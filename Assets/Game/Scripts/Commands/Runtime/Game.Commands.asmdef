@@ -1,0 +1,17 @@
+{
+    "name": "Game.Commands",
+    "rootNamespace": "Game.Commands",
+    "references": [
+        "Game.Commands.Abstractions",
+        "UniTask"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
