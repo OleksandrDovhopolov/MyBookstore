@@ -1,12 +1,14 @@
 using Save;
+using Save.Config;
 using Save.Identity;
 using Save.Storage;
 using VContainer;
-using VContainer.Unity;
 
 namespace Game.Bootstrap
 {
-    // Registered in: BootstrapInstaller (GlobalLifetimeScope — сохранения переживают смену сцен)
+    // Registered in: BootstrapInstaller (GlobalLifetimeScope — сохранения переживают смену сцен).
+    // Depends on InfrastructureVContainerBindings for ICommandLogger / ICommandErrorReporter /
+    // IConnectionService / IRequestFactory when HTTP mode is enabled.
     public static class SaveVContainerBindings
     {
         public static void RegisterSave(this IContainerBuilder builder)
@@ -16,16 +18,20 @@ namespace Game.Bootstrap
                    .As<IPlayerIdentityProvider>();
 
             // Storage — по умолчанию LocalDiskStorage (MVP).
-            // Для HTTP: закомментируй LocalDiskStorage и раскомментируй блок ниже.
+            // Для HTTP-режима: закомментируй блок LocalDiskStorage и раскомментируй блок HTTP ниже.
             builder.Register<LocalDiskStorage>(Lifetime.Singleton)
                    .As<ISaveStorage>();
 
-            // HTTP + offline cache:
-            // builder.Register<ISaveBackendConfig, SaveBackendConfig>(Lifetime.Singleton); // TODO: реализовать
-            // builder.Register<LocalDiskStorage>(Lifetime.Singleton);  // локальный кэш
+            // HTTP + write-through кэш:
+            //   HttpSaveStorage конструируется контейнером — все его зависимости
+            //   (ISaveBackendConfig, ISaveStorage local cache, IPlayerIdentityProvider,
+            //    IConnectionService, ICommandLogger, ICommandErrorReporter) резолвятся автоматически.
+            //
+            // builder.Register<ISaveBackendConfig, SaveBackendConfig>(Lifetime.Singleton);
+            // builder.Register<LocalDiskStorage>(Lifetime.Singleton);  // local write-through cache
             // builder.Register<HttpSaveStorage>(Lifetime.Singleton).As<ISaveStorage>();
 
-            // SaveService — Fix 4: регистрируется как ISaveService.
+            // SaveService — регистрируется как ISaveService.
             // VContainer автоматически вызовет Dispose() при разрушении scope,
             // так как SaveService реализует IDisposable.
             builder.Register<SaveService>(Lifetime.Singleton)

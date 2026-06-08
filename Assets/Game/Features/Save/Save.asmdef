@@ -2,7 +2,10 @@
     "name": "Save",
     "rootNamespace": "Save",
     "references": [
-        "UniTask"
+        "UniTask",
+        "Game.Commands.Abstractions",
+        "Game.Commands",
+        "Game.Http"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

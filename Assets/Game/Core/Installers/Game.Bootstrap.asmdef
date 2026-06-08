@@ -4,7 +4,10 @@
     "references": [
         "VContainer",
         "VContainer.Unity",
-        "Save"
+        "Save",
+        "Game.Commands.Abstractions",
+        "Game.Commands",
+        "Game.Http"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Commands;
+using Game.Http;
 using Save.Config;
 using Save.Identity;
 using Save.Storage;
@@ -41,10 +43,15 @@ namespace Save
 
             // Standalone wiring — без VContainer, чтобы тест не зависел от настроек сцены.
             // HTTP-режим: HttpSaveStorage — primary, LocalDiskStorage — write-through кэш.
+            // Сетевой стек: команда → IConnectionService → IRequestFactory (Unity adapter).
             var localCache = new LocalDiskStorage();
             var identity = new PersistentInstallPlayerIdentityProvider();
             var config = new SaveBackendConfig();
-            var http = new HttpSaveStorage(config, localCache, identity);
+            var logger = new UnityCommandLogger(CommandLogLevel.Info);
+            var errorReporter = new NoOpCommandErrorReporter();
+            var requestFactory = new UnityWebRequestFactory();
+            var connectionService = new ConnectionService(requestFactory);
+            var http = new HttpSaveStorage(config, localCache, identity, connectionService, logger, errorReporter);
             _save = new SaveService(http, localCache);
 
             Debug.Log($"[TestStart] backend: {config.BaseUrl}{config.SavePath}");
