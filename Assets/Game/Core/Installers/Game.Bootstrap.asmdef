@@ -2,7 +2,9 @@
     "name": "Game.Bootstrap",
     "rootNamespace": "Game.Bootstrap",
     "references": [
-        "VContainer"
+        "VContainer",
+        "VContainer.Unity",
+        "Save"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
