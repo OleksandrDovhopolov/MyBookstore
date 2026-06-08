@@ -1,0 +1,14 @@
+[
+  {
+    "id": "req_dune_rush",
+    "bookId": "book_dune",
+    "rewardSoft": 50,
+    "timeLimitSeconds": 300
+  },
+  {
+    "id": "req_hobbit_daily",
+    "bookId": "book_hobbit",
+    "rewardSoft": 30,
+    "timeLimitSeconds": 86400
+  }
+]

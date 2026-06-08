@@ -14,6 +14,7 @@ namespace Game.Bootstrap
             builder.RegisterAnalytics();
             builder.RegisterSave();
             builder.RegisterInfrastructure();
+            builder.RegisterConfigs();
             builder.RegisterUiSystem();
         }
     }

@@ -1,20 +1,19 @@
 {
-    "name": "Game.Bootstrap",
-    "rootNamespace": "Game.Bootstrap",
+    "name": "Configs",
+    "rootNamespace": "Game.Configs",
     "references": [
-        "VContainer",
-        "Save",
-        "Configs",
+        "UniTask",
         "Game.Commands.Abstractions",
         "Game.Commands",
-        "Game.Http",
-        "UniTask"
+        "Game.Http"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],

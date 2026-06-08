@@ -1,0 +1,18 @@
+[
+  {
+    "id": "book_dune",
+    "title": "Dune",
+    "author": "Frank Herbert",
+    "genre": "sci-fi",
+    "basePrice": 120,
+    "rarityWeight": 0.2
+  },
+  {
+    "id": "book_hobbit",
+    "title": "The Hobbit",
+    "author": "J.R.R. Tolkien",
+    "genre": "fantasy",
+    "basePrice": 90,
+    "rarityWeight": 0.5
+  }
+]

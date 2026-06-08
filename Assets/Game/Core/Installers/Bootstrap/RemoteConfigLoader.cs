@@ -42,18 +42,31 @@ namespace Game.Bootstrap
             Debug.Log("[RemoteConfigLoader] Firebase dependencies ready.");
         }
 
-        // TODO: реализовать после импорта FirebaseRemoteConfig_*.unitypackage.
-        // Оригинальный код использовал:
-        //   using Firebase.RemoteConfig;
-        //   var settings = new ConfigSettings { MinimumFetchIntervalInMilliseconds = 0 };
-        //   await FirebaseRemoteConfig.DefaultInstance.SetConfigSettingsAsync(settings).AsUniTask();
-        //   await FirebaseRemoteConfig.DefaultInstance.FetchAndActivateAsync().AsUniTask();
-        //   IsReady = true;
+        // Реализация активна за define BOOKSTORE_FIREBASE_RC (после импорта
+        // FirebaseRemoteConfig_*.unitypackage). До этого — безопасный no-op, чтобы
+        // сборка не падала, если метод где-то вызван (см. FirebaseRemoteConfigService).
+#if BOOKSTORE_FIREBASE_RC
+        public async UniTask FetchAndActivateAsync(CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            var settings = new Firebase.RemoteConfig.ConfigSettings { MinimumFetchIntervalInMilliseconds = 0 };
+            await Firebase.RemoteConfig.FirebaseRemoteConfig.DefaultInstance
+                .SetConfigSettingsAsync(settings).AsUniTask().AttachExternalCancellation(ct);
+            await Firebase.RemoteConfig.FirebaseRemoteConfig.DefaultInstance
+                .FetchAndActivateAsync().AsUniTask().AttachExternalCancellation(ct);
+
+            IsReady = true;
+            Debug.Log("[RemoteConfigLoader] Remote Config fetched and activated.");
+        }
+#else
         public UniTask FetchAndActivateAsync(CancellationToken ct)
         {
-            throw new NotImplementedException(
-                "Firebase Remote Config SDK не импортирован. " +
-                "Импортируй FirebaseRemoteConfig_*.unitypackage и раскомментируй реализацию.");
+            Debug.LogWarning(
+                "[RemoteConfigLoader] FetchAndActivateAsync skipped: define BOOKSTORE_FIREBASE_RC " +
+                "не задан (FirebaseRemoteConfig SDK не импортирован).");
+            return UniTask.CompletedTask;
         }
+#endif
     }
 }

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "loc_downtown",
+    "displayName": "Downtown Store",
+    "unlockCost": 0,
+    "requiredLevel": 1
+  },
+  {
+    "id": "loc_mall",
+    "displayName": "Shopping Mall",
+    "unlockCost": 5000,
+    "requiredLevel": 5
+  }
+]
