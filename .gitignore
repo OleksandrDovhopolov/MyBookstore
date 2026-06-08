@@ -83,6 +83,13 @@ mono_crash.*
 # Crashlytics generated file
 crashlytics-build.properties
 
+# Firebase secrets — do not commit
+google-services.json
+google-services.json.meta
+GoogleService-Info.plist
+GoogleService-Info.plist.meta
+firebase-service-account*.json
+
 # TestRunner generated files
 InitTestScene*.unity*
 
