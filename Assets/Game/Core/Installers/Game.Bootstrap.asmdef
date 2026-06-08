@@ -3,11 +3,11 @@
     "rootNamespace": "Game.Bootstrap",
     "references": [
         "VContainer",
-        "VContainer.Unity",
         "Save",
         "Game.Commands.Abstractions",
         "Game.Commands",
-        "Game.Http"
+        "Game.Http",
+        "UniTask"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
