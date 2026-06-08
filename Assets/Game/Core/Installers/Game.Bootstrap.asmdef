@@ -1,0 +1,21 @@
+{
+    "name": "Game.Bootstrap",
+    "rootNamespace": "Game.Bootstrap",
+    "references": [
+        "VContainer",
+        "Save",
+        "Game.Commands.Abstractions",
+        "Game.Commands",
+        "Game.Http",
+        "UniTask"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

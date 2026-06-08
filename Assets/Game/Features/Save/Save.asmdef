@@ -1,0 +1,21 @@
+{
+    "name": "Save",
+    "rootNamespace": "Save",
+    "references": [
+        "UniTask",
+        "Game.Commands.Abstractions",
+        "Game.Commands",
+        "Game.Http"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
