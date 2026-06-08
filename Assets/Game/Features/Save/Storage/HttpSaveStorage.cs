@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
 using Save.Config;
 using Save.Identity;
 using UnityEngine;
@@ -169,7 +170,9 @@ namespace Save.Storage
         private async UniTask PushToServerAsync(string data, CancellationToken ct)
         {
             var url = BuildUrl();
-            var payload = $"{{\"playerId\":\"{_identity.GetPlayerId()}\",\"data\":{data}}}";
+            // Server contract: data is a JSON-escaped STRING, not an embedded object.
+            //   { "playerId": "...", "data": "{\"Meta\":...}" }
+            var payload = JsonConvert.SerializeObject(new { playerId = _identity.GetPlayerId(), data });
             using var request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST);
             request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(payload));
             request.downloadHandler = new DownloadHandlerBuffer();

@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Save.Config;
+using Save.Identity;
 using Save.Storage;
 using UnityEngine;
 
@@ -17,6 +19,7 @@ namespace Save
     //   6. Выводит путь к файлу и его содержимое
     // Повторный запуск Play должен показать инкремент счётчика — это подтверждает,
     // что данные реально лежат на диске.
+    [Obsolete("Test Class")]
     public class TestStart : MonoBehaviour
     {
         private const string ModuleKey = "test_counter";
@@ -37,8 +40,14 @@ namespace Save
             var ct = _cts.Token;
 
             // Standalone wiring — без VContainer, чтобы тест не зависел от настроек сцены.
-            var storage = new LocalDiskStorage();
-            _save = new SaveService(storage);
+            // HTTP-режим: HttpSaveStorage — primary, LocalDiskStorage — write-through кэш.
+            var localCache = new LocalDiskStorage();
+            var identity = new PersistentInstallPlayerIdentityProvider();
+            var config = new SaveBackendConfig();
+            var http = new HttpSaveStorage(config, localCache, identity);
+            _save = new SaveService(http, localCache);
+
+            Debug.Log($"[TestStart] backend: {config.BaseUrl}{config.SavePath}");
 
             try
             {
