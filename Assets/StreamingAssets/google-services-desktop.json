@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "679386914013",
+    "project_id": "mybookstore-13b53",
+    "storage_bucket": "mybookstore-13b53.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:679386914013:android:a662e20e5fd72d24830f34",
+        "android_client_info": {
+          "package_name": "com.bobak.mybookstore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAG-kSDZLOq686WGq7RhMb43HDZCjGHFz0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
