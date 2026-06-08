@@ -19,6 +19,7 @@ namespace Save
         private static readonly TimeSpan SaveRateLimit = TimeSpan.FromMilliseconds(500);
 
         private readonly ISaveStorage _storage;
+        private readonly ISaveStorage _localStorageOverride; // used for ForceLocalOnly mode
         private readonly SemaphoreSlim _semaphore = new(1, 1);
         private readonly List<ISaveHook> _hooks = new();
         private CancellationTokenSource _debounceCts = new();
@@ -28,10 +29,15 @@ namespace Save
         private bool _isDirty;
         private bool _disposed;
         private DateTimeOffset _lastSaveUtc = DateTimeOffset.MinValue;
+        private int _autosaveBlockCount;
+        private bool _hasPendingAutosave;
 
-        public SaveService(ISaveStorage storage)
+        // localStorageOverride: if provided, used for SaveMode.ForceLocalOnly (skips server push).
+        // Typically LocalDiskStorage when primary storage is HttpSaveStorage.
+        public SaveService(ISaveStorage storage, ISaveStorage localStorageOverride = null)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _localStorageOverride = localStorageOverride;
         }
 
         public void RegisterHook(ISaveHook hook)
@@ -66,17 +72,14 @@ namespace Save
                 await hook.AfterLoadAsync(ct);
         }
 
-        public async UniTask SaveAsync(CancellationToken ct)
+        public async UniTask SaveAsync(CancellationToken ct, SaveMode mode = SaveMode.Regular)
         {
             ThrowIfDisposed();
             ct.ThrowIfCancellationRequested();
             await EnsureLoadedAsync(ct);
 
-            // Fix 1: rate limit выполняется ДО захвата семафора.
-            // В Research этот Delay был внутри try-блока после WaitAsync,
-            // что блокировало UpdateModuleAsync на 500мс.
             var elapsed = DateTimeOffset.UtcNow - _lastSaveUtc;
-            if (elapsed < SaveRateLimit)
+            if (mode != SaveMode.ForceWithSync && elapsed < SaveRateLimit)
                 await UniTask.Delay(SaveRateLimit - elapsed, cancellationToken: ct);
 
             // Fix 3: async hooks выполняются ДО захвата семафора,
@@ -105,7 +108,8 @@ namespace Save
 
             if (jsonToSave == null) return;
 
-            await _storage.SaveAsync(jsonToSave, ct);
+            var targetStorage = mode == SaveMode.ForceLocalOnly ? _localStorageOverride ?? _storage : _storage;
+            await targetStorage.SaveAsync(jsonToSave, ct);
 
             await _semaphore.WaitAsync(ct);
             try
@@ -171,7 +175,43 @@ namespace Save
             _debounceCts.Cancel();
             _debounceCts.Dispose();
             _debounceCts = new CancellationTokenSource();
+
+            if (_autosaveBlockCount > 0)
+            {
+                _hasPendingAutosave = true;
+                return;
+            }
+
             DebouncedSaveAsync(_debounceCts.Token).Forget();
+        }
+
+        public IDisposable BlockAutosave()
+        {
+            ThrowIfDisposed();
+            System.Threading.Interlocked.Increment(ref _autosaveBlockCount);
+            return new AutosaveLease(this);
+        }
+
+        private void ReleaseAutosaveLease()
+        {
+            if (System.Threading.Interlocked.Decrement(ref _autosaveBlockCount) == 0 && _hasPendingAutosave)
+            {
+                _hasPendingAutosave = false;
+                MarkDirty();
+            }
+        }
+
+        private sealed class AutosaveLease : IDisposable
+        {
+            private SaveService _owner;
+
+            public AutosaveLease(SaveService owner) => _owner = owner;
+
+            public void Dispose()
+            {
+                var o = System.Threading.Interlocked.Exchange(ref _owner, null);
+                o?.ReleaseAutosaveLease();
+            }
         }
 
         public void Dispose()
@@ -268,10 +308,13 @@ namespace Save
             else Debug.Log(msg);
 
             if (data.Modules.Count <= 0) return;
+            const int moduleLimit = 5120;
             foreach (var kvp in data.Modules)
             {
                 var size = kvp.Value?.Json == null ? 0 : Encoding.UTF8.GetByteCount(kvp.Value.Json);
-                Debug.Log($"[SaveService]   module='{kvp.Key}' v{kvp.Value?.Version} = {size}B");
+                var moduleMsg = $"[SaveService]   module='{kvp.Key}' v{kvp.Value?.Version} = {size}B";
+                if (size > moduleLimit) Debug.LogWarning(moduleMsg + " (OVER 5KB)");
+                else Debug.Log(moduleMsg);
             }
         }
 

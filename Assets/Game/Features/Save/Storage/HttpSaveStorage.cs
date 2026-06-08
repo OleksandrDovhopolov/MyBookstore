@@ -153,6 +153,20 @@ namespace Save.Storage
             }
         }
 
+        // Used by SaveSyncBootstrap to compare revisions without write-through.
+        public async UniTask<string> PeekServerAsync(CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                return await PullFromServerAsync(ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                throw new InvalidOperationException($"{LogPrefix} PeekServerAsync failed. {ex.Message}", ex);
+            }
+        }
+
         private async UniTask PushToServerAsync(string data, CancellationToken ct)
         {
             var url = BuildUrl();

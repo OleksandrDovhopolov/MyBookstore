@@ -34,6 +34,9 @@ namespace Save.Storage
                     Directory.CreateDirectory(directory);
 
                 var tempPath = _filePath + ".tmp";
+                // stale .tmp from a previous crash would cause File.Replace to fail
+                if (File.Exists(tempPath))
+                    File.Delete(tempPath);
                 await File.WriteAllTextAsync(tempPath, data ?? string.Empty, Encoding.UTF8, ct);
 
                 if (File.Exists(_filePath))
@@ -60,7 +63,15 @@ namespace Save.Storage
             {
                 ct.ThrowIfCancellationRequested();
                 if (!File.Exists(_filePath))
+                {
+                    if (File.Exists(_backupPath))
+                    {
+                        File.Copy(_backupPath, _filePath);
+                        Debug.LogWarning("[LocalDiskStorage] Main file missing, recovered from .bak");
+                        return await File.ReadAllTextAsync(_filePath, ct);
+                    }
                     return null;
+                }
 
                 return await File.ReadAllTextAsync(_filePath, ct);
             }
