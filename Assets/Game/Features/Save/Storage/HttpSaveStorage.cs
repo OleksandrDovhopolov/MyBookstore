@@ -9,10 +9,9 @@ using UnityEngine.Networking;
 
 namespace Save.Storage
 {
-    // Переписан с нуля (не копия Research). Fixes 5–6 из SAVE_MIGRATION_FROM_RESEARCH.md:
-    //   Fix 5: Exists() убран, null из LoadAsync = нет данных.
-    //   Fix 6: write-through local cache — при сетевой ошибке прогресс не теряется.
-    //          URL через ISaveBackendConfig, не захардкожен.
+    // Write-through кэш: SaveAsync сначала пишет локально, потом пушит на сервер.
+    // При сетевой ошибке прогресс не теряется — на следующем сейве push повторится.
+    // URL берётся из ISaveBackendConfig (не захардкожен).
     public sealed class HttpSaveStorage : ISaveStorage
     {
         private const string LogPrefix = "[HttpSaveStorage]";

@@ -3,7 +3,6 @@ using Newtonsoft.Json.Linq;
 
 namespace Save.Storage
 {
-    // Источник: Research/SaveGlobalPayloadParser.cs — без изменений логики.
     // Нормализует HTTP-ответ сервера в строку, пригодную для десериализации SaveData.
     // Поддерживает три формата ответа:
     //   data-string — { "data": "<json-string>" }

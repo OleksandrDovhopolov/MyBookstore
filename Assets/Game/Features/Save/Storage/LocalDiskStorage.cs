@@ -7,8 +7,6 @@ using UnityEngine;
 
 namespace Save.Storage
 {
-    // Источник: Research/LocalDiskStorage.cs — без изменений логики.
-    // Exists() убран — интерфейс ISaveStorage его не требует (null из LoadAsync = нет данных).
     public sealed class LocalDiskStorage : ISaveStorage
     {
         private readonly string _filePath;

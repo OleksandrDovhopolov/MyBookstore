@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace Save.Identity
 {
-    // Источник: Research/PersistentInstallPlayerIdentityProvider.cs — без изменений логики.
     // Генерирует UUID при первой установке, хранит в PlayerPrefs.
     // Используется HttpSaveStorage для идентификации игрока на сервере.
     public sealed class PersistentInstallPlayerIdentityProvider : IPlayerIdentityProvider

@@ -3,8 +3,8 @@ using Cysharp.Threading.Tasks;
 
 namespace Save.Storage
 {
-    // Exists() намеренно убран (баг Research: HttpSaveStorage.Exists() всегда возвращал true).
-    // Признак "нет данных" — LoadAsync возвращает null.
+    // Признак "нет данных" — LoadAsync возвращает null. Отдельного Exists() нет намеренно:
+    // у HTTP-источника проверка существования = тот же сетевой запрос, что и загрузка.
     public interface ISaveStorage
     {
         UniTask SaveAsync(string data, CancellationToken ct);
