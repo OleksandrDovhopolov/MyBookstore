@@ -26,8 +26,8 @@ namespace Game.Bootstrap
 
             // Addressables: catalog init + remote-catalog update (CDN — Cloudflare R2).
             // ProdAddressablesWrapper — статика, не биндится; потребители вызывают Load/Release напрямую.
+            // Прогрев каталога — теперь часть LoadingOrchestrator (AddressablesUpdateOperation).
             builder.Register<IAddressablesCatalogService, AddressablesCatalogService>(Lifetime.Singleton);
-            builder.RegisterEntryPoint<AddressablesWarmupEntryPoint>();
 
             // TODO: Auth token provider
             // builder.Register<IAuthTokenProvider, JwtAuthTokenProvider>(Lifetime.Singleton);

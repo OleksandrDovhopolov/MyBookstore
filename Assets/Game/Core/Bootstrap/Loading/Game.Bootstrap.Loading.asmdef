@@ -1,16 +1,13 @@
 {
-    "name": "Game.Bootstrap",
-    "rootNamespace": "Game.Bootstrap",
+    "name": "Game.Bootstrap.Loading",
+    "rootNamespace": "Game.Bootstrap.Loading",
     "references": [
-        "VContainer",
-        "Save",
-        "Configs",
-        "Game.Commands.Abstractions",
-        "Game.Commands",
-        "Game.Http",
         "UniTask",
+        "VContainer",
+        "Configs",
+        "Save",
         "Infrastructure",
-        "Game.Bootstrap.Loading"
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

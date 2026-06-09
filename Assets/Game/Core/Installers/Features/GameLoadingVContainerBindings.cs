@@ -1,23 +1,24 @@
+using Game.Bootstrap.Loading;
 using VContainer;
+using VContainer.Unity;
 
 namespace Game.Bootstrap
 {
-    // Registered in: BootstrapInstaller (GlobalLifetimeScope — survives scene transitions)
+    // Registered in: BootstrapInstaller (GlobalLifetimeScope — survives scene transitions).
+    // Заменил три прежних entry point (Addressables/Configs warmup + BookDuneProbe)
+    // на единый Phase/Group/Operation-флоу через LoadingOrchestrator.
     public static class GameLoadingVContainerBindings
     {
         public static void RegisterGameLoading(this IContainerBuilder builder)
         {
-            // TODO: Loading progress tracking
-            // builder.Register<LoadingProgressAggregator>(_ => new LoadingProgressAggregator(), Lifetime.Singleton);
+            builder.Register<LoadingProgressAggregator>(_ => new LoadingProgressAggregator(), Lifetime.Singleton);
+            builder.Register<LoadingOrchestrator>(Lifetime.Singleton);
 
-            // TODO: Loading orchestrator — coordinates loading steps across systems
-            // builder.Register<LoadingOrchestrator>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<LoadingOrchestratorEntryPoint>();
 
-            // TODO: Scene transition service
-            // builder.Register<ISceneTransitionService, SceneTransitionService>(Lifetime.Singleton);
-
-            // TODO: Splash / loading screen controller
-            // builder.RegisterComponentInNewPrefab(_loadingScreenPrefab, Lifetime.Singleton).DontDestroyOnLoad();
+            // TODO: LoadingScreenView prefab — забиндить после сборки префаба
+            // (DontDestroyOnLoad), затем подключить к LoadingOrchestrator.ProgressChanged
+            // в LoadingOrchestratorEntryPoint (сейчас прогресс уходит в Debug.Log).
         }
     }
 }

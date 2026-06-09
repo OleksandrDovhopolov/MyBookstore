@@ -42,12 +42,8 @@ namespace Game.Bootstrap
 
             builder.Register<IConfigsService, ConfigsService>(Lifetime.Singleton);
 
-            // Жёсткий прогрев на бутстрапе; GetAsync прогреет лениво, если entry points не диспатчатся.
-            builder.RegisterEntryPoint<ConfigsWarmupEntryPoint>();
-
-            // Диагностика: читает book_dune после прогрева и показывает мёрджнутый результат
-            // (сервер + RC). Убрать строку, когда будет не нужна.
-            builder.RegisterEntryPoint<BookDuneProbeEntryPoint>();
+            // Прогрев конфигов — теперь часть LoadingOrchestrator (ConfigsWarmupOperation).
+            // См. Game.Bootstrap.Loading.LoadingOrchestratorEntryPoint.
         }
 
         private static IConfigSource ResolveServerSource(IObjectResolver r)
