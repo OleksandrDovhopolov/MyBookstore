@@ -10,8 +10,11 @@ namespace Game.Bootstrap
     {
         public static void RegisterInfrastructure(this IContainerBuilder builder)
         {
-            // Command infrastructure ports
-            builder.Register<ICommandLogger, UnityCommandLogger>(Lifetime.Singleton);
+            // Command infrastructure ports.
+            // UnityCommandLogger takes CommandLogLevel — у параметра есть значение по умолчанию,
+            // но VContainer всё равно пытается резолвить его как зависимость (No such registration).
+            // Поэтому явно через factory-делегат с нужным уровнем.
+            builder.Register<ICommandLogger>(_ => new UnityCommandLogger(CommandLogLevel.Info), Lifetime.Singleton);
             builder.Register<ICommandErrorReporter, NoOpCommandErrorReporter>(Lifetime.Singleton);
 
             // HTTP transport: factory builds IRequest adapters, ConnectionService wraps it
