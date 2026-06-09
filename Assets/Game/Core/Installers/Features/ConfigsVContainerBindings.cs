@@ -61,6 +61,7 @@ namespace Game.Bootstrap
 #if UNITY_EDITOR
         private const string UseServerPrefKey = "MyBookstore.Configs.UseServerSource";
         private const string MenuPath = "Tools/Configs/Use Server Source";
+        private const string ClearSnapshotMenuPath = "Tools/Configs/Clear Server Snapshot";
 
         private static bool UseServerSourceInEditor => EditorPrefs.GetBool(UseServerPrefKey, false);
 
@@ -73,6 +74,24 @@ namespace Game.Bootstrap
         {
             Menu.SetChecked(MenuPath, UseServerSourceInEditor);
             return true;
+        }
+
+        // Удаляет persistentDataPath/configs/ (snapshot + saved manifest с etag'ами).
+        // Используй после ручной правки БД на сервере, если клиент держит старое содержимое.
+        // На следующем Play ServerConfigSource зальёт всё заново.
+        [MenuItem(ClearSnapshotMenuPath)]
+        private static void ClearServerSnapshot()
+        {
+            var dir = System.IO.Path.Combine(UnityEngine.Application.persistentDataPath, "configs");
+            if (System.IO.Directory.Exists(dir))
+            {
+                System.IO.Directory.Delete(dir, recursive: true);
+                UnityEngine.Debug.Log($"[Configs] Snapshot cleared: {dir}");
+            }
+            else
+            {
+                UnityEngine.Debug.Log($"[Configs] Nothing to clear ({dir} doesn't exist).");
+            }
         }
 #endif
     }
