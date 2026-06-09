@@ -1,6 +1,8 @@
 using Game.Commands;
 using Game.Http;
+using Infrastructure;
 using VContainer;
+using VContainer.Unity;
 
 namespace Game.Bootstrap
 {
@@ -21,6 +23,11 @@ namespace Game.Bootstrap
             // with internet-availability checks and retry hooks.
             builder.Register<IRequestFactory, UnityWebRequestFactory>(Lifetime.Singleton);
             builder.Register<IConnectionService, ConnectionService>(Lifetime.Singleton);
+
+            // Addressables: catalog init + remote-catalog update (CDN — Cloudflare R2).
+            // ProdAddressablesWrapper — статика, не биндится; потребители вызывают Load/Release напрямую.
+            builder.Register<IAddressablesCatalogService, AddressablesCatalogService>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<AddressablesWarmupEntryPoint>();
 
             // TODO: Auth token provider
             // builder.Register<IAuthTokenProvider, JwtAuthTokenProvider>(Lifetime.Singleton);

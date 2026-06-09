@@ -8,7 +8,8 @@
         "Game.Commands.Abstractions",
         "Game.Commands",
         "Game.Http",
-        "UniTask"
+        "UniTask",
+        "Infrastructure"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
