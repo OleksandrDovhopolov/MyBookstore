@@ -2,7 +2,9 @@ namespace Game.Configs.Server
 {
     /// <summary>
     /// Тот же .NET сервер, что и для сейвов (см. Save/Config/SaveBackendConfig).
-    /// Пути под конфиги пока не реализованы на бэке — заданы по спеку (Phase 4).
+    /// Public-методы конфигов реализованы и активны. Environment не передаётся —
+    /// сервер по умолчанию отдаёт prod. (dev при необходимости: дописать "?environment=dev"
+    /// к путям ниже; не используется в текущем цикле.)
     /// </summary>
     public sealed class ConfigsBackendConfig : IConfigsBackendConfig
     {

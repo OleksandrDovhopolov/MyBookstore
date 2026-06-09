@@ -17,9 +17,10 @@ namespace Game.Configs.Server
     /// Слои (от младшего к старшему): bundled defaults (fallback) → snapshot → server.
     /// Сеть упала → отдаём snapshot; снапшота нет → bundled defaults.
     ///
-    /// ВНИМАНИЕ: публичные методы /configs/* на бэке ещё не реализованы — это seam,
-    /// написанный против спека (docs/CONFIG_CACHE_SYSTEM.md, Phase 4). До выката
-    /// бэкенда тестируется на моке (Postman/stub).
+    /// Подключён к живому public API (GET /configs/manifest, GET /configs/{name}),
+    /// environment по умолчанию prod. ETag канонизируется (без кавычек) на всех точках
+    /// входа, чтобы delta-skip по etag работал (см. GetConfigCommand.NormalizeEtag).
+    /// Контракт сервера — docs/CONFIG_SERVER_API.md.
     /// </summary>
     public sealed class ServerConfigSource : IConfigSource
     {
@@ -110,7 +111,11 @@ namespace Game.Configs.Server
 
             try
             {
-                return JsonConvert.DeserializeObject<List<ManifestEntry>>(cmd.ManifestJson);
+                var entries = JsonConvert.DeserializeObject<List<ManifestEntry>>(cmd.ManifestJson);
+                if (entries != null)
+                    foreach (var e in entries)
+                        e.Etag = GetConfigCommand.NormalizeEtag(e.Etag);
+                return entries;
             }
             catch (Exception ex)
             {
@@ -170,7 +175,7 @@ namespace Game.Configs.Server
                     if (entries != null)
                         foreach (var e in entries)
                             if (!string.IsNullOrEmpty(e.Name))
-                                _etagByName[e.Name] = e.Etag;
+                                _etagByName[e.Name] = GetConfigCommand.NormalizeEtag(e.Etag);
                 }
 
                 foreach (var path in Directory.GetFiles(_snapshotDir, "*.json", SearchOption.TopDirectoryOnly))

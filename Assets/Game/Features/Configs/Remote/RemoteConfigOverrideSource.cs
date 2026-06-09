@@ -6,13 +6,15 @@ namespace Game.Configs.Remote
 {
     /// <summary>
     /// Override-слой поверх базовых конфигов через Firebase RC.
-    /// Конвенция ключей: RC-ключ "cfg.&lt;fileName&gt;" хранит JSON-объект
+    /// Конвенция ключей: RC-ключ "cfg_&lt;fileName&gt;" хранит JSON-объект
     /// { "&lt;id&gt;": { ...partial... }, ... }. Partial мёржится поверх базового
     /// объекта конфига в ConfigsService — это и есть точка A/B и таргетинга.
+    /// Подчёркивание (не точка) — потому что ключи Firebase RC допускают только
+    /// буквы, цифры и '_'.
     /// </summary>
     public sealed class RemoteConfigOverrideSource : IConfigOverrideSource
     {
-        private const string KeyPrefix = "cfg.";
+        private const string KeyPrefix = "cfg_";
 
         private readonly IRemoteConfigService _rc;
 
@@ -34,9 +36,13 @@ namespace Game.Configs.Remote
             {
                 var token = JObject.Parse(raw)[id];
                 if (token == null)
+                {
+                    Debug.Log($"[RemoteConfigOverrideSource] '{KeyPrefix}{fileName}' есть, но нет записи для id='{id}'.");
                     return false;
+                }
 
                 partialJson = token.ToString();
+                Debug.Log($"[RemoteConfigOverrideSource] override {fileName}/{id} -> {partialJson}");
                 return true;
             }
             catch (Exception ex)

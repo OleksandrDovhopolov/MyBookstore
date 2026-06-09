@@ -29,17 +29,27 @@ namespace Game.Bootstrap
                 .AttachExternalCancellation(ct);
 
             _ready = true;
-            Debug.Log("[FirebaseRemoteConfigService] RC fetched and activated.");
+
+            var info = FirebaseRemoteConfig.DefaultInstance.Info;
+            var keys = string.Join(", ", FirebaseRemoteConfig.DefaultInstance.Keys);
+            Debug.Log(
+                $"[FirebaseRemoteConfigService] activated. LastFetchStatus={info.LastFetchStatus}, " +
+                $"FetchTime={info.FetchTime:O}, keys=[{keys}]");
         }
 
         public bool TryGetString(string key, out string value)
         {
             value = null;
             if (!_ready)
+            {
+                Debug.LogWarning($"[FirebaseRemoteConfigService] TryGetString('{key}') до InitializeAsync — RC ещё не активирован.");
                 return false;
+            }
 
             var v = FirebaseRemoteConfig.DefaultInstance.GetValue(key);
-            value = v?.StringValue;
+            value = v.StringValue;
+            // Source: RemoteValue = пришло с сервера; StaticValue = ключа нет в RC вообще.
+            Debug.Log($"[FirebaseRemoteConfigService] key='{key}' source={v.Source} value='{value}'");
             return !string.IsNullOrEmpty(value);
         }
     }

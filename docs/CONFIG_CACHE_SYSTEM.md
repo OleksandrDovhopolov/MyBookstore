@@ -85,7 +85,7 @@ console, без клиентского кода на эксперимент.
 
 - Контракт отвязан от Firebase SDK через `IRemoteConfigService` ([файл](../Assets/Game/Features/Configs/Remote/IRemoteConfigService.cs)).
 - `RemoteConfigOverrideSource` ([файл](../Assets/Game/Features/Configs/Remote/RemoteConfigOverrideSource.cs)) мёржит partial поверх base при десериализации.
-- **Конвенция ключей RC**: ключ `cfg.<fileName>` хранит JSON `{ "<id>": { ...partial... } }`.
+- **Конвенция ключей RC**: ключ `cfg_<fileName>` хранит JSON `{ "<id>": { ...partial... } }`. Подчёркивание, а не точка — ключи Firebase RC допускают только буквы/цифры/`_`.
 - Firebase-реализация (`FirebaseRemoteConfigService`, [файл](../Assets/Game/Core/Installers/Bootstrap/FirebaseRemoteConfigService.cs)) и `RemoteConfigLoader.FetchAndActivateAsync` — за define **`BOOKSTORE_FIREBASE_RC`**. До его включения активна `NullRemoteConfigService` (нет override'ов, сборка не ломается).
 
 **Правило разделения:** большой структурный контент → сервер; эксперименты/флаги/скаляры → RC.
@@ -141,9 +141,14 @@ console, без клиентского кода на эксперимент.
 
 ## 3. Backend API spec (для передачи backend)
 
+> **Полная самодостаточная спека для backend-разработчика:** [CONFIG_SERVER_API.md](CONFIG_SERVER_API.md).
+> Ниже — краткая выжимка.
+
 Сервер: `https://gameserver-production-be8b.up.railway.app/api/v1/` (тот же, что для сейвов).
-Клиентский seam (`ServerConfigSource`) уже написан против этого контракта — методы нужно
-реализовать на бэке.
+**Public-методы (manifest + {name}) реализованы и подключены** — `ServerConfigSource` ходит на
+живой API (environment по умолчанию prod). ETag канонизируется на клиенте (срез кавычек/`W/`),
+т.к. сервер отдаёт его в кавычках в заголовке и без кавычек в манифесте.
+**Admin-методы (publish/history/rollback) — ещё не реализованы**, спека ниже.
 
 ### Public (читает клиент)
 

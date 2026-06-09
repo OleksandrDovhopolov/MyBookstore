@@ -349,27 +349,15 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1154821714}
-  - component: {fileID: 1154821713}
+  - component: {fileID: 1154821715}
+  - component: {fileID: 1154821716}
   m_Layer: 0
-  m_Name: 'Firebase '
+  m_Name: ConfigsSmokeTest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1154821713
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1154821712}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 41003fa2a3d7f664ca379cfd5f34ad1a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _runOnStart: 1
 --- !u!4 &1154821714
 Transform:
   m_ObjectHideFlags: 0
@@ -385,6 +373,30 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1154821715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1154821712}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 245a37dcbb7380e4bb9cd91b23ff4049, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1154821716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1154821712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd1a1dbe346006048b92589fd16899f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

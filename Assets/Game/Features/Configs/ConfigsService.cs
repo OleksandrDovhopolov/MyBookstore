@@ -137,6 +137,7 @@ namespace Game.Configs
                     try
                     {
                         obj.Merge(JObject.Parse(partial), MergeSettings);
+                        Debug.Log($"{LogPrefix} applied override for {fileName}/{id}.");
                     }
                     catch (Exception ex)
                     {
