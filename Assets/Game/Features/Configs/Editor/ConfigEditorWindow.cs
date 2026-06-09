@@ -119,6 +119,14 @@ namespace Game.Configs.Editor
                 if (GUILayout.Button("Publish", EditorStyles.toolbarButton, GUILayout.Width(70)))
                     PublishAsync().Forget();
 
+            using (new EditorGUI.DisabledScope(!CanShowHistory()))
+                if (GUILayout.Button("History", EditorStyles.toolbarButton, GUILayout.Width(70)))
+                    ConfigHistoryWindow.Open(_state.Section, _state.Environment, OnRolledBack);
+
+            using (new EditorGUI.DisabledScope(!CanPromote()))
+                if (GUILayout.Button("Promote to Prod", EditorStyles.toolbarButton, GUILayout.Width(120)))
+                    PromoteAsync().Forget();
+
             var rawNext = GUILayout.Toggle(_rawJsonMode, "Raw JSON", EditorStyles.toolbarButton, GUILayout.Width(80));
             if (rawNext != _rawJsonMode)
             {
@@ -200,7 +208,18 @@ namespace Game.Configs.Editor
 
         private void DrawBottomPanel(IReadOnlyList<ValidationIssue> issues)
         {
-            EditorGUILayout.LabelField("Publish Comment", EditorStyles.boldLabel);
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Publish Comment", EditorStyles.boldLabel, GUILayout.Width(160));
+            GUILayout.FlexibleSpace();
+            using (new EditorGUI.DisabledScope(_state.WorkingArray == null || _state.WorkingArray.Count == 0))
+            {
+                if (GUILayout.Button("Copy Current JSON", GUILayout.Width(150)))
+                {
+                    EditorGUIUtility.systemCopyBuffer = _state.SerializeWorking(Newtonsoft.Json.Formatting.Indented);
+                    _state.LastOperationResult = "Working JSON copied to clipboard.";
+                }
+            }
+            EditorGUILayout.EndHorizontal();
             _state.PublishComment = EditorGUILayout.TextField(_state.PublishComment ?? string.Empty);
 
             if (issues.Count > 0)
@@ -215,7 +234,17 @@ namespace Game.Configs.Editor
                 EditorGUILayout.HelpBox(_state.LastOperationResult, MessageType.Info);
 
             if (!string.IsNullOrEmpty(_state.LastError))
+            {
                 EditorGUILayout.HelpBox(_state.LastError, MessageType.Error);
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("Copy Error", GUILayout.Width(100)))
+                {
+                    EditorGUIUtility.systemCopyBuffer = _state.LastError;
+                    _state.LastOperationResult = "Last error copied to clipboard.";
+                }
+                EditorGUILayout.EndHorizontal();
+            }
         }
 
         // ----- Operations -----
@@ -401,6 +430,60 @@ namespace Game.Configs.Editor
             Repaint();
         }
 
+        private async UniTask PromoteAsync()
+        {
+            ResetMessages();
+
+            if (!EditorUtility.DisplayDialog(
+                "Promote to Prod",
+                $"Promote section '{_state.Section}' from dev to prod? " +
+                "The current dev version will be copied byte-for-byte into prod as a new version.",
+                "Promote", "Cancel"))
+                return;
+
+            _state.State = EditorWindowState.Publishing;
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+            try
+            {
+                var url = _api.PromoteUrl(_state.Section, "dev", "prod");
+                var res = await _api.PostAsync(url, _cts.Token);
+
+                if (res.StatusCode == 401)
+                {
+                    _state.LastError = "401 Unauthorized — проверь Username/Password.";
+                    _state.State = EditorWindowState.Error;
+                    Repaint();
+                    return;
+                }
+                if (!res.Success)
+                {
+                    _state.LastError = $"Promote failed: HTTP {res.StatusCode}: {res.Error}";
+                    _state.State = EditorWindowState.Error;
+                    Repaint();
+                    return;
+                }
+
+                _state.LastOperationResult = "Promoted to prod.";
+                _state.State = EditorWindowState.Loaded;
+                TryClearServerSnapshot();
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception ex)
+            {
+                _state.LastError = ex.Message;
+                _state.State = EditorWindowState.Error;
+            }
+            Repaint();
+        }
+
+        // Колбек после успешного rollback из ConfigHistoryWindow: подтянуть свежую версию в главное окно.
+        private void OnRolledBack()
+        {
+            PullAsync().Forget();
+            TryClearServerSnapshot();
+        }
+
         private void HandleConflict()
         {
             var reload = EditorUtility.DisplayDialog(
@@ -451,6 +534,20 @@ namespace Game.Configs.Editor
             if (issues.Count > 0) return false;
             return _state.IsDirty || _state.State == EditorWindowState.Empty;
         }
+
+        // §12: History — enabled when section loaded.
+        private bool CanShowHistory()
+            => ConfigEditorSettings.IsConfigured
+               && !IsBusy()
+               && (_state.State == EditorWindowState.Loaded || _state.State == EditorWindowState.Dirty);
+
+        // §12: Promote to Prod — enabled only for dev (и когда есть что promote'ить).
+        private bool CanPromote()
+            => ConfigEditorSettings.IsConfigured
+               && !IsBusy()
+               && _state.Environment == "dev"
+               && _state.State == EditorWindowState.Loaded
+               && !_state.IsDirty; // promote копирует серверную версию — лучше требовать чистого состояния, иначе ГД может думать, что promote'нул свои локальные правки.
 
         private void UpdateDirtyTransition()
         {

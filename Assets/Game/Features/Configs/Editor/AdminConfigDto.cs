@@ -17,7 +17,7 @@ namespace Game.Configs.Editor
         [JsonProperty("json")] public JArray Json;
     }
 
-    /// <summary>Один элемент истории (§3.3).</summary>
+    /// <summary>Один элемент истории (§3.3). Метаданные only — JSON версии грузится отдельным GET /versions/{v} (§3.6).</summary>
     internal sealed class HistoryEntryDto
     {
         [JsonProperty("version")] public long Version;

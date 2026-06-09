@@ -39,6 +39,13 @@ namespace Game.Configs.Editor
         public string PromoteUrl(string section, string from, string to)
             => $"{Trim(BaseUrl)}{AdminBase}{Uri.EscapeDataString(section)}/promote?from={Uri.EscapeDataString(from)}&to={Uri.EscapeDataString(to)}";
 
+        /// <summary>
+        /// Контент конкретной версии секции. Используется History → View JSON
+        /// (lazy fetch вместо раздувания /history). См. CONFIG_SERVER_API.md §3.6.
+        /// </summary>
+        public string VersionUrl(string section, string environment, long version)
+            => $"{Trim(BaseUrl)}{AdminBase}{Uri.EscapeDataString(section)}/versions/{version}?environment={Uri.EscapeDataString(environment)}";
+
         public UniTask<Result> GetAsync(string url, CancellationToken ct)
             => SendAsync(url, UnityWebRequest.kHttpVerbGET, null, null, ct);
 
@@ -59,7 +66,9 @@ namespace Game.Configs.Editor
         private static async UniTask<Result> SendAsync(
             string url, string verb, string body, string ifMatch, CancellationToken ct)
         {
-            // Логируем URL (НЕ заголовки/тело — там пароль и потенциально секретные данные).
+            // §14 спеки: логируем ТОЛЬКО verb+URL+status.
+            // Никогда не логировать: Authorization (Basic <token>), пароль, тело запроса/ответа.
+            // При изменении этого блока — проверь, что новые поля не утекают.
             Debug.Log($"[AdminApiClient] {verb} {url}");
 
             using var req = new UnityWebRequest(url, verb);

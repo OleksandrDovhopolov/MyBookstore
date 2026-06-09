@@ -1,10 +1,77 @@
 # Config Editor Window MVP Spec
 
-Спецификация Unity Editor-окна для редактирования серверных конфигов через уже реализованный backend API.
+> **Статус: MVP реализован.** Окно живёт в `Assets/Game/Features/Configs/Editor/` (assembly `Configs.Editor`, Editor-only). Открывается через `Tools/Configs/Editor Window`.
+> Спека ниже сохранена как историческая запись требований; реальные отступления и текущее состояние — в §0 ниже.
 
 Связанные документы:
-- [CONFIG_SERVER_API.md](CONFIG_SERVER_API.md)
-- [ADR-001-config-section-snapshot-storage.md](ADR-001-config-section-snapshot-storage.md)
+- [ADR-0002 (клиент): config system architecture](adr/0002-config-system-architecture.md) — архитектурное решение, extension paths и оценки сложности
+- [CONFIG_CACHE_SYSTEM.md](CONFIG_CACHE_SYSTEM.md) — клиентский runtime конфигов
+- [CONFIG_SERVER_API.md](CONFIG_SERVER_API.md) — серверный контракт (источник истины — на стороне backend)
+
+---
+
+## 0. Implementation status
+
+### Реализовано (MVP `done`)
+
+| §  | Возможность | Где живёт |
+|----|-------------|-----------|
+| 3  | Menu entry `Tools/Configs/Editor Window` | [ConfigEditorWindow.cs](../Assets/Game/Features/Configs/Editor/ConfigEditorWindow.cs) |
+| 4.1 | Toolbar: Section / Environment / Pull / Publish / History / Promote / Raw JSON / статус | ConfigEditorWindow |
+| 4.2 | Item list со search, Add / Duplicate / Delete | [ItemListPanel.cs](../Assets/Game/Features/Configs/Editor/ItemListPanel.cs) |
+| 4.3 | Typed-форма для `books` | [BooksItemDrawer.cs](../Assets/Game/Features/Configs/Editor/BooksItemDrawer.cs) |
+| 4.3 | Generic JObject-форма для остальных секций | [GenericItemDrawer.cs](../Assets/Game/Features/Configs/Editor/GenericItemDrawer.cs) |
+| 4.4 | Bottom: Publish Comment, Last Operation Result, Last Error | ConfigEditorWindow.DrawBottomPanel |
+| 5   | SectionState (selectedSection, env, version, etag, snapshots, dirty, ...) | [SectionState.cs](../Assets/Game/Features/Configs/Editor/SectionState.cs). **Selection хранится по индексу**, не по id — устойчиво к правке `id` в форме (отступление от §5, см. §0.2). |
+| 6   | Транспорт admin API через `UnityWebRequest`; Basic auth; ETag-канонизация через `GetConfigCommand.NormalizeEtag` | [AdminApiClient.cs](../Assets/Game/Features/Configs/Editor/AdminApiClient.cs) |
+| 7   | Connection foldout: BaseUrl/Username/Password в `EditorPrefs`; Save Locally + Test Connection | [ConfigEditorSettings.cs](../Assets/Game/Features/Configs/Editor/ConfigEditorSettings.cs) |
+| 8.1 | Pull (200 / 404 → Empty / 401 / прочие) | ConfigEditorWindow.PullAsync |
+| 8.2 | Bootstrap первой публикации с `If-Match: "bootstrap"` | ConfigEditorWindow.PublishAsync |
+| 8.3 | Edit + publish целой секции | PublishAsync |
+| 8.4–8.6 | Add / Duplicate (с очисткой id) / Delete (с confirm) | ItemListPanel |
+| 8.7 | Publish: валидация → PUT → 200/400/412/401-ветки | PublishAsync |
+| 8.8 | Conflict: modal `Reload Latest / Cancel` | HandleConflict |
+| 8.9 | History — отдельное окно с таблицей версий | [ConfigHistoryWindow.cs](../Assets/Game/Features/Configs/Editor/ConfigHistoryWindow.cs) |
+| 8.10 | Rollback с confirm + автоматический Pull в главное окно | ConfigHistoryWindow.RollbackAsync + ConfigEditorWindow.OnRolledBack |
+| 8.11 | Promote to Prod (enabled только при env=dev), confirm | PromoteAsync |
+| 9   | Validation: array / objects / id (непустой, уникальный) + books extras (title, basePrice ≥ 0, rarityWeight ≥ 0) — блокирует Publish и метит ⚠ в item list | [SectionValidator.cs](../Assets/Game/Features/Configs/Editor/SectionValidator.cs) |
+| 10  | Raw JSON mode: Format / Apply (с parse-validation) | [RawJsonDrawer.cs](../Assets/Game/Features/Configs/Editor/RawJsonDrawer.cs) |
+| 11  | UI states (Disconnected / Idle / Loading / Loaded / Dirty / Publishing / Conflict / Error / Empty) + переходы | ConfigEditorWindow.* + UpdateDirtyTransition |
+| 12  | Buttons enable/disable rules | CanPublish / CanShowHistory / CanPromote / DisabledScope-блоки |
+| 14  | Логирование `verb + url + status`; **пароль и `Authorization` не логируются** (закреплено комментарием в AdminApiClient.SendAsync) | AdminApiClient |
+| 14  | `Copy Error`, `Copy Current JSON` (через `EditorGUIUtility.systemCopyBuffer`) | DrawBottomPanel |
+
+### Acceptance Criteria (§15) — статус
+
+- [x] Открыть окно из Unity menu
+- [x] Указать URL / username / password
+- [x] Pull секции `books/dev`
+- [x] Добавить новую книгу и опубликовать секцию
+- [x] Изменить поле существующей книги и опубликовать
+- [x] Удалить книгу и опубликовать
+- [x] Видеть history
+- [x] Rollback на старую версию
+- [x] Promote `dev → prod`
+- [x] `If-Match` / `ETag` полностью скрыты от пользователя
+- [x] При `412` — понятная ошибка + диалог `Reload Latest`
+
+### 0.1 Меню-путь
+
+Изменено с **`Tools/Game Server/Config Editor`** (как было в §3 спеки) на **`Tools/Configs/Editor Window`** — выравнивание с уже существующими пунктами `Tools/Configs/Use Server Source` и `Tools/Configs/Clear Server Snapshot`. §3 спеки явно разрешает «внутренний стиль namespace».
+
+### 0.2 Отступления от изначальной спеки
+
+- **`SelectedItemId` (§5) → `SelectedItemIndex` (int).** Хранение по id ломается, как только ГД правит поле `id` в форме — selection теряется. Индекс устойчив к правкам полей; пересоздаётся при Pull/Add/Duplicate/Delete.
+- **Auto-clear server snapshot после Publish.** Дополнительно к §8.7: после успешного PUT окно вызывает удаление `Application.persistentDataPath/configs/` (логика идентична `Tools/Configs/Clear Server Snapshot`). Это гарантирует, что следующий Play в редакторе видит свежие данные, а не закэшированный snapshot.
+- **`Promote to Prod` требует чистого Loaded** (не Dirty). Спека (§12) требовала только «enabled only for dev». Запрет в Dirty добавлен, чтобы исключить ложное ощущение «я promote'нул свои локальные правки» — promote копирует **серверную** dev-версию, локальные мутации игнорирует.
+- **View JSON в History — lazy fetch.** Бэкенд не отдаёт `json` в `/history` (только метаданные). Реализовано через отдельный endpoint `GET /api/admin/configs/{name}/versions/{version}` ([CONFIG_SERVER_API.md §3.5](CONFIG_SERVER_API.md)), который backend уже выкатил. Кнопка `View JSON` грузит контент при первом клике и кэширует на жизнь окна; кэш сбрасывается на Refresh и после Rollback.
+- **Single Basic-auth учётка** вместо ролей `editor` / `publisher`. Совпадает с серверной реализацией (`ADMIN_USER`/`ADMIN_PASS` env). Разделение ролей отложено вместе с серверной частью.
+
+### 0.3 Не реализовано (post-MVP) — см. §16
+
+`auto-merge при 412`, `inline diff viewer pulled vs working`, `typed forms для locations/requests/events`, `bulk import/export`, `schema validation per section`, `local autosave draft`. Оценки сложности и точки расширения — в [ADR-0002 §Extension paths](adr/0002-config-system-architecture.md).
+
+---
 
 ## 1. Цель
 
@@ -46,11 +113,7 @@
 
 ## 3. Entry Point
 
-Добавить Unity menu item:
-
-```text
-Tools/Game Server/Config Editor
-```
+> **Реализовано:** `Tools/Configs/Editor Window` (выравнивание с существующими `Tools/Configs/*` пунктами; §3 разрешает «внутренний стиль»).
 
 При нажатии открывается `ConfigEditorWindow`.
 
@@ -539,11 +602,15 @@ MVP считается готовым, если:
 
 ## 16. Post-MVP Improvements
 
-После MVP можно добавить:
+После MVP можно добавить (оценки сложности — в [ADR-0002 §Extension paths](adr/0002-config-system-architecture.md)):
 
-- auto-merge по `id`
-- diff view между pulled и working snapshot
-- typed forms для всех секций
-- bulk import/export json files
-- validation schema per section
-- локальный autosave draft
+| Фича | Сложность | См. в ADR |
+|------|-----------|-----------|
+| auto-merge по `id` при `412` | **High** (3–5 дней) | §7 |
+| inline diff view pulled vs working | **Medium** (~2 дня) | §6 |
+| typed forms для locations / requests / events | **Low** (~2 часа на секцию) | §5 |
+| bulk import / export JSON | Trivial-Low | — |
+| validation schema per section (JSON Schema) | **High** (~неделя) | §8 |
+| локальный autosave draft | Low | — |
+| Editor admin-токен per-GD (JWT вместо общего Basic) | **High** | §10 |
+| Заменить Editor HTTP на `Game.Http`-команды (если появится in-game admin) | **Medium** (~2 дня) | §11 |
