@@ -30,8 +30,13 @@ namespace Game.Configs.Editor
         public string CurrentEtag;          // canonical (no quotes)
         public string PulledSnapshotJson;   // serialized array, как отдал сервер
         public JArray WorkingArray = new(); // parsed working
-        public string SelectedItemId;
+        public int SelectedItemIndex = -1;  // -1 = nothing selected
         public string PublishComment = string.Empty;
+
+        public JObject SelectedItem
+            => SelectedItemIndex >= 0 && SelectedItemIndex < WorkingArray.Count
+                ? WorkingArray[SelectedItemIndex] as JObject
+                : null;
 
         public EditorWindowState State = EditorWindowState.Idle;
         public string LastError;
@@ -67,7 +72,7 @@ namespace Game.Configs.Editor
             var arr = dto?.Json ?? new JArray();
             PulledSnapshotJson = arr.ToString(Newtonsoft.Json.Formatting.None);
             WorkingArray = (JArray)arr.DeepClone();
-            SelectedItemId = null;
+            SelectedItemIndex = -1;
         }
 
         public void MarkEmpty()
@@ -76,7 +81,7 @@ namespace Game.Configs.Editor
             CurrentEtag = null;
             PulledSnapshotJson = null;
             WorkingArray = new JArray();
-            SelectedItemId = null;
+            SelectedItemIndex = -1;
         }
 
         public string SerializeWorking(Newtonsoft.Json.Formatting f = Newtonsoft.Json.Formatting.None)

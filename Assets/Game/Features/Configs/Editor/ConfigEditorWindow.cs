@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
@@ -9,10 +10,10 @@ using UnityEngine;
 namespace Game.Configs.Editor
 {
     /// <summary>
-    /// Unity Editor-окно для правки серверных конфигов через admin API.
-    /// Phase A: Pull / Publish / 404 (empty) / 412 (conflict) / 200, правая панель — Raw JSON only.
-    /// Список items, typed/generic-формы, History/Rollback/Promote — Phase B/C.
-    /// Спека: docs/CONFIG_EDITOR_WINDOW_MVP_SPEC.md.
+    /// Unity Editor-окно правки серверных конфигов через admin API.
+    /// Phase A: Pull/Publish/Bootstrap/Conflict (Raw JSON).
+    /// Phase B: список items слева + typed (books) / generic drawer + валидация.
+    /// History/Rollback/Promote — Phase C. Спека: docs/CONFIG_EDITOR_WINDOW_MVP_SPEC.md.
     /// </summary>
     internal sealed class ConfigEditorWindow : EditorWindow
     {
@@ -24,19 +25,23 @@ namespace Game.Configs.Editor
         private readonly SectionState _state = new();
         private readonly AdminApiClient _api = new();
         private readonly RawJsonDrawer _rawDrawer = new();
+        private readonly GenericItemDrawer _genericDrawer = new();
+        private readonly ItemListPanel _itemList = new();
 
         private bool _connectionFoldout = true;
+        private bool _rawJsonMode;
         private string _baseUrlField;
         private string _userField;
         private string _passField;
 
+        private Vector2 _detailScroll;
         private CancellationTokenSource _cts;
 
         [MenuItem("Tools/Configs/Editor Window")]
         public static void Open()
         {
             var w = GetWindow<ConfigEditorWindow>("Config Editor");
-            w.minSize = new Vector2(720, 520);
+            w.minSize = new Vector2(820, 540);
             w.Show();
         }
 
@@ -63,11 +68,27 @@ namespace Game.Configs.Editor
             DrawConnectionFoldout();
             EditorGUILayout.Space(4);
 
+            var issues = SectionValidator.Validate(_state.Section, _state.WorkingArray);
+            var invalidIds = CollectInvalidIds(issues);
+
             using (new EditorGUI.DisabledScope(IsBusy()))
-                DrawRightPane();
+            {
+                if (_rawJsonMode)
+                {
+                    DrawRawJsonPane();
+                }
+                else
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    DrawLeftPane(invalidIds);
+                    DrawRightPane();
+                    EditorGUILayout.EndHorizontal();
+                }
+            }
 
             EditorGUILayout.Space(4);
-            DrawBottomPanel();
+            UpdateDirtyTransition();
+            DrawBottomPanel(issues);
         }
 
         private void DrawToolbar()
@@ -98,10 +119,15 @@ namespace Game.Configs.Editor
                 if (GUILayout.Button("Publish", EditorStyles.toolbarButton, GUILayout.Width(70)))
                     PublishAsync().Forget();
 
+            var rawNext = GUILayout.Toggle(_rawJsonMode, "Raw JSON", EditorStyles.toolbarButton, GUILayout.Width(80));
+            if (rawNext != _rawJsonMode)
+            {
+                _rawJsonMode = rawNext;
+                _rawDrawer.Sync(_state); // при входе в Raw JSON синхронизируем буфер с working
+            }
+
             GUILayout.FlexibleSpace();
-
             EditorGUILayout.LabelField(StateLabel(), EditorStyles.toolbarTextField, GUILayout.Width(360));
-
             EditorGUILayout.EndHorizontal();
         }
 
@@ -134,23 +160,56 @@ namespace Game.Configs.Editor
             }
         }
 
-        private void DrawRightPane()
+        private void DrawLeftPane(HashSet<string> invalidIds)
         {
-            _rawDrawer.Sync(_state);
-            EditorGUILayout.LabelField("Raw JSON (Phase A — typed/generic forms TBD in Phase B)", EditorStyles.boldLabel);
-            _rawDrawer.Draw(_state);
-
-            // Подсветка Dirty в state-машине (§11). Pulled snapshot → правка → Dirty.
-            if (_state.IsDirty && _state.State == EditorWindowState.Loaded)
-                _state.State = EditorWindowState.Dirty;
-            else if (!_state.IsDirty && _state.State == EditorWindowState.Dirty)
-                _state.State = EditorWindowState.Loaded;
+            EditorGUILayout.BeginVertical(GUILayout.Width(260));
+            _itemList.Draw(_state, invalidIds);
+            EditorGUILayout.EndVertical();
         }
 
-        private void DrawBottomPanel()
+        private void DrawRightPane()
+        {
+            EditorGUILayout.BeginVertical();
+            var selected = FindSelectedItem();
+            if (selected == null)
+            {
+                EditorGUILayout.HelpBox(
+                    _state.WorkingArray.Count == 0
+                        ? "Section is empty. Click Add to create the first item."
+                        : "Select an item on the left to edit.",
+                    MessageType.Info);
+            }
+            else
+            {
+                _detailScroll = EditorGUILayout.BeginScrollView(_detailScroll, GUILayout.ExpandHeight(true));
+                if (_state.Section == "books")
+                    BooksItemDrawer.Draw(selected);
+                else
+                    _genericDrawer.Draw(selected);
+                EditorGUILayout.EndScrollView();
+            }
+            EditorGUILayout.EndVertical();
+        }
+
+        private void DrawRawJsonPane()
+        {
+            _rawDrawer.Sync(_state);
+            EditorGUILayout.LabelField("Raw JSON (whole section)", EditorStyles.boldLabel);
+            _rawDrawer.Draw(_state);
+        }
+
+        private void DrawBottomPanel(IReadOnlyList<ValidationIssue> issues)
         {
             EditorGUILayout.LabelField("Publish Comment", EditorStyles.boldLabel);
             _state.PublishComment = EditorGUILayout.TextField(_state.PublishComment ?? string.Empty);
+
+            if (issues.Count > 0)
+            {
+                var msg = "Validation issues (Publish disabled):\n - " + string.Join(
+                    "\n - ",
+                    issues.ConvertAllToStrings());
+                EditorGUILayout.HelpBox(msg, MessageType.Warning);
+            }
 
             if (!string.IsNullOrEmpty(_state.LastOperationResult))
                 EditorGUILayout.HelpBox(_state.LastOperationResult, MessageType.Info);
@@ -240,7 +299,9 @@ namespace Game.Configs.Editor
                     return;
                 }
 
-                var etag = !string.IsNullOrEmpty(res.ETag) ? res.ETag : Game.Configs.Server.Commands.GetConfigCommand.NormalizeEtag(dto.Etag);
+                var etag = !string.IsNullOrEmpty(res.ETag)
+                    ? res.ETag
+                    : Game.Configs.Server.Commands.GetConfigCommand.NormalizeEtag(dto.Etag);
                 _state.ApplyPulled(dto, etag);
                 _state.State = EditorWindowState.Loaded;
                 _state.LastOperationResult = $"Pulled '{_state.Section}/{_state.Environment}' version={dto.Version}.";
@@ -261,7 +322,7 @@ namespace Game.Configs.Editor
             var issues = SectionValidator.Validate(_state.Section, _state.WorkingArray);
             if (issues.Count > 0)
             {
-                _state.LastError = "Validation failed:\n - " + string.Join("\n - ", issues.ConvertAll(i => i.Message));
+                _state.LastError = "Validation failed:\n - " + string.Join("\n - ", issues.ConvertAllToStrings());
                 _state.State = EditorWindowState.Error;
                 Repaint();
                 return;
@@ -323,7 +384,9 @@ namespace Game.Configs.Editor
                     return;
                 }
 
-                var etag = !string.IsNullOrEmpty(res.ETag) ? res.ETag : Game.Configs.Server.Commands.GetConfigCommand.NormalizeEtag(dto.Etag);
+                var etag = !string.IsNullOrEmpty(res.ETag)
+                    ? res.ETag
+                    : Game.Configs.Server.Commands.GetConfigCommand.NormalizeEtag(dto.Etag);
                 _state.ApplyPulled(dto, etag);
                 _state.State = EditorWindowState.Loaded;
                 _state.LastOperationResult = $"Published version={dto.Version} (etag={etag}).";
@@ -349,8 +412,6 @@ namespace Game.Configs.Editor
                 PullAsync().Forget();
         }
 
-        // После успешного Publish — выбросить локальный server-snapshot, чтобы Play видел свежие данные.
-        // Логика тождественна Tools/Configs/Clear Server Snapshot из ConfigsVContainerBindings.
         private void TryClearServerSnapshot()
         {
             try
@@ -383,10 +444,20 @@ namespace Game.Configs.Editor
         {
             if (!ConfigEditorSettings.IsConfigured) return false;
             if (IsBusy()) return false;
-            // Loaded или Empty — можно публиковать; Empty=bootstrap. Dirty не обязателен для Loaded (повторная публикация без правок тоже валидна).
             if (_state.State != EditorWindowState.Loaded && _state.State != EditorWindowState.Empty && _state.State != EditorWindowState.Dirty)
                 return false;
+            // Блок при наличии validation issues — определяется по живому валидатору в OnGUI.
+            var issues = SectionValidator.Validate(_state.Section, _state.WorkingArray);
+            if (issues.Count > 0) return false;
             return _state.IsDirty || _state.State == EditorWindowState.Empty;
+        }
+
+        private void UpdateDirtyTransition()
+        {
+            if (_state.IsDirty && _state.State == EditorWindowState.Loaded)
+                _state.State = EditorWindowState.Dirty;
+            else if (!_state.IsDirty && _state.State == EditorWindowState.Dirty)
+                _state.State = EditorWindowState.Loaded;
         }
 
         private string StateLabel()
@@ -403,7 +474,25 @@ namespace Game.Configs.Editor
             _state.State = ConfigEditorSettings.IsConfigured ? EditorWindowState.Idle : EditorWindowState.Disconnected;
         }
 
-        // Подсветить Dirty в state, когда working menyala (вызывается из drawers через Apply).
-        // В Phase A правка идёт только через RawJsonDrawer.Apply, который обновляет working — а dirty считается через сравнение строк, так что отдельный hook не нужен.
+        private JObject FindSelectedItem() => _state.SelectedItem;
+
+        private static HashSet<string> CollectInvalidIds(IReadOnlyList<ValidationIssue> issues)
+        {
+            var set = new HashSet<string>();
+            for (var i = 0; i < issues.Count; i++)
+                if (!string.IsNullOrEmpty(issues[i].ItemId))
+                    set.Add(issues[i].ItemId);
+            return set;
+        }
+    }
+
+    internal static class ValidationIssueExtensions
+    {
+        public static List<string> ConvertAllToStrings(this IReadOnlyList<ValidationIssue> issues)
+        {
+            var list = new List<string>(issues.Count);
+            for (var i = 0; i < issues.Count; i++) list.Add(issues[i].Message);
+            return list;
+        }
     }
 }
