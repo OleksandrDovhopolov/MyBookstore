@@ -1,14 +1,13 @@
-# Config Server API — спека для backend
+# Config Server API
 
-Хэндофф для backend-разработчика. Описывает публичные и admin-методы доставки игровых
-конфигов, которые нужно реализовать на .NET сервере. Документ самодостаточный — читать
-без доп. контекста.
+Контракт серверных методов конфигов и инструкция для клиента.
+**Статус: public + admin реализованы на backend.**
 
-- **Сервер:** `https://gameserver-production-be8b.up.railway.app/api/v1/` (тот же, что для сейвов).
-- **Клиент уже готов** и ходит по этим путям — см. `Assets/Game/Features/Configs/Server/`
-  (`ServerConfigSource`, `GetConfigsManifestCommand`, `GetConfigCommand`). Менять клиент не нужно;
-  нужно отдать ровно те форматы, что описаны ниже.
-- Формат данных везде — **JSON**. Транспорт — HTTPS, методы GET (public) и PUT/POST/GET (admin).
+- **Сервер:** `https://gameserver-production-be8b.up.railway.app`
+- **Public** (читает игровой клиент): `…/api/v1/configs/...` — версионированный путь.
+- **Admin** (правит ГД): `…/api/admin/configs/...` — **без** `v1` в пути.
+- **Клиент**: `Assets/Game/Features/Configs/Server/` (`ServerConfigSource`, `GetConfigsManifestCommand`, `GetConfigCommand`) — подключён к public-методам. Editor-окно Pull/Publish под admin-методы пока не написано (см. §11), но эндпоинты живые и доступны через Postman/curl уже сейчас.
+- Формат данных — **JSON**. Транспорт — HTTPS.
 
 ---
 
@@ -91,40 +90,46 @@ Content-Type: application/json
 
 ## 3. Admin API (editor-publish для геймдизайнеров)
 
-Через это ГД публикует конфиги без ребилда клиента. Все методы — **только с аутентификацией**
-(см. §6). Клиентское Editor-окно Pull/Publish будет написано после готовности этих методов.
+Базовый путь: `/api/admin/configs/...` (**без `v1`**, в отличие от public). Все методы
+защищены **Basic Auth** (см. §6). Валидация payload при `PUT`/`POST`: тело-массив, у каждого
+элемента непустой уникальный `id` — иначе `400`.
 
-### 3.1 `GET /admin/configs/{name}?environment=dev`
-Текущая версия секции для редактирования (с `version` и `etag` для последующего `If-Match`).
+### 3.1 `GET /api/admin/configs/{name}?environment=<env>`
+Текущая версия секции для редактирования.
 
 **Response `200`:**
 ```
 ETag: "a1b2c3"
 ```
 ```json
-{ "name": "books", "environment": "dev", "version": 13, "etag": "a1b2c3", "json": [ /* ...массив конфигов... */ ] }
+{ "name": "books", "environment": "dev", "version": 13, "etag": "a1b2c3", "json": [ /* массив конфигов */ ] }
 ```
 
-### 3.2 `PUT /admin/configs/{name}?environment=dev` — публикация
-**Optimistic concurrency** (решает «двое правят один файл»): клиент шлёт etag версии,
-которую он редактировал.
+### 3.2 `PUT /api/admin/configs/{name}?environment=<env>` — публикация
+Optimistic concurrency: клиент шлёт etag версии, на основе которой редактирует.
 
 **Request:**
 ```
 If-Match: "a1b2c3"
 Content-Type: application/json
+Authorization: Basic <base64(user:pass)>
 ```
 ```json
 { "json": [ /* новый массив конфигов */ ], "comment": "balance pass tier 2" }
 ```
 
-**Responses:**
-- `200` — опубликовано. Новая `version = old+1`, новый `etag`. Тело — как в 3.1.
-- `412 Precondition Failed` — на сервере уже более новая версия (кто-то опубликовал раньше).
-  Клиент должен пул + мёрдж и повторить. **Не перезаписывать молча.**
-- `400` — невалидный JSON / нарушение схемы (см. §7, опционально).
+**Bootstrap первой публикации.** Если секции ещё нет в указанном `environment`, etag для
+сравнения отсутствует. Сервер сейчас принимает любой непустой `If-Match` — мы условно
+используем `If-Match: "bootstrap"`. После первой публикации работает обычный flow с реальным etag.
 
-### 3.3 `GET /admin/configs/{name}/history?environment=dev`
+**Responses:**
+- `200` — опубликовано. `version = old+1`, новый `etag`. Тело — как в 3.1.
+- `412 Precondition Failed` — на сервере уже более новая версия. Клиент должен пул и
+  смёрджить руками; **не перезаписывать молча**.
+- `400` — невалидный JSON / нарушена схема (не массив / пустой/дублирующийся `id`).
+- `401` — нет/неверный Basic-auth.
+
+### 3.3 `GET /api/admin/configs/{name}/history?environment=<env>`
 **Response `200`:**
 ```json
 [
@@ -133,12 +138,13 @@ Content-Type: application/json
 ]
 ```
 
-### 3.4 `POST /admin/configs/{name}/rollback?environment=dev&to=12`
-Создаёт **новую** версию (14), идентичную версии 12 (не удаляет историю). Возвращает как 3.1.
+### 3.4 `POST /api/admin/configs/{name}/rollback?environment=<env>&to=<version>`
+Создаёт **новую** версию, идентичную указанной (не удаляет историю). Возвращает как 3.1.
 
-### 3.5 Promote dev → prod
-Вариант реализации (на выбор): отдельный `POST /admin/configs/{name}/promote?from=dev&to=prod`,
-либо обычный `PUT` в `environment=prod`. Прод-публикация — с явным подтверждением на клиенте.
+### 3.5 `POST /api/admin/configs/{name}/promote?from=dev&to=prod`
+Серверное копирование текущей версии из `from` в `to` — гарантирует, что в prod пойдёт
+байт-в-байт тот контент, что протестировали в dev (см. провенанс в audit-полях). Прод-publish
+с явным подтверждением на клиенте.
 
 ---
 
@@ -167,12 +173,18 @@ Content-Type: application/json
 
 ## 6. Аутентификация
 
-- **Public** (`/configs/*`): можно без auth (конфиги не секретны) либо за тем же механизмом,
-  что остальной public API. Решить вместе.
-- **Admin** (`/admin/configs/*`): обязательно. Минимум — bearer-токен per-ГД. Роли:
-  - `editor` — запись в dev/staging;
-  - `publisher` — плюс prod.
-- Аудит: в каждой версии хранить `updatedBy`, `updatedAt`, `comment`.
+- **Public** (`/api/v1/configs/*`): без auth.
+- **Admin** (`/api/admin/configs/*`): **HTTP Basic**. Credentials берутся из env-переменных
+  сервера `ADMIN_USER` / `ADMIN_PASS` (fallback есть в `AdminAuth` config, но прод-источник —
+  именно env). Передаётся стандартным заголовком:
+  ```
+  Authorization: Basic <base64(user:pass)>
+  ```
+- Ролей пока нет — единственная Basic-учётка имеет полный доступ ко всем environment'ам и
+  методам. Разделение editor/publisher отложено.
+- Аудит: в каждой версии хранятся `updatedBy`, `updatedAt`, `comment`.
+
+> **На клиенте.** Не комитить креды. Хранить в `EditorPrefs` per-машина (`MyBookstore.Configs.AdminUser` / `…AdminPass`), Editor-окно при первом запуске запрашивает их у ГД.
 
 ---
 
@@ -213,17 +225,98 @@ configs(
 
 ---
 
-## 9. Чеклист для backend
+## 9. Состояние реализации
 
-- [ ] `GET /configs/manifest` → массив `{name, version, etag}` (public).
-- [ ] `GET /configs/{name}` с `If-None-Match` → `200`+`ETag`+массив / `304` / `404` (public).
-- [ ] Инвариант `manifest.etag == GET.ETag` для текущей версии.
-- [ ] `GET /admin/configs/{name}` (с version+etag), auth.
-- [ ] `PUT /admin/configs/{name}` с `If-Match` → `200` / `412`, инкремент version, новый etag, запись аудита.
-- [ ] `GET /admin/configs/{name}/history`.
-- [ ] `POST /admin/configs/{name}/rollback?to=`.
-- [ ] Окружения dev/(staging)/prod + способ выбора окружения клиентом (согласовать).
-- [ ] Auth для `/admin/*` (роли editor/publisher), аудит updated_by/at/comment.
-- [ ] Таблица `configs` (история версиями).
+**Backend (done):**
+- [x] `GET /api/v1/configs/manifest`, `GET /api/v1/configs/{name}` (public, ETag/304/404).
+- [x] `GET /api/admin/configs/{name}` (текущая версия с etag).
+- [x] `PUT /api/admin/configs/{name}` с `If-Match`, валидация payload, инкремент version, новый etag, аудит.
+- [x] `GET /api/admin/configs/{name}/history`.
+- [x] `POST /api/admin/configs/{name}/rollback?to=`.
+- [x] `POST /api/admin/configs/{name}/promote?from=&to=`.
+- [x] Basic auth для admin (env `ADMIN_USER`/`ADMIN_PASS`).
+- [x] Таблица `configs` с историей версиями.
+
+**Client (done):**
+- [x] `ServerConfigSource` подключён к public-методам (manifest + delta по ETag).
+- [x] Disk snapshot fallback, ETag-канонизация.
+- [x] Firebase RC override-слой поверх серверных конфигов.
+
+**Client (todo):**
+- [ ] Editor-окно `Tools/Configs/Pull-Publish` под admin-методы (см. §11).
+- [ ] Хранение admin-credentials в `EditorPrefs`.
+
+---
+
+## 10. Workflow до готовности Editor-окна — Postman / curl
+
+Промежуточный способ публиковать обновления через CLI/Postman, пока нет UI.
+
+### Pull (посмотреть текущий contents + etag)
+```bash
+curl -u "$ADMIN_USER:$ADMIN_PASS" \
+  "https://gameserver-production-be8b.up.railway.app/api/admin/configs/books?environment=prod"
+```
+
+### Publish (правка существующей секции)
+```bash
+# 1) Возьми etag из pull выше.
+# 2) Сформируй новое тело массива.
+curl -X PUT -u "$ADMIN_USER:$ADMIN_PASS" \
+  -H 'Content-Type: application/json' \
+  -H 'If-Match: "a1b2c3"' \
+  -d '{
+        "json": [
+          { "id": "book_dune", "title": "Dune", "author": "Frank Herbert", "genre": "sci-fi", "basePrice": 150, "rarityWeight": 0.2 }
+        ],
+        "comment": "balance pass tier 2"
+      }' \
+  "https://gameserver-production-be8b.up.railway.app/api/admin/configs/books?environment=prod"
+```
+
+### Bootstrap первой публикации секции
+```bash
+curl -X PUT -u "$ADMIN_USER:$ADMIN_PASS" \
+  -H 'Content-Type: application/json' \
+  -H 'If-Match: "bootstrap"' \
+  -d '{ "json": [ /* первый contents */ ], "comment": "initial" }' \
+  "https://gameserver-production-be8b.up.railway.app/api/admin/configs/events?environment=dev"
+```
+
+### Promote dev → prod
+```bash
+curl -X POST -u "$ADMIN_USER:$ADMIN_PASS" \
+  "https://gameserver-production-be8b.up.railway.app/api/admin/configs/books/promote?from=dev&to=prod"
+```
+
+### Rollback
+```bash
+curl -X POST -u "$ADMIN_USER:$ADMIN_PASS" \
+  "https://gameserver-production-be8b.up.railway.app/api/admin/configs/books/rollback?environment=prod&to=12"
+```
+
+### History
+```bash
+curl -u "$ADMIN_USER:$ADMIN_PASS" \
+  "https://gameserver-production-be8b.up.railway.app/api/admin/configs/books/history?environment=prod"
+```
+
+После любого `PUT/POST` в Unity: `Tools → Configs → Clear Server Snapshot` → Play.
+
+---
+
+## 11. Editor Pull/Publish flow (для будущего окна на клиенте)
+
+Окно `Tools/Configs/Pull-Publish` (наследник нашего тумблера `Use Server Source` / меню `Clear Server Snapshot`). Шаги ГД:
+
+1. **Settings (один раз):** ввести `ADMIN_USER` / `ADMIN_PASS` — кладутся в `EditorPrefs` per-машину, **в репо не комитятся**.
+2. **Choose environment:** dev / prod (radio).
+3. **Pull**: `GET /admin/configs/{name}?environment=<env>` → показать текущий contents + сохранить etag в окне.
+4. **Edit locally**: открыть JSON во внешнем редакторе или прямо в окне (textarea). По желанию — Play Mode с локальной папкой для теста.
+5. **Diff**: показать diff локального contents vs только что pulled с сервера — защита от случайного push'а мусора.
+6. **Publish**: `PUT /admin/configs/{name}?environment=<env>` с `If-Match: <pulled etag>`. На `412` показать модалку «на сервере новее, нажми Pull → смёрджи руками».
+7. **History**: `GET .../history` — список с возможностью просмотра и **Rollback** (`POST .../rollback?to=`).
+8. **Promote dev → prod**: `POST .../promote?from=dev&to=prod` с явным confirm-диалогом «ты публикуешь в прод».
+9. После любого write — автоматически `Clear Server Snapshot` для корректного refresh при следующем Play.
 
 Связанные документы: [CONFIG_CACHE_SYSTEM.md](CONFIG_CACHE_SYSTEM.md) — клиентская архитектура целиком.

@@ -144,11 +144,13 @@ console, без клиентского кода на эксперимент.
 > **Полная самодостаточная спека для backend-разработчика:** [CONFIG_SERVER_API.md](CONFIG_SERVER_API.md).
 > Ниже — краткая выжимка.
 
-Сервер: `https://gameserver-production-be8b.up.railway.app/api/v1/` (тот же, что для сейвов).
-**Public-методы (manifest + {name}) реализованы и подключены** — `ServerConfigSource` ходит на
-живой API (environment по умолчанию prod). ETag канонизируется на клиенте (срез кавычек/`W/`),
+Сервер: `https://gameserver-production-be8b.up.railway.app` (тот же, что для сейвов).
+**Public-методы реализованы и подключены** — `ServerConfigSource` ходит на `/api/v1/configs/*`
+(environment по умолчанию `prod`). ETag канонизируется на клиенте (срез кавычек/`W/`),
 т.к. сервер отдаёт его в кавычках в заголовке и без кавычек в манифесте.
-**Admin-методы (publish/history/rollback) — ещё не реализованы**, спека ниже.
+**Admin-методы (`/api/admin/configs/*`) тоже реализованы**: `GET / PUT (If-Match) / history /
+rollback / promote`, Basic auth (env `ADMIN_USER`/`ADMIN_PASS`). До появления Editor-окна
+правки публикуются через Postman/curl — рабочие примеры в [CONFIG_SERVER_API.md §10](CONFIG_SERVER_API.md).
 
 ### Public (читает клиент)
 
