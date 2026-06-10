@@ -80,6 +80,12 @@ mono_crash.*
 *.unitypackage.meta
 *.app
 
+# Unity Burst debug symbols — auto-generated next to player builds, never ship
+# Folder format: <ProductName>_BurstDebugInformation_DoNotShip/
+*_BurstDebugInformation_DoNotShip/
+*_BackUpThisFolder_ButDontShipItWithYourGame/
+*_ButDontShipItWithYourGame/
+
 # Crashlytics generated file
 crashlytics-build.properties
 
