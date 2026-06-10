@@ -1,6 +1,8 @@
 using Game.Commands;
 using Game.Http;
 using Infrastructure;
+using Game.Logging;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -12,11 +14,15 @@ namespace Game.Bootstrap
     {
         public static void RegisterInfrastructure(this IContainerBuilder builder)
         {
+            builder.Register<LoggerSettingsService>(
+                _ => new LoggerSettingsService(Resources.Load<LoggerSettings>("LoggerSettings")),
+                Lifetime.Singleton);
+            builder.Register<ILoggerSettingsService>(r => r.Resolve<LoggerSettingsService>(), Lifetime.Singleton);
+            builder.Register<GameLogger>(r => new GameLogger(r.Resolve<LoggerSettingsService>()), Lifetime.Singleton);
+            builder.Register<ILogService>(r => r.Resolve<GameLogger>(), Lifetime.Singleton);
+
             // Command infrastructure ports.
-            // UnityCommandLogger takes CommandLogLevel — у параметра есть значение по умолчанию,
-            // но VContainer всё равно пытается резолвить его как зависимость (No such registration).
-            // Поэтому явно через factory-делегат с нужным уровнем.
-            builder.Register<ICommandLogger>(_ => new UnityCommandLogger(CommandLogLevel.Info), Lifetime.Singleton);
+            builder.Register<ICommandLogger>(r => new CommandLoggerAdapter(r.Resolve<ILogService>()), Lifetime.Singleton);
             builder.Register<ICommandErrorReporter, NoOpCommandErrorReporter>(Lifetime.Singleton);
 
             // HTTP transport: factory builds IRequest adapters, ConnectionService wraps it
@@ -34,6 +40,8 @@ namespace Game.Bootstrap
 
             // TODO: Remote config loader
             // builder.Register<IRemoteConfigService, RemoteConfigService>(Lifetime.Singleton);
+
+            builder.RegisterBuildCallback(resolver => resolver.Resolve<ILogService>());
         }
     }
 }

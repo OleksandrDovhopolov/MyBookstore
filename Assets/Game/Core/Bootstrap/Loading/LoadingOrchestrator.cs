@@ -5,24 +5,29 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Debug = UnityEngine.Debug;
+using Game.Logging;
 
 namespace Game.Bootstrap.Loading
 {
     public sealed class LoadingOrchestrator
     {
         private readonly LoadingProgressAggregator _aggregator;
+        private readonly IChannelLogger<LogChannel.Loading> _logger;
         private readonly TimeSpan _progressPollInterval = TimeSpan.FromMilliseconds(100);
         private readonly List<ILoadingOperation> _allOperations = new();
-
-        private Action<string> Logger => Debug.Log;
 
         private IReadOnlyList<LoadingPhase> _phases = Array.Empty<LoadingPhase>();
         private float _lastReportedProgress;
 
         public LoadingOrchestrator(LoadingProgressAggregator aggregator)
+            : this(aggregator, null)
+        {
+        }
+
+        public LoadingOrchestrator(LoadingProgressAggregator aggregator, ILogService logService)
         {
             _aggregator = aggregator ?? throw new ArgumentNullException(nameof(aggregator));
+            _logger = logService?.GetLogger<LogChannel.Loading>();
         }
 
         public event Action<float> ProgressChanged;
@@ -303,6 +308,68 @@ namespace Game.Bootstrap.Loading
             Exception ex,
             long durationMs)
         {
+            var level = ResolveLogLevel(result, operation.IsCritical, ex);
+            var message = BuildOperationLogMessage(
+                result,
+                phaseId,
+                groupId,
+                operation,
+                attempt,
+                timedOut,
+                ex,
+                durationMs);
+            var payload = new
+            {
+                result,
+                phaseId,
+                groupId,
+                operationId = operation.Id,
+                attempt,
+                durationMs,
+                isCritical = operation.IsCritical,
+                timedOut,
+                errorType = ex?.GetType().Name
+            };
+
+            _logger?.Log(level, message, ex, payload);
+        }
+
+        private static LogLevel ResolveLogLevel(string result, bool isCritical, Exception ex)
+        {
+            if (string.Equals(result, "start", StringComparison.Ordinal))
+            {
+                return LogLevel.Debug;
+            }
+
+            if (ex == null)
+            {
+                return LogLevel.Information;
+            }
+
+            if (timedOutOrFailed(result) && isCritical)
+            {
+                return LogLevel.Error;
+            }
+
+            return LogLevel.Warning;
+
+            static bool timedOutOrFailed(string value)
+            {
+                return string.Equals(value, "timeout", StringComparison.Ordinal)
+                       || string.Equals(value, "failed", StringComparison.Ordinal);
+            }
+        }
+
+        private static string BuildOperationLogMessage(
+            string result,
+            string phaseId,
+            string groupId,
+            ILoadingOperation operation,
+            int attempt,
+            bool timedOut,
+            Exception ex,
+            long durationMs)
+        {
             var sb = new StringBuilder(256);
             sb.Append("[Loading] ");
             sb.Append("result=").Append(result).Append(' ');
@@ -320,7 +387,7 @@ namespace Game.Bootstrap.Loading
                 sb.Append("error_message=").Append(ex.Message);
             }
 
-            Logger(sb.ToString());
+            return sb.ToString();
         }
 
         private void ResetAllOperations()
