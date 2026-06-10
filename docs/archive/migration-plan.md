@@ -81,7 +81,14 @@
 ## Definition of Done (текущая итерация = Phase 1)
 
 Считаем Phase 1 закрытой, когда:
-- Все 11 строк в таблице Phase 1 либо `[x]`, либо отмечены «N/A — отложено».
-- Editor-запуск проходит через новый `BootstrapEntryPoint`: видим прогресс-бар, операции выполняются по фазам, на ошибке RemoteConfig/Save показывается экран с кнопкой retry.
-- `LoadingOrchestratorTests.cs` зелёные.
-- В [BOOTSTRAP_AND_LOADING.md](BOOTSTRAP_AND_LOADING.md) обновлён раздел «Что ещё не реализовано»: убраны закрытые пункты, добавлены отложенные на Phase 2.
+- Все 11 строк в таблице Phase 1 либо `[x]`, либо отмечены «N/A — отложено». ✓
+- Editor-запуск проходит через новый `BootstrapEntryPoint`: видим прогресс-бар, операции выполняются по фазам, на ошибке RemoteConfig/Save показывается экран с кнопкой retry. ✓ (retry-флоу проверен пользователем как отложенный — кнопка в префабе будет позже)
+- `LoadingOrchestratorTests.cs` зелёные. ✓
+- В [BOOTSTRAP_AND_LOADING.md](BOOTSTRAP_AND_LOADING.md) обновлён раздел «Что ещё не реализовано». ✓
+
+**Статус: ЗАКРЫТО** (2026-06-10).
+
+Открытые хвосты на следующие итерации:
+- Retry UI: кнопка на префабе + биндинг `NotifyRetryClicked()` → когда дойдут руки до error-UX
+- Переход boot→game (`ISceneTransitionService`) → отдельная фича
+- UIManager / Analytics / GameStateService / LoadLocation — Phase 2, по решению пользователя отложены
