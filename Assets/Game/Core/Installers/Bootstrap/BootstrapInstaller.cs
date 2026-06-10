@@ -1,6 +1,7 @@
 using Game.Bootstrap.Loading;
 using UnityEngine;
 using VContainer;
+// LoadingSettings — DTO в Loading-сборке (см. LoadingSettings.cs).
 
 namespace Game.Bootstrap
 {
@@ -9,6 +10,11 @@ namespace Game.Bootstrap
     [CreateAssetMenu(fileName = "BootstrapInstaller", menuName = "Game/Installers/BootstrapInstaller")]
     public class BootstrapInstaller : ScriptableObjectInstaller
     {
+        [Header("Scene Transition")]
+        [Tooltip("Имя сцены, в которую переходит лоадер после успешного завершения всех операций. " +
+                 "Сцена должна быть добавлена в Build Settings.")]
+        [SerializeField] private string _gameplaySceneName = "GameplayScene";
+
 #if UNITY_EDITOR
         [Header("Debug Start (Editor only)")]
         [Tooltip("Master switch. Если выключен — debug-флаги ниже игнорируются.")]
@@ -21,6 +27,10 @@ namespace Game.Bootstrap
         public override void InstallBindings(IContainerBuilder builder)
         {
             ApplyDebugFlags();
+
+            // Настройки лоадера передаём через DTO в Loading-сборке.
+            // Сам SO в DI не регистрируем — это бы потребовало ссылку Loading→Bootstrap (циклика).
+            builder.RegisterInstance(new LoadingSettings(_gameplaySceneName));
 
             builder.RegisterGameLoading();
             builder.RegisterAnalytics();

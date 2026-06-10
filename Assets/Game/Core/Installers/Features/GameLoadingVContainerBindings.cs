@@ -14,9 +14,13 @@ namespace Game.Bootstrap
             builder.Register<LoadingProgressAggregator>(_ => new LoadingProgressAggregator(), Lifetime.Singleton);
             builder.Register<LoadingOrchestrator>(Lifetime.Singleton);
 
+            // Generic-сервис переходов между сценами. Тонкая обёртка над SceneManager,
+            // вызывается операцией SceneTransitionOperation и (в будущем) gameplay-кодом.
+            builder.Register<ISceneTransitionService, SceneTransitionService>(Lifetime.Singleton);
+
             // Префаб LoadingScreen лежит в boot-сцене (см. иерархию).
             // RegisterComponentInHierarchy ищет компонент в той же сцене, где GlobalLifetimeScope.
-            // Если экран будет переезжать в DontDestroyOnLoad — переключим на RegisterComponentInNewPrefab.
+            // LoadingScreenView сам делает DontDestroyOnLoad в Awake — переживает SceneTransitionOperation.
             builder.RegisterComponentInHierarchy<LoadingScreenView>();
 
             builder.RegisterEntryPoint<LoadingOrchestratorEntryPoint>();

@@ -25,6 +25,8 @@ namespace Game.Bootstrap.Loading
         private readonly IRemoteConfigService _remoteConfig;
         private readonly IConfigsService _configs;
         private readonly ISaveService _save;
+        private readonly ISceneTransitionService _sceneTransition;
+        private readonly LoadingSettings _settings;
 
         public LoadingOrchestratorEntryPoint(
             LoadingOrchestrator orchestrator,
@@ -32,7 +34,9 @@ namespace Game.Bootstrap.Loading
             IAddressablesCatalogService catalog,
             IRemoteConfigService remoteConfig,
             IConfigsService configs,
-            ISaveService save)
+            ISaveService save,
+            ISceneTransitionService sceneTransition,
+            LoadingSettings settings)
         {
             _orchestrator = orchestrator;
             _view = view;
@@ -40,6 +44,8 @@ namespace Game.Bootstrap.Loading
             _remoteConfig = remoteConfig;
             _configs = configs;
             _save = save;
+            _sceneTransition = sceneTransition;
+            _settings = settings;
         }
 
         public async UniTask StartAsync(CancellationToken cancellation)
@@ -79,9 +85,8 @@ namespace Game.Bootstrap.Loading
                 if (result.IsSuccess)
                 {
                     Debug.Log($"{LogPrefix} Loading complete.");
-                    // Видимость финального экрана ("Tap to Start" / переход в игру) —
-                    // отдельный шаг следующей итерации. Сейчас просто гасим лоадер.
-                    _view.SetVisible(false);
+                    // К моменту сюда мы уже в gameplay-сцене. LoadingScreenView жил в boot-сцене
+                    // и уничтожен SceneManager.LoadSceneAsync(Single). SetVisible не вызываем.
                     return;
                 }
 
@@ -135,7 +140,8 @@ namespace Game.Bootstrap.Loading
             {
                 new LoadingGroup("phase_finalization_seq", LoadingGroupExecutionMode.Sequential, new ILoadingOperation[]
                 {
-                    new WarmupOperation()
+                    new WarmupOperation(),
+                    new SceneTransitionOperation(_sceneTransition, _settings.GameplaySceneName)
                 })
             });
 
@@ -144,12 +150,21 @@ namespace Game.Bootstrap.Loading
 
         private void OnProgressChanged(float value)
         {
-            _view.SetProgress(value);
+            // View может быть уже уничтожен после SceneTransitionOperation
+            // (boot-сцена выгружена). Unity перегружает == чтобы вернуть true для
+            // destroyed MonoBehaviour — проверка работает.
+            if (_view != null)
+            {
+                _view.SetProgress(value);
+            }
         }
 
         private void OnActiveDescriptionChanged(string description)
         {
-            _view.SetStatus(description);
+            if (_view != null)
+            {
+                _view.SetStatus(description);
+            }
         }
     }
 }

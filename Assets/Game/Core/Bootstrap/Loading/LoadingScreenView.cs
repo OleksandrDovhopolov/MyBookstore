@@ -18,6 +18,8 @@ namespace Game.Bootstrap.Loading
         [SerializeField] private TextMeshProUGUI _errorText;
 
         private UniTaskCompletionSource<bool> _retryTcs;
+        // View живёт в boot-сцене и умирает при SceneManager.LoadSceneAsync(Single).
+        // Это ожидаемое поведение — entry point после перехода в view уже не лезет.
 
         public void SetVisible(bool isVisible)
         {
