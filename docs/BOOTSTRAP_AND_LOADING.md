@@ -379,3 +379,438 @@ GlobalLifetimeScope (DontDestroyOnLoad)
 - Debug-флаги (`DebugStartFlags` + поля на `BootstrapInstaller` SO)
 - Editor-тесты `LoadingOrchestratorTests` (retry, critical failure, timeout, weighted aggregator)
 - Попутно: фикс латентной регистрации `LocalDiskStorage` через factory-делегат (default `string` параметр)
+
+---
+
+## 13. Приложение: Reference из Research (для отложенных пунктов)
+
+Раздел сохраняет описание того, как переход boot→gameplay был построен в проекте Research (источник миграции). Используется как референс для **отложенных** пунктов из раздела 12 — `MainSceneBootstrap`, `IGameplayReadyGate`, `IGameplayReadyInitializer`, фаза авторизации, cover/reveal анимации.
+
+В MyBookstore сейчас реализована **только часть** этой архитектуры (см. разделы 6 и 10). Полный Research-флоу был 4-фазным с авторизацией; в MyBookstore — 3 фазы, без авторизации.
+
+### 13.1 Обзор Research-флоу
+
+```
+[App Start — Bootstrap Scene]
+        Bootstrap.Start()
+              │
+    RunBootstrapAsync()
+              │
+    LoadingOrchestrator.RunAsync()
+              │
+    ┌─────────┴──────────────────────────────────┐
+    │  Phase 1: Technical Init (Sequential)       │
+    │  Phase 2: Authorization (Sequential)        │
+    │  Phase 3: Data Load (Parallel)             │
+    │  Phase 4: Finalization (Sequential)         │
+    └─────────┬──────────────────────────────────┘
+              │ SceneTransitionOperation
+              │  → PlayCoverAsync()  (прячет загрузочный экран за transition)
+              │  → SceneManager.LoadSceneAsync(mainSceneName)
+              ↓
+[GameplayScene загружена]
+        MainSceneBootstrap.Start()
+              │
+    uiManager.Show<GameplaySceneController>()
+              │
+    WaitUntil(IsWindowShown)
+              │
+    GameplayReadyGate.MarkReadyAsync()
+              │
+    ┌─────────┴──────────────────────┐
+    │  RunInitializersAsync()         │  ← все IGameplayReadyInitializer последовательно
+    │  PlayRevealAsync()              │  ← анимация "открытие" экрана
+    │  TrackEvent(AppStarted)         │  ← аналитика
+    └─────────┬──────────────────────┘
+              │
+    _isReady = true
+    _readyTcs.TrySetResult()          ← разблокирует всех WaitUntilReadyAsync()-ожидателей
+```
+
+### 13.2 Bootstrap.cs — точка входа (Research)
+
+`Assets/Game/Core/Bootstrap/Bootstrap.cs` — MonoBehaviour в Bootstrap-сцене, все зависимости через `[Inject]`.
+
+**Инжектируемые зависимости:**
+
+| Зависимость | Роль |
+|---|---|
+| `UIManager` | Управление UI-окнами |
+| `WindowFactoryDI` | Фабрика окон через DI |
+| `SaveService` | Сохранения |
+| `RemoteConfigLoader` | Firebase RC |
+| `IAuthorizationService` | Авторизация игрока |
+| `LoadingOrchestrator` | Исполнитель фаз загрузки |
+| `TransitionAnimationService` | Анимации перехода (cover/reveal) |
+
+**Параметры (SerializeField):**
+
+| Поле | Значение | Назначение |
+|---|---|---|
+| `_minimumLoadingSeconds` | 2f | Минимальное время на экране загрузки |
+| `_globalLoadingTimeoutSeconds` | 60f | Глобальный таймаут всего флоу |
+| `_mainSceneName` | — | Имя сцены для перехода |
+| `_loadingScreenView` | — | Ссылка на view загрузочного экрана |
+
+**Логика `RunBootstrapAsync()`:**
+
+```
+1. Показать LoadingScreenView
+2. Создать LoadingAuthorizationGate (обёртка над IAuthorizationService + LoadingScreenView)
+3. BuildPhases(authGate) → список из 4 LoadingPhase
+4. orchestrator.SetPhases(phases)
+5. Подписаться на ProgressChanged / ActiveDescriptionChanged → обновлять View
+
+6. LOOP (пока не отменено):
+    result = await orchestrator.RunAsync(startPhaseIndex, globalTimeout, ct)
+    if (result.IsSuccess) → break
+    Показать ошибку в View
+    Ждать нажатия "Retry"
+    startPhaseIndex = result.FailedPhaseIndex   ← resume с упавшей фазы
+    orchestrator.ResetFromPhase(startPhaseIndex)
+
+7. Дождаться minimumLoadingSeconds (если прошло меньше)
+```
+
+> **В MyBookstore эквивалент:** `LoadingOrchestratorEntryPoint` (раздел 6) — без UIManager/WindowFactory/Auth, без minimumLoadingSeconds, retry-петля та же.
+
+### 13.3 LoadingOrchestrator — движок фаз (Research)
+
+`Assets/Game/Core/Bootstrap/Loading/LoadingOrchestrator.cs` — sealed класс, координирует выполнение фаз и агрегирует прогресс.
+
+**Ключевые события:**
+
+| Событие | Когда |
+|---|---|
+| `ProgressChanged(float)` | При каждом обновлении взвешенного прогресса (≥ 0.0001 delta) |
+| `ActiveDescriptionChanged(string)` | При смене активной операции |
+| `CriticalFailure(LoadingFailure)` | При провале критичной операции |
+
+**`RunAsync(startPhaseIndex, globalTimeout, ct)`:**
+- Создаёт linked CancellationToken с globalTimeout
+- Итерирует фазы начиная с `startPhaseIndex`
+- Для каждой группы вызывает `ExecuteSequentialGroupAsync` или `ExecuteParallelGroupAsync`
+- При критичном провале → `CriticalFailure?.Invoke()` → `return Failed(failure, phaseIndex)`
+- После всех фаз → `CurrentProgress = 1f` → `return Success()`
+
+**Параллельный режим (`ExecuteParallelGroupAsync`):**
+- Все операции группы запускаются через `UniTask.WhenAll`
+- Прогресс обновляется polling-циклом каждые 100ms
+- Если одна операция критично упала → `groupCts.Cancel()` → остальные получают отмену
+
+**Прогресс (`LoadingProgressAggregator`):**
+- Взвешенный прогресс: `sum(op.Progress * op.Weight) / sum(op.Weight)`
+- Сглаживание: `smoothed += (raw - smoothed) * 0.25f` (exponential moving average)
+- Прогресс только растёт (`Math.Max(smoothed, next)`)
+
+**Retry на уровне операции (`ExecuteOperationWithPolicyAsync`):**
+- До `maxAttempts` попыток с задержкой `delayBetweenAttempts`
+- Таймаут операции — отдельный linked CancellationToken
+- Тип ошибки логируется: `result=failed/timeout`
+
+> В MyBookstore перенесён 1:1 — единственная разница в составе фаз/операций. См. `Assets/Game/Core/Bootstrap/Loading/LoadingOrchestrator.cs`.
+
+### 13.4 Фазы загрузки (Research, 4 фазы)
+
+Фазы строятся в `Bootstrap.BuildPhases()`. Каждая `LoadingPhase` содержит одну или несколько `LoadingGroup`.
+
+#### Phase 1 — `phase_technical_init` (Sequential)
+
+| Операция | ID | Critical | Weight | Timeout | Retry |
+|---|---|---|---|---|---|
+| `UiManagerConfigureOperation` | `ui_manager_configure` | ✅ | 0.1 | 5s | 1 |
+| `FirebaseDependenciesOperation` | `firebase_dependencies` | ❌ | 0.1 | 8s | 2×0.5s |
+| `AddressablesUpdateOperation` | `addressables_update` | ✅ | 0.3 | 20s | 2×1s |
+
+#### Phase 2 — `phase_authorization` (Sequential)
+
+| Операция | ID | Critical | Weight | Timeout | Retry |
+|---|---|---|---|---|---|
+| `AuthorizationGateOperation` | `authorization_gate` | ✅ | 0.15 | 5 min | 1 |
+
+Логика `LoadingAuthorizationGate.WaitUntilAuthorizedAsync()`:
+```
+HasCachedToken → скрыть кнопки логина, сразу return
+Нет токена    → показать кнопки (Guest / Facebook)
+              → WaitForLoginSelectionAsync() (бесконечно)
+              → AuthorizeAsync(method)
+              → если success → скрыть кнопки, return
+              → если fail   → продолжить ждать
+```
+
+Таймаут 5 минут — достаточно для ручного логина. Операция критична: без авторизации нет токена для серверных запросов.
+
+#### Phase 3 — `phase_data_load` (Parallel)
+
+| Операция | ID | Critical | Weight | Timeout | Retry |
+|---|---|---|---|---|---|
+| `RemoteConfigFetchOperation` | `remote_config_fetch` | ❌ | 0.2 | 10s | 2×0.5s |
+| `SaveDataLoadOperation` | `save_data_load` | ✅ | 0.3 | 10s | 2×0.3s |
+
+#### Phase 4 — `phase_finalization` (Sequential)
+
+| Операция | ID | Critical | Weight | Timeout | Retry |
+|---|---|---|---|---|---|
+| `WarmupOperation` | `warmup` | ❌ | 0.1 | 5s | 1 |
+| `SceneTransitionOperation` | `scene_transition` | ✅ | 0.15 | 15s | 1 |
+
+> **В MyBookstore сейчас:** Phase 1 — без `UiManagerConfigureOperation`; `FirebaseDependenciesOperation + RemoteConfigFetchOperation` объединены в `RemoteConfigInitOperation` через существующий `IRemoteConfigService.InitializeAsync()`. Фаза авторизации отсутствует. Phase 3 заменена на `ConfigsWarmupOperation + SaveDataLoadOperation`. Phase 4 — `WarmupOperation + SceneTransitionOperation`. Итого 3 фазы, 6 операций.
+
+### 13.5 SceneTransitionOperation — переход в сцену (Research)
+
+`Assets/Game/Core/Bootstrap/Loading/Operations/SceneTransitionOperation.cs`
+
+```csharp
+protected override async UniTask ExecuteInternalAsync(CancellationToken ct)
+{
+    await UniTask.Yield(PlayerLoopTiming.Update, ct);         // даём кадр отрисоваться
+    await _transitionAnimationService.PlayCoverAsync(ct);     // 1. закрыть экран (cover)
+    var asyncOperation = SceneManager.LoadSceneAsync(_sceneName);  // 2. начать загрузку сцены
+    while (!asyncOperation.isDone)
+    {
+        ReportProgress(asyncOperation.progress >= 0.9f ? 1f : asyncOperation.progress);
+        await UniTask.Yield(PlayerLoopTiming.Update, ct);
+    }
+    ReportProgress(1f);
+}
+```
+
+**Что происходит:**
+1. `PlayCoverAsync()` — transition animation закрывает экран (игрок видит fade/curtain)
+2. `LoadSceneAsync()` — Unity выгружает Bootstrap-сцену и загружает GameplayScene в фоне
+3. Пока загружается — репортим прогресс (Unity даёт 0–0.9 в процессе, 1.0 только по завершению)
+4. Экран остаётся закрытым до `PlayRevealAsync()` в `GameplayReadyGate`
+
+**Важно:** экран открывается НЕ здесь, а позже — в `GameplayReadyGate.MarkReadyAsync()`. Это гарантирует, что игрок видит геймплейную сцену только после того, как все feature-инициализаторы отработали.
+
+> **В MyBookstore сейчас:** аналогичная `SceneTransitionOperation`, но без `PlayCoverAsync`/`PlayRevealAsync` (cover/reveal-анимации отложены — см. раздел 12). Прогресс репортится так же.
+
+### 13.6 MainSceneBootstrap (Research, не реализовано в MyBookstore)
+
+`Assets/Game/Core/Bootstrap/MainScene/MainSceneBootstrap.cs` — MonoBehaviour в GameplayScene. VContainer инжектирует зависимости.
+
+**Инжектируемые зависимости:**
+- `UIManager` — показывает окна
+- `IGameplayReadyGate` — барьер готовности
+
+**`LoadGameplayAsync()`:**
+
+```csharp
+_uiManager.Show<GameplaySceneController>();          // 1. открыть главное UI окно геймплея
+await UniTask.WaitUntil(IsWindowShown<GameplaySceneController>);  // 2. ждать пока UI готово
+await _gameplayReadyGate.MarkReadyAsync(ct);         // 3. сигнализировать о готовности
+```
+
+**GameplaySceneController** — главное окно игровой сцены. Пока оно не показалось, сцена не считается готовой. Гарантирует, что UI полностью инициализировано до открытия экрана.
+
+> **В MyBookstore:** не реализовано. Появится, когда у gameplay-сцены будет реальный UI-каркас (требует UIManager — отложен).
+
+### 13.7 GameplayReadyGate — главный барьер готовности (Research, не реализовано в MyBookstore)
+
+`Assets/Game/UI/UIShared/Scripts/GameplayReadyGate/GameplayReadyGate.cs`
+
+Реализует `IGameplayReadyGate`. Регистрируется в `GameInstaller` как Singleton:
+```csharp
+builder.Register<IGameplayReadyGate, GameplayReadyGate>(Lifetime.Singleton);
+```
+
+**Интерфейс:**
+```csharp
+public interface IGameplayReadyGate
+{
+    bool IsReady { get; }
+    UniTask WaitUntilReadyAsync(CancellationToken ct);
+    UniTask MarkReadyAsync(CancellationToken ct);
+}
+```
+
+**`MarkReadyAsync()` — детальный флоу:**
+
+```
+if (_isReady) → return                               // уже готово
+if (_isMarkingReady)                                 // параллельный вызов
+    → WaitUntilReadyAsync()                          // ждём завершения первого
+    → return
+
+_isMarkingReady = true
+try {
+    1. RunInitializersAsync(ct)
+       │   for each IGameplayReadyInitializer:
+       │       await initializer.InitializeAsync(ct)  // строго последовательно
+       │
+    2. await _transitionAnimationService.PlayRevealAsync(ct)
+       │   // открывает экран — игрок видит геймплей
+       │
+    3. _analytics.TrackEvent(AppStarted)
+       │
+    4. _isReady = true
+    5. _readyTcs.TrySetResult()                      // разблокирует WaitUntilReadyAsync()
+}
+finally { _isMarkingReady = false }
+```
+
+**`WaitUntilReadyAsync()`:**
+```csharp
+if (_isReady) return UniTask.CompletedTask;   // уже готово — мгновенно
+return _readyTcs.Task.AttachExternalCancellation(ct);  // ждём сигнала
+```
+
+Внутри `UniTaskCompletionSource` — стандартный паттерн "one-shot event" в UniTask.
+
+**Порядок событий при MarkReady:**
+```
+[все инициализаторы завершены]
+    → PlayRevealAsync()      ← СНАЧАЛА анимация (экран открывается)
+    → TrackEvent(AppStarted) ← ПОТОМ аналитика
+    → TrySetResult()         ← ПОТОМ разблокировать ожидателей
+```
+
+> **В MyBookstore:** не реализовано. Добавим, когда появится первая фича, которой нужно дождаться полной готовности сцены (например, OrchestratorRunner-аналог для live-ops).
+
+### 13.8 IGameplayReadyInitializer — паттерн расширения (Research, не реализовано в MyBookstore)
+
+`Assets/Game/UI/UIShared/Scripts/GameplayReadyGate/IGameplayReadyInitializer.cs`
+
+```csharp
+public interface IGameplayReadyInitializer
+{
+    UniTask InitializeAsync(CancellationToken ct);
+}
+```
+
+**Как добавить новый инициализатор:**
+
+1. Создать класс, реализующий `IGameplayReadyInitializer`
+2. Зарегистрировать в инсталлере фичи:
+```csharp
+builder.Register<MyFeatureGameplayReadyInitializer>(Lifetime.Singleton)
+       .As<IGameplayReadyInitializer>();
+```
+3. VContainer автоматически соберёт все `IGameplayReadyInitializer` в `IEnumerable<>` и инжектирует в `GameplayReadyGate`
+
+**Текущие реализации в Research:**
+
+| Класс | Фича | Что делает |
+|---|---|---|
+| `BattlePassGameplayReadyInitializer` | BattlePass | `IBattlePassStartupSync.InitializeAsync()` — синхронизация прогресса BP с сервером |
+
+**Обработка ошибок в инициализаторах:**
+
+`BattlePassGameplayReadyInitializer` ловит все `Exception` (кроме `OperationCanceledException`) и логирует `Warning` — ошибка в инициализаторе **не блокирует** открытие геймплея:
+
+```csharp
+catch (Exception exception)
+{
+    Debug.LogWarning($"[...] Initial Battle Pass sync failed. {exception.Message}");
+    // не re-throw — gate продолжает
+}
+```
+
+### 13.9 Потребители IGameplayReadyGate (Research)
+
+Системы, которым нужно дождаться полной готовности сцены перед стартом, инжектируют `IGameplayReadyGate` и вызывают `WaitUntilReadyAsync()`.
+
+#### OrchestratorRunner
+
+`Assets/Game/Features/EventOrchestration/Module/Infrastructure/OrchestratorRunner.cs`
+
+MonoBehaviour, управляет live-ops событиями (card collection events и т.д.).
+
+```csharp
+private async UniTask RunAsync(CancellationToken ct)
+{
+    await _gameplayReadyGate.WaitUntilReadyAsync(ct);   // ← ждёт открытия экрана
+    await _orchestrator.InitializeAsync(ct);             // загружает расписание событий
+    await UniTask.WhenAll(
+        RunTickLoopAsync(ct),       // тикает каждые ~1s
+        RunRefreshLoopAsync(ct));   // обновляет расписание каждые ~60s
+}
+```
+
+Оркестратор НЕ стартует до тех пор, пока игрок физически не видит геймплейную сцену. Это предотвращает триггер событий в момент загрузки.
+
+### 13.10 Полная диаграмма (Research)
+
+```
+Bootstrap Scene
+─────────────────────────────────────────────────────────────────────────
+Bootstrap.Start()
+  ↓
+RunBootstrapAsync()
+  ↓ показать LoadingScreen
+  ↓ создать LoadingAuthorizationGate
+  ↓ BuildPhases()
+  ↓
+LoadingOrchestrator.RunAsync()
+  │
+  ├─ PHASE 1: phase_technical_init [Sequential]
+  │     UiManagerConfigureOperation  [critical, w=0.1, t=5s]
+  │     FirebaseDependenciesOperation [non-critical, w=0.1, t=8s, retry×2]
+  │     AddressablesUpdateOperation   [critical, w=0.3, t=20s, retry×2]
+  │
+  ├─ PHASE 2: phase_authorization [Sequential]
+  │     AuthorizationGateOperation   [critical, w=0.15, t=5min]
+  │       └─ WaitUntilAuthorizedAsync()
+  │            ├─ HasCachedToken → immediate
+  │            └─ No token → show login UI → wait for tap
+  │
+  ├─ PHASE 3: phase_data_load [Parallel]
+  │     ┌─ RemoteConfigFetchOperation [non-critical, w=0.2, t=10s, retry×2]
+  │     └─ SaveDataLoadOperation      [critical, w=0.3, t=10s, retry×2]
+  │
+  └─ PHASE 4: phase_finalization [Sequential]
+        WarmupOperation               [non-critical, w=0.1, t=5s]
+        SceneTransitionOperation      [critical, w=0.15, t=15s]
+          ↓
+          PlayCoverAsync()            ← transition закрывает экран
+          SceneManager.LoadSceneAsync(mainSceneName)
+
+═══════════════════════════════════════════════════════════════════════════
+                         [Сцена загружена]
+═══════════════════════════════════════════════════════════════════════════
+
+Gameplay Scene
+─────────────────────────────────────────────────────────────────────────
+MainSceneBootstrap.Start()
+  ↓
+LoadGameplayAsync()
+  ↓
+uiManager.Show<GameplaySceneController>()
+  ↓
+WaitUntil(IsWindowShown<GameplaySceneController>)
+  ↓
+GameplayReadyGate.MarkReadyAsync()
+  │
+  ├─ RunInitializersAsync()       [sequential]
+  │     BattlePassGameplayReadyInitializer
+  │       └─ IBattlePassStartupSync.InitializeAsync()   ← sync BP от сервера
+  │
+  ├─ PlayRevealAsync()            ← экран открывается, игрок видит геймплей
+  ├─ TrackEvent(AppStarted)       ← аналитика
+  ├─ _isReady = true
+  └─ _readyTcs.TrySetResult()     ← разблокировать ожидателей
+
+               ↓ разблокировано
+OrchestratorRunner.WaitUntilReadyAsync() → InitializeAsync() → tick/refresh loops
+```
+
+### 13.11 Справка: параметры операций (Research)
+
+| Операция | Вес прогресса | Critical | Timeout | Max Retry |
+|---|---|---|---|---|
+| `UiManagerConfigureOperation` | 0.1 | ✅ | 5s | 1 |
+| `FirebaseDependenciesOperation` | 0.1 | ❌ | 8s | 2 |
+| `AddressablesUpdateOperation` | 0.3 | ✅ | 20s | 2 |
+| `AuthorizationGateOperation` | 0.15 | ✅ | 5min | 1 |
+| `RemoteConfigFetchOperation` | 0.2 | ❌ | 10s | 2 |
+| `SaveDataLoadOperation` | 0.3 | ✅ | 10s | 2 |
+| `WarmupOperation` | 0.1 | ❌ | 5s | 1 |
+| `SceneTransitionOperation` | 0.15 | ✅ | 15s | 1 |
+
+**Итоговый суммарный вес:** 1.5 (используется для нормализации взвешенного прогресса)
+
+**Операция с флагом Critical=true:** при провале после исчерпания retry → `LoadingRunResult.Failed(failedPhaseIndex)` → Bootstrap показывает ошибку и предлагает retry с этой фазы.
+
+**Операция с Critical=false:** при провале — логируется, игра продолжается.
+
+> **Сравнение с MyBookstore:** см. реальные операции в разделе 6 и в `Assets/Game/Core/Bootstrap/Loading/Operations/`. Веса/таймауты/retry-policy в портированных операциях скопированы 1:1.
