@@ -1,17 +1,12 @@
 {
-    "name": "Game.Bootstrap",
-    "rootNamespace": "Game.Bootstrap",
+    "name": "DayCycle",
+    "rootNamespace": "Game.DayCycle",
     "references": [
-        "VContainer",
-        "Save",
-        "Configs",
-        "Game.Commands.Abstractions",
-        "Game.Commands",
-        "Game.Http",
         "UniTask",
-        "Infrastructure",
-        "Game.Bootstrap.Loading",
-        "DayCycle"
+        "VContainer",
+        "Configs",
+        "Save",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

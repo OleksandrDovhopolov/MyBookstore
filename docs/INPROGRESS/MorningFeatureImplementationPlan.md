@@ -130,3 +130,37 @@ Manual Unity check:
 - Real weather simulation, calendar rules, dynamic news, and long dialogue are out of scope.
 - The first implementation uses placeholder UI and text-only weather.
 - Existing `docs/INPROGRESS/Утро.md` remains the GDD/spec source; this file is the implementation plan.
+
+## Status — vertical slice implemented (2026-06-10)
+
+Decisions locked in (with the user):
+
+- Config source for the day: **new `DayConfig` → `days.json`** (not an expanded `EventConfig`).
+- Code home: **new `DayCycle` assembly** hosting the shared day-state + the Morning phase. Sales stays in `Book.Sell`.
+- UI: **debug uGUI** screen in `GameplayScene` (no UI System dependency yet).
+- Notion: 4 core-loop tasks created in «✅ Задачи до релиза (MVP)» linked to the parent «Прототип core loop» via `Depends on` chain (Утро → Подготовка → Продажа → Итоги).
+
+What landed:
+
+- `Game.Configs.Models.DayConfig` (`[ConfigFile("days")]`) + sample `Assets/Configs/days.json` (day 1, day 2).
+- `Assets/Game/Features/DayCycle/` assembly:
+  - `Day/DayPhase`, `Day/DayProgressState` (shared current day/phase/gold/reputation/completed days/owned books), `Day/IDayProgressService` + `DayProgressService` (Save module `day_progress`, schema v1). This is the shared day-state the whole core loop reads.
+  - `Morning/` domain: `MorningDayContext`, `MorningContinueResult`, `IMorningContextResolver` + `MorningContextResolver` (deterministic resolve by `DayIndex` → reuse last day → fallback; modifier ids derived as `weather_*` / `event_*`), `IMorningSessionService` + `MorningSessionService`, `MorningFallback`.
+  - `Morning/UI/MorningScreenView` (self-injecting uGUI/TMP debug view).
+- DI: `DayCycleVContainerBindings.RegisterDayCycle()` wired into `GameInstaller`; resolves `ISaveService`/`IConfigsService` from the global scope. The view is registered only if present in the scene (project still runs before the UI is wired).
+- EditMode tests (`DayCycle.Tests.Editor`): resolver field mapping, modifier derivation, fallback, day-beyond-content reuse, determinism; session start/resume, phase reset, persisted day, continue → preparation persistence across restart.
+
+Determinism note: the morning context is re-resolved from the persisted `CurrentDay` each open, so restart on the morning phase shows the same day/event/weather **without** persisting the context itself — satisfies the acceptance criterion with no extra save module.
+
+Manual scene wiring still required (Unity, by hand — not committable as code):
+
+1. In `GameplayScene`, under the Canvas add a GameObject with `MorningScreenView`.
+2. Assign the 6 `TMP_Text` fields (day / title / weather / summary / hint / modifier) and the `Continue` `Button`.
+3. Ensure `GameplayLifetimeScope` has `GameInstaller` in its mono-installers (so `RegisterDayCycle` runs and finds the view).
+
+Follow-ups (out of this slice):
+
+- Publish `days.json` to the Config server so non-editor builds resolve it (editor uses `LocalFolderConfigSource`).
+- Extend `LocationConfig` with `DemandGenres`/`DemandTags` — belongs to the Preparation task.
+- Analytics events (`morning_opened`, `morning_continue_clicked`) — stub until the analytics logging task.
+- `Preparation` consumes `MorningContinueResult` as its setup input (replaces its temporary fallback).
