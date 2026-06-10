@@ -37,10 +37,10 @@
 | 9 | `LoadingOrchestratorEntryPoint` (заменяет Addressables/Configs warmup + BookDuneProbe) | `RegisterGameLoading()` стаб | [x] |
 | 10 | Зарегистрировать `LoadingOrchestrator`, `LoadingProgressAggregator`, entry point в `GameLoadingVContainerBindings`. Снять регистрации старых entry points из `ConfigsVContainerBindings`, `InfrastructureVContainerBindings` | `GameLoadingVContainerBindings` стабы | [x] |
 | 11 | Удалить `BookDuneProbeEntryPoint.cs` (+ .meta) — диагностика больше не нужна | — | [x] |
-| 12 | Удалить `AddressablesWarmupEntryPoint.cs`, `ConfigsWarmupEntryPoint.cs` (после успешного smoke-теста — сейчас лежат как dead code, не зарегистрированы) | — | [ ] |
+| 12 | Удалены `AddressablesWarmupEntryPoint.cs` и `ConfigsWarmupEntryPoint.cs` (+ .meta) после успешного smoke-теста | — | [x] |
 | 13 | Создать Editor-тесты `Game.Bootstrap.Loading.Tests.Editor.asmdef` + `LoadingOrchestratorTests.cs` | — | [x] |
 | 14 | Обновить `Game.Bootstrap.asmdef`: добавить ref `Game.Bootstrap.Loading` | — | [x] |
-| 15 | Smoke-тест в Editor: запуск → лог `[LoadingOrchestrator] progress=...` → приложение продолжает работу | — | [ ] |
+| 15 | Smoke-тест в Editor: запуск → лог `[LoadingOrchestrator] Loading complete.` → приложение продолжает работу. Пройден. По пути починена латентная регистрация `LocalDiskStorage` (factory-делегат вместо ctor-резолва) | — | [x] |
 | 16 | После smoke-теста: подключить `LoadingScreenView` в DI и в `LoadingOrchestratorEntryPoint` (вместо `Debug.Log`) | — | [ ] |
 
 **Не делаем в Phase 1** (по твоему решению):
@@ -56,9 +56,9 @@
 
 | # | Шаг | Что переносим | Риск | Статус |
 |---|---|---|---|---|
-| 1 | `GameStateService` | enum состояний игры + сервис + сигналы | Низкий | [ ] |
-| 2 | Debug-start флаги | `SkipLoading`, `StartFromScene`, `UseLocalConfigs` в `BootstrapInstaller` SO. Чекается в `BootstrapEntryPoint` | Низкий | [ ] |
-| 3 | `LinearLoadingTime` (или эквивалент) | Если в Pet#2 есть структурированные метрики времени фаз помимо логов | Низкий | [ ] |
+| 1 | `GameStateService` | enum состояний игры + сервис + сигналы | Низкий | [ ] N/A — отложено |
+| 2 | Debug-start флаги | `_useDebugFeatures` + `_skipFullLoading` на `BootstrapInstaller` SO (Editor-only). Статика `DebugStartFlags`. Чекается в `LoadingOrchestratorEntryPoint.BuildPhases()`. Auto-detect по сцене (Pet#2-style) не делали — у MyBookstore нет `LocationView` | Низкий | [x] |
+| 3 | `LinearLoadingTime` (или эквивалент) | Если в Pet#2 есть структурированные метрики времени фаз помимо логов | Низкий | [ ] N/A — отложено |
 | 4 | `LoadLocationCommand` + `GameSceneController` | Когда появится понятие «локация» и переходы между сценами | Высокий, отложить | [ ] |
 | 5 | UIManager / WindowFactory / WindowRouter / TransitionAnimationService | Полноценная UI-подсистема | Высокий | [ ] |
 | 6 | `IAnalyticsService` | Аналитика | Средний | [ ] |

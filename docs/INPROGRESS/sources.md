@@ -15,9 +15,10 @@
 
 ## Pet#2
 
-- **Путь:** _TODO — будет указан перед стартом Phase 2_
-- **Ветка / коммит:** _TODO_
-- **Роль:** источник оркестрации и UX-слоя загрузки. Donor для Command/Phases, LoadingScreen, Debug-флагов, GameStateService, LoadLocationCommand.
+- **Путь:** `C:\Projects\heroes\Assets\Root`
+- **Точка входа загрузки:** `C:\Projects\heroes\Assets\Root\Bootstrapper.cs`
+- **Ветка / коммит:** по последнему состоянию
+- **Роль (Phase 2 — текущий скоуп):** donor для debug-флагов старта (`UseDebugSimplifiedStart`, `_useDebugFeatures`-маршрут). Остальное (LoadLocationCommand, GameStateService, метрики) — отложено по решению пользователя.
 
 ---
 

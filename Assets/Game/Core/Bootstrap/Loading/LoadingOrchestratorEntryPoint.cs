@@ -75,13 +75,24 @@ namespace Game.Bootstrap.Loading
 
         private IReadOnlyList<LoadingPhase> BuildPhases()
         {
-            var phaseTechnical = new LoadingPhase("phase_technical_init", new[]
+            var skipHeavy = DebugStartFlags.SkipFullLoading;
+            if (skipHeavy)
             {
-                new LoadingGroup("phase_technical_seq", LoadingGroupExecutionMode.Sequential, new ILoadingOperation[]
+                Debug.LogWarning(
+                    $"{LogPrefix} SkipFullLoading=true: Addressables update и RemoteConfig init будут пропущены.");
+            }
+
+            var technicalOps = skipHeavy
+                ? new ILoadingOperation[] { new WarmupOperation() }
+                : new ILoadingOperation[]
                 {
                     new AddressablesUpdateOperation(_catalog),
                     new RemoteConfigInitOperation(_remoteConfig)
-                })
+                };
+
+            var phaseTechnical = new LoadingPhase("phase_technical_init", new[]
+            {
+                new LoadingGroup("phase_technical_seq", LoadingGroupExecutionMode.Sequential, technicalOps)
             });
 
             var phaseData = new LoadingPhase("phase_data_load", new[]

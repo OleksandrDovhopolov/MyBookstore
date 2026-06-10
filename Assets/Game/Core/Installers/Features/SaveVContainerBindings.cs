@@ -18,9 +18,11 @@ namespace Game.Bootstrap
                    .As<IPlayerIdentityProvider>();
 
             // Storage — по умолчанию LocalDiskStorage (MVP).
-            // Для HTTP-режима: закомментируй блок LocalDiskStorage и раскомментируй блок HTTP ниже.
-            builder.Register<LocalDiskStorage>(Lifetime.Singleton)
-                   .As<ISaveStorage>();
+            // Через factory-делегат: у конструктора LocalDiskStorage есть string-параметр
+            // с default-значением, но VContainer его всё равно пытается резолвить
+            // (см. аналогичный комментарий у UnityCommandLogger в InfrastructureVContainerBindings).
+            // Для HTTP-режима: закомментируй эту строку и раскомментируй блок HTTP ниже.
+            builder.Register<ISaveStorage>(_ => new LocalDiskStorage(), Lifetime.Singleton);
 
             // HTTP + write-through кэш:
             //   HttpSaveStorage конструируется контейнером — все его зависимости
