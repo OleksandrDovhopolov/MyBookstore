@@ -14,11 +14,12 @@ namespace Game.Bootstrap
             builder.Register<LoadingProgressAggregator>(_ => new LoadingProgressAggregator(), Lifetime.Singleton);
             builder.Register<LoadingOrchestrator>(Lifetime.Singleton);
 
-            builder.RegisterEntryPoint<LoadingOrchestratorEntryPoint>();
+            // Префаб LoadingScreen лежит в boot-сцене (см. иерархию).
+            // RegisterComponentInHierarchy ищет компонент в той же сцене, где GlobalLifetimeScope.
+            // Если экран будет переезжать в DontDestroyOnLoad — переключим на RegisterComponentInNewPrefab.
+            builder.RegisterComponentInHierarchy<LoadingScreenView>();
 
-            // TODO: LoadingScreenView prefab — забиндить после сборки префаба
-            // (DontDestroyOnLoad), затем подключить к LoadingOrchestrator.ProgressChanged
-            // в LoadingOrchestratorEntryPoint (сейчас прогресс уходит в Debug.Log).
+            builder.RegisterEntryPoint<LoadingOrchestratorEntryPoint>();
         }
     }
 }

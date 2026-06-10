@@ -12,13 +12,15 @@ using VContainer.Unity;
 namespace Game.Bootstrap.Loading
 {
     // Заменяет три отдельных IAsyncStartable (AddressablesWarmup / ConfigsWarmup / BookDuneProbe).
-    // Строит фазы загрузки, запускает оркестратор. Retry — пока вручную через перезапуск
-    // (LoadingScreenView подключим следующим шагом после сборки префаба).
+    // Строит фазы загрузки, запускает оркестратор, ведёт LoadingScreenView, разруливает retry.
     public sealed class LoadingOrchestratorEntryPoint : IAsyncStartable
     {
         private const string LogPrefix = "[LoadingOrchestrator]";
+        private const string ErrorMessage = "Check your internet connection and try again.";
+        private static readonly TimeSpan GlobalTimeout = TimeSpan.FromSeconds(60);
 
         private readonly LoadingOrchestrator _orchestrator;
+        private readonly LoadingScreenView _view;
         private readonly IAddressablesCatalogService _catalog;
         private readonly IRemoteConfigService _remoteConfig;
         private readonly IConfigsService _configs;
@@ -26,12 +28,14 @@ namespace Game.Bootstrap.Loading
 
         public LoadingOrchestratorEntryPoint(
             LoadingOrchestrator orchestrator,
+            LoadingScreenView view,
             IAddressablesCatalogService catalog,
             IRemoteConfigService remoteConfig,
             IConfigsService configs,
             ISaveService save)
         {
             _orchestrator = orchestrator;
+            _view = view;
             _catalog = catalog;
             _remoteConfig = remoteConfig;
             _configs = configs;
@@ -42,24 +46,16 @@ namespace Game.Bootstrap.Loading
         {
             try
             {
+                _view.SetVisible(true);
+                _view.SetErrorVisible(false);
+
                 _orchestrator.SetPhases(BuildPhases());
                 _orchestrator.ProgressChanged += OnProgressChanged;
                 _orchestrator.ActiveDescriptionChanged += OnActiveDescriptionChanged;
 
                 try
                 {
-                    var result = await _orchestrator.RunAsync(0, TimeSpan.FromSeconds(60), cancellation);
-                    if (result.IsSuccess)
-                    {
-                        Debug.Log($"{LogPrefix} Loading complete.");
-                    }
-                    else
-                    {
-                        var f = result.Failure;
-                        Debug.LogError(
-                            $"{LogPrefix} Loading failed at phase={f?.PhaseId} op={f?.OperationId} " +
-                            $"timedOut={f?.TimedOut} attempt={f?.Attempt}: {f?.Exception?.Message}");
-                    }
+                    await RunWithRetryAsync(cancellation);
                 }
                 finally
                 {
@@ -70,6 +66,37 @@ namespace Game.Bootstrap.Loading
             catch (OperationCanceledException)
             {
                 // shutdown — ignore
+            }
+        }
+
+        private async UniTask RunWithRetryAsync(CancellationToken ct)
+        {
+            var startPhaseIndex = 0;
+
+            while (!ct.IsCancellationRequested)
+            {
+                var result = await _orchestrator.RunAsync(startPhaseIndex, GlobalTimeout, ct);
+                if (result.IsSuccess)
+                {
+                    Debug.Log($"{LogPrefix} Loading complete.");
+                    // Видимость финального экрана ("Tap to Start" / переход в игру) —
+                    // отдельный шаг следующей итерации. Сейчас просто гасим лоадер.
+                    _view.SetVisible(false);
+                    return;
+                }
+
+                var f = result.Failure;
+                Debug.LogError(
+                    $"{LogPrefix} Failed at phase={f?.PhaseId} op={f?.OperationId} " +
+                    $"timedOut={f?.TimedOut} attempt={f?.Attempt}: {f?.Exception?.Message}");
+
+                _view.SetError(ErrorMessage);
+                _view.SetErrorVisible(true);
+                await _view.WaitForRetryClickAsync(ct);
+                _view.SetErrorVisible(false);
+
+                startPhaseIndex = result.FailedPhaseIndex ?? 0;
+                _orchestrator.ResetFromPhase(startPhaseIndex);
             }
         }
 
@@ -115,17 +142,14 @@ namespace Game.Bootstrap.Loading
             return new[] { phaseTechnical, phaseData, phaseFinal };
         }
 
-        private static void OnProgressChanged(float value)
+        private void OnProgressChanged(float value)
         {
-            Debug.Log($"{LogPrefix} progress={value:P0}");
+            _view.SetProgress(value);
         }
 
-        private static void OnActiveDescriptionChanged(string description)
+        private void OnActiveDescriptionChanged(string description)
         {
-            if (!string.IsNullOrEmpty(description))
-            {
-                Debug.Log($"{LogPrefix} status='{description}'");
-            }
+            _view.SetStatus(description);
         }
     }
 }

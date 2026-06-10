@@ -41,7 +41,7 @@
 | 13 | Создать Editor-тесты `Game.Bootstrap.Loading.Tests.Editor.asmdef` + `LoadingOrchestratorTests.cs` | — | [x] |
 | 14 | Обновить `Game.Bootstrap.asmdef`: добавить ref `Game.Bootstrap.Loading` | — | [x] |
 | 15 | Smoke-тест в Editor: запуск → лог `[LoadingOrchestrator] Loading complete.` → приложение продолжает работу. Пройден. По пути починена латентная регистрация `LocalDiskStorage` (factory-делегат вместо ctor-резолва) | — | [x] |
-| 16 | После smoke-теста: подключить `LoadingScreenView` в DI и в `LoadingOrchestratorEntryPoint` (вместо `Debug.Log`) | — | [ ] |
+| 16 | `LoadingScreenView` подключён в DI через `RegisterComponentInHierarchy`. В `LoadingOrchestratorEntryPoint` — `SetVisible/SetProgress/SetStatus`, retry-петля с `WaitForRetryClickAsync` | — | [x] |
 
 **Не делаем в Phase 1** (по твоему решению):
 - `UIManager`, `IWindowFactory`, `IWindowRouter` — отложено в следующие итерации
