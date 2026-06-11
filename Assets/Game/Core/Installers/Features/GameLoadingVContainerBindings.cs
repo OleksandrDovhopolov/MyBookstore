@@ -18,10 +18,10 @@ namespace Game.Bootstrap
             // вызывается операцией SceneTransitionOperation и (в будущем) gameplay-кодом.
             builder.Register<ISceneTransitionService, SceneTransitionService>(Lifetime.Singleton);
 
-            // Префаб LoadingScreen лежит в boot-сцене (см. иерархию).
-            // RegisterComponentInHierarchy ищет компонент в той же сцене, где GlobalLifetimeScope.
-            // LoadingScreenView сам делает DontDestroyOnLoad в Awake — переживает SceneTransitionOperation.
-            builder.RegisterComponentInHierarchy<LoadingScreenView>();
+            // LoadingScreenView лежит в boot-сцене и НЕ резолвится через DI:
+            // при VContainerSettings.RootLifetimeScope=prefab GlobalLifetimeScope инстансится
+            // до загрузки boot-сцены, поэтому RegisterComponentInHierarchy ничего бы не нашёл.
+            // EntryPoint сам ищет view через FindAnyObjectByType в StartAsync (см. там же).
 
             builder.RegisterEntryPoint<LoadingOrchestratorEntryPoint>();
         }

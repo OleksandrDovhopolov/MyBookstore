@@ -20,7 +20,6 @@ namespace Game.Bootstrap.Loading
         private static readonly TimeSpan GlobalTimeout = TimeSpan.FromSeconds(60);
 
         private readonly LoadingOrchestrator _orchestrator;
-        private readonly LoadingScreenView _view;
         private readonly IAddressablesCatalogService _catalog;
         private readonly IRemoteConfigService _remoteConfig;
         private readonly IConfigsService _configs;
@@ -28,9 +27,13 @@ namespace Game.Bootstrap.Loading
         private readonly ISceneTransitionService _sceneTransition;
         private readonly LoadingSettings _settings;
 
+        // View ищем на StartAsync (а не через DI), потому что GlobalLifetimeScope теперь
+        // приходит из VContainerSettings.RootLifetimeScope (префаб) и инстансится до
+        // загрузки boot-сцены. RegisterComponentInHierarchy в такой момент пуст.
+        private LoadingScreenView _view;
+
         public LoadingOrchestratorEntryPoint(
             LoadingOrchestrator orchestrator,
-            LoadingScreenView view,
             IAddressablesCatalogService catalog,
             IRemoteConfigService remoteConfig,
             IConfigsService configs,
@@ -39,7 +42,6 @@ namespace Game.Bootstrap.Loading
             LoadingSettings settings)
         {
             _orchestrator = orchestrator;
-            _view = view;
             _catalog = catalog;
             _remoteConfig = remoteConfig;
             _configs = configs;
@@ -52,8 +54,18 @@ namespace Game.Bootstrap.Loading
         {
             try
             {
-                _view.SetVisible(true);
-                _view.SetErrorVisible(false);
+                // К моменту StartAsync (PlayerLoop) boot-сцена уже подняла все Awake/Start,
+                // включая объект с LoadingScreenView. Если префаб не лежит в Bootstrap.unity —
+                // просто едем без визуала, все view-вызовы дальше null-safe.
+                _view = UnityEngine.Object.FindAnyObjectByType<LoadingScreenView>(FindObjectsInactive.Include);
+                if (_view == null)
+                    Debug.LogWarning($"{LogPrefix} LoadingScreenView не найден в boot-сцене. Загрузка пойдёт без UI-визуала.");
+
+                if (_view != null)
+                {
+                    _view.SetVisible(true);
+                    _view.SetErrorVisible(false);
+                }
 
                 _orchestrator.SetPhases(BuildPhases());
                 _orchestrator.ProgressChanged += OnProgressChanged;
@@ -95,10 +107,18 @@ namespace Game.Bootstrap.Loading
                     $"{LogPrefix} Failed at phase={f?.PhaseId} op={f?.OperationId} " +
                     $"timedOut={f?.TimedOut} attempt={f?.Attempt}: {f?.Exception?.Message}");
 
-                _view.SetError(ErrorMessage);
-                _view.SetErrorVisible(true);
-                await _view.WaitForRetryClickAsync(ct);
-                _view.SetErrorVisible(false);
+                if (_view != null)
+                {
+                    _view.SetError(ErrorMessage);
+                    _view.SetErrorVisible(true);
+                    await _view.WaitForRetryClickAsync(ct);
+                    _view.SetErrorVisible(false);
+                }
+                else
+                {
+                    // Без UI ретраить нельзя — выходим, иначе зациклимся.
+                    return;
+                }
 
                 startPhaseIndex = result.FailedPhaseIndex ?? 0;
                 _orchestrator.ResetFromPhase(startPhaseIndex);
