@@ -1,20 +1,15 @@
-using Game.Bootstrap.Loading;
 using UnityEngine;
 using VContainer;
-// LoadingSettings — DTO в Loading-сборке (см. LoadingSettings.cs).
 
 namespace Game.Bootstrap
 {
-    // ScriptableObjectInstaller — assign this asset to GlobalLifetimeScope._scriptableObjectInstallers.
-    // Registers application-wide singleton services that must survive scene transitions.
+    // ScriptableObjectInstaller — лежит в Script Installers GlobalLifetimeScope.prefab.
+    // Регистрирует application-wide singletons, которые переживают смену сцен.
+    // Имя стартовой gameplay-сцены теперь живёт SerializeField'ом на Bootstrap MonoBehaviour
+    // (в boot-сцене) — поэтому здесь нет ни _gameplaySceneName, ни LoadingSettings.
     [CreateAssetMenu(fileName = "BootstrapInstaller", menuName = "Game/Installers/BootstrapInstaller")]
     public class BootstrapInstaller : ScriptableObjectInstaller
     {
-        [Header("Scene Transition")]
-        [Tooltip("Имя сцены, в которую переходит лоадер после успешного завершения всех операций. " +
-                 "Сцена должна быть добавлена в Build Settings.")]
-        [SerializeField] private string _gameplaySceneName = "GameplayScene";
-
 #if UNITY_EDITOR
         [Header("Debug Start (Editor only)")]
         [Tooltip("Master switch. Если выключен — debug-флаги ниже игнорируются.")]
@@ -28,10 +23,6 @@ namespace Game.Bootstrap
         {
             ApplyDebugFlags();
 
-            // Настройки лоадера передаём через DTO в Loading-сборке.
-            // Сам SO в DI не регистрируем — это бы потребовало ссылку Loading→Bootstrap (циклика).
-            builder.RegisterInstance(new LoadingSettings(_gameplaySceneName));
-
             builder.RegisterGameLoading();
             builder.RegisterAnalytics();
             builder.RegisterSave();
@@ -43,12 +34,12 @@ namespace Game.Bootstrap
         private void ApplyDebugFlags()
         {
 #if UNITY_EDITOR
-            DebugStartFlags.UseDebugFeatures = _useDebugFeatures;
-            DebugStartFlags.SkipFullLoading = _useDebugFeatures && _skipFullLoading;
-            if (DebugStartFlags.UseDebugFeatures)
+            Game.Bootstrap.Loading.DebugStartFlags.UseDebugFeatures = _useDebugFeatures;
+            Game.Bootstrap.Loading.DebugStartFlags.SkipFullLoading = _useDebugFeatures && _skipFullLoading;
+            if (Game.Bootstrap.Loading.DebugStartFlags.UseDebugFeatures)
             {
                 Debug.LogWarning(
-                    $"[BootstrapInstaller] Debug flags ON. SkipFullLoading={DebugStartFlags.SkipFullLoading}");
+                    $"[BootstrapInstaller] Debug flags ON. SkipFullLoading={Game.Bootstrap.Loading.DebugStartFlags.SkipFullLoading}");
             }
 #endif
         }
