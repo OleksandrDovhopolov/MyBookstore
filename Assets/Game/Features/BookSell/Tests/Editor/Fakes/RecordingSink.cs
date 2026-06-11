@@ -8,11 +8,19 @@ namespace Book.Sell.Tests.Editor.Fakes
     public sealed class RecordingSink : ISalesDaySink
     {
         public List<(Customer customer, CustomerPhase phase)> Phases { get; } = new();
+        public List<(Customer customer, string bookId)> Reserved { get; } = new();
+        public List<(Customer customer, string bookId)> Released { get; } = new();
         public List<(Customer customer, PassiveSaleEvent evt)> PassiveSales { get; } = new();
         public List<(Customer customer, RequestConfig request)> ActiveStarted { get; } = new();
 
         public void OnPhaseChanged(Customer customer, CustomerPhase phase)
             => Phases.Add((customer, phase));
+
+        public void OnBookReserved(Customer customer, string bookId)
+            => Reserved.Add((customer, bookId));
+
+        public void OnBookReleased(Customer customer, string bookId)
+            => Released.Add((customer, bookId));
 
         public void OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent)
             => PassiveSales.Add((customer, saleEvent));

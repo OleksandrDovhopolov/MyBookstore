@@ -48,6 +48,7 @@ namespace Book.Sell.Domain.Steps
                 _matchedTags = candidate.MatchedTags;
                 _sub = Sub.Commit;
                 _t = 0f;
+                ctx.Sink?.OnBookReserved(self, _targetId);
                 return StepStatus.Running;
             }
 
@@ -68,7 +69,10 @@ namespace Book.Sell.Domain.Steps
             // Safety net: if the step is aborted while a reservation is still held (not yet committed),
             // release it so the book returns to the shelf.
             if (_targetId != null && ctx.Shelf.IsReserved(_targetId))
+            {
                 ctx.Shelf.ReleaseReserve(_targetId);
+                ctx.Sink?.OnBookReleased(self, _targetId);
+            }
         }
     }
 }

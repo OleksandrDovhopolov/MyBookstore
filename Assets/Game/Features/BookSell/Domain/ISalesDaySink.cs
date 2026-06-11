@@ -11,6 +11,12 @@ namespace Book.Sell.Domain
     {
         void OnPhaseChanged(Customer customer, CustomerPhase phase);
 
+        /// <summary>A customer targeted a book and reserved it (soft-lock) before committing the sale.</summary>
+        void OnBookReserved(Customer customer, string bookId);
+
+        /// <summary>A reservation was released without a sale (customer aborted mid-purchase).</summary>
+        void OnBookReleased(Customer customer, string bookId);
+
         void OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent);
 
         /// <summary>A customer acquired the interaction lock and the active minigame opens for them.</summary>

@@ -188,8 +188,31 @@ namespace Book.Sell.Services
         {
             if (phase == CustomerPhase.Done)
                 _result.CustomersServed++;
+
+            switch (phase)
+            {
+                case CustomerPhase.Approaching:
+                    Debug.Log($"{LogPrefix} customer arrived: {customer.Id}");
+                    break;
+                case CustomerPhase.AwaitingHelp:
+                    Debug.Log($"{LogPrefix} customer wants help: {customer.Id}");
+                    break;
+                case CustomerPhase.Leaving:
+                    Debug.Log($"{LogPrefix} customer leaving: {customer.Id}");
+                    break;
+                case CustomerPhase.Done:
+                    Debug.Log($"{LogPrefix} customer done: {customer.Id}");
+                    break;
+            }
+
             CustomerPhaseChanged?.Invoke(customer);
         }
+
+        void ISalesDaySink.OnBookReserved(Customer customer, string bookId)
+            => Debug.Log($"{LogPrefix} reserved (targeting): book={bookId}, customer={customer.Id}");
+
+        void ISalesDaySink.OnBookReleased(Customer customer, string bookId)
+            => Debug.Log($"{LogPrefix} reservation released (no sale): book={bookId}, customer={customer.Id}");
 
         void ISalesDaySink.OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent)
         {
