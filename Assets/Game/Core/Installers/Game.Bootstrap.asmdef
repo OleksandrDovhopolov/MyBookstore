@@ -11,7 +11,8 @@
         "UniTask",
         "Infrastructure",
         "Game.Bootstrap.Loading",
-        "DayCycle"
+        "DayCycle",
+        "Book.Sell"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

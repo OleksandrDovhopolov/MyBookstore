@@ -131,3 +131,62 @@ Manual Unity check:
 - `Decor` is ignored in scoring for this slice, but `SalesSessionSetup.DecorIds` is preserved for later integration.
 - Production navigation/window system is out of scope.
 - A simple uGUI/debug screen is acceptable for validating the core hypothesis.
+
+## Status — vertical slice implemented (2026-06-11)
+
+Decisions locked in (with the user):
+
+- **Both passive and active** sales in the same slice (vs «only manual first» originally).
+- **Skip** is its own tier (`RecommendationTier.Skipped`), neutral, 0 gold, отдельный счётчик `SkippedCount` — НЕ `Failed`.
+- **Passive sales** не зависят от таймера: после каждой активной резолюции (включая Skip) сервис делает 0–2 попытки. Attempt #1 — 60% шанс; если успешно — attempt #2 — 40% шанс. Подбор — из `Available` книг полки с матчем по `LocationConfig.DemandGenres ∪ DemandTags`.
+- **End of day** — после фиксированной очереди (`DefaultActiveQueueSize = 5`).
+- **Without Save, without `DayProgressService`** — Sales standalone, in-memory state. Каждый `StartDayAsync` сбрасывает state.
+- **UI — на стороне пользователя**. Sales отдаёт всё через 4 события + DTO; никакого Unity-объекта в сборке `Book.Sell`.
+- **`ISalesRandom`** — порт над `UnityEngine.Random`, фейк-очередь в тестах для детерминизма.
+
+What landed:
+
+- **Config refactor**:
+  - `BookConfig` расширен полями `Tags: string[]`, `Mood: string[]`.
+  - `RequestConfig` **полностью заменён** на sales-shape (`Text`, `DesiredGenres/Tags/Mood`, `MaxPrice`, `Difficulty`, `BaseRewardGold`). Старая quest-форма (`bookId`/`rewardSoft`/`timeLimitSeconds`) удалена.
+  - `LocationConfig` расширен полями `DemandGenres: string[]`, `DemandTags: string[]`.
+- **Sample content** в `Assets/Configs/` — без real IP (никаких Dune/Hobbit):
+  - `books.json` — 8 вымышленных книг с заполненными `Tags`/`Mood`.
+  - `requests.json` — 5 sales-shape запросов с осмысленными `Text` и разными матчами/«trap» по `MaxPrice`.
+  - `locations.json` — 2 локации с `DemandGenres`/`DemandTags`. `loc_downtown` теги согласованы с `DayConfig.day_001` (`study`/`short`/`science`).
+- **`Book.Sell` assembly** (refs: UniTask, VContainer, Configs):
+  - `Domain/`: `SalesSessionSetup`, `SalesSessionState`, `SalesDayResult`, `RecommendationResult/Reason/Tier`, `ScoreBreakdown`, `ShelfBook(/State)`, `PassiveSaleEvent`.
+  - `Services/`: `ISalesRandom`+`UnityRandomSalesRandom`; `ISalesSetupProvider`+`DefaultSalesSetupProvider` (первая локация + первые 8 книг); `IRecommendationScoringService`+`RecommendationScoringService` (чистая логика с case-insensitive матчем); `IPassiveSaleSelector`+`DefaultPassiveSaleSelector`; `ISalesSessionService`+`SalesSessionService` (оркестрация + 4 события).
+- **DI** в `BookSellVContainerBindings` — все 5 сервисов как `Singleton`. `GameInstaller.RegisterBookSell()` уже вызывается.
+- **EditMode-тесты** (`Book.Sell.Tests.Editor`):
+  - `RecommendationScoringServiceTests` — 9 кейсов: exact match→Excellent, wrong→Failed, `MaxPrice<=0` skip price, over-budget no-price-bonus, location cap +1, Normal tier 3-5 gold = BasePrice, null location, matched-tags-in-reason, case-insensitive.
+  - `SalesSessionServiceTests` — 11 кейсов: первый ActiveRequestStarted, RecommendBook + advance, sold-out no-op, Skip → Skipped tier no gold no shelf change, оба порога пассивных → 2 fires, первый порог фейлится → 0 fires, второй порог фейлится → 1 fire, нет матча на полке → 0 fires, DayCompleted ровно 1 раз, очередь капится на `DefaultActiveQueueSize`, пустой setup → мгновенный DayCompleted, **event-order**: `started → resolved → passive → started`.
+
+Event flow по тику взаимодействия (фиксирован тестом):
+
+```
+RecommendBook(id) / SkipCurrentRequest()
+  → RecommendationResolved(result)
+  → PassiveSaleHappened × 0..2
+  → if queue empty → DayCompleted(result)
+       else        → ActiveRequestStarted(nextRequest)
+```
+
+Manual scene wiring (пользовательский UI, не коммитится кодом):
+
+1. В `GameplayScene` положить GameObject с пользовательским View-скриптом, у него `[Inject] ISalesSessionService` (resolve через `GameplayLifetimeScope.Auto Inject Game Objects` — туда добавить этот GameObject).
+2. View:
+   - подписывается на 4 события + рендерит `service.State.Shelf` (фильтр по `Available`);
+   - кнопка «Подтвердить» вызывает `service.RecommendBook(selectedBookId)`;
+   - кнопка «Ничего не предложить» вызывает `service.SkipCurrentRequest()`;
+   - `service.StartDayAsync(day: 1, ct)` в `Start()`.
+3. Запуск из `Bootstrap.unity` (уже настроен в прошлой итерации).
+
+Follow-ups (out of this slice):
+
+- Интеграция с `DayCycle.IDayProgressService` (передача `currentDay` и финализация наград в общий day-state).
+- Save для in-progress дня (модуль `book_sell.sales`).
+- Фаза Results — экран итогов поверх `SalesDayResult`.
+- Аналитика (`sales_opened`, `request_shown`, `book_recommended`, `recommendation_reason_shown`, `sales_completed`).
+- Подключение `Preparation` как реального источника `SalesSessionSetup` (заменяет `DefaultSalesSetupProvider`).
+- Учёт декора в scoring (поле `DecorIds` уже хранится).

@@ -1,18 +1,82 @@
 [
   {
-    "id": "book_dune",
-    "title": "Dune",
-    "author": "Frank Herbert",
+    "id": "book_red_greenhouse",
+    "title": "Красная теплица",
+    "author": "А. Линд",
     "genre": "sci-fi",
-    "basePrice": 120,
-    "rarityWeight": 0.2
+    "basePrice": 80,
+    "rarityWeight": 0.4,
+    "tags": ["space", "survival", "engineering"],
+    "mood": ["smart", "tense", "optimistic"]
   },
   {
-    "id": "book_hobbit",
-    "title": "The Hobbit",
-    "author": "J.R.R. Tolkien",
-    "genre": "fantasy",
+    "id": "book_quiet_orbit",
+    "title": "Тихая орбита",
+    "author": "Н. Доу",
+    "genre": "sci-fi",
+    "basePrice": 60,
+    "rarityWeight": 0.5,
+    "tags": ["space", "loneliness", "study"],
+    "mood": ["smart", "melancholic"]
+  },
+  {
+    "id": "book_lantern_letters",
+    "title": "Письма у фонаря",
+    "author": "М. Орвилл",
+    "genre": "mystery",
+    "basePrice": 70,
+    "rarityWeight": 0.4,
+    "tags": ["letters", "cozy", "small_town"],
+    "mood": ["cozy", "warm"]
+  },
+  {
+    "id": "book_grey_pier",
+    "title": "Серый пирс",
+    "author": "Р. Хант",
+    "genre": "mystery",
     "basePrice": 90,
-    "rarityWeight": 0.5
+    "rarityWeight": 0.3,
+    "tags": ["sea", "investigation", "rain"],
+    "mood": ["dark", "tense"]
+  },
+  {
+    "id": "book_summer_two_chapters",
+    "title": "Лето в двух главах",
+    "author": "Л. Прайс",
+    "genre": "romance",
+    "basePrice": 50,
+    "rarityWeight": 0.6,
+    "tags": ["short", "summer", "first_love"],
+    "mood": ["warm", "optimistic"]
+  },
+  {
+    "id": "book_north_window",
+    "title": "Северное окно",
+    "author": "К. Брун",
+    "genre": "romance",
+    "basePrice": 65,
+    "rarityWeight": 0.4,
+    "tags": ["loneliness", "winter", "letters"],
+    "mood": ["melancholic", "romantic"]
+  },
+  {
+    "id": "book_short_road",
+    "title": "Короткая дорога к Эйлуру",
+    "author": "Д. Векс",
+    "genre": "classic",
+    "basePrice": 100,
+    "rarityWeight": 0.2,
+    "tags": ["short", "philosophy", "study"],
+    "mood": ["smart", "warm"]
+  },
+  {
+    "id": "book_practical_horizons",
+    "title": "Практические горизонты",
+    "author": "Е. Шор",
+    "genre": "nonfiction",
+    "basePrice": 110,
+    "rarityWeight": 0.3,
+    "tags": ["science", "study", "history"],
+    "mood": ["smart", "optimistic"]
   }
 ]

@@ -1,14 +1,18 @@
 [
   {
     "id": "loc_downtown",
-    "displayName": "Downtown Store",
+    "displayName": "Центр / у университета",
     "unlockCost": 0,
-    "requiredLevel": 1
+    "requiredLevel": 1,
+    "demandGenres": ["sci-fi", "classic", "nonfiction"],
+    "demandTags": ["study", "short", "science"]
   },
   {
     "id": "loc_mall",
-    "displayName": "Shopping Mall",
+    "displayName": "Торговый центр",
     "unlockCost": 5000,
-    "requiredLevel": 5
+    "requiredLevel": 5,
+    "demandGenres": ["romance", "mystery"],
+    "demandTags": ["cozy", "summer", "letters"]
   }
 ]

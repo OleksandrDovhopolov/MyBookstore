@@ -1,7 +1,12 @@
 {
     "name": "Book.Sell",
     "rootNamespace": "Book.Sell",
-    "references": [],
+    "references": [
+        "UniTask",
+        "VContainer",
+        "Configs",
+        "Unity.TextMeshPro"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -14,6 +14,8 @@
 10. [Переходы между сценами — текущий статус](#10-переходы-между-сценами)
 11. [Диаграмма зависимостей](#11-диаграмма-зависимостей)
 12. [Что ещё не реализовано (TODO)](#12-что-ещё-не-реализовано)
+13. [Приложение: Reference из Research (для отложенных пунктов)](#13-приложение-reference-из-research-для-отложенных-пунктов)
+14. [Архитектурные альтернативы: почему `ILoadingOperation`, а не `ICommand`](#14-архитектурные-альтернативы-почему-iloadingoperation-а-не-icommand)
 
 ---
 
@@ -814,3 +816,62 @@ OrchestratorRunner.WaitUntilReadyAsync() → InitializeAsync() → tick/refresh 
 **Операция с Critical=false:** при провале — логируется, игра продолжается.
 
 > **Сравнение с MyBookstore:** см. реальные операции в разделе 6 и в `Assets/Game/Core/Bootstrap/Loading/Operations/`. Веса/таймауты/retry-policy в портированных операциях скопированы 1:1.
+
+---
+
+## 14. Архитектурные альтернативы: почему `ILoadingOperation`, а не `ICommand`
+
+В проекте есть два неконкурирующих, но архитектурно похожих «фундамента единицы работы»:
+
+- **`ICommand`** (сборки `Game.Commands.Abstractions` / `Game.Commands` / `Game.Http`) — общий контракт «единица работы» для фич и REST-запросов. См. `docs/README_Commands.md`. Используется в `Save` (`HttpSaveStorage`), `Configs` (`ServerConfigSource`, `GetConfigCommand`, `GetConfigsManifestCommand`).
+- **`ILoadingOperation`** (сборка `Game.Bootstrap.Loading`) — единица работы **только для бутстрапа**, со встроенными retry/timeout/critical/weight/displayPriority и агрегатором прогресса с EMA-сглаживанием.
+
+В референсном проекте Heroes (см. `docs/archive/heroes-loading-scene-transitions.md`) вся загрузка построена на `ICommand`: `IProgressQueueCommand` + `BoxCommandWithDependencies` + `DependentPhasesController<T>`. То есть один контракт для всего — загрузки, фич, HTTP.
+
+В MyBookstore выбран другой путь — Operation-based, источник миграции **Research**, а не Heroes. Решение зафиксировано в `docs/archive/pet-gap.md` §1, §7. Эта секция объясняет почему и когда стоит пересмотреть выбор.
+
+### Сравнение
+
+| Аспект | Heroes (`ICommand`-based) | MyBookstore (`ILoadingOperation`-based) |
+|---|---|---|
+| Базовый юнит | `ICommand` (общий с фича-командами и HTTP) | `ILoadingOperation` (loading-only) |
+| Координация | `DependentPhasesController<T>` + фазы-маяки | `LoadingPhase` → `LoadingGroup` → `Sequential/Parallel` |
+| Прогресс | очередь с весами; сумма по очередям руками | взвешенный агрегат + EMA-сглаживание встроены |
+| Retry / Timeout | пер-команда, через окно ошибок + UI | декларативно в `LoadingOperationBase` (RetryPolicy, Timeout, IsCritical) |
+| Ошибки | window-based (`ShowLoadingErrorWindowWithDelayedCallback`) | `LoadingFailure` + retry-loop в `Bootstrap.cs` |
+| Зависимости | Тянет `WindowsService`, `LinearLoadingTime`, `GameStateService` | Только `UniTask` + `UnityEngine.Debug` |
+| Тесты | завязаны на window-сервис и DI | `LoadingOrchestratorTests` — чистый NUnit, без Unity-зависимостей |
+
+### Аргументы за `ILoadingOperation` (текущий выбор)
+
+1. **Изолированный готовый блок.** Из `pet-gap.md` §1: «11 файлов ядра + 8 файлов операций, все в одном namespace `Game.Bootstrap.Loading`, внешних зависимостей нет кроме UniTask и UnityEngine.Debug.» Копируется одним заходом.
+2. **Встроенные UX-фичи прогресса** — взвешенный агрегат + EMA-сглаживание + `DisplayPriority` для параллельных операций. В Heroes эти вещи дописаны поверх Command-стека вручную.
+3. **Тестируемость** — `LoadingOrchestratorTests` покрывают retry, critical failure, timeout, monotone progress без Unity-зависимостей.
+4. **Размер задачи** — 3 фазы и 6 операций. На таком масштабе плюсы единого `ICommand` (один контракт во всём проекте) не окупают переписывание оркестратора и операций.
+
+### Аргументы за `ICommand` (отвергнутая альтернатива)
+
+1. **Один контракт «единицы работы» во всём проекте** — концептуально красиво. Сейчас загрузка живёт в своём «карантине», фича-команды — в `Game.Commands`.
+2. **`DependentPhasesController<T>`** даёт более гибкие зависимости, чем плоские группы. Полезно, когда фазы не просто Sequential/Parallel, а образуют граф (как при загрузке локаций в Heroes: `LoadLocalSave → FindServerUrl → CreateServerConnection → GetCatalogFromServer`).
+3. **`ICommandsFactory.GetProgressQueueCommand(...)`** из `Game.Commands` уже умеет делать очереди с весами — для in-game загрузок локаций он мог бы оказаться удобнее.
+
+### Когда пересмотреть решение
+
+1. **In-game loading локаций.** Когда `Sales`/`Preparation`-сцены перестанут быть простым `SceneManager.LoadSceneAsync(Single)` и начнут грузить контент локации (как `LoadLocationCommand` в Heroes раздел 4–5: PrimaryQueue + SecondaryQueue, зависимости между «UnloadCurrentScene → DownloadDependencies → LoadAndRunLocationCommand»). На таком масштабе `DependentPhasesController` может выиграть у плоских `LoadingPhase`. Сделать ADR с прямым сравнением.
+2. **Тяжёлая платёжно-серверная воронка на старте.** Если фаза `phase_data_load` дорастёт до 10+ операций с нетривиальным графом зависимостей (login → sync → static data → progress → seasons + UI props параллельно), и `LoadingGroup` начнёт «гнуться» — стоит посмотреть в сторону Heroes-style зависимостей.
+3. **Унификация UI-флоу ошибок.** Если появится централизованный `IErrorWindowService`, разумный шаг — повесить его на единый контракт (`ICommand` его уже имеет через `ICommandErrorReporter`).
+
+### Что НЕ является аргументом для перехода
+
+- «Чтобы было как в Heroes». Heroes — референсный проект, а не source-of-truth.
+- «Чтобы был один интерфейс». На текущем размере это эстетика, не функциональность.
+- «`ICommand` поддерживает HTTP». Подсистема Save/Configs/HTTP уже на `ICommand`, и пересечения с бутстрапом нет.
+
+### Итог
+
+Текущий выбор `ILoadingOperation` обоснован масштабом задачи и качеством готового кода из Research. Базовый `ICommand`-стек в проекте есть и работает (Save, Configs, Http) — он не конкурент `ILoadingOperation`, а инструмент для другого уровня (фичи, REST). Пересмотр стоит откладывать до момента, когда сложность загрузки превысит возможности `LoadingPhase`/`LoadingGroup` — это произойдёт **не раньше** реальной in-game загрузки локаций.
+
+Источники для ретроспективы:
+- `docs/README_Commands.md` — спецификация `ICommand`/`Game.Http`-стека.
+- `docs/archive/heroes-loading-scene-transitions.md` — полная картина Heroes-style загрузки на `ICommand`.
+- `docs/archive/pet-gap.md` §1, §7 — оригинальное решение взять Research-source.
