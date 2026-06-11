@@ -80,7 +80,14 @@ namespace Game.Logging.Tests.Editor
             Assert.That(target.CurrentFilePath, Is.Not.Null.And.Not.Empty);
             Assert.That(File.Exists(target.CurrentFilePath), Is.True);
 
-            var text = File.ReadAllText(target.CurrentFilePath);
+            // FileLogTarget держит файл открытым на запись с FileShare.ReadWrite (для «тейлинга»
+            // живого лога). Читаем с тем же режимом share, иначе на Windows — sharing violation.
+            string text;
+            using (var stream = new FileStream(target.CurrentFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var reader = new StreamReader(stream))
+            {
+                text = reader.ReadToEnd();
+            }
             Assert.That(text, Does.Contain("Player opened shop"));
             Assert.That(text, Does.Contain("[Information] [Gameplay]"));
         }
