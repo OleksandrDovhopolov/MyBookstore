@@ -1,7 +1,7 @@
-// Firebase-специфичная реализация Remote Config.
-// Включается define'ом BOOKSTORE_FIREBASE_RC ПОСЛЕ импорта FirebaseRemoteConfig_*.unitypackage
-// (Project Settings → Player → Scripting Define Symbols) и переключения регистрации
-// в ConfigsVContainerBindings. До этого активна NullRemoteConfigService — сборка не ломается.
+// Firebase-specific Remote Config implementation.
+// Enabled by the BOOKSTORE_FIREBASE_RC define AFTER importing FirebaseRemoteConfig_*.unitypackage
+// (Project Settings -> Player -> Scripting Define Symbols) and switching the registration
+// in ConfigsVContainerBindings. Until then NullRemoteConfigService is active — the build does not break.
 #if BOOKSTORE_FIREBASE_RC
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -42,13 +42,14 @@ namespace Game.Bootstrap
             value = null;
             if (!_ready)
             {
-                Debug.LogWarning($"[FirebaseRemoteConfigService] TryGetString('{key}') до InitializeAsync — RC ещё не активирован.");
+                Debug.LogWarning($"[FirebaseRemoteConfigService] TryGetString('{key}') before InitializeAsync — RC is not activated yet.");
                 return false;
             }
 
             var v = FirebaseRemoteConfig.DefaultInstance.GetValue(key);
             value = v.StringValue;
-            // Source: RemoteValue = пришло с сервера; StaticValue = ключа нет в RC вообще.
+
+            // Source: RemoteValue = came from the server; StaticValue = the key is absent in RC.
             Debug.Log($"[FirebaseRemoteConfigService] key='{key}' source={v.Source} value='{value}'");
             return !string.IsNullOrEmpty(value);
         }

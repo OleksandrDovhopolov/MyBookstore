@@ -6,12 +6,14 @@ namespace Game.Logging
     public sealed class LoggerSettings : ScriptableObject
     {
         [Header("Editor Defaults")]
+        [Tooltip("Defaults applied in the Unity Editor (Application.isEditor). Used when there is no runtime PlayerPrefs override (e.g. set via the Tools/Logging menu).")]
         [SerializeField] private bool _editorConsoleEnabled = true;
         [SerializeField] private bool _editorFileEnabled = false;
         [SerializeField] private LogLevel _editorConsoleMinimumLevel = LogLevel.Debug;
         [SerializeField] private LogLevel _editorFileMinimumLevel = LogLevel.Debug;
 
         [Header("Player Defaults")]
+        [Tooltip("Defaults applied in player / device builds. Used when there is no runtime PlayerPrefs override.")]
         [SerializeField] private bool _playerConsoleEnabled = true;
         [SerializeField] private bool _playerFileEnabled = true;
         [SerializeField] private LogLevel _playerConsoleMinimumLevel = LogLevel.Information;

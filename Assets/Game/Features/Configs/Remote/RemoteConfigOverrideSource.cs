@@ -5,12 +5,11 @@ using UnityEngine;
 namespace Game.Configs.Remote
 {
     /// <summary>
-    /// Override-слой поверх базовых конфигов через Firebase RC.
-    /// Конвенция ключей: RC-ключ "cfg_&lt;fileName&gt;" хранит JSON-объект
-    /// { "&lt;id&gt;": { ...partial... }, ... }. Partial мёржится поверх базового
-    /// объекта конфига в ConfigsService — это и есть точка A/B и таргетинга.
-    /// Подчёркивание (не точка) — потому что ключи Firebase RC допускают только
-    /// буквы, цифры и '_'.
+    /// Override layer on top of base configs via Firebase RC.
+    /// Key convention: the RC key "cfg_&lt;fileName&gt;" holds a JSON object
+    /// { "&lt;id&gt;": { ...partial... }, ... }. The partial is merged over the base
+    /// config object in ConfigsService — this is the A/B and targeting hook.
+    /// Underscore (not dot) because Firebase RC keys allow only letters, digits and '_'.
     /// </summary>
     public sealed class RemoteConfigOverrideSource : IConfigOverrideSource
     {
@@ -37,7 +36,7 @@ namespace Game.Configs.Remote
                 var token = JObject.Parse(raw)[id];
                 if (token == null)
                 {
-                    Debug.Log($"[RemoteConfigOverrideSource] '{KeyPrefix}{fileName}' есть, но нет записи для id='{id}'.");
+                    Debug.Log($"[RemoteConfigOverrideSource] '{KeyPrefix}{fileName}' present, but no entry for id='{id}'.");
                     return false;
                 }
 

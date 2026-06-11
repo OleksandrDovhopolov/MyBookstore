@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _editorConsoleEnabled: 1
   _editorFileEnabled: 1
-  _editorConsoleMinimumLevel: 1
+  _editorConsoleMinimumLevel: 2
   _editorFileMinimumLevel: 1
   _playerConsoleEnabled: 1
   _playerFileEnabled: 1
