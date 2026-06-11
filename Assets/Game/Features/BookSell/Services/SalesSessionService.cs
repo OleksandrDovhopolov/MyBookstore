@@ -124,6 +124,13 @@ namespace Book.Sell.Services
             CountTier(result.Tier);
             _result.Recommendations.Add(result);
 
+            // Log only on an actual sale — Failed gives the customer feedback but no book moves.
+            if (result.Tier == RecommendationTier.Normal || result.Tier == RecommendationTier.Excellent)
+            {
+                Debug.Log($"{LogPrefix} active sale: book={shelfBook.BookId}, tier={result.Tier}, " +
+                          $"gold={result.GoldEarned}, request={request.Id}");
+            }
+
             RecommendationResolved?.Invoke(result);
 
             TryFirePassiveSales();
@@ -224,9 +231,10 @@ namespace Book.Sell.Services
 
         private bool FireOnePassiveSale()
         {
-            var book = _passiveSelector.PickPassiveSale(_state.Shelf, _locationConfig, _random);
-            if (book == null) return false;
+            var candidate = _passiveSelector.PickPassiveSale(_state.Shelf, _locationConfig, _random);
+            if (candidate == null) return false;
 
+            var book = candidate.Book;
             book.State = ShelfBookState.SoldOut;
             var gold = book.Config.BasePrice;
 
@@ -235,10 +243,16 @@ namespace Book.Sell.Services
             _result.CustomersServed++;
             _result.SoldBookIds.Add(book.BookId);
 
-            var evt = new PassiveSaleEvent(book.BookId, gold);
+            var evt = new PassiveSaleEvent(book.BookId, gold, candidate.MatchedGenres, candidate.MatchedTags);
             _result.PassiveSales.Add(evt);
 
+            // PassiveSaleHappened must fire BEFORE this log so the event-order test stays green
+            // (the test asserts the resolved -> passive -> started sequence). Logging here keeps
+            // the order intact: subscribers see the event first; the log line is a side effect.
             PassiveSaleHappened?.Invoke(evt);
+
+            Debug.Log($"{LogPrefix} passive sale: book={book.BookId}, gold={gold}, " +
+                      $"location={_locationConfig?.Id}");
             return true;
         }
 

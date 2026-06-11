@@ -13,8 +13,9 @@ namespace Book.Sell.UI
 {
     /// <summary>
     /// Debug screen for the Sales phase: header + current-request panel + shelf grid + two
-    /// action buttons + feedback log + day-end panel. All logic lives in
-    /// <see cref="ISalesSessionService"/>; the view only renders snapshots and emits input.
+    /// action buttons + feedback log (a VerticalLayoutGroup of prefab entries) + day-end panel.
+    /// All logic lives in <see cref="ISalesSessionService"/>; the view only renders snapshots
+    /// and emits input.
     ///
     /// Scene placement: GameplayScene -> Canvas -> a GameObject with this script + child UI
     /// elements. Registered via RegisterComponentInHierarchy in BookSellVContainerBindings.
@@ -30,6 +31,7 @@ namespace Book.Sell.UI
         [Header("Active request")]
         [SerializeField] private GameObject _requestPanel;
         [SerializeField] private TMP_Text _requestText;
+        [SerializeField] private TMP_Text _difficultyLabel;     // "Difficulty: 3/5" — empty when Unknown
 
         [Header("Shelf (grid)")]
         [Tooltip("Container for book cards (typically a GridLayoutGroup or VerticalLayoutGroup).")]
@@ -40,8 +42,10 @@ namespace Book.Sell.UI
         [SerializeField] private Button _confirmButton;
         [SerializeField] private Button _skipButton;
 
-        [Header("Feedback log")]
-        [SerializeField] private TMP_Text _feedbackLog;
+        [Header("Feedback log (vertical list of prefab entries)")]
+        [Tooltip("Parent transform with a VerticalLayoutGroup. New entries are appended as children.")]
+        [SerializeField] private Transform _feedbackLogContainer;
+        [SerializeField] private FeedbackLogEntryView _feedbackLogEntryPrefab;
         [SerializeField] [Min(1)] private int _maxLogLines = 8;
 
         [Header("Day end")]
@@ -52,7 +56,7 @@ namespace Book.Sell.UI
         private ISalesSessionService _sales;
         private readonly CancellationTokenSource _cts = new();
         private readonly List<BookCardView> _cards = new();
-        private readonly Queue<string> _logLines = new();
+        private readonly Queue<FeedbackLogEntryView> _entries = new();
         private string _selectedBookId;
         private bool _interactionAllowed;
 
@@ -71,7 +75,7 @@ namespace Book.Sell.UI
             SetActionsInteractable(false);
             if (_dayEndPanel != null) _dayEndPanel.SetActive(false);
             if (_requestPanel != null) _requestPanel.SetActive(false);
-            if (_feedbackLog != null) _feedbackLog.text = "";
+            if (_difficultyLabel != null) _difficultyLabel.text = "";
         }
 
         private void Start()
@@ -107,6 +111,13 @@ namespace Book.Sell.UI
             if (_requestPanel != null) _requestPanel.SetActive(true);
             if (_requestText != null) _requestText.text = req.Text;
 
+            if (_difficultyLabel != null)
+            {
+                _difficultyLabel.text = req.Difficulty == RequestDifficulty.Unknown
+                    ? ""
+                    : $"Difficulty: {(int)req.Difficulty}/5";
+            }
+
             _selectedBookId = null;
             foreach (var c in _cards) c.SetSelected(false);
 
@@ -124,7 +135,7 @@ namespace Book.Sell.UI
                 FindCard(result.BookId)?.SetSoldOut(true);
             }
 
-            AppendLog(BuildResultLine(result));
+            AppendActiveEntry(result);
 
             // Input stays disabled between a resolved active request and the next one starting —
             // it is re-enabled by ActiveRequestStarted.
@@ -136,7 +147,16 @@ namespace Book.Sell.UI
         private void OnPassiveSaleHappened(PassiveSaleEvent evt)
         {
             FindCard(evt.BookId)?.SetSoldOut(true);
-            AppendLog($"<i>passive sale: {evt.BookId}  +{evt.GoldEarned}</i>");
+
+            var demand = new List<string>(evt.MatchedGenres.Count + evt.MatchedTags.Count);
+            demand.AddRange(evt.MatchedGenres);
+            demand.AddRange(evt.MatchedTags);
+            var demandSuffix = demand.Count > 0 ? $"  demand: {string.Join(", ", demand)}" : "";
+
+            AppendEntry(
+                FeedbackLogEntryView.EntryKind.PassiveSale,
+                $"<i>passive sale: {evt.BookId}  +{evt.GoldEarned}{demandSuffix}</i>");
+
             RefreshHeader();
         }
 
@@ -188,9 +208,11 @@ namespace Book.Sell.UI
         private void OnRestartClicked()
         {
             // Restart the day without reloading the scene.
-            ClearCards();
-            _logLines.Clear();
-            if (_feedbackLog != null) _feedbackLog.text = "";
+            // Note: Destroy is deferred to end-of-frame, but StartDayFlowAsync awaits StartDayAsync
+            // (which itself does not yield), so any new entries created inside StartDay will be added
+            // to the container BEFORE the old ones are physically removed. That is fine — the queue
+            // is logical, and the only risk would be visual overlap for one frame.
+            ClearEntries();
             if (_dayEndPanel != null) _dayEndPanel.SetActive(false);
             _selectedBookId = null;
             StartDayFlowAsync(_cts.Token).Forget();
@@ -226,19 +248,63 @@ namespace Book.Sell.UI
             return null;
         }
 
-        // ---------- log / header ----------
+        // ---------- feedback log ----------
 
-        private void AppendLog(string line)
+        private void AppendActiveEntry(RecommendationResult result)
         {
-            _logLines.Enqueue(line);
-            while (_logLines.Count > _maxLogLines) _logLines.Dequeue();
-            if (_feedbackLog != null) _feedbackLog.text = string.Join("\n", _logLines);
+            FeedbackLogEntryView.EntryKind kind;
+            string text;
+
+            switch (result.Tier)
+            {
+                case RecommendationTier.Excellent:
+                    kind = FeedbackLogEntryView.EntryKind.ActiveExcellent;
+                    text = BuildResultLine(result);
+                    break;
+                case RecommendationTier.Normal:
+                    kind = FeedbackLogEntryView.EntryKind.ActiveNormal;
+                    text = BuildResultLine(result);
+                    break;
+                case RecommendationTier.Failed:
+                    kind = FeedbackLogEntryView.EntryKind.ActiveFailed;
+                    text = BuildResultLine(result);
+                    break;
+                case RecommendationTier.Skipped:
+                default:
+                    kind = FeedbackLogEntryView.EntryKind.ActiveSkipped;
+                    text = "<i>— nothing offered</i>";
+                    break;
+            }
+
+            AppendEntry(kind, text);
+        }
+
+        private void AppendEntry(FeedbackLogEntryView.EntryKind kind, string text)
+        {
+            if (_feedbackLogEntryPrefab == null || _feedbackLogContainer == null) return;
+
+            var entry = Instantiate(_feedbackLogEntryPrefab, _feedbackLogContainer);
+            entry.Bind(kind, text);
+            _entries.Enqueue(entry);
+
+            while (_entries.Count > _maxLogLines)
+            {
+                var oldest = _entries.Dequeue();
+                if (oldest != null) Destroy(oldest.gameObject);
+            }
+        }
+
+        private void ClearEntries()
+        {
+            while (_entries.Count > 0)
+            {
+                var e = _entries.Dequeue();
+                if (e != null) Destroy(e.gameObject);
+            }
         }
 
         private string BuildResultLine(RecommendationResult result)
         {
-            if (result.Tier == RecommendationTier.Skipped) return "<i>— nothing offered</i>";
-
             var tierLabel = result.Tier switch
             {
                 RecommendationTier.Excellent => "<b>Excellent</b>",

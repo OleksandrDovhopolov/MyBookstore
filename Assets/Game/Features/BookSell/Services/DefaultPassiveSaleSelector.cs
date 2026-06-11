@@ -8,55 +8,69 @@ namespace Book.Sell.Services
     /// <inheritdoc cref="IPassiveSaleSelector"/>
     public sealed class DefaultPassiveSaleSelector : IPassiveSaleSelector
     {
-        public ShelfBook PickPassiveSale(IReadOnlyList<ShelfBook> shelf, LocationConfig location, ISalesRandom random)
+        public PassiveSaleCandidate PickPassiveSale(
+            IReadOnlyList<ShelfBook> shelf,
+            LocationConfig location,
+            ISalesRandom random)
         {
             if (shelf == null || shelf.Count == 0 || location == null || random == null)
                 return null;
 
-            // Collect candidates: Available + matches either DemandGenres or DemandTags.
-            var candidates = new List<ShelfBook>(shelf.Count);
+            // Collect candidates together with the demand items they matched.
+            var candidates = new List<(ShelfBook book, List<string> genres, List<string> tags)>(shelf.Count);
             for (var i = 0; i < shelf.Count; i++)
             {
                 var book = shelf[i];
                 if (book.State != ShelfBookState.Available) continue;
-                if (MatchesLocationDemand(book, location))
-                    candidates.Add(book);
+
+                var matchedGenres = CollectGenreMatches(book.Config.Genre, location.DemandGenres);
+                var matchedTags = CollectTagMatches(book.Config.Tags, location.DemandTags);
+
+                if (matchedGenres.Count > 0 || matchedTags.Count > 0)
+                    candidates.Add((book, matchedGenres, matchedTags));
             }
 
             if (candidates.Count == 0) return null;
 
             var index = random.Range(0, candidates.Count);
-            return candidates[index];
+            var picked = candidates[index];
+            return new PassiveSaleCandidate(picked.book, picked.genres, picked.tags);
         }
 
-        private static bool MatchesLocationDemand(ShelfBook book, LocationConfig location)
+        private static List<string> CollectGenreMatches(string bookGenre, string[] demandGenres)
         {
-            var cfg = book.Config;
-
-            if (location.DemandGenres != null && !string.IsNullOrEmpty(cfg.Genre))
+            var matched = new List<string>();
+            if (demandGenres == null || string.IsNullOrEmpty(bookGenre)) return matched;
+            foreach (var g in demandGenres)
             {
-                foreach (var g in location.DemandGenres)
+                if (string.IsNullOrEmpty(g)) continue;
+                if (string.Equals(g, bookGenre, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals(g, cfg.Genre, StringComparison.OrdinalIgnoreCase))
-                        return true;
+                    matched.Add(g);
+                    break;  // a book has exactly one Genre — at most one match
                 }
             }
+            return matched;
+        }
 
-            if (location.DemandTags != null && cfg.Tags != null)
+        private static List<string> CollectTagMatches(string[] bookTags, string[] demandTags)
+        {
+            var matched = new List<string>();
+            if (demandTags == null || bookTags == null) return matched;
+            foreach (var d in demandTags)
             {
-                foreach (var lt in location.DemandTags)
+                if (string.IsNullOrEmpty(d)) continue;
+                foreach (var b in bookTags)
                 {
-                    if (string.IsNullOrEmpty(lt)) continue;
-                    foreach (var bt in cfg.Tags)
+                    if (string.IsNullOrEmpty(b)) continue;
+                    if (string.Equals(d, b, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (string.IsNullOrEmpty(bt)) continue;
-                        if (string.Equals(lt, bt, StringComparison.OrdinalIgnoreCase))
-                            return true;
+                        matched.Add(d);
+                        break;
                     }
                 }
             }
-
-            return false;
+            return matched;
         }
     }
 }
