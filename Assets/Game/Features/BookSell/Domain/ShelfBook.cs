@@ -3,8 +3,9 @@ using Game.Configs.Models;
 namespace Book.Sell.Domain
 {
     /// <summary>
-    /// Книга на дневной полке. Снимок <see cref="BookConfig"/> + состояние (Available/SoldOut).
-    /// Один экземпляр на книгу в рамках MVP: после продажи (активной или пассивной) — SoldOut до конца дня.
+    /// A book sitting on the daily shelf. Snapshot of <see cref="BookConfig"/> + a runtime state
+    /// flag (Available / SoldOut). One copy per book for the MVP: after a sale (active or passive)
+    /// the book is SoldOut for the rest of the day.
     /// </summary>
     public sealed class ShelfBook
     {

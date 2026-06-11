@@ -5,12 +5,13 @@ using Game.Configs.Models;
 namespace Book.Sell.Services
 {
     /// <summary>
-    /// Выбор книги для фоновой («пассивной») продажи: подходит ли что-то с полки под спрос локации.
+    /// Picks a book for a passive ("background") sale: any shelf book that matches the
+    /// current location's demand.
     /// </summary>
     public interface IPassiveSaleSelector
     {
         /// <summary>
-        /// Возвращает книгу для пассивной продажи или null, если на полке нет ничего, что матчит спрос локации.
+        /// Returns a book to sell passively, or null when nothing on the shelf matches the location's demand.
         /// </summary>
         ShelfBook PickPassiveSale(IReadOnlyList<ShelfBook> shelf, LocationConfig location, ISalesRandom random);
     }

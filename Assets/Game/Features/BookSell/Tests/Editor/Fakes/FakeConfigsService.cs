@@ -7,7 +7,7 @@ using Game.Configs;
 
 namespace Book.Sell.Tests.Editor.Fakes
 {
-    /// <summary>Минимальный фейк IConfigsService под нужды Sales-тестов: задаём листы по типу.</summary>
+    /// <summary>Minimal IConfigsService fake for Sales tests: lists are set per type.</summary>
     public sealed class FakeConfigsService : IConfigsService
     {
         private readonly Dictionary<Type, IReadOnlyList<IConfig>> _byType = new();

@@ -29,7 +29,7 @@ namespace Book.Sell.Tests.Editor
 
         private static RequestConfig SciReq(string id) => new()
         {
-            Id = id, Text = $"запрос {id}",
+            Id = id, Text = $"request {id}",
             DesiredGenres = new[] { "sci-fi" },
             DesiredTags = new[] { "space", "survival" },
             DesiredMood = new[] { "smart" },
@@ -86,7 +86,7 @@ namespace Book.Sell.Tests.Editor
                 requests: new[] { SciReq("r1"), SciReq("r2") },
                 location: Uni());
 
-            // никаких пассивных — день не начинался
+            // no passive sales — the day has not started yet
             h.Random.EnqueueDouble(0.99, 0.99);
 
             h.StartDay();
@@ -105,7 +105,7 @@ namespace Book.Sell.Tests.Editor
                 new[] { SciReq("r1"), SciReq("r2") },
                 Uni());
 
-            // оба тика — без пассивных
+            // both ticks — no passive sales
             h.Random.EnqueueDouble(0.99, 0.99);
 
             h.StartDay();
@@ -134,10 +134,10 @@ namespace Book.Sell.Tests.Editor
             h.Service.RecommendBook("b1");
             var resolvedBefore = h.Resolved.Count;
 
-            // повторная попытка — игнор
+            // second attempt — ignored
             h.Service.RecommendBook("b1");
 
-            Assert.AreEqual(resolvedBefore, h.Resolved.Count, "Sold-out книга не должна резолвиться повторно.");
+            Assert.AreEqual(resolvedBefore, h.Resolved.Count, "A sold-out book must not resolve again.");
         }
 
         [Test]
@@ -158,26 +158,26 @@ namespace Book.Sell.Tests.Editor
             Assert.IsNull(h.Resolved[0].BookId);
             Assert.AreEqual(0, h.Service.AccumulatedResult.GoldEarned);
             Assert.AreEqual(1, h.Service.AccumulatedResult.SkippedCount);
-            Assert.AreEqual(ShelfBookState.Available, h.Service.State.Shelf[0].State, "Skip не трогает полку.");
+            Assert.AreEqual(ShelfBookState.Available, h.Service.State.Shelf[0].State, "Skip does not touch the shelf.");
         }
 
         [Test]
         public void PassiveSales_BothThresholdsTriggered_AndShelfHasMatch_FiresTwo()
         {
-            // 3 матчевых книги, 3 запроса (хватит на серию)
+            // 3 matching books, 3 requests (enough for the whole tick)
             var h = new Harness(
                 new[] { Sci("b1"), Sci("b2"), Sci("b3") },
                 new[] { SciReq("r1"), SciReq("r2"), SciReq("r3") },
                 Uni());
 
-            // На первом тике: NextDouble #1=0.5 < 0.6 (attempt #1 ок), NextDouble #2=0.3 < 0.4 (attempt #2 ок)
-            // Range вернёт первый кандидат и так
-            h.Random.EnqueueDouble(0.5, 0.3, /* следующие тики не нужны */ 0.99, 0.99, 0.99);
+            // First tick: NextDouble #1 = 0.5 < 0.6 (attempt #1 OK), NextDouble #2 = 0.3 < 0.4 (attempt #2 OK).
+            // Range returns the first candidate regardless.
+            h.Random.EnqueueDouble(0.5, 0.3, /* following ticks unused */ 0.99, 0.99, 0.99);
 
             h.StartDay();
-            h.Service.RecommendBook("b1"); // b1 sold_out по активной + 2 passive fire
+            h.Service.RecommendBook("b1"); // b1 sold via active + 2 passive sales fire
 
-            Assert.AreEqual(2, h.Passive.Count, "При двух матчевых порогах и наличии кандидатов — ровно 2 пассивные.");
+            Assert.AreEqual(2, h.Passive.Count, "Two passing thresholds with candidates available -> exactly 2 passive sales.");
         }
 
         [Test]
@@ -188,7 +188,7 @@ namespace Book.Sell.Tests.Editor
                 new[] { SciReq("r1"), SciReq("r2") },
                 Uni());
 
-            // NextDouble #1 = 0.7 >= 0.6 → попытка #1 даже не запускается
+            // NextDouble #1 = 0.7 >= 0.6 -> attempt #1 does not even start
             h.Random.EnqueueDouble(0.7, 0.7);
 
             h.StartDay();
@@ -205,7 +205,7 @@ namespace Book.Sell.Tests.Editor
                 new[] { SciReq("r1"), SciReq("r2") },
                 Uni());
 
-            // attempt #1: 0.3 < 0.6 → запускаем, успех; attempt #2: 0.7 >= 0.4 → не запускаем
+            // attempt #1: 0.3 < 0.6 -> start, success; attempt #2: 0.7 >= 0.4 -> do not start
             h.Random.EnqueueDouble(0.3, 0.7, 0.99, 0.99);
 
             h.StartDay();
@@ -217,25 +217,25 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void PassiveSales_NoMatchingBooksOnShelf_FiresZero_EvenIfThresholdsPass()
         {
-            // На полке только romance — Uni demand'у не матчит
+            // The shelf only has romance — Uni demand does not match.
             var h = new Harness(
                 new[] { Off("o1"), Off("o2") },
                 new[] { SciReq("r1"), SciReq("r2") },
                 Uni());
 
-            // На активный запрос нечего предложить (romance vs sci-fi) — Skip, и оба порога «успешны»
+            // Nothing matches the active request (romance vs sci-fi) -> Skip, and both thresholds "succeed".
             h.Random.EnqueueDouble(0.0, 0.0, 0.99, 0.99);
 
             h.StartDay();
             h.Service.SkipCurrentRequest();
 
-            Assert.AreEqual(0, h.Passive.Count, "Без матча на полке пассивная не срабатывает даже при удачных порогах.");
+            Assert.AreEqual(0, h.Passive.Count, "Without a matching shelf book passive sales must not fire even with lucky thresholds.");
         }
 
         [Test]
         public void DayCompleted_FiresOnce_AfterLastActiveResolved()
         {
-            // 2 запроса, по skip каждому — день завершён
+            // Two requests, skip both -> the day is over.
             var h = new Harness(
                 new[] { Sci("b1"), Sci("b2") },
                 new[] { SciReq("r1"), SciReq("r2") },
@@ -249,14 +249,14 @@ namespace Book.Sell.Tests.Editor
 
             Assert.AreEqual(1, h.DayCompleted.Count);
             Assert.IsTrue(h.Service.State.DayCompleted);
-            // После DayCompleted ActiveRequestStarted больше не эмитится сверх 2 запросов
+            // After DayCompleted no extra ActiveRequestStarted is emitted past the 2 requests.
             Assert.AreEqual(2, h.ActiveStarted.Count);
         }
 
         [Test]
         public void ActiveQueue_LimitedTo_DefaultSize()
         {
-            // 10 запросов в конфиге, но в день берётся ровно DefaultActiveQueueSize (5)
+            // 10 requests in config, but a day takes exactly DefaultActiveQueueSize (5).
             var requests = Enumerable.Range(1, 10).Select(i => SciReq($"r{i}")).ToArray();
             var h = new Harness(
                 new[] { Sci("b1"), Sci("b2"), Sci("b3"), Sci("b4"), Sci("b5") },
@@ -284,7 +284,7 @@ namespace Book.Sell.Tests.Editor
             h.StartDay();
 
             Assert.AreEqual(0, h.ActiveStarted.Count);
-            Assert.AreEqual(1, h.DayCompleted.Count, "Пустая очередь → день сразу завершён.");
+            Assert.AreEqual(1, h.DayCompleted.Count, "Empty queue -> the day completes immediately.");
         }
 
         [Test]
@@ -295,19 +295,19 @@ namespace Book.Sell.Tests.Editor
                 new[] { SciReq("r1"), SciReq("r2") },
                 Uni());
 
-            // Одна пассивная после первого активного
+            // One passive sale after the first active resolution.
             h.Random.EnqueueDouble(0.3, 0.7, 0.99, 0.99);
 
-            // лента событий
+            // Event ledger.
             var log = new List<string>();
             h.Service.RecommendationResolved += _ => log.Add("resolved");
             h.Service.PassiveSaleHappened += _ => log.Add("passive");
             h.Service.ActiveRequestStarted += _ => log.Add("started");
 
-            h.StartDay();              // started r1
-            h.Service.RecommendBook("b1"); // resolved → passive → started r2
+            h.StartDay();                  // started r1
+            h.Service.RecommendBook("b1"); // resolved -> passive -> started r2
 
-            // первая запись — started (r1) случилась в StartDay
+            // The first "started" entry fired inside StartDay.
             CollectionAssert.AreEqual(new[] { "started", "resolved", "passive", "started" }, log);
         }
     }

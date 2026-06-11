@@ -7,9 +7,9 @@ using UnityEngine.UI;
 namespace Book.Sell.UI
 {
     /// <summary>
-    /// Карточка одной книги на полке. Префаб, который инстансится <see cref="SalesScreenView"/>
-    /// в grid-контейнер по одной на каждую <see cref="Domain.ShelfBook"/>.
-    /// Состояния: Available (можно нажать) / Selected (подсветка) / SoldOut (затемнённая, не нажимается).
+    /// A single book card inside the shelf grid. <see cref="SalesScreenView"/> instantiates one
+    /// per <see cref="Domain.ShelfBook"/>. States: Available (clickable) / Selected (highlighted)
+    /// / SoldOut (dimmed and non-interactable).
     /// </summary>
     public sealed class BookCardView : MonoBehaviour
     {
@@ -18,16 +18,16 @@ namespace Book.Sell.UI
         [SerializeField] private TMP_Text _authorLabel;
         [SerializeField] private TMP_Text _genreLabel;
         [SerializeField] private TMP_Text _priceLabel;
-        [SerializeField] private TMP_Text _tagsLabel;     // опционально: можно не подключать
+        [SerializeField] private TMP_Text _tagsLabel;     // optional, can be left unassigned
 
         [Header("Interaction")]
         [SerializeField] private Button _button;
-        [SerializeField] private GameObject _selectedHighlight; // обводка/рамка для selected-состояния
+        [SerializeField] private GameObject _selectedHighlight; // border/glow shown in the Selected state
 
         [Header("Visual states")]
-        [Tooltip("Прозрачность карточки при sold-out. 1 = непрозрачно, 0.4 = типично затемнено.")]
+        [Tooltip("Card opacity when sold out. 1 = opaque, 0.4 = typical dim.")]
         [SerializeField] [Range(0f, 1f)] private float _soldOutAlpha = 0.4f;
-        [SerializeField] private CanvasGroup _canvasGroup;      // ставится автоматически при Awake, если не назначен
+        [SerializeField] private CanvasGroup _canvasGroup;      // auto-resolved in Awake if left unassigned
 
         private Action<string> _onClicked;
         public string BookId { get; private set; }

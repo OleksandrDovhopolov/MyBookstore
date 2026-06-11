@@ -1,14 +1,15 @@
 namespace Book.Sell.Domain
 {
     /// <summary>
-    /// Итог одной активной интеракции с клиентом: какую книгу выбрал (или null если Skip),
-    /// какой tier, сколько gold принёс. Скоринговые детали — в <see cref="Breakdown"/> и <see cref="Reason"/>.
+    /// Result of one active customer interaction: which book the player handed over
+    /// (or null if they skipped), the score tier, and how much gold was earned. Scoring
+    /// internals live in <see cref="Breakdown"/> and <see cref="Reason"/>.
     /// </summary>
     public sealed class RecommendationResult
     {
         public string RequestId { get; }
 
-        /// <summary>id книги или null, если игрок выбрал Skip.</summary>
+        /// <summary>Book id, or null when the player chose to skip the request.</summary>
         public string BookId { get; }
 
         public RecommendationTier Tier { get; }

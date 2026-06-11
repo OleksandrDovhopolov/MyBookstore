@@ -4,14 +4,14 @@ using Book.Sell.Services;
 namespace Book.Sell.Tests.Editor.Fakes
 {
     /// <summary>
-    /// Детерминированный фейк: задаёт очередь значений для NextDouble и Range.
-    /// Если очередь пуста — возвращает «дефолт-фейл» (NextDouble = 0.99, Range = min),
-    /// чтобы тесты падали явно вместо случайного прохождения.
+    /// Deterministic fake: feeds a fixed queue of values for NextDouble and Range.
+    /// If the queue is empty, falls back to a "definite fail" (NextDouble = 0.99, Range = min)
+    /// so tests fail explicitly instead of passing by accident.
     /// </summary>
     public sealed class FakeSalesRandom : ISalesRandom
     {
         private readonly Queue<double> _doubles = new();
-        private readonly Queue<int> _rangeOffsets = new(); // относительный index в [0, count)
+        private readonly Queue<int> _rangeOffsets = new(); // relative index in [0, count)
 
         public FakeSalesRandom EnqueueDouble(params double[] values)
         {
@@ -31,7 +31,7 @@ namespace Book.Sell.Tests.Editor.Fakes
             var off = _rangeOffsets.Dequeue();
             var size = maxExclusive - minInclusive;
             if (size <= 0) return minInclusive;
-            // зажимаем в диапазон
+            // clamp into range
             if (off < 0) off = 0;
             if (off >= size) off = size - 1;
             return minInclusive + off;

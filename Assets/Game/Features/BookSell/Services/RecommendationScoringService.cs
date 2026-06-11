@@ -12,7 +12,7 @@ namespace Book.Sell.Services
         public const int TagMatchPoints = 2;
         public const int MoodMatchPoints = 1;
         public const int PriceMatchPoints = 1;
-        public const int LocationBonusPoints = 1;   // капится в +1, даже если матчей по жанру + тегам несколько
+        public const int LocationBonusPoints = 1;   // capped at +1 even if both genre and tag match the location
 
         public RecommendationResult Score(BookConfig book, RequestConfig request, LocationConfig location)
         {
@@ -54,7 +54,7 @@ namespace Book.Sell.Services
             {
                 case RecommendationTier.Excellent: return book.BasePrice + request.BaseRewardGold;
                 case RecommendationTier.Normal: return book.BasePrice;
-                default: return 0;  // Failed, Skipped — без награды
+                default: return 0;  // Failed, Skipped — no reward
             }
         }
 

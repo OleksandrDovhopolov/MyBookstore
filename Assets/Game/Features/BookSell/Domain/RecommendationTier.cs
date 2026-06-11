@@ -1,9 +1,9 @@
 namespace Book.Sell.Domain
 {
     /// <summary>
-    /// Категория результата рекомендации. Скоринг даёт три tier'а по score
-    /// (0-2 Failed / 3-5 Normal / 6+ Excellent). Skip — отдельный tier:
-    /// игрок честно отказал клиенту, это НЕ Failed.
+    /// Outcome category for a recommendation. Scoring produces three tiers by score
+    /// (0-2 Failed / 3-5 Normal / 6+ Excellent). Skip is a fourth, non-scoring tier:
+    /// the player honestly declined to recommend anything. NOT the same as Failed.
     /// </summary>
     public enum RecommendationTier
     {

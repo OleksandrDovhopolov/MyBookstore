@@ -1,7 +1,8 @@
 namespace Book.Sell.Domain
 {
     /// <summary>
-    /// Фоновая продажа: книга ушла «сама» по матчу со спросом локации. UI рисует short toast.
+    /// A background ("passive") sale: a book left the shelf on its own because it matched
+    /// the location's demand. The UI typically renders this as a short toast / log line.
     /// </summary>
     public sealed class PassiveSaleEvent
     {

@@ -3,15 +3,16 @@ using System.Collections.Generic;
 namespace Book.Sell.Domain
 {
     /// <summary>
-    /// Итог дня продажи. Будущая фаза Results потребляет это; пока — для логов и тестов.
+    /// End-of-day summary of the Sales phase. Future Results phase will consume this;
+    /// for now it feeds the debug log and the EditMode tests.
     /// </summary>
     public sealed class SalesDayResult
     {
         public int Day { get; set; }
 
-        public int CustomersServed { get; set; }       // активные + пассивные
-        public int ManualRequests { get; set; }        // только активные (включая Skipped)
-        public int SalesCount { get; set; }            // фактически проданные книги (Normal + Excellent + пассивные)
+        public int CustomersServed { get; set; }       // active + passive
+        public int ManualRequests { get; set; }        // active only (including Skipped)
+        public int SalesCount { get; set; }            // books actually sold (Normal + Excellent + passive)
         public int GoldEarned { get; set; }
 
         public int ExcellentCount { get; set; }

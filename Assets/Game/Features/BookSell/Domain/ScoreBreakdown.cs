@@ -1,8 +1,8 @@
 namespace Book.Sell.Domain
 {
     /// <summary>
-    /// Покомпонентный разбор очков рекомендации. Сумма = <see cref="Total"/>.
-    /// Сохраняем отдельно для UI («совпало: жанр + 2 тега») и тестов.
+    /// Per-component breakdown of a recommendation's score. Sum equals <see cref="Total"/>.
+    /// Kept separate so the UI can show "matched: genre + 2 tags" and the tests can assert.
     /// </summary>
     public readonly struct ScoreBreakdown
     {

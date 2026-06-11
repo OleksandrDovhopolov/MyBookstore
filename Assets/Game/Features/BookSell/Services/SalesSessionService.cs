@@ -15,9 +15,9 @@ namespace Book.Sell.Services
         private const string LogPrefix = "[Sales.Session]";
         public const int DefaultActiveQueueSize = 5;
 
-        // Тригерные пороги для пассивных продаж. Внутри 0..1: чем меньше — тем чаще пассивная.
-        public const double PassiveAttempt1Threshold = 0.6;   // 60% шанс попробовать первую
-        public const double PassiveAttempt2Threshold = 0.4;   // 40% шанс попробовать вторую (только если первая успешна)
+        // Trigger thresholds for passive sales. Lower = more likely to fire.
+        public const double PassiveAttempt1Threshold = 0.6;   // 60% chance to attempt the first one
+        public const double PassiveAttempt2Threshold = 0.4;   // 40% chance to attempt the second one (only if the first succeeded)
 
         private readonly IConfigsService _configs;
         private readonly ISalesSetupProvider _setupProvider;
@@ -75,7 +75,7 @@ namespace Book.Sell.Services
 
             if (_state.ActiveQueue.Count == 0)
             {
-                Debug.LogWarning($"{LogPrefix} Очередь активных запросов пуста — день сразу завершён.");
+                Debug.LogWarning($"{LogPrefix} Active queue is empty — completing the day immediately.");
                 _state.DayCompleted = true;
                 DayCompleted?.Invoke(_result);
                 return UniTask.CompletedTask;
@@ -91,26 +91,26 @@ namespace Book.Sell.Services
             if (!EnsureActiveRequest(out var request)) return;
             if (string.IsNullOrEmpty(bookId))
             {
-                Debug.LogWarning($"{LogPrefix} RecommendBook(null) — игнорируем.");
+                Debug.LogWarning($"{LogPrefix} RecommendBook(null) — ignored.");
                 return;
             }
 
             var shelfBook = FindShelfBook(bookId);
             if (shelfBook == null)
             {
-                Debug.LogWarning($"{LogPrefix} bookId='{bookId}' нет на полке — игнорируем.");
+                Debug.LogWarning($"{LogPrefix} bookId='{bookId}' is not on the shelf — ignored.");
                 return;
             }
             if (shelfBook.State == ShelfBookState.SoldOut)
             {
-                Debug.LogWarning($"{LogPrefix} bookId='{bookId}' уже sold_out — игнорируем.");
+                Debug.LogWarning($"{LogPrefix} bookId='{bookId}' is already sold out — ignored.");
                 return;
             }
 
             var result = _scoring.Score(shelfBook.Config, request, _locationConfig);
 
-            // Failed — тоже даёт обратную связь клиенту, но книга НЕ продаётся.
-            // Normal/Excellent — продажа.
+            // Failed still gives the customer feedback but the book is NOT sold.
+            // Normal / Excellent — the book is sold.
             if (result.Tier == RecommendationTier.Normal || result.Tier == RecommendationTier.Excellent)
             {
                 shelfBook.State = ShelfBookState.SoldOut;
@@ -162,7 +162,7 @@ namespace Book.Sell.Services
                 var book = _configs.Get<BookConfig>(ids[i]);
                 if (book == null)
                 {
-                    Debug.LogWarning($"{LogPrefix} BookConfig '{ids[i]}' не найден — пропускаю.");
+                    Debug.LogWarning($"{LogPrefix} BookConfig '{ids[i]}' not found — skipping.");
                     continue;
                 }
                 _state.Shelf.Add(new ShelfBook(book));
@@ -172,8 +172,8 @@ namespace Book.Sell.Services
         private void BuildActiveQueue(int targetSize)
         {
             var allRequests = _configs.GetAll<RequestConfig>();
-            // Берём первые targetSize в порядке конфига (детерминированно).
-            // Когда появится Утро/Подготовка — селекция может стать сложнее.
+            // Take the first targetSize requests in config order (deterministic).
+            // Once Morning/Preparation are wired in, selection can become smarter.
             for (var i = 0; i < allRequests.Count && _state.ActiveQueue.Count < targetSize; i++)
             {
                 _state.ActiveQueue.Add(allRequests[i]);
@@ -185,7 +185,7 @@ namespace Book.Sell.Services
             request = CurrentRequest;
             if (request == null)
             {
-                Debug.LogWarning($"{LogPrefix} Нет активного запроса. StartDay не вызван или день уже завершён.");
+                Debug.LogWarning($"{LogPrefix} No active request. StartDay was not called or the day is already completed.");
                 return false;
             }
             return true;
@@ -213,11 +213,11 @@ namespace Book.Sell.Services
 
         private void TryFirePassiveSales()
         {
-            // Attempt #1: 60% шанс.
+            // Attempt #1: 60% chance.
             if (_random.NextDouble() >= PassiveAttempt1Threshold) return;
             if (!FireOnePassiveSale()) return;
 
-            // Attempt #2 — только если первая прошла: 40% шанс.
+            // Attempt #2 — only if #1 succeeded: 40% chance.
             if (_random.NextDouble() >= PassiveAttempt2Threshold) return;
             FireOnePassiveSale();
         }

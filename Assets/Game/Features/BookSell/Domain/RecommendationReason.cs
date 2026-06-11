@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace Book.Sell.Domain
 {
     /// <summary>
-    /// «Человеческое объяснение» результата рекомендации: какие именно жанры/теги/тон
-    /// совпали + есть ли бонус локации + укладывается ли в бюджет.
-    /// View собирает из этого читаемую фразу.
+    /// Human-readable breakdown of why a recommendation got its score: which genres / tags /
+    /// mood actually matched + whether the price fits the customer's budget + whether the
+    /// current location amplified the genre or any tag. View builds a readable sentence from this.
     /// </summary>
     public sealed class RecommendationReason
     {

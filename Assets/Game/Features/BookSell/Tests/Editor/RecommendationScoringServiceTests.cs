@@ -42,7 +42,7 @@ namespace Book.Sell.Tests.Editor
         {
             var result = Sut().Score(SciFiBook(), SciFiRequest(), University());
 
-            // genre +3, tag 3×2=6, mood 3×1=3, price +1, location +1 = 14
+            // genre +3, tag 3*2=6, mood 3*1=3, price +1, location +1 = 14
             Assert.AreEqual(RecommendationTier.Excellent, result.Tier);
             Assert.AreEqual(3, result.Breakdown.GenrePoints);
             Assert.AreEqual(6, result.Breakdown.TagPoints);
@@ -60,7 +60,7 @@ namespace Book.Sell.Tests.Editor
             var req = new RequestConfig { Id = "r1", DesiredGenres = new[] { "sci-fi" }, MaxPrice = 100 };
             var result = Sut().Score(book, req, null);
 
-            // только price +1 = 1
+            // only price +1 = 1
             Assert.AreEqual(RecommendationTier.Failed, result.Tier);
             Assert.AreEqual(0, result.GoldEarned);
         }
@@ -71,7 +71,7 @@ namespace Book.Sell.Tests.Editor
             var req = SciFiRequest(maxPrice: 0);
             var result = Sut().Score(SciFiBook(), req, null);
 
-            Assert.AreEqual(0, result.Breakdown.PricePoints, "MaxPrice<=0 → price scoring пропущен.");
+            Assert.AreEqual(0, result.Breakdown.PricePoints, "MaxPrice<=0 -> price scoring is skipped.");
             Assert.IsFalse(result.Reason.PriceFits);
         }
 
@@ -83,13 +83,13 @@ namespace Book.Sell.Tests.Editor
             var result = Sut().Score(book, req, null);
 
             Assert.AreEqual(0, result.Breakdown.PricePoints);
-            Assert.Greater(result.Breakdown.Total, 3, "Жанр+теги+тон уже дают много.");
+            Assert.Greater(result.Breakdown.Total, 3, "Genre + tags + mood still produce a lot.");
         }
 
         [Test]
         public void LocationBonus_Caps_AtOne_EvenWithGenreAndTagMatch()
         {
-            // и Genre, и Tags матчат с локацией — бонус остаётся +1
+            // Both Genre and Tags match the location — bonus stays at +1.
             var result = Sut().Score(SciFiBook(), SciFiRequest(), University());
             Assert.AreEqual(1, result.Breakdown.LocationPoints);
             Assert.IsTrue(result.Reason.LocationBonus);
@@ -98,7 +98,7 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void NormalTier_3to5_Returns_Normal_AndGoldIsBasePrice()
         {
-            // только genre +3 = 3 → Normal
+            // genre +3 = 3 -> Normal
             var book = new BookConfig { Id = "b1", Genre = "sci-fi", BasePrice = 80 };
             var req = new RequestConfig { Id = "r1", DesiredGenres = new[] { "sci-fi" }, MaxPrice = 0 };
             var result = Sut().Score(book, req, null);

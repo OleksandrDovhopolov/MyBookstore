@@ -3,9 +3,9 @@ using System.Collections.Generic;
 namespace Book.Sell.Domain
 {
     /// <summary>
-    /// «Что игрок принёс в день»: какая локация и какие книги на полке.
-    /// Когда появится фаза Подготовки — придёт оттуда. Сейчас собирается
-    /// fallback-провайдером из первой локации + первых N книг.
+    /// "What the player brought into the day": which location was picked and which books
+    /// are on the shelf. Once the Preparation phase exists, the setup will come from there.
+    /// For now it is assembled by the fallback provider from the first location + first N books.
     /// </summary>
     public sealed class SalesSessionSetup
     {
@@ -13,7 +13,7 @@ namespace Book.Sell.Domain
         public string LocationId { get; }
         public IReadOnlyList<string> ShelfBookIds { get; }
 
-        /// <summary>Декор сейчас не влияет на scoring (out of scope), но поле сохраняется для будущей интеграции.</summary>
+        /// <summary>Decor does not affect scoring yet (out of scope), but the field is preserved for future integration.</summary>
         public IReadOnlyList<string> DecorIds { get; }
 
         public SalesSessionSetup(int day, string locationId, IReadOnlyList<string> shelfBookIds, IReadOnlyList<string> decorIds = null)

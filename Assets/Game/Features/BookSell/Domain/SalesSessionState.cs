@@ -4,8 +4,8 @@ using Game.Configs.Models;
 namespace Book.Sell.Domain
 {
     /// <summary>
-    /// Изменяющееся состояние дня продажи. View рендерит из снимка после события.
-    /// Не сериализуется (Save out of scope для текущей итерации).
+    /// Mutable state of the sales day. The View renders from this snapshot after each event.
+    /// Not serialized (Save is out of scope for this iteration).
     /// </summary>
     public sealed class SalesSessionState
     {
@@ -15,7 +15,7 @@ namespace Book.Sell.Domain
         public List<ShelfBook> Shelf { get; } = new();
         public List<RequestConfig> ActiveQueue { get; } = new();
 
-        /// <summary>Индекс текущего активного запроса внутри <see cref="ActiveQueue"/>. -1 пока день не стартанул.</summary>
+        /// <summary>Index of the current active request inside <see cref="ActiveQueue"/>. -1 until the day starts.</summary>
         public int CurrentRequestIndex { get; set; } = -1;
 
         public bool DayCompleted { get; set; }

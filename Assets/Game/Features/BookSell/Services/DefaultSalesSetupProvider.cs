@@ -9,8 +9,8 @@ using UnityEngine;
 namespace Book.Sell.Services
 {
     /// <summary>
-    /// Fallback-provider до появления фазы Подготовки. Первый location из LocationConfig +
-    /// первые <see cref="MaxShelfBooks"/> книг из BookConfig. Без декора.
+    /// Fallback provider used until the Preparation phase exists. First location from
+    /// LocationConfig + first <see cref="MaxShelfBooks"/> books from BookConfig. No decor.
     /// </summary>
     public sealed class DefaultSalesSetupProvider : ISalesSetupProvider
     {
@@ -29,7 +29,7 @@ namespace Book.Sell.Services
             var locations = _configs.GetAll<LocationConfig>();
             if (locations.Count == 0)
             {
-                Debug.LogWarning($"{LogPrefix} В LocationConfig нет ни одной локации. Setup пустой.");
+                Debug.LogWarning($"{LogPrefix} LocationConfig is empty. Returning an empty setup.");
                 return new SalesSessionSetup(day, locationId: null, shelfBookIds: Array.Empty<string>());
             }
 
@@ -38,12 +38,12 @@ namespace Book.Sell.Services
             var books = _configs.GetAll<BookConfig>();
             if (books.Count == 0)
             {
-                Debug.LogWarning($"{LogPrefix} В BookConfig нет ни одной книги. Полка пустая.");
+                Debug.LogWarning($"{LogPrefix} BookConfig is empty. Shelf will be empty.");
                 return new SalesSessionSetup(day, location.Id, Array.Empty<string>());
             }
 
             var shelfIds = books.Take(MaxShelfBooks).Select(b => b.Id).ToList();
-            Debug.Log($"{LogPrefix} День {day}: локация={location.Id}, книг на полке={shelfIds.Count}.");
+            Debug.Log($"{LogPrefix} Day {day}: location={location.Id}, shelf size={shelfIds.Count}.");
             return new SalesSessionSetup(day, location.Id, shelfIds);
         }
     }

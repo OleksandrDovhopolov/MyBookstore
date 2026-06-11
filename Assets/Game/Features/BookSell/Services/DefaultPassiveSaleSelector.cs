@@ -13,7 +13,7 @@ namespace Book.Sell.Services
             if (shelf == null || shelf.Count == 0 || location == null || random == null)
                 return null;
 
-            // Сначала собираем кандидатов: Available + матч по DemandGenres или DemandTags.
+            // Collect candidates: Available + matches either DemandGenres or DemandTags.
             var candidates = new List<ShelfBook>(shelf.Count);
             for (var i = 0; i < shelf.Count; i++)
             {

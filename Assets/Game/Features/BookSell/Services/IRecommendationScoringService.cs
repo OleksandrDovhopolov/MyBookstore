@@ -4,8 +4,8 @@ using Game.Configs.Models;
 namespace Book.Sell.Services
 {
     /// <summary>
-    /// Чистая логика: BookConfig × RequestConfig × LocationConfig → RecommendationResult.
-    /// Без Unity-зависимостей, легко покрывается EditMode-тестами.
+    /// Pure scoring logic: BookConfig × RequestConfig × LocationConfig → RecommendationResult.
+    /// No Unity dependencies — fully covered by EditMode tests.
     /// </summary>
     public interface IRecommendationScoringService
     {

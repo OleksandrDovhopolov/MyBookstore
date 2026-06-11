@@ -7,21 +7,22 @@ using Game.Configs.Models;
 namespace Book.Sell.Services
 {
     /// <summary>
-    /// Оркестратор дня продажи. View подписывается на 4 события и держит локальный снимок состояния.
+    /// Day orchestrator for the Sales phase. The View subscribes to four events and keeps
+    /// a local snapshot of the state.
     ///
-    /// Event flow по тику взаимодействия:
+    /// Event flow per interaction tick:
     ///   RecommendBook(id) / SkipCurrentRequest()
-    ///     → RecommendationResolved(result)
-    ///     → PassiveSaleHappened × 0..2
-    ///     → if queue empty → DayCompleted(result)
-    ///          else        → ActiveRequestStarted(nextRequest)
+    ///     -> RecommendationResolved(result)
+    ///     -> PassiveSaleHappened * 0..2
+    ///     -> if queue empty -> DayCompleted(result)
+    ///          else         -> ActiveRequestStarted(nextRequest)
     /// </summary>
     public interface ISalesSessionService
     {
         SalesSessionState State { get; }
         SalesDayResult AccumulatedResult { get; }
 
-        /// <summary>Текущий активный запрос или null до StartDay / после завершения.</summary>
+        /// <summary>The current active request, or null before StartDay / after the day is completed.</summary>
         RequestConfig CurrentRequest { get; }
 
         event Action<RequestConfig> ActiveRequestStarted;
@@ -29,13 +30,13 @@ namespace Book.Sell.Services
         event Action<PassiveSaleEvent> PassiveSaleHappened;
         event Action<SalesDayResult> DayCompleted;
 
-        /// <summary>Собирает setup, генерит очередь активных запросов, эмитит первый ActiveRequestStarted.</summary>
+        /// <summary>Builds the setup, generates the active queue, emits the first ActiveRequestStarted.</summary>
         UniTask StartDayAsync(int day, CancellationToken ct);
 
-        /// <summary>Игрок выбрал книгу с полки и нажал «Подтвердить».</summary>
+        /// <summary>The player picked a book from the shelf and pressed "Confirm".</summary>
         void RecommendBook(string bookId);
 
-        /// <summary>Игрок нажал «Ничего не предложить» — Skipped tier, без штрафа.</summary>
+        /// <summary>The player pressed "Nothing to offer" — Skipped tier, no penalty.</summary>
         void SkipCurrentRequest();
     }
 }
