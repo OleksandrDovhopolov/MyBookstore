@@ -12,13 +12,10 @@ using VContainer;
 namespace Book.Sell.UI
 {
     /// <summary>
-    /// Debug screen for the Sales phase: header + current-request panel + shelf grid + two
-    /// action buttons + feedback log (a VerticalLayoutGroup of prefab entries) + day-end panel.
-    /// All logic lives in <see cref="ISalesSessionService"/>; the view only renders snapshots
-    /// and emits input.
-    ///
-    /// Scene placement: GameplayScene -> Canvas -> a GameObject with this script + child UI
-    /// elements. Registered via RegisterComponentInHierarchy in BookSellVContainerBindings.
+    /// Debug screen for the real-time Sales phase (ADR-0003). Pumps the day controller from Update,
+    /// renders the shelf live (reserved/sold books drop out), and exposes the active minigame via the
+    /// request panel + Confirm/Skip. All logic is in <see cref="ISalesDayController"/>; the view only
+    /// renders snapshots and forwards player input. Animated movement/popups are out of scope here.
     /// </summary>
     public sealed class SalesScreenView : MonoBehaviour
     {
@@ -26,15 +23,14 @@ namespace Book.Sell.UI
         [SerializeField] private TMP_Text _dayLabel;
         [SerializeField] private TMP_Text _locationLabel;
         [SerializeField] private TMP_Text _goldLabel;
-        [SerializeField] private TMP_Text _progressLabel;       // "Request 2 / 5"
+        [SerializeField] private TMP_Text _progressLabel;       // "Served: N"
 
-        [Header("Active request")]
+        [Header("Active request (minigame)")]
         [SerializeField] private GameObject _requestPanel;
         [SerializeField] private TMP_Text _requestText;
-        [SerializeField] private TMP_Text _difficultyLabel;     // "Difficulty: 3/5" — empty when Unknown
+        [SerializeField] private TMP_Text _difficultyLabel;     // "Difficulty: 3/5" — empty when none/Unknown
 
         [Header("Shelf (grid)")]
-        [Tooltip("Container for book cards (typically a GridLayoutGroup or VerticalLayoutGroup).")]
         [SerializeField] private Transform _shelfContainer;
         [SerializeField] private BookCardView _bookCardPrefab;
 
@@ -43,27 +39,27 @@ namespace Book.Sell.UI
         [SerializeField] private Button _skipButton;
 
         [Header("Feedback log (vertical list of prefab entries)")]
-        [Tooltip("Parent transform with a VerticalLayoutGroup. New entries are appended as children.")]
         [SerializeField] private Transform _feedbackLogContainer;
         [SerializeField] private FeedbackLogEntryView _feedbackLogEntryPrefab;
-        [SerializeField] [Min(1)] private int _maxLogLines = 8;
+        [SerializeField] [Min(1)] private int _maxLogLines = 12;
 
         [Header("Day end")]
         [SerializeField] private GameObject _dayEndPanel;
         [SerializeField] private TMP_Text _dayEndSummary;
         [SerializeField] private Button _restartButton;        // optional
 
-        private ISalesSessionService _sales;
+        private ISalesDayController _controller;
         private readonly CancellationTokenSource _cts = new();
         private readonly List<BookCardView> _cards = new();
         private readonly Queue<FeedbackLogEntryView> _entries = new();
         private string _selectedBookId;
-        private bool _interactionAllowed;
+        private bool _minigameOpen;
+        private bool _dayRunning;
 
         [Inject]
-        public void Construct(ISalesSessionService sales)
+        public void Construct(ISalesDayController controller)
         {
-            _sales = sales;
+            _controller = controller;
         }
 
         private void Awake()
@@ -72,82 +68,74 @@ namespace Book.Sell.UI
             if (_skipButton != null) _skipButton.onClick.AddListener(OnSkipClicked);
             if (_restartButton != null) _restartButton.onClick.AddListener(OnRestartClicked);
 
-            SetActionsInteractable(false);
             if (_dayEndPanel != null) _dayEndPanel.SetActive(false);
             if (_requestPanel != null) _requestPanel.SetActive(false);
             if (_difficultyLabel != null) _difficultyLabel.text = "";
+            SetActionsInteractable(false);
         }
 
         private void Start()
         {
-            if (_sales == null)
+            if (_controller == null)
             {
-                Debug.LogWarning("[SalesScreenView] ISalesSessionService was not injected — the screen is inactive.");
+                Debug.LogWarning("[SalesScreenView] ISalesDayController was not injected — the screen is inactive.");
                 return;
             }
 
-            _sales.ActiveRequestStarted += OnActiveRequestStarted;
-            _sales.RecommendationResolved += OnRecommendationResolved;
-            _sales.PassiveSaleHappened += OnPassiveSaleHappened;
-            _sales.DayCompleted += OnDayCompleted;
+            _controller.ActiveRequestStarted += OnActiveRequestStarted;
+            _controller.RecommendationResolved += OnRecommendationResolved;
+            _controller.PassiveSaleHappened += OnPassiveSaleHappened;
+            _controller.DayCompleted += OnDayCompleted;
 
             StartDayFlowAsync(_cts.Token).Forget();
         }
 
-        private async UniTaskVoid StartDayFlowAsync(CancellationToken ct)
+        private void Update()
         {
-            // ActiveRequestStarted is emitted synchronously inside StartDayAsync; cards do not
-            // exist yet at that point, which is fine — the shelf snapshot is materialized below
-            // right after the await.
-            await _sales.StartDayAsync(day: 1, ct);
-            PopulateShelfCards();
+            if (!_dayRunning || _controller == null) return;
+            _controller.Tick(Time.deltaTime);
+            RefreshShelfAvailability();
             RefreshHeader();
         }
 
-        // ---------- service events ----------
+        private async UniTaskVoid StartDayFlowAsync(CancellationToken ct)
+        {
+            await _controller.StartDayAsync(day: 1, ct);
+            PopulateShelfCards();
+            RefreshHeader();
+            _dayRunning = !_controller.IsDayCompleted;
+        }
+
+        // ---------- controller events ----------
 
         private void OnActiveRequestStarted(RequestConfig req)
         {
+            _minigameOpen = true;
             if (_requestPanel != null) _requestPanel.SetActive(true);
             if (_requestText != null) _requestText.text = req.Text;
-
             if (_difficultyLabel != null)
-            {
                 _difficultyLabel.text = req.Difficulty == RequestDifficulty.Unknown
                     ? ""
                     : $"Difficulty: {(int)req.Difficulty}/5";
-            }
 
             _selectedBookId = null;
             foreach (var c in _cards) c.SetSelected(false);
-
-            _interactionAllowed = true;
             SetActionsInteractable(true);
-            RefreshHeader();
         }
 
         private void OnRecommendationResolved(RecommendationResult result)
         {
-            // A book leaves the shelf only on Normal/Excellent. Failed and Skipped do not sell.
-            if (!string.IsNullOrEmpty(result.BookId) &&
-                (result.Tier == RecommendationTier.Excellent || result.Tier == RecommendationTier.Normal))
-            {
-                FindCard(result.BookId)?.SetSoldOut(true);
-            }
-
             AppendActiveEntry(result);
 
-            // Input stays disabled between a resolved active request and the next one starting —
-            // it is re-enabled by ActiveRequestStarted.
-            _interactionAllowed = false;
+            _minigameOpen = false;
+            _selectedBookId = null;
+            if (_requestPanel != null) _requestPanel.SetActive(false);
+            if (_difficultyLabel != null) _difficultyLabel.text = "";
             SetActionsInteractable(false);
-            RefreshHeader();
         }
 
         private void OnPassiveSaleHappened(PassiveSaleEvent evt)
         {
-            FindCard(evt.BookId)?.SetSoldOut(true);
-
             var demand = new List<string>(evt.MatchedGenres.Count + evt.MatchedTags.Count);
             demand.AddRange(evt.MatchedGenres);
             demand.AddRange(evt.MatchedTags);
@@ -156,15 +144,13 @@ namespace Book.Sell.UI
             AppendEntry(
                 FeedbackLogEntryView.EntryKind.PassiveSale,
                 $"<i>passive sale: {evt.BookId}  +{evt.GoldEarned}{demandSuffix}</i>");
-
-            RefreshHeader();
         }
 
         private void OnDayCompleted(SalesDayResult result)
         {
-            _interactionAllowed = false;
+            _dayRunning = false;
+            _minigameOpen = false;
             SetActionsInteractable(false);
-
             if (_requestPanel != null) _requestPanel.SetActive(false);
 
             if (_dayEndPanel != null) _dayEndPanel.SetActive(true);
@@ -173,11 +159,12 @@ namespace Book.Sell.UI
                 _dayEndSummary.text =
                     $"<b>Day {result.Day} completed</b>\n\n" +
                     $"Sales: {result.SalesCount}  |  Revenue: {result.GoldEarned}\n" +
+                    $"Customers: {result.CustomersServed}\n" +
                     $"Excellent: {result.ExcellentCount}   Normal: {result.NormalCount}   " +
                     $"Failed: {result.FailedCount}   Skipped: {result.SkippedCount}";
             }
 
-            Debug.Log($"[SalesScreenView] DayCompleted: day={result.Day}, " +
+            Debug.Log($"[SalesScreenView] DayCompleted: day={result.Day}, customers={result.CustomersServed}, " +
                       $"sales={result.SalesCount}, gold={result.GoldEarned}, " +
                       $"excellent={result.ExcellentCount}, normal={result.NormalCount}, " +
                       $"failed={result.FailedCount}, skipped={result.SkippedCount}");
@@ -187,7 +174,7 @@ namespace Book.Sell.UI
 
         private void OnBookCardClicked(string bookId)
         {
-            if (!_interactionAllowed) return;
+            if (!_minigameOpen) return;   // selection only matters during an active minigame
             _selectedBookId = bookId;
             foreach (var c in _cards) c.SetSelected(c.BookId == bookId);
             SetActionsInteractable(true);
@@ -195,26 +182,22 @@ namespace Book.Sell.UI
 
         private void OnConfirmClicked()
         {
-            if (!_interactionAllowed || string.IsNullOrEmpty(_selectedBookId)) return;
-            _sales.RecommendBook(_selectedBookId);
+            if (!_minigameOpen || string.IsNullOrEmpty(_selectedBookId)) return;
+            _controller.RecommendBook(_selectedBookId);
         }
 
         private void OnSkipClicked()
         {
-            if (!_interactionAllowed) return;
-            _sales.SkipCurrentRequest();
+            if (!_minigameOpen) return;
+            _controller.SkipCurrentRequest();
         }
 
         private void OnRestartClicked()
         {
-            // Restart the day without reloading the scene.
-            // Note: Destroy is deferred to end-of-frame, but StartDayFlowAsync awaits StartDayAsync
-            // (which itself does not yield), so any new entries created inside StartDay will be added
-            // to the container BEFORE the old ones are physically removed. That is fine — the queue
-            // is logical, and the only risk would be visual overlap for one frame.
             ClearEntries();
             if (_dayEndPanel != null) _dayEndPanel.SetActive(false);
             _selectedBookId = null;
+            _minigameOpen = false;
             StartDayFlowAsync(_cts.Token).Forget();
         }
 
@@ -225,12 +208,40 @@ namespace Book.Sell.UI
             ClearCards();
             if (_bookCardPrefab == null || _shelfContainer == null) return;
 
-            foreach (var shelfBook in _sales.State.Shelf)
+            foreach (var shelfBook in _controller.Shelf.Books)
             {
                 var card = Instantiate(_bookCardPrefab, _shelfContainer);
                 card.Bind(shelfBook.Config, OnBookCardClicked);
-                card.SetSoldOut(shelfBook.State == ShelfBookState.SoldOut);
                 _cards.Add(card);
+            }
+            RefreshShelfAvailability();
+        }
+
+        private void RefreshShelfAvailability()
+        {
+            if (_cards.Count == 0) return;
+
+            var shelf = _controller.Shelf;
+            var selectionStillValid = false;
+
+            foreach (var card in _cards)
+            {
+                var book = shelf.Find(card.BookId);
+                var available = book != null
+                                && book.State == ShelfBookState.Available
+                                && !shelf.IsReserved(card.BookId);
+                card.SetSoldOut(!available);
+
+                if (available && card.BookId == _selectedBookId)
+                    selectionStillValid = true;
+            }
+
+            // Selected book got sold/reserved out from under the player → drop the selection.
+            if (!string.IsNullOrEmpty(_selectedBookId) && !selectionStillValid)
+            {
+                _selectedBookId = null;
+                foreach (var c in _cards) c.SetSelected(false);
+                if (_minigameOpen) SetActionsInteractable(true);
             }
         }
 
@@ -239,13 +250,6 @@ namespace Book.Sell.UI
             foreach (var c in _cards)
                 if (c != null) Destroy(c.gameObject);
             _cards.Clear();
-        }
-
-        private BookCardView FindCard(string bookId)
-        {
-            foreach (var c in _cards)
-                if (c.BookId == bookId) return c;
-            return null;
         }
 
         // ---------- feedback log ----------
@@ -327,18 +331,11 @@ namespace Book.Sell.UI
 
         private void RefreshHeader()
         {
-            var state = _sales.State;
-            var result = _sales.AccumulatedResult;
-
-            if (_dayLabel != null) _dayLabel.text = $"Day {state.Day}";
-            if (_locationLabel != null) _locationLabel.text = state.LocationId ?? "—";
+            var result = _controller.AccumulatedResult;
+            if (_dayLabel != null) _dayLabel.text = $"Day {_controller.Day}";
+            if (_locationLabel != null) _locationLabel.text = _controller.LocationId ?? "—";
             if (_goldLabel != null) _goldLabel.text = result.GoldEarned.ToString();
-            if (_progressLabel != null)
-            {
-                var total = state.ActiveQueue.Count;
-                var idx = state.CurrentRequestIndex < 0 ? total : state.CurrentRequestIndex + 1;
-                _progressLabel.text = total > 0 ? $"Request {idx} / {total}" : "—";
-            }
+            if (_progressLabel != null) _progressLabel.text = $"Served: {result.CustomersServed}";
         }
 
         private void SetActionsInteractable(bool active)
@@ -349,16 +346,14 @@ namespace Book.Sell.UI
                 _skipButton.interactable = active;
         }
 
-        // ---------- lifecycle ----------
-
         private void OnDestroy()
         {
-            if (_sales != null)
+            if (_controller != null)
             {
-                _sales.ActiveRequestStarted -= OnActiveRequestStarted;
-                _sales.RecommendationResolved -= OnRecommendationResolved;
-                _sales.PassiveSaleHappened -= OnPassiveSaleHappened;
-                _sales.DayCompleted -= OnDayCompleted;
+                _controller.ActiveRequestStarted -= OnActiveRequestStarted;
+                _controller.RecommendationResolved -= OnRecommendationResolved;
+                _controller.PassiveSaleHappened -= OnPassiveSaleHappened;
+                _controller.DayCompleted -= OnDayCompleted;
             }
 
             if (_confirmButton != null) _confirmButton.onClick.RemoveListener(OnConfirmClicked);

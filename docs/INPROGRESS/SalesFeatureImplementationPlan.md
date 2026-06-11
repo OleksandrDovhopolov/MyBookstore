@@ -190,3 +190,38 @@ Follow-ups (out of this slice):
 - Аналитика (`sales_opened`, `request_shown`, `book_recommended`, `recommendation_reason_shown`, `sales_completed`).
 - Подключение `Preparation` как реального источника `SalesSessionSetup` (заменяет `DefaultSalesSetupProvider`).
 - Учёт декора в scoring (поле `DecorIds` уже хранится).
+
+## Status — customer simulation (ADR-0003) на заглушках (2026-06-11)
+
+Пошаговый `SalesSessionService` **заменён** real-time симуляцией покупателей (ADR-0003).
+Анимированный view отложен; логика валидируется EditMode-тестами + текст/кнопки.
+
+Landed (всё в `Assets/Game/Features/BookSell/`, английский по LANGUAGE_POLICY):
+
+- **Domain brain:** `StepStatus`, `ICustomerStep`, `CustomerPhase`, `Customer` (план шагов + tick-FSM),
+  `CustomerContext`, `ISalesDaySink`, `SalesTuning`, `SalesShelf` (reserve-on-target),
+  `Domain/Steps/`: `ApproachStep`, `PassivePurchaseStep` (browse→reserve→commit, miss пропускает),
+  `ActiveRequestStep` (lock FIFO, blocked при занятом), `LeaveStep`.
+- **Services:** `IInteractionLock`/`InteractionLock` (один общий FIFO-lock миниигры/диалога),
+  `ICustomerSpawner`/`DefaultCustomerSpawner` (стаб: Approach→[passive×k]→опц. active→[passive×m]→Leave),
+  `ISalesDayController`/`SalesDayController` (спавн по интервалу, доменная пауза при удержанном lock,
+  конец дня = все Done ИЛИ все распроданы; reuse скоринга/селектора/random).
+- **Удалено:** `SalesSessionService`, `ISalesSessionService`, `SalesSessionState` + их тесты.
+- **DI:** `IInteractionLock`, `ICustomerSpawner`, `SalesTuning` (instance), `ISalesDayController`.
+- **UI:** `SalesScreenView` переведён на `ISalesDayController` + `Update()→Tick(deltaTime)`; полка
+  обновляется живьём (reserved/sold выпадают); request-панель + Confirm/Skip показываются только во
+  время активной миниигры; difficulty-лейбл; feedback log — passive+active поток.
+- **Тесты (EditMode):** `InteractionLockTests` (FIFO/acquire/release), `SalesShelfTests`
+  (reserve/commit/all-sold-out), `Steps/*` (Approach/Passive/Active), `SalesDayControllerTests`
+  (пассивная покупка, только-1-миниигра + пауза + FIFO-секвенс, reserve-контерженция,
+  день кончается по sold-out, активный RecommendBook-резолв). `RecommendationScoringServiceTests` —
+  без изменений. Детерминизм: ручной `dt` + `FakeSalesRandom` + `SalesTuning.FastTuning()`.
+
+Реализованные решения из ADR/decisions-doc: unified-агент (passive/active в любом порядке, активный
+не обязан следовать за пассивным), пауза = замирание тиков (не `Time.timeScale`), reserve-on-target
+прячет книгу из активной полки, спавн за интерфейсом, miss пропускает книгу, конец дня по двум условиям.
+
+Manual scene wiring (debug, текст/кнопки): экран `SalesScreenView` теперь real-time — большинство
+времени активной миниигры нет (покупатели бродят и докупают пассивно), Confirm/Skip активируются,
+когда покупатель просит помощь. Поля инспектора те же + новые `_feedbackLogContainer`/`_feedbackLogEntryPrefab`
+(из прошлой итерации) и `_difficultyLabel`. Дополнительной разметки не требуется.
