@@ -20,6 +20,26 @@
     "mood": ["smart", "melancholic"]
   },
   {
+    "id": "book_glass_sun",
+    "title": "Стеклянное солнце",
+    "author": "Т. Каро",
+    "genre": "sci-fi",
+    "basePrice": 75,
+    "rarityWeight": 0.4,
+    "tags": ["space", "science", "philosophy"],
+    "mood": ["smart", "melancholic"]
+  },
+  {
+    "id": "book_signals_andromeda",
+    "title": "Сигналы из Андромеды",
+    "author": "П. Кент",
+    "genre": "sci-fi",
+    "basePrice": 95,
+    "rarityWeight": 0.3,
+    "tags": ["space", "investigation", "science"],
+    "mood": ["tense", "dark"]
+  },
+  {
     "id": "book_lantern_letters",
     "title": "Письма у фонаря",
     "author": "М. Орвилл",
@@ -38,6 +58,26 @@
     "rarityWeight": 0.3,
     "tags": ["sea", "investigation", "rain"],
     "mood": ["dark", "tense"]
+  },
+  {
+    "id": "book_eleven_keys",
+    "title": "Одиннадцать ключей",
+    "author": "С. Норберг",
+    "genre": "mystery",
+    "basePrice": 75,
+    "rarityWeight": 0.4,
+    "tags": ["investigation", "small_town", "winter"],
+    "mood": ["tense", "smart"]
+  },
+  {
+    "id": "book_clock_silence",
+    "title": "Часы тишины",
+    "author": "Б. Велл",
+    "genre": "mystery",
+    "basePrice": 110,
+    "rarityWeight": 0.2,
+    "tags": ["investigation", "philosophy", "rain"],
+    "mood": ["dark", "melancholic"]
   },
   {
     "id": "book_summer_two_chapters",
@@ -60,6 +100,26 @@
     "mood": ["melancholic", "romantic"]
   },
   {
+    "id": "book_letters_lighthouse",
+    "title": "Письма с маяка",
+    "author": "В. Прайс",
+    "genre": "romance",
+    "basePrice": 60,
+    "rarityWeight": 0.5,
+    "tags": ["letters", "sea", "small_town"],
+    "mood": ["warm", "romantic"]
+  },
+  {
+    "id": "book_summer_kitchen",
+    "title": "Кухня летом",
+    "author": "Я. Тардо",
+    "genre": "romance",
+    "basePrice": 45,
+    "rarityWeight": 0.6,
+    "tags": ["cozy", "summer", "short"],
+    "mood": ["warm", "optimistic", "cozy"]
+  },
+  {
     "id": "book_short_road",
     "title": "Короткая дорога к Эйлуру",
     "author": "Д. Векс",
@@ -67,6 +127,36 @@
     "basePrice": 100,
     "rarityWeight": 0.2,
     "tags": ["short", "philosophy", "study"],
+    "mood": ["smart", "warm"]
+  },
+  {
+    "id": "book_iron_bridges",
+    "title": "Чугунные мосты",
+    "author": "Г. Мор",
+    "genre": "classic",
+    "basePrice": 85,
+    "rarityWeight": 0.4,
+    "tags": ["history", "philosophy"],
+    "mood": ["smart", "dark"]
+  },
+  {
+    "id": "book_quiet_evening",
+    "title": "Тихий вечер",
+    "author": "Л. Холь",
+    "genre": "classic",
+    "basePrice": 70,
+    "rarityWeight": 0.5,
+    "tags": ["philosophy", "short", "cozy"],
+    "mood": ["cozy", "melancholic"]
+  },
+  {
+    "id": "book_walk_inland",
+    "title": "Прогулка вглубь страны",
+    "author": "Э. Дрейк",
+    "genre": "classic",
+    "basePrice": 95,
+    "rarityWeight": 0.3,
+    "tags": ["philosophy", "small_town", "history"],
     "mood": ["smart", "warm"]
   },
   {
@@ -78,5 +168,35 @@
     "rarityWeight": 0.3,
     "tags": ["science", "study", "history"],
     "mood": ["smart", "optimistic"]
+  },
+  {
+    "id": "book_morning_routes",
+    "title": "Утренние маршруты",
+    "author": "К. Стенн",
+    "genre": "nonfiction",
+    "basePrice": 60,
+    "rarityWeight": 0.5,
+    "tags": ["study", "history", "small_town"],
+    "mood": ["optimistic", "smart"]
+  },
+  {
+    "id": "book_cards_charts",
+    "title": "Карты и графики",
+    "author": "Й. Берг",
+    "genre": "nonfiction",
+    "basePrice": 130,
+    "rarityWeight": 0.2,
+    "tags": ["science", "study", "engineering"],
+    "mood": ["smart"]
+  },
+  {
+    "id": "book_recipe_year",
+    "title": "Рецепт года",
+    "author": "Д. Локк",
+    "genre": "nonfiction",
+    "basePrice": 55,
+    "rarityWeight": 0.6,
+    "tags": ["cozy", "short", "study"],
+    "mood": ["warm", "optimistic"]
   }
 ]

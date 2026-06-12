@@ -48,5 +48,55 @@
     "maxPrice": 80,
     "difficulty": 2,
     "baseRewardGold": 15
+  },
+  {
+    "id": "req_quiet_evening_classic",
+    "text": "После работы хочу что-то умное, но недлинное. Классику, если она атмосферная.",
+    "desiredGenres": ["classic"],
+    "desiredTags": ["short", "philosophy"],
+    "desiredMood": ["smart", "cozy"],
+    "maxPrice": 100,
+    "difficulty": 2,
+    "baseRewardGold": 18
+  },
+  {
+    "id": "req_winter_letters_gift",
+    "text": "Подарок маме на Новый год. Любит зимние истории — про письма, про долгие вечера.",
+    "desiredGenres": ["romance", "mystery"],
+    "desiredTags": ["letters", "winter"],
+    "desiredMood": ["cozy", "warm", "melancholic"],
+    "maxPrice": 90,
+    "difficulty": 3,
+    "baseRewardGold": 22
+  },
+  {
+    "id": "req_engineer_practical_read",
+    "text": "Я инженер, на отпуске. Дайте что-нибудь практическое: схемы, расчёты, идеи.",
+    "desiredGenres": ["nonfiction", "sci-fi"],
+    "desiredTags": ["engineering", "science", "study"],
+    "desiredMood": ["smart", "optimistic"],
+    "maxPrice": 130,
+    "difficulty": 4,
+    "baseRewardGold": 28
+  },
+  {
+    "id": "req_history_walk",
+    "text": "Люблю гулять по городу и думать. Хочу про историю мест, чтобы было философски.",
+    "desiredGenres": ["classic", "nonfiction"],
+    "desiredTags": ["history", "philosophy", "small_town"],
+    "desiredMood": ["smart", "warm"],
+    "maxPrice": 100,
+    "difficulty": 3,
+    "baseRewardGold": 20
+  },
+  {
+    "id": "req_quiet_lighthouse_romance",
+    "text": "Хочу романтику у моря — без подростковых страданий. Что-то взрослое, спокойное.",
+    "desiredGenres": ["romance"],
+    "desiredTags": ["sea", "letters", "small_town"],
+    "desiredMood": ["warm", "romantic", "melancholic"],
+    "maxPrice": 75,
+    "difficulty": 2,
+    "baseRewardGold": 15
   }
 ]

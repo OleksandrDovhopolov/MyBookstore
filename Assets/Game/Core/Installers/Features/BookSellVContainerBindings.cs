@@ -17,7 +17,9 @@ namespace Game.Bootstrap
         {
             // Reused pure-domain services.
             builder.Register<ISalesRandom, UnityRandomSalesRandom>(Lifetime.Singleton);
-            builder.Register<ISalesSetupProvider, DefaultSalesSetupProvider>(Lifetime.Singleton);
+            // ISalesSetupProvider is registered by Preparation (PreparationSalesSetupProvider),
+            // which reads the player's choice from preparation.session and falls back to the
+            // catalog if no session exists yet.
             builder.Register<IRecommendationScoringService, RecommendationScoringService>(Lifetime.Singleton);
             builder.Register<IPassiveSaleSelector, DefaultPassiveSaleSelector>(Lifetime.Singleton);
 

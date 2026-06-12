@@ -28,6 +28,9 @@ namespace Game.DayCycle.Morning.UI
         [Header("Continue")]
         [SerializeField] private Button _continueButton;
 
+        [Header("Next screen")]
+        [SerializeField] private GameObject _preparationScreenRoot;
+
         private IMorningSessionService _session;
         private readonly CancellationTokenSource _cts = new();
 
@@ -88,11 +91,12 @@ namespace Game.DayCycle.Morning.UI
             SetInteractable(false);
             var result = await _session.ContinueToPreparationAsync(ct);
 
-            // Подготовка ещё не реализована (следующая задача цепочки). Пока логируем
-            // переданный payload, чтобы вручную проверить связь Утро → Подготовка.
             Debug.Log($"[MorningScreenView] → Подготовка. День {result.Day}, " +
                       $"модификаторы=[{string.Join(",", result.ActiveModifierIds)}], " +
                       $"локации=[{string.Join(",", result.TargetLocationIds)}].");
+
+            if (_preparationScreenRoot != null) _preparationScreenRoot.SetActive(true);
+            gameObject.SetActive(false);
         }
 
         private void SetInteractable(bool value)

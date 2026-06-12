@@ -15,6 +15,7 @@ namespace Game.Bootstrap
             builder.RegisterRewardDrop();
             builder.RegisterIap();
             builder.RegisterQuest();
+            builder.RegisterPreparation();
             builder.RegisterBookSell();
         }
     }
