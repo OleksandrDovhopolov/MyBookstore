@@ -1,0 +1,28 @@
+{
+    "name": "Book.Sell.Tests.Editor",
+    "rootNamespace": "Book.Sell.Tests.Editor",
+    "references": [
+        "UniTask",
+        "Book.Sell",
+        "Book.Sell.API",
+        "Configs",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "Save"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

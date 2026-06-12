@@ -1,0 +1,30 @@
+{
+    "name": "DayCycle.Tests.Editor",
+    "rootNamespace": "Game.DayCycle.Tests.Editor",
+    "references": [
+        "UniTask",
+        "DayCycle",
+        "Book.Sell.API",
+        "Game.Bootstrap.Loading",
+        "Configs",
+        "Save",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

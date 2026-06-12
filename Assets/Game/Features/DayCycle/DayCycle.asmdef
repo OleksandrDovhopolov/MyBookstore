@@ -1,0 +1,22 @@
+{
+    "name": "DayCycle",
+    "rootNamespace": "Game.DayCycle",
+    "references": [
+        "UniTask",
+        "VContainer",
+        "Configs",
+        "Save",
+        "Unity.TextMeshPro",
+        "Book.Sell.API",
+        "Game.Bootstrap.Loading"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

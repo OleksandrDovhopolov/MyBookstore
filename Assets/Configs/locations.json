@@ -1,0 +1,18 @@
+[
+  {
+    "id": "loc_downtown",
+    "displayName": "Центр / у университета",
+    "unlockCost": 0,
+    "requiredLevel": 1,
+    "demandGenres": ["Fantasy", "Classic", "Fact"],
+    "demandTags": ["study", "short", "science"]
+  },
+  {
+    "id": "loc_mall",
+    "displayName": "Торговый центр",
+    "unlockCost": 5000,
+    "requiredLevel": 5,
+    "demandGenres": ["Drama", "Crime"],
+    "demandTags": ["cozy", "summer", "letters"]
+  }
+]

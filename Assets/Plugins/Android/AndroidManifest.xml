@@ -10,7 +10,9 @@
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 
     <application>
-        <!--Used when Application Entry is set to Activity, otherwise remove this activity block-->
+        <!-- Application Entry Point = Activity (Player Settings → Android → Other Settings).
+             Если когда-то переключишься на GameActivity — закомментируй этот блок и раскомментируй
+             блок с UnityPlayerGameActivity / @style/BaseUnityGameActivityTheme ниже. -->
         <activity android:name="com.unity3d.player.UnityPlayerActivity"
                   android:theme="@style/UnityThemeSelector">
             <intent-filter>
@@ -19,7 +21,7 @@
             </intent-filter>
             <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
         </activity>
-        <!--Used when Application Entry is set to GameActivity, otherwise remove this activity block-->
+        <!--
         <activity android:name="com.unity3d.player.UnityPlayerGameActivity"
                   android:theme="@style/BaseUnityGameActivityTheme">
             <intent-filter>
@@ -29,5 +31,6 @@
             <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
             <meta-data android:name="android.app.lib_name" android:value="game" />
         </activity>
+        -->
     </application>
 </manifest>

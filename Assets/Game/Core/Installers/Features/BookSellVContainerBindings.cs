@@ -1,46 +1,38 @@
+using Book.Sell.Domain;
+using Book.Sell.Services;
+using Book.Sell.UI;
+using UnityEngine;
 using VContainer;
+using VContainer.Unity;
 
 namespace Game.Bootstrap
 {
-    // Main feature. Registered in: GameInstaller (GameplayLifetimeScope)
-    // Resolves from parent: IWebClient, ISaveService, IAnalyticsService, IInventoryService
+    // Main Feature (core loop) — Sales phase, real-time customer simulation (ADR-0003).
+    // Registered in: GameInstaller (GameplayLifetimeScope).
+    // Resolves from parent (GlobalLifetimeScope): IConfigsService.
+    // No ISaveService / IDayProgressService — Sales is standalone for this iteration.
     public static class BookSellVContainerBindings
     {
         public static void RegisterBookSell(this IContainerBuilder builder)
         {
-            // --- Core ---
+            // Reused pure-domain services.
+            builder.Register<ISalesRandom, UnityRandomSalesRandom>(Lifetime.Singleton);
+            // ISalesSetupProvider is registered by Preparation (PreparationSalesSetupProvider),
+            // which reads the player's choice from preparation.session and falls back to the
+            // catalog if no session exists yet.
+            builder.Register<IRecommendationScoringService, RecommendationScoringService>(Lifetime.Singleton);
+            builder.Register<IPassiveSaleSelector, DefaultPassiveSaleSelector>(Lifetime.Singleton);
 
-            // TODO: Book catalog config (book definitions, genres, prices — ScriptableObject)
-            // builder.RegisterInstance(_bookCatalogConfig);
+            // Customer simulation.
+            builder.Register<IInteractionLock, InteractionLock>(Lifetime.Singleton);
+            builder.Register<ICustomerSpawner, DefaultCustomerSpawner>(Lifetime.Singleton);
+            builder.RegisterInstance(new SalesTuning());
+            builder.Register<ISalesDayController, SalesDayController>(Lifetime.Singleton);
 
-            // TODO: Book catalog provider — fetches/caches book list from server
-            // builder.Register<IBookCatalogProvider, RemoteBookCatalogProvider>(Lifetime.Singleton);
-
-            // TODO: Book purchase service — validates, processes and records book purchases
-            // builder.Register<IBookPurchaseService, BookPurchaseService>(Lifetime.Singleton);
-
-            // TODO: Book server API
-            // builder.Register<IBookServerApi, HttpBookServerApi>(Lifetime.Singleton);
-
-            // --- Presentation ---
-
-            // TODO: Book list UI view model
-            // builder.Register<BookListViewModel>(Lifetime.Singleton);
-
-            // TODO: Book detail UI view model
-            // builder.Register<BookDetailViewModel>(Lifetime.Transient);
-
-            // TODO: Window router for book sell flow
-            // builder.Register<IBookSellWindowRouter, BookSellWindowRouter>(Lifetime.Transient);
-
-            // --- Integration ---
-
-            // TODO: Register with event system / quest tracker when a book is sold
-            // builder.RegisterBuildCallback(resolver =>
-            // {
-            //     var eventRegistry = resolver.Resolve<IEventRegistry>();
-            //     eventRegistry.Register<BookSoldEvent>(resolver.Resolve<IQuestService>().HandleBookSold);
-            // });
+            // Debug screen. Registered only if present in the scene, so the project runs before the UI
+            // is wired. Same pattern as MorningScreenView.
+            if (Object.FindAnyObjectByType<SalesScreenView>(FindObjectsInactive.Include) != null)
+                builder.RegisterComponentInHierarchy<SalesScreenView>();
         }
     }
 }

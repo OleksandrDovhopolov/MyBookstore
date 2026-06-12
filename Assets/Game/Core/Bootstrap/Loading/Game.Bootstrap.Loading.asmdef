@@ -1,0 +1,21 @@
+{
+    "name": "Game.Bootstrap.Loading",
+    "rootNamespace": "Game.Bootstrap.Loading",
+    "references": [
+        "UniTask",
+        "VContainer",
+        "Configs",
+        "Save",
+        "Infrastructure",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

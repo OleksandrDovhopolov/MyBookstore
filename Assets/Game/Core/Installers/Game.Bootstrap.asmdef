@@ -4,10 +4,17 @@
     "references": [
         "VContainer",
         "Save",
+        "Configs",
         "Game.Commands.Abstractions",
         "Game.Commands",
         "Game.Http",
-        "UniTask"
+        "UniTask",
+        "Infrastructure",
+        "Game.Bootstrap.Loading",
+        "DayCycle",
+        "Book.Sell",
+        "Book.Sell.API",
+        "Game.Preparation"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

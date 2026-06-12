@@ -1,0 +1,23 @@
+{
+    "name": "Game.Preparation",
+    "rootNamespace": "Game.Preparation",
+    "references": [
+        "UniTask",
+        "VContainer",
+        "Configs",
+        "Save",
+        "Unity.TextMeshPro",
+        "Book.Sell",
+        "Book.Sell.API",
+        "DayCycle"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
