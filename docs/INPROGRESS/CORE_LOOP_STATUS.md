@@ -14,6 +14,8 @@
 | ADR-0003 customer simulation | `docs/adr/0003-customer-simulation.md` | Accepted | 2026-06-11 |
 | ADR-0004 stock model (hybrid) + passive sale chance | `docs/adr/0004-stock-model-hybrid-sale-chance.md` | Accepted | 2026-06-12 |
 | Book.Sell.API extraction (первая `.API` в проекте) | — | — | 2026-06-12 |
+| Подготовка (Preparation) — MVP slice (выбор книг, save-модуль, замена `DefaultSalesSetupProvider`) | — | Done | 2026-06-12 |
+| Миграция жанров каталога на канон 7 жанров (Classic, Fantasy, Crime, Drama, Fact, Travel, Kids) | `Assets/Configs/{books,locations,days,requests}.json` | Done | 2026-06-12 |
 
 ## Что технически уже работает «бесплатно»
 
@@ -26,15 +28,13 @@
 
 ## Что переходит в работу прямо сейчас (по порядку)
 
-Закреплённый владельцем порядок: **B → A → baseSaleChance**.
+Закреплённый владельцем порядок: ~~B~~ (done) → **A → baseSaleChance**.
 
-### B. Подготовка (Preparation)
+### ✅ B. Подготовка (Preparation) — DONE 2026-06-12
 
-- **Notion:** [Core loop — Подготовка](https://app.notion.com/p/37b511859db381f0ab9ad1739e927eb7) — статус Backlog → переходит в работу первой.
-- **Что делает:** замыкает базовый цикл (Morning → Preparation → Sales → Results → Morning). Без неё игроку нечего делать между Итогами и Продажей следующего дня.
-- **Почему первой:** без stocking-фазы стартовый пресет (A) некуда «налить», а `baseSaleChance` — нечего рассчитывать.
-- **Опирается на:** ADR-0004 (per-genre-count + per-title гибрид) — stocking оперирует genre-grouped книгами + capacity (`In Shop X/40`).
-- **Спека:** `docs/INPROGRESS/Подготовка.md`, план: `docs/INPROGRESS/PreparationFeatureImplementationPlan.md`.
+- **Notion:** [Core loop — Подготовка](https://app.notion.com/p/37b511859db381f0ab9ad1739e927eb7).
+- Реализован MVP slice: фича `Assets/Game/Features/Preparation` с `PreparationSessionService`, save-модулем `preparation.session`, `PreparationSalesSetupProvider` (заменил `DefaultSalesSetupProvider` в DI), `PreparationScreenView` с toggle-выбором книг и кнопкой «Открыть лавку». Локация захардкожена `loc_downtown`, декор пуст — расширения уходят в `baseSaleChance` и отдельные задачи (см. «Известные ограничения»).
+- Параллельно: миграция каталога на канон 7 жанров (Classic, Fantasy, Crime, Drama, Fact, Travel, Kids) — `books.json` 25 книг, `locations.json`/`days.json`/`requests.json` переведены на новые `genre` id.
 
 ### A. FTUE first-launch preset
 

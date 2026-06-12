@@ -2,7 +2,7 @@
   {
     "id": "req_engineer_survival",
     "text": "Хочу научную фантастику про выживание на другой планете. Чтобы герой не выл — а решал задачи инженерией.",
-    "desiredGenres": ["sci-fi"],
+    "desiredGenres": ["Fantasy"],
     "desiredTags": ["space", "survival", "engineering"],
     "desiredMood": ["smart", "tense", "optimistic"],
     "maxPrice": 90,
@@ -12,7 +12,7 @@
   {
     "id": "req_student_short",
     "text": "Что-нибудь короткое и умное. У меня экзамены, читать буду по дороге в универ.",
-    "desiredGenres": ["classic", "nonfiction"],
+    "desiredGenres": ["Classic", "Fact"],
     "desiredTags": ["short", "study"],
     "desiredMood": ["smart"],
     "maxPrice": 100,
@@ -22,7 +22,7 @@
   {
     "id": "req_rainy_mystery",
     "text": "Сегодня дождь, хочется чего-то атмосферного. Море, тайна, не слишком пугающе.",
-    "desiredGenres": ["mystery"],
+    "desiredGenres": ["Crime"],
     "desiredTags": ["sea", "rain"],
     "desiredMood": ["dark", "tense"],
     "maxPrice": 100,
@@ -32,7 +32,7 @@
   {
     "id": "req_summer_romance_cheap",
     "text": "Что-нибудь летнее, лёгкое. Только недорого — я тут проездом.",
-    "desiredGenres": ["romance"],
+    "desiredGenres": ["Drama"],
     "desiredTags": ["summer", "short"],
     "desiredMood": ["warm", "optimistic"],
     "maxPrice": 55,
@@ -42,7 +42,7 @@
   {
     "id": "req_letters_cozy",
     "text": "Подарок для бабушки. Она любит, когда герои пишут друг другу письма, и чтобы всё было тёплое.",
-    "desiredGenres": ["mystery", "romance"],
+    "desiredGenres": ["Crime", "Drama"],
     "desiredTags": ["letters", "cozy"],
     "desiredMood": ["cozy", "warm"],
     "maxPrice": 80,
@@ -52,7 +52,7 @@
   {
     "id": "req_quiet_evening_classic",
     "text": "После работы хочу что-то умное, но недлинное. Классику, если она атмосферная.",
-    "desiredGenres": ["classic"],
+    "desiredGenres": ["Classic"],
     "desiredTags": ["short", "philosophy"],
     "desiredMood": ["smart", "cozy"],
     "maxPrice": 100,
@@ -62,7 +62,7 @@
   {
     "id": "req_winter_letters_gift",
     "text": "Подарок маме на Новый год. Любит зимние истории — про письма, про долгие вечера.",
-    "desiredGenres": ["romance", "mystery"],
+    "desiredGenres": ["Drama", "Crime"],
     "desiredTags": ["letters", "winter"],
     "desiredMood": ["cozy", "warm", "melancholic"],
     "maxPrice": 90,
@@ -72,7 +72,7 @@
   {
     "id": "req_engineer_practical_read",
     "text": "Я инженер, на отпуске. Дайте что-нибудь практическое: схемы, расчёты, идеи.",
-    "desiredGenres": ["nonfiction", "sci-fi"],
+    "desiredGenres": ["Fact", "Fantasy"],
     "desiredTags": ["engineering", "science", "study"],
     "desiredMood": ["smart", "optimistic"],
     "maxPrice": 130,
@@ -82,7 +82,7 @@
   {
     "id": "req_history_walk",
     "text": "Люблю гулять по городу и думать. Хочу про историю мест, чтобы было философски.",
-    "desiredGenres": ["classic", "nonfiction"],
+    "desiredGenres": ["Classic", "Fact"],
     "desiredTags": ["history", "philosophy", "small_town"],
     "desiredMood": ["smart", "warm"],
     "maxPrice": 100,
@@ -92,11 +92,31 @@
   {
     "id": "req_quiet_lighthouse_romance",
     "text": "Хочу романтику у моря — без подростковых страданий. Что-то взрослое, спокойное.",
-    "desiredGenres": ["romance"],
+    "desiredGenres": ["Drama"],
     "desiredTags": ["sea", "letters", "small_town"],
     "desiredMood": ["warm", "romantic", "melancholic"],
     "maxPrice": 75,
     "difficulty": 2,
     "baseRewardGold": 15
+  },
+  {
+    "id": "req_travel_seaside",
+    "text": "Еду на побережье на неделю. Хочу что-то про путешествия, море, неспешное.",
+    "desiredGenres": ["Travel"],
+    "desiredTags": ["sea", "small_town", "history"],
+    "desiredMood": ["warm", "melancholic", "optimistic"],
+    "maxPrice": 90,
+    "difficulty": 2,
+    "baseRewardGold": 18
+  },
+  {
+    "id": "req_kids_summer_gift",
+    "text": "Подарок племяннику на лето. Короткое, уютное, чтобы вечером читать.",
+    "desiredGenres": ["Kids"],
+    "desiredTags": ["short", "summer", "cozy"],
+    "desiredMood": ["warm", "optimistic", "cozy"],
+    "maxPrice": 50,
+    "difficulty": 1,
+    "baseRewardGold": 12
   }
 ]

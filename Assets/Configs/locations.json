@@ -4,7 +4,7 @@
     "displayName": "Центр / у университета",
     "unlockCost": 0,
     "requiredLevel": 1,
-    "demandGenres": ["sci-fi", "classic", "nonfiction"],
+    "demandGenres": ["Fantasy", "Classic", "Fact"],
     "demandTags": ["study", "short", "science"]
   },
   {
@@ -12,7 +12,7 @@
     "displayName": "Торговый центр",
     "unlockCost": 5000,
     "requiredLevel": 5,
-    "demandGenres": ["romance", "mystery"],
+    "demandGenres": ["Drama", "Crime"],
     "demandTags": ["cozy", "summer", "letters"]
   }
 ]

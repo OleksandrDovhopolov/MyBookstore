@@ -7,7 +7,7 @@
     "eventId": "exam_week",
     "summaryText": "В университете началась неделя экзаменов.",
     "hintText": "Студенты чаще ищут научпоп и короткие книги.",
-    "demandGenres": ["science", "classic"],
+    "demandGenres": ["Fact", "Classic"],
     "demandTags": ["short", "study"],
     "targetLocationIds": ["loc_downtown"]
   },
@@ -19,7 +19,7 @@
     "eventId": "",
     "summaryText": "Серое небо и тихие улицы — день для уютного чтения.",
     "hintText": "В дождь лучше идут атмосферные и длинные истории.",
-    "demandGenres": ["mystery", "romance"],
+    "demandGenres": ["Crime", "Drama"],
     "demandTags": ["cozy", "long"],
     "targetLocationIds": ["loc_downtown"]
   }
