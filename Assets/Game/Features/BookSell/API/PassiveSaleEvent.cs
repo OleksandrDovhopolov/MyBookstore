@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Book.Sell.Domain
+namespace Book.Sell.API
 {
     /// <summary>
     /// A background ("passive") sale: a book left the shelf on its own because it matched

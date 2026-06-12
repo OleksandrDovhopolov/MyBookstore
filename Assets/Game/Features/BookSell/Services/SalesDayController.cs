@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Book.Sell.API;
 using Book.Sell.Domain;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
+using Save;
 using UnityEngine;
 
 namespace Book.Sell.Services
@@ -22,6 +24,7 @@ namespace Book.Sell.Services
         private readonly ICustomerSpawner _spawner;
         private readonly IInteractionLock _lock;
         private readonly SalesTuning _tuning;
+        private readonly ISaveService _save;
 
         private SalesShelf _shelf = new();
         private SalesDayResult _result = new();
@@ -44,7 +47,8 @@ namespace Book.Sell.Services
             ISalesRandom random,
             ICustomerSpawner spawner,
             IInteractionLock interactionLock,
-            SalesTuning tuning)
+            SalesTuning tuning,
+            ISaveService save = null)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _setupProvider = setupProvider ?? throw new ArgumentNullException(nameof(setupProvider));
@@ -54,6 +58,7 @@ namespace Book.Sell.Services
             _spawner = spawner ?? throw new ArgumentNullException(nameof(spawner));
             _lock = interactionLock ?? throw new ArgumentNullException(nameof(interactionLock));
             _tuning = tuning ?? throw new ArgumentNullException(nameof(tuning));
+            _save = save;   // optional in tests; in prod injected via DI
         }
 
         public int Day { get; private set; }
@@ -303,7 +308,19 @@ namespace Book.Sell.Services
         private void CompleteDay()
         {
             _completed = true;
+
+            // Publish the result first so subscribers (UI, downstream phases) and the save module
+            // see the same snapshot. Save is fire-and-forget: CompleteDay is called synchronously
+            // from Tick / event handlers; we never block the simulation on a disk/network write.
+            // The Results phase reads back via ISaveService.GetModuleAsync, which awaits any
+            // pending in-flight writes through the save service's own queue.
             DayCompleted?.Invoke(_result);
+
+            if (_save != null)
+            {
+                _save.UpdateModuleAsync(SalesSaveKeys.LastDayResult, _result,
+                    SalesSaveKeys.LastDayResultSchemaVersion, CancellationToken.None).Forget();
+            }
         }
     }
 }

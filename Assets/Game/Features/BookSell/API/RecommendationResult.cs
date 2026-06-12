@@ -1,4 +1,4 @@
-namespace Book.Sell.Domain
+namespace Book.Sell.API
 {
     /// <summary>
     /// Result of one active customer interaction: which book the player handed over

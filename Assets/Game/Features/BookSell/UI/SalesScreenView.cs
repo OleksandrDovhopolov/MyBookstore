@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading;
+using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
@@ -44,6 +45,9 @@ namespace Book.Sell.UI
         [SerializeField] [Min(1)] private int _maxLogLines = 12;
 
         [Header("Day end")]
+        [Tooltip("Root GameObject of the Results screen. Activated when the day completes; this view deactivates itself.")]
+        [SerializeField] private GameObject _resultsScreenRoot;
+        [Header("Legacy day-end fallback (used only when Results Screen Root is empty)")]
         [SerializeField] private GameObject _dayEndPanel;
         [SerializeField] private TMP_Text _dayEndSummary;
         [SerializeField] private Button _restartButton;        // optional
@@ -56,10 +60,13 @@ namespace Book.Sell.UI
         private bool _minigameOpen;
         private bool _dayRunning;
 
+        private ICurrentDayProvider _dayProvider;
+
         [Inject]
-        public void Construct(ISalesDayController controller)
+        public void Construct(ISalesDayController controller, ICurrentDayProvider dayProvider = null)
         {
             _controller = controller;
+            _dayProvider = dayProvider;
         }
 
         private void Awake()
@@ -82,6 +89,15 @@ namespace Book.Sell.UI
                 return;
             }
 
+            // On restart, the player may have already completed today's sales but not yet pressed
+            // Next Day. In that case, skip Sales entirely and hand straight to Results.
+            if (_dayProvider != null && _dayProvider.IsCurrentDayCompleted && _resultsScreenRoot != null)
+            {
+                _resultsScreenRoot.SetActive(true);
+                gameObject.SetActive(false);
+                return;
+            }
+
             _controller.ActiveRequestStarted += OnActiveRequestStarted;
             _controller.RecommendationResolved += OnRecommendationResolved;
             _controller.PassiveSaleHappened += OnPassiveSaleHappened;
@@ -100,7 +116,10 @@ namespace Book.Sell.UI
 
         private async UniTaskVoid StartDayFlowAsync(CancellationToken ct)
         {
-            await _controller.StartDayAsync(day: 1, ct);
+            // Day comes from DayCycle.DayProgressService via the ICurrentDayProvider adapter.
+            // When the adapter is not registered (e.g. early prototype scenes), fall back to day 1.
+            var day = _dayProvider?.CurrentDay ?? 1;
+            await _controller.StartDayAsync(day, ct);
             PopulateShelfCards();
             RefreshHeader();
             _dayRunning = !_controller.IsDayCompleted;
@@ -153,6 +172,20 @@ namespace Book.Sell.UI
             SetActionsInteractable(false);
             if (_requestPanel != null) _requestPanel.SetActive(false);
 
+            Debug.Log($"[SalesScreenView] DayCompleted: day={result.Day}, customers={result.CustomersServed}, " +
+                      $"sales={result.SalesCount}, gold={result.GoldEarned}, " +
+                      $"excellent={result.ExcellentCount}, normal={result.NormalCount}, " +
+                      $"failed={result.FailedCount}, skipped={result.SkippedCount}");
+
+            // Hand over to the Results screen if it's wired in the scene; otherwise fall back to the
+            // legacy in-place day-end panel (kept for the prototype scene before Results is set up).
+            if (_resultsScreenRoot != null)
+            {
+                _resultsScreenRoot.SetActive(true);
+                gameObject.SetActive(false);
+                return;
+            }
+
             if (_dayEndPanel != null) _dayEndPanel.SetActive(true);
             if (_dayEndSummary != null)
             {
@@ -163,11 +196,6 @@ namespace Book.Sell.UI
                     $"Excellent: {result.ExcellentCount}   Normal: {result.NormalCount}   " +
                     $"Failed: {result.FailedCount}   Skipped: {result.SkippedCount}";
             }
-
-            Debug.Log($"[SalesScreenView] DayCompleted: day={result.Day}, customers={result.CustomersServed}, " +
-                      $"sales={result.SalesCount}, gold={result.GoldEarned}, " +
-                      $"excellent={result.ExcellentCount}, normal={result.NormalCount}, " +
-                      $"failed={result.FailedCount}, skipped={result.SkippedCount}");
         }
 
         // ---------- user input ----------

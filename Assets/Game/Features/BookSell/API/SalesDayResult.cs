@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 
-namespace Book.Sell.Domain
+namespace Book.Sell.API
 {
     /// <summary>
-    /// End-of-day summary of the Sales phase. Future Results phase will consume this;
-    /// for now it feeds the debug log and the EditMode tests.
+    /// End-of-day summary of the Sales phase. Consumed by the Results phase
+    /// (lives in the DayCycle feature) via Save module "book_sell.last_day_result".
     /// </summary>
     public sealed class SalesDayResult
     {

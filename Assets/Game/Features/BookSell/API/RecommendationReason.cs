@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Book.Sell.Domain
+namespace Book.Sell.API
 {
     /// <summary>
     /// Human-readable breakdown of why a recommendation got its score: which genres / tags /

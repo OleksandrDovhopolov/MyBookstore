@@ -4,9 +4,11 @@
     "references": [
         "UniTask",
         "Book.Sell",
+        "Book.Sell.API",
         "Configs",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "Save"
     ],
     "includePlatforms": [
         "Editor"

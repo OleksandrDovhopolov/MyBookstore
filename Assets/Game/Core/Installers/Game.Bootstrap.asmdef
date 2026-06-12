@@ -12,7 +12,8 @@
         "Infrastructure",
         "Game.Bootstrap.Loading",
         "DayCycle",
-        "Book.Sell"
+        "Book.Sell",
+        "Book.Sell.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

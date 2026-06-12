@@ -1,4 +1,4 @@
-namespace Book.Sell.Domain
+namespace Book.Sell.API
 {
     /// <summary>
     /// Outcome category for a recommendation. Scoring produces three tiers by score

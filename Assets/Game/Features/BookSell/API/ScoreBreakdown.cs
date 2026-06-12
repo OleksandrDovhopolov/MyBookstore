@@ -1,4 +1,4 @@
-namespace Book.Sell.Domain
+namespace Book.Sell.API
 {
     /// <summary>
     /// Per-component breakdown of a recommendation's score. Sum equals <see cref="Total"/>.
