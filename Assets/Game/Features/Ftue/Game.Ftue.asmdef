@@ -1,21 +1,13 @@
 {
-    "name": "Game.Bootstrap",
-    "rootNamespace": "Game.Bootstrap",
+    "name": "Game.Ftue",
+    "rootNamespace": "Game.Ftue",
     "references": [
+        "UniTask",
         "VContainer",
         "Save",
         "Configs",
-        "Game.Commands.Abstractions",
-        "Game.Commands",
-        "Game.Http",
-        "UniTask",
-        "Infrastructure",
-        "Game.Bootstrap.Loading",
         "DayCycle",
-        "Book.Sell",
-        "Book.Sell.API",
-        "Game.Preparation",
-        "Game.Ftue"
+        "Game.Bootstrap.Loading"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

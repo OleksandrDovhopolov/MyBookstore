@@ -16,6 +16,7 @@
 | Book.Sell.API extraction (первая `.API` в проекте) | — | — | 2026-06-12 |
 | Подготовка (Preparation) — MVP slice (выбор книг, save-модуль, замена `DefaultSalesSetupProvider`) | — | Done | 2026-06-12 |
 | Миграция жанров каталога на канон 7 жанров (Classic, Fantasy, Crime, Drama, Fact, Travel, Kids) | `Assets/Configs/{books,locations,days,requests}.json` | Done | 2026-06-12 |
+| FTUE first-launch preset (A) — `Game.Ftue`, фаза `phase_ftue` в Bootstrap, `DayProgressInventoryProvider` вместо каталога | [link](https://app.notion.com/p/37d511859db381a6a90dd55eb2f4ba8a) | Done | 2026-06-12 |
 
 ## Что технически уже работает «бесплатно»
 
@@ -28,7 +29,13 @@
 
 ## Что переходит в работу прямо сейчас (по порядку)
 
-Закреплённый владельцем порядок: ~~B~~ (done) → **A → baseSaleChance**.
+Закреплённый владельцем порядок: ~~B~~ (done) → ~~A~~ (done) → **baseSaleChance**.
+
+### ✅ A. FTUE first-launch preset — DONE 2026-06-12
+
+- **Notion:** [FTUE — first-launch preset](https://app.notion.com/p/37d511859db381a6a90dd55eb2f4ba8a).
+- Реализован: новая фича `Assets/Game/Features/Ftue` с `IFtueBootstrapper`/`FtueBootstrapper`, save-модуль `ftue.applied` (идемпотентность), `FtueBootstrapOperation` как новая фаза `phase_ftue` в Bootstrap pipeline (между data_load и finalization). На первом запуске заливает Gold=60 + 27 книг по жанрам (Fantasy 5, Crime 5, Drama 6, Classic 3, Fact 3, Travel 3, Kids 2; выбор по `RarityWeight` desc).
+- `CatalogInventoryProvider` удалён, заменён на `DayProgressInventoryProvider` поверх `DayProgressState.OwnedBookIds` (с fallback на каталог при пустом OwnedBookIds).
 
 ### ✅ B. Подготовка (Preparation) — DONE 2026-06-12
 
@@ -69,6 +76,7 @@
 1. **Restart посреди Results** возвращает игрока в Sales (не в Results). Идемпотентность не страдает (`results.applied_rewards` модуль), только UX. Чинится выносом `DayPhase` enum в `Book.Sell.API` + `DayProgressService.SetPhaseAsync(Results)` при открытии Results.
 2. **Декор пока заглушка** — `DecorIds` пробрасываются в `SalesSessionSetup`, но в scoring и в пассив не влияют. Подключение — в задаче `baseSaleChance`.
 3. **Capacity Подготовки захардкожена** — `PreparationSessionService` использует константы `DefaultMinDailyBooks = 1` и `DefaultDailyBookSlots = 12` (см. `Assets/Game/Features/Preparation/Services/PreparationSessionService.cs`). По спеке (`docs/INPROGRESS/Подготовка.md`, раздел «Лимиты») это должны быть параметры состояния игрока (`CurrentBookCapacity`), растущие через улучшения лавки — диапазон 12–20. **Не оставлять как константы** на этапе экономики/прогрессии: миграция в `EconomyConfig` / `DayProgressState.CurrentBookCapacity` — отдельная задача (вместе с `baseSaleChance`).
+4. **FTUE-пресет захардкожен** — `FtueBootstrapper` хранит `StartingGold = 60` и `PresetCounts` (map жанр→количество) как константы. Миграция в `economy.json` / `ftue.json` — отдельная задача (вместе с пунктом 3). Преимущество текущего состояния: правки через изменение константы + пересборка, без перевыкатки конфига.
 
 ## Что у владельца следующее по моей рекомендации
 
