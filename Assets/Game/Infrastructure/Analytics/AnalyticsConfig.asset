@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8407789ad544d19a20e7c898ba65888, type: 3}
+  m_Name: AnalyticsConfig
+  m_EditorClassIdentifier: 
+  _isAnalyticsEnabled: 1
+  _isDebugLoggingEnabled: 1
+  _environment: development
+  _enabledProviderIds:
+  - debug
+  - firebase
+  _maxQueueSize: 100
+  _maxEventNameLength: 40
+  _maxParameterKeyLength: 40
+  _maxParameterCount: 50
+  _sendEventsWithoutUserId: 1

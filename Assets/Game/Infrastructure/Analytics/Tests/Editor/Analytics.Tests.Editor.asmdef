@@ -1,0 +1,20 @@
+{
+    "name": "Analytics.Tests.Editor",
+    "rootNamespace": "Analytics.Tests.Editor",
+    "references": [
+        "Analytics"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
