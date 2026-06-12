@@ -307,20 +307,38 @@ namespace Book.Sell.Services
 
         private void CompleteDay()
         {
+            // Flag the day completed synchronously so further ticks early-return.
+            // Actual publish (save write + event) runs as an async chain so the save module is
+            // populated BEFORE downstream subscribers (Results) react. Without this ordering the
+            // Results view reads an empty module in the same frame and bails with "no result".
+            if (_completed) return;
             _completed = true;
+            PublishCompletionAsync().Forget();
+        }
 
-            // Publish the result first so subscribers (UI, downstream phases) and the save module
-            // see the same snapshot. Save is fire-and-forget: CompleteDay is called synchronously
-            // from Tick / event handlers; we never block the simulation on a disk/network write.
-            // The Results phase reads back via ISaveService.GetModuleAsync, which awaits any
-            // pending in-flight writes through the save service's own queue.
-            DayCompleted?.Invoke(_result);
+        private async UniTaskVoid PublishCompletionAsync()
+        {
+            // Snapshot the result reference so a late reset doesn't race the publish.
+            var snapshot = _result;
 
+            // 1) Persist BEFORE emitting so anyone listening to DayCompleted can immediately read
+            //    book_sell.last_day_result. UpdateModuleAsync only returns after the in-memory
+            //    module table is updated (it awaits its own semaphore internally).
             if (_save != null)
             {
-                _save.UpdateModuleAsync(SalesSaveKeys.LastDayResult, _result,
-                    SalesSaveKeys.LastDayResultSchemaVersion, CancellationToken.None).Forget();
+                try
+                {
+                    await _save.UpdateModuleAsync(SalesSaveKeys.LastDayResult, snapshot,
+                        SalesSaveKeys.LastDayResultSchemaVersion, CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"{LogPrefix} failed to persist SalesDayResult: {ex.Message}");
+                }
             }
+
+            // 2) Now it is safe to notify the View; Results will see a populated save module.
+            DayCompleted?.Invoke(snapshot);
         }
     }
 }
