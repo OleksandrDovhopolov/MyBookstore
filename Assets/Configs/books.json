@@ -1,252 +1,606 @@
 [
   {
-    "id": "book_red_greenhouse",
-    "title": "Красная теплица",
-    "author": "А. Линд",
-    "genre": "Fantasy",
-    "basePrice": 80,
-    "rarityWeight": 0.4,
-    "tags": ["space", "survival", "engineering"],
-    "mood": ["smart", "tense", "optimistic"]
-  },
-  {
-    "id": "book_quiet_orbit",
-    "title": "Тихая орбита",
-    "author": "Н. Доу",
-    "genre": "Fantasy",
-    "basePrice": 60,
-    "rarityWeight": 0.5,
-    "tags": ["space", "loneliness", "study"],
-    "mood": ["smart", "melancholic"]
-  },
-  {
-    "id": "book_glass_sun",
-    "title": "Стеклянное солнце",
-    "author": "Т. Каро",
-    "genre": "Fantasy",
-    "basePrice": 75,
-    "rarityWeight": 0.4,
-    "tags": ["space", "science", "philosophy"],
-    "mood": ["smart", "melancholic"]
-  },
-  {
-    "id": "book_signals_andromeda",
-    "title": "Сигналы из Андромеды",
-    "author": "П. Кент",
-    "genre": "Fantasy",
-    "basePrice": 95,
-    "rarityWeight": 0.3,
-    "tags": ["space", "investigation", "science"],
-    "mood": ["tense", "dark"]
-  },
-  {
-    "id": "book_lantern_letters",
-    "title": "Письма у фонаря",
-    "author": "М. Орвилл",
-    "genre": "Crime",
-    "basePrice": 70,
-    "rarityWeight": 0.4,
-    "tags": ["letters", "cozy", "small_town"],
-    "mood": ["cozy", "warm"]
-  },
-  {
-    "id": "book_grey_pier",
-    "title": "Серый пирс",
-    "author": "Р. Хант",
-    "genre": "Crime",
-    "basePrice": 90,
-    "rarityWeight": 0.3,
-    "tags": ["sea", "investigation", "rain"],
-    "mood": ["dark", "tense"]
-  },
-  {
-    "id": "book_eleven_keys",
-    "title": "Одиннадцать ключей",
-    "author": "С. Норберг",
-    "genre": "Crime",
-    "basePrice": 75,
-    "rarityWeight": 0.4,
-    "tags": ["investigation", "small_town", "winter"],
-    "mood": ["tense", "smart"]
-  },
-  {
-    "id": "book_clock_silence",
-    "title": "Часы тишины",
-    "author": "Б. Велл",
-    "genre": "Crime",
-    "basePrice": 110,
-    "rarityWeight": 0.2,
-    "tags": ["investigation", "philosophy", "rain"],
-    "mood": ["dark", "melancholic"]
-  },
-  {
-    "id": "book_summer_two_chapters",
-    "title": "Лето в двух главах",
-    "author": "Л. Прайс",
-    "genre": "Drama",
-    "basePrice": 50,
-    "rarityWeight": 0.6,
-    "tags": ["short", "summer", "first_love"],
-    "mood": ["warm", "optimistic"]
-  },
-  {
-    "id": "book_north_window",
-    "title": "Северное окно",
-    "author": "К. Брун",
+    "id": "book_001",
+    "title": "Тени зимнего моря",
+    "author": "И. Воронова",
     "genre": "Drama",
     "basePrice": 65,
-    "rarityWeight": 0.4,
-    "tags": ["loneliness", "winter", "letters"],
-    "mood": ["melancholic", "romantic"]
+    "rarityWeight": 0.35,
+    "tags": ["sea", "winter", "history"],
+    "mood": ["melancholic", "dark", "smart"]
   },
   {
-    "id": "book_letters_lighthouse",
-    "title": "Письма с маяка",
-    "author": "В. Прайс",
-    "genre": "Drama",
-    "basePrice": 60,
-    "rarityWeight": 0.5,
-    "tags": ["letters", "sea", "small_town"],
-    "mood": ["warm", "romantic"]
+    "id": "book_002",
+    "title": "Орбита надежды",
+    "author": "К. Северин",
+    "genre": "Fantasy",
+    "basePrice": 95,
+    "rarityWeight": 0.62,
+    "tags": ["space", "engineering", "science"],
+    "mood": ["optimistic", "smart", "tense"]
   },
   {
-    "id": "book_summer_kitchen",
-    "title": "Кухня летом",
-    "author": "Я. Тардо",
-    "genre": "Drama",
-    "basePrice": 45,
-    "rarityWeight": 0.6,
-    "tags": ["cozy", "summer", "short"],
+    "id": "book_003",
+    "title": "Письма под дождём",
+    "author": "Е. Лескова",
+    "genre": "Classic",
+    "basePrice": 55,
+    "rarityWeight": 0.22,
+    "tags": ["letters", "rain", "first_love"],
+    "mood": ["romantic", "warm", "melancholic"]
+  },
+  {
+    "id": "book_004",
+    "title": "Последний свидетель",
+    "author": "М. Дорин",
+    "genre": "Crime",
+    "basePrice": 90,
+    "rarityWeight": 0.71,
+    "tags": ["investigation", "history", "small_town"],
+    "mood": ["tense", "dark", "smart"]
+  },
+  {
+    "id": "book_005",
+    "title": "Летняя станция",
+    "author": "О. Белова",
+    "genre": "Travel",
+    "basePrice": 70,
+    "rarityWeight": 0.41,
+    "tags": ["summer", "sea", "study"],
     "mood": ["warm", "optimistic", "cozy"]
   },
   {
-    "id": "book_short_road",
-    "title": "Короткая дорога к Эйлуру",
-    "author": "Д. Векс",
-    "genre": "Classic",
-    "basePrice": 100,
-    "rarityWeight": 0.2,
-    "tags": ["short", "philosophy", "study"],
-    "mood": ["smart", "warm"]
+    "id": "book_006",
+    "title": "Звёздный инженер",
+    "author": "Р. Громов",
+    "genre": "Fact",
+    "basePrice": 120,
+    "rarityWeight": 0.8,
+    "tags": ["engineering", "space", "science"],
+    "mood": ["smart", "optimistic", "tense"]
   },
   {
-    "id": "book_iron_bridges",
-    "title": "Чугунные мосты",
-    "author": "Г. Мор",
+    "id": "book_007",
+    "title": "Дом у маяка",
+    "author": "Т. Озёрная",
     "genre": "Classic",
+    "basePrice": 60,
+    "rarityWeight": 0.27,
+    "tags": ["sea", "rain", "small_town"],
+    "mood": ["cozy", "warm", "melancholic"]
+  },
+  {
+    "id": "book_008",
+    "title": "Код одиночества",
+    "author": "Д. Карпов",
+    "genre": "Drama",
     "basePrice": 85,
-    "rarityWeight": 0.4,
-    "tags": ["history", "philosophy"],
-    "mood": ["smart", "dark"]
+    "rarityWeight": 0.53,
+    "tags": ["loneliness", "study", "science"],
+    "mood": ["smart", "melancholic", "dark"]
   },
   {
-    "id": "book_quiet_evening",
-    "title": "Тихий вечер",
-    "author": "Л. Холь",
-    "genre": "Classic",
-    "basePrice": 70,
-    "rarityWeight": 0.5,
-    "tags": ["philosophy", "short", "cozy"],
-    "mood": ["cozy", "melancholic"]
+    "id": "book_009",
+    "title": "Город без следов",
+    "author": "Л. Рейн",
+    "genre": "Crime",
+    "basePrice": 88,
+    "rarityWeight": 0.68,
+    "tags": ["investigation", "rain", "history"],
+    "mood": ["tense", "dark", "smart"]
   },
   {
-    "id": "book_walk_inland",
-    "title": "Прогулка вглубь страны",
-    "author": "Э. Дрейк",
-    "genre": "Classic",
-    "basePrice": 95,
-    "rarityWeight": 0.3,
-    "tags": ["philosophy", "small_town", "history"],
-    "mood": ["smart", "warm"]
+    "id": "book_010",
+    "title": "Тёплый июль",
+    "author": "Н. Соколова",
+    "genre": "Kids",
+    "basePrice": 45,
+    "rarityWeight": 0.18,
+    "tags": ["summer", "small_town", "first_love"],
+    "mood": ["warm", "cozy", "optimistic"]
   },
   {
-    "id": "book_practical_horizons",
-    "title": "Практические горизонты",
-    "author": "Е. Шор",
+    "id": "book_011",
+    "title": "Хроники красной планеты",
+    "author": "В. Марек",
+    "genre": "Fantasy",
+    "basePrice": 100,
+    "rarityWeight": 0.74,
+    "tags": ["space", "survival", "engineering"],
+    "mood": ["tense", "optimistic", "smart"]
+  },
+  {
+    "id": "book_012",
+    "title": "Философия тумана",
+    "author": "А. Лемов",
     "genre": "Fact",
-    "basePrice": 110,
-    "rarityWeight": 0.3,
-    "tags": ["science", "study", "history"],
-    "mood": ["smart", "optimistic"]
+    "basePrice": 78,
+    "rarityWeight": 0.37,
+    "tags": ["philosophy", "rain", "study"],
+    "mood": ["smart", "melancholic", "warm"]
   },
   {
-    "id": "book_morning_routes",
-    "title": "Утренние маршруты",
-    "author": "К. Стенн",
-    "genre": "Fact",
-    "basePrice": 60,
-    "rarityWeight": 0.5,
-    "tags": ["study", "history", "small_town"],
-    "mood": ["optimistic", "smart"]
-  },
-  {
-    "id": "book_cards_charts",
-    "title": "Карты и графики",
-    "author": "Й. Берг",
-    "genre": "Fact",
-    "basePrice": 130,
-    "rarityWeight": 0.2,
-    "tags": ["science", "study", "engineering"],
-    "mood": ["smart"]
-  },
-  {
-    "id": "book_recipe_year",
-    "title": "Рецепт года",
-    "author": "Д. Локк",
-    "genre": "Fact",
-    "basePrice": 55,
-    "rarityWeight": 0.6,
-    "tags": ["cozy", "short", "study"],
-    "mood": ["warm", "optimistic"]
-  },
-  {
-    "id": "book_north_coast",
-    "title": "Северный берег",
-    "author": "Й. Кер",
+    "id": "book_013",
+    "title": "Северные письма",
+    "author": "Я. Руденко",
     "genre": "Travel",
-    "basePrice": 70,
-    "rarityWeight": 0.4,
-    "tags": ["sea", "small_town", "history"],
-    "mood": ["warm", "melancholic"]
+    "basePrice": 68,
+    "rarityWeight": 0.33,
+    "tags": ["letters", "winter", "history"],
+    "mood": ["melancholic", "cozy", "warm"]
   },
   {
-    "id": "book_train_diary",
-    "title": "Дневник поездов",
-    "author": "М. Шорн",
-    "genre": "Travel",
+    "id": "book_014",
+    "title": "Лабиринт улик",
+    "author": "Г. Холодов",
+    "genre": "Crime",
+    "basePrice": 92,
+    "rarityWeight": 0.72,
+    "tags": ["investigation", "science", "short"],
+    "mood": ["tense", "smart", "dark"]
+  },
+  {
+    "id": "book_015",
+    "title": "Маленькая гавань",
+    "author": "С. Лунёва",
+    "genre": "Kids",
+    "basePrice": 50,
+    "rarityWeight": 0.24,
+    "tags": ["sea", "small_town", "summer"],
+    "mood": ["cozy", "warm", "optimistic"]
+  },
+  {
+    "id": "book_016",
+    "title": "На краю вакуума",
+    "author": "И. Фарен",
+    "genre": "Fantasy",
+    "basePrice": 105,
+    "rarityWeight": 0.81,
+    "tags": ["space", "loneliness", "survival"],
+    "mood": ["tense", "dark", "smart"]
+  },
+  {
+    "id": "book_017",
+    "title": "История старого вокзала",
+    "author": "П. Орлов",
+    "genre": "Classic",
+    "basePrice": 62,
+    "rarityWeight": 0.29,
+    "tags": ["history", "small_town", "letters"],
+    "mood": ["warm", "melancholic", "cozy"]
+  },
+  {
+    "id": "book_018",
+    "title": "Забытая формула",
+    "author": "Е. Ларин",
+    "genre": "Drama",
     "basePrice": 80,
-    "rarityWeight": 0.3,
-    "tags": ["history", "study", "small_town"],
-    "mood": ["smart", "optimistic"]
+    "rarityWeight": 0.48,
+    "tags": ["science", "study", "philosophy"],
+    "mood": ["smart", "melancholic", "optimistic"]
   },
   {
-    "id": "book_walking_silence",
-    "title": "Тишина для пешехода",
-    "author": "А. Грилле",
+    "id": "book_019",
+    "title": "Дело о белом зонте",
+    "author": "М. Янсен",
+    "genre": "Crime",
+    "basePrice": 84,
+    "rarityWeight": 0.59,
+    "tags": ["investigation", "rain", "small_town"],
+    "mood": ["tense", "cozy", "smart"]
+  },
+  {
+    "id": "book_020",
+    "title": "Путешествие к южным берегам",
+    "author": "Р. Тихонов",
     "genre": "Travel",
-    "basePrice": 60,
-    "rarityWeight": 0.5,
-    "tags": ["philosophy", "loneliness", "study"],
-    "mood": ["smart", "melancholic"]
+    "basePrice": 73,
+    "rarityWeight": 0.39,
+    "tags": ["sea", "summer", "history"],
+    "mood": ["optimistic", "warm", "cozy"]
+  },
+
+  {
+    "id": "book_021",
+    "title": "Станция Полярис",
+    "author": "К. Мельник",
+    "genre": "Fantasy",
+    "basePrice": 110,
+    "rarityWeight": 0.84,
+    "tags": ["space", "science", "survival"],
+    "mood": ["tense", "smart", "optimistic"]
   },
   {
-    "id": "book_kite_pocket",
-    "title": "Карманный воздушный змей",
-    "author": "П. Тин",
-    "genre": "Kids",
-    "basePrice": 35,
-    "rarityWeight": 0.6,
-    "tags": ["short", "summer", "cozy"],
-    "mood": ["warm", "optimistic"]
+    "id": "book_022",
+    "title": "Осенние признания",
+    "author": "Л. Брагина",
+    "genre": "Classic",
+    "basePrice": 58,
+    "rarityWeight": 0.26,
+    "tags": ["letters", "first_love", "rain"],
+    "mood": ["romantic", "warm", "melancholic"]
   },
   {
-    "id": "book_bear_market",
-    "title": "Мишка идёт на рынок",
-    "author": "Е. Шпиль",
+    "id": "book_023",
+    "title": "Чёрный архив",
+    "author": "Т. Грей",
+    "genre": "Crime",
+    "basePrice": 96,
+    "rarityWeight": 0.76,
+    "tags": ["investigation", "history", "philosophy"],
+    "mood": ["dark", "smart", "tense"]
+  },
+  {
+    "id": "book_024",
+    "title": "Книжная улица",
+    "author": "О. Зорина",
     "genre": "Kids",
-    "basePrice": 30,
-    "rarityWeight": 0.6,
-    "tags": ["short", "cozy", "small_town"],
-    "mood": ["warm", "cozy"]
+    "basePrice": 48,
+    "rarityWeight": 0.21,
+    "tags": ["small_town", "cozy", "history"],
+    "mood": ["warm", "cozy", "optimistic"]
+  },
+  {
+    "id": "book_025",
+    "title": "Теория дальних звёзд",
+    "author": "А. Миронов",
+    "genre": "Fact",
+    "basePrice": 115,
+    "rarityWeight": 0.77,
+    "tags": ["science", "space", "study"],
+    "mood": ["smart", "optimistic", "tense"]
+  },
+  {
+    "id": "book_026",
+    "title": "Снежный путь",
+    "author": "И. Савина",
+    "genre": "Travel",
+    "basePrice": 67,
+    "rarityWeight": 0.32,
+    "tags": ["winter", "history", "short"],
+    "mood": ["melancholic", "warm", "cozy"]
+  },
+  {
+    "id": "book_027",
+    "title": "Механики пустоты",
+    "author": "Г. Романов",
+    "genre": "Fantasy",
+    "basePrice": 102,
+    "rarityWeight": 0.69,
+    "tags": ["engineering", "space", "survival"],
+    "mood": ["smart", "tense", "dark"]
+  },
+  {
+    "id": "book_028",
+    "title": "Последнее лето",
+    "author": "С. Глинская",
+    "genre": "Drama",
+    "basePrice": 72,
+    "rarityWeight": 0.44,
+    "tags": ["summer", "first_love", "sea"],
+    "mood": ["romantic", "warm", "melancholic"]
+  },
+  {
+    "id": "book_029",
+    "title": "Следы на снегу",
+    "author": "Д. Волков",
+    "genre": "Crime",
+    "basePrice": 89,
+    "rarityWeight": 0.63,
+    "tags": ["winter", "investigation", "small_town"],
+    "mood": ["tense", "dark", "smart"]
+  },
+  {
+    "id": "book_030",
+    "title": "Чай у пристани",
+    "author": "М. Рябова",
+    "genre": "Classic",
+    "basePrice": 57,
+    "rarityWeight": 0.25,
+    "tags": ["sea", "cozy", "letters"],
+    "mood": ["warm", "cozy", "romantic"]
+  },
+
+  {
+    "id": "book_031",
+    "title": "Атлас забытых миров",
+    "author": "В. Сигма",
+    "genre": "Fantasy",
+    "basePrice": 108,
+    "rarityWeight": 0.82,
+    "tags": ["space", "history", "science"],
+    "mood": ["smart", "optimistic", "tense"]
+  },
+  {
+    "id": "book_032",
+    "title": "Город дождя",
+    "author": "К. Норд",
+    "genre": "Drama",
+    "basePrice": 69,
+    "rarityWeight": 0.38,
+    "tags": ["rain", "loneliness", "small_town"],
+    "mood": ["melancholic", "dark", "warm"]
+  },
+  {
+    "id": "book_033",
+    "title": "Короткие истории маяка",
+    "author": "Е. Полевая",
+    "genre": "Kids",
+    "basePrice": 42,
+    "rarityWeight": 0.16,
+    "tags": ["short", "sea", "summer"],
+    "mood": ["cozy", "warm", "optimistic"]
+  },
+  {
+    "id": "book_034",
+    "title": "Тайна старой карты",
+    "author": "Л. Корвин",
+    "genre": "Crime",
+    "basePrice": 86,
+    "rarityWeight": 0.57,
+    "tags": ["investigation", "history", "travel"],
+    "mood": ["tense", "smart", "optimistic"]
+  },
+  {
+    "id": "book_035",
+    "title": "Звёздный дневник",
+    "author": "Н. Кравец",
+    "genre": "Fantasy",
+    "basePrice": 98,
+    "rarityWeight": 0.66,
+    "tags": ["space", "letters", "science"],
+    "mood": ["smart", "optimistic", "warm"]
+  },
+  {
+    "id": "book_036",
+    "title": "Берег памяти",
+    "author": "Т. Белецкая",
+    "genre": "Classic",
+    "basePrice": 61,
+    "rarityWeight": 0.31,
+    "tags": ["sea", "history", "first_love"],
+    "mood": ["romantic", "melancholic", "warm"]
+  },
+  {
+    "id": "book_037",
+    "title": "Учебник мечтателя",
+    "author": "А. Светлов",
+    "genre": "Fact",
+    "basePrice": 82,
+    "rarityWeight": 0.47,
+    "tags": ["study", "philosophy", "science"],
+    "mood": ["smart", "optimistic", "warm"]
+  },
+  {
+    "id": "book_038",
+    "title": "Зимний экспресс",
+    "author": "П. Климов",
+    "genre": "Travel",
+    "basePrice": 75,
+    "rarityWeight": 0.43,
+    "tags": ["winter", "history", "rain"],
+    "mood": ["cozy", "melancholic", "warm"]
+  },
+  {
+    "id": "book_039",
+    "title": "Пепел улик",
+    "author": "Р. Денисов",
+    "genre": "Crime",
+    "basePrice": 94,
+    "rarityWeight": 0.73,
+    "tags": ["investigation", "philosophy", "loneliness"],
+    "mood": ["dark", "smart", "tense"]
+  },
+  {
+    "id": "book_040",
+    "title": "Лунная ферма",
+    "author": "О. Сторм",
+    "genre": "Fantasy",
+    "basePrice": 99,
+    "rarityWeight": 0.67,
+    "tags": ["space", "engineering", "survival"],
+    "mood": ["optimistic", "smart", "tense"]
+  },
+
+  {
+    "id": "book_041",
+    "title": "Дорога к морю",
+    "author": "С. Мирская",
+    "genre": "Travel",
+    "basePrice": 71,
+    "rarityWeight": 0.4,
+    "tags": ["sea", "summer", "history"],
+    "mood": ["warm", "optimistic", "cozy"]
+  },
+  {
+    "id": "book_042",
+    "title": "Тихий переулок",
+    "author": "И. Невская",
+    "genre": "Drama",
+    "basePrice": 64,
+    "rarityWeight": 0.34,
+    "tags": ["small_town", "rain", "first_love"],
+    "mood": ["romantic", "melancholic", "warm"]
+  },
+  {
+    "id": "book_043",
+    "title": "Энциклопедия горизонтов",
+    "author": "Д. Яковлев",
+    "genre": "Fact",
+    "basePrice": 118,
+    "rarityWeight": 0.79,
+    "tags": ["science", "travel", "study"],
+    "mood": ["smart", "optimistic", "warm"]
+  },
+  {
+    "id": "book_044",
+    "title": "Старый причал",
+    "author": "М. Орехова",
+    "genre": "Classic",
+    "basePrice": 59,
+    "rarityWeight": 0.28,
+    "tags": ["sea", "letters", "history"],
+    "mood": ["cozy", "warm", "melancholic"]
+  },
+  {
+    "id": "book_045",
+    "title": "Колония Альфа",
+    "author": "Г. Серов",
+    "genre": "Fantasy",
+    "basePrice": 112,
+    "rarityWeight": 0.86,
+    "tags": ["space", "survival", "engineering"],
+    "mood": ["tense", "smart", "optimistic"]
+  },
+  {
+    "id": "book_046",
+    "title": "Письма без адреса",
+    "author": "Е. Громова",
+    "genre": "Drama",
+    "basePrice": 66,
+    "rarityWeight": 0.36,
+    "tags": ["letters", "loneliness", "rain"],
+    "mood": ["melancholic", "romantic", "dark"]
+  },
+  {
+    "id": "book_047",
+    "title": "Музей тайн",
+    "author": "В. Фрост",
+    "genre": "Crime",
+    "basePrice": 91,
+    "rarityWeight": 0.7,
+    "tags": ["investigation", "history", "science"],
+    "mood": ["smart", "tense", "dark"]
+  },
+  {
+    "id": "book_048",
+    "title": "Лесной календарь",
+    "author": "Н. Уткина",
+    "genre": "Kids",
+    "basePrice": 44,
+    "rarityWeight": 0.17,
+    "tags": ["summer", "winter", "short"],
+    "mood": ["warm", "cozy", "optimistic"]
+  },
+  {
+    "id": "book_049",
+    "title": "Трактат о времени",
+    "author": "К. Ларсен",
+    "genre": "Fact",
+    "basePrice": 87,
+    "rarityWeight": 0.52,
+    "tags": ["philosophy", "science", "history"],
+    "mood": ["smart", "melancholic", "optimistic"]
+  },
+  {
+    "id": "book_050",
+    "title": "Последний маяк",
+    "author": "Я. Светова",
+    "genre": "Classic",
+    "basePrice": 63,
+    "rarityWeight": 0.3,
+    "tags": ["sea", "loneliness", "rain"],
+    "mood": ["melancholic", "warm", "cozy"]
+  },
+
+  {
+    "id": "book_051",
+    "title": "Орбитальный сад",
+    "author": "Р. Вега",
+    "genre": "Fantasy",
+    "basePrice": 104,
+    "rarityWeight": 0.78,
+    "tags": ["space", "engineering", "science"],
+    "mood": ["smart", "optimistic", "warm"]
+  },
+  {
+    "id": "book_052",
+    "title": "Дневник путешественника",
+    "author": "О. Даль",
+    "genre": "Travel",
+    "basePrice": 74,
+    "rarityWeight": 0.42,
+    "tags": ["history", "summer", "letters"],
+    "mood": ["optimistic", "warm", "cozy"]
+  },
+  {
+    "id": "book_053",
+    "title": "Серебряный снег",
+    "author": "Т. Морозова",
+    "genre": "Drama",
+    "basePrice": 68,
+    "rarityWeight": 0.39,
+    "tags": ["winter", "first_love", "small_town"],
+    "mood": ["romantic", "melancholic", "warm"]
+  },
+  {
+    "id": "book_054",
+    "title": "Уравнение бездны",
+    "author": "И. Векслер",
+    "genre": "Fact",
+    "basePrice": 109,
+    "rarityWeight": 0.75,
+    "tags": ["science", "philosophy", "space"],
+    "mood": ["smart", "dark", "tense"]
+  },
+  {
+    "id": "book_055",
+    "title": "Секрет дубовой аллеи",
+    "author": "П. Белов",
+    "genre": "Crime",
+    "basePrice": 83,
+    "rarityWeight": 0.55,
+    "tags": ["investigation", "small_town", "history"],
+    "mood": ["cozy", "tense", "smart"]
+  },
+  {
+    "id": "book_056",
+    "title": "Тёплый свет окон",
+    "author": "Л. Чернова",
+    "genre": "Classic",
+    "basePrice": 56,
+    "rarityWeight": 0.23,
+    "tags": ["cozy", "rain", "letters"],
+    "mood": ["warm", "cozy", "romantic"]
+  },
+  {
+    "id": "book_057",
+    "title": "Марсианская смена",
+    "author": "А. Вест",
+    "genre": "Fantasy",
+    "basePrice": 101,
+    "rarityWeight": 0.65,
+    "tags": ["space", "survival", "study"],
+    "mood": ["tense", "optimistic", "smart"]
+  },
+  {
+    "id": "book_058",
+    "title": "Школьный корабль",
+    "author": "С. Янтарь",
+    "genre": "Kids",
+    "basePrice": 47,
+    "rarityWeight": 0.19,
+    "tags": ["study", "sea", "summer"],
+    "mood": ["optimistic", "warm", "cozy"]
+  },
+  {
+    "id": "book_059",
+    "title": "Глубина памяти",
+    "author": "М. Левин",
+    "genre": "Drama",
+    "basePrice": 79,
+    "rarityWeight": 0.46,
+    "tags": ["history", "loneliness", "letters"],
+    "mood": ["melancholic", "smart", "warm"]
+  },
+  {
+    "id": "book_060",
+    "title": "Созвездие механиков",
+    "author": "В. Астер",
+    "genre": "Fantasy",
+    "basePrice": 113,
+    "rarityWeight": 0.88,
+    "tags": ["engineering", "space", "survival"],
+    "mood": ["smart", "tense", "optimistic"]
   }
 ]
