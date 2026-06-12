@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Game.Configs.Models;
@@ -41,7 +42,7 @@ namespace Book.Sell.Tests.Editor.Fakes
             return shelf;
         }
 
-        /// <summary>Zero durations + zero spawn interval → one Tick advances each step. Fast & deterministic.</summary>
+        /// <summary>Zero durations + zero spawn interval → one Tick advances each step. Fast &amp; deterministic.</summary>
         public static SalesTuning FastTuning()
             => new()
             {
@@ -52,14 +53,24 @@ namespace Book.Sell.Tests.Editor.Fakes
                 BaseCustomers = 0
             };
 
+        /// <summary>Selector that passes the stage-1 gate every time. Useful for flow-focused tests.</summary>
+        public static IPassiveSaleSelector AlwaysHitPassiveSelector()
+            => new WeightedPassiveSaleSelector(new FakeBaseSaleChanceCalculator(1.0));
+
+        /// <summary>Selector that never passes the gate. Useful for "miss" flow tests.</summary>
+        public static IPassiveSaleSelector AlwaysMissPassiveSelector()
+            => new WeightedPassiveSaleSelector(new FakeBaseSaleChanceCalculator(0.0));
+
         public static CustomerContext Context(SalesShelf shelf, LocationConfig location, ISalesDaySink sink,
-            IInteractionLock interactionLock = null, ISalesRandom random = null, SalesTuning tuning = null)
+            IInteractionLock interactionLock = null, ISalesRandom random = null, SalesTuning tuning = null,
+            IPassiveSaleSelector passiveSelector = null, IReadOnlyList<string> activeDecorIds = null)
             => new(
                 shelf,
                 interactionLock ?? new InteractionLock(),
                 random ?? new FakeSalesRandom(),
-                new DefaultPassiveSaleSelector(),
+                passiveSelector ?? AlwaysHitPassiveSelector(),
                 location,
+                activeDecorIds,
                 sink,
                 tuning ?? FastTuning());
     }

@@ -2,7 +2,8 @@
     "name": "Analytics.Tests.Editor",
     "rootNamespace": "Analytics.Tests.Editor",
     "references": [
-        "Analytics"
+        "Analytics",
+        "UnityEngine.TestRunner"
     ],
     "includePlatforms": [
         "Editor"

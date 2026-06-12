@@ -90,7 +90,7 @@ namespace Book.Sell.Services
             BuildShelf(setup.ShelfBookIds);
 
             _result = new SalesDayResult { Day = setup.Day };
-            _ctx = new CustomerContext(_shelf, _lock, _random, _passiveSelector, _location, this, _tuning);
+            _ctx = new CustomerContext(_shelf, _lock, _random, _passiveSelector, _location, setup.DecorIds, this, _tuning);
 
             _customers = new List<Customer>(_spawner.BuildCustomers(setup, _tuning, _random));
             _nextToSpawn = 0;

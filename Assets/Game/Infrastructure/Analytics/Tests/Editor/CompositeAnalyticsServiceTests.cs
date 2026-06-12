@@ -1,7 +1,10 @@
 using System;
-using Analytics;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using Analytics;
 using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace AnalyticsTests.Editor
 {
@@ -44,6 +47,10 @@ namespace AnalyticsTests.Editor
         [Test]
         public void TrackEvent_ContinuesWhenProviderThrows()
         {
+            // The composite service logs an error when a provider throws and then continues
+            // with the remaining providers. Expect that log so the test runner doesn't fail on it.
+            LogAssert.Expect(LogType.Error, new Regex(@"\[Analytics\].*Provider 'firebase' TrackEvent failed"));
+
             var throwingProvider = new ThrowingProvider("firebase");
             var recordingProvider = new RecordingProvider("debug");
             var service = CreateService(throwingProvider, recordingProvider);

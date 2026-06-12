@@ -14,11 +14,16 @@ namespace Book.Sell.Tests.Editor.Steps
         };
 
         [Test]
-        public void MatchingBook_ReservesDuringWindow_ThenCommitsSale()
+        public void ChanceHit_ReservesDuringWindow_ThenCommitsSale()
         {
             var sink = new RecordingSink();
             var shelf = SalesTestKit.Shelf(SalesTestKit.Book("b1", genre: "sci-fi", price: 80));
-            var ctx = SalesTestKit.Context(shelf, SalesTestKit.Location(demandGenres: new[] { "sci-fi" }), sink, tuning: Tuning());
+            var ctx = SalesTestKit.Context(
+                shelf,
+                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
+                sink,
+                tuning: Tuning(),
+                passiveSelector: SalesTestKit.AlwaysHitPassiveSelector());
             var step = new PassivePurchaseStep();
             var self = new Customer("c1", new[] { step });
 
@@ -40,12 +45,16 @@ namespace Book.Sell.Tests.Editor.Steps
         }
 
         [Test]
-        public void NoMatch_CompletesAsMiss_NoSale_BookStaysAvailable()
+        public void ChanceMiss_CompletesAsMiss_NoSale_BookStaysAvailable()
         {
             var sink = new RecordingSink();
-            // Shelf book is romance; location demands sci-fi → no match.
-            var shelf = SalesTestKit.Shelf(SalesTestKit.Book("b1", genre: "romance", tags: new[] { "summer" }));
-            var ctx = SalesTestKit.Context(shelf, SalesTestKit.Location(demandGenres: new[] { "sci-fi" }, demandTags: new[] { "space" }), sink, tuning: Tuning());
+            var shelf = SalesTestKit.Shelf(SalesTestKit.Book("b1", genre: "sci-fi"));
+            var ctx = SalesTestKit.Context(
+                shelf,
+                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
+                sink,
+                tuning: Tuning(),
+                passiveSelector: SalesTestKit.AlwaysMissPassiveSelector());
             var step = new PassivePurchaseStep();
             var self = new Customer("c1", new[] { step });
 
@@ -56,11 +65,16 @@ namespace Book.Sell.Tests.Editor.Steps
         }
 
         [Test]
-        public void MatchedDemand_IsReportedInEvent()
+        public void SaleEvent_ReportsGenre_TagsAreEmpty()
         {
             var sink = new RecordingSink();
             var shelf = SalesTestKit.Shelf(SalesTestKit.Book("b1", genre: "sci-fi", tags: new[] { "space", "survival" }));
-            var ctx = SalesTestKit.Context(shelf, SalesTestKit.Location(demandGenres: new[] { "sci-fi" }, demandTags: new[] { "space" }), sink, tuning: Tuning());
+            var ctx = SalesTestKit.Context(
+                shelf,
+                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }, demandTags: new[] { "space" }),
+                sink,
+                tuning: Tuning(),
+                passiveSelector: SalesTestKit.AlwaysHitPassiveSelector());
             var step = new PassivePurchaseStep();
             var self = new Customer("c1", new[] { step });
 
@@ -70,7 +84,7 @@ namespace Book.Sell.Tests.Editor.Steps
 
             var evt = sink.PassiveSales[0].evt;
             CollectionAssert.Contains(evt.MatchedGenres.ToArray(), "sci-fi");
-            CollectionAssert.Contains(evt.MatchedTags.ToArray(), "space");
+            Assert.IsEmpty(evt.MatchedTags, "Passive sales no longer report tag matches (ADR-0004).");
         }
     }
 }

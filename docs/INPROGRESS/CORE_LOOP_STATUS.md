@@ -17,6 +17,7 @@
 | Подготовка (Preparation) — MVP slice (выбор книг, save-модуль, замена `DefaultSalesSetupProvider`) | — | Done | 2026-06-12 |
 | Миграция жанров каталога на канон 7 жанров (Classic, Fantasy, Crime, Drama, Fact, Travel, Kids) | `Assets/Configs/{books,locations,days,requests}.json` | Done | 2026-06-12 |
 | FTUE first-launch preset (A) — `Game.Ftue`, фаза `phase_ftue` в Bootstrap, `DayProgressInventoryProvider` вместо каталога | [link](https://app.notion.com/p/37d511859db381a6a90dd55eb2f4ba8a) | Done | 2026-06-12 |
+| baseSaleChance — probabilistic passive sale (ADR-0004): `economy.json`, `WeightedPassiveSaleSelector`, decor stub `IDecorModifierProvider` | [link](https://app.notion.com/p/37c511859db381bf89e6f89b7e1ce95a) | Done | 2026-06-12 |
 
 ## Что технически уже работает «бесплатно»
 
@@ -29,7 +30,15 @@
 
 ## Что переходит в работу прямо сейчас (по порядку)
 
-Закреплённый владельцем порядок: ~~B~~ (done) → ~~A~~ (done) → **baseSaleChance**.
+Закреплённый владельцем порядок: ~~B~~ (done) → ~~A~~ (done) → ~~baseSaleChance~~ (done). **Core loop MVP замкнут.**
+
+### ✅ baseSaleChance — DONE 2026-06-12
+
+- **Notion:** [Sales — пассивные через baseSaleChance](https://app.notion.com/p/37c511859db381bf89e6f89b7e1ce95a).
+- Реализован: пассивная продажа теперь двухстадийная (ADR-0004). Stage 1 — гейт по жанру `clamp(min(base + perCopy*count, cap) × locMod × decorMod, 0, 1)`; stage 2 — взвешенный пик по `BookConfig.RarityWeight`. `MatchedTags` в `PassiveSaleEvent` теперь всегда пуст (теги — слой активной миниигры).
+- Новый `EconomyConfig` (`economy.json`, singleton-id `"economy"`) держит `baseSaleChance/perCopyChance/capChance/locationDemandMultiplier`. Стартовые значения `0.05 / 0.05 / 0.50 / 1.5` — placeholder под балансировку.
+- Декор — заглушка: `IDecorModifierProvider` интерфейс, `NoopDecorModifierProvider` всегда возвращает 1.0. Реальный декор-фича подключится позже без переписывания селектора/калькулятора. `ActiveDecorIds` уже пробрасывается через `CustomerContext` от `SalesSessionSetup`.
+- `DefaultPassiveSaleSelector` удалён. Тесты обновлены, добавлены unit-тесты для калькулятора и селектора.
 
 ### ✅ A. FTUE first-launch preset — DONE 2026-06-12
 

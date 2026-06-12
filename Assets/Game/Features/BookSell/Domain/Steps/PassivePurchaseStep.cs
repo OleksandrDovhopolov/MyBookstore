@@ -36,7 +36,7 @@ namespace Book.Sell.Domain.Steps
                 if (_t < ctx.Tuning.BrowseDuration) return StepStatus.Running;
 
                 var candidate = ctx.PassiveSelector.PickPassiveSale(
-                    ctx.Shelf.AvailableForSelection(), ctx.Location, ctx.Random);
+                    ctx.Shelf.AvailableForSelection(), ctx.Location, ctx.ActiveDecorIds, ctx.Random);
 
                 // Miss: nothing on the shelf matches the location demand → skip this book, continue plan.
                 if (candidate == null) return StepStatus.Completed;

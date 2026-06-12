@@ -1,0 +1,9 @@
+[
+  {
+    "id": "economy",
+    "baseSaleChance": 0.05,
+    "perCopyChance": 0.05,
+    "capChance": 0.50,
+    "locationDemandMultiplier": 1.5
+  }
+]
