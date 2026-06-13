@@ -15,6 +15,8 @@ namespace Game.Inventory.UI
     /// appears only on categories that have a registered handler.
     /// Production UI lands with the UI System module.
     /// </summary>
+    ///
+    /// THIS CLASS IS INJECTED IN GameplayLifetimeScope in GameplayScene as AutoInjectedGameObject
     public sealed class InventoryScreenView : MonoBehaviour
     {
         [Header("Tabs")]
@@ -89,8 +91,10 @@ namespace Game.Inventory.UI
         private void SelectCategory(string categoryId)
         {
             _activeCategoryId = categoryId;
+            
             if (_activeCategoryLabel != null && _categories.TryGet(categoryId, out var c))
                 _activeCategoryLabel.text = c.DisplayName;
+            
             Render();
         }
 

@@ -37,9 +37,9 @@ namespace Game.Bootstrap
 
             builder.Register<IInventoryUseRouter, InventoryUseRouter>(Lifetime.Singleton);
 
-            // Debug UI is registered only when present in the scene (same guard as other feature views).
+            /*// Debug UI is registered only when present in the scene (same guard as other feature views).
             if (Object.FindAnyObjectByType<InventoryScreenView>(FindObjectsInactive.Include) != null)
-                builder.RegisterComponentInHierarchy<InventoryScreenView>();
+                builder.RegisterComponentInHierarchy<InventoryScreenView>();*/
         }
     }
 }

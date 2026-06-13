@@ -34,7 +34,6 @@ namespace Game.Inventory.UI
                 _countLabel.gameObject.SetActive(item.Count > 1);
                 _countLabel.text = $"×{item.Count}";
             }
-            if (_useButton != null) _useButton.gameObject.SetActive(hasUseHandler);
         }
 
         private void OnUseClicked()
