@@ -7,6 +7,7 @@ using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.Ftue.Domain;
+using Game.Inventory.API;
 using Save;
 using UnityEngine;
 
@@ -17,12 +18,12 @@ namespace Game.Ftue.Services
     {
         private const string LogPrefix = "[FTUE]";
 
-        // MVP: стартовый пресет захардкожен. По спеке TB-референс: 60 золота + 27 книг по жанрам.
-        // Миграция в economy.json / ftue.json — отдельная задача (вместе с DailyBookSlots refactor).
-        // Зафиксировано в docs/INPROGRESS/CORE_LOOP_STATUS.md → "Известные ограничения".
+        // MVP: starter preset is hardcoded. Tiny Bookshop reference: 60 gold + 27 books across genres.
+        // Migration to economy.json / ftue.json is a separate task (paired with the DailyBookSlots refactor).
+        // Tracked in docs/INPROGRESS/CORE_LOOP_STATUS.md under "Known limitations".
         private const int StartingGold = 60;
 
-        // Порядок жанров фиксирован — он же определяет порядок ids в OwnedBookIds (для предсказуемости тестов).
+        // Genre order is fixed so the resulting inventory seeding order is stable across runs (good for tests).
         private static readonly IReadOnlyList<KeyValuePair<string, int>> PresetCounts = new[]
         {
             new KeyValuePair<string, int>("Fantasy", 5),
@@ -36,11 +37,13 @@ namespace Game.Ftue.Services
 
         private readonly ISaveService _save;
         private readonly IConfigsService _configs;
+        private readonly IInventoryService _inventory;
 
-        public FtueBootstrapper(ISaveService save, IConfigsService configs)
+        public FtueBootstrapper(ISaveService save, IConfigsService configs, IInventoryService inventory)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
+            _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
         }
 
         public async UniTask RunAsync(CancellationToken ct)
@@ -54,8 +57,8 @@ namespace Game.Ftue.Services
 
             var existingDay = await _save.GetModuleAsync<DayProgressState>(DayProgressService.ModuleKey, ct);
 
-            // Легаси-сейв: игрок уже играл, но маркер ftue.applied не было — просто помечаем,
-            // не перезаписываем прогресс. Покрывает миграцию существующих игроков.
+            // Legacy save: the player has already progressed, but the ftue.applied marker is missing.
+            // Just mark applied and leave their progress untouched. Covers migration of existing players.
             if (existingDay != null && (existingDay.CurrentDay > 1 || existingDay.CompletedDays.Count > 0))
             {
                 Debug.Log($"{LogPrefix} skip — existing progress detected (day={existingDay.CurrentDay}), marking applied.");
@@ -63,15 +66,19 @@ namespace Game.Ftue.Services
                 return;
             }
 
-            // Чистый первый запуск.
+            // Clean first launch: seed gold in day_progress, seed books in inventory.
             var state = existingDay ?? new DayProgressState();
             state.Gold = StartingGold;
-            state.OwnedBookIds = BuildPresetBookIds();
-
             await _save.UpdateModuleAsync(DayProgressService.ModuleKey, state, DayProgressService.SchemaVersion, ct);
+
+            var preset = BuildPresetBookIds()
+                .Select(id => new InventoryItem(id, InventoryCategories.Book, count: 1))
+                .ToList();
+            await _inventory.AddBatchAsync(preset, ct);
+
             await WriteAppliedMarkerAsync(ct);
 
-            Debug.Log($"{LogPrefix} applied: gold={state.Gold}, books={state.OwnedBookIds.Count}.");
+            Debug.Log($"{LogPrefix} applied: gold={state.Gold}, books={preset.Count}.");
         }
 
         private List<string> BuildPresetBookIds()
@@ -79,7 +86,7 @@ namespace Game.Ftue.Services
             var catalog = _configs.GetAll<BookConfig>();
             if (catalog == null || catalog.Count == 0)
             {
-                Debug.LogWarning($"{LogPrefix} BookConfig каталог пуст — пресет будет пустым.");
+                Debug.LogWarning($"{LogPrefix} BookConfig catalog is empty — preset will be empty.");
                 return new List<string>();
             }
 
@@ -93,7 +100,7 @@ namespace Game.Ftue.Services
             {
                 if (!byGenre.TryGetValue(genre, out var genreBooks) || genreBooks.Count == 0)
                 {
-                    Debug.LogWarning($"{LogPrefix} жанр '{genre}' отсутствует в каталоге — пропуск {requested} книг.");
+                    Debug.LogWarning($"{LogPrefix} genre '{genre}' missing from catalog — skipping {requested} books.");
                     continue;
                 }
 
@@ -104,7 +111,7 @@ namespace Game.Ftue.Services
                     .ToList();
 
                 if (picked.Count < requested)
-                    Debug.LogWarning($"{LogPrefix} жанр '{genre}': в каталоге {picked.Count} книг, запрошено {requested} — взято {picked.Count}.");
+                    Debug.LogWarning($"{LogPrefix} genre '{genre}': catalog has {picked.Count} books, requested {requested} — took {picked.Count}.");
 
                 foreach (var book in picked)
                     result.Add(book.Id);

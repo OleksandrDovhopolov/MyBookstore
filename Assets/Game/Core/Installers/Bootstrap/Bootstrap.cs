@@ -6,6 +6,8 @@ using Game.Bootstrap.Loading;
 using Game.Configs;
 using Game.Configs.Remote;
 using Game.Ftue.Services;
+using Game.Inventory.API;
+using Game.Inventory.Services;
 using Infrastructure;
 using Save;
 using UnityEngine;
@@ -51,6 +53,12 @@ namespace Game.Bootstrap
         private ISceneTransitionService _sceneTransition;
         private IFtueBootstrapper _ftue;
 
+        // Injected to force construction (and therefore ISaveHook self-registration) before
+        // SaveDataLoadOperation runs LoadAsync. We never invoke methods on these fields directly.
+        // ReSharper disable NotAccessedField.Local
+        private IInventoryService _inventory;
+        // ReSharper restore NotAccessedField.Local
+
         // NOT GetCancellationTokenOnDestroy(): the boot GameObject is destroyed during
         // SceneManager.LoadSceneAsync(Single), and the final SceneTransitionOperation would surface
         // OperationCanceledException, which the orchestrator reports as "scene failure".
@@ -66,7 +74,8 @@ namespace Game.Bootstrap
             IConfigsService configs,
             ISaveService save,
             ISceneTransitionService sceneTransition,
-            IFtueBootstrapper ftue)
+            IFtueBootstrapper ftue,
+            IInventoryService inventory)
         {
             _orchestrator = orchestrator;
             _catalog = catalog;
@@ -75,6 +84,7 @@ namespace Game.Bootstrap
             _save = save;
             _sceneTransition = sceneTransition;
             _ftue = ftue;
+            _inventory = inventory;
         }
 
         private void Awake()

@@ -15,7 +15,9 @@
         "Book.Sell",
         "Book.Sell.API",
         "Game.Preparation",
-        "Game.Ftue"
+        "Game.Ftue",
+        "Game.Inventory",
+        "Game.Inventory.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -18,6 +18,7 @@
 | Миграция жанров каталога на канон 7 жанров (Classic, Fantasy, Crime, Drama, Fact, Travel, Kids) | `Assets/Configs/{books,locations,days,requests}.json` | Done | 2026-06-12 |
 | FTUE first-launch preset (A) — `Game.Ftue`, фаза `phase_ftue` в Bootstrap, `DayProgressInventoryProvider` вместо каталога | [link](https://app.notion.com/p/37d511859db381a6a90dd55eb2f4ba8a) | Done | 2026-06-12 |
 | baseSaleChance — probabilistic passive sale (ADR-0004): `economy.json`, `WeightedPassiveSaleSelector`, decor stub `IDecorModifierProvider` | [link](https://app.notion.com/p/37c511859db381bf89e6f89b7e1ce95a) | Done | 2026-06-12 |
+| Inventory feature — `Game.Inventory.API` + `Game.Inventory` (categories registry, uniques/stacks, ISaveHook, use-router + 2 stub handlers, debug UI). `OwnedBookIds` удалён из `DayProgressState`, FTUE/Preparation переключены на `IInventoryService`. Async API + `IInventoryRepository` seam под server. Legacy migration через `ISaveHook`. | — | Done | 2026-06-12 |
 
 ## Что технически уже работает «бесплатно»
 

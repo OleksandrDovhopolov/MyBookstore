@@ -29,6 +29,7 @@ namespace Game.Bootstrap
             builder.RegisterInfrastructure();
             builder.RegisterConfigs();
             builder.RegisterUiSystem();
+            builder.RegisterInventory();
             builder.RegisterFtue();
         }
 

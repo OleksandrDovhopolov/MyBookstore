@@ -1,14 +1,13 @@
 {
-    "name": "Game.Ftue",
-    "rootNamespace": "Game.Ftue",
+    "name": "Game.Inventory",
+    "rootNamespace": "Game.Inventory",
     "references": [
         "UniTask",
         "VContainer",
         "Save",
         "Configs",
-        "DayCycle",
-        "Game.Bootstrap.Loading",
-        "Game.Inventory.API"
+        "Game.Inventory.API",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

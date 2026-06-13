@@ -3,14 +3,14 @@ using System.Collections.Generic;
 namespace Game.DayCycle.Day
 {
     /// <summary>
-    /// Общий прогресс дня для всего core loop. Единственный источник истины по
-    /// «какой сейчас день и фаза» — его читают/пишут все 4 фазы (Утро, Подготовка,
-    /// Продажа, Итоги). Сохраняется как Save-модуль <see cref="DayProgressService.ModuleKey"/>.
-    /// POCO: сериализуется Newtonsoft через ISaveService.UpdateModuleAsync.
+    /// Shared day progress for the entire core loop. Single source of truth for "what day and phase
+    /// the game is in" — read/written by all four phases (Morning, Preparation, Sales, Results).
+    /// Persisted as save module <see cref="DayProgressService.ModuleKey"/>.
+    /// POCO: serialized by Newtonsoft via ISaveService.UpdateModuleAsync.
     /// </summary>
     public sealed class DayProgressState
     {
-        /// <summary>Текущий игровой день, 1-based.</summary>
+        /// <summary>1-based current game day.</summary>
         public int CurrentDay { get; set; } = 1;
 
         public DayPhase CurrentPhase { get; set; } = DayPhase.Morning;
@@ -19,15 +19,9 @@ namespace Game.DayCycle.Day
         public int Reputation { get; set; }
 
         /// <summary>
-        /// Завершённые дни — для идемпотентного начисления наград в Итогах
-        /// (не начислять дважды при перезапуске на экране итогов).
+        /// Completed days — used by Results for idempotent reward application
+        /// (prevents double-grant when the player restarts on the summary screen).
         /// </summary>
         public List<int> CompletedDays { get; set; } = new();
-
-        /// <summary>
-        /// Книги во владении игрока (id из books.json). Пока заглушка для прототипа,
-        /// позже мигрирует в модуль Inventory.
-        /// </summary>
-        public List<string> OwnedBookIds { get; set; } = new();
     }
 }
