@@ -10,7 +10,6 @@ namespace Game.Bootstrap
         {
             builder.RegisterDayCycle();
             builder.RegisterResources();
-            builder.RegisterInventory();
             builder.RegisterShop();
             builder.RegisterRewardDrop();
             builder.RegisterIap();
