@@ -23,6 +23,8 @@ namespace Game.Bootstrap
         {
             ApplyDebugFlags();
 
+            builder.RegisterMessagePipeBus();
+            builder.RegisterMessagePipeSmokeTest(); // TODO: remove after first real message broker is wired up
             builder.RegisterGameLoading();
             builder.RegisterAnalytics();
             builder.RegisterSave();

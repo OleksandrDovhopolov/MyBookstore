@@ -21,7 +21,9 @@
         "Game.Resources",
         "Game.Resources.API",
         "Game.Progression",
-        "Game.Progression.API"
+        "Game.Progression.API",
+        "MessagePipe",
+        "MessagePipe.VContainer"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
