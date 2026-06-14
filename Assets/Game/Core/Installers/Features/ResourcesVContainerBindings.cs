@@ -1,27 +1,24 @@
+using Game.Resources.API;
+using Game.Resources.Services;
 using VContainer;
 
 namespace Game.Bootstrap
 {
-    // Registered in: GameInstaller (GameplayLifetimeScope)
-    // Resolves from parent: IWebClient, ISaveService
+    // Registered in: BootstrapInstaller (GlobalLifetimeScope — currencies must be available before
+    // FTUE seeds the starter gold and before GameplayScene's Results phase reads/writes them).
+    // Resolves from the same scope: ISaveService.
+    //
+    // GameHudView (debug HUD) lives in GameplayScene and is auto-injected from
+    // GameplayLifetimeScope as an AutoInjectedGameObject — it is NOT registered here.
     public static class ResourcesVContainerBindings
     {
         public static void RegisterResources(this IContainerBuilder builder)
         {
-            // TODO: Resource specs config (currency definitions, resource types — ScriptableObject)
-            // builder.RegisterInstance(_resourceSpecsConfig);
+            builder.Register<IResourcesRepository, SaveBackedResourcesRepository>(Lifetime.Singleton);
 
-            // TODO: Resource server API
-            // builder.Register<IResourceServerApi, HttpResourceServerApi>(Lifetime.Singleton);
-
-            // TODO: Resource operations service (add/subtract resources)
-            // builder.Register<IResourceOperationsService, ResourceOperationsService>(Lifetime.Singleton);
-
-            // TODO: Resource manager — entry point, syncs resources on startup
-            // builder.RegisterEntryPoint<ResourceManager>().As<IResourceManager>();
-
-            // TODO: Currency animation component (scene MonoBehaviour)
-            // builder.RegisterComponentInHierarchy<AnimateCurrency>();
+            // ResourcesService self-registers as ISaveHook in its constructor.
+            builder.Register<ResourcesService>(Lifetime.Singleton)
+                .As<IResourcesService>();
         }
     }
 }

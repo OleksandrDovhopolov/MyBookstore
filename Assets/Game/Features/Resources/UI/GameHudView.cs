@@ -7,10 +7,11 @@ using VContainer;
 namespace Game.Resources.UI
 {
     /// <summary>
-    /// Debug HUD: shows current gold and reputation. Place it as an inactive (or active) GameObject
-    /// in GameplayScene; the view is registered via <c>RegisterComponentInHierarchy</c> only when
-    /// present in the hierarchy. Production HUD lands with the UI System module.
+    /// Debug HUD: shows current gold and reputation. Place it as an active GameObject in
+    /// GameplayScene. Production HUD lands with the UI System module.
     /// </summary>
+    ///
+    /// THIS CLASS IS INJECTED IN GameplayLifetimeScope in GameplayScene as AutoInjectedGameObject
     public sealed class GameHudView : MonoBehaviour
     {
         [Header("Labels")]
