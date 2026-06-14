@@ -476,10 +476,10 @@ GameObject:
   m_Component:
   - component: {fileID: 351796691533624350}
   - component: {fileID: 5725024303665411235}
-  - component: {fileID: 303474359754135758}
-  - component: {fileID: 6253659911905198488}
+  - component: {fileID: -5117327106164573868}
   - component: {fileID: 5653145718807376124}
-  - component: {fileID: 7646039940513722396}
+  - component: {fileID: -5341817592482013987}
+  - component: {fileID: -4612274501263048103}
   m_Layer: 5
   m_Name: SettingsWindowView
   m_TagString: Untagged
@@ -520,7 +520,7 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
---- !u!223 &303474359754135758
+--- !u!223 &-5117327106164573868
 Canvas:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -538,12 +538,25 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 25
+  m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
---- !u!114 &6253659911905198488
+--- !u!114 &5653145718807376124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5883908850249204972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa2ed810107f22f4fb749e1150200c68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _duration: 0.25
+--- !u!114 &-5341817592482013987
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -561,20 +574,7 @@ MonoBehaviour:
   _resetButton: {fileID: 6302467636079804288}
   _closeButton: {fileID: 718839318352162672}
   _openConfirmButton: {fileID: 5253344779377311683}
---- !u!114 &5653145718807376124
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5883908850249204972}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fa2ed810107f22f4fb749e1150200c68, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _duration: 0.25
---- !u!114 &7646039940513722396
+--- !u!114 &-4612274501263048103
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

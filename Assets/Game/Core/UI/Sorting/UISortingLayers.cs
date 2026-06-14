@@ -1,22 +1,24 @@
 namespace Game.UI
 {
+    // Sort Order ranges per logical layer. Used instead of Unity SortingLayers because
+    // nested Canvases under a Screen Space Overlay parent silently ignore sortingLayer
+    // changes — only sortingOrder is honored. Each layer gets a 1000-wide segment.
     public static class UISortingLayers
     {
-        public const string Hud = "UI_Hud";
-        public const string Main = "UI_Main";
-        public const string Additional = "UI_Additional";
-        public const string System = "UI_System";
-        public const string Develop = "UI_Develop";
-
         public const int OrderStep = 10;
 
-        public static string For(WindowLayer layer) => layer switch
+        public const int MainBase = 1000;
+        public const int AdditionalBase = 2000;
+        public const int SystemBase = 3000;
+        public const int DevelopBase = 4000;
+
+        public static int BaseOrderFor(WindowLayer layer) => layer switch
         {
-            WindowLayer.Main => Main,
-            WindowLayer.Additional => Additional,
-            WindowLayer.System => System,
-            WindowLayer.Develop => Develop,
-            _ => Main,
+            WindowLayer.Main => MainBase,
+            WindowLayer.Additional => AdditionalBase,
+            WindowLayer.System => SystemBase,
+            WindowLayer.Develop => DevelopBase,
+            _ => MainBase,
         };
     }
 }

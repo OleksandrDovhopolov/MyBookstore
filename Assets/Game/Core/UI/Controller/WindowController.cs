@@ -57,8 +57,8 @@ namespace Game.UI
             }
 
             OnShowStart();
-            View.CanvasGroup.alpha = 0f;
-            View.GameObject.SetActive(true);
+            // View is already activated and alpha-zeroed by UIManager before sorting.
+            // We only run the appearance animation (or snap to full alpha if no animation).
 
             if (View.Animation != null)
             {

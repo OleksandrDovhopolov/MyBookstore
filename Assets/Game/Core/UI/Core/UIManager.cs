@@ -74,6 +74,13 @@ namespace Game.UI
                 }
 
                 controller.ApplyArguments(args);
+
+                // Activate the view + zero alpha BEFORE sorting. Canvas silently drops
+                // sortingLayerName changes while its GameObject is inactive (Unity quirk:
+                // the Canvas isn't registered with the renderer until enabled).
+                controller.View.CanvasGroup.alpha = 0f;
+                controller.View.GameObject.SetActive(true);
+
                 _sorting.Apply(controller, layer);
                 _stack.Push(controller, layer);
 
