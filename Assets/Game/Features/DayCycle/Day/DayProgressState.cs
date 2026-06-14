@@ -7,6 +7,9 @@ namespace Game.DayCycle.Day
     /// the game is in" — read/written by all four phases (Morning, Preparation, Sales, Results).
     /// Persisted as save module <see cref="DayProgressService.ModuleKey"/>.
     /// POCO: serialized by Newtonsoft via ISaveService.UpdateModuleAsync.
+    ///
+    /// Note: gold lives in Game.Resources (IResourcesService, id "gold") and reputation lives in
+    /// Game.Progression (IProgressionService) — both have their own save modules and APIs.
     /// </summary>
     public sealed class DayProgressState
     {
@@ -14,9 +17,6 @@ namespace Game.DayCycle.Day
         public int CurrentDay { get; set; } = 1;
 
         public DayPhase CurrentPhase { get; set; } = DayPhase.Morning;
-
-        public int Gold { get; set; }
-        public int Reputation { get; set; }
 
         /// <summary>
         /// Completed days — used by Results for idempotent reward application

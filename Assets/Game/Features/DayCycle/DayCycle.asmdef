@@ -8,7 +8,9 @@
         "Save",
         "Unity.TextMeshPro",
         "Book.Sell.API",
-        "Game.Bootstrap.Loading"
+        "Game.Bootstrap.Loading",
+        "Game.Resources.API",
+        "Game.Progression.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

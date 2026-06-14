@@ -8,6 +8,7 @@ using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.Ftue.Domain;
 using Game.Inventory.API;
+using Game.Resources.API;
 using Save;
 using UnityEngine;
 
@@ -38,12 +39,14 @@ namespace Game.Ftue.Services
         private readonly ISaveService _save;
         private readonly IConfigsService _configs;
         private readonly IInventoryService _inventory;
+        private readonly IResourcesService _resources;
 
-        public FtueBootstrapper(ISaveService save, IConfigsService configs, IInventoryService inventory)
+        public FtueBootstrapper(ISaveService save, IConfigsService configs, IInventoryService inventory, IResourcesService resources)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
+            _resources = resources ?? throw new ArgumentNullException(nameof(resources));
         }
 
         public async UniTask RunAsync(CancellationToken ct)
@@ -66,10 +69,8 @@ namespace Game.Ftue.Services
                 return;
             }
 
-            // Clean first launch: seed gold in day_progress, seed books in inventory.
-            var state = existingDay ?? new DayProgressState();
-            state.Gold = StartingGold;
-            await _save.UpdateModuleAsync(DayProgressService.ModuleKey, state, DayProgressService.SchemaVersion, ct);
+            // Clean first launch: seed gold via resources, seed books in inventory.
+            await _resources.AddAsync(ResourceIds.Gold, StartingGold, "ftue", ct);
 
             var preset = BuildPresetBookIds()
                 .Select(id => new InventoryItem(id, InventoryCategories.Book, count: 1))
@@ -78,7 +79,7 @@ namespace Game.Ftue.Services
 
             await WriteAppliedMarkerAsync(ct);
 
-            Debug.Log($"{LogPrefix} applied: gold={state.Gold}, books={preset.Count}.");
+            Debug.Log($"{LogPrefix} applied: gold={StartingGold}, books={preset.Count}.");
         }
 
         private List<string> BuildPresetBookIds()

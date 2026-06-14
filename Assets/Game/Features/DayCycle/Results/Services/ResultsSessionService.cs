@@ -5,6 +5,8 @@ using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.DayCycle.Day;
 using Game.DayCycle.Results.Domain;
+using Game.Progression.API;
+using Game.Resources.API;
 using Save;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -20,6 +22,8 @@ namespace Game.DayCycle.Results.Services
 
         private readonly ISaveService _save;
         private readonly IDayProgressService _dayProgress;
+        private readonly IResourcesService _resources;
+        private readonly IProgressionService _progression;
         private readonly IResultsRewardService _rewards;
         private readonly IResultsReviewTextProvider _reviewProvider;
         private readonly ISceneTransitionService _sceneTransition;
@@ -29,12 +33,16 @@ namespace Game.DayCycle.Results.Services
         public ResultsSessionService(
             ISaveService save,
             IDayProgressService dayProgress,
+            IResourcesService resources,
+            IProgressionService progression,
             IResultsRewardService rewards,
             IResultsReviewTextProvider reviewProvider,
             ISceneTransitionService sceneTransition)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _dayProgress = dayProgress ?? throw new ArgumentNullException(nameof(dayProgress));
+            _resources = resources ?? throw new ArgumentNullException(nameof(resources));
+            _progression = progression ?? throw new ArgumentNullException(nameof(progression));
             _rewards = rewards ?? throw new ArgumentNullException(nameof(rewards));
             _reviewProvider = reviewProvider ?? throw new ArgumentNullException(nameof(reviewProvider));
             _sceneTransition = sceneTransition ?? throw new ArgumentNullException(nameof(sceneTransition));
@@ -76,12 +84,11 @@ namespace Game.DayCycle.Results.Services
             }
             else
             {
-                var state = _dayProgress.Current;
-                var computation = _rewards.Compute(sales, state.Reputation);
+                var computation = _rewards.Compute(sales, _progression.Reputation);
 
-                state.Gold += computation.GoldDelta;
-                state.Reputation += computation.ReputationDelta;   // already clamped by Compute
-                await _dayProgress.SaveAsync(ct);
+                var reason = $"results_day_{sales.Day}";
+                await _resources.AddAsync(ResourceIds.Gold, computation.GoldDelta, reason, ct);
+                await _progression.AddReputationAsync(computation.ReputationDelta, reason, ct);
 
                 applied.AppliedDays.Add(new AppliedDayRewards
                 {
@@ -102,7 +109,7 @@ namespace Game.DayCycle.Results.Services
 
             // Best-match for the already-applied path: recompute from sales (no balance side-effect).
             if (summary.BestMatch == null)
-                summary.BestMatch = _rewards.Compute(sales, _dayProgress.Current.Reputation).BestMatch;
+                summary.BestMatch = _rewards.Compute(sales, _progression.Reputation).BestMatch;
 
             _currentSummary = summary;
             SummaryReady?.Invoke(summary);

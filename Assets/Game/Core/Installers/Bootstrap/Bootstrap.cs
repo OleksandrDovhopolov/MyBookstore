@@ -8,6 +8,8 @@ using Game.Configs.Remote;
 using Game.Ftue.Services;
 using Game.Inventory.API;
 using Game.Inventory.Services;
+using Game.Progression.API;
+using Game.Resources.API;
 using Infrastructure;
 using Save;
 using UnityEngine;
@@ -57,6 +59,8 @@ namespace Game.Bootstrap
         // SaveDataLoadOperation runs LoadAsync. We never invoke methods on these fields directly.
         // ReSharper disable NotAccessedField.Local
         private IInventoryService _inventory;
+        private IResourcesService _resources;
+        private IProgressionService _progression;
         // ReSharper restore NotAccessedField.Local
 
         // NOT GetCancellationTokenOnDestroy(): the boot GameObject is destroyed during
@@ -75,7 +79,9 @@ namespace Game.Bootstrap
             ISaveService save,
             ISceneTransitionService sceneTransition,
             IFtueBootstrapper ftue,
-            IInventoryService inventory)
+            IInventoryService inventory,
+            IResourcesService resources,
+            IProgressionService progression)
         {
             _orchestrator = orchestrator;
             _catalog = catalog;
@@ -85,6 +91,8 @@ namespace Game.Bootstrap
             _sceneTransition = sceneTransition;
             _ftue = ftue;
             _inventory = inventory;
+            _resources = resources;
+            _progression = progression;
         }
 
         private void Awake()

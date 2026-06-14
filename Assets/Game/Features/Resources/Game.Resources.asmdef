@@ -1,0 +1,21 @@
+{
+    "name": "Game.Resources",
+    "rootNamespace": "Game.Resources",
+    "references": [
+        "UniTask",
+        "VContainer",
+        "Save",
+        "Game.Resources.API",
+        "Game.Progression.API",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -17,7 +17,11 @@
         "Game.Preparation",
         "Game.Ftue",
         "Game.Inventory",
-        "Game.Inventory.API"
+        "Game.Inventory.API",
+        "Game.Resources",
+        "Game.Resources.API",
+        "Game.Progression",
+        "Game.Progression.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

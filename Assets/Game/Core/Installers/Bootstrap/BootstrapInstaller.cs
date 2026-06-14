@@ -30,6 +30,8 @@ namespace Game.Bootstrap
             builder.RegisterConfigs();
             builder.RegisterUiSystem();
             builder.RegisterInventory();
+            builder.RegisterResources();
+            builder.RegisterProgression();
             builder.RegisterFtue();
         }
 

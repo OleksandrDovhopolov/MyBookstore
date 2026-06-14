@@ -5,6 +5,7 @@ using Game.DayCycle.Day;
 using Game.DayCycle.Results.Domain;
 using Game.DayCycle.Results.Services;
 using Game.DayCycle.Tests.Editor.Fakes;
+using Game.Resources.API;
 using NUnit.Framework;
 
 namespace Game.DayCycle.Tests.Editor.Results
@@ -15,6 +16,8 @@ namespace Game.DayCycle.Tests.Editor.Results
         {
             public FakeSaveService Save { get; }
             public FakeDayProgressService DayProgress { get; } = new();
+            public FakeResourcesService Resources { get; } = new();
+            public FakeProgressionService Progression { get; } = new();
             public FakeSceneTransitionService SceneTransition { get; } = new();
             public ResultsSessionService Sut { get; }
 
@@ -33,7 +36,7 @@ namespace Game.DayCycle.Tests.Editor.Results
                 }
 
                 Sut = new ResultsSessionService(
-                    Save, DayProgress,
+                    Save, DayProgress, Resources, Progression,
                     new DefaultResultsRewardService(),
                     new DefaultResultsReviewTextProvider(),
                     SceneTransition);
@@ -41,6 +44,9 @@ namespace Game.DayCycle.Tests.Editor.Results
                 Sut.SummaryReady += s => Summaries.Add(s);
                 Sut.NoResultAvailable += () => NoResultEmits++;
             }
+
+            public int Gold => Resources.GetAmount(ResourceIds.Gold);
+            public int Reputation => Progression.Reputation;
 
             public void Run() => Sut.LoadAndApplyAsync(CancellationToken.None).GetAwaiter().GetResult();
             public void Advance() => Sut.AdvanceToNextDayAsync(CancellationToken.None).GetAwaiter().GetResult();
@@ -64,7 +70,7 @@ namespace Game.DayCycle.Tests.Editor.Results
 
             Assert.AreEqual(1, h.NoResultEmits);
             Assert.AreEqual(0, h.Summaries.Count);
-            Assert.AreEqual(0, h.DayProgress.State.Gold);
+            Assert.AreEqual(0, h.Gold);
         }
 
         [Test]
@@ -74,8 +80,8 @@ namespace Game.DayCycle.Tests.Editor.Results
             h.Run();
 
             Assert.AreEqual(1, h.Summaries.Count);
-            Assert.AreEqual(150, h.DayProgress.State.Gold);
-            Assert.AreEqual(3, h.DayProgress.State.Reputation);
+            Assert.AreEqual(150, h.Gold);
+            Assert.AreEqual(3, h.Reputation);
 
             // Idempotency record persisted.
             Assert.IsTrue(h.Save.Store.ContainsKey(ResultsSessionService.AppliedRewardsModuleKey));
@@ -89,8 +95,8 @@ namespace Game.DayCycle.Tests.Editor.Results
             h.Run();
 
             Assert.AreEqual(2, h.Summaries.Count, "Both runs emit a summary…");
-            Assert.AreEqual(100, h.DayProgress.State.Gold, "…but balances mutate only once.");
-            Assert.AreEqual(2, h.DayProgress.State.Reputation);
+            Assert.AreEqual(100, h.Gold, "…but balances mutate only once.");
+            Assert.AreEqual(2, h.Reputation);
             Assert.IsTrue(h.Summaries[1].AlreadyApplied);
             Assert.IsFalse(h.Summaries[0].AlreadyApplied);
         }
@@ -101,16 +107,18 @@ namespace Game.DayCycle.Tests.Editor.Results
             // First session: applies day 1.
             var first = new Harness(Sales(gold: 100, exc: 1));
             first.Run();
-            Assert.AreEqual(100, first.DayProgress.State.Gold);
+            Assert.AreEqual(100, first.Gold);
 
-            // Restart: brand-new service + day-progress, but Save store carries over the applied record
-            // *and* the last day result. Pre-seed the second day-progress with the persisted balances.
+            // Restart: brand-new service, but Save store carries over the applied record
+            // *and* the last day result. Pre-seed the second resources/progression with the
+            // persisted balances (in production they would come from their own save modules).
             var second = new Harness(sharedStore: first.Save.Store);
-            second.DayProgress.State.Gold = first.DayProgress.State.Gold;
-            second.DayProgress.State.Reputation = first.DayProgress.State.Reputation;
+            second.Resources.AddAsync(ResourceIds.Gold, first.Gold, "preseed", CancellationToken.None)
+                .GetAwaiter().GetResult();
+            second.Progression.SetReputation(first.Reputation);
             second.Run();
 
-            Assert.AreEqual(100, second.DayProgress.State.Gold,
+            Assert.AreEqual(100, second.Gold,
                 "Restart on Results must not re-apply rewards.");
             Assert.IsTrue(second.Summaries[0].AlreadyApplied);
         }
