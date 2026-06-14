@@ -2,7 +2,7 @@ using Cysharp.Threading.Tasks;
 
 namespace Game.UI.Common
 {
-    [Window("UI/Common/SettingsWindow", WindowType.Page, keepInCache: true)]
+    [Window("SettingsWindow", WindowType.Page, keepInCache: true)]
     public sealed class SettingsWindow : WindowController<SettingsWindowView>
     {
         private int _openCount;

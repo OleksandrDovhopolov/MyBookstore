@@ -2,7 +2,7 @@ using Cysharp.Threading.Tasks;
 
 namespace Game.UI.Common
 {
-    [Window("UI/Common/ConfirmDialog", WindowType.Popup)]
+    [Window("ConfirmDialog", WindowType.Popup)]
     public sealed class ConfirmDialog : WindowController<ConfirmDialogView>, IResultWindow<ConfirmDialogResult>
     {
         public ConfirmDialogResult Result { get; private set; } = ConfirmDialogResult.None;
