@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Game.UI.SmokeTest
 {
-    [Window("Prefabs/UI/SmokeTest/SmokeMainPage", WindowType.Page)]
+    [Window("SmokeMainPage", WindowType.Page)]
     public sealed class SmokeMainPage : WindowController<SmokeWindowView>
     {
         protected override void OnShowStart() => Debug.Log("[Smoke] SmokeMainPage ShowStart");

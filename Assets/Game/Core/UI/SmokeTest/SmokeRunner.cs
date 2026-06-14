@@ -25,10 +25,10 @@ namespace Game.UI.SmokeTest
                 await UniTask.Delay(TimeSpan.FromSeconds(1), cancellationToken: ct);
 
                 await _uiManager.ShowAsync<SmokeMainPage>(ct: ct);
-                await UniTask.Delay(TimeSpan.FromSeconds(1), cancellationToken: ct);
+                await UniTask.Delay(TimeSpan.FromSeconds(2), cancellationToken: ct);
 
                 await _uiManager.ShowAsync<SmokeAdditionalPopup>(ct: ct);
-                await UniTask.Delay(TimeSpan.FromSeconds(1), cancellationToken: ct);
+                await UniTask.Delay(TimeSpan.FromSeconds(2), cancellationToken: ct);
 
                 await _uiManager.ShowAsync<SmokeSystemDialog>(new WindowArgs().AsSystem(), ct);
                 await UniTask.Delay(TimeSpan.FromSeconds(2), cancellationToken: ct);

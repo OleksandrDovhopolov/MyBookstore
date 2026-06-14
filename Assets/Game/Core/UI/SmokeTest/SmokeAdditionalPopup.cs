@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Game.UI.SmokeTest
 {
-    [Window("Prefabs/UI/SmokeTest/SmokeAdditionalPopup", WindowType.Popup)]
+    [Window("SmokeAdditionalPopup", WindowType.Popup)]
     public sealed class SmokeAdditionalPopup : WindowController<SmokeWindowView>
     {
         protected override void OnShowStart() => Debug.Log("[Smoke] SmokeAdditionalPopup ShowStart");

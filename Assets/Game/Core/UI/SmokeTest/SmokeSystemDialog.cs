@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Game.UI.SmokeTest
 {
     // Page-typed but shown via WindowArgs.AsSystem() to verify layer override.
-    [Window("Prefabs/UI/SmokeTest/SmokeSystemDialog", WindowType.Page)]
+    [Window("SmokeSystemDialog", WindowType.Page)]
     public sealed class SmokeSystemDialog : WindowController<SmokeWindowView>
     {
         protected override void OnShowStart() => Debug.Log("[Smoke] SmokeSystemDialog ShowStart");
