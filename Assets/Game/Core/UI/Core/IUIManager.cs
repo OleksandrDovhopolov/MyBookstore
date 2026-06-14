@@ -11,6 +11,8 @@ namespace Game.UI
         UniTask HideAsync<T>(bool forceClose = false, CancellationToken ct = default)
             where T : class, IWindowController;
 
+        UniTask HideAsync(IWindowController controller, bool forceClose = false, CancellationToken ct = default);
+
         UniTask HideTopAsync(WindowLayer? layer = null, CancellationToken ct = default);
 
         IWindowController GetTopWindow(WindowLayer? layer = null);

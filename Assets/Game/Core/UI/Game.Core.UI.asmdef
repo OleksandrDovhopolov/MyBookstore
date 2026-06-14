@@ -6,6 +6,7 @@
         "UniTask",
         "Unity.Addressables",
         "Unity.ResourceManager",
+        "Unity.TextMeshPro",
         "Infrastructure"
     ],
     "includePlatforms": [],

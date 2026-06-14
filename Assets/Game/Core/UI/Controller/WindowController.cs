@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using VContainer;
 
 namespace Game.UI
 {
@@ -10,6 +11,7 @@ namespace Game.UI
         private bool _isInitialized;
 
         protected TView View { get; private set; }
+        protected IUIManager UIManager { get; private set; }
         public WindowAttribute Attribute { get; private set; }
         public WindowArgs Arguments { get; private set; }
         public bool IsShown { get; private set; }
@@ -18,6 +20,12 @@ namespace Game.UI
         IWindow IWindowController.View => View;
 
         public event Action<IWindowController> Closed;
+
+        [Inject]
+        public void InjectUIManager(IUIManager uiManager) => UIManager = uiManager;
+
+        protected UniTask CloseAsync(CancellationToken ct = default)
+            => UIManager.HideAsync(this, forceClose: false, ct);
 
         public void Configure(WindowView view, WindowAttribute attribute)
         {

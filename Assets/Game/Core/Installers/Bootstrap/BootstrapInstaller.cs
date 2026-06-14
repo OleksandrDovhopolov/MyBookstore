@@ -36,7 +36,6 @@ namespace Game.Bootstrap
             builder.RegisterInfrastructure();
             builder.RegisterConfigs();
             builder.RegisterUiSystem(_uiCanvasRootPrefab);
-            builder.RegisterUiSmokeTest(); // TODO: remove after Phase 0 verification
             builder.RegisterInventory();
             builder.RegisterResources();
             builder.RegisterProgression();

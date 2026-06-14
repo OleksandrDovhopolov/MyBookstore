@@ -27,6 +27,11 @@ namespace Game.Bootstrap
             builder.Register<UIManager>(Lifetime.Singleton)
                 .As<IUIManager>()
                 .AsSelf();
+
+            // Force eager instantiation of UIManagerCanvas + UIManager at container build.
+            // Without this they stay lazy and the canvas never spawns until the first ShowAsync
+            // (which means UiPilotDebugPanel on the canvas root never gets a chance to render).
+            builder.RegisterBuildCallback(resolver => resolver.Resolve<IUIManager>());
         }
     }
 }

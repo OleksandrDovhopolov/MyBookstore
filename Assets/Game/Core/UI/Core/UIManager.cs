@@ -106,6 +106,21 @@ namespace Game.UI
             }
         }
 
+        public async UniTask HideAsync(IWindowController controller, bool forceClose = false, CancellationToken ct = default)
+        {
+            if (controller == null) return;
+            await _gate.WaitAsync(ct);
+            try
+            {
+                if (!_storage.All.Contains(controller)) return;
+                await HideInternalAsync(controller, forceClose, ct);
+            }
+            finally
+            {
+                _gate.Release();
+            }
+        }
+
         public async UniTask HideTopAsync(WindowLayer? layer = null, CancellationToken ct = default)
         {
             await _gate.WaitAsync(ct);
@@ -141,6 +156,16 @@ namespace Game.UI
         private async UniTask HideInternalAsync(IWindowController controller, bool forceClose, CancellationToken ct)
         {
             if (controller.IsCloseBlocked && !forceClose) return;
+
+            // Close children (typically Additional popups whose ParentWindow == this controller)
+            // before closing the parent. Snapshot first since HideInternalAsync mutates _storage.
+            var children = _storage.All
+                .Where(c => c != controller && c.Arguments?.ParentWindow == controller)
+                .ToList();
+            foreach (var child in children)
+            {
+                await HideInternalAsync(child, forceClose: true, ct);
+            }
 
             using (_locks.Acquire(controller))
             {
