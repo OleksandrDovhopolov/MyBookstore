@@ -9,7 +9,8 @@
         "Unity.TextMeshPro",
         "Book.Sell",
         "Book.Sell.API",
-        "DayCycle"
+        "DayCycle",
+        "Game.Inventory.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

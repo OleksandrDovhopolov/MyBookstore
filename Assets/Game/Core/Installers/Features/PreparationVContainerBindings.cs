@@ -18,7 +18,7 @@ namespace Game.Bootstrap
     {
         public static void RegisterPreparation(this IContainerBuilder builder)
         {
-            builder.Register<IPreparationInventoryProvider, CatalogInventoryProvider>(Lifetime.Singleton);
+            builder.Register<IPreparationInventoryProvider, DayProgressInventoryProvider>(Lifetime.Singleton);
             builder.Register<IPreparationSessionService, PreparationSessionService>(Lifetime.Singleton);
             builder.Register<ISalesSetupProvider, PreparationSalesSetupProvider>(Lifetime.Singleton);
 

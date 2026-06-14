@@ -32,7 +32,7 @@ namespace Book.Sell.Tests.Editor
                 configs,
                 new DefaultSalesSetupProvider(configs),
                 new RecommendationScoringService(),
-                new DefaultPassiveSaleSelector(),
+                SalesTestKit.AlwaysHitPassiveSelector(),
                 new FakeSalesRandom(),
                 new StubCustomerSpawner(customers),
                 new InteractionLock(),
@@ -71,9 +71,9 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
-        public void SinglePassiveCustomer_BuysOneMatchingBook_ThenLeaves()
+        public void SinglePassiveCustomer_BuysOneBook_ThenLeaves()
         {
-            // Two matching books so the day ends via "all customers done" (one book remains),
+            // Two books so the day ends via "all customers done" (one book remains),
             // not via "all sold out" — that lets the customer actually reach Done (CustomersServed).
             var c = Build(
                 new[]
@@ -137,9 +137,10 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
-        public void ReserveContention_TwoPassive_DoNotTakeSameBook()
+        public void ReserveContention_TwoPassive_PickDifferentBooks()
         {
-            // Only b1 matches the location demand; b2 (romance) does not.
+            // With the probabilistic selector always firing, each passive customer reserves an
+            // available book; the reservation hides it from the second customer's pick.
             var c = Build(
                 new[]
                 {
@@ -150,15 +151,16 @@ namespace Book.Sell.Tests.Editor
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }, demandTags: new[] { "space" }),
                 new List<Customer> { Passive("c1"), Passive("c2") });
 
-            var passive = 0;
-            c.PassiveSaleHappened += _ => passive++;
+            var soldIds = new List<string>();
+            c.PassiveSaleHappened += e => soldIds.Add(e.BookId);
 
             StartDay(c);
             Run(c);
 
-            Assert.AreEqual(1, passive, "Only one matching book exists → exactly one passive sale.");
-            Assert.AreEqual(1, c.AccumulatedResult.SalesCount);
             Assert.IsTrue(c.IsDayCompleted);
+            Assert.AreEqual(2, soldIds.Count, "Both customers buy.");
+            CollectionAssert.AreEquivalent(new[] { "b1", "b2" }, soldIds, "No double-reservation: customers pick distinct books.");
+            Assert.IsTrue(c.Shelf.AllSoldOut());
         }
 
         [Test]

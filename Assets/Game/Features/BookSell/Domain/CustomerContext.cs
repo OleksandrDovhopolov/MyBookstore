@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Book.Sell.Services;
 using Game.Configs.Models;
 
@@ -15,6 +17,7 @@ namespace Book.Sell.Domain
         public ISalesRandom Random { get; }
         public IPassiveSaleSelector PassiveSelector { get; }
         public LocationConfig Location { get; }
+        public IReadOnlyList<string> ActiveDecorIds { get; }
         public ISalesDaySink Sink { get; }
         public SalesTuning Tuning { get; }
 
@@ -24,6 +27,7 @@ namespace Book.Sell.Domain
             ISalesRandom random,
             IPassiveSaleSelector passiveSelector,
             LocationConfig location,
+            IReadOnlyList<string> activeDecorIds,
             ISalesDaySink sink,
             SalesTuning tuning)
         {
@@ -32,6 +36,7 @@ namespace Book.Sell.Domain
             Random = random;
             PassiveSelector = passiveSelector;
             Location = location;
+            ActiveDecorIds = activeDecorIds ?? Array.Empty<string>();
             Sink = sink;
             Tuning = tuning;
         }

@@ -1,25 +1,45 @@
+using Game.Inventory.API;
+using Game.Inventory.Services;
+using Game.Inventory.UI;
+using Game.Inventory.UseHandlers;
+using UnityEngine;
 using VContainer;
+using VContainer.Unity;
 
 namespace Game.Bootstrap
 {
-    // Registered in: GameInstaller (GameplayLifetimeScope)
-    // Resolves from parent: IWebClient, ISaveService, IAnalyticsService
+    // Registered in: BootstrapInstaller (GlobalLifetimeScope — inventory must be available before
+    // FTUE writes the starter preset and before GameplayScene asks for owned books).
+    // Resolves from the same scope: ISaveService, IConfigsService.
     public static class InventoryVContainerBindings
     {
         public static void RegisterInventory(this IContainerBuilder builder)
         {
-            // TODO: Item category registry (maps item type strings to domain types)
-            // builder.Register<IItemCategoryRegistry, ItemCategoryRegistry>(Lifetime.Singleton);
+            // Category registry — single mutable instance seeded at registration time.
+            builder.Register<IItemCategoryRegistry>(_ =>
+            {
+                var registry = new ItemCategoryRegistry();
+                registry.Register(new ItemCategory(InventoryCategories.Book,        ItemStackingMode.Unique, "Books"));
+                registry.Register(new ItemCategory(InventoryCategories.Decor,       ItemStackingMode.Unique, "Decor"));
+                registry.Register(new ItemCategory(InventoryCategories.PuzzlePiece, ItemStackingMode.Stack,  "Puzzle Pieces"));
+                return registry;
+            }, Lifetime.Singleton);
 
-            // TODO: Inventory server API
-            // builder.Register<IInventoryServerApi, HttpInventoryServerApi>(Lifetime.Singleton);
+            builder.Register<IInventoryRepository, SaveBackedInventoryRepository>(Lifetime.Singleton);
 
-            // TODO: Inventory service — add/remove/query items
-            // builder.Register<IInventoryService, InventoryModuleService>(Lifetime.Singleton)
-            //     .AsImplementedInterfaces();
+            // InventoryService self-registers as ISaveHook in its constructor.
+            builder.Register<InventoryService>(Lifetime.Singleton)
+                .As<IInventoryService>();
+            
+            // Use handlers — discovered by InventoryUseRouter via IReadOnlyList<IInventoryItemUseHandler>.
+            builder.Register<IInventoryItemUseHandler, NoopDecorUseHandler>(Lifetime.Singleton);
+            builder.Register<IInventoryItemUseHandler, PuzzleAssembleUseHandler>(Lifetime.Singleton);
 
-            // TODO: Inventory view model / UI adapter
-            // builder.Register<InventoryViewModel>(Lifetime.Singleton);
+            builder.Register<IInventoryUseRouter, InventoryUseRouter>(Lifetime.Singleton);
+
+            /*// Debug UI is registered only when present in the scene (same guard as other feature views).
+            if (Object.FindAnyObjectByType<InventoryScreenView>(FindObjectsInactive.Include) != null)
+                builder.RegisterComponentInHierarchy<InventoryScreenView>();*/
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Game.Bootstrap
         public static void RegisterInfrastructure(this IContainerBuilder builder)
         {
             builder.Register<LoggerSettingsService>(
-                _ => new LoggerSettingsService(Resources.Load<LoggerSettings>("LoggerSettings")),
+                _ => new LoggerSettingsService(UnityEngine.Resources.Load<LoggerSettings>("LoggerSettings")),
                 Lifetime.Singleton);
             builder.Register<ILoggerSettingsService>(r => r.Resolve<LoggerSettingsService>(), Lifetime.Singleton);
             builder.Register<GameLogger>(r => new GameLogger(r.Resolve<LoggerSettingsService>()), Lifetime.Singleton);

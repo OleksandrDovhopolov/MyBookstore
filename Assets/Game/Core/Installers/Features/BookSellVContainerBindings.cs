@@ -21,7 +21,12 @@ namespace Game.Bootstrap
             // which reads the player's choice from preparation.session and falls back to the
             // catalog if no session exists yet.
             builder.Register<IRecommendationScoringService, RecommendationScoringService>(Lifetime.Singleton);
-            builder.Register<IPassiveSaleSelector, DefaultPassiveSaleSelector>(Lifetime.Singleton);
+
+            // Probabilistic passive sale (ADR-0004): chance gate per genre, then weighted pick by RarityWeight.
+            // Decor stays a stub (NoopDecorModifierProvider returns 1.0); real decor lands in a follow-up.
+            builder.Register<IDecorModifierProvider, NoopDecorModifierProvider>(Lifetime.Singleton);
+            builder.Register<IBaseSaleChanceCalculator, EconomyBasedSaleChanceCalculator>(Lifetime.Singleton);
+            builder.Register<IPassiveSaleSelector, WeightedPassiveSaleSelector>(Lifetime.Singleton);
 
             // Customer simulation.
             builder.Register<IInteractionLock, InteractionLock>(Lifetime.Singleton);

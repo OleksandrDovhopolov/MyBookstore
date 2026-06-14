@@ -9,8 +9,6 @@ namespace Game.Bootstrap
         public override void InstallBindings(IContainerBuilder builder)
         {
             builder.RegisterDayCycle();
-            builder.RegisterResources();
-            builder.RegisterInventory();
             builder.RegisterShop();
             builder.RegisterRewardDrop();
             builder.RegisterIap();

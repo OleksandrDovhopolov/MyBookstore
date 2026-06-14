@@ -14,7 +14,16 @@
         "DayCycle",
         "Book.Sell",
         "Book.Sell.API",
-        "Game.Preparation"
+        "Game.Preparation",
+        "Game.Ftue",
+        "Game.Inventory",
+        "Game.Inventory.API",
+        "Game.Resources",
+        "Game.Resources.API",
+        "Game.Progression",
+        "Game.Progression.API",
+        "MessagePipe",
+        "MessagePipe.VContainer"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

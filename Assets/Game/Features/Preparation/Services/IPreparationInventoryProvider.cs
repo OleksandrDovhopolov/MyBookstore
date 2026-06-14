@@ -4,9 +4,10 @@ using Game.Configs.Models;
 namespace Game.Preparation.Services
 {
     /// <summary>
-    /// Источник «доступных игроку книг» для UI Подготовки. В MVP реализация
-    /// (<see cref="CatalogInventoryProvider"/>) отдаёт весь каталог BookConfig;
-    /// после задачи FTUE-пресет (A) сюда подключится реальный owned-инвентарь.
+    /// Source of "books available to the player" for the Preparation UI.
+    /// <see cref="DayProgressInventoryProvider"/> reads the inventory under category
+    /// <c>InventoryCategories.Book</c>; the starter set is seeded there by <c>FtueBootstrapper</c>
+    /// on first launch.
     /// </summary>
     public interface IPreparationInventoryProvider
     {

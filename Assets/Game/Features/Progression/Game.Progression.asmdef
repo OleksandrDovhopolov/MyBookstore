@@ -1,0 +1,19 @@
+{
+    "name": "Game.Progression",
+    "rootNamespace": "Game.Progression",
+    "references": [
+        "UniTask",
+        "VContainer",
+        "Save",
+        "Game.Progression.API"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

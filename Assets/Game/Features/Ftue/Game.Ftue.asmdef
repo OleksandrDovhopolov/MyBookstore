@@ -1,0 +1,23 @@
+{
+    "name": "Game.Ftue",
+    "rootNamespace": "Game.Ftue",
+    "references": [
+        "UniTask",
+        "VContainer",
+        "Save",
+        "Configs",
+        "DayCycle",
+        "Game.Bootstrap.Loading",
+        "Game.Inventory.API",
+        "Game.Resources.API"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

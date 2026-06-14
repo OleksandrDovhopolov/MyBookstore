@@ -5,19 +5,17 @@ using Game.Configs.Models;
 namespace Book.Sell.Services
 {
     /// <summary>
-    /// Picks a book for a passive ("background") sale: any shelf book that matches the
-    /// current location's demand. Returns the matched demand items together with the book
-    /// so the View can explain "why it sold".
+    /// Picks a book for a passive ("background") sale via a two-stage probabilistic model
+    /// (ADR-0004): per-genre chance gate, then weighted pick by <c>RarityWeight</c>.
+    /// Active decor ids enter the chance formula through <see cref="IDecorModifierProvider"/>.
+    /// Returns a candidate (book + matched genre), or null when no genre passes the gate.
     /// </summary>
     public interface IPassiveSaleSelector
     {
-        /// <summary>
-        /// Returns a candidate (book + matched demand), or null when nothing on the shelf
-        /// matches the location's demand.
-        /// </summary>
         PassiveSaleCandidate PickPassiveSale(
             IReadOnlyList<ShelfBook> shelf,
             LocationConfig location,
+            IReadOnlyList<string> activeDecorIds,
             ISalesRandom random);
     }
 }

@@ -1,0 +1,21 @@
+{
+    "name": "Game.Inventory",
+    "rootNamespace": "Game.Inventory",
+    "references": [
+        "UniTask",
+        "VContainer",
+        "Save",
+        "Configs",
+        "Game.Inventory.API",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
