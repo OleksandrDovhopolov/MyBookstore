@@ -1,0 +1,20 @@
+{
+    "name": "Game.Core.UI",
+    "rootNamespace": "Game.UI",
+    "references": [
+        "VContainer",
+        "UniTask",
+        "Unity.Addressables",
+        "Unity.ResourceManager",
+        "Infrastructure"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
