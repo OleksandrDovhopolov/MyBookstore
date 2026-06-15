@@ -9,6 +9,7 @@ namespace Game.UI
         // and bumps by OrderStep on each Apply. Compacted back down when the top window closes.
         private readonly Dictionary<WindowLayer, int> _topOrderByLayer = new()
         {
+            [WindowLayer.Hud] = UISortingLayers.HudBase,
             [WindowLayer.Main] = UISortingLayers.MainBase,
             [WindowLayer.Additional] = UISortingLayers.AdditionalBase,
             [WindowLayer.System] = UISortingLayers.SystemBase,

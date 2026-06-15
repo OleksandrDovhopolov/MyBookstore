@@ -197,6 +197,7 @@ namespace Game.UI
             WindowType.Page => WindowLayer.Main,
             WindowType.Popup => WindowLayer.Additional,
             WindowType.Widget => WindowLayer.Main,
+            WindowType.HUD => WindowLayer.Hud,
             _ => WindowLayer.Main,
         };
 

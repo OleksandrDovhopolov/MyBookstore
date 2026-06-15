@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
@@ -9,12 +10,13 @@ using VContainer.Unity;
 namespace Game.Decor.Services
 {
     /// <summary>
-    /// Validates DecorConfig and LocationConfig.DecorSlots at boot. Fires as an IStartable entry
-    /// point. In Editor, errors throw to block Play mode; in runtime builds, errors are logged
-    /// and the affected entries get effectively ignored downstream.
+    /// Validates DecorConfig and LocationConfig.DecorSlots at boot. Awaits <see cref="IConfigsService.WarmupAsync"/>
+    /// first so configs are guaranteed to be loaded regardless of entry-point registration order.
+    /// In Editor, errors throw to block Play mode; in runtime builds, errors are logged and the
+    /// affected entries get effectively ignored downstream.
     /// See docs/INPROGRESS/Decor.md §11.5 for the rule list.
     /// </summary>
-    public sealed class DecorConfigValidator : IStartable
+    public sealed class DecorConfigValidator : IAsyncStartable
     {
         private const string LogTag = "[DecorValidator]";
 
@@ -25,16 +27,10 @@ namespace Game.Decor.Services
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
         }
 
-        public void Start()
+        public async UniTask StartAsync(CancellationToken cancellation)
         {
-            //TODO check this bug.
-            /*
-             * 
-            var decors = _configs.GetAll<DecorConfig>(); before  public async UniTask WarmupAsync(CancellationToken ct)
-            and data is not loaded after
-             */
-            DelayedStart().Forget();
-            return;
+            await _configs.WarmupAsync(cancellation);
+
             var report = Validate();
 
             for (var i = 0; i < report.Warnings.Count; i++)
@@ -51,26 +47,6 @@ namespace Game.Decor.Services
 #endif
         }
 
-        private async UniTask DelayedStart()
-        {
-            await UniTask.WaitForSeconds(1f);
-            
-            var report = Validate();
-
-            for (var i = 0; i < report.Warnings.Count; i++)
-                Debug.LogWarning($"{LogTag} {report.Warnings[i]}");
-
-            if (!report.HasErrors) return;
-
-            for (var i = 0; i < report.Errors.Count; i++)
-                Debug.LogError($"{LogTag} {report.Errors[i]}");
-
-#if UNITY_EDITOR
-            throw new InvalidOperationException(
-                $"{LogTag} {report.Errors.Count} decor config error(s). See console.\n{report.FormatErrors()}");
-#endif
-        }
-        
         public ValidationReport Validate()
         {
             var report = new ValidationReport();

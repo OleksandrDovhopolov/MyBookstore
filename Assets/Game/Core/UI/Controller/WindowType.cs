@@ -5,6 +5,9 @@ namespace Game.UI
         Page,
         Popup,
         Widget,
-        HUD // TODO added new HUD for method  private Transform ResolveParent(WindowType type). where need to update
+        // Scene-unique HUD. Parented under UICanvasRoot.HudRoot, mapped to WindowLayer.Hud
+        // (sortingOrder 0 — always below windows). Excluded from UIStack.FocusOrder so
+        // HideTopAsync() cannot close it.
+        HUD,
     }
 }

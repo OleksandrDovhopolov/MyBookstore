@@ -4,6 +4,8 @@ namespace Game.UI
 {
     public sealed class UIStack : IUIStack
     {
+        // HUD is intentionally omitted: HideTopAsync() without an explicit layer asks
+        // GetFocused() for the topmost focusable window, and HUD must never be focusable.
         private static readonly WindowLayer[] FocusOrder =
         {
             WindowLayer.System,
@@ -14,6 +16,7 @@ namespace Game.UI
 
         private readonly Dictionary<WindowLayer, List<IWindowController>> _byLayer = new()
         {
+            [WindowLayer.Hud] = new List<IWindowController>(),
             [WindowLayer.Main] = new List<IWindowController>(),
             [WindowLayer.Additional] = new List<IWindowController>(),
             [WindowLayer.System] = new List<IWindowController>(),

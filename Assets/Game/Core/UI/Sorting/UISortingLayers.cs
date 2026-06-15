@@ -7,6 +7,7 @@ namespace Game.UI
     {
         public const int OrderStep = 10;
 
+        public const int HudBase = 0;
         public const int MainBase = 1000;
         public const int AdditionalBase = 2000;
         public const int SystemBase = 3000;
@@ -14,6 +15,7 @@ namespace Game.UI
 
         public static int BaseOrderFor(WindowLayer layer) => layer switch
         {
+            WindowLayer.Hud => HudBase,
             WindowLayer.Main => MainBase,
             WindowLayer.Additional => AdditionalBase,
             WindowLayer.System => SystemBase,
