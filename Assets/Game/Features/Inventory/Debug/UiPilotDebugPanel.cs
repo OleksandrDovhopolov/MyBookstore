@@ -39,6 +39,7 @@ namespace Game.UI.DebugPanel
             y += h + pad;
             if (GUI.Button(new Rect(pad, y, w, h), "Hide Top"))
             {
+                //TODO bug ? tgis button hides GameplaySceneController. but this is main screen hud and cant be hided 
                 _uiManager.HideTopAsync().Forget();
             }
 

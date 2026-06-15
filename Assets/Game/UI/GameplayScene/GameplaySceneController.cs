@@ -8,6 +8,7 @@ using VContainer;
 public class GameplaySceneController: WindowController<GameplaySceneView>
 {
     private IResourcesService _resources;
+    //private IProgressionService _progression;
 
     [Inject]
     public void Construct(IResourcesService resources)
@@ -24,12 +25,15 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         }
         
         _resources.Changed += OnResourceChanged;
+        //_progression.Changed += OnProgressionChanged;
+        
         var goldAmount = _resources.GetAmount(ResourceIds.Gold);
         Debug.LogWarning($"[GameplaySceneController] goldAmount {goldAmount}");
         View.SetGoldAmount(goldAmount);
     }
     
     private void OnResourceChanged(ResourceChangeEvent _) => Refresh();
+    //private void OnProgressionChanged(ProgressionChangeEvent _) => Refresh();
     
     private void Refresh()
     {
