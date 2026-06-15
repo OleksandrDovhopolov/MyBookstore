@@ -10,7 +10,7 @@ namespace Game.Decor.Services
     /// <summary>
     /// Inventory use handler for category "decor". When the player Use'es a decor:
     /// try to autoplace it into the first free compatible slot. If no compatible empty slot,
-    /// the call becomes a no-op + log (the player is expected to open DecorPlacementScreenView
+    /// the call becomes a no-op + log (the player is expected to open DecorPlacementWindow
     /// to manually swap something out).
     /// </summary>
     public sealed class DecorActivationUseHandler : IInventoryItemUseHandler

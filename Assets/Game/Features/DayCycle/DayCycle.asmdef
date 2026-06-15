@@ -11,7 +11,8 @@
         "Game.Bootstrap.Loading",
         "Game.Resources.API",
         "Game.Progression.API",
-        "Game.Decor.API"
+        "Game.Core.UI",
+        "Game.Newspaper"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

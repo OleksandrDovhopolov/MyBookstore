@@ -4,7 +4,8 @@ using Book.Sell.API;
 using Cysharp.Threading.Tasks;
 using Game.DayCycle.Results.Domain;
 using Game.DayCycle.Results.Services;
-using Game.Decor;
+using Game.Newspaper.UI;
+using Game.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,6 +18,8 @@ namespace Game.DayCycle.Results.UI
     /// Numbers come straight from the persisted SalesDayResult through IResultsSessionService; the
     /// view never recomputes anything. GameObject is inactive by default; SalesScreenView activates
     /// it on day completion, and on restart the Sales view routes here when the day is already done.
+    /// Decor newspaper offers and the placement screen are no longer wired here — newspaper offers
+    /// live in <see cref="NewspaperWindow"/>, opened via the "Open Newspaper" button.
     /// </summary>
     public sealed class ResultsScreenView : MonoBehaviour
     {
@@ -48,30 +51,20 @@ namespace Game.DayCycle.Results.UI
 
         [Header("Actions")]
         [SerializeField] private Button _nextDayButton;
+        [SerializeField] private Button _openNewspaperButton;
 
         [Header("Error")]
         [SerializeField] private GameObject _errorPanel;
 
-        [Header("Decor newspaper offers")]
-        [SerializeField] private GameObject _freeDecorPanel;
-        [SerializeField] private TMP_Text _freeDecorLabel;
-        [SerializeField] private Button _freeDecorClaimButton;
-        [SerializeField] private GameObject _paidDecorPanel;
-        [SerializeField] private TMP_Text _paidDecorLabel;
-        [SerializeField] private Button _paidDecorBuyButton;
-
-        [Header("Decor placement")]
-        [SerializeField] private GameObject _decorPlacementScreen;
-
         private IResultsSessionService _service;
-        private IDecorRewardService _decorReward;
+        private IUIManager _uiManager;
         private readonly CancellationTokenSource _cts = new();
 
         [Inject]
-        public void Construct(IResultsSessionService service, IDecorRewardService decorReward)
+        public void Construct(IResultsSessionService service, IUIManager uiManager)
         {
             _service = service;
-            _decorReward = decorReward;
+            _uiManager = uiManager;
         }
 
         private void Awake()
@@ -81,12 +74,9 @@ namespace Game.DayCycle.Results.UI
                 _nextDayButton.onClick.AddListener(OnNextDayClicked);
                 _nextDayButton.interactable = false;
             }
+            if (_openNewspaperButton != null) _openNewspaperButton.onClick.AddListener(OnOpenNewspaperClicked);
             if (_errorPanel != null) _errorPanel.SetActive(false);
             if (_alreadyAppliedHint != null) _alreadyAppliedHint.gameObject.SetActive(false);
-            if (_freeDecorPanel != null) _freeDecorPanel.SetActive(false);
-            if (_paidDecorPanel != null) _paidDecorPanel.SetActive(false);
-            if (_freeDecorClaimButton != null) _freeDecorClaimButton.onClick.AddListener(OnClaimFreeDecorClicked);
-            if (_paidDecorBuyButton != null) _paidDecorBuyButton.onClick.AddListener(OnBuyPaidDecorClicked);
         }
 
         private void OnEnable()
@@ -100,11 +90,6 @@ namespace Game.DayCycle.Results.UI
             _service.SummaryReady += OnSummaryReady;
             _service.NoResultAvailable += OnNoResultAvailable;
             _service.LoadAndApplyAsync(_cts.Token).Forget();
-
-            RefreshDecorOffers();
-
-            if (_decorPlacementScreen != null)
-                _decorPlacementScreen.SetActive(true);
         }
 
         private void OnDisable()
@@ -179,56 +164,26 @@ namespace Game.DayCycle.Results.UI
             _service.AdvanceToNextDayAsync(_cts.Token).Forget();
         }
 
+        private void OnOpenNewspaperClicked() => OpenNewspaperAsync().Forget();
+
+        private async UniTaskVoid OpenNewspaperAsync()
+        {
+            if (_uiManager == null)
+            {
+                Debug.LogWarning("[ResultsScreenView] IUIManager not injected — cannot open NewspaperWindow.");
+                return;
+            }
+            await _uiManager.ShowAsync<NewspaperWindow>(ct: _cts.Token);
+        }
+
         // ----- lifecycle -----
 
         private void OnDestroy()
         {
             if (_nextDayButton != null) _nextDayButton.onClick.RemoveListener(OnNextDayClicked);
-            if (_freeDecorClaimButton != null) _freeDecorClaimButton.onClick.RemoveListener(OnClaimFreeDecorClicked);
-            if (_paidDecorBuyButton != null) _paidDecorBuyButton.onClick.RemoveListener(OnBuyPaidDecorClicked);
+            if (_openNewspaperButton != null) _openNewspaperButton.onClick.RemoveListener(OnOpenNewspaperClicked);
             _cts.Cancel();
             _cts.Dispose();
-        }
-
-        // ----- decor newspaper offers -----
-
-        private void RefreshDecorOffers()
-        {
-            if (_decorReward == null) return;
-
-            if (_freeDecorPanel != null)
-            {
-                _freeDecorPanel.SetActive(_decorReward.HasFreeDecorAvailable);
-                if (_freeDecorLabel != null)
-                    _freeDecorLabel.text = $"Newspaper: free <b>{_decorReward.OfferedFreeDecorId}</b>!";
-            }
-
-            if (_paidDecorPanel != null)
-            {
-                _paidDecorPanel.SetActive(_decorReward.HasPaidOfferAvailable);
-                if (_paidDecorLabel != null)
-                    _paidDecorLabel.text = $"Buy <b>{_decorReward.OfferedPaidDecorId}</b> — {_decorReward.OfferedPaidPrice} gold";
-            }
-        }
-
-        private void OnClaimFreeDecorClicked() => ClaimFreeDecorAsync().Forget();
-
-        private async UniTaskVoid ClaimFreeDecorAsync()
-        {
-            if (_decorReward == null) return;
-            await _decorReward.ClaimFreeDecorAsync(_cts.Token);
-            RefreshDecorOffers();
-        }
-
-        private void OnBuyPaidDecorClicked() => BuyPaidDecorAsync().Forget();
-
-        private async UniTaskVoid BuyPaidDecorAsync()
-        {
-            if (_decorReward == null) return;
-            var bought = await _decorReward.BuyOfferedDecorAsync(_cts.Token);
-            if (!bought)
-                Debug.Log("[ResultsScreenView] Paid decor purchase failed (likely insufficient gold).");
-            RefreshDecorOffers();
         }
 
         private static void Set(TMP_Text label, string value)

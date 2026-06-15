@@ -1,12 +1,14 @@
 {
-    "name": "Game.Decor.UI.Editor",
-    "rootNamespace": "Game.Decor.UI.Editor",
+    "name": "Game.Newspaper",
+    "rootNamespace": "Game.Newspaper",
     "references": [
-        "Game.Decor"
+        "VContainer",
+        "UniTask",
+        "Game.Core.UI",
+        "Game.Decor.API",
+        "Unity.TextMeshPro"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

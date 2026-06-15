@@ -1,9 +1,7 @@
 using Book.Sell.API;
 using Game.Decor;
 using Game.Decor.Services;
-using Game.Decor.UI;
 using Game.Inventory.API;
-using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -30,9 +28,8 @@ namespace Game.Bootstrap
             // Config validation runs at boot. In Editor errors throw to block Play mode.
             builder.RegisterEntryPoint<DecorConfigValidator>(Lifetime.Singleton);
 
-            // Debug placement screen — registered only when present in the scene.
-            if (Object.FindAnyObjectByType<DecorPlacementScreenView>(FindObjectsInactive.Include) != null)
-                builder.RegisterComponentInHierarchy<DecorPlacementScreenView>();
+            // DecorPlacementWindow is loaded by AddressablesWindowFactory + injected via
+            // IObjectResolver.Inject — no scene binding needed.
         }
     }
 }
