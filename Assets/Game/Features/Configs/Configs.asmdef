@@ -5,7 +5,8 @@
         "UniTask",
         "Game.Commands.Abstractions",
         "Game.Commands",
-        "Game.Http"
+        "Game.Http",
+        "Game.Decor.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -10,7 +10,8 @@
         "Book.Sell.API",
         "Game.Bootstrap.Loading",
         "Game.Resources.API",
-        "Game.Progression.API"
+        "Game.Progression.API",
+        "Game.Decor.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

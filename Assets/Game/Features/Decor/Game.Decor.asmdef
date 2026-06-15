@@ -1,0 +1,26 @@
+{
+    "name": "Game.Decor",
+    "rootNamespace": "Game.Decor",
+    "references": [
+        "VContainer",
+        "UniTask",
+        "Configs",
+        "Save",
+        "Game.Inventory.API",
+        "Game.Resources.API",
+        "Book.Sell.API",
+        "Game.Decor.API",
+        "Infrastructure",
+        "Unity.TextMeshPro",
+        "Game.Core.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

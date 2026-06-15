@@ -10,7 +10,8 @@
         "Book.Sell",
         "Book.Sell.API",
         "DayCycle",
-        "Game.Inventory.API"
+        "Game.Inventory.API",
+        "Game.Decor.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

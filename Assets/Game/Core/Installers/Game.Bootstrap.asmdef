@@ -25,7 +25,9 @@
         "MessagePipe",
         "MessagePipe.VContainer",
         "Game.Core.UI",
-        "Game.Core.WorldHud"
+        "Game.Core.WorldHud",
+        "Game.Decor",
+        "Game.Decor.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

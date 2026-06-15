@@ -2,7 +2,6 @@ using Game.Inventory.API;
 using Game.Inventory.Services;
 using Game.Inventory.UI;
 using Game.Inventory.UseHandlers;
-using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -32,7 +31,7 @@ namespace Game.Bootstrap
                 .As<IInventoryService>();
             
             // Use handlers — discovered by InventoryUseRouter via IReadOnlyList<IInventoryItemUseHandler>.
-            builder.Register<IInventoryItemUseHandler, NoopDecorUseHandler>(Lifetime.Singleton);
+            // Decor activation handler is registered by Game.Decor (RegisterDecor).
             builder.Register<IInventoryItemUseHandler, PuzzleAssembleUseHandler>(Lifetime.Singleton);
 
             builder.Register<IInventoryUseRouter, InventoryUseRouter>(Lifetime.Singleton);

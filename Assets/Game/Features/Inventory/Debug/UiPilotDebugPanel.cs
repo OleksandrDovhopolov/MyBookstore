@@ -1,5 +1,6 @@
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
 using Cysharp.Threading.Tasks;
+using Game.Inventory.UI;
 using Game.UI.Common;
 using UnityEngine;
 using VContainer;
@@ -39,6 +40,12 @@ namespace Game.UI.DebugPanel
             if (GUI.Button(new Rect(pad, y, w, h), "Hide Top"))
             {
                 _uiManager.HideTopAsync().Forget();
+            }
+
+            y += h + pad;
+            if (GUI.Button(new Rect(pad, y, w, h), "Show Inventory"))
+            {
+                _uiManager.ShowAsync<InventoryWindowController>().Forget();
             }
         }
 

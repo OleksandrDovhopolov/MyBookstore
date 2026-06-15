@@ -39,6 +39,7 @@ namespace Game.Bootstrap
             builder.RegisterWorldHud();
             builder.RegisterWorldHudSmokeTest(); // TODO: remove after World HUD Phase 0 verification
             builder.RegisterInventory();
+            builder.RegisterDecor();
             builder.RegisterResources();
             builder.RegisterProgression();
             builder.RegisterFtue();

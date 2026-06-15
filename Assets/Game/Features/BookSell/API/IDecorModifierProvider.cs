@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 
-namespace Book.Sell.Services
+namespace Book.Sell.API
 {
     /// <summary>
     /// Per-genre multiplier applied to the passive sale chance, sourced from active decor.
-    /// Neutral value is 1.0 (no effect). Real decor lands in a follow-up feature; the stub
-    /// returns 1.0 unconditionally so callers and the formula are wired ahead of time.
+    /// Neutral value is 1.0 (no effect). Real implementation lives in Game.Decor — this contract
+    /// stays in BookSell.API so that decor can plug in without depending on BookSell impl assembly.
     /// </summary>
     public interface IDecorModifierProvider
     {

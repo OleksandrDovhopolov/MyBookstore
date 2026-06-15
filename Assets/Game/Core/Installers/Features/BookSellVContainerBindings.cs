@@ -1,3 +1,4 @@
+using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Book.Sell.UI;
@@ -24,8 +25,7 @@ namespace Game.Bootstrap
             builder.Register<IRecommendationScoringService, RecommendationScoringService>(Lifetime.Singleton);
 
             // Probabilistic passive sale (ADR-0004): chance gate per genre, then weighted pick by RarityWeight.
-            // Decor stays a stub (NoopDecorModifierProvider returns 1.0); real decor lands in a follow-up.
-            builder.Register<IDecorModifierProvider, NoopDecorModifierProvider>(Lifetime.Singleton);
+            // IDecorModifierProvider is registered by RegisterDecor in Game.Decor module.
             builder.Register<IBaseSaleChanceCalculator, EconomyBasedSaleChanceCalculator>(Lifetime.Singleton);
             builder.Register<IPassiveSaleSelector, WeightedPassiveSaleSelector>(Lifetime.Singleton);
 

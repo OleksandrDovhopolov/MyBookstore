@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Book.Sell.API;
 using Book.Sell.Services;
 using Book.Sell.Tests.Editor.Fakes;
 using Game.Configs.Models;
@@ -31,7 +33,7 @@ namespace Book.Sell.Tests.Editor.Services
                     LocationDemandMultiplier = locMultiplier
                 }
             });
-            var calc = new EconomyBasedSaleChanceCalculator(configs, decor ?? new NoopDecorModifierProvider());
+            var calc = new EconomyBasedSaleChanceCalculator(configs, decor ?? new NeutralDecorProvider());
             return (calc, configs);
         }
 
@@ -106,7 +108,7 @@ namespace Book.Sell.Tests.Editor.Services
             LogAssert.Expect(LogType.Error, new Regex(@"\[Sales\.Chance\].*EconomyConfig.*missing"));
 
             var configs = new FakeConfigsService();
-            var calc = new EconomyBasedSaleChanceCalculator(configs, new NoopDecorModifierProvider());
+            var calc = new EconomyBasedSaleChanceCalculator(configs, new NeutralDecorProvider());
             var chance = calc.Compute("Fantasy", 5, SalesTestKit.Location(), null);
             Assert.AreEqual(0d, chance, Epsilon);
         }
@@ -115,7 +117,13 @@ namespace Book.Sell.Tests.Editor.Services
         {
             private readonly float _value;
             public ConstantDecorProvider(float value) => _value = value;
-            public float GetGenreMultiplier(string genre, System.Collections.Generic.IReadOnlyList<string> activeDecorIds) => _value;
+            public float GetGenreMultiplier(string genre, IReadOnlyList<string> activeDecorIds) => _value;
+        }
+
+        // Local fake that replaces the deleted NoopDecorModifierProvider stub from the BookSell impl.
+        private sealed class NeutralDecorProvider : IDecorModifierProvider
+        {
+            public float GetGenreMultiplier(string genre, IReadOnlyList<string> activeDecorIds) => 1f;
         }
     }
 }
