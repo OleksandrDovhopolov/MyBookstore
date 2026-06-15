@@ -32,6 +32,9 @@ namespace Book.Sell.Services
         /// <summary>Fired whenever any customer changes phase (arrival / browsing / leaving / done). For the View.</summary>
         event Action<Customer> CustomerPhaseChanged;
 
+        /// <summary>Customer targeted a book and reserved it (soft-lock) before committing the sale. For the View's feedback log.</summary>
+        event Action<Customer, string> BookReserved;
+
         UniTask StartDayAsync(int day, CancellationToken ct);
 
         /// <summary>Advance the simulation by dt seconds. No-op while the interaction lock is held (domain pause) or the day is done.</summary>

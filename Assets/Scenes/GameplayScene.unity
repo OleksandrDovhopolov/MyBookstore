@@ -2692,14 +2692,8 @@ MonoBehaviour:
   _repDeltaLabel: {fileID: 105078719}
   _alreadyAppliedHint: {fileID: 1744745516}
   _nextDayButton: {fileID: 900572135}
+  _openNewspaperButton: {fileID: 0}
   _errorPanel: {fileID: 1924930179}
-  _freeDecorPanel: {fileID: 152527446}
-  _freeDecorLabel: {fileID: 987447165}
-  _freeDecorClaimButton: {fileID: 2132920539}
-  _paidDecorPanel: {fileID: 260435858}
-  _paidDecorLabel: {fileID: 1575311311}
-  _paidDecorBuyButton: {fileID: 1090881613}
-  _decorPlacementScreen: {fileID: 1640305108}
 --- !u!1 &618073251
 GameObject:
   m_ObjectHideFlags: 0
@@ -5502,7 +5496,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1640305109}
-  - component: {fileID: 1640305110}
   m_Layer: 5
   m_Name: DecorPlacementScreenView
   m_TagString: Untagged
@@ -5536,29 +5529,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1640305110
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1640305108}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4e7064469ccb684bb04c3173c28c0d6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _summaryLabel: {fileID: 612114743}
-  _capHintLabel: {fileID: 703812244}
-  _slotListRoot: {fileID: 1303337691}
-  _inventoryListRoot: {fileID: 755730411}
-  _slotRowTemplate: {fileID: 3586030313250705538, guid: c2d82bd81a85dde41b0180e0952322c6, type: 3}
-  _inventoryRowTemplate: {fileID: 9106201824885507445, guid: 6ac7ec6b66f8d194fadf0ac7a12281d2, type: 3}
-  _clearAllButton: {fileID: 0}
-  _closeButton: {fileID: 2026726626}
-  _positiveColor: {r: 0.2, g: 0.8, b: 0.2, a: 1}
-  _negativeColor: {r: 0.9, g: 0.25, b: 0.25, a: 1}
-  _capHintColor: {r: 0.95, g: 0.85, b: 0.2, a: 1}
 --- !u!1 &1662866658
 GameObject:
   m_ObjectHideFlags: 0

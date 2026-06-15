@@ -102,6 +102,7 @@ namespace Book.Sell.UI
             _controller.RecommendationResolved += OnRecommendationResolved;
             _controller.PassiveSaleHappened += OnPassiveSaleHappened;
             _controller.DayCompleted += OnDayCompleted;
+            _controller.BookReserved += OnBookReserved;
 
             StartDayFlowAsync(_cts.Token).Forget();
         }
@@ -151,6 +152,13 @@ namespace Book.Sell.UI
             if (_requestPanel != null) _requestPanel.SetActive(false);
             if (_difficultyLabel != null) _difficultyLabel.text = "";
             SetActionsInteractable(false);
+        }
+
+        private void OnBookReserved(Domain.Customer customer, string bookId)
+        {
+            AppendEntry(
+                FeedbackLogEntryView.EntryKind.BookReserved,
+                $"<i>{customer.Id} reserved {bookId}</i>");
         }
 
         private void OnPassiveSaleHappened(PassiveSaleEvent evt)
@@ -382,6 +390,7 @@ namespace Book.Sell.UI
                 _controller.RecommendationResolved -= OnRecommendationResolved;
                 _controller.PassiveSaleHappened -= OnPassiveSaleHappened;
                 _controller.DayCompleted -= OnDayCompleted;
+                _controller.BookReserved -= OnBookReserved;
             }
 
             if (_confirmButton != null) _confirmButton.onClick.RemoveListener(OnConfirmClicked);
