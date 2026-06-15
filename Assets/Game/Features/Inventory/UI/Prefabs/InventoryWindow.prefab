@@ -447,7 +447,6 @@ GameObject:
   - component: {fileID: 5725024303665411235}
   - component: {fileID: 303474359754135758}
   - component: {fileID: 5653145718807376124}
-  - component: {fileID: 2076020754707717803}
   - component: {fileID: -4927027694607511064}
   - component: {fileID: 5412122639631517965}
   - component: {fileID: 8564571989903992922}
@@ -527,25 +526,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _duration: 0.25
---- !u!114 &2076020754707717803
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5883908850249204972}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 241da73d5eac6de4db9c880108711f00, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _animation: {fileID: 5653145718807376124}
-  _titleLabel: {fileID: 0}
-  _bodyLabel: {fileID: 0}
-  _confirmButton: {fileID: 0}
-  _confirmButtonLabel: {fileID: 0}
-  _cancelButton: {fileID: 718839318352162672}
-  _cancelButtonLabel: {fileID: 4005765486893361887}
 --- !u!114 &-4927027694607511064
 MonoBehaviour:
   m_ObjectHideFlags: 0
