@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
 using UnityEngine;
@@ -26,6 +27,14 @@ namespace Game.Decor.Services
 
         public void Start()
         {
+            //TODO check this bug.
+            /*
+             * 
+            var decors = _configs.GetAll<DecorConfig>(); before  public async UniTask WarmupAsync(CancellationToken ct)
+            and data is not loaded after
+             */
+            DelayedStart().Forget();
+            return;
             var report = Validate();
 
             for (var i = 0; i < report.Warnings.Count; i++)
@@ -42,6 +51,26 @@ namespace Game.Decor.Services
 #endif
         }
 
+        private async UniTask DelayedStart()
+        {
+            await UniTask.WaitForSeconds(1f);
+            
+            var report = Validate();
+
+            for (var i = 0; i < report.Warnings.Count; i++)
+                Debug.LogWarning($"{LogTag} {report.Warnings[i]}");
+
+            if (!report.HasErrors) return;
+
+            for (var i = 0; i < report.Errors.Count; i++)
+                Debug.LogError($"{LogTag} {report.Errors[i]}");
+
+#if UNITY_EDITOR
+            throw new InvalidOperationException(
+                $"{LogTag} {report.Errors.Count} decor config error(s). See console.\n{report.FormatErrors()}");
+#endif
+        }
+        
         public ValidationReport Validate()
         {
             var report = new ValidationReport();

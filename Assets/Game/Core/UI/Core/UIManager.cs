@@ -190,7 +190,7 @@ namespace Game.UI
         }
 
         private Transform ResolveParent(WindowType type)
-            => type == WindowType.Widget ? _canvasRoot.HudRoot : _canvasRoot.WindowsRoot;
+            => type == WindowType.HUD ? _canvasRoot.HudRoot : _canvasRoot.WindowsRoot;
 
         private static WindowLayer DefaultLayerFor(WindowType type) => type switch
         {

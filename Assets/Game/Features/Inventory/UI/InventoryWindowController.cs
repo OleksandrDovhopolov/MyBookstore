@@ -6,7 +6,6 @@ using VContainer;
 
 namespace Game.Inventory.UI
 {
-    //TODO this classes should be removed from Assets/Game/Core/UI/Common/Inventory/InventoryWindowController.cs. and Game.Core.UI should cleared from Inventory.API and Inventory.Game
     [Window("InventoryWindow", WindowType.Page)]
     public sealed class InventoryWindowController : WindowController<InventoryWindowView>
     {

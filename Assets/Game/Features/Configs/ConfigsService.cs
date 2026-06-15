@@ -38,6 +38,8 @@ namespace Game.Configs
         public async UniTask WarmupAsync(CancellationToken ct)
         {
             if (_warmedUp) return;
+            
+            Debug.LogWarning($"{LogPrefix} WarmupAsync");
             await _source.WarmupAsync(ct);
             _warmedUp = true;
         }
