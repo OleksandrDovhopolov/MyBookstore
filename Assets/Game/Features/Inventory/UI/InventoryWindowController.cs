@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Game.Inventory.API;
 using Game.UI;
-using UnityEngine;
 using VContainer;
 
 namespace Game.Inventory.UI
@@ -13,7 +13,7 @@ namespace Game.Inventory.UI
         private IItemCategoryRegistry _categories;
         private IInventoryUseRouter _useRouter;
         private IReadOnlyList<IInventoryItemUseHandler> _handlers;
-        
+
         [Inject]
         public void Construct(
             IInventoryService inventory,
@@ -26,33 +26,22 @@ namespace Game.Inventory.UI
             _useRouter = useRouter;
             _handlers = handlers;
         }
-        
-        protected override void OnShowStart()
-        {
-            Debug.Log("[Smoke] InventoryWindowController ShowStart");
-            
-            View.Init(_inventory, _categories, _useRouter, _handlers);
-        }
 
-        protected override void OnShowComplete()
+        protected override void OnInit()
         {
-            Debug.Log("[Smoke] InventoryWindowController OnShowComplete");
-            base.OnShowComplete();
+            View.Bind(_inventory, _categories, _useRouter, _handlers);
             View.CloseButton.onClick.AddListener(CloseWindow);
         }
 
-        private void CloseWindow()
+        protected override void OnShowStart() => View.Refresh();
+
+        protected override void OnDispose()
         {
-            UIManager.HideAsync<InventoryWindowController>();
+            if (View == null) return;
+            View.CloseButton.onClick.RemoveListener(CloseWindow);
+            View.Teardown();
         }
-        
-        protected override void OnHideStart(bool isClosed)
-        {
-            Debug.Log("[Smoke] InventoryWindowController OnHideStart");
-            
-            base.OnHideStart(isClosed);
-            
-            View.CloseButton.onClick.RemoveAllListeners();
-        }
+
+        private void CloseWindow() => UIManager.HideAsync<InventoryWindowController>().Forget();
     }
 }

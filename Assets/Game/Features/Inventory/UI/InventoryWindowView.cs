@@ -6,7 +6,6 @@ using Game.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using VContainer;
 
 namespace Game.Inventory.UI
 {
@@ -22,7 +21,7 @@ namespace Game.Inventory.UI
 
         [Header("Header")]
         [SerializeField] private TMP_Text _activeCategoryLabel;
-        
+
         [SerializeField] private Button _closeButton;
 
         private IInventoryService _inventory;
@@ -35,24 +34,30 @@ namespace Game.Inventory.UI
         private readonly HashSet<string> _categoriesWithHandlers = new();
         private string _activeCategoryId;
         private readonly CancellationTokenSource _cts = new();
+        private bool _isBound;
 
         public Button CloseButton => _closeButton;
-        
-        public void Init(IInventoryService inventory, IItemCategoryRegistry categories, IInventoryUseRouter useRouter, IReadOnlyList<IInventoryItemUseHandler> handlers)
+
+        /// <summary>
+        /// Called once by the controller in OnInit. Stores deps, builds tabs, subscribes to inventory
+        /// changes and selects the first category. Subsequent re-shows go through <see cref="Refresh"/>.
+        /// </summary>
+        public void Bind(
+            IInventoryService inventory,
+            IItemCategoryRegistry categories,
+            IInventoryUseRouter useRouter,
+            IReadOnlyList<IInventoryItemUseHandler> handlers)
         {
+            if (_isBound) return;
+
             _inventory = inventory;
             _categories = categories;
             _useRouter = useRouter;
             _handlers = handlers;
 
-            Init();
-        }
-        
-        private void Init()
-        {
             if (_inventory == null || _categories == null)
             {
-                Debug.LogWarning("[InventoryScreenView] dependencies missing — not registered in DI?");
+                Debug.LogWarning("[InventoryWindowView] dependencies missing — not registered in DI?");
                 return;
             }
 
@@ -64,12 +69,28 @@ namespace Game.Inventory.UI
 
             var first = _categories.GetAll();
             if (first.Count > 0) SelectCategory(first[0].Id);
+
+            _isBound = true;
         }
 
-        public void BuildTabs()
+        public void Refresh()
+        {
+            if (!_isBound || string.IsNullOrEmpty(_activeCategoryId)) return;
+            Render();
+        }
+
+        public void Teardown()
+        {
+            if (_inventory != null) _inventory.Changed -= OnInventoryChanged;
+            if (!_cts.IsCancellationRequested) _cts.Cancel();
+            _cts.Dispose();
+            _isBound = false;
+        }
+
+        private void BuildTabs()
         {
             if (_tabContainer == null || _tabButtonPrefab == null) return;
-            
+
             var all = _categories.GetAll();
             for (var i = 0; i < all.Count; i++)
             {
@@ -86,14 +107,14 @@ namespace Game.Inventory.UI
         private void SelectCategory(string categoryId)
         {
             _activeCategoryId = categoryId;
-            
+
             if (_activeCategoryLabel != null && _categories.TryGet(categoryId, out var c))
                 _activeCategoryLabel.text = c.DisplayName;
-            
+
             Render();
         }
 
-        public void Render()
+        private void Render()
         {
             ClearRows();
             if (_rowPrefab == null || _rowContainer == null || string.IsNullOrEmpty(_activeCategoryId)) return;
@@ -117,18 +138,15 @@ namespace Game.Inventory.UI
 
         private void OnInventoryChanged(InventoryChangeEvent _)
         {
-            if (!string.IsNullOrEmpty(_activeCategoryId)) Render();
+            if (_isBound && !string.IsNullOrEmpty(_activeCategoryId)) Render();
         }
 
-        private void OnUseClicked(string itemId)
-        {
-            UseAsync(itemId, _cts.Token).Forget();
-        }
+        private void OnUseClicked(string itemId) => UseAsync(itemId, _cts.Token).Forget();
 
         private async UniTaskVoid UseAsync(string itemId, CancellationToken ct)
         {
             var result = await _useRouter.UseAsync(itemId, ct);
-            Debug.Log($"[InventoryScreen] use {itemId}: success={result.Success}, consume={result.ConsumeAfterUse}, msg={result.Message}");
+            Debug.Log($"[InventoryWindow] use {itemId}: success={result.Success}, consume={result.ConsumeAfterUse}, msg={result.Message}");
         }
     }
 }
