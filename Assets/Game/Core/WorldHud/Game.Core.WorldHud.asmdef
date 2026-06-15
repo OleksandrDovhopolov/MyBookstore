@@ -1,14 +1,13 @@
 {
-    "name": "Book.Sell",
-    "rootNamespace": "Book.Sell",
+    "name": "Game.Core.WorldHud",
+    "rootNamespace": "Game.WorldHud",
     "references": [
-        "UniTask",
         "VContainer",
-        "Configs",
-        "Save",
+        "UniTask",
+        "Unity.Addressables",
+        "Unity.ResourceManager",
         "Unity.TextMeshPro",
-        "Book.Sell.API",
-        "Game.Core.WorldHud"
+        "Infrastructure"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

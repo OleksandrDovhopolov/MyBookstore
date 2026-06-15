@@ -1,6 +1,7 @@
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Book.Sell.UI;
+using Book.Sell.UI.Customer;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -13,7 +14,7 @@ namespace Game.Bootstrap
     // No ISaveService / IDayProgressService — Sales is standalone for this iteration.
     public static class BookSellVContainerBindings
     {
-        public static void RegisterBookSell(this IContainerBuilder builder)
+        public static void RegisterBookSell(this IContainerBuilder builder, CustomerVisual customerVisualPrefab, Transform customerSpawnRoot)
         {
             // Reused pure-domain services.
             builder.Register<ISalesRandom, UnityRandomSalesRandom>(Lifetime.Singleton);
@@ -33,6 +34,13 @@ namespace Game.Bootstrap
             builder.Register<ICustomerSpawner, DefaultCustomerSpawner>(Lifetime.Singleton);
             builder.RegisterInstance(new SalesTuning());
             builder.Register<ISalesDayController, SalesDayController>(Lifetime.Singleton);
+
+            // Customer visualization + world-space thought bubbles (Phase 0 of World HUD).
+            builder.RegisterInstance(new CustomerVisualRegistryConfig(customerVisualPrefab, customerSpawnRoot));
+            builder.Register<CustomerVisualRegistry>(Lifetime.Singleton)
+                .AsImplementedInterfaces() // exposes ICustomerVisualRegistry, IStartable, IDisposable
+                .AsSelf();
+            builder.RegisterEntryPoint<CustomerBubbleBinder>(Lifetime.Singleton);
 
             // Debug screen. Registered only if present in the scene, so the project runs before the UI
             // is wired. Same pattern as MorningScreenView.

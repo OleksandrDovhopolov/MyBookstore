@@ -36,6 +36,8 @@ namespace Game.Bootstrap
             builder.RegisterInfrastructure();
             builder.RegisterConfigs();
             builder.RegisterUiSystem(_uiCanvasRootPrefab);
+            builder.RegisterWorldHud();
+            builder.RegisterWorldHudSmokeTest(); // TODO: remove after World HUD Phase 0 verification
             builder.RegisterInventory();
             builder.RegisterResources();
             builder.RegisterProgression();

@@ -24,7 +24,8 @@
         "Game.Progression.API",
         "MessagePipe",
         "MessagePipe.VContainer",
-        "Game.Core.UI"
+        "Game.Core.UI",
+        "Game.Core.WorldHud"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
