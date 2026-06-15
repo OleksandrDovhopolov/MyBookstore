@@ -60,6 +60,9 @@ namespace Game.DayCycle.Results.UI
         [SerializeField] private TMP_Text _paidDecorLabel;
         [SerializeField] private Button _paidDecorBuyButton;
 
+        [Header("Decor placement")]
+        [SerializeField] private GameObject _decorPlacementScreen;
+
         private IResultsSessionService _service;
         private IDecorRewardService _decorReward;
         private readonly CancellationTokenSource _cts = new();
@@ -99,6 +102,9 @@ namespace Game.DayCycle.Results.UI
             _service.LoadAndApplyAsync(_cts.Token).Forget();
 
             RefreshDecorOffers();
+
+            if (_decorPlacementScreen != null)
+                _decorPlacementScreen.SetActive(true);
         }
 
         private void OnDisable()

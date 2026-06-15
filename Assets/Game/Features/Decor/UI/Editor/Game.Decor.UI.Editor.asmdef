@@ -1,0 +1,18 @@
+{
+    "name": "Game.Decor.UI.Editor",
+    "rootNamespace": "Game.Decor.UI.Editor",
+    "references": [
+        "Game.Decor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
