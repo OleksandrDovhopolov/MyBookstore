@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: UI
   m_GUID: 65fe7f39b09e04740a95f8f435f8c858
   m_SerializeEntries:
+  - m_GUID: 0d46c2ab7dc4589428601072bb9f6fae
+    m_Address: GameplaySceneController
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 179b1d22bfd99ec4fb2af73a25ae0859
     m_Address: SmokeSystemDialog
     m_ReadOnly: 0
