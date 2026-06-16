@@ -7,6 +7,7 @@ using Game.Configs.Models;
 using Game.Inventory.API;
 using Game.Rewards.API;
 using UnityEngine;
+// PR5: filters pool by inventory ownership to avoid silent dupe-drop in book category (Unique mode).
 
 namespace Game.Rewards.Services
 {
@@ -26,11 +27,13 @@ namespace Game.Rewards.Services
         private const string LogPrefix = "[BookBox]";
 
         private readonly IConfigsService _configs;
+        private readonly IInventoryService _inventory;
         private readonly IRewardRandom _random;
 
-        public BookBoxRewardExpander(IConfigsService configs, IRewardRandom random)
+        public BookBoxRewardExpander(IConfigsService configs, IInventoryService inventory, IRewardRandom random)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
+            _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
             _random = random ?? throw new ArgumentNullException(nameof(random));
         }
 
@@ -48,7 +51,7 @@ namespace Game.Rewards.Services
             var pool = BuildPool(rule.Filter);
             if (pool.Count == 0)
             {
-                Debug.LogWarning($"{LogPrefix} Empty pool for '{spec.Id}'. Returning empty spec.");
+                Debug.LogWarning($"{LogPrefix} Empty pool for '{spec.Id}' (all candidates owned or filter matches nothing). Player paid but received nothing.");
                 return UniTask.FromResult(new RewardSpec(spec.Id, Array.Empty<RewardItem>()));
             }
 
@@ -66,6 +69,9 @@ namespace Game.Rewards.Services
                 weights.RemoveAt(pickIndex);
             }
 
+            if (rolls < rule.Rolls)
+                Debug.LogWarning($"{LogPrefix} Underfilled box '{spec.Id}': delivered {rolls}/{rule.Rolls} books (collection nearly complete).");
+
             return UniTask.FromResult(new RewardSpec(spec.Id, items));
         }
 
@@ -76,8 +82,10 @@ namespace Game.Rewards.Services
             for (var i = 0; i < all.Count; i++)
             {
                 var book = all[i];
-                if (book != null && !string.IsNullOrEmpty(book.Id) && filter(book))
-                    pool.Add(book);
+                if (book == null || string.IsNullOrEmpty(book.Id)) continue;
+                if (!filter(book)) continue;
+                if (_inventory.Has(book.Id)) continue;   // PR5: skip books player already owns (book category is Unique).
+                pool.Add(book);
             }
             return pool;
         }

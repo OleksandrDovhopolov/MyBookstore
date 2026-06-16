@@ -25,18 +25,19 @@ namespace Game.Rewards.Tests.Editor
                 Mood = mood
             };
 
-        private static (BookBoxRewardExpander svc, FakeConfigsService cfg, FakeRewardRandom rng) Build(
+        private static (BookBoxRewardExpander svc, FakeConfigsService cfg, FakeInventoryService inv, FakeRewardRandom rng) Build(
             IReadOnlyList<BookConfig> pool)
         {
             var cfg = new FakeConfigsService().Seed(pool);
+            var inv = new FakeInventoryService();
             var rng = new FakeRewardRandom();
-            return (new BookBoxRewardExpander(cfg, rng), cfg, rng);
+            return (new BookBoxRewardExpander(cfg, inv, rng), cfg, inv, rng);
         }
 
         [Test]
         public void CanExpand_BookBoxId_True()
         {
-            var (svc, _, _) = Build(new BookConfig[0]);
+            var (svc, _, _, _) = Build(new BookConfig[0]);
             Assert.IsTrue(svc.CanExpand(new RewardSpec("book_box_common_15", new RewardItem[0])));
             Assert.IsTrue(svc.CanExpand(new RewardSpec("book_box_anything", new RewardItem[0])));
         }
@@ -44,7 +45,7 @@ namespace Game.Rewards.Tests.Editor
         [Test]
         public void CanExpand_NonBookBoxId_False()
         {
-            var (svc, _, _) = Build(new BookConfig[0]);
+            var (svc, _, _, _) = Build(new BookConfig[0]);
             Assert.IsFalse(svc.CanExpand(new RewardSpec("decor_vintage_globe", new RewardItem[0])));
             Assert.IsFalse(svc.CanExpand(new RewardSpec("anything_else", new RewardItem[0])));
         }
@@ -58,7 +59,7 @@ namespace Game.Rewards.Tests.Editor
             for (var i = 0; i < 20; i++)
                 pool.Add(Book($"book_{i:D3}", "Drama", 0.3f + i * 0.02f));
 
-            var (svc, _, _) = Build(pool);
+            var (svc, _, _, _) = Build(pool);
             var spec = new RewardSpec("book_box_common_15", new RewardItem[0]);
 
             var result = svc.ExpandAsync(spec, CancellationToken.None).GetAwaiter().GetResult();
@@ -95,7 +96,7 @@ namespace Game.Rewards.Tests.Editor
                 Book("common_5", "Drama", 0.55f),
             };
 
-            var (svc, _, _) = Build(pool);
+            var (svc, _, _, _) = Build(pool);
             var spec = new RewardSpec("book_box_rare_8", new RewardItem[0]);
 
             var result = svc.ExpandAsync(spec, CancellationToken.None).GetAwaiter().GetResult();
@@ -118,7 +119,7 @@ namespace Game.Rewards.Tests.Editor
                 Book("crime_only",   "Crime",   0.8f, "tense"),
             };
 
-            var (svc, _, _) = Build(pool);
+            var (svc, _, _, _) = Build(pool);
             var spec = new RewardSpec("book_box_genre_dystopic_1", new RewardItem[0]);
 
             var result = svc.ExpandAsync(spec, CancellationToken.None).GetAwaiter().GetResult();
@@ -130,7 +131,7 @@ namespace Game.Rewards.Tests.Editor
         [Test]
         public void Expand_UnknownBoxId_ReturnsEmptySpec()
         {
-            var (svc, _, _) = Build(new BookConfig[0]);
+            var (svc, _, _, _) = Build(new BookConfig[0]);
             var spec = new RewardSpec("book_box_unknown_thing", new RewardItem[0]);
 
             var result = svc.ExpandAsync(spec, CancellationToken.None).GetAwaiter().GetResult();
@@ -149,11 +150,63 @@ namespace Game.Rewards.Tests.Editor
                 Book("common_b", "Drama", 0.4f),
             };
 
-            var (svc, _, _) = Build(pool);
+            var (svc, _, _, _) = Build(pool);
             var spec = new RewardSpec("book_box_rare_8", new RewardItem[0]);
 
             var result = svc.ExpandAsync(spec, CancellationToken.None).GetAwaiter().GetResult();
 
+            Assert.AreEqual(0, result.Items.Count);
+        }
+
+        [Test]
+        public void Expand_ExcludesOwnedBooks_FromPool()
+        {
+            // 10-book pool. Player owns 7 of them — expand common_15 must roll only from the 3
+            // remaining and return at most 3 items.
+            var pool = new List<BookConfig>();
+            for (var i = 0; i < 10; i++)
+                pool.Add(Book($"book_{i:D2}", "Drama", 0.3f + i * 0.02f));
+
+            var (svc, _, inv, _) = Build(pool);
+
+            // Seed first 7 ids into inventory.
+            for (var i = 0; i < 7; i++)
+                inv.AddAsync($"book_{i:D2}", InventoryCategories.Book, 1, CancellationToken.None)
+                   .GetAwaiter().GetResult();
+
+            var spec = new RewardSpec("book_box_common_15", new RewardItem[0]);
+            var result = svc.ExpandAsync(spec, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(3, result.Items.Count, "Pool of 3 unowned → 3 books delivered (clamped).");
+            foreach (var item in result.Items)
+            {
+                Assert.IsTrue(item.Id == "book_07" || item.Id == "book_08" || item.Id == "book_09",
+                    $"Got owned id {item.Id}; expected only unowned book_07/08/09.");
+            }
+        }
+
+        [Test]
+        public void Expand_AllBooksOwned_ReturnsEmptySpec()
+        {
+            // 5-book pool. Player owns all 5 — pool collapses to 0 → empty spec.
+            var pool = new List<BookConfig>
+            {
+                Book("a", "Drama", 0.7f),
+                Book("b", "Drama", 0.7f),
+                Book("c", "Drama", 0.7f),
+                Book("d", "Drama", 0.7f),
+                Book("e", "Drama", 0.7f),
+            };
+
+            var (svc, _, inv, _) = Build(pool);
+            foreach (var b in pool)
+                inv.AddAsync(b.Id, InventoryCategories.Book, 1, CancellationToken.None)
+                   .GetAwaiter().GetResult();
+
+            var spec = new RewardSpec("book_box_rare_8", new RewardItem[0]);
+            var result = svc.ExpandAsync(spec, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(spec.Id, result.Id, "Granted spec id matches request even when empty.");
             Assert.AreEqual(0, result.Items.Count);
         }
     }
