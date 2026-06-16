@@ -4,6 +4,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
+using Game.Decor;
 using Game.Resources.API;
 using Game.Rewards.API;
 using Game.Shop.API;
@@ -23,6 +24,7 @@ namespace Game.Shop.Services
         private const string LogPrefix = "[Shop]";
         private const string SourcePrefix = "shop:";
 
+        private readonly ISaveService _save;
         private readonly SaveBackedShopRepository _repository;
         private readonly IResourcesService _resources;
         private readonly IRewardGrantService _rewards;
@@ -42,7 +44,7 @@ namespace Game.Shop.Services
             IRewardGrantService rewards,
             IConfigsService configs)
         {
-            if (save == null) throw new ArgumentNullException(nameof(save));
+            _save = save ?? throw new ArgumentNullException(nameof(save));
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _resources = resources ?? throw new ArgumentNullException(nameof(resources));
             _rewards = rewards ?? throw new ArgumentNullException(nameof(rewards));
@@ -57,13 +59,58 @@ namespace Game.Shop.Services
 
         public async UniTask AfterLoadAsync(CancellationToken ct)
         {
+            // SaveDataLoad and ConfigsWarmup run in parallel during bootstrap (Bootstrap.cs:201),
+            // so the configs may not be ready yet when this hook fires. Ensuring warmup here is
+            // idempotent (IConfigsService.WarmupAsync no-ops after the first call) and serializes
+            // catalog access for free.
+            await _configs.WarmupAsync(ct);
+
             _state = await _repository.LoadAsync(ct) ?? new ShopStateDto();
             if (_state.Lots == null) _state.Lots = new Dictionary<string, LotPurchasesDto>(StringComparer.Ordinal);
+
+            await TryMigrateLegacyDecorAsync(ct);
 
             WarmupCatalog();
             _loaded = true;
 
             Debug.Log($"{LogPrefix} loaded: {_lotsById.Count} lots across {_lotsByStorefront.Count} storefronts.");
+        }
+
+        // ----- legacy migration -----
+
+        /// <summary>
+        /// One-shot migration of the pre-Shop decor flags (<c>DecorPlacementState.FirstDayRewardClaimed</c>
+        /// and <c>FirstDayPurchaseDone</c>) into <see cref="ShopStateDto"/>. Reads the legacy DTO directly
+        /// through <see cref="ISaveService"/> (not through <c>DecorPlacementService</c>) so hook ordering
+        /// inside VContainer doesn't matter. Idempotent: bails out if the shop state already contains
+        /// any decor lot entry. Legacy fields stay in <c>decor.placement</c> as a rollback safety net.
+        /// </summary>
+        private async UniTask TryMigrateLegacyDecorAsync(CancellationToken ct)
+        {
+            if (_state.Lots.ContainsKey(NewspaperShopLotIds.DecorFreeVintageGlobe)
+                || _state.Lots.ContainsKey(NewspaperShopLotIds.DecorPaidCoffeePot))
+                return;
+
+            var legacy = await _save.GetModuleAsync<DecorPlacementState>(DecorSaveKeys.Placement, ct);
+            if (legacy == null) return;
+
+            var dirty = false;
+            if (legacy.FirstDayRewardClaimed)
+            {
+                _state.Lots[NewspaperShopLotIds.DecorFreeVintageGlobe] = new LotPurchasesDto { Purchases = 1 };
+                dirty = true;
+            }
+            if (legacy.FirstDayPurchaseDone)
+            {
+                _state.Lots[NewspaperShopLotIds.DecorPaidCoffeePot] = new LotPurchasesDto { Purchases = 1 };
+                dirty = true;
+            }
+
+            if (dirty)
+            {
+                await _repository.SaveAsync(_state, ct);
+                Debug.Log($"{LogPrefix} migrated legacy decor flags (free={legacy.FirstDayRewardClaimed}, paid={legacy.FirstDayPurchaseDone}).");
+            }
         }
 
         public UniTask BeforeSaveAsync(CancellationToken ct) => UniTask.CompletedTask;

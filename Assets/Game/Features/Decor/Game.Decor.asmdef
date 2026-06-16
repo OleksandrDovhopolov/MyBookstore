@@ -10,6 +10,7 @@
         "Game.Resources.API",
         "Book.Sell.API",
         "Game.Decor.API",
+        "Game.Shop.API",
         "Infrastructure",
         "Unity.TextMeshPro",
         "Game.Core.UI"

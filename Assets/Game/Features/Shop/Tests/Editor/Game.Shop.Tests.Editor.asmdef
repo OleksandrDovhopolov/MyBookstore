@@ -10,6 +10,7 @@
         "Game.Rewards.API",
         "Game.Resources.API",
         "Game.Inventory.API",
+        "Game.Decor.API",
         "UnityEngine.TestRunner"
     ],
     "includePlatforms": [

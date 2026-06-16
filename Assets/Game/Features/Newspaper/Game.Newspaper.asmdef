@@ -5,7 +5,7 @@
         "VContainer",
         "UniTask",
         "Game.Core.UI",
-        "Game.Decor.API",
+        "Game.Shop.API",
         "Unity.TextMeshPro"
     ],
     "includePlatforms": [],

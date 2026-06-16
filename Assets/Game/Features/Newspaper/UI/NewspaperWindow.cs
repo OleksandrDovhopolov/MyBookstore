@@ -1,6 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Game.Decor;
+using Game.Shop.API;
 using Game.UI;
 using UnityEngine;
 using VContainer;
@@ -9,19 +9,19 @@ namespace Game.Newspaper.UI
 {
     /// <summary>
     /// Daily newspaper window. Phase 0 scope: two decor offers (free + paid) routed through
-    /// <see cref="IDecorRewardService"/>. Future content (book bundles for sale, weather forecast,
+    /// <see cref="IShopService"/>. Future content (book bundles for sale, weather forecast,
     /// weekly calendar) lives in the same prefab/view and lands in later phases.
     /// </summary>
     [Window("NewspaperWindow", WindowType.Page)]
     public sealed class NewspaperWindow : WindowController<NewspaperWindowView>
     {
-        private IDecorRewardService _decorReward;
+        private IShopService _shop;
         private CancellationTokenSource _cts;
 
         [Inject]
-        public void InjectServices(IDecorRewardService decorReward)
+        public void InjectServices(IShopService shop)
         {
-            _decorReward = decorReward;
+            _shop = shop;
         }
 
         protected override void OnInit()
@@ -50,21 +50,24 @@ namespace Game.Newspaper.UI
 
         private void RefreshDecorOffers()
         {
-            Debug.LogWarning($"Test _decorReward {_decorReward == null}");
-            if (_decorReward == null) return;
+            if (_shop == null) return;
 
             if (View.FreeDecorPanel != null)
             {
-                View.FreeDecorPanel.SetActive(_decorReward.HasFreeDecorAvailable);
-                if (View.FreeDecorLabel != null)
-                    View.FreeDecorLabel.text = $"Newspaper: free <b>{_decorReward.OfferedFreeDecorId}</b>!";
+                var available = _shop.IsAvailable(NewspaperShopLotIds.DecorFreeVintageGlobe);
+                View.FreeDecorPanel.SetActive(available);
+                if (available && View.FreeDecorLabel != null
+                    && _shop.TryGetLot(NewspaperShopLotIds.DecorFreeVintageGlobe, out var freeLot))
+                    View.FreeDecorLabel.text = $"Newspaper: free <b>{freeLot.RewardId}</b>!";
             }
 
             if (View.PaidDecorPanel != null)
             {
-                View.PaidDecorPanel.SetActive(_decorReward.HasPaidOfferAvailable);
-                if (View.PaidDecorLabel != null)
-                    View.PaidDecorLabel.text = $"Buy <b>{_decorReward.OfferedPaidDecorId}</b> — {_decorReward.OfferedPaidPrice} gold";
+                var available = _shop.IsAvailable(NewspaperShopLotIds.DecorPaidCoffeePot);
+                View.PaidDecorPanel.SetActive(available);
+                if (available && View.PaidDecorLabel != null
+                    && _shop.TryGetLot(NewspaperShopLotIds.DecorPaidCoffeePot, out var paidLot))
+                    View.PaidDecorLabel.text = $"Buy <b>{paidLot.RewardId}</b> — {paidLot.Price.Amount} gold";
             }
         }
 
@@ -72,8 +75,8 @@ namespace Game.Newspaper.UI
 
         private async UniTaskVoid ClaimFreeDecorAsync()
         {
-            if (_decorReward == null) return;
-            await _decorReward.ClaimFreeDecorAsync(_cts.Token);
+            if (_shop == null) return;
+            await _shop.BuyAsync(NewspaperShopLotIds.DecorFreeVintageGlobe, _cts.Token);
             RefreshDecorOffers();
         }
 
@@ -81,10 +84,10 @@ namespace Game.Newspaper.UI
 
         private async UniTaskVoid BuyPaidDecorAsync()
         {
-            if (_decorReward == null) return;
-            var bought = await _decorReward.BuyOfferedDecorAsync(_cts.Token);
-            if (!bought)
-                Debug.Log("[NewspaperWindow] Paid decor purchase failed (likely insufficient gold).");
+            if (_shop == null) return;
+            var result = await _shop.BuyAsync(NewspaperShopLotIds.DecorPaidCoffeePot, _cts.Token);
+            if (result.Status != ShopPurchaseStatus.Success)
+                Debug.Log($"[NewspaperWindow] Paid decor purchase failed: {result.Status}.");
             RefreshDecorOffers();
         }
 

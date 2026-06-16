@@ -1,1 +1,22 @@
-[]
+[
+  {
+    "id": "newspaper_decor_vintage_globe",
+    "storefrontId": "newspaper.decor",
+    "price": { "currency": "gold", "amount": 0 },
+    "rewardId": "decor_vintage_globe",
+    "rewardItems": [
+      { "id": "vintage_globe", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+    ],
+    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+  },
+  {
+    "id": "newspaper_decor_coffee_pot",
+    "storefrontId": "newspaper.decor",
+    "price": { "currency": "gold", "amount": 50 },
+    "rewardId": "decor_coffee_pot",
+    "rewardItems": [
+      { "id": "coffee_pot", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+    ],
+    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+  }
+]
