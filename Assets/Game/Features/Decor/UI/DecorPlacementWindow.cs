@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using Book.Sell.API;
@@ -57,6 +58,7 @@ namespace Game.Decor.UI
 
         protected override void OnShowStart()
         {
+            Debug.Log($"[DecorPlacementWindow] OnShowStart: placement!=null={_placement!=null}, inventory!=null={_inventory!=null}, placements={_placement?.GetAllPlacements().Count ?? -1}");
             if (_placement != null) _placement.PlacementChanged += Render;
             if (_inventory != null) _inventory.Changed += OnInventoryChanged;
             Render();
@@ -135,6 +137,7 @@ namespace Game.Decor.UI
         {
             ClearRows(_slotRowPool);
             var shop = _configs.Get<BookShopConfig>(DecorPlacementService.HardcodedBookShopId);
+            Debug.Log($"[DecorPlacementWindow] RenderSlots: shop={(shop!=null?shop.Id:"<null>")}, slots={shop?.DecorSlots?.Length ?? -1}, placements={_placement.GetAllPlacements().Count}");
             if (shop?.DecorSlots == null) return;
 
             foreach (var slot in shop.DecorSlots)
@@ -155,6 +158,7 @@ namespace Game.Decor.UI
         {
             ClearRows(_inventoryRowPool);
             var items = _inventory.GetByCategory(InventoryCategories.Decor);
+            Debug.Log($"[DecorPlacementWindow] RenderInventory: inventory decor items={items.Count}, ids=[{string.Join(",", items.Select(i => i.ItemId))}], template={(View.InventoryRowTemplate!=null)}, listRoot={(View.InventoryListRoot!=null)}");
             foreach (var item in items)
             {
                 var config = _configs.Get<DecorConfig>(item.ItemId);

@@ -17,7 +17,12 @@ namespace Game.WorldHud.SmokeTest
 
         public WorldHudSmokeRunner(IWorldHudManager worldHud) => _worldHud = worldHud;
 
-        public void Start() => RunAsync(_cts.Token).Forget();
+        public void Start()
+        {
+            // waiting for scene visual 
+            return;
+            RunAsync(_cts.Token).Forget();
+        }
 
         private async UniTaskVoid RunAsync(CancellationToken ct)
         {

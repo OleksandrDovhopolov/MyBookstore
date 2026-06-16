@@ -43,6 +43,7 @@ namespace Game.Decor.Services
             _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             save?.RegisterHook(this);
+            Debug.Log($"{LogTag} ctor — service constructed, hook registered. saveNull={(save==null)}");
         }
 
         // Exposed only for the IDecorRewardService neighbour; not part of the public API.
@@ -96,7 +97,9 @@ namespace Game.Decor.Services
                 return DecorPlacementResult.SlotOccupied;
 
             _state.Placements.Add(new DecorPlacementEntry { SlotId = slotId, DecorId = decorId });
+            Debug.Log($"{LogTag} PlaceAsync ENTER save: slot={slotId}, decor={decorId}, totalPlacements={_state.Placements.Count}");
             await _storage.SaveAsync(_state, ct);
+            Debug.Log($"{LogTag} PlaceAsync EXIT save: slot={slotId}, decor={decorId} — persisted.");
             PlacementChanged?.Invoke();
             return DecorPlacementResult.Success;
         }
@@ -126,6 +129,17 @@ namespace Game.Decor.Services
             _state = await _storage.LoadAsync(ct);
             _loaded = true;
 
+            // Bootstrap runs ConfigsWarmup + SaveDataLoad in parallel (Bootstrap.cs phase_data_load).
+            // Orphan cleanup below reads DecorConfig / BookShopConfig — both must be warmed up first,
+            // otherwise legitimate placements get silently dropped as "missing from configs".
+            // WarmupAsync is idempotent: if configs already warmed, this returns immediately.
+            await _configs.WarmupAsync(ct);
+
+            // DBG: snapshot of config readiness after the explicit await — both counts should be > 0.
+            var decorsKnown = _configs.GetAll<DecorConfig>().Count;
+            var shopsKnown = _configs.GetAll<BookShopConfig>().Count;
+            Debug.Log($"{LogTag} AfterLoadAsync ENTER (after WarmupAsync): loaded placements={_state.Placements.Count}, configs decors={decorsKnown}, shops={shopsKnown}");
+
             // Orphan cleanup: drop placements whose decor or slot disappeared from configs.
             var dirty = false;
             for (var i = _state.Placements.Count - 1; i >= 0; i--)
@@ -142,7 +156,7 @@ namespace Game.Decor.Services
                 var decorConfig = _configs.Get<DecorConfig>(entry.DecorId);
                 if (decorConfig == null)
                 {
-                    Debug.LogWarning($"{LogTag} Decor '{entry.DecorId}' is missing from configs — unplacing from slot '{entry.SlotId}'.");
+                    Debug.LogWarning($"{LogTag} Decor '{entry.DecorId}' is missing from configs — unplacing from slot '{entry.SlotId}'. (decorsKnown={decorsKnown})");
                     _state.Placements.RemoveAt(i);
                     dirty = true;
                     continue;
@@ -151,7 +165,7 @@ namespace Game.Decor.Services
                 var slot = FindSlot(entry.SlotId);
                 if (slot == null)
                 {
-                    Debug.LogWarning($"{LogTag} Slot '{entry.SlotId}' is missing from bookshop config — dropping placement of '{entry.DecorId}'.");
+                    Debug.LogWarning($"{LogTag} Slot '{entry.SlotId}' is missing from bookshop config — dropping placement of '{entry.DecorId}'. (shopsKnown={shopsKnown})");
                     _state.Placements.RemoveAt(i);
                     dirty = true;
                     continue;
@@ -164,6 +178,8 @@ namespace Game.Decor.Services
                     dirty = true;
                 }
             }
+
+            Debug.Log($"{LogTag} AfterLoadAsync EXIT: final placements={_state.Placements.Count}, dirty(resaved)={dirty}");
 
             if (dirty)
             {
