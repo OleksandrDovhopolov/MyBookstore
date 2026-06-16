@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using cheatModule;
 using Cysharp.Threading.Tasks;
+using Game.Configs;
+using Game.Inventory.API;
 using Game.UI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,11 +21,15 @@ namespace Game.Cheat
         private List<ICheatsModule> _cheatsModules;
         
         private UIManager _uiManager;
+        private IInventoryService _inventory;
+        private IConfigsService _configs;
 
         [Inject]
-        private void Construct(UIManager uiManager)
+        private void Construct(UIManager uiManager, IInventoryService inventory, IConfigsService configs)
         {
             _uiManager = uiManager;
+            _inventory = inventory;
+            _configs = configs;
         }
         
         public void Start()
@@ -78,7 +84,7 @@ namespace Game.Cheat
             
             var cheatsModules = new List<ICheatsModule>
             {
-                new DecorationCheatModule(_uiManager, destroyCt),
+                new DecorationCheatModule(_uiManager, _inventory, _configs, destroyCt),
             };
             
             return cheatsModules;
