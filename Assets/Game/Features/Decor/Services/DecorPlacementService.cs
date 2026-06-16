@@ -96,6 +96,13 @@ namespace Game.Decor.Services
             if (!string.IsNullOrEmpty(GetDecorInSlot(slotId)))
                 return DecorPlacementResult.SlotOccupied;
 
+            // Decor is a unique object — refuse to place the same decor into a second slot.
+            for (var i = 0; i < _state.Placements.Count; i++)
+            {
+                if (string.Equals(_state.Placements[i].DecorId, decorId, StringComparison.OrdinalIgnoreCase))
+                    return DecorPlacementResult.AlreadyPlaced;
+            }
+
             _state.Placements.Add(new DecorPlacementEntry { SlotId = slotId, DecorId = decorId });
             Debug.Log($"{LogTag} PlaceAsync ENTER save: slot={slotId}, decor={decorId}, totalPlacements={_state.Placements.Count}");
             await _storage.SaveAsync(_state, ct);

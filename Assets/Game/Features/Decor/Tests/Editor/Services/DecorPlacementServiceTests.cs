@@ -96,6 +96,18 @@ namespace Game.Decor.Tests.Editor.Services
         }
 
         [Test]
+        public void Place_DecorAlreadyPlacedElsewhere_Fails()
+        {
+            _inventory.Seed("globe", InventoryCategories.Decor);
+            _service.PlaceAsync("globe", "s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+            var result = _service.PlaceAsync("globe", "s_stand_med", CancellationToken.None).GetAwaiter().GetResult();
+            Assert.AreEqual(DecorPlacementResult.AlreadyPlaced, result);
+            Assert.AreEqual("globe", _service.GetDecorInSlot("s_stand_small"));
+            Assert.IsNull(_service.GetDecorInSlot("s_stand_med"));
+            CollectionAssert.AreEqual(new[] { "globe" }, _service.GetActiveDecorIds());
+        }
+
+        [Test]
         public void Unplace_RemovesEntry()
         {
             _inventory.Seed("globe", InventoryCategories.Decor);

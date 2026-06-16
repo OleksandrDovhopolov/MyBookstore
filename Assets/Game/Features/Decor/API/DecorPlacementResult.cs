@@ -9,5 +9,6 @@ namespace Game.Decor
         PositionTypeMismatch = 4,
         SizeMismatch = 5,
         SlotOccupied = 6,
+        AlreadyPlaced = 7,
     }
 }

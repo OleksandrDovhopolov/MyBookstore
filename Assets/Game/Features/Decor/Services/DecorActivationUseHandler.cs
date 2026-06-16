@@ -30,6 +30,14 @@ namespace Game.Decor.Services
 
         public async UniTask<InventoryUseResult> UseAsync(InventoryItem item, CancellationToken ct)
         {
+            // Decor is unique — if it's already placed in any slot, do nothing instead of duplicating.
+            var existingSlot = FindPlacedSlot(item.ItemId);
+            if (!string.IsNullOrEmpty(existingSlot))
+            {
+                Debug.Log($"{LogTag} '{item.ItemId}' already placed in '{existingSlot}' — nothing to do.");
+                return InventoryUseResult.Ok(consume: false, message: $"already placed in {existingSlot}");
+            }
+
             var decorConfig = _configs.Get<DecorConfig>(item.ItemId);
             if (decorConfig == null)
             {
@@ -61,6 +69,16 @@ namespace Game.Decor.Services
 
             Debug.Log($"{LogTag} No free compatible slot for '{item.ItemId}'. Open placement screen to swap.");
             return InventoryUseResult.Ok(consume: false, message: "no free compatible slot");
+        }
+
+        private string FindPlacedSlot(string decorId)
+        {
+            foreach (var entry in _placement.GetAllPlacements())
+            {
+                if (string.Equals(entry.DecorId, decorId, System.StringComparison.OrdinalIgnoreCase))
+                    return entry.SlotId;
+            }
+            return null;
         }
     }
 }
