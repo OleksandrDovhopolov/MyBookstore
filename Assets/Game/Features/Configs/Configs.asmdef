@@ -6,7 +6,9 @@
         "Game.Commands.Abstractions",
         "Game.Commands",
         "Game.Http",
-        "Game.Decor.API"
+        "Game.Decor.API",
+        "Game.Shop.API",
+        "Game.Rewards.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

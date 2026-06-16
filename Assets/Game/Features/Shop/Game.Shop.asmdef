@@ -1,0 +1,23 @@
+{
+    "name": "Game.Shop",
+    "rootNamespace": "Game.Shop",
+    "references": [
+        "UniTask",
+        "VContainer",
+        "Save",
+        "Configs",
+        "Game.Shop.API",
+        "Game.Rewards.API",
+        "Game.Resources.API",
+        "Game.Inventory.API"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
