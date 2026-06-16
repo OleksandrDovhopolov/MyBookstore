@@ -31,39 +31,40 @@ namespace Game.UI.DebugPanel
             const float h = 36f;
             const float pad = 8f;
 
+            var x = Screen.width - w - pad;
             var y = pad;
-            if (GUI.Button(new Rect(pad, y, w, h), "Show Settings"))
+            if (GUI.Button(new Rect(x, y, w, h), "Show Settings"))
             {
                 _uiManager.ShowAsync<SettingsWindow>().Forget();
             }
 
             y += h + pad;
-            if (GUI.Button(new Rect(pad, y, w, h), "Show Confirm (await)"))
+            if (GUI.Button(new Rect(x, y, w, h), "Show Confirm (await)"))
             {
                 ShowStandaloneConfirmAsync().Forget();
             }
 
             y += h + pad;
-            if (GUI.Button(new Rect(pad, y, w, h), "Hide Top"))
+            if (GUI.Button(new Rect(x, y, w, h), "Hide Top"))
             {
-                //TODO bug ? tgis button hides GameplaySceneController. but this is main screen hud and cant be hided 
+                //TODO bug ? tgis button hides GameplaySceneController. but this is main screen hud and cant be hided
                 _uiManager.HideTopAsync().Forget();
             }
 
             y += h + pad;
-            if (GUI.Button(new Rect(pad, y, w, h), "Show Inventory"))
+            if (GUI.Button(new Rect(x, y, w, h), "Show Inventory"))
             {
                 _uiManager.ShowAsync<InventoryWindowController>().Forget();
             }
 
             y += h + pad;
-            if (GUI.Button(new Rect(pad, y, w, h), "Show Decoration"))
+            if (GUI.Button(new Rect(x, y, w, h), "Show Decoration"))
             {
                 _uiManager.ShowAsync<DecorPlacementWindow>().Forget();
             }
 
             y += h + pad;
-            if (GUI.Button(new Rect(pad, y, w, h), "Get debug free decor"))
+            if (GUI.Button(new Rect(x, y, w, h), "Get debug free decor"))
             {
                 _decorReward.ClaimFreeDecorAsync(default).Forget();
             }

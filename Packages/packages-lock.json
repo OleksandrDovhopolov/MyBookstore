@@ -21,6 +21,13 @@
       "dependencies": {},
       "hash": "e5acc106ee196bc5a32fb14cdf2987b0f96d11e0"
     },
+    "com.dovhopolov.cheatmodule": {
+      "version": "https://github.com/OleksandrDovhopolov/CheatModule.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "c64a6be095c22493aded035e6d38e7b66041bbc8"
+    },
     "com.unity.2d.animation": {
       "version": "10.2.2",
       "depth": 1,
