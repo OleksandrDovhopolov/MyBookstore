@@ -17,6 +17,16 @@ namespace Game.Newspaper.UI
         [SerializeField] private TMP_Text _paidDecorLabel;
         [SerializeField] private Button _paidDecorBuyButton;
 
+        [Header("Book crates")]
+        [SerializeField] private GameObject _bookCratesPanel;
+        [SerializeField] private Button _commonBoxBuyButton;
+        [SerializeField] private TMP_Text _commonBoxLabel;
+        [SerializeField] private Button _rareBoxBuyButton;
+        [SerializeField] private TMP_Text _rareBoxLabel;
+        [SerializeField] private Button _dystopicBoxBuyButton;
+        [SerializeField] private TMP_Text _dystopicBoxLabel;
+        [SerializeField] private TMP_Text _lastBookRewardLabel;
+
         [Header("Close")]
         [SerializeField] private Button _closeButton;
 
@@ -27,6 +37,15 @@ namespace Game.Newspaper.UI
         public GameObject PaidDecorPanel => _paidDecorPanel;
         public TMP_Text PaidDecorLabel => _paidDecorLabel;
         public Button PaidDecorBuyButton => _paidDecorBuyButton;
+
+        public GameObject BookCratesPanel => _bookCratesPanel;
+        public Button CommonBoxBuyButton => _commonBoxBuyButton;
+        public TMP_Text CommonBoxLabel => _commonBoxLabel;
+        public Button RareBoxBuyButton => _rareBoxBuyButton;
+        public TMP_Text RareBoxLabel => _rareBoxLabel;
+        public Button DystopicBoxBuyButton => _dystopicBoxBuyButton;
+        public TMP_Text DystopicBoxLabel => _dystopicBoxLabel;
+        public TMP_Text LastBookRewardLabel => _lastBookRewardLabel;
 
         public Button CloseButton => _closeButton;
     }

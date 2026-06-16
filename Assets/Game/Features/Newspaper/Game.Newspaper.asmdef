@@ -6,6 +6,7 @@
         "UniTask",
         "Game.Core.UI",
         "Game.Shop.API",
+        "Game.Rewards.API",
         "Unity.TextMeshPro"
     ],
     "includePlatforms": [],

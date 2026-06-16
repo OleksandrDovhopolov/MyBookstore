@@ -5,7 +5,8 @@
         "UniTask",
         "Game.Rewards.API",
         "Game.Resources.API",
-        "Game.Inventory.API"
+        "Game.Inventory.API",
+        "Configs"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

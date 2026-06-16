@@ -18,5 +18,29 @@
       { "id": "coffee_pot", "category": "decor", "amount": 1, "kind": "InventoryItem" }
     ],
     "limit": { "mode": "Disposable", "maxPurchases": 1 }
+  },
+  {
+    "id": "newspaper_book_common_15",
+    "storefrontId": "newspaper.books",
+    "price": { "currency": "gold", "amount": 20 },
+    "rewardId": "book_box_common_15",
+    "rewardItems": [],
+    "limit": { "mode": "Unlimited", "maxPurchases": 0 }
+  },
+  {
+    "id": "newspaper_book_rare_8",
+    "storefrontId": "newspaper.books",
+    "price": { "currency": "gold", "amount": 30 },
+    "rewardId": "book_box_rare_8",
+    "rewardItems": [],
+    "limit": { "mode": "Unlimited", "maxPurchases": 0 }
+  },
+  {
+    "id": "newspaper_book_genre_dystopic_1",
+    "storefrontId": "newspaper.books",
+    "price": { "currency": "gold", "amount": 40 },
+    "rewardId": "book_box_genre_dystopic_1",
+    "rewardItems": [],
+    "limit": { "mode": "Unlimited", "maxPurchases": 0 }
   }
 ]

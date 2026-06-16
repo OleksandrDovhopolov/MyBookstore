@@ -10,6 +10,10 @@ namespace Game.Shop.API
         public const string DecorFreeVintageGlobe = "newspaper_decor_vintage_globe";
         public const string DecorPaidCoffeePot = "newspaper_decor_coffee_pot";
 
+        public const string BookBoxCommon15 = "newspaper_book_common_15";
+        public const string BookBoxRare8 = "newspaper_book_rare_8";
+        public const string BookBoxGenreDystopic1 = "newspaper_book_genre_dystopic_1";
+
         public const string StorefrontDecor = "newspaper.decor";
         public const string StorefrontBooks = "newspaper.books";
     }

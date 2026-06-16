@@ -346,9 +346,55 @@ Save-схема (черновик):
 - **Цена отдельных книг vs коробок** — есть ли вообще смысл в штучной покупке. Решаем при дизайне Classic Shop (Phase 1).
 - **Bank = отдельный Storefront или вкладка Premium в Classic Shop?** Решаем перед Phase 3.
 - **Trade-in / sell-back** — рискованно для экономики, обсудить отдельно.
-- **`DecorRewardService` после Phase 0 миграции** — удалить или оставить thin facade поверх `IShopService`? Зависит от того, есть ли вызывающие за пределами `NewspaperWindow`.
+- **`DecorRewardService` после Phase 0 миграции** — удалить или оставить thin facade поверх `IShopService`? Зависит от того, есть ли вызывающие за пределами `NewspaperWindow` (текущий `UiPilotDebugPanel.cs:69` дёргает `ClaimFreeDecorAsync` — миграция дебаг-панели → удаление facade).
 - **Какие конкретно книги попадают в Phase 0 пулы коробок** — нужен список `book_id` или фильтр по тегу (`rarity == "common"`).
 - **`source`-строка для аналитики / `IRewardGrantService.GrantAsync(..., source)`** — формат: `"shop:<lotId>"` или `"shop:<storefrontId>:<lotId>"`? Определяем при подключении аналитики (Phase 1).
+
+### Phase 0 — известные ограничения и tech debt
+
+Список фиксируется по факту реализации PR1–PR4. Каждый пункт = осознанное Phase 0 решение, **не баг**. Адресуется в Phase 1+, если приоритет позволит.
+
+#### Игровая логика
+
+1. **Book-box не фильтрует по инвентарю.** `BookBoxRewardExpander.BuildPool` ([`BookBoxRewardExpander.cs:78`](../../Assets/Game/Features/Rewards/Services/BookBoxRewardExpander.cs)) тянет из всех `BookConfig`'ов с фильтром rarity/genre, **не учитывает** что у игрока уже есть. Категория `book` — `ItemStackingMode.Unique`, дубликаты silent no-op в `InventoryService.ApplyAdd` ([`InventoryService.cs:208-217`](../../Assets/Game/Features/Inventory/Services/InventoryService.cs)). **Эффект:** при заполнении коллекции крейт становится всё бесполезнее (50/60 в инвентаре → 15 ролов дают ~2-3 новых книги, остальные silent drop, gold потрачен).
+   - **Фикс (Phase 1):** inject `IInventoryService` в expander, в `BuildPool` исключать `_inventory.Has(book.Id)`. `Math.Min(rolls, poolSize)` уже корректно clamp'ит при сжатии пула. +2 теста: исключение owned, пустой пул.
+   - **UI doliv:** `LastBookRewardLabel` уже показывает фактическое количество через `result.Granted.Items.Count` — игрок поймёт, что коллекция почти полная. Опционально: добавить hint «коллекция почти полная — крейт может дать меньше».
+   - **Альтернатива (Phase 2+):** daily rotation пулов делает дубликаты приемлемыми (как gacha).
+
+2. **`shop` save для Unlimited лотов redundant.** Счётчик `Purchases` инкрементится при каждой покупке книжной коробки, но никто его не читает (`IsAvailable` для `Unlimited` returns `true` без проверки). **Эффект:** save bloat (несколько байт), нет функционального вреда. Решение «оставить» обсуждалось — forward-compat для daily-reset / lifetime-N.
+   - **Опционально (Phase 1):** в `ShopService.BuyAsync` пропускать `IncrementPurchase` + `_repository.SaveAsync` для `Mode == Unlimited`.
+
+3. **`MaxPurchases=0` на Unlimited лотах** — семантически странное. JSON выглядит как «0 покупок разрешено», но фактически `Mode==Unlimited` обходит проверку.
+   - **Фикс (Phase 1):** сделать `MaxPurchases` опциональным (`int?`) или ввести `ShopLotLimit.Unlimited()` factory + кастомный JSON converter, чтобы конфиг писал просто `"limit": "Unlimited"`.
+
+4. **`DecorRewardService` facade хардкодит item id'ы.** `OfferedFreeDecorId => "vintage_globe"`, `OfferedPaidDecorId => "coffee_pot"` ([`DecorRewardService.cs:13-14`](../../Assets/Game/Features/Decor/Services/DecorRewardService.cs)). `OfferedPaidPrice` уже мигрирован на чтение из конфига; id'ы — нет, потому что нет способа определить «первый item в первом rewardItems»-конвенции без догадок.
+   - **Фикс (Phase 1):** либо вернуть id из `lot.RewardItems[0].Id` (хрупкая convention), либо удалить эти свойства из API и обновить consumer'ов.
+
+5. **Atomicity gap в BuyAsync (`SHOP.md §12.4`).** Если `RewardGrantService.GrantAsync` падает после `RemoveAsync` — gold списан, награда не выдана. `ShopService` логирует `Debug.LogError` с source для ручного восстановления, но автоматического refund'а нет.
+   - **Фикс (Phase 2 — server-authoritative):** атомарная транзакция на сервере + snapshot apply.
+
+#### Инфраструктура
+
+6. **`ShopService.AfterLoadAsync` локально дожидается `_configs.WarmupAsync`.** ([`ShopService.cs:AfterLoadAsync`](../../Assets/Game/Features/Shop/Services/ShopService.cs)) Это патч для race condition: `Bootstrap.cs:201` запускает `SaveDataLoadOperation` и `ConfigsWarmupOperation` в **параллельной** `LoadingGroup`. Если save load заканчивается раньше прогрева конфигов, `ShopService` (как `ISaveHook`) видит пустой `IConfigsService.GetAll<ShopConfig>()` → пустой каталог. Локально ждём `WarmupAsync` (idempotent).
+   - **Фикс (Phase 1):** на уровне Bootstrap — либо сделать Configs зависимостью SaveDataLoad, либо вынести в две последовательные phase'ы. Затронет и других consumer'ов конфигов в save-hook'ах (потенциально `DecorPlacementService`).
+
+7. **`DecorRewardService` facade живёт только ради `UiPilotDebugPanel`.** Единственный consumer вне `NewspaperWindow`. После миграции дебаг-панели на `IShopService.BuyAsync(NewspaperShopLotIds.DecorFreeVintageGlobe, ...)` можно удалить facade + интерфейс `IDecorRewardService`.
+
+8. **`IDecorRewardService` остался в `Game.Decor.API`.** API всё ещё экспортирует интерфейс, который существует только для legacy consumer'а. Удаляется вместе с пунктом 7.
+
+#### UX
+
+9. **Inline label вместо popup.** `NewspaperWindow.LastBookRewardLabel` показывает «Получено: 15 книг — book_001, book_004, ...» как простой текст. Нет анимации, нет иконок, нет possibility to dismiss. Это сознательно скромный MVP UX.
+   - **Фикс (Phase 1):** `RewardsWindow` popup со списком книг + иконки + кнопка OK. Переиспользуется для Classic Shop и других магазинов.
+
+10. **Нет аналитики.** Контракт `IShopService.LotPurchased` готов к подписке трекером (см. `SHOP.md §8`), но decorator/listener в Phase 0 не реализован.
+    - **Фикс (Phase 1):** `ShopAnalyticsListener` подписывается на `LotPurchased` и эмитит события из списка §8.
+
+11. **Нет подтверждения покупки.** Клик «купить» сразу списывает gold. Для дешёвых лотов (20-50 gold) приемлемо; для будущих дорогих лотов (Phase 3 Bank) обязательно.
+    - **Фикс (Phase 1):** `IConfirmationPolicy` с порогом по `lot.Price.Amount` или флагом в `ShopConfig`.
+
+12. **Нет daily reset.** Книжные коробки бесконечны, декор-офферы одноразовые. Phase 0 не ротирует.
+    - **Фикс (Phase 1):** см. §13 Phase plan — daily reset по `ICurrentDayProvider` (уже есть в BookSell) или server-calendar.
 
 ---
 
