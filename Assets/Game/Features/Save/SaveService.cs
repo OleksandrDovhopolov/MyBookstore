@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Save.Model;
 using Save.Storage;
 using UnityEngine;
@@ -134,10 +135,10 @@ namespace Save
                 if (string.IsNullOrWhiteSpace(moduleKey))
                     throw new ArgumentNullException(nameof(moduleKey));
 
-                if (!_data.Modules.TryGetValue(moduleKey, out var payload))
+                if (!_data.Modules.TryGetValue(moduleKey, out var payload) || payload.Json == null)
                     return null;
 
-                return JsonConvert.DeserializeObject<T>(payload.Json);
+                return payload.Json.ToObject<T>();
             }
             finally
             {
@@ -157,8 +158,10 @@ namespace Save
                 if (string.IsNullOrWhiteSpace(moduleKey))
                     throw new ArgumentNullException(nameof(moduleKey));
 
-                var json = JsonConvert.SerializeObject(value, Formatting.None);
-                _data.Modules[moduleKey] = new ModulePayload { Version = schemaVersion, Json = json };
+                // FromObject keeps the payload as a structured JToken — the outer SaveData
+                // serializer then emits it inline instead of an escaped string.
+                var token = value == null ? null : JToken.FromObject(value);
+                _data.Modules[moduleKey] = new ModulePayload { Version = schemaVersion, Json = token };
                 _isDirty = true;
             }
             finally
@@ -311,7 +314,9 @@ namespace Save
             const int moduleLimit = 5120;
             foreach (var kvp in data.Modules)
             {
-                var size = kvp.Value?.Json == null ? 0 : Encoding.UTF8.GetByteCount(kvp.Value.Json);
+                var size = kvp.Value?.Json == null
+                    ? 0
+                    : Encoding.UTF8.GetByteCount(kvp.Value.Json.ToString(Formatting.None));
                 var moduleMsg = $"[SaveService]   module='{kvp.Key}' v{kvp.Value?.Version} = {size}B";
                 if (size > moduleLimit) Debug.LogWarning(moduleMsg + " (OVER 5KB)");
                 else Debug.Log(moduleMsg);
