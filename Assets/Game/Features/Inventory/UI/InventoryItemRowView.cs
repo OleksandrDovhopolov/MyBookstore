@@ -24,11 +24,12 @@ namespace Game.Inventory.UI
             if (_useButton != null) _useButton.onClick.AddListener(OnUseClicked);
         }
 
-        public void Bind(InventoryItem item, bool hasUseHandler, Action<string> onUse)
+        public void Bind(InventoryItem item, bool hasUseHandler, string info, Action<string> onUse)
         {
             _itemId = item.ItemId;
             _onUse = onUse;
-            if (_idLabel != null) _idLabel.text = item.ItemId;
+            if (_idLabel != null)
+                _idLabel.text = string.IsNullOrEmpty(info) ? item.ItemId : $"{item.ItemId} — {info}";
             if (_countLabel != null)
             {
                 _countLabel.gameObject.SetActive(item.Count > 1);

@@ -24,6 +24,7 @@ namespace Game.Bootstrap
             builder.Register<IDecorModifierProvider, ConfigBasedDecorModifierProvider>(Lifetime.Singleton);
             builder.Register<IDecorRewardService, DecorRewardService>(Lifetime.Singleton);
             builder.Register<IInventoryItemUseHandler, DecorActivationUseHandler>(Lifetime.Singleton);
+            builder.Register<IInventoryItemInfoProvider, DecorPlacementInfoProvider>(Lifetime.Singleton);
 
             // Config validation runs at boot. In Editor errors throw to block Play mode.
             builder.RegisterEntryPoint<DecorConfigValidator>(Lifetime.Singleton);

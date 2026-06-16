@@ -13,23 +13,26 @@ namespace Game.Inventory.UI
         private IItemCategoryRegistry _categories;
         private IInventoryUseRouter _useRouter;
         private IReadOnlyList<IInventoryItemUseHandler> _handlers;
+        private IReadOnlyList<IInventoryItemInfoProvider> _infoProviders;
 
         [Inject]
         public void Construct(
             IInventoryService inventory,
             IItemCategoryRegistry categories,
             IInventoryUseRouter useRouter,
-            IReadOnlyList<IInventoryItemUseHandler> handlers)
+            IReadOnlyList<IInventoryItemUseHandler> handlers,
+            IReadOnlyList<IInventoryItemInfoProvider> infoProviders)
         {
             _inventory = inventory;
             _categories = categories;
             _useRouter = useRouter;
             _handlers = handlers;
+            _infoProviders = infoProviders;
         }
 
         protected override void OnInit()
         {
-            View.Bind(_inventory, _categories, _useRouter, _handlers);
+            View.Bind(_inventory, _categories, _useRouter, _handlers, _infoProviders);
             View.CloseButton.onClick.AddListener(CloseWindow);
         }
 

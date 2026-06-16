@@ -32,6 +32,7 @@ namespace Game.Inventory.UI
         private readonly List<Button> _tabButtons = new();
         private readonly List<InventoryItemRowView> _rows = new();
         private readonly HashSet<string> _categoriesWithHandlers = new();
+        private readonly Dictionary<string, IInventoryItemInfoProvider> _infoByCategoryId = new();
         private string _activeCategoryId;
         private readonly CancellationTokenSource _cts = new();
         private bool _isBound;
@@ -46,7 +47,8 @@ namespace Game.Inventory.UI
             IInventoryService inventory,
             IItemCategoryRegistry categories,
             IInventoryUseRouter useRouter,
-            IReadOnlyList<IInventoryItemUseHandler> handlers)
+            IReadOnlyList<IInventoryItemUseHandler> handlers,
+            IReadOnlyList<IInventoryItemInfoProvider> infoProviders)
         {
             if (_isBound) return;
 
@@ -63,6 +65,16 @@ namespace Game.Inventory.UI
 
             for (var i = 0; _handlers != null && i < _handlers.Count; i++)
                 if (_handlers[i] != null) _categoriesWithHandlers.Add(_handlers[i].SupportedCategoryId);
+
+            if (infoProviders != null)
+            {
+                for (var i = 0; i < infoProviders.Count; i++)
+                {
+                    var p = infoProviders[i];
+                    if (p == null || string.IsNullOrEmpty(p.SupportedCategoryId)) continue;
+                    _infoByCategoryId[p.SupportedCategoryId] = p;
+                }
+            }
 
             BuildTabs();
             _inventory.Changed += OnInventoryChanged;
@@ -121,10 +133,12 @@ namespace Game.Inventory.UI
 
             var items = _inventory.GetByCategory(_activeCategoryId);
             var hasHandler = _categoriesWithHandlers.Contains(_activeCategoryId);
+            _infoByCategoryId.TryGetValue(_activeCategoryId, out var infoProvider);
             for (var i = 0; i < items.Count; i++)
             {
+                var info = infoProvider?.GetInfoFor(items[i].ItemId);
                 var row = Instantiate(_rowPrefab, _rowContainer);
-                row.Bind(items[i], hasHandler, OnUseClicked);
+                row.Bind(items[i], hasHandler, info, OnUseClicked);
                 _rows.Add(row);
             }
         }

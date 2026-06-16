@@ -108,7 +108,7 @@ namespace Game.Inventory.UI
             for (var i = 0; i < items.Count; i++)
             {
                 var row = Instantiate(_rowPrefab, _rowContainer);
-                row.Bind(items[i], hasHandler, OnUseClicked);
+                row.Bind(items[i], hasHandler, info: null, OnUseClicked);
                 _rows.Add(row);
             }
         }
