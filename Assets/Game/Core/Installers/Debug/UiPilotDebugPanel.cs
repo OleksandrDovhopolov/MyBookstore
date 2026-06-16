@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using Game.Decor;
 using Game.Decor.UI;
 using Game.Inventory.UI;
+using Game.Newspaper.UI;
 using Game.UI.Common;
 using UnityEngine;
 using VContainer;
@@ -47,7 +48,6 @@ namespace Game.UI.DebugPanel
             y += h + pad;
             if (GUI.Button(new Rect(x, y, w, h), "Hide Top"))
             {
-                //TODO bug ? tgis button hides GameplaySceneController. but this is main screen hud and cant be hided
                 _uiManager.HideTopAsync().Forget();
             }
 
@@ -67,6 +67,12 @@ namespace Game.UI.DebugPanel
             if (GUI.Button(new Rect(x, y, w, h), "Get debug free decor"))
             {
                 _decorReward.ClaimFreeDecorAsync(default).Forget();
+            }
+
+            y += h + pad;
+            if (GUI.Button(new Rect(x, y, w, h), "Show Newspaper"))
+            {
+                _uiManager.ShowAsync<NewspaperWindow>().Forget();
             }
         }
 

@@ -50,6 +50,7 @@ namespace Game.Newspaper.UI
 
         private void RefreshDecorOffers()
         {
+            Debug.LogWarning($"Test _decorReward {_decorReward == null}");
             if (_decorReward == null) return;
 
             if (View.FreeDecorPanel != null)

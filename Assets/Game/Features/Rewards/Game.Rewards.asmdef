@@ -1,0 +1,19 @@
+{
+    "name": "Game.Rewards",
+    "rootNamespace": "Game.Rewards",
+    "references": [
+        "UniTask",
+        "Game.Rewards.API",
+        "Game.Resources.API",
+        "Game.Inventory.API"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -41,6 +41,7 @@ namespace Game.Bootstrap
             builder.RegisterInventory();
             builder.RegisterDecor();
             builder.RegisterResources();
+            builder.RegisterRewards();
             builder.RegisterProgression();
             builder.RegisterFtue();
         }

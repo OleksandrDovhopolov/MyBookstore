@@ -27,7 +27,10 @@
         "Game.Core.UI",
         "Game.Core.WorldHud",
         "Game.Decor",
-        "Game.Decor.API"
+        "Game.Decor.API",
+        "Game.Rewards",
+        "Game.Rewards.API",
+        "Game.Newspaper"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
