@@ -10,7 +10,7 @@ using VContainer.Unity;
 namespace Game.Decor.Services
 {
     /// <summary>
-    /// Validates DecorConfig and LocationConfig.DecorSlots at boot. Awaits <see cref="IConfigsService.WarmupAsync"/>
+    /// Validates DecorConfig and BookShopConfig.DecorSlots at boot. Awaits <see cref="IConfigsService.WarmupAsync"/>
     /// first so configs are guaranteed to be loaded regardless of entry-point registration order.
     /// In Editor, errors throw to block Play mode; in runtime builds, errors are logged and the
     /// affected entries get effectively ignored downstream.
@@ -51,7 +51,7 @@ namespace Game.Decor.Services
         {
             var report = new ValidationReport();
             ValidateDecors(report);
-            ValidateLocations(report);
+            ValidateBookShops(report);
             return report;
         }
 
@@ -121,38 +121,38 @@ namespace Game.Decor.Services
             }
         }
 
-        private void ValidateLocations(ValidationReport report)
+        private void ValidateBookShops(ValidationReport report)
         {
-            var locations = _configs.GetAll<LocationConfig>();
-            for (var i = 0; i < locations.Count; i++)
+            var shops = _configs.GetAll<BookShopConfig>();
+            for (var i = 0; i < shops.Count; i++)
             {
-                var location = locations[i];
-                if (location?.DecorSlots == null) continue;
+                var shop = shops[i];
+                if (shop?.DecorSlots == null) continue;
 
                 var slotIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                for (var j = 0; j < location.DecorSlots.Length; j++)
+                for (var j = 0; j < shop.DecorSlots.Length; j++)
                 {
-                    var slot = location.DecorSlots[j];
+                    var slot = shop.DecorSlots[j];
                     if (slot == null)
                     {
-                        report.Errors.Add($"Location '{location.Id}' DecorSlots[{j}] is null.");
+                        report.Errors.Add($"BookShop '{shop.Id}' DecorSlots[{j}] is null.");
                         continue;
                     }
 
                     if (string.IsNullOrEmpty(slot.Id))
                     {
-                        report.Errors.Add($"Location '{location.Id}' DecorSlots[{j}] has empty Id.");
+                        report.Errors.Add($"BookShop '{shop.Id}' DecorSlots[{j}] has empty Id.");
                         continue;
                     }
 
                     if (!slotIds.Add(slot.Id))
-                        report.Errors.Add($"Location '{location.Id}' has duplicate slot Id '{slot.Id}'.");
+                        report.Errors.Add($"BookShop '{shop.Id}' has duplicate slot Id '{slot.Id}'.");
 
                     if (!Enum.IsDefined(typeof(DecorPositionType), slot.PositionType))
-                        report.Errors.Add($"Location '{location.Id}' slot '{slot.Id}' has invalid PositionType.");
+                        report.Errors.Add($"BookShop '{shop.Id}' slot '{slot.Id}' has invalid PositionType.");
 
                     if (!Enum.IsDefined(typeof(DecorSize), slot.MaxSize))
-                        report.Errors.Add($"Location '{location.Id}' slot '{slot.Id}' has invalid MaxSize.");
+                        report.Errors.Add($"BookShop '{shop.Id}' slot '{slot.Id}' has invalid MaxSize.");
                 }
             }
         }

@@ -134,10 +134,10 @@ namespace Game.Decor.UI
         private void RenderSlots()
         {
             ClearRows(_slotRowPool);
-            var location = _configs.Get<LocationConfig>(DecorPlacementService.HardcodedLocationId);
-            if (location?.DecorSlots == null) return;
+            var shop = _configs.Get<BookShopConfig>(DecorPlacementService.HardcodedBookShopId);
+            if (shop?.DecorSlots == null) return;
 
-            foreach (var slot in location.DecorSlots)
+            foreach (var slot in shop.DecorSlots)
             {
                 if (slot == null) continue;
                 var row = SpawnSlotRow();
@@ -294,6 +294,10 @@ namespace Game.Decor.UI
             await _placement.ClearAllAsync(_cts.Token);
         }
 
-        private void OnCloseClicked() => CloseAsync().Forget();
+        private void OnCloseClicked()
+        {
+            //UIManager.HideAsync<DecorPlacementWindow>().Forget();
+            CloseAsync().Forget();
+        }
     }
 }

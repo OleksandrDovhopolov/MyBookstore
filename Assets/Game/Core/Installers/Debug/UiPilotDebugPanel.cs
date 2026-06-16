@@ -1,5 +1,7 @@
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
 using Cysharp.Threading.Tasks;
+using Game.Decor;
+using Game.Decor.UI;
 using Game.Inventory.UI;
 using Game.UI.Common;
 using UnityEngine;
@@ -12,9 +14,14 @@ namespace Game.UI.DebugPanel
     public sealed class UiPilotDebugPanel : MonoBehaviour
     {
         private IUIManager _uiManager;
+        private IDecorRewardService  _decorReward;
 
         [Inject]
-        public void Construct(IUIManager uiManager) => _uiManager = uiManager;
+        public void Construct(IUIManager uiManager, IDecorRewardService  decorReward)
+        {
+            _uiManager = uiManager;
+            _decorReward = decorReward;
+        }
 
         private void OnGUI()
         {
@@ -47,6 +54,18 @@ namespace Game.UI.DebugPanel
             if (GUI.Button(new Rect(pad, y, w, h), "Show Inventory"))
             {
                 _uiManager.ShowAsync<InventoryWindowController>().Forget();
+            }
+
+            y += h + pad;
+            if (GUI.Button(new Rect(pad, y, w, h), "Show Decoration"))
+            {
+                _uiManager.ShowAsync<DecorPlacementWindow>().Forget();
+            }
+
+            y += h + pad;
+            if (GUI.Button(new Rect(pad, y, w, h), "Get debug free decor"))
+            {
+                _decorReward.ClaimFreeDecorAsync(default).Forget();
             }
         }
 

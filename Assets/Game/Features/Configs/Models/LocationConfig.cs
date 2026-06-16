@@ -1,8 +1,10 @@
 namespace Game.Configs.Models
 {
     /// <summary>
-    /// Конфиг локации (где лавка стоит сегодня). Расширен под пассивные продажи
-    /// и scoring-бонус локации.
+    /// Конфиг локации — *где* лавка стоит сегодня (центр, торговый центр, парк, ...). Отвечает
+    /// за спрос (demand genres/tags для пассивных продаж и scoring-бонус локации) и условия
+    /// разблокировки. Слоты декора живут на <see cref="BookShopConfig"/>, не здесь — декор
+    /// "едет" вместе с лавкой между локациями.
     /// Файл: locations.json (JSON-массив).
     /// </summary>
     [ConfigFile("locations")]
@@ -18,9 +20,5 @@ namespace Game.Configs.Models
 
         /// <summary>Теги/темы повышенного спроса (study, cozy, family, ...). Используются пассивными продажами и scoring-бонусом локации.</summary>
         public string[] DemandTags { get; set; }
-
-        //TODO this is wrong logic. Location does not have any DecorSlots. PLay has uniq entity as BookShop and this books shop has slots near/in/on it with clots.
-        /// <summary>Decor placement slots available at this location. Empty/null means no slots (e.g. early-game cart).</summary>
-        public DecorSlot[] DecorSlots { get; set; }
     }
 }

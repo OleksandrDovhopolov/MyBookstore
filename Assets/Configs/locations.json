@@ -5,17 +5,7 @@
     "unlockCost": 0,
     "requiredLevel": 1,
     "demandGenres": ["Fantasy", "Classic", "Fact"],
-    "demandTags": ["study", "short", "science"],
-    "decorSlots": [
-      { "id": "cart_table_1", "positionType": "Standing", "maxSize": "Medium" },
-      { "id": "cart_table_2", "positionType": "Standing", "maxSize": "Medium" },
-      { "id": "cart_table_3", "positionType": "Standing", "maxSize": "Medium" },
-      { "id": "hang_1",       "positionType": "Hanging",  "maxSize": "Small"  },
-      { "id": "hang_2",       "positionType": "Hanging",  "maxSize": "Small"  },
-      { "id": "hang_3",       "positionType": "Hanging",  "maxSize": "Small"  },
-      { "id": "wall_left",    "positionType": "Wall",     "maxSize": "Large"  },
-      { "id": "wall_right",   "positionType": "Wall",     "maxSize": "Large"  }
-    ]
+    "demandTags": ["study", "short", "science"]
   },
   {
     "id": "loc_mall",
@@ -23,7 +13,6 @@
     "unlockCost": 5000,
     "requiredLevel": 5,
     "demandGenres": ["Drama", "Crime"],
-    "demandTags": ["cozy", "summer", "letters"],
-    "decorSlots": []
+    "demandTags": ["cozy", "summer", "letters"]
   }
 ]

@@ -20,9 +20,9 @@ namespace Game.Decor.Tests.Editor.Services
             _configs = new FakeConfigsService();
             _configs.SetAll(new[]
             {
-                new LocationConfig
+                new BookShopConfig
                 {
-                    Id = DecorPlacementService.HardcodedLocationId,
+                    Id = DecorPlacementService.HardcodedBookShopId,
                     DecorSlots = new[]
                     {
                         new DecorSlot { Id = "s_stand_small", PositionType = DecorPositionType.Standing, MaxSize = DecorSize.Small },

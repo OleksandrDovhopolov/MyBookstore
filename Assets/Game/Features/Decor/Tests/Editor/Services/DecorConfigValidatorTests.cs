@@ -9,12 +9,12 @@ namespace Game.Decor.Tests.Editor.Services
     {
         private static DecorConfigValidator Build(
             DecorConfig[] decors = null,
-            LocationConfig[] locations = null,
+            BookShopConfig[] shops = null,
             BookConfig[] books = null)
         {
             var configs = new FakeConfigsService();
             configs.SetAll(decors ?? System.Array.Empty<DecorConfig>());
-            configs.SetAll(locations ?? System.Array.Empty<LocationConfig>());
+            configs.SetAll(shops ?? System.Array.Empty<BookShopConfig>());
             configs.SetAll(books ?? System.Array.Empty<BookConfig>());
             return new DecorConfigValidator(configs);
         }
@@ -100,11 +100,11 @@ namespace Game.Decor.Tests.Editor.Services
         [Test]
         public void DuplicateSlotId_Errors()
         {
-            var v = Build(locations: new[]
+            var v = Build(shops: new[]
             {
-                new LocationConfig
+                new BookShopConfig
                 {
-                    Id = "loc1",
+                    Id = "shop1",
                     DecorSlots = new[]
                     {
                         new DecorSlot { Id = "s1", PositionType = DecorPositionType.Standing, MaxSize = DecorSize.Small },
@@ -119,11 +119,11 @@ namespace Game.Decor.Tests.Editor.Services
         [Test]
         public void EmptySlotId_Errors()
         {
-            var v = Build(locations: new[]
+            var v = Build(shops: new[]
             {
-                new LocationConfig
+                new BookShopConfig
                 {
-                    Id = "loc1",
+                    Id = "shop1",
                     DecorSlots = new[]
                     {
                         new DecorSlot { Id = "", PositionType = DecorPositionType.Standing, MaxSize = DecorSize.Small },

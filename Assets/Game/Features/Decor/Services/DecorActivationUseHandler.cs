@@ -37,15 +37,15 @@ namespace Game.Decor.Services
                 return InventoryUseResult.Fail("decor config missing");
             }
 
-            var location = _configs.Get<LocationConfig>(DecorPlacementService.HardcodedLocationId);
-            if (location?.DecorSlots == null || location.DecorSlots.Length == 0)
+            var shop = _configs.Get<BookShopConfig>(DecorPlacementService.HardcodedBookShopId);
+            if (shop?.DecorSlots == null || shop.DecorSlots.Length == 0)
             {
-                return InventoryUseResult.Fail("no slots at current location");
+                return InventoryUseResult.Fail("no slots on current bookshop");
             }
 
-            for (var i = 0; i < location.DecorSlots.Length; i++)
+            for (var i = 0; i < shop.DecorSlots.Length; i++)
             {
-                var slot = location.DecorSlots[i];
+                var slot = shop.DecorSlots[i];
                 if (slot == null) continue;
                 if (decorConfig.PositionType != slot.PositionType) continue;
                 if ((int)decorConfig.Size > (int)slot.MaxSize) continue;

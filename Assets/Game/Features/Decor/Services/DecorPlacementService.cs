@@ -12,15 +12,17 @@ using UnityEngine;
 namespace Game.Decor.Services
 {
     /// <summary>
-    /// Persistent placement of decor items into LocationConfig slots. Self-registers as
+    /// Persistent placement of decor items into BookShopConfig slots. Self-registers as
     /// <see cref="ISaveHook"/> in the constructor; <c>AfterLoadAsync</c> loads state and runs
     /// orphan cleanup (placements referencing decor or slots that no longer exist are dropped
-    /// with a warning). Phase 0 hardcodes the location id <c>"loc_downtown"</c>.
+    /// with a warning). Phase 0 hardcodes the shop id <c>"main_bookshop"</c>; a future
+    /// IPlayerBookShopProvider (Phase 2+) replaces this const.
     /// </summary>
     public sealed class DecorPlacementService : IDecorPlacementService, ISaveHook
     {
         private const string LogTag = "[DecorPlacement]";
-        public const string HardcodedLocationId = "loc_downtown";
+        // TODO Phase 2+: replace with IPlayerBookShopProvider when more than one shop format exists.
+        public const string HardcodedBookShopId = "main_bookshop";
 
         private readonly SaveBackedDecorPlacementStorage _storage;
         private readonly IInventoryService _inventory;
@@ -149,7 +151,7 @@ namespace Game.Decor.Services
                 var slot = FindSlot(entry.SlotId);
                 if (slot == null)
                 {
-                    Debug.LogWarning($"{LogTag} Slot '{entry.SlotId}' is missing from location config — dropping placement of '{entry.DecorId}'.");
+                    Debug.LogWarning($"{LogTag} Slot '{entry.SlotId}' is missing from bookshop config — dropping placement of '{entry.DecorId}'.");
                     _state.Placements.RemoveAt(i);
                     dirty = true;
                     continue;
@@ -172,11 +174,11 @@ namespace Game.Decor.Services
 
         private DecorSlot FindSlot(string slotId)
         {
-            var location = _configs.Get<LocationConfig>(HardcodedLocationId);
-            if (location?.DecorSlots == null) return null;
-            for (var i = 0; i < location.DecorSlots.Length; i++)
+            var shop = _configs.Get<BookShopConfig>(HardcodedBookShopId);
+            if (shop?.DecorSlots == null) return null;
+            for (var i = 0; i < shop.DecorSlots.Length; i++)
             {
-                var slot = location.DecorSlots[i];
+                var slot = shop.DecorSlots[i];
                 if (slot != null && string.Equals(slot.Id, slotId, StringComparison.OrdinalIgnoreCase))
                     return slot;
             }
