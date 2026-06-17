@@ -11,6 +11,7 @@ using VContainer;
 
 namespace Game.Newspaper.UI
 {
+    //TODO should remove this from Game.Newspaper.UI and move closer to its domain
     /// <summary>
     /// Daily newspaper window. Phase 0 scope: two decor offers (free + paid) + three book crates
     /// routed through <see cref="IShopService"/>. Future content (book bundles for sale, weather

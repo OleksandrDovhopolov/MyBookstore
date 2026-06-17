@@ -5,7 +5,7 @@ using Game.UI;
 
 namespace Game.Newspaper.UI
 {
-    //TODO this class should be in Newspaper ? 
+    //TODO should remove this from Game.Newspaper.UI and move closer to its domain
     /// <summary>
     /// Popup that summarises what a player received from a purchase. Phase 1 MVP: textual list
     /// (item id × amount per line). Phase 2+: icons, animations, claim flow per spec.
