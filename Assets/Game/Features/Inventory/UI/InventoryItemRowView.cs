@@ -15,6 +15,7 @@ namespace Game.Inventory.UI
         [SerializeField] private TMP_Text _idLabel;
         [SerializeField] private TMP_Text _countLabel;
         [SerializeField] private Button _useButton;
+        [SerializeField] private TextMeshProUGUI _index;
 
         private string _itemId;
         private Action<string> _onUse;
@@ -24,10 +25,13 @@ namespace Game.Inventory.UI
             if (_useButton != null) _useButton.onClick.AddListener(OnUseClicked);
         }
 
-        public void Bind(InventoryItem item, bool hasUseHandler, string info, Action<string> onUse)
+        public void Bind(InventoryItem item, bool hasUseHandler, string info, Action<string> onUse, int index)
         {
             _itemId = item.ItemId;
             _onUse = onUse;
+            
+            _index.text = $"×{index}";
+            
             if (_idLabel != null)
                 _idLabel.text = string.IsNullOrEmpty(info) ? item.ItemId : $"{item.ItemId} — {info}";
             if (_countLabel != null)

@@ -50,6 +50,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dc963227e6816614bb23ebb2bec4fb25
+    m_Address: RewardsWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: eb7817be6dc738e43a517ac8a8a5db85
     m_Address: DecorPlacementWindow
     m_ReadOnly: 0

@@ -1,17 +1,14 @@
 {
-    "name": "GameplayUI",
-    "rootNamespace": "GameplayUI",
+    "name": "Game.Shop.UI",
+    "rootNamespace": "Game.Shop.UI",
     "references": [
-        "VContainer",
         "UniTask",
-        "Unity.Addressables",
-        "Unity.ResourceManager",
-        "Unity.TextMeshPro",
-        "Infrastructure",
-        "Game.Inventory",
+        "VContainer",
+        "Game.Shop.API",
+        "Game.Rewards.API",
         "Game.Core.UI",
-        "Game.Resources.API",
-        "Game.Shop.UI"
+        "Game.Newspaper",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

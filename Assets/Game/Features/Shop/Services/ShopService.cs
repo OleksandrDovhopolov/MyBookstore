@@ -139,7 +139,8 @@ namespace Game.Shop.Services
         {
             if (!TryGetLot(lotId, out var lot)) return false;
             if (lot.Limit.Mode == ShopLimitMode.Unlimited) return true;
-            return GetPurchaseCount(lotId) < lot.Limit.MaxPurchases;
+            var cap = lot.Limit.MaxPurchases ?? int.MaxValue;  // null → effectively unlimited (defensive)
+            return GetPurchaseCount(lotId) < cap;
         }
 
         // ----- async write -----

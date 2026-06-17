@@ -138,7 +138,7 @@ namespace Game.Inventory.UI
             {
                 var info = infoProvider?.GetInfoFor(items[i].ItemId);
                 var row = Instantiate(_rowPrefab, _rowContainer);
-                row.Bind(items[i], hasHandler, info, OnUseClicked);
+                row.Bind(items[i], hasHandler, info, OnUseClicked, i);
                 _rows.Add(row);
             }
         }

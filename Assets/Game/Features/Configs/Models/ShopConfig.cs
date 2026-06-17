@@ -31,7 +31,7 @@ namespace Game.Configs.Models
     public sealed class ShopLotLimitData
     {
         public ShopLimitMode Mode { get; set; }
-        public int MaxPurchases { get; set; }
+        public int? MaxPurchases { get; set; }
     }
 
     public sealed class RewardItemData

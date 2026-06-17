@@ -197,8 +197,9 @@ namespace Game.Newspaper.UI
                     }
                     else
                     {
-                        var ids = string.Join(", ", items.Select(i => i.Id));
-                        View.LastBookRewardLabel.text = $"Получено: {items.Count} книг — {ids}";
+                        //THIS DATA IN REWARD WINDOW
+                        //var ids = string.Join(", ", items.Select(i => i.Id));
+                        //View.LastBookRewardLabel.text = $"Получено: {items.Count} книг — {ids}";
                     }
                     break;
                 case ShopPurchaseStatus.NotEnoughCurrency:

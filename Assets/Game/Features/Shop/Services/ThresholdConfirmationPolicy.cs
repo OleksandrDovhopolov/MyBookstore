@@ -8,7 +8,7 @@ namespace Game.Shop.Services
     /// (<c>newspaper_decor_coffee_pot</c>, 50g) so that lot does NOT trigger confirm, while anything
     /// above does. Classic Shop (PR11) ассортимент сделает порог осмысленным.
     /// </summary>
-    internal sealed class ThresholdConfirmationPolicy : IShopConfirmationPolicy
+    public sealed class ThresholdConfirmationPolicy : IShopConfirmationPolicy
     {
         private const int Threshold = 50;
 

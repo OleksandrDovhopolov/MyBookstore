@@ -16,7 +16,7 @@ namespace Game.Shop.Services
     /// <c>shop_lot_failed</c> require call sites in UI / ShopService respectively — added incrementally
     /// when Classic Shop window lands (PR11) and when we want to track NotEnoughCurrency funnels.
     /// </remarks>
-    internal sealed class ShopAnalyticsListener : IStartable, IDisposable
+    public sealed class ShopAnalyticsListener : IStartable, IDisposable
     {
         private readonly IShopService _shop;
         private readonly IAnalyticsService _analytics;

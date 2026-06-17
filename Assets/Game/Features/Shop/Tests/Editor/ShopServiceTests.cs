@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Game.Configs.Models;
 using Game.Rewards.API;
@@ -157,6 +158,52 @@ namespace Game.Shop.Tests.Editor
             var dto = h.Repo.LoadAsync(CancellationToken.None).GetAwaiter().GetResult();
             Assert.IsTrue(dto.Lots.ContainsKey("lot_a"));
             Assert.AreEqual(1, dto.Lots["lot_a"].Purchases);
+        }
+
+        [Test]
+        public void AfterLoadAsync_MultipleStorefronts_PartitionedByStorefrontId()
+        {
+            // Mixed storefronts in one config — GetLots(X) must return only lots tagged with X.
+            var lots = new[]
+            {
+                new ShopConfig
+                {
+                    Id = "lot_a", StorefrontId = "store.alpha",
+                    Price = new ShopPriceData { Currency = Gold, Amount = 10 },
+                    RewardId = "reward_a",
+                    RewardItems = new RewardItemData[0],
+                    Limit = new ShopLotLimitData { Mode = ShopLimitMode.Unlimited }
+                },
+                new ShopConfig
+                {
+                    Id = "lot_b", StorefrontId = "store.beta",
+                    Price = new ShopPriceData { Currency = Gold, Amount = 20 },
+                    RewardId = "reward_b",
+                    RewardItems = new RewardItemData[0],
+                    Limit = new ShopLotLimitData { Mode = ShopLimitMode.Unlimited }
+                },
+                new ShopConfig
+                {
+                    Id = "lot_c", StorefrontId = "store.alpha",
+                    Price = new ShopPriceData { Currency = Gold, Amount = 30 },
+                    RewardId = "reward_c",
+                    RewardItems = new RewardItemData[0],
+                    Limit = new ShopLotLimitData { Mode = ShopLimitMode.Unlimited }
+                },
+            };
+
+            var h = Build(lots);
+
+            var alpha = h.Svc.GetLots("store.alpha");
+            var beta = h.Svc.GetLots("store.beta");
+            var gamma = h.Svc.GetLots("store.unknown");
+
+            Assert.AreEqual(2, alpha.Count);
+            Assert.IsTrue(alpha.Any(l => l.LotId == "lot_a"));
+            Assert.IsTrue(alpha.Any(l => l.LotId == "lot_c"));
+            Assert.AreEqual(1, beta.Count);
+            Assert.AreEqual("lot_b", beta[0].LotId);
+            Assert.AreEqual(0, gamma.Count, "Unknown storefront returns empty list, not null.");
         }
 
         [Test]
