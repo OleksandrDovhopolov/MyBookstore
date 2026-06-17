@@ -30,7 +30,7 @@
 
 Принять четырёхслойную архитектуру:
 
-1. **Source-layer** — поставщик сырых JSON-файлов секций: `LocalFolderConfigSource` (Editor/dev) и `ServerConfigSource` (runtime; ETag + disk snapshot fallback + bundled defaults). Контракт — `IConfigSource.GetRaw(string fileName)`.
+1. **Source-layer** — поставщик сырых JSON-файлов секций: `LocalFolderConfigSource` (Editor/dev), `StreamingAssetsConfigSource` (bundled defaults в плеер-сборке — `StreamingAssets/Configs/` + `manifest.json`, читаются через `UnityWebRequest`, потому что на Android прямой `File.IO` не работает), и `ServerConfigSource` (runtime; ETag + disk snapshot fallback + bundled defaults). Контракт — `IConfigSource.GetRaw(string fileName)`.
 2. **Override-layer** — Firebase Remote Config как partial-overlay поверх base через `IConfigOverrideSource` (реализация — `RemoteConfigOverrideSource`). RC-ключ `cfg_<fileName>` → JSON `{ "<id>": { ...partial... } }`, мёрджится при ленивой десериализации.
 3. **Service-layer** — единый `IConfigsService` с типобезопасным `Get<T>`/`TryGet<T>`/`GetAsync<T>`/`IsExists<T>`/`GetAll<T>`. Реализация (`ConfigsService`) ленива: тип десериализуется при первом обращении.
 4. **Editor-layer** — отдельный Editor-only сборочный проект `Configs.Editor` для admin-инструмента (Pull / Publish / History / Rollback / Promote). НЕ переиспользует `Game.Http`-команды: см. отступление ниже.

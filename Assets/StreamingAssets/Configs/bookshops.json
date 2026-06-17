@@ -1,0 +1,16 @@
+[
+  {
+    "id": "main_bookshop",
+    "displayName": "Main cart",
+    "decorSlots": [
+      { "id": "cart_table_1", "positionType": "Standing", "maxSize": "Medium" },
+      { "id": "cart_table_2", "positionType": "Standing", "maxSize": "Medium" },
+      { "id": "cart_table_3", "positionType": "Standing", "maxSize": "Medium" },
+      { "id": "hang_1",       "positionType": "Hanging",  "maxSize": "Small"  },
+      { "id": "hang_2",       "positionType": "Hanging",  "maxSize": "Small"  },
+      { "id": "hang_3",       "positionType": "Hanging",  "maxSize": "Small"  },
+      { "id": "wall_left",    "positionType": "Wall",     "maxSize": "Large"  },
+      { "id": "wall_right",   "positionType": "Wall",     "maxSize": "Large"  }
+    ]
+  }
+]
