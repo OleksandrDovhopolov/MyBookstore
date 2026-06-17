@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Game.Configs;
 using Game.Inventory.API;
 using Game.UI;
 using VContainer;
@@ -14,6 +15,7 @@ namespace Game.Inventory.UI
         private IInventoryUseRouter _useRouter;
         private IReadOnlyList<IInventoryItemUseHandler> _handlers;
         private IReadOnlyList<IInventoryItemInfoProvider> _infoProviders;
+        private IConfigsService _configs;
 
         [Inject]
         public void Construct(
@@ -21,18 +23,20 @@ namespace Game.Inventory.UI
             IItemCategoryRegistry categories,
             IInventoryUseRouter useRouter,
             IReadOnlyList<IInventoryItemUseHandler> handlers,
-            IReadOnlyList<IInventoryItemInfoProvider> infoProviders)
+            IReadOnlyList<IInventoryItemInfoProvider> infoProviders,
+            IConfigsService configs)
         {
             _inventory = inventory;
             _categories = categories;
             _useRouter = useRouter;
             _handlers = handlers;
             _infoProviders = infoProviders;
+            _configs = configs;
         }
 
         protected override void OnInit()
         {
-            View.Bind(_inventory, _categories, _useRouter, _handlers, _infoProviders);
+            View.Bind(_inventory, _categories, _useRouter, _handlers, _infoProviders, _configs);
             View.CloseButton.onClick.AddListener(CloseWindow);
         }
 
