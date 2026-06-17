@@ -1,10 +1,131 @@
 # Система наград (Rewards)
 
-**Сборка:** `Assets/Game/Features/Rewards/Rewards.asmdef`
+**Сборки (Phase 0/1 — реальные):**
+- `Game.Rewards.API` — контракты (interfaces + value types).
+- `Game.Rewards` — `LocalRewardGrantService`, `BookBoxRewardExpander`, `IRewardRandom` port.
+- `Game.Rewards.Tests.Editor` — 15+ unit-тестов.
+
+**Status:** Phase 0/1 локальная реализация ✅ done. Server-authoritative flow (intents/ads/snapshots) описан ниже как target — **не реализован**.
+
+> **Структура документа:** §0 — текущая реализация (что фактически в коде). §1+ ниже — target server-authoritative архитектура (foundation для Phase 2+). При работе с текущим кодом начинай с §0.
 
 ---
 
-## Обзор архитектуры
+## 0. Текущая реализация (Phase 0/1)
+
+### Сжатый контракт
+
+```csharp
+// Game.Rewards.API/IRewardGrantService.cs
+public interface IRewardGrantService {
+    UniTask<RewardGrantResult> GrantAsync(RewardSpec spec, string source, CancellationToken ct);
+}
+
+// Game.Rewards.API/IRewardSpecExpander.cs — plug-in для трансформации спеки
+public interface IRewardSpecExpander {
+    bool CanExpand(RewardSpec spec);
+    UniTask<RewardSpec> ExpandAsync(RewardSpec spec, CancellationToken ct);
+}
+
+// Game.Rewards.API
+public sealed class RewardSpec { string Id; IReadOnlyList<RewardItem> Items; }
+public readonly struct RewardItem { string Id; string Category; int Amount; RewardKind Kind; }
+public enum RewardKind { Resource, InventoryItem }
+public readonly struct RewardGrantResult { bool Success; RewardSpec Granted; string FailureReason; }
+```
+
+### Pipeline (Phase 0/1)
+
+```
+caller.GrantAsync(spec, source, ct)                ← caller: IShopService.BuyAsync, FTUE, etc.
+  → LocalRewardGrantService.GrantAsync
+     ├─ expanded = await ExpandAsync(spec)         ← цепочка IRewardSpecExpander'ов
+     │     └─ BookBoxRewardExpander.CanExpand?      ← spec.Id.StartsWith("book_box_")?
+     │           → ExpandAsync ролит N книг        ← weighted-without-replacement по pool rule
+     │             returns RewardSpec с реальными InventoryItem'ами
+     │
+     └─ foreach item in expanded.Items:
+        switch item.Kind:
+          Resource      → IResourcesService.AddAsync(id, amount, source, ct)
+          InventoryItem → IInventoryService.AddAsync(id, category, amount, ct)
+        
+  → RewardGrantResult.Ok(expanded)                 ← caller получает фактически выданное (не запрос)
+```
+
+### Что реализовано (5 файлов в `Game.Rewards`)
+
+| Файл | Назначение |
+|---|---|
+| [`Services/LocalRewardGrantService.cs`](../../Assets/Game/Features/Rewards/Services/LocalRewardGrantService.cs) | Phase 0/1 диспатчер. Прогоняет spec через цепочку `IRewardSpecExpander[]`, диспатчит каждый `RewardItem` по `RewardKind` в Resources или Inventory. Не транзакционен (Phase 0 debt — см. `SHOP.md §11 §5`). |
+| [`Services/BookBoxRewardExpander.cs`](../../Assets/Game/Features/Rewards/Services/BookBoxRewardExpander.cs) | Реализует `IRewardSpecExpander`. Матчит `spec.Id.StartsWith("book_box_")`. Берёт `BookConfig`'и через `IConfigsService.GetAll<BookConfig>()`, фильтрует по правилам (`BookBoxPoolRules`), исключает уже-владеемые (PR5: `_inventory.Has`), ролит N книг weighted-without-replacement через `IRewardRandom`. |
+| [`Services/BookBoxPoolRules.cs`](../../Assets/Game/Features/Rewards/Services/BookBoxPoolRules.cs) | Хардкод-таблица 3 правил pool-selection: `book_box_common_15` (все, weight=1-RarityWeight, 15 ролов), `book_box_rare_8` (RarityWeight≥0.6, weight=RarityWeight, 8 ролов), `book_box_genre_dystopic_1` (Fantasy+dark, 1 рол). Phase 2+: вынести в config. |
+| [`Services/IRewardRandom.cs`](../../Assets/Game/Features/Rewards/Services/IRewardRandom.cs) | Port-абстракция RNG. Адаптер `UnityRewardRandom` поверх `UnityEngine.Random` в DI. Тесты используют `FakeRewardRandom` (queue-based детерминизм). |
+| [`API/*.cs`](../../Assets/Game/Features/Rewards/API/) | Контракты выше (`IRewardGrantService`, `IRewardSpecExpander`, `RewardSpec`, `RewardItem`, `RewardKind`, `RewardGrantResult`). |
+
+### DI регистрация ([`RewardsVContainerBindings.cs`](../../Assets/Game/Core/Installers/Features/RewardsVContainerBindings.cs))
+
+```csharp
+public static void RegisterRewards(this IContainerBuilder builder)
+{
+    builder.Register<IRewardRandom, UnityRewardRandom>(Lifetime.Singleton);
+
+    builder.Register<BookBoxRewardExpander>(Lifetime.Singleton);
+
+    // Explicit list (VContainer не auto-resolve'ит коллекции в этом проекте).
+    builder.Register<IReadOnlyList<IRewardSpecExpander>>(
+        r => new IRewardSpecExpander[] { r.Resolve<BookBoxRewardExpander>() },
+        Lifetime.Singleton);
+
+    builder.Register<LocalRewardGrantService>(Lifetime.Singleton).As<IRewardGrantService>();
+}
+```
+
+Зарегистрирован в `BootstrapInstaller` (Global scope) — `IRewardGrantService` живёт через переходы сцен.
+
+### Текущие consumer'ы
+
+- **`ShopService.BuyAsync`** ([`Shop.Services/ShopService.cs`](../../Assets/Game/Features/Shop/Services/ShopService.cs)) — после списания gold вызывает `_rewards.GrantAsync(spec, $"shop:{lotId}", ct)`.
+- Других consumer'ов пока нет. Phase 2+: FTUE (стартовая выдача), BattlePass, FortuneWheel.
+
+### Тесты
+
+[`Rewards.Tests.Editor`](../../Assets/Game/Features/Rewards/Tests/Editor/) — 15+ тестов:
+- `LocalRewardGrantServiceTests` — 8 кейсов (Resource grant, InventoryItem grant, multi-item, expander matching/non-matching, zero-amount skip, null spec → Fail).
+- `BookBoxRewardExpanderTests` — 9 кейсов (CanExpand true/false, pool builds, rarity filter, genre+mood filter, unknown box id, empty pool, inventory exclusion, all-owned returns empty).
+
+### Что **НЕ** реализовано (из target архитектуры ниже)
+
+| §-target | Не реализовано | Когда |
+|---|---|---|
+| Ads flow (`AdsRewardFlowService`, `IRewardedAdsProvider`) | Полностью отсутствует. | Phase 3+ если появится IAP/ads монетизация. |
+| `IRewardIntentService` (intent create + status polling) | Полностью отсутствует. | Phase 2+ с server-authoritative. |
+| `ServerRewardGrantService` поверх `POST /api/v1/rewards/grant` | Endpoint описан в [`api-endpoints.md`](../api-endpoints.md), реализация — отсутствует. | Phase 2+ или раньше, если потребуется. |
+| `IRewardPlayerStateSyncService` (snapshot apply из глобального save'а) | Полностью отсутствует. | Phase 2+. |
+| `IRewardHandler` chain (handler pattern из target архитектуры) | Не реализован — `LocalRewardGrantService` обходится `switch` по `RewardKind`. Plug-in нужен только для трансформаций spec'и, не для финального dispatch. | Если 4+ типов наград появятся. Сейчас 2 (Resource, InventoryItem). |
+| `IRewardSpecProvider` (catalog) | Не реализован — спеки строятся inline из `ShopConfig.RewardItems`. | Phase 1+ если появится `reward_specs.json` reuse pattern. |
+| `RewardsWindow` UI popup | Реализован в `Game.Newspaper.UI` (PR10) — см. `SHOP.md §0 PR10`. Не в `Rewards` модуле — там UI не живёт. | — |
+| Идемпотентность grant'а (idempotency key) | Не нужен в local mode. | Обязательно в Phase 2 для server endpoint'а. |
+| Аналитика grant'ов | Не реализована на уровне Rewards. Shop эмитит `item_purchased` через свой `ShopAnalyticsListener` — это покрывает большинство сценариев. | Если FTUE/BattlePass начнут выдавать награды — добавить аналогичный listener. |
+
+### Открытые вопросы / tech debt
+
+1. **`RewardKind` enum vs handler pattern.** Сейчас 2 значения. Если станет 4+ — мигрировать на `IRewardHandler` (см. target §6 ниже). Решение зафиксировать перед добавлением третьего типа.
+2. **Атомарность grant'а.** Если `Grant` падает между resources/inventory мутациями — state частично записан. Phase 2 закроется через server snapshot-pattern.
+3. **`BookBoxPoolRules` хардкод.** Phase 2+ вынести в `reward_specs.json` через `[ConfigFile]`.
+4. **`IRewardRandom` живёт в `Game.Rewards` impl asmdef.** Это OK для текущего использования (только BookBoxRewardExpander), но если несколько модулей захотят shared RNG — подумать о выносе в Infrastructure.
+5. **`UnityRewardRandom` не seedable.** Тесты используют `FakeRewardRandom` (queue), а прод-rng непредсказуем. Если потребуется reproducible production runs (debug повторов / save analysis) — добавить seeded mode.
+
+### Связь с Shop
+
+- Shop **не** ссылается на `Game.Rewards` (impl) — только на `Game.Rewards.API`. Это позволяет менять `LocalRewardGrantService` ↔ будущий `ServerRewardGrantService` без пересборки Shop'а.
+- Shop передаёт `source` в формате `"shop:<lotId>"` — `LocalRewardGrantService` форвардит его в `IResourcesService.AddAsync(reason)` для аудит-логирования.
+- `RewardSpec.Id` совпадает с `ShopLot.RewardId` — это id, по которому матчат expander'ы.
+
+---
+
+## Обзор архитектуры (target — server-authoritative, **не реализовано**)
+
+> Всё ниже описывает целевую state для Phase 2+. При работе с текущим кодом ориентируйся на §0 выше.
 
 Система наград реализует два независимых потока:
 

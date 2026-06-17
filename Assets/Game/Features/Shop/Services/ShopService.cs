@@ -59,11 +59,9 @@ namespace Game.Shop.Services
 
         public async UniTask AfterLoadAsync(CancellationToken ct)
         {
-            // SaveDataLoad and ConfigsWarmup run in parallel during bootstrap (Bootstrap.cs:201),
-            // so the configs may not be ready yet when this hook fires. Ensuring warmup here is
-            // idempotent (IConfigsService.WarmupAsync no-ops after the first call) and serializes
-            // catalog access for free.
-            await _configs.WarmupAsync(ct);
+            // PR6: configs are now guaranteed warm before save load runs (Bootstrap.cs split the
+            // former parallel phase_data group). The local _configs.WarmupAsync hedge from PR3 is
+            // gone; configs are always ready when this hook fires.
 
             _state = await _repository.LoadAsync(ct) ?? new ShopStateDto();
             if (_state.Lots == null) _state.Lots = new Dictionary<string, LotPurchasesDto>(StringComparer.Ordinal);

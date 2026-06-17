@@ -4,8 +4,8 @@ using Cysharp.Threading.Tasks;
 using Game.Rewards.API;
 using Game.Shop.API;
 using Game.UI;
+using Game.UI.Common;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 using VContainer;
 
@@ -20,12 +20,14 @@ namespace Game.Newspaper.UI
     public sealed class NewspaperWindow : WindowController<NewspaperWindowView>
     {
         private IShopService _shop;
+        private IShopConfirmationPolicy _confirmPolicy;
         private CancellationTokenSource _cts;
 
         [Inject]
-        public void InjectServices(IShopService shop)
+        public void InjectServices(IShopService shop, IShopConfirmationPolicy confirmPolicy)
         {
             _shop = shop;
+            _confirmPolicy = confirmPolicy;
         }
 
         protected override void OnInit()
@@ -112,40 +114,74 @@ namespace Game.Newspaper.UI
                 label.text = $"{displayName} (n/a)";
         }
 
-        // ----- decor handlers -----
+        // ----- click handlers (all flow through TryBuyAsync) -----
 
-        private void OnClaimFreeDecorClicked() => ClaimFreeDecorAsync().Forget();
+        private void OnClaimFreeDecorClicked() =>
+            TryBuyAsync(NewspaperShopLotIds.DecorFreeVintageGlobe, showRewardsPopup: true, updateBookLabel: false).Forget();
 
-        private async UniTaskVoid ClaimFreeDecorAsync()
+        private void OnBuyPaidDecorClicked() =>
+            TryBuyAsync(NewspaperShopLotIds.DecorPaidCoffeePot, showRewardsPopup: true, updateBookLabel: false).Forget();
+
+        private void OnBuyCommonBoxClicked() =>
+            TryBuyAsync(NewspaperShopLotIds.BookBoxCommon15, showRewardsPopup: true, updateBookLabel: true).Forget();
+
+        private void OnBuyRareBoxClicked() =>
+            TryBuyAsync(NewspaperShopLotIds.BookBoxRare8, showRewardsPopup: true, updateBookLabel: true).Forget();
+
+        private void OnBuyDystopicBoxClicked() =>
+            TryBuyAsync(NewspaperShopLotIds.BookBoxGenreDystopic1, showRewardsPopup: true, updateBookLabel: true).Forget();
+
+        // ----- common purchase pipeline -----
+
+        private async UniTaskVoid TryBuyAsync(string lotId, bool showRewardsPopup, bool updateBookLabel)
         {
             if (_shop == null) return;
-            await _shop.BuyAsync(NewspaperShopLotIds.DecorFreeVintageGlobe, _cts.Token);
-            RefreshOffers();
-        }
 
-        private void OnBuyPaidDecorClicked() => BuyPaidDecorAsync().Forget();
+            if (!_shop.TryGetLot(lotId, out var lot))
+            {
+                Debug.LogWarning($"[NewspaperWindow] Lot '{lotId}' not found in catalog.");
+                return;
+            }
 
-        private async UniTaskVoid BuyPaidDecorAsync()
-        {
-            if (_shop == null) return;
-            var result = await _shop.BuyAsync(NewspaperShopLotIds.DecorPaidCoffeePot, _cts.Token);
-            if (result.Status != ShopPurchaseStatus.Success)
-                Debug.Log($"[NewspaperWindow] Paid decor purchase failed: {result.Status}.");
-            RefreshOffers();
-        }
+            // PR9: confirmation policy (default: price > 50g). Free + cheap lots skip the dialog.
+            if (_confirmPolicy != null && _confirmPolicy.RequiresConfirmation(lot))
+            {
+                var confirmed = await ShowConfirmAsync(lot);
+                if (!confirmed) return;
+            }
 
-        // ----- book-box handlers -----
-
-        private void OnBuyCommonBoxClicked() => BuyBoxAsync(NewspaperShopLotIds.BookBoxCommon15).Forget();
-        private void OnBuyRareBoxClicked() => BuyBoxAsync(NewspaperShopLotIds.BookBoxRare8).Forget();
-        private void OnBuyDystopicBoxClicked() => BuyBoxAsync(NewspaperShopLotIds.BookBoxGenreDystopic1).Forget();
-
-        private async UniTaskVoid BuyBoxAsync(string lotId)
-        {
-            if (_shop == null) return;
             var result = await _shop.BuyAsync(lotId, _cts.Token);
-            UpdateLastBookRewardLabel(result);
+
+            // PR10: show RewardsWindow on success; keep inline label for failures + decor errors.
+            if (result.Status == ShopPurchaseStatus.Success && showRewardsPopup && result.Granted != null
+                && result.Granted.Items.Count > 0)
+            {
+                await UIManager.ShowAsync<RewardsWindow>(
+                    new RewardsWindowArgs(result.Granted, $"Received from {lot.RewardId}"),
+                    _cts.Token);
+            }
+
+            if (updateBookLabel)
+                UpdateLastBookRewardLabel(result);
+            else if (result.Status != ShopPurchaseStatus.Success)
+                Debug.Log($"[NewspaperWindow] Purchase '{lotId}' failed: {result.Status}.");
+
             RefreshOffers();
+        }
+
+        private async UniTask<bool> ShowConfirmAsync(ShopLot lot)
+        {
+            var args = new ConfirmDialogArgs(
+                title: $"Buy {lot.RewardId}?",
+                body: $"Spend <b>{lot.Price.Amount} {lot.Price.Currency}</b> on this offer?",
+                confirmLabel: "Buy",
+                cancelLabel: "Cancel");
+
+            var dialog = await UIManager.ShowAsync<ConfirmDialog>(args, _cts.Token);
+            if (dialog == null) return false;
+
+            var result = await dialog.WaitForResultAsync<ConfirmDialogResult>(_cts.Token);
+            return result == ConfirmDialogResult.Confirmed;
         }
 
         private void UpdateLastBookRewardLabel(ShopPurchaseResult result)

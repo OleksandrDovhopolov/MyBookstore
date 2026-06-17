@@ -1,26 +1,45 @@
+using System.Collections.Generic;
+using System.Linq;
+using Analytics;
+using UnityEngine;
 using VContainer;
 
 namespace Game.Bootstrap
 {
     // Registered in: BootstrapInstaller (GlobalLifetimeScope — analytics must be available globally)
+    // Phase 0/1: NullAnalyticsService logs events through Debug.Log so we can verify event flow in
+    // the Editor without a real provider. Future: replace registration with a composite provider
+    // (Firebase, GameAnalytics, AppsFlyer) — IAnalyticsService consumers don't change.
     public static class AnalyticsVContainerBindings
     {
         public static void RegisterAnalytics(this IContainerBuilder builder)
         {
-            // TODO: Analytics config (ScriptableObject)
-            // builder.RegisterInstance(_analyticsConfig);
+            builder.Register<IAnalyticsService, NullAnalyticsService>(Lifetime.Singleton);
+        }
 
-            // TODO: Analytics providers (Firebase, GameAnalytics, AppsFlyer, etc.)
-            // builder.Register<IFirebaseAnalyticsProvider, FirebaseAnalyticsProvider>(Lifetime.Singleton);
-            // builder.Register<IDebugAnalyticsProvider, DebugAnalyticsProvider>(Lifetime.Singleton);
+        private sealed class NullAnalyticsService : IAnalyticsService
+        {
+            private const string LogPrefix = "[Analytics]";
 
-            // TODO: Composite analytics service that fans out to all providers
-            // builder.Register<IAnalyticsService, CompositeAnalyticsService>(Lifetime.Singleton)
-            //     .AsImplementedInterfaces();
+            public bool IsInitialized => true;
 
-            // TODO: Analytics event router / mapping config
-            // builder.RegisterInstance(_analyticsRoutingConfig);
-            // builder.Register<IAnalyticsEventRouter, AnalyticsEventRouter>(Lifetime.Singleton);
+            public void Initialize() { }
+
+            public void TrackEvent(IAnalyticsEvent analyticsEvent)
+            {
+                if (analyticsEvent == null) return;
+                var payload = analyticsEvent.Parameters == null || analyticsEvent.Parameters.Count == 0
+                    ? string.Empty
+                    : " " + string.Join(", ", analyticsEvent.Parameters.Select(Format));
+                Debug.Log($"{LogPrefix} {analyticsEvent.Name}{payload}");
+            }
+
+            public void SetUserId(string userId) { }
+            public void SetUserProperty(string key, string value) { }
+            public void Flush() { }
+
+            private static string Format(KeyValuePair<string, object> kv) =>
+                kv.Value == null ? $"{kv.Key}=null" : $"{kv.Key}={kv.Value}";
         }
     }
 }
