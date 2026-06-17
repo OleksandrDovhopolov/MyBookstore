@@ -13,51 +13,76 @@
 
 ---
 
-## 0. Статус реализации (на момент последнего обновления)
+## 0. Статус реализации
+
+**Phase 0 ✅ Done** · **Phase 1 ✅ Done (кроме PR7 — отложен)** · **Phase 2+ — позднее**
+
+40+ unit-тестов, 2 storefront-окна (Newspaper, Classic Shop), HUD кнопка, аналитика, confirmation dialog, RewardsWindow popup. Билд зелёный.
 
 ### Phase 0 ✅ Done (PR1–PR5)
-
-Полностью локальный shop модуль на gold. Все 5 PR'ов в main, билд зелёный, 31+ unit-тест.
 
 | PR | Что реализовано | Файлы |
 |---|---|---|
 | **PR1** | `Game.Rewards.API` + `Game.Rewards` asmdef'ы. `IRewardGrantService`, `IRewardSpecExpander` plug-in pattern, `LocalRewardGrantService` (dispatcher Resource→Resources, InventoryItem→Inventory). 8 тестов. | [`Assets/Game/Features/Rewards/`](../../Assets/Game/Features/Rewards/) |
 | **PR2** | `Game.Shop.API` + `Game.Shop` asmdef'ы. `IShopService`, `ShopService` + `SaveBackedShopRepository` (save key `shop`, schema v1). `ShopConfig` POCO через `[ConfigFile("shop")]`. `ShopVContainerBindings` перевезён из `GameInstaller` в `BootstrapInstaller`. 9 тестов. | [`Assets/Game/Features/Shop/`](../../Assets/Game/Features/Shop/), [`Configs/Models/ShopConfig.cs`](../../Assets/Game/Features/Configs/Models/ShopConfig.cs), [`Assets/Configs/shop.json`](../../Assets/Configs/shop.json) |
-| **PR3** | Декор-офферы мигрированы в shop как `Disposable+1` лоты. `NewspaperShopLotIds` константы. `DecorRewardService` ужат до thin facade поверх `IShopService` (нужен для `UiPilotDebugPanel.cs:69`). `NewspaperWindow` использует `IShopService` напрямую. Save migration `decor.placement.FirstDay*` → `shop.lots.*` (идемпотентная). 5 migration tests. | [`NewspaperShopLotIds.cs`](../../Assets/Game/Features/Shop/API/NewspaperShopLotIds.cs), [`DecorRewardService.cs`](../../Assets/Game/Features/Decor/Services/DecorRewardService.cs), [`ShopService.TryMigrateLegacyDecorAsync`](../../Assets/Game/Features/Shop/Services/ShopService.cs) |
-| **PR4** | `BookBoxRewardExpander` — weighted-without-replacement sampling по `RarityWeight`/`Genre`/`Mood`. 3 book-box лота (`common_15` 20g, `rare_8` 30g, `genre_dystopic_1` 40g). UI секция Books в `NewspaperWindow` (3 кнопки + inline label). `IRewardRandom` port + `UnityRewardRandom` (Rewards владеет своим RNG, не зависит от BookSell). 7 тестов. | [`BookBoxRewardExpander.cs`](../../Assets/Game/Features/Rewards/Services/BookBoxRewardExpander.cs), [`BookBoxPoolRules.cs`](../../Assets/Game/Features/Rewards/Services/BookBoxPoolRules.cs) |
-| **PR5** | Inventory-aware фильтр: book-box роллит только из неимеющихся книг. `Debug.LogWarning` при пустом пуле и underfilled box. +2 теста. | [`BookBoxRewardExpander.BuildPool`](../../Assets/Game/Features/Rewards/Services/BookBoxRewardExpander.cs) |
+| **PR3** | Декор-офферы мигрированы в shop как `Disposable+1` лоты. `NewspaperShopLotIds` константы. `DecorRewardService` ужат до thin facade поверх `IShopService`. `NewspaperWindow` использует `IShopService` напрямую. Save migration `decor.placement.FirstDay*` → `shop.lots.*` (идемпотентная). 5 migration tests. | [`NewspaperShopLotIds.cs`](../../Assets/Game/Features/Shop/API/NewspaperShopLotIds.cs), [`DecorRewardService.cs`](../../Assets/Game/Features/Decor/Services/DecorRewardService.cs), [`ShopService.TryMigrateLegacyDecorAsync`](../../Assets/Game/Features/Shop/Services/ShopService.cs) |
+| **PR4** | `BookBoxRewardExpander` — weighted-without-replacement sampling по `RarityWeight`/`Genre`/`Mood`. 3 book-box лота. UI секция Books в `NewspaperWindow`. `IRewardRandom` port + `UnityRewardRandom`. 7 тестов. | [`BookBoxRewardExpander.cs`](../../Assets/Game/Features/Rewards/Services/BookBoxRewardExpander.cs), [`BookBoxPoolRules.cs`](../../Assets/Game/Features/Rewards/Services/BookBoxPoolRules.cs) |
+| **PR5** | Inventory-aware фильтр для book-box: роллит только из неимеющихся книг. `Debug.LogWarning` при пустом пуле и underfilled box. +2 теста. | [`BookBoxRewardExpander.BuildPool`](../../Assets/Game/Features/Rewards/Services/BookBoxRewardExpander.cs) |
 
-### Phase 1 ⏳ In Progress (PR6, PR8, PR9, PR10 done)
+### Phase 1 ✅ Done (PR6, PR8, PR9, PR10, PR11 + cleanup §3 + hotfix AlreadyOwned)
 
-| PR | Что | Статус | Файлы |
-|---|---|---|---|
-| **PR6** | Bootstrap-level race fix: `phase_data_load` разделён на 2 sequential группы (configs → save). Удалён локальный `_configs.WarmupAsync` из `ShopService.AfterLoadAsync`. | ✅ Done | [`Bootstrap.cs:199-211`](../../Assets/Game/Core/Installers/Bootstrap/Bootstrap.cs) |
-| **PR7** | Daily reset (`ShopLimitMode.Daily`, `ICurrentDayProvider` inject, schema migration v2). | ⏳ Pending | — |
-| **PR8** | `ShopAnalyticsListener` (`IStartable + IDisposable`) подписывается на `LotPurchased`, эмитит `item_purchased` в `IAnalyticsService`. `NullAnalyticsService` зарегистрирован как fallback (логирует через `Debug.Log`). | ✅ Done | [`ShopAnalyticsListener.cs`](../../Assets/Game/Features/Shop/Services/ShopAnalyticsListener.cs), [`AnalyticsVContainerBindings.cs`](../../Assets/Game/Core/Installers/Features/AnalyticsVContainerBindings.cs) |
-| **PR9** | `IShopConfirmationPolicy` + `ThresholdConfirmationPolicy` (порог 50g). `NewspaperWindow` показывает `ConfirmDialog` через `UIManager.ShowAsync<ConfirmDialog>` перед `BuyAsync`. | ✅ Done | [`IShopConfirmationPolicy.cs`](../../Assets/Game/Features/Shop/API/IShopConfirmationPolicy.cs), [`ThresholdConfirmationPolicy.cs`](../../Assets/Game/Features/Shop/Services/ThresholdConfirmationPolicy.cs) |
-| **PR10** | `RewardsWindow` popup в `Game.Newspaper.UI`. `RewardsWindowArgs` несёт `RewardSpec Granted`. `NewspaperWindow` показывает popup после успешной покупки (заменяет inline label для success path; label остаётся для error states). | ✅ Done (prefab нужно собрать в редакторе) | [`RewardsWindow.cs`](../../Assets/Game/Features/Newspaper/UI/RewardsWindow.cs), [`RewardsWindowView.cs`](../../Assets/Game/Features/Newspaper/UI/RewardsWindowView.cs) |
-| **PR11** | Classic Shop window (must-have headline Phase 1) — вкладки Books/Boxes/Decor, постоянный ассортимент, использует PR6-PR10. | ⏳ Pending | — |
+| PR | Что | Файлы |
+|---|---|---|
+| **PR6** | Bootstrap-level race fix: `phase_data_load` разделён на 2 sequential группы (configs → save). Удалён локальный `_configs.WarmupAsync` из `ShopService.AfterLoadAsync`. | [`Bootstrap.cs:199-211`](../../Assets/Game/Core/Installers/Bootstrap/Bootstrap.cs) |
+| **PR7** | Daily reset (`ShopLimitMode.Daily`, `ICurrentDayProvider` inject, schema migration v2). | ⏳ **Отложен** на позднее. |
+| **PR8** | `ShopAnalyticsListener` (`IStartable + IDisposable`) подписывается на `LotPurchased`, эмитит `item_purchased` в `IAnalyticsService`. `NullAnalyticsService` зарегистрирован как fallback (логирует через `Debug.Log`). | [`ShopAnalyticsListener.cs`](../../Assets/Game/Features/Shop/Services/ShopAnalyticsListener.cs), [`AnalyticsVContainerBindings.cs`](../../Assets/Game/Core/Installers/Features/AnalyticsVContainerBindings.cs) |
+| **PR9** | `IShopConfirmationPolicy` + `ThresholdConfirmationPolicy` (порог 50g). `NewspaperWindow` + `ShopLotsSectionView` показывают `ConfirmDialog` через `UIManager.ShowAsync<ConfirmDialog>` перед `BuyAsync`. | [`IShopConfirmationPolicy.cs`](../../Assets/Game/Features/Shop/API/IShopConfirmationPolicy.cs), [`ThresholdConfirmationPolicy.cs`](../../Assets/Game/Features/Shop/Services/ThresholdConfirmationPolicy.cs) |
+| **PR10** | `RewardsWindow` popup в `Game.Newspaper.UI`. `RewardsWindowArgs` несёт `RewardSpec Granted`. Используется и `NewspaperWindow`, и `ClassicShopWindow` (через `ShopLotsSectionView`). Лейбл показывает 1 reward per line. | [`RewardsWindow.cs`](../../Assets/Game/Features/Newspaper/UI/RewardsWindow.cs), [`RewardsWindowView.cs`](../../Assets/Game/Features/Newspaper/UI/RewardsWindowView.cs) |
+| **PR11** | Classic Shop window (must-have headline). Новый asmdef `Game.Shop.UI`. Generic `ShopLotsSectionView` биндится к storefrontId + сервисам, рендерит card list через manual pool. `ClassicShopWindow` с 3 табами (`classic.books`/`boxes`/`decor`). HUD button в `GameplaySceneView` → `UIManager.ShowAsync<ClassicShopWindow>`. +1 partition тест. | [`Game.Shop.UI/`](../../Assets/Game/Features/Shop/UI/), [`ClassicShopWindow.cs`](../../Assets/Game/Features/Shop/UI/ClassicShopWindow.cs), [`ShopLotsSectionView.cs`](../../Assets/Game/Features/Shop/UI/Sections/ShopLotsSectionView.cs), [`ShopStorefrontIds.cs`](../../Assets/Game/Features/Shop/API/ShopStorefrontIds.cs) |
+| **Cleanup §3** | `ShopLotLimit.MaxPurchases` → `int?` (nullable). `shop.json` Unlimited лоты теряют `maxPurchases: 0`. POCO + ShopService адаптированы. | [`ShopLotLimit.cs`](../../Assets/Game/Features/Shop/API/ShopLotLimit.cs), [`ShopConfig.cs`](../../Assets/Game/Features/Configs/Models/ShopConfig.cs) |
+| **Hotfix AlreadyOwned** | `ShopPurchaseStatus.AlreadyOwned` + `ShopService` инжектит `IInventoryService` + проверяет inline reward items до списания gold. Защита от дубликатов для inline-rewardItems Unique-категории (single books, decor). Book-box лоты не блокируются — их owned-filter в expander'е. +3 теста. | [`ShopService.HasOwnedInlineRewardItem`](../../Assets/Game/Features/Shop/Services/ShopService.cs), [`ShopPurchaseStatus.cs`](../../Assets/Game/Features/Shop/API/ShopPurchaseStatus.cs) |
+
+### Дополнительно реализовано (вне основного PR-плана)
+
+- **Inventory UI расширение для книг.** `InventoryItemRowView` + `InventoryWindowView` + `InventoryScreenView` теперь могут отображать полный `BookConfig` (title/author/genre/basePrice/rarityWeight/tags/mood) через новый метод `BindBook`. Книги в обоих окнах сортируются по `ItemId` (zero-padded — естественный порядок 1, 2, 3). Index стартует с 1. `IConfigsService` инжектится в оба окна. | [`InventoryItemRowView.cs`](../../Assets/Game/Features/Inventory/UI/InventoryItemRowView.cs), [`InventoryWindowView.cs`](../../Assets/Game/Features/Inventory/UI/InventoryWindowView.cs), [`InventoryScreenView.cs`](../../Assets/Game/Features/Inventory/UI/InventoryScreenView.cs) |
 
 ### Архитектура (как сейчас)
 
 ```
-NewspaperWindow → IShopService (Game.Shop.API)
-                  IShopConfirmationPolicy → ThresholdConfirmationPolicy (порог 50g)
-                  UIManager → ConfirmDialog + RewardsWindow popup
+HUD GameplaySceneView ─── "Open Shop" button → UIManager.ShowAsync<ClassicShopWindow>
+                              │
+                              ↓
+ClassicShopWindow (Game.Shop.UI) ─── 3 tabs ─── ShopLotsSectionView × 3 (Books/Boxes/Decor)
+   ↑                                                  ↑
+   └── tabs switch via SetActive + Refresh        Generic component:
+                                                   - Bind(storefrontId, IShopService, policy, UIManager, ct)
+                                                   - Pool ShopLotCardView per lot
+                                                   - TryBuyAsync: confirm dialog → BuyAsync → RewardsWindow
+
+NewspaperWindow (Game.Newspaper.UI) ── Page ── 2 decor + 3 book-box секции (legacy per-lot UI)
+   ↑
+   └── opened from ResultsScreenView end-of-day
+
 ShopService → SaveBackedShopRepository (save key "shop", schema v1)
               IConfigsService.GetAll<ShopConfig>() — shop.json
               IResourcesService.Remove (списание gold)
+              IInventoryService.Has (AlreadyOwned check — inline rewardItems)
               IRewardGrantService.GrantAsync(spec, "shop:<lotId>", ct)
               LotPurchased event → ShopAnalyticsListener → IAnalyticsService
+
 LocalRewardGrantService → IRewardSpecExpander[] (Bootstrap: [BookBoxRewardExpander])
                           → expanded spec → IInventoryService.Add / IResourcesService.Add
+
 BookBoxRewardExpander → IConfigsService.GetAll<BookConfig>()
                         IInventoryService.Has (filter owned books — PR5)
                         IRewardRandom (UnityRewardRandom)
                         BookBoxPoolRules table (3 правила хардкод)
+
+InventoryWindowController → InventoryWindowView ─── tabs by category ─── List<InventoryItemRowView>
+                            IConfigsService.TryGet<BookConfig> → BindBook (полное отображение) / Bind (legacy)
 ```
 
-### Save схема (текущая, schema v1)
+### Save схема (schema v1)
 
 ```jsonc
 "shop": {
@@ -66,43 +91,96 @@ BookBoxRewardExpander → IConfigsService.GetAll<BookConfig>()
     "Lots": {
       "newspaper_decor_vintage_globe": { "Purchases": 1 },
       "newspaper_decor_coffee_pot": { "Purchases": 1 },
+      "classic_book_005": { "Purchases": 1 },
       "newspaper_book_common_15": { "Purchases": 3 }
     }
   }
 }
 ```
 
-Для `Unlimited` лотов (book boxes) `Purchases` инкрементится, но не читается — redundant (см. §11 tech debt §2). Для `Disposable` лотов (decor) — блокирует повторную покупку.
+Для `Unlimited` лотов (book boxes, single books, classic boxes) `Purchases` инкрементится, но не читается для лимита — счётчик в save'е redundant (см. §11 tech debt §2). Для `Disposable` лотов (decor) — блокирует повторную покупку. Для inline-rewardItems-лотов с Unique-категорией (single books, decor) — дополнительная защита через `IInventoryService.Has` (AlreadyOwned hotfix).
 
 ### Конфиг `shop.json` (текущий ассортимент)
 
-5 лотов: 2 декора (free vintage_globe / paid coffee_pot 50g), 3 book-box (common_15 20g, rare_8 30g, genre_dystopic_1 40g). Inline `rewardItems` (для декора) или пустой массив + матчинг expander'ом по `rewardId` (для book-box).
+**12 лотов** в 5 storefront'ах:
+
+| Storefront | Лоты | Лимит | Цены |
+|---|---|---|---|
+| `newspaper.decor` | `newspaper_decor_vintage_globe` (free), `newspaper_decor_coffee_pot` (paid 50g) | Disposable+1 | 0 / 50g |
+| `newspaper.books` | `newspaper_book_common_15`, `newspaper_book_rare_8`, `newspaper_book_genre_dystopic_1` | Unlimited | 20g / 30g / 40g |
+| `classic.books` | `classic_book_005`, `classic_book_042` | Unlimited | 15g / 25g |
+| `classic.boxes` | `classic_box_common_10` (reuses `book_box_common_15` expander rule), `classic_box_rare_5` | Unlimited | 15g / 25g |
+| `classic.decor` | `classic_decor_old_lamp`, `classic_decor_houseplant`, `classic_decor_maritime_painting` | Disposable+1 | 75g / 60g / 90g |
+
+Stub-ассортимент — реальная балансировка отложена. Single-book лоты подвержены `AlreadyOwned` блокировке (книга в инвентаре → лот disabled).
 
 ### Реализация vs дизайн доки
 
 | Item в design | Реализация |
 |---|---|
-| `StaticRewardSpecRegistry` (§12 black-design) | **Не делаем.** `rewardItems` inline в `ShopConfig`. Registry появится в Phase 1, если возникнет reuse. |
-| `IRewardHandler` chain (из `Rewards-System.md`) | **Не делаем.** `LocalRewardGrantService` использует `switch` по `RewardKind` — handler pattern избыточен на 2 типах. |
-| Server-authoritative flow | **Не делаем в Phase 0/1.** Контракт `IRewardGrantService` стабилен — Phase 2 заменит реализацию без правок consumer'ов. |
-| `ExchangeService` / `ExchangeSlot` (Heroes-style) | **Не делаем.** 4 уровня индирекции избыточны для 5 лотов. |
-| `ActivationEvents` / `VisibilityEvents` / `UnlockPurchaseEvents` | **Не делаем в Phase 0/1.** Появятся в Phase 2 с Offers/Sale. |
+| `StaticRewardSpecRegistry` (§12) | **Не делаем.** `rewardItems` inline в `ShopConfig`. Registry появится если возникнет reuse. |
+| `IRewardHandler` chain (Rewards-System.md) | **Не делаем.** `LocalRewardGrantService` использует `switch` по `RewardKind` — handler pattern избыточен на 2 типах. |
+| Server-authoritative flow | **Phase 2+.** Контракт `IRewardGrantService` стабилен — реализация заменится без правок consumer'ов. |
+| `ExchangeService` / `ExchangeSlot` (Heroes) | **Не делаем.** Избыточно для 12 лотов. |
+| `ActivationEvents` / `VisibilityEvents` / `UnlockPurchaseEvents` | **Phase 2+** с Offers/Sale. |
+| Daily reset (PR7) | **Отложен.** `ShopLimitMode` остался Unlimited/Disposable; счётчик save готов к расширению (LotPurchasesDto уже отдельный класс). |
 
-### Tech debt
+### Tech debt — финальный статус
 
-Полный список в [§11 Phase 0 — известные ограничения и tech debt](#11-открытые-вопросы). Резюме: 12 пунктов, из них 7 закроются в Phase 1 (PR6 ✅, PR8 ✅, PR9 ✅, PR10 ✅, PR7 ⏳, рефактор daily reset ⏳), 3 пункта откладываются (atomicity = Phase 2, hardcoded ids + facade existence = Phase 1.5 cleanup).
+Из 12 пунктов в [§11 Phase 0 — известные ограничения и tech debt](#11-открытые-вопросы):
+
+| § | Item | Статус |
+|---|---|---|
+| §1 | Inventory-aware book-box | ✅ PR5 |
+| §1.5 | AlreadyOwned для inline single-book лотов | ✅ Hotfix |
+| §2 | Redundant shop save для Unlimited | ⏳ Phase 2+ (или PR7 при возобновлении) |
+| §3 | MaxPurchases=0 semantic | ✅ Cleanup §3 (`int?`) |
+| §4 | DecorRewardService facade hardcoded ids | ⏳ Phase 1.5 cleanup |
+| §5 | Atomicity gap (gold-remove + grant-fail) | ⏳ Phase 2 (server-authoritative) |
+| §6 | Configs/Save race | ✅ PR6 |
+| §7-8 | DecorRewardService facade existence | ⏳ Phase 1.5 (удалить вместе с миграцией UiPilotDebugPanel) |
+| §9 | Inline label вместо popup | ✅ PR10 (RewardsWindow) |
+| §10 | Нет аналитики | ✅ PR8 |
+| §11 | Нет confirmation dialog | ✅ PR9 |
+| §12 | Нет daily reset | ⏳ PR7 отложен |
+
+**Закрыто: 8** · **Отложено: 4** (atomicity = Phase 2, остальные = Phase 1.5 cleanup или PR7 возврат).
+
+### Что осталось делать (вне Phase 0/1)
+
+- **PR7 Daily reset** — `ShopLimitMode.Daily`, `ICurrentDayProvider`, schema migration v2. Возврат когда понадобится daily-rotation ассортимента.
+- **Phase 1.5 cleanup**:
+  - Удалить `DecorRewardService` facade (мигрировать `UiPilotDebugPanel` на `IShopService.BuyAsync`).
+  - Объединить `InventoryWindow` (production) и `InventoryScreen` (debug) — сейчас дублируют логику.
+  - Вынести `RewardsWindow` из `Game.Newspaper.UI` (TODO в файле — должно жить ближе к Shop или в Core.UI).
+  - Newspaper переход на `ShopLotsSectionView` (сейчас собственная per-lot логика).
+- **Phase 2**: Server-driven каталог через `/api/v1/shop/*`, `ServerRewardGrantService`, idempotency, snapshot apply, ActivationEvents, Offers/Sale, Location vendors.
+- **Phase 3**: Bank (gems / IAP / BattlePass).
+- **Phase 4+**: Content PR (балансировка ассортимента дизайнером), иконки, локализация, tab visual state.
 
 ### Ключевые точки кода для онбординга
 
 | Зачем смотреть | Где |
 |---|---|
 | Что shop умеет | [`IShopService.cs`](../../Assets/Game/Features/Shop/API/IShopService.cs) |
-| Как покупка работает | [`ShopService.BuyAsync`](../../Assets/Game/Features/Shop/Services/ShopService.cs) |
+| Как покупка работает (full pipeline) | [`ShopService.BuyAsync`](../../Assets/Game/Features/Shop/Services/ShopService.cs) |
 | Как добавить новый лот | [`shop.json`](../../Assets/Configs/shop.json) — JSON-only, без code change |
-| Как добавить новый storefront | Новый `storefrontId` в `shop.json` + UI consumer'а |
+| Как добавить новый storefront | Новый `storefrontId` в `shop.json` + UI consumer'а (Classic Shop reuse'ит generic `ShopLotsSectionView`) |
 | Как добавить новый expander | Класс implements `IRewardSpecExpander`, регистрация в `RewardsVContainerBindings.cs` (заменить factory list) |
 | Аналитика | [`ShopAnalyticsListener.cs`](../../Assets/Game/Features/Shop/Services/ShopAnalyticsListener.cs) |
-| Save миграция | [`ShopService.TryMigrateLegacyDecorAsync`](../../Assets/Game/Features/Shop/Services/ShopService.cs) |
+| Save миграция (пример) | [`ShopService.TryMigrateLegacyDecorAsync`](../../Assets/Game/Features/Shop/Services/ShopService.cs) |
+| Generic shop UI section | [`ShopLotsSectionView.cs`](../../Assets/Game/Features/Shop/UI/Sections/ShopLotsSectionView.cs) |
+| HUD shop entry | [`GameplaySceneController.OnOpenShopClicked`](../../Assets/Game/UI/GameplayScene/GameplaySceneController.cs) |
+| Inventory book details | [`InventoryItemRowView.BindBook`](../../Assets/Game/Features/Inventory/UI/InventoryItemRowView.cs) |
+| Reward popup | [`RewardsWindow.cs`](../../Assets/Game/Features/Newspaper/UI/RewardsWindow.cs) |
+
+### Prefab'ы, которые должны быть в Unity для smoke-теста
+
+- `ClassicShopWindow.prefab` (Addressable `"ClassicShopWindow"`) с `ClassicShopWindowView` + 3 ShopLotsSectionView instances + 3 tab buttons + close button.
+- `ShopLotCardView.prefab` (template для cards внутри секции).
+- `RewardsWindow.prefab` (Addressable `"RewardsWindow"`) для popup'а наград.
+- HUD prefab — `GameplaySceneController.prefab` с button-link в `_openShopButton`.
+- `InventoryItemRowView.prefab` — добавить SerializeFields для title/author/genre/etc. (опционально, fallback на legacy display).
 
 ---
 

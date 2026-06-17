@@ -36,6 +36,7 @@ namespace Game.Shop.Tests.Editor
             public FakeResourcesService Resources;
             public FakeRewardGrantService Rewards;
             public FakeConfigsService Configs;
+            public FakeInventoryService Inventory;
             public SaveBackedShopRepository Repo;
         }
 
@@ -46,11 +47,12 @@ namespace Game.Shop.Tests.Editor
                 Save = new FakeSaveService(),
                 Resources = new FakeResourcesService(),
                 Rewards = new FakeRewardGrantService(),
-                Configs = new FakeConfigsService()
+                Configs = new FakeConfigsService(),
+                Inventory = new FakeInventoryService()
             };
             h.Configs.Seed(lots ?? new List<ShopConfig>());
             h.Repo = new SaveBackedShopRepository(h.Save);
-            h.Svc = new ShopService(h.Save, h.Repo, h.Resources, h.Rewards, h.Configs);
+            h.Svc = new ShopService(h.Save, h.Repo, h.Resources, h.Rewards, h.Configs, h.Inventory);
             if (runAfterLoad)
                 h.Svc.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
             return h;
@@ -158,6 +160,81 @@ namespace Game.Shop.Tests.Editor
             var dto = h.Repo.LoadAsync(CancellationToken.None).GetAwaiter().GetResult();
             Assert.IsTrue(dto.Lots.ContainsKey("lot_a"));
             Assert.AreEqual(1, dto.Lots["lot_a"].Purchases);
+        }
+
+        [Test]
+        public void Buy_AlreadyOwnedInlineItem_ReturnsAlreadyOwned_NoCharge()
+        {
+            // Lot grants `vintage_globe` decor. Player already owns it → block before charging gold.
+            var lot = new ShopConfig
+            {
+                Id = "lot_dupe", StorefrontId = Storefront,
+                Price = new ShopPriceData { Currency = Gold, Amount = 30 },
+                RewardId = "reward_dupe",
+                RewardItems = new[]
+                {
+                    new RewardItemData { Id = "vintage_globe", Category = "decor", Amount = 1, Kind = RewardKind.InventoryItem }
+                },
+                Limit = new ShopLotLimitData { Mode = ShopLimitMode.Unlimited }
+            };
+            var h = Build(new[] { lot });
+            h.Resources.Seed(Gold, 100);
+            h.Inventory.Seed("vintage_globe", "decor");   // player already owns it
+
+            var result = h.Svc.BuyAsync("lot_dupe", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(ShopPurchaseStatus.AlreadyOwned, result.Status);
+            Assert.AreEqual(100, h.Resources.GetAmount(Gold), "Gold must not be charged for already-owned items.");
+            Assert.AreEqual(0, h.Rewards.GrantCalls.Count, "Grant must not be invoked.");
+            Assert.IsFalse(h.Svc.IsAvailable("lot_dupe"), "Lot must read as unavailable for UI button state.");
+        }
+
+        [Test]
+        public void Buy_InlineItemNotOwned_ProceedsNormally()
+        {
+            // Same shape as above but inventory is empty — happy path still works.
+            var lot = new ShopConfig
+            {
+                Id = "lot_fresh", StorefrontId = Storefront,
+                Price = new ShopPriceData { Currency = Gold, Amount = 30 },
+                RewardId = "reward_fresh",
+                RewardItems = new[]
+                {
+                    new RewardItemData { Id = "houseplant", Category = "decor", Amount = 1, Kind = RewardKind.InventoryItem }
+                },
+                Limit = new ShopLotLimitData { Mode = ShopLimitMode.Unlimited }
+            };
+            var h = Build(new[] { lot });
+            h.Resources.Seed(Gold, 100);
+
+            var result = h.Svc.BuyAsync("lot_fresh", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(ShopPurchaseStatus.Success, result.Status);
+            Assert.AreEqual(70, h.Resources.GetAmount(Gold));
+            Assert.AreEqual(1, h.Rewards.GrantCalls.Count);
+        }
+
+        [Test]
+        public void Buy_EmptyRewardItems_NotBlockedByInventoryCheck()
+        {
+            // Book-box style: empty rewardItems (expander fills at grant time). Inventory of the same
+            // RewardId is irrelevant — owned-filter lives inside BookBoxRewardExpander, not here.
+            var lot = new ShopConfig
+            {
+                Id = "lot_box", StorefrontId = Storefront,
+                Price = new ShopPriceData { Currency = Gold, Amount = 20 },
+                RewardId = "book_box_common_15",
+                RewardItems = new RewardItemData[0],
+                Limit = new ShopLotLimitData { Mode = ShopLimitMode.Unlimited }
+            };
+            var h = Build(new[] { lot });
+            h.Resources.Seed(Gold, 100);
+            h.Inventory.Seed("book_005", "book");    // already has a book, but lot has empty items
+
+            var result = h.Svc.BuyAsync("lot_box", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(ShopPurchaseStatus.Success, result.Status);
+            Assert.IsTrue(h.Svc.IsAvailable("lot_box"));
         }
 
         [Test]

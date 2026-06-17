@@ -41,6 +41,7 @@ namespace Game.Shop.Tests.Editor
             public FakeSaveService Save;
             public FakeResourcesService Resources;
             public FakeRewardGrantService Rewards;
+            public FakeInventoryService Inventory;
             public FakeConfigsService Configs;
             public SaveBackedShopRepository Repo;
         }
@@ -52,11 +53,12 @@ namespace Game.Shop.Tests.Editor
                 Save = new FakeSaveService(),
                 Resources = new FakeResourcesService(),
                 Rewards = new FakeRewardGrantService(),
-                Configs = new FakeConfigsService()
+                Configs = new FakeConfigsService(),
+                Inventory = new FakeInventoryService()
             };
             h.Configs.Seed(DecorLots());
             h.Repo = new SaveBackedShopRepository(h.Save);
-            h.Svc = new ShopService(h.Save, h.Repo, h.Resources, h.Rewards, h.Configs);
+            h.Svc = new ShopService(h.Save, h.Repo, h.Resources, h.Rewards, h.Configs, h.Inventory);
             return h;
         }
 

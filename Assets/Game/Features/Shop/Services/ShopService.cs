@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Decor;
+using Game.Inventory.API;
 using Game.Resources.API;
 using Game.Rewards.API;
 using Game.Shop.API;
@@ -29,6 +30,7 @@ namespace Game.Shop.Services
         private readonly IResourcesService _resources;
         private readonly IRewardGrantService _rewards;
         private readonly IConfigsService _configs;
+        private readonly IInventoryService _inventory;
 
         private readonly Dictionary<string, ShopLot> _lotsById = new(StringComparer.Ordinal);
         private readonly Dictionary<string, List<ShopLot>> _lotsByStorefront = new(StringComparer.Ordinal);
@@ -42,13 +44,15 @@ namespace Game.Shop.Services
             SaveBackedShopRepository repository,
             IResourcesService resources,
             IRewardGrantService rewards,
-            IConfigsService configs)
+            IConfigsService configs,
+            IInventoryService inventory)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _resources = resources ?? throw new ArgumentNullException(nameof(resources));
             _rewards = rewards ?? throw new ArgumentNullException(nameof(rewards));
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
+            _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
 
             save.RegisterHook(this);
         }
@@ -138,9 +142,35 @@ namespace Game.Shop.Services
         public bool IsAvailable(string lotId)
         {
             if (!TryGetLot(lotId, out var lot)) return false;
+            if (!IsWithinLimit(lotId, lot)) return false;
+            if (HasOwnedInlineRewardItem(lotId)) return false;
+            return true;
+        }
+
+        private bool IsWithinLimit(string lotId, ShopLot lot)
+        {
             if (lot.Limit.Mode == ShopLimitMode.Unlimited) return true;
             var cap = lot.Limit.MaxPurchases ?? int.MaxValue;  // null → effectively unlimited (defensive)
             return GetPurchaseCount(lotId) < cap;
+        }
+
+        /// <summary>
+        /// True if the lot's inline <c>rewardItems</c> contain any <see cref="RewardKind.InventoryItem"/>
+        /// the player already owns. Phase 1 simple dupe guard: book/decor categories are Unique-mode,
+        /// so <c>IInventoryService.Has(id)</c> means «already owned». Book-box lots ship with empty
+        /// rewardItems (expander fills at grant time), so this check is a no-op for them — their own
+        /// owned-filter logic lives inside <c>BookBoxRewardExpander</c>.
+        /// </summary>
+        private bool HasOwnedInlineRewardItem(string lotId)
+        {
+            if (!_specsByLotId.TryGetValue(lotId, out var spec) || spec.Items == null) return false;
+            for (var i = 0; i < spec.Items.Count; i++)
+            {
+                var item = spec.Items[i];
+                if (item.Kind == RewardKind.InventoryItem && _inventory.Has(item.Id))
+                    return true;
+            }
+            return false;
         }
 
         // ----- async write -----
@@ -153,7 +183,15 @@ namespace Game.Shop.Services
             if (!TryGetLot(lotId, out var lot))
                 return ShopPurchaseResult.Fail(ShopPurchaseStatus.LotNotFound);
 
-            if (!IsAvailable(lotId))
+            // AlreadyOwned takes priority over LimitReached so UI can display a clear reason — both
+            // collapse into IsAvailable=false but their causes (and player-facing messages) differ.
+            if (HasOwnedInlineRewardItem(lotId))
+            {
+                Debug.LogWarning($"{LogPrefix} Lot '{lotId}' grants an item already owned. Purchase blocked.");
+                return ShopPurchaseResult.Fail(ShopPurchaseStatus.AlreadyOwned, lot);
+            }
+
+            if (!IsWithinLimit(lotId, lot))
                 return ShopPurchaseResult.Fail(ShopPurchaseStatus.LimitReached, lot);
 
             var price = lot.Price;
