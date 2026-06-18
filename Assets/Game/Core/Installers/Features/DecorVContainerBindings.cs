@@ -17,6 +17,16 @@ namespace Game.Bootstrap
         {
             builder.Register<SaveBackedDecorPlacementStorage>(Lifetime.Singleton);
 
+            //TODO check bug
+            /*
+             * P1 Badge Eagerly register the decor save hook
+
+DecorPlacementService only calls save.RegisterHook(this) from its constructor, but this registration is lazy and nothing in the bootstrap path resolves IDecorPlacementService before SaveDataLoadOperation;
+ the first consumers I found are gameplay/preparation UI after boot. On a subsequent launch, saved placements are never loaded, 
+ so active decor is empty and the next placement save can overwrite the previous placement state. 
+Force this service to be constructed before save load (for example via the bootstrap forced-resolution list or a build callback).
+             */
+            
             builder.Register<DecorPlacementService>(Lifetime.Singleton)
                 .AsImplementedInterfaces() // exposes IDecorPlacementService + ISaveHook
                 .AsSelf();                  // self resolution for DecorRewardService
