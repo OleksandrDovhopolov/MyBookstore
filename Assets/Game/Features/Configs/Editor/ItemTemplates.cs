@@ -19,7 +19,9 @@ namespace Game.Configs.Editor
                     ["author"] = "",
                     ["genre"] = "",
                     ["basePrice"] = 0,
-                    ["rarityWeight"] = 0.0
+                    ["rarityWeight"] = 0.0,
+                    ["tags"] = new JArray(),
+                    ["mood"] = new JArray()
                 },
                 "locations" => new JObject
                 {

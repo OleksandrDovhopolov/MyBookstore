@@ -22,6 +22,10 @@ namespace Game.Configs.Editor
             DrawString(item, "genre", "Genre");
             DrawInt(item, "basePrice", "Base Price");
             DrawFloat(item, "rarityWeight", "Rarity Weight");
+            EditorGUILayout.Space(8);
+            DrawStringArray(item, "tags", "Tags");
+            EditorGUILayout.Space(4);
+            DrawStringArray(item, "mood", "Mood");
         }
 
         private static void DrawString(JObject obj, string field, string label)
@@ -45,6 +49,48 @@ namespace Game.Configs.Editor
                 ? obj[field].Value<float>() : 0f;
             var next = EditorGUILayout.FloatField(label, current);
             if (!Mathf.Approximately(next, current)) obj[field] = next;
+        }
+
+        private static void DrawStringArray(JObject obj, string field, string label)
+        {
+            var arr = obj[field] as JArray;
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
+            if (GUILayout.Button("+", GUILayout.Width(28)))
+            {
+                arr ??= new JArray();
+                obj[field] = arr;
+                arr.Add(string.Empty);
+            }
+            EditorGUILayout.EndHorizontal();
+
+            using (new EditorGUI.IndentLevelScope())
+            {
+                if (arr == null || arr.Count == 0)
+                {
+                    EditorGUILayout.LabelField("Empty");
+                    return;
+                }
+
+                for (var i = 0; i < arr.Count; i++)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    var current = arr[i]?.Type == JTokenType.String ? arr[i].Value<string>() : string.Empty;
+                    var next = EditorGUILayout.TextField($"[{i}]", current);
+                    if (next != current)
+                        arr[i] = next;
+
+                    if (GUILayout.Button("-", GUILayout.Width(28)))
+                    {
+                        arr.RemoveAt(i);
+                        EditorGUILayout.EndHorizontal();
+                        GUI.FocusControl(null);
+                        break;
+                    }
+                    EditorGUILayout.EndHorizontal();
+                }
+            }
         }
     }
 }
