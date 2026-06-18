@@ -1,0 +1,99 @@
+[
+  {
+    "id": "vintage_globe",
+    "displayName": "Vintage Globe",
+    "iconAddress": "Decor/VintageGlobe",
+    "positionType": "Standing",
+    "size": "Small",
+    "basePrice": 50,
+    "rarity": "Common",
+    "genreMultipliers": [
+      { "genre": "Fantasy", "multiplier": 1.5 },
+      { "genre": "Fact", "multiplier": 1.2 }
+    ],
+    "styles": ["classic", "maritime"],
+    "atmosphereTags": ["wood", "study"],
+    "paintable": false,
+    "electric": false,
+    "activatable": false,
+    "distracting": false,
+    "dailyUpkeepCost": 0
+  },
+  {
+    "id": "coffee_pot",
+    "displayName": "Coffee Pot",
+    "iconAddress": "Decor/CoffeePot",
+    "positionType": "Standing",
+    "size": "Small",
+    "basePrice": 50,
+    "rarity": "Common",
+    "genreMultipliers": [
+      { "genre": "Classic", "multiplier": 1.3 }
+    ],
+    "styles": ["cozy"],
+    "atmosphereTags": ["coffee", "warm"],
+    "paintable": false,
+    "electric": true,
+    "activatable": false,
+    "distracting": false,
+    "dailyUpkeepCost": 2
+  },
+  {
+    "id": "houseplant",
+    "displayName": "Houseplant",
+    "iconAddress": "Decor/Houseplant",
+    "positionType": "Standing",
+    "size": "Small",
+    "basePrice": 30,
+    "rarity": "Common",
+    "genreMultipliers": [
+      { "genre": "Drama", "multiplier": 1.2 },
+      { "genre": "Classic", "multiplier": 1.2 }
+    ],
+    "styles": ["cozy"],
+    "atmosphereTags": ["green", "fresh"],
+    "paintable": false,
+    "electric": false,
+    "activatable": false,
+    "distracting": false,
+    "dailyUpkeepCost": 0
+  },
+  {
+    "id": "old_lamp",
+    "displayName": "Old Lamp",
+    "iconAddress": "Decor/OldLamp",
+    "positionType": "Hanging",
+    "size": "Small",
+    "basePrice": 40,
+    "rarity": "Common",
+    "genreMultipliers": [
+      { "genre": "Crime", "multiplier": 1.3 }
+    ],
+    "styles": ["classic"],
+    "atmosphereTags": ["wood", "warm"],
+    "paintable": true,
+    "electric": true,
+    "activatable": false,
+    "distracting": false,
+    "dailyUpkeepCost": 1
+  },
+  {
+    "id": "maritime_painting",
+    "displayName": "Maritime Painting",
+    "iconAddress": "Decor/MaritimePainting",
+    "positionType": "Wall",
+    "size": "Medium",
+    "basePrice": 80,
+    "rarity": "Uncommon",
+    "genreMultipliers": [
+      { "genre": "Fantasy", "multiplier": 1.4 }
+    ],
+    "styles": ["maritime"],
+    "atmosphereTags": ["sea", "salt"],
+    "paintable": false,
+    "electric": false,
+    "activatable": false,
+    "distracting": false,
+    "dailyUpkeepCost": 0
+  }
+]

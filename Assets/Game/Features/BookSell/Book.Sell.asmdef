@@ -7,7 +7,8 @@
         "Configs",
         "Save",
         "Unity.TextMeshPro",
-        "Book.Sell.API"
+        "Book.Sell.API",
+        "Game.Core.WorldHud"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,0 +1,32 @@
+{
+    "name": "Game.Shop.Tests.Editor",
+    "rootNamespace": "Game.Shop.Tests.Editor",
+    "references": [
+        "UniTask",
+        "Save",
+        "Configs",
+        "Game.Shop.API",
+        "Game.Shop",
+        "Game.Rewards.API",
+        "Game.Resources.API",
+        "Game.Inventory.API",
+        "Game.Decor.API",
+        "UnityEngine.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

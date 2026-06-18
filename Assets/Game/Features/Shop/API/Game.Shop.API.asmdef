@@ -1,0 +1,17 @@
+{
+    "name": "Game.Shop.API",
+    "rootNamespace": "Game.Shop.API",
+    "references": [
+        "UniTask",
+        "Game.Rewards.API"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

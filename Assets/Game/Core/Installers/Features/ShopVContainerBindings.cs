@@ -1,31 +1,32 @@
+using Game.Shop.API;
+using Game.Shop.Services;
 using VContainer;
+using VContainer.Unity;
 
 namespace Game.Bootstrap
 {
-    // Registered in: GameInstaller (GameplayLifetimeScope)
-    // Resolves from parent: IWebClient, IWindowFactory, IAnalyticsService
-    // Resolves from scene scope: IResourceManager, IInventoryService, IIapPurchaseService
+    // Registered in: BootstrapInstaller (GlobalLifetimeScope — shop state must survive scene
+    // transitions, and ShopService is an ISaveHook that runs on the boot-time save load).
+    // Resolves from the same scope: ISaveService, IResourcesService, IRewardGrantService,
+    // IConfigsService.
     public static class ShopVContainerBindings
     {
         public static void RegisterShop(this IContainerBuilder builder)
         {
-            // TODO: Shop catalog config (offer definitions, sections — ScriptableObject)
-            // builder.RegisterInstance(_shopConfig);
+            builder.Register<SaveBackedShopRepository>(Lifetime.Singleton);
 
-            // TODO: Shop server API
-            // builder.Register<IShopServerApi, HttpShopServerApi>(Lifetime.Singleton);
+            // ShopService self-registers as ISaveHook in its constructor.
+            builder.Register<ShopService>(Lifetime.Singleton)
+                .AsImplementedInterfaces()  // IShopService + ISaveHook
+                .AsSelf();
 
-            // TODO: Offer provider — fetches personalized offers from server
-            // builder.Register<IShopOfferProvider, ServerShopOfferProvider>(Lifetime.Singleton);
+            // PR8: analytics listener auto-starts at scope creation and forwards LotPurchased events
+            // to IAnalyticsService. Disposed on scope teardown (un-subscribes from the event).
+            builder.RegisterEntryPoint<ShopAnalyticsListener>(Lifetime.Singleton);
 
-            // TODO: Shop purchase handler — orchestrates IAP or soft-currency purchases
-            // builder.Register<IShopPurchaseHandler, ShopPurchaseHandler>(Lifetime.Singleton);
-
-            // TODO: Shop service — public API used by UI and other features
-            // builder.Register<IShopService, ShopService>(Lifetime.Singleton);
-
-            // TODO: Shop window router
-            // builder.Register<IShopWindowRouter, ShopWindowRouter>(Lifetime.Transient);
+            // PR9: confirmation policy. UI consumers (NewspaperWindow, future Classic Shop) check
+            // the policy before BuyAsync and show a ConfirmDialog when required.
+            builder.Register<IShopConfirmationPolicy, ThresholdConfirmationPolicy>(Lifetime.Singleton);
         }
     }
 }

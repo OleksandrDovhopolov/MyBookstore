@@ -23,7 +23,17 @@
         "Game.Progression",
         "Game.Progression.API",
         "MessagePipe",
-        "MessagePipe.VContainer"
+        "MessagePipe.VContainer",
+        "Game.Core.UI",
+        "Game.Core.WorldHud",
+        "Game.Decor",
+        "Game.Decor.API",
+        "Game.Rewards",
+        "Game.Rewards.API",
+        "Game.Newspaper",
+        "Game.Shop",
+        "Game.Shop.API",
+        "Analytics"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

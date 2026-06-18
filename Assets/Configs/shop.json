@@ -1,0 +1,115 @@
+[
+  {
+    "id": "newspaper_decor_vintage_globe",
+    "storefrontId": "newspaper.decor",
+    "price": { "currency": "gold", "amount": 0 },
+    "rewardId": "decor_vintage_globe",
+    "rewardItems": [
+      { "id": "vintage_globe", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+    ],
+    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+  },
+  {
+    "id": "newspaper_decor_coffee_pot",
+    "storefrontId": "newspaper.decor",
+    "price": { "currency": "gold", "amount": 50 },
+    "rewardId": "decor_coffee_pot",
+    "rewardItems": [
+      { "id": "coffee_pot", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+    ],
+    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+  },
+  {
+    "id": "newspaper_book_common_15",
+    "storefrontId": "newspaper.books",
+    "price": { "currency": "gold", "amount": 20 },
+    "rewardId": "book_box_common_15",
+    "rewardItems": [],
+    "limit": { "mode": "Unlimited" }
+  },
+  {
+    "id": "newspaper_book_rare_8",
+    "storefrontId": "newspaper.books",
+    "price": { "currency": "gold", "amount": 30 },
+    "rewardId": "book_box_rare_8",
+    "rewardItems": [],
+    "limit": { "mode": "Unlimited" }
+  },
+  {
+    "id": "newspaper_book_genre_dystopic_1",
+    "storefrontId": "newspaper.books",
+    "price": { "currency": "gold", "amount": 40 },
+    "rewardId": "book_box_genre_dystopic_1",
+    "rewardItems": [],
+    "limit": { "mode": "Unlimited" }
+  },
+
+  {
+    "id": "classic_book_005",
+    "storefrontId": "classic.books",
+    "price": { "currency": "gold", "amount": 15 },
+    "rewardId": "single_book_005",
+    "rewardItems": [
+      { "id": "book_005", "category": "book", "amount": 1, "kind": "InventoryItem" }
+    ],
+    "limit": { "mode": "Unlimited" }
+  },
+  {
+    "id": "classic_book_042",
+    "storefrontId": "classic.books",
+    "price": { "currency": "gold", "amount": 25 },
+    "rewardId": "single_book_042",
+    "rewardItems": [
+      { "id": "book_042", "category": "book", "amount": 1, "kind": "InventoryItem" }
+    ],
+    "limit": { "mode": "Unlimited" }
+  },
+
+  {
+    "id": "classic_box_common_10",
+    "storefrontId": "classic.boxes",
+    "price": { "currency": "gold", "amount": 15 },
+    "rewardId": "book_box_common_15",
+    "rewardItems": [],
+    "limit": { "mode": "Unlimited" }
+  },
+  {
+    "id": "classic_box_rare_5",
+    "storefrontId": "classic.boxes",
+    "price": { "currency": "gold", "amount": 25 },
+    "rewardId": "book_box_rare_8",
+    "rewardItems": [],
+    "limit": { "mode": "Unlimited" }
+  },
+
+  {
+    "id": "classic_decor_old_lamp",
+    "storefrontId": "classic.decor",
+    "price": { "currency": "gold", "amount": 75 },
+    "rewardId": "decor_old_lamp",
+    "rewardItems": [
+      { "id": "old_lamp", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+    ],
+    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+  },
+  {
+    "id": "classic_decor_houseplant",
+    "storefrontId": "classic.decor",
+    "price": { "currency": "gold", "amount": 60 },
+    "rewardId": "decor_houseplant",
+    "rewardItems": [
+      { "id": "houseplant", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+    ],
+    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+  },
+  {
+    "id": "classic_decor_maritime_painting",
+    "storefrontId": "classic.decor",
+    "price": { "currency": "gold", "amount": 90 },
+    "rewardId": "decor_maritime_painting",
+    "rewardItems": [
+      { "id": "maritime_painting", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+    ],
+    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+  }
+]

@@ -47,14 +47,19 @@ namespace Game.Inventory.Services
             if (!_handlersByCategory.TryGetValue(owned.CategoryId, out var handler))
                 return InventoryUseResult.Fail($"no handler for category '{owned.CategoryId}'");
 
-            var result = await handler.UseAsync(owned, ct);
-            if (result.Success && result.ConsumeAfterUse)
-            {
-                var removed = await _inventory.RemoveAsync(itemId, 1, ct);
-                if (!removed)
-                    Debug.LogWarning($"{LogPrefix} use ok but RemoveAsync failed for '{itemId}'.");
-            }
-            return result;
+            // TODO: clicking an inventory item should only show info, not invoke handlers.
+            // Re-enable when "Use from inventory" becomes a real action again.
+            // var result = await handler.UseAsync(owned, ct);
+            // if (result.Success && result.ConsumeAfterUse)
+            // {
+            //     var removed = await _inventory.RemoveAsync(itemId, 1, ct);
+            //     if (!removed)
+            //         Debug.LogWarning($"{LogPrefix} use ok but RemoveAsync failed for '{itemId}'.");
+            // }
+            // return result;
+
+            await UniTask.Yield(ct);
+            return InventoryUseResult.Ok(consume: false, message: "use disabled — info-only mode");
         }
     }
 }

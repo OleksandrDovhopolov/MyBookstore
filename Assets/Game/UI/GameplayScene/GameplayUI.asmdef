@@ -1,0 +1,25 @@
+{
+    "name": "GameplayUI",
+    "rootNamespace": "GameplayUI",
+    "references": [
+        "VContainer",
+        "UniTask",
+        "Unity.Addressables",
+        "Unity.ResourceManager",
+        "Unity.TextMeshPro",
+        "Infrastructure",
+        "Game.Inventory",
+        "Game.Core.UI",
+        "Game.Resources.API",
+        "Game.Shop.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

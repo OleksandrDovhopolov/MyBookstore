@@ -196,11 +196,18 @@ namespace Game.Bootstrap
                 new LoadingGroup("phase_technical_seq", LoadingGroupExecutionMode.Sequential, technicalOps)
             });
 
+            // PR6: split former phase_data_parallel into two sequential groups. Save hooks (e.g.
+            // ShopService.AfterLoadAsync) need configs to already be warm; running them in parallel
+            // produced a race where IConfigsService.GetAll<T>() returned empty inside hooks. Sequence
+            // is cheap (configs warmup ~50ms, save load ~10ms) and removes a whole class of bugs.
             var phaseData = new LoadingPhase("phase_data_load", new[]
             {
-                new LoadingGroup("phase_data_parallel", LoadingGroupExecutionMode.Parallel, new ILoadingOperation[]
+                new LoadingGroup("phase_data_configs", LoadingGroupExecutionMode.Sequential, new ILoadingOperation[]
                 {
-                    new ConfigsWarmupOperation(_configs),
+                    new ConfigsWarmupOperation(_configs)
+                }),
+                new LoadingGroup("phase_data_save", LoadingGroupExecutionMode.Sequential, new ILoadingOperation[]
+                {
                     new SaveDataLoadOperation(_save)
                 })
             });

@@ -12,6 +12,8 @@ using VContainer;
 
 namespace Book.Sell.UI
 {
+    // This class is used in SalesCheatModule FindAnyObjectByType. when refactor remove need update SalesCheatModule ( using DI ? ) //
+    
     /// <summary>
     /// Debug screen for the real-time Sales phase (ADR-0003). Pumps the day controller from Update,
     /// renders the shelf live (reserved/sold books drop out), and exposes the active minigame via the
@@ -53,6 +55,7 @@ namespace Book.Sell.UI
         [SerializeField] private Button _restartButton;        // optional
 
         private ISalesDayController _controller;
+        public ISalesDayController Controller => _controller;
         private readonly CancellationTokenSource _cts = new();
         private readonly List<BookCardView> _cards = new();
         private readonly Queue<FeedbackLogEntryView> _entries = new();
@@ -102,6 +105,7 @@ namespace Book.Sell.UI
             _controller.RecommendationResolved += OnRecommendationResolved;
             _controller.PassiveSaleHappened += OnPassiveSaleHappened;
             _controller.DayCompleted += OnDayCompleted;
+            _controller.BookReserved += OnBookReserved;
 
             StartDayFlowAsync(_cts.Token).Forget();
         }
@@ -151,6 +155,13 @@ namespace Book.Sell.UI
             if (_requestPanel != null) _requestPanel.SetActive(false);
             if (_difficultyLabel != null) _difficultyLabel.text = "";
             SetActionsInteractable(false);
+        }
+
+        private void OnBookReserved(Domain.Customer customer, string bookId)
+        {
+            AppendEntry(
+                FeedbackLogEntryView.EntryKind.BookReserved,
+                $"<i>{customer.Id} reserved {bookId}</i>");
         }
 
         private void OnPassiveSaleHappened(PassiveSaleEvent evt)
@@ -382,6 +393,7 @@ namespace Book.Sell.UI
                 _controller.RecommendationResolved -= OnRecommendationResolved;
                 _controller.PassiveSaleHappened -= OnPassiveSaleHappened;
                 _controller.DayCompleted -= OnDayCompleted;
+                _controller.BookReserved -= OnBookReserved;
             }
 
             if (_confirmButton != null) _confirmButton.onClick.RemoveListener(OnConfirmClicked);

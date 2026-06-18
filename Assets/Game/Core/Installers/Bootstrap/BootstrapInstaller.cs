@@ -1,3 +1,4 @@
+using Game.UI;
 using UnityEngine;
 using VContainer;
 
@@ -10,6 +11,10 @@ namespace Game.Bootstrap
     [CreateAssetMenu(fileName = "BootstrapInstaller", menuName = "Game/Installers/BootstrapInstaller")]
     public class BootstrapInstaller : ScriptableObjectInstaller
     {
+        [Header("UI System")]
+        [Tooltip("Prefab with the UICanvasRoot component. Instantiated once into DontDestroyOnLoad.")]
+        [SerializeField] private UICanvasRoot _uiCanvasRootPrefab;
+
 #if UNITY_EDITOR
         [Header("Debug Start (Editor only)")]
         [Tooltip("Master switch. When off, the debug flags below are ignored.")]
@@ -30,9 +35,14 @@ namespace Game.Bootstrap
             builder.RegisterSave();
             builder.RegisterInfrastructure();
             builder.RegisterConfigs();
-            builder.RegisterUiSystem();
+            builder.RegisterUiSystem(_uiCanvasRootPrefab);
+            builder.RegisterWorldHud();
+            builder.RegisterWorldHudSmokeTest(); // TODO: remove after World HUD Phase 0 verification
             builder.RegisterInventory();
+            builder.RegisterDecor();
             builder.RegisterResources();
+            builder.RegisterRewards();
+            builder.RegisterShop();
             builder.RegisterProgression();
             builder.RegisterFtue();
         }

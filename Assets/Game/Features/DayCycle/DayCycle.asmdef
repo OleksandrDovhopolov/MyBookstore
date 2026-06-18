@@ -10,7 +10,9 @@
         "Book.Sell.API",
         "Game.Bootstrap.Loading",
         "Game.Resources.API",
-        "Game.Progression.API"
+        "Game.Progression.API",
+        "Game.Core.UI",
+        "Game.Newspaper"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

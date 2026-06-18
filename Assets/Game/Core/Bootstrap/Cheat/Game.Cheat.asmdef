@@ -1,0 +1,23 @@
+{
+    "name": "Game.Cheat",
+    "rootNamespace": "Game.Cheat",
+    "references": [
+        "VContainer",
+        "UniTask",
+        "CheatModule",
+        "Game.Core.UI",
+        "Configs",
+        "Game.Inventory.API",
+        "Game.Resources.API",
+        "Book.Sell"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -6,8 +6,9 @@ namespace Book.Sell.UI
 {
     /// <summary>
     /// One line in the day's feedback log. <see cref="SalesScreenView"/> instantiates one
-    /// of these per resolved request and per passive sale, into a VerticalLayoutGroup container.
-    /// The kind drives the visual treatment (label color + optional background).
+    /// of these per resolved request, per passive sale, and per book reservation, into a
+    /// VerticalLayoutGroup container. The kind drives the visual treatment (label color +
+    /// optional background).
     /// </summary>
     public sealed class FeedbackLogEntryView : MonoBehaviour
     {
@@ -21,7 +22,8 @@ namespace Book.Sell.UI
             ActiveNormal = 1,
             ActiveFailed = 2,
             ActiveSkipped = 3,
-            PassiveSale = 4
+            PassiveSale = 4,
+            BookReserved = 5
         }
 
         [Header("Content")]
@@ -31,16 +33,21 @@ namespace Book.Sell.UI
         [Tooltip("Optional background image — left null if you don't want per-kind coloring.")]
         [SerializeField] private Image _background;
 
-        [Tooltip("Text color per EntryKind. Array index matches the enum value (0..4).")]
-        [SerializeField] private Color[] _labelColors = new Color[5]
+        [Tooltip("Text color per EntryKind. Array index matches the enum value (0..5).")]
+        [SerializeField] private Color[] _labelColors = new Color[6]
         {
-            Color.white, Color.white, Color.white, Color.white, Color.white
+            Color.white,                      // ActiveExcellent
+            Color.white,                      // ActiveNormal
+            Color.white,                      // ActiveFailed
+            Color.white,                      // ActiveSkipped
+            Color.white,                      // PassiveSale
+            new Color(0.4f, 0.7f, 1f)         // BookReserved — cyan-info, distinct from sales
         };
 
         [Tooltip("Background color per EntryKind. Used only if Background is assigned.")]
-        [SerializeField] private Color[] _backgroundColors = new Color[5]
+        [SerializeField] private Color[] _backgroundColors = new Color[6]
         {
-            Color.clear, Color.clear, Color.clear, Color.clear, Color.clear
+            Color.clear, Color.clear, Color.clear, Color.clear, Color.clear, Color.clear
         };
 
         public void Bind(EntryKind kind, string text)

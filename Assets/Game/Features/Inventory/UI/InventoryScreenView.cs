@@ -1,6 +1,10 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Configs;
+using Game.Configs.Models;
 using Game.Inventory.API;
 using TMPro;
 using UnityEngine;
@@ -34,6 +38,7 @@ namespace Game.Inventory.UI
         private IItemCategoryRegistry _categories;
         private IInventoryUseRouter _useRouter;
         private IReadOnlyList<IInventoryItemUseHandler> _handlers;
+        private IConfigsService _configs;
 
         private readonly List<Button> _tabButtons = new();
         private readonly List<InventoryItemRowView> _rows = new();
@@ -46,12 +51,14 @@ namespace Game.Inventory.UI
             IInventoryService inventory,
             IItemCategoryRegistry categories,
             IInventoryUseRouter useRouter,
-            IReadOnlyList<IInventoryItemUseHandler> handlers)
+            IReadOnlyList<IInventoryItemUseHandler> handlers,
+            IConfigsService configs)
         {
             _inventory = inventory;
             _categories = categories;
             _useRouter = useRouter;
             _handlers = handlers;
+            _configs = configs;
         }
 
         private void Start()
@@ -91,10 +98,10 @@ namespace Game.Inventory.UI
         private void SelectCategory(string categoryId)
         {
             _activeCategoryId = categoryId;
-            
+
             if (_activeCategoryLabel != null && _categories.TryGet(categoryId, out var c))
                 _activeCategoryLabel.text = c.DisplayName;
-            
+
             Render();
         }
 
@@ -104,11 +111,23 @@ namespace Game.Inventory.UI
             if (_rowPrefab == null || _rowContainer == null || string.IsNullOrEmpty(_activeCategoryId)) return;
 
             var items = _inventory.GetByCategory(_activeCategoryId);
+            // Inventory storage is dictionary-backed (random iteration order). Sort by item id so
+            // zero-padded book ids (book_001 ... book_060) render in natural numeric order.
+            var sorted = items.OrderBy(it => it.ItemId, StringComparer.Ordinal).ToList();
+
             var hasHandler = _categoriesWithHandlers.Contains(_activeCategoryId);
-            for (var i = 0; i < items.Count; i++)
+            var isBookCategory = _activeCategoryId == InventoryCategories.Book && _configs != null;
+
+            for (var i = 0; i < sorted.Count; i++)
             {
+                var item = sorted[i];
                 var row = Instantiate(_rowPrefab, _rowContainer);
-                row.Bind(items[i], hasHandler, OnUseClicked);
+
+                if (isBookCategory && _configs.TryGet<BookConfig>(item.ItemId, out var book))
+                    row.BindBook(item, book, hasHandler, OnUseClicked, i + 1);
+                else
+                    row.Bind(item, hasHandler, info: null, OnUseClicked, i + 1);
+
                 _rows.Add(row);
             }
         }

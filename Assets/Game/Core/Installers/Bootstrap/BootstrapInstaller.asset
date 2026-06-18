@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9dbbd08749f07942b41739fb9825b55, type: 3}
   m_Name: BootstrapInstaller
   m_EditorClassIdentifier: 
+  _uiCanvasRootPrefab: {fileID: 134780185855202316, guid: 3f215f261b2be9042b7901f9c2ad2870, type: 3}
   _useDebugFeatures: 0
   _skipFullLoading: 0

@@ -1,0 +1,21 @@
+{
+    "name": "Game.Newspaper",
+    "rootNamespace": "Game.Newspaper",
+    "references": [
+        "VContainer",
+        "UniTask",
+        "Game.Core.UI",
+        "Game.Shop.API",
+        "Game.Rewards.API",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

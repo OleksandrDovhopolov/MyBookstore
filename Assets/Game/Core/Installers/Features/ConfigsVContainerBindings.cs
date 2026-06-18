@@ -52,7 +52,19 @@ namespace Game.Bootstrap
                 r.Resolve<IConnectionService>(),
                 r.Resolve<ICommandLogger>(),
                 r.Resolve<ICommandErrorReporter>(),
-                new LocalFolderConfigSource()); // bundled defaults baseline (Editor: Assets/Configs)
+                CreateBundledDefaults());
+
+        // Editor: live Assets/Configs/ для hot-reload.
+        // Build: StreamingAssets/Configs/ (через UnityWebRequest — на Android прямой File.IO недоступен).
+        // Регламент синхронизации: Tools/Configs/Sync Bundled Defaults to StreamingAssets.
+        private static IConfigSource CreateBundledDefaults()
+        {
+#if UNITY_EDITOR
+            return new LocalFolderConfigSource();
+#else
+            return new StreamingAssetsConfigSource();
+#endif
+        }
 
 #if UNITY_EDITOR
         private const string UseServerPrefKey = "MyBookstore.Configs.UseServerSource";

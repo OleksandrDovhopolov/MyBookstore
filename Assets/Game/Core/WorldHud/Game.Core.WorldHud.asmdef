@@ -1,0 +1,21 @@
+{
+    "name": "Game.Core.WorldHud",
+    "rootNamespace": "Game.WorldHud",
+    "references": [
+        "VContainer",
+        "UniTask",
+        "Unity.Addressables",
+        "Unity.ResourceManager",
+        "Unity.TextMeshPro",
+        "Infrastructure"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

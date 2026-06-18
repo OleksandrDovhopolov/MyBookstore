@@ -32,6 +32,9 @@ namespace Book.Sell.Services
         /// <summary>Fired whenever any customer changes phase (arrival / browsing / leaving / done). For the View.</summary>
         event Action<Customer> CustomerPhaseChanged;
 
+        /// <summary>Customer targeted a book and reserved it (soft-lock) before committing the sale. For the View's feedback log.</summary>
+        event Action<Customer, string> BookReserved;
+
         UniTask StartDayAsync(int day, CancellationToken ct);
 
         /// <summary>Advance the simulation by dt seconds. No-op while the interaction lock is held (domain pause) or the day is done.</summary>
@@ -42,5 +45,16 @@ namespace Book.Sell.Services
 
         /// <summary>Player declined to recommend anything for the current active minigame.</summary>
         void SkipCurrentRequest();
+
+        /// <summary>
+        /// Forcibly ends the current sales day. Debug/cheat use only.
+        /// When <paramref name="zeroOut"/> is true the published result has no sales, no gold and
+        /// no served customers (only <see cref="Day"/> is preserved). Otherwise the already
+        /// accumulated result is published as-is.
+        /// Safe to call mid-minigame: active request state is dropped, the lock is left held but
+        /// no longer reachable (Tick short-circuits on the completed flag). No-op if the day has
+        /// already completed.
+        /// </summary>
+        void ForceCompleteDay(bool zeroOut);
     }
 }

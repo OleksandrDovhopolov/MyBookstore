@@ -4,6 +4,8 @@ using Book.Sell.API;
 using Cysharp.Threading.Tasks;
 using Game.DayCycle.Results.Domain;
 using Game.DayCycle.Results.Services;
+using Game.Newspaper.UI;
+using Game.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,6 +18,8 @@ namespace Game.DayCycle.Results.UI
     /// Numbers come straight from the persisted SalesDayResult through IResultsSessionService; the
     /// view never recomputes anything. GameObject is inactive by default; SalesScreenView activates
     /// it on day completion, and on restart the Sales view routes here when the day is already done.
+    /// Decor newspaper offers and the placement screen are no longer wired here — newspaper offers
+    /// live in <see cref="NewspaperWindow"/>, opened via the "Open Newspaper" button.
     /// </summary>
     public sealed class ResultsScreenView : MonoBehaviour
     {
@@ -47,17 +51,20 @@ namespace Game.DayCycle.Results.UI
 
         [Header("Actions")]
         [SerializeField] private Button _nextDayButton;
+        [SerializeField] private Button _openNewspaperButton;
 
         [Header("Error")]
         [SerializeField] private GameObject _errorPanel;
 
         private IResultsSessionService _service;
+        private IUIManager _uiManager;
         private readonly CancellationTokenSource _cts = new();
 
         [Inject]
-        public void Construct(IResultsSessionService service)
+        public void Construct(IResultsSessionService service, IUIManager uiManager)
         {
             _service = service;
+            _uiManager = uiManager;
         }
 
         private void Awake()
@@ -67,6 +74,7 @@ namespace Game.DayCycle.Results.UI
                 _nextDayButton.onClick.AddListener(OnNextDayClicked);
                 _nextDayButton.interactable = false;
             }
+            if (_openNewspaperButton != null) _openNewspaperButton.onClick.AddListener(OnOpenNewspaperClicked);
             if (_errorPanel != null) _errorPanel.SetActive(false);
             if (_alreadyAppliedHint != null) _alreadyAppliedHint.gameObject.SetActive(false);
         }
@@ -156,11 +164,24 @@ namespace Game.DayCycle.Results.UI
             _service.AdvanceToNextDayAsync(_cts.Token).Forget();
         }
 
+        private void OnOpenNewspaperClicked() => OpenNewspaperAsync().Forget();
+
+        private async UniTaskVoid OpenNewspaperAsync()
+        {
+            if (_uiManager == null)
+            {
+                Debug.LogWarning("[ResultsScreenView] IUIManager not injected — cannot open NewspaperWindow.");
+                return;
+            }
+            await _uiManager.ShowAsync<NewspaperWindow>(ct: _cts.Token);
+        }
+
         // ----- lifecycle -----
 
         private void OnDestroy()
         {
             if (_nextDayButton != null) _nextDayButton.onClick.RemoveListener(OnNextDayClicked);
+            if (_openNewspaperButton != null) _openNewspaperButton.onClick.RemoveListener(OnOpenNewspaperClicked);
             _cts.Cancel();
             _cts.Dispose();
         }

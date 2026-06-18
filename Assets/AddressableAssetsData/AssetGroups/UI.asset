@@ -1,0 +1,98 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: UI
+  m_EditorClassIdentifier: 
+  m_GroupName: UI
+  m_GUID: 65fe7f39b09e04740a95f8f435f8c858
+  m_SerializeEntries:
+  - m_GUID: 0d46c2ab7dc4589428601072bb9f6fae
+    m_Address: GameplaySceneController
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 179b1d22bfd99ec4fb2af73a25ae0859
+    m_Address: SmokeSystemDialog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2083b234cd2852340b856032e516fd20
+    m_Address: InventoryWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2e39b1b001153f04dbbb5968adcb8ff5
+    m_Address: SmokeMainPage
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 48bb5f55d8670e349b6e614913f9d910
+    m_Address: Assets/TextMesh Pro/Shaders/TMP_Bitmap-Custom-Atlas.shader
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4a5064af916ad6341ad107f26eff1985
+    m_Address: Assets/Game/UI/Fonts/LilitaOne-Regular Outline 40 SDF.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 50c12c23294124aa48490c44ac65a9e4
+    m_Address: Assets/Game/UI/Fonts/LilitaOne-Regular Outline 40 SDF.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7e21c93daa8c96a4e96f9bd474a4b356
+    m_Address: SmokeAdditionalPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aa9fdc7ac23d342798922793111065d0
+    m_Address: Assets/Game/UI/Fonts/LilitaOne-Regular Outline 40 SDF Atlas.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cc763ba3347e9e840bb83177ef17287d
+    m_Address: NewspaperWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d7a3de56b03c2fd46abc7d2c00950e65
+    m_Address: ClassicShopWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d7d7ca9e1e896c442b2c754d17d1e97a
+    m_Address: ConfirmDialog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d8232db4a1cf38641acf8ff4eda4ae3d
+    m_Address: SettingsWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dc963227e6816614bb23ebb2bec4fb25
+    m_Address: RewardsWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eb7817be6dc738e43a517ac8a8a5db85
+    m_Address: DecorPlacementWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 962dd82bfa6d0f047923cc0481612c96, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: d5fee8075c17e274f845e605ff2d7905, type: 2}
+    - {fileID: 11400000, guid: b86b758f3651e574d9bd9284b3959794, type: 2}

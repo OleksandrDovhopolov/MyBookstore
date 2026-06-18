@@ -33,6 +33,12 @@ namespace Game.Inventory.Tests.Editor
             return svc;
         }
 
+        // TODO: handler dispatch + consume side-effect is currently disabled in InventoryUseRouter
+        // (clicking inventory item shows info only). The two cases below assert the disabled path:
+        // router returns synthetic Ok(consume:false) regardless of what the handler would have done,
+        // and the inventory item is NOT removed. Re-enable original assertions when use-from-inventory
+        // becomes a real action again.
+
         [Test]
         public void HandlerConsumesItem_RemoveCalled()
         {
@@ -45,8 +51,10 @@ namespace Game.Inventory.Tests.Editor
             var result = router.UseAsync("decor_plant", CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.IsTrue(result.Success);
-            Assert.IsTrue(result.ConsumeAfterUse);
-            Assert.IsFalse(inv.Has("decor_plant"));
+            Assert.IsFalse(result.ConsumeAfterUse, "router currently swallows handler.ConsumeAfterUse");
+            Assert.IsTrue(inv.Has("decor_plant"), "router currently does NOT remove on use");
+            // Assert.IsTrue(result.ConsumeAfterUse);
+            // Assert.IsFalse(inv.Has("decor_plant"));
         }
 
         [Test]

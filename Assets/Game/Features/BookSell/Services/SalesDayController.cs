@@ -73,6 +73,7 @@ namespace Book.Sell.Services
         public event Action<PassiveSaleEvent> PassiveSaleHappened;
         public event Action<SalesDayResult> DayCompleted;
         public event Action<Customer> CustomerPhaseChanged;
+        public event Action<Customer, string> BookReserved;
 
         public UniTask StartDayAsync(int day, CancellationToken ct)
         {
@@ -168,6 +169,27 @@ namespace Book.Sell.Services
             ResolveActive();
         }
 
+        public void ForceCompleteDay(bool zeroOut)
+        {
+            if (_completed) return;
+
+            // Drop in-progress minigame state so the published result is consistent.
+            // The IInteractionLock may still be held by the active step — that's fine: the next
+            // Tick short-circuits on _completed before reaching the lock check, and the View
+            // stops pumping Update once _dayRunning flips to false in OnDayCompleted.
+            _activeCustomer = null;
+            _activeRequest = null;
+
+            if (zeroOut)
+            {
+                _result = new SalesDayResult { Day = Day };
+            }
+
+            // Reuse the organic completion path: same save + event ordering as CheckEndOfDay.
+            _completed = true;
+            PublishCompletionAsync().Forget();
+        }
+
         public void SkipCurrentRequest()
         {
             if (_activeCustomer == null)
@@ -214,7 +236,10 @@ namespace Book.Sell.Services
         }
 
         void ISalesDaySink.OnBookReserved(Customer customer, string bookId)
-            => Debug.Log($"{LogPrefix} reserved (targeting): book={bookId}, customer={customer.Id}");
+        {
+            Debug.Log($"{LogPrefix} reserved (targeting): book={bookId}, customer={customer.Id}");
+            BookReserved?.Invoke(customer, bookId);
+        }
 
         void ISalesDaySink.OnBookReleased(Customer customer, string bookId)
             => Debug.Log($"{LogPrefix} reservation released (no sale): book={bookId}, customer={customer.Id}");
