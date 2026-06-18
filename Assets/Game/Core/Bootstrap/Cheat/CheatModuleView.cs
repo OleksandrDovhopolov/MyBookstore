@@ -4,6 +4,7 @@ using cheatModule;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Inventory.API;
+using Game.Resources.API;
 using Game.UI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,13 +24,15 @@ namespace Game.Cheat
         private UIManager _uiManager;
         private IInventoryService _inventory;
         private IConfigsService _configs;
+        private IResourcesService _resources;
 
         [Inject]
-        private void Construct(UIManager uiManager, IInventoryService inventory, IConfigsService configs)
+        private void Construct(UIManager uiManager, IInventoryService inventory, IConfigsService configs, IResourcesService resources)
         {
             _uiManager = uiManager;
             _inventory = inventory;
             _configs = configs;
+            _resources = resources;
         }
         
         public void Start()
@@ -85,6 +88,7 @@ namespace Game.Cheat
             var cheatsModules = new List<ICheatsModule>
             {
                 new DecorationCheatModule(_uiManager, _inventory, _configs, destroyCt),
+                new ResourcesCheatModule(_resources, destroyCt),
             };
             
             return cheatsModules;
