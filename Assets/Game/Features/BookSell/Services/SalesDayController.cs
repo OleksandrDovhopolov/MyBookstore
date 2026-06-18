@@ -169,6 +169,27 @@ namespace Book.Sell.Services
             ResolveActive();
         }
 
+        public void ForceCompleteDay(bool zeroOut)
+        {
+            if (_completed) return;
+
+            // Drop in-progress minigame state so the published result is consistent.
+            // The IInteractionLock may still be held by the active step — that's fine: the next
+            // Tick short-circuits on _completed before reaching the lock check, and the View
+            // stops pumping Update once _dayRunning flips to false in OnDayCompleted.
+            _activeCustomer = null;
+            _activeRequest = null;
+
+            if (zeroOut)
+            {
+                _result = new SalesDayResult { Day = Day };
+            }
+
+            // Reuse the organic completion path: same save + event ordering as CheckEndOfDay.
+            _completed = true;
+            PublishCompletionAsync().Forget();
+        }
+
         public void SkipCurrentRequest()
         {
             if (_activeCustomer == null)

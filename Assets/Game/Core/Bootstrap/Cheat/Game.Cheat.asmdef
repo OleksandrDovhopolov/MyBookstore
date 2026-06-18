@@ -8,7 +8,8 @@
         "Game.Core.UI",
         "Configs",
         "Game.Inventory.API",
-        "Game.Resources.API"
+        "Game.Resources.API",
+        "Book.Sell"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

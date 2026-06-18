@@ -15,16 +15,22 @@ namespace Game.Cheat
     public class CheatModuleView : MonoBehaviour, ICheatsContainer
     {
         [SerializeField] private CheatsManager _cheatsManagerPrefab;
-        [SerializeField] private Button _cheatButton; 
-        
+        [SerializeField] private Button _cheatButton;
+
         private CheatsManager _cheatsManager;
         private CheatPanelItem _rootPanel;
         private List<ICheatsModule> _cheatsModules;
-        
+
         private UIManager _uiManager;
         private IInventoryService _inventory;
         private IConfigsService _configs;
         private IResourcesService _resources;
+
+        // ISalesDayController is intentionally NOT injected here: this view lives in a UI window
+        // prefab instantiated by the global UI factory, while the controller is registered in the
+        // gameplay scope. A direct [Inject] fails at construction time and a TryResolve on the
+        // global IObjectResolver returns false. SalesCheatModule looks the controller up via the
+        // active SalesScreenView in the scene instead.
 
         [Inject]
         private void Construct(UIManager uiManager, IInventoryService inventory, IConfigsService configs, IResourcesService resources)
@@ -34,13 +40,13 @@ namespace Game.Cheat
             _configs = configs;
             _resources = resources;
         }
-        
+
         public void Start()
         {
             InitializeRootPanel();
             InitializeCheatsModules();
         }
-        
+
         private void OnEnable()
         {
             _cheatButton.onClick.AddListener(OpenCheatPanel);
@@ -50,7 +56,7 @@ namespace Game.Cheat
         {
             _cheatButton.onClick.RemoveListener(OpenCheatPanel);
         }
-        
+
         private void InitializeRootPanel()
         {
             if (_cheatsManager == null)
@@ -62,11 +68,11 @@ namespace Game.Cheat
             {
                 throw new NullReferenceException("_cheatsManager");
             }
-            
+
             _rootPanel = _cheatsManager.GetCheatItem<CheatPanelItem>();
             _rootPanel.transform.SetParent(_cheatsManager.transform, false);
         }
-        
+
         private void InitializeCheatsModules()
         {
             _cheatsModules = new List<ICheatsModule>(GetCheatModules());
@@ -75,25 +81,26 @@ namespace Game.Cheat
                 module.Initialize(this);
             });
         }
-        
+
         public void AddItem<T>(Action<T> initializer) where T : CheatItem
         {
             _rootPanel.AddItem(initializer);
         }
-        
+
         protected virtual List<ICheatsModule> GetCheatModules()
         {
             var destroyCt = this.GetCancellationTokenOnDestroy();
-            
+
             var cheatsModules = new List<ICheatsModule>
             {
                 new DecorationCheatModule(_uiManager, _inventory, _configs, destroyCt),
                 new ResourcesCheatModule(_resources, destroyCt),
+                new SalesCheatModule(),
             };
-            
+
             return cheatsModules;
         }
-        
+
         public void OpenCheatPanel()
         {
             if (_cheatsManager == null)
@@ -101,7 +108,7 @@ namespace Game.Cheat
                 Debug.LogWarning("Failed to open inventory window. Inventory services are not initialized.");
                 throw new NullReferenceException("_cheatsManager");
             }
-            
+
             _cheatsManager.ShowPanel(_rootPanel);
         }
     }
