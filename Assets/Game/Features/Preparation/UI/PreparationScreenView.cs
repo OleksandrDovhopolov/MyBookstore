@@ -31,6 +31,7 @@ namespace Game.Preparation.UI
 
         [Header("Actions")]
         [SerializeField] private Button _openShopButton;
+        [SerializeField] private Button _randomBooksButton;
 
         [Header("Next screen")]
         [SerializeField] private GameObject _salesScreenRoot;
@@ -39,7 +40,9 @@ namespace Game.Preparation.UI
         private IDayProgressService _dayProgress;
         private readonly CancellationTokenSource _cts = new();
         private readonly List<PreparationBookRowView> _rows = new();
+        private readonly List<SelectableBookItem> _items = new();
         private bool _started;
+        private bool _randomSelectionRunning;
 
         [Inject]
         public void Construct(IPreparationSessionService session, IDayProgressService dayProgress)
@@ -52,6 +55,9 @@ namespace Game.Preparation.UI
         {
             if (_openShopButton != null)
                 _openShopButton.onClick.AddListener(OnOpenShopClicked);
+
+            if (_randomBooksButton != null)
+                _randomBooksButton.onClick.AddListener(OnRandomBooksClicked);
         }
 
         private void Start()
@@ -79,15 +85,19 @@ namespace Game.Preparation.UI
         private async UniTaskVoid RefreshAsync(CancellationToken ct)
         {
             SetButtonInteractable(false);
+            SetRandomBooksButtonInteractable(false);
             var items = await _session.StartOrResumeAsync(ct);
             Render(items);
             UpdateCounter();
             UpdateValidation();
+            SetRandomBooksButtonInteractable(_items.Count > 0);
         }
 
         private void Render(IReadOnlyList<SelectableBookItem> items)
         {
             ClearRows();
+            _items.Clear();
+            _items.AddRange(items);
             if (_bookRowPrefab == null || _bookListContainer == null) return;
 
             for (int i = 0; i < items.Count; i++)
@@ -152,12 +162,63 @@ namespace Game.Preparation.UI
             var validation = _session.Validate();
             if (_validationLabel != null)
                 _validationLabel.text = validation.IsValid ? string.Empty : string.Join("\n", validation.Errors);
-            SetButtonInteractable(validation.IsValid);
+            SetButtonInteractable(validation.IsValid && !_randomSelectionRunning);
         }
 
         private void OnOpenShopClicked()
         {
             ConfirmAsync(_cts.Token).Forget();
+        }
+
+        private void OnRandomBooksClicked()
+        {
+            SelectRandomBooksAsync(_cts.Token).Forget();
+        }
+
+        private async UniTaskVoid SelectRandomBooksAsync(CancellationToken ct)
+        {
+            if (_session == null || _items.Count == 0) return;
+
+            _randomSelectionRunning = true;
+            SetRandomBooksButtonInteractable(false);
+            SetButtonInteractable(false);
+
+            try
+            {
+                var selectedIds = _session.CurrentState?.SelectedBookIds != null
+                    ? new List<string>(_session.CurrentState.SelectedBookIds)
+                    : new List<string>();
+
+                for (int i = 0; i < selectedIds.Count; i++)
+                {
+                    await _session.ToggleBookAsync(selectedIds[i], ct);
+                }
+
+                var candidates = new List<string>(_items.Count);
+                for (int i = 0; i < _items.Count; i++)
+                {
+                    if (!string.IsNullOrEmpty(_items[i].BookId))
+                        candidates.Add(_items[i].BookId);
+                }
+
+                Shuffle(candidates);
+
+                var targetCount = Mathf.Min(_session.Capacity.DailyBookSlots, candidates.Count);
+                for (int i = 0; i < targetCount; i++)
+                {
+                    await _session.ToggleBookAsync(candidates[i], ct);
+                }
+            }
+            catch (System.OperationCanceledException)
+            {
+            }
+            finally
+            {
+                _randomSelectionRunning = false;
+                SetRandomBooksButtonInteractable(true);
+                UpdateCounter();
+                UpdateValidation();
+            }
         }
 
         private async UniTaskVoid ConfirmAsync(CancellationToken ct)
@@ -180,10 +241,28 @@ namespace Game.Preparation.UI
                 _openShopButton.interactable = value;
         }
 
+        private void SetRandomBooksButtonInteractable(bool value)
+        {
+            if (_randomBooksButton != null)
+                _randomBooksButton.interactable = value;
+        }
+
+        private static void Shuffle<T>(IList<T> items)
+        {
+            for (int i = items.Count - 1; i > 0; i--)
+            {
+                var j = Random.Range(0, i + 1);
+                (items[i], items[j]) = (items[j], items[i]);
+            }
+        }
+
         private void OnDestroy()
         {
             if (_openShopButton != null)
                 _openShopButton.onClick.RemoveListener(OnOpenShopClicked);
+
+            if (_randomBooksButton != null)
+                _randomBooksButton.onClick.RemoveListener(OnRandomBooksClicked);
 
             if (_started && _session != null)
                 _session.StateChanged -= OnStateChanged;

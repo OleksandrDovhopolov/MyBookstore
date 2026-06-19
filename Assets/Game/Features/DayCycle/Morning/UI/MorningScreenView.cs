@@ -8,6 +8,7 @@ using VContainer;
 
 namespace Game.DayCycle.Morning.UI
 {
+    //TODO remove this class 
     /// <summary>
     /// Debug-экран утра для вертикального среза core loop (uGUI). Не продакшен-окно:
     /// финальный UI приедет с модулем UI System. Вся логика — в IMorningSessionService;
