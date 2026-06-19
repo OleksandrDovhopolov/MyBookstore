@@ -48,23 +48,35 @@ namespace Book.Sell.Domain
             if (status == StepStatus.Completed)
                 Advance(ctx);
             else if (status == StepStatus.CompletedAndLeave)
-                AbandonPlanAndLeaveNow(ctx);
+                AbandonRemainingPlanAndLeave(ctx);
         }
 
         /// <summary>
-        /// Ends the visit immediately: exit the current step (frees any held reservation), drop the
-        /// rest of the plan, and emit Leaving→Done directly. NOTE: this deliberately does NOT run the
-        /// trailing LeaveStep — it is currently empty. If LeaveStep ever gains domain logic, route
-        /// through it here instead. Kept type-agnostic on purpose (no `is LeaveStep` check) so Customer
-        /// stays decoupled from concrete step types.
+        /// Ends the shopping cycle early: exits the current step (freeing any held reservation), skips
+        /// the rest of the plan, and routes the customer to the plan's terminal LeaveStep so the leave
+        /// duration (and any future LeaveStep logic) runs uniformly. The spawner always appends a Leave
+        /// step as the last entry. The skipped intermediate steps were never entered, so their Exit is
+        /// intentionally not called. Type-agnostic on purpose (no `is LeaveStep` check) — relies on the
+        /// "last step is terminal" convention, with a defensive fallback if no step lies ahead.
         /// </summary>
-        private void AbandonPlanAndLeaveNow(CustomerContext ctx)
+        private void AbandonRemainingPlanAndLeave(CustomerContext ctx)
         {
             _plan[_index].Exit(this, ctx);
-            _index = _plan.Count;
+
+            var leaveIndex = _plan.Count - 1;
+            if (leaveIndex <= _index)
+            {
+                UnityEngine.Debug.LogWarning($"[Customer] plan for '{Id}' has no trailing LeaveStep — leaving instantly.");
+                // Defensive: no terminal step ahead — finish immediately.
+                _index = _plan.Count;
+                _entered = false;
+                SetPhase(CustomerPhase.Leaving, ctx);
+                SetPhase(CustomerPhase.Done, ctx);
+                return;
+            }
+
+            _index = leaveIndex;   // jump to the terminal LeaveStep; it Enters and runs normally next tick
             _entered = false;
-            SetPhase(CustomerPhase.Leaving, ctx);
-            SetPhase(CustomerPhase.Done, ctx);
         }
 
         /// <summary>

@@ -45,7 +45,7 @@ namespace Book.Sell.Services
                 var m = random.Range(0, MaxExtraPassivePerSide + 1);
                 for (var p = 0; p < m; p++) steps.Add(new PassivePurchaseStep());
 
-                steps.Add(new LeaveStep());
+                steps.Add(new LeaveStep(RandomLeaveDuration(tuning, random)));
 
                 customers.Add(new Customer($"cust_{i + 1}", steps));
             }
@@ -54,10 +54,13 @@ namespace Book.Sell.Services
         }
 
         private static float RandomApproachDuration(SalesTuning tuning, ISalesRandom random)
-        {
-            var min = tuning.MinApproachDuration;
-            var max = tuning.MaxApproachDuration;
+            => RandomInRange(tuning.MinApproachDuration, tuning.MaxApproachDuration, random);
 
+        private static float RandomLeaveDuration(SalesTuning tuning, ISalesRandom random)
+            => RandomInRange(tuning.MinLeaveDuration, tuning.MaxLeaveDuration, random);
+
+        private static float RandomInRange(float min, float max, ISalesRandom random)
+        {
             if (max < min)
             {
                 var tmp = min;

@@ -16,7 +16,6 @@ namespace Book.Sell.UI.Customer
     public sealed class CustomerVisualRegistry : ICustomerVisualRegistry, IStartable, IDisposable
     {
         private const float CameraFallbackHorizontalMargin = 1f;
-        private const float ExitDurationSeconds = 1.25f;
         private const float DespawnDelaySeconds = 2f;
 
         private readonly ISalesDayController _sales;
@@ -85,7 +84,7 @@ namespace Book.Sell.UI.Customer
                     state.Visual.MoveToAsync(state.LanePosition, ResolveApproachDuration(customer)).Forget();
                     break;
                 case CustomerPhase.Leaving:
-                    MoveToExitAndDespawnAsync(customer.Id, state).Forget();
+                    MoveToExitAndDespawnAsync(customer.Id, state, ResolveLeaveDuration(customer)).Forget();
                     break;
                 case CustomerPhase.Done:
                     if (!state.DespawnStarted)
@@ -113,12 +112,12 @@ namespace Book.Sell.UI.Customer
             CustomerVisualSpawned?.Invoke(visual);
         }
 
-        private async Cysharp.Threading.Tasks.UniTaskVoid MoveToExitAndDespawnAsync(string customerId, VisualState state)
+        private async Cysharp.Threading.Tasks.UniTaskVoid MoveToExitAndDespawnAsync(string customerId, VisualState state, float exitDuration)
         {
             if (state.DespawnStarted || state.Visual == null) return;
             state.DespawnStarted = true;
 
-            await state.Visual.MoveToAsync(ResolveExitPosition(), ExitDurationSeconds);
+            await state.Visual.MoveToAsync(ResolveExitPosition(), exitDuration);
             DespawnNow(customerId);
         }
 
@@ -168,6 +167,11 @@ namespace Book.Sell.UI.Customer
             => customer.CurrentStep is ApproachStep approachStep
                 ? approachStep.ResolveDuration(_tuning)
                 : _tuning.ApproachDuration;
+
+        private float ResolveLeaveDuration(Book.Sell.Domain.Customer customer)
+            => customer.CurrentStep is LeaveStep leaveStep
+                ? leaveStep.ResolveDuration(_tuning)
+                : _tuning.LeaveDuration;
 
         private static Vector3 ResolveCameraEdgePosition(bool left)
         {
