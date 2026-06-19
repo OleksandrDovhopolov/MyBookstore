@@ -9,9 +9,10 @@ namespace Book.Sell.Services
 {
     /// <summary>
     /// Stub spawner for the MVP. Builds a finite, deterministic-from-random list of customers.
-    /// Each customer: Approach -> [Passive x k] -> (optional Active(request_i)) -> [Passive x m] -> Leave,
-    /// with k, m in 0..2. Active requests are drawn in config order from RequestConfig; once exhausted,
-    /// remaining customers are purely passive. Count = max(requestCount, tuning.BaseCustomers).
+    /// Each customer: Approach -> [Passive x k] -> (optional Active(request_i)) -> [Passive x m]
+    /// -> CompletePurchase -> Leave, with k, m in 0..2. Active requests are drawn in config order from
+    /// RequestConfig; once exhausted, remaining customers are purely passive.
+    /// Count = max(requestCount, tuning.BaseCustomers).
     /// </summary>
     public sealed class DefaultCustomerSpawner : ICustomerSpawner
     {
@@ -44,6 +45,8 @@ namespace Book.Sell.Services
 
                 var m = random.Range(0, MaxExtraPassivePerSide + 1);
                 for (var p = 0; p < m; p++) steps.Add(new PassivePurchaseStep());
+
+                steps.Add(new CompletePurchaseStep());
 
                 steps.Add(new LeaveStep(RandomLeaveDuration(tuning, random)));
 

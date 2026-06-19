@@ -209,6 +209,67 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void CompletePurchase_HappyPath_FiresWithPassiveCount()
+        {
+            // Three books so two passive sales leave one on the shelf — the day ends via "all customers
+            // done" (not "all sold out"), letting the customer reach CompletePurchase with count 2.
+            var c = Build(
+                new[]
+                {
+                    SalesTestKit.Book("b1", genre: "sci-fi", price: 80),
+                    SalesTestKit.Book("b2", genre: "sci-fi", price: 80),
+                    SalesTestKit.Book("b3", genre: "sci-fi", price: 80)
+                },
+                new RequestConfig[0],
+                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
+                new List<Customer>
+                {
+                    new("c1", new ICustomerStep[]
+                    {
+                        new ApproachStep(), new PassivePurchaseStep(), new PassivePurchaseStep(),
+                        new CompletePurchaseStep(), new LeaveStep()
+                    })
+                });
+
+            var completions = new List<int>();
+            c.CustomerPurchaseCompleted += (_, count) => completions.Add(count);
+
+            StartDay(c);
+            Run(c);
+
+            Assert.IsTrue(c.IsDayCompleted);
+            CollectionAssert.AreEqual(new[] { 2 }, completions, "Completion fires once with the passive count.");
+        }
+
+        [Test]
+        public void CompletePurchase_AbortWithZeroSales_DoesNotFire()
+        {
+            // Empty shelf → first passive misses → abort → CompletePurchase skipped (count 0).
+            var c = Build(
+                new BookConfig[0],
+                new RequestConfig[0],
+                SalesTestKit.Location(),
+                new List<Customer>
+                {
+                    new("c1", new ICustomerStep[]
+                    {
+                        new ApproachStep(), new PassivePurchaseStep(),
+                        new CompletePurchaseStep(), new LeaveStep()
+                    })
+                });
+
+            var completions = 0;
+            c.CustomerPurchaseCompleted += (_, _) => completions++;
+
+            StartDay(c);
+            Run(c);
+
+            Assert.IsTrue(c.IsDayCompleted);
+            Assert.AreEqual(0, completions, "No books bought → completion skipped.");
+            Assert.AreEqual(1, c.AccumulatedResult.CustomersServed, "Customer still leaves (served).");
+        }
+
+        [Test]
         public void ActiveRequest_OnlyOneMinigame_PausesOthers_ThenSequencesFifo()
         {
             var reqA = SalesTestKit.Request("reqA");

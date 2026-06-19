@@ -9,5 +9,6 @@ namespace Book.Sell.UI.Customer
         ThinkingNext,       // "..." dots again (after first purchase)
         Rejected,           // crossed-out book + replacement
         PassiveSaleFailed,  // passive purchase attempt ended without a sale
+        PurchaseCompleted,  // visit finished; shows how many books were bought passively
     }
 }

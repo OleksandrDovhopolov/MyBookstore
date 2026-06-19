@@ -5,7 +5,7 @@ namespace Book.Sell.Domain.Steps
     /// duration, then completes — the customer becomes Done when the plan advances past this step.
     /// The View plays the walk-away animation independently (see CustomerVisualRegistry).
     /// </summary>
-    public sealed class LeaveStep : ICustomerStep
+    public sealed class LeaveStep : IClosingStep
     {
         private readonly float? _durationOverride;
         private float _elapsed;

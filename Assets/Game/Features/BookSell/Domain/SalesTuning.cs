@@ -21,6 +21,10 @@ namespace Book.Sell.Domain
         /// <summary>Seconds between targeting a book (reserve) and committing the passive sale.</summary>
         public float PassiveCommitDelay { get; set; } = 0.6f;
 
+        /// <summary>Seconds the purchase-completion animation holds (CompletePurchaseStep) when the
+        /// customer bought at least one book passively.</summary>
+        public float CompletePurchaseDuration { get; set; } = 1.5f;
+
         /// <summary>Seconds a customer spends "leaving" (walking away) before becoming Done.
         /// Aligned with the visual exit move so the domain finishes roughly as the visual despawns.</summary>
         public float LeaveDuration { get; set; } = 3f;
@@ -32,7 +36,7 @@ namespace Book.Sell.Domain
         public float MaxLeaveDuration { get; set; } = 6f;
 
         /// <summary>Seconds between sequential customer spawns ("one by one").</summary>
-        public float SpawnInterval { get; set; } = 2.0f;
+        public float SpawnInterval { get; set; } = 5.0f;
 
         /// <summary>Minimum customers per day in the stub spawner.</summary>
         public int BaseCustomers { get; set; } = 6;

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Book.Sell.Domain.Steps;
 
 namespace Book.Sell.Domain
 {
@@ -14,6 +15,11 @@ namespace Book.Sell.Domain
 
         public string Id { get; }
         public CustomerPhase Phase { get; private set; } = CustomerPhase.Spawned;
+
+        /// <summary>Books this customer has bought in PASSIVE mode (active recommendations excluded).</summary>
+        public int PassivePurchaseCount { get; private set; }
+
+        public void RegisterPassivePurchase() => PassivePurchaseCount++;
 
         public Customer(string id, IReadOnlyList<ICustomerStep> plan)
         {
@@ -48,35 +54,36 @@ namespace Book.Sell.Domain
             if (status == StepStatus.Completed)
                 Advance(ctx);
             else if (status == StepStatus.CompletedAndLeave)
-                AbandonRemainingPlanAndLeave(ctx);
+                AbandonRemainingPurchasesAndClose(ctx);
         }
 
         /// <summary>
         /// Ends the shopping cycle early: exits the current step (freeing any held reservation), skips
-        /// the rest of the plan, and routes the customer to the plan's terminal LeaveStep so the leave
-        /// duration (and any future LeaveStep logic) runs uniformly. The spawner always appends a Leave
-        /// step as the last entry. The skipped intermediate steps were never entered, so their Exit is
-        /// intentionally not called. Type-agnostic on purpose (no `is LeaveStep` check) — relies on the
-        /// "last step is terminal" convention, with a defensive fallback if no step lies ahead.
+        /// the remaining purchase steps, and resumes at the first closing step (<see cref="IClosingStep"/>
+        /// — CompletePurchase then Leave) so the completion animation and walk-away still run. The skipped
+        /// intermediate steps were never entered, so their Exit is intentionally not called. A defensive
+        /// fallback finishes immediately if no closing step lies ahead.
         /// </summary>
-        private void AbandonRemainingPlanAndLeave(CustomerContext ctx)
+        private void AbandonRemainingPurchasesAndClose(CustomerContext ctx)
         {
             _plan[_index].Exit(this, ctx);
 
-            var leaveIndex = _plan.Count - 1;
-            if (leaveIndex <= _index)
+            for (var i = _index + 1; i < _plan.Count; i++)
             {
-                UnityEngine.Debug.LogWarning($"[Customer] plan for '{Id}' has no trailing LeaveStep — leaving instantly.");
-                // Defensive: no terminal step ahead — finish immediately.
-                _index = _plan.Count;
-                _entered = false;
-                SetPhase(CustomerPhase.Leaving, ctx);
-                SetPhase(CustomerPhase.Done, ctx);
-                return;
+                if (_plan[i] is IClosingStep)
+                {
+                    _index = i;        // first closing step Enters and runs normally next tick
+                    _entered = false;
+                    return;
+                }
             }
 
-            _index = leaveIndex;   // jump to the terminal LeaveStep; it Enters and runs normally next tick
+            UnityEngine.Debug.LogWarning($"[Customer] plan for '{Id}' has no closing step — leaving instantly.");
+            // Defensive: no closing step ahead — finish immediately.
+            _index = _plan.Count;
             _entered = false;
+            SetPhase(CustomerPhase.Leaving, ctx);
+            SetPhase(CustomerPhase.Done, ctx);
         }
 
         /// <summary>

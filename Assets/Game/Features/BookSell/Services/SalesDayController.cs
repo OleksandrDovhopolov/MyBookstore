@@ -74,6 +74,7 @@ namespace Book.Sell.Services
         public event Action<Customer, RecommendationResult> CustomerRecommendationResolved;
         public event Action<Customer, PassiveSaleEvent> CustomerPassiveSaleHappened;
         public event Action<Customer> CustomerPassivePurchaseFailed;
+        public event Action<Customer, int> CustomerPurchaseCompleted;
         public event Action<SalesDayResult> DayCompleted;
         public event Action<Customer> CustomerPhaseChanged;
         public event Action<Customer, string> BookReserved;
@@ -257,6 +258,12 @@ namespace Book.Sell.Services
         {
             Debug.Log($"{LogPrefix} passive purchase failed: customer={customer.Id}");
             CustomerPassivePurchaseFailed?.Invoke(customer);
+        }
+
+        void ISalesDaySink.OnPurchaseCompleted(Customer customer, int passiveCount)
+        {
+            Debug.Log($"{LogPrefix} purchase completed: customer={customer.Id}, passiveBooks={passiveCount}");
+            CustomerPurchaseCompleted?.Invoke(customer, passiveCount);
         }
 
         void ISalesDaySink.OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent)

@@ -78,6 +78,7 @@ namespace Book.Sell.UI.Customer
                     break;
                 case CustomerThoughtState.Comment:
                 case CustomerThoughtState.PassiveSaleFailed:
+                case CustomerThoughtState.PurchaseCompleted:
                     if (_view.CommentText != null) _view.CommentText.text = payload.CommentText ?? string.Empty;
                     break;
                 case CustomerThoughtState.Rejected:
@@ -100,6 +101,7 @@ namespace Book.Sell.UI.Customer
                 CustomerThoughtState.Comment => "Bought book",
                 CustomerThoughtState.Rejected => "Active purchase",
                 CustomerThoughtState.PassiveSaleFailed => "Fail",
+                CustomerThoughtState.PurchaseCompleted => "Done shopping",
                 _ => string.Empty
             };
         }
@@ -112,6 +114,7 @@ namespace Book.Sell.UI.Customer
             CustomerThoughtState.Comment => _view?.CommentGroup,
             CustomerThoughtState.Rejected => _view?.RejectionGroup,
             CustomerThoughtState.PassiveSaleFailed => _view?.CommentGroup,
+            CustomerThoughtState.PurchaseCompleted => _view?.CommentGroup,
             _ => null,
         };
 

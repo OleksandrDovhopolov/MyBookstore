@@ -16,7 +16,9 @@ namespace Book.Sell.Domain
         public IInteractionLock Lock { get; }
         public ISalesRandom Random { get; }
         public IPassiveSaleSelector PassiveSelector { get; }
+        //TODO check почему покупатель хранит какую-то информацию про локацию . скорее всего он не должен это знать  
         public LocationConfig Location { get; }
+        //TODO check почему покупатель хранит какую-то информацию про декорации. скорее всего он не должен это знать  
         public IReadOnlyList<string> ActiveDecorIds { get; }
         public ISalesDaySink Sink { get; }
         public SalesTuning Tuning { get; }

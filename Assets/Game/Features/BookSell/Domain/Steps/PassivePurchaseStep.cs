@@ -70,6 +70,7 @@ namespace Book.Sell.Domain.Steps
 
             var saleEvent = new PassiveSaleEvent(_targetId, gold, _matchedGenres, _matchedTags);
             ctx.Sink?.OnPassiveSale(self, saleEvent);
+            self.RegisterPassivePurchase();
             return StepStatus.Completed;
         }
 

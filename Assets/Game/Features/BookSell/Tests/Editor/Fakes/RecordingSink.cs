@@ -12,6 +12,7 @@ namespace Book.Sell.Tests.Editor.Fakes
         public List<(Customer customer, string bookId)> Reserved { get; } = new();
         public List<(Customer customer, string bookId)> Released { get; } = new();
         public List<Customer> PassiveFailures { get; } = new();
+        public List<(Customer customer, int count)> PurchaseCompletions { get; } = new();
         public List<(Customer customer, PassiveSaleEvent evt)> PassiveSales { get; } = new();
         public List<(Customer customer, RequestConfig request)> ActiveStarted { get; } = new();
 
@@ -26,6 +27,9 @@ namespace Book.Sell.Tests.Editor.Fakes
 
         public void OnPassivePurchaseFailed(Customer customer)
             => PassiveFailures.Add(customer);
+
+        public void OnPurchaseCompleted(Customer customer, int passiveCount)
+            => PurchaseCompletions.Add((customer, passiveCount));
 
         public void OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent)
             => PassiveSales.Add((customer, saleEvent));
