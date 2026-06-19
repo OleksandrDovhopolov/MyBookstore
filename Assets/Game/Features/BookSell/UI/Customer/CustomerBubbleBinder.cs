@@ -12,11 +12,8 @@ namespace Book.Sell.UI.Customer
 {
     // Phase 0 binder: maps Customer phase transitions to bubble state transitions.
     //
-    // PassiveSaleHappened and RecommendationResolved are NOT wired to bubble overrides yet — they
-    // need a "which customer" mapping that the current events don't carry (PassiveSaleEvent has no
-    // customer id; RecommendationResult correlates to whatever customer currently holds the
-    // minigame lock). Phase 1 will add a richer correlation source and richer state transitions
-    // (Comment after a passive sale, Rejected on Failed tier, etc.).
+    // Phase 0 keeps bubble content intentionally coarse: movement, locked book, active purchase,
+    // and bought-book feedback. Richer rejection/reason bubbles can layer on the same events later.
     public sealed class CustomerBubbleBinder : IStartable, IDisposable
     {
         private static readonly WorldHudArgs BubbleAttachArgs =
@@ -65,8 +62,11 @@ namespace Book.Sell.UI.Customer
         {
             switch (customer.Phase)
             {
-                case CustomerPhase.Spawned:
                 case CustomerPhase.Approaching:
+                    await EnsureBubbleAsync(customer, CustomerThoughtState.Thinking, "moving");
+                    break;
+
+                case CustomerPhase.Spawned:
                 case CustomerPhase.Browsing:
                 case CustomerPhase.AwaitingHelp:
                     await EnsureBubbleAsync(customer, CustomerThoughtState.Thinking);

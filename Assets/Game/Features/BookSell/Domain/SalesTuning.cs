@@ -6,8 +6,14 @@ namespace Book.Sell.Domain
     /// </summary>
     public sealed class SalesTuning
     {
-        /// <summary>Seconds a customer spends walking up before they can be interacted with.</summary>
-        public float ApproachDuration { get; set; } = 1.5f;
+        /// <summary>Fallback fixed approach duration used by manually constructed approach steps.</summary>
+        public float ApproachDuration { get; set; } = 3f;
+
+        /// <summary>Minimum seconds a spawned customer spends walking up before buying can start.</summary>
+        public float MinApproachDuration { get; set; } = 3f;
+
+        /// <summary>Maximum seconds a spawned customer spends walking up before buying can start.</summary>
+        public float MaxApproachDuration { get; set; } = 6f;
 
         /// <summary>Seconds a customer "thinks" before each passive purchase attempt.</summary>
         public float BrowseDuration { get; set; } = 1.2f;

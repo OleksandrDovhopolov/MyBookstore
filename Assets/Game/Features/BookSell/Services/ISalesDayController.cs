@@ -7,6 +7,7 @@ using Game.Configs.Models;
 
 namespace Book.Sell.Services
 {
+    //TODO check logic of all event. is this a good solution ? 
     /// <summary>
     /// Drives the real-time sales day: spawns customers over time, ticks their plans, arbitrates the
     /// single active-minigame lock, and resolves player input. Replaces the turn-based

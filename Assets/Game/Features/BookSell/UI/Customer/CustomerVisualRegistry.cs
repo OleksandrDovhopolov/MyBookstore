@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Book.Sell.Domain;
+using Book.Sell.Domain.Steps;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -81,7 +82,7 @@ namespace Book.Sell.UI.Customer
             switch (customer.Phase)
             {
                 case CustomerPhase.Approaching:
-                    state.Visual.MoveToAsync(state.LanePosition, _tuning.ApproachDuration).Forget();
+                    state.Visual.MoveToAsync(state.LanePosition, ResolveApproachDuration(customer)).Forget();
                     break;
                 case CustomerPhase.Leaving:
                     MoveToExitAndDespawnAsync(customer.Id, state).Forget();
@@ -162,6 +163,11 @@ namespace Book.Sell.UI.Customer
             if (_shopApproach != null) return _shopApproach.position;
             return Vector3.zero;
         }
+
+        private float ResolveApproachDuration(Book.Sell.Domain.Customer customer)
+            => customer.CurrentStep is ApproachStep approachStep
+                ? approachStep.ResolveDuration(_tuning)
+                : _tuning.ApproachDuration;
 
         private static Vector3 ResolveCameraEdgePosition(bool left)
         {

@@ -32,7 +32,7 @@ namespace Book.Sell.Services
             var customers = new List<Customer>(count);
             for (var i = 0; i < count; i++)
             {
-                var steps = new List<ICustomerStep> { new ApproachStep() };
+                var steps = new List<ICustomerStep> { new ApproachStep(RandomApproachDuration(tuning, random)) };
 
                 var k = random.Range(0, MaxExtraPassivePerSide + 1);
                 for (var p = 0; p < k; p++) steps.Add(new PassivePurchaseStep());
@@ -49,6 +49,27 @@ namespace Book.Sell.Services
             }
 
             return customers;
+        }
+
+        private static float RandomApproachDuration(SalesTuning tuning, ISalesRandom random)
+        {
+            var min = tuning.MinApproachDuration;
+            var max = tuning.MaxApproachDuration;
+
+            if (max < min)
+            {
+                var tmp = min;
+                min = max;
+                max = tmp;
+            }
+
+            if (max <= min) return min;
+
+            var roll = random.NextDouble();
+            if (roll < 0d) roll = 0d;
+            if (roll > 1d) roll = 1d;
+
+            return min + (float)(roll * (max - min));
         }
     }
 }

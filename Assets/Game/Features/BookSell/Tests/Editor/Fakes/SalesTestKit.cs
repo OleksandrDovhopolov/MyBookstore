@@ -47,6 +47,8 @@ namespace Book.Sell.Tests.Editor.Fakes
             => new()
             {
                 ApproachDuration = 0f,
+                MinApproachDuration = 0f,
+                MaxApproachDuration = 0f,
                 BrowseDuration = 0f,
                 PassiveCommitDelay = 0f,
                 SpawnInterval = 0f,

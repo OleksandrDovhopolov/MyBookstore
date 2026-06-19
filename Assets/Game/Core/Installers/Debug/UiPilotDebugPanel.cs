@@ -15,13 +15,11 @@ namespace Game.UI.DebugPanel
     public sealed class UiPilotDebugPanel : MonoBehaviour
     {
         private IUIManager _uiManager;
-        private IDecorRewardService  _decorReward;
 
         [Inject]
-        public void Construct(IUIManager uiManager, IDecorRewardService  decorReward)
+        public void Construct(IUIManager uiManager)
         {
             _uiManager = uiManager;
-            _decorReward = decorReward;
         }
 
         private void OnGUI()
@@ -34,7 +32,7 @@ namespace Game.UI.DebugPanel
 
             var x = Screen.width - w - pad;
             var y = pad;
-            if (GUI.Button(new Rect(x, y, w, h), "Show Settings"))
+            /*if (GUI.Button(new Rect(x, y, w, h), "Show Settings"))
             {
                 _uiManager.ShowAsync<SettingsWindow>().Forget();
             }
@@ -43,7 +41,7 @@ namespace Game.UI.DebugPanel
             if (GUI.Button(new Rect(x, y, w, h), "Show Confirm (await)"))
             {
                 ShowStandaloneConfirmAsync().Forget();
-            }
+            }*/
 
             y += h + pad;
             if (GUI.Button(new Rect(x, y, w, h), "Hide Top"))
@@ -61,12 +59,6 @@ namespace Game.UI.DebugPanel
             if (GUI.Button(new Rect(x, y, w, h), "Show Decoration"))
             {
                 _uiManager.ShowAsync<DecorPlacementWindow>().Forget();
-            }
-
-            y += h + pad;
-            if (GUI.Button(new Rect(x, y, w, h), "Get debug free decor"))
-            {
-                _decorReward.ClaimFreeDecorAsync(default).Forget();
             }
 
             y += h + pad;
