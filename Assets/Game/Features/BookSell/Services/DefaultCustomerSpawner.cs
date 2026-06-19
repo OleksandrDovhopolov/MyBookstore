@@ -24,6 +24,8 @@ namespace Book.Sell.Services
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
         }
 
+        //TODO нужно поменять эту логику . все первые клиенты получают активную покупку . + это зависит от количества RequestConfig. 
+        // скорее всего нужно несколько режимов. 1 Рандом 2 Заранее заготовленные планы. например для первых дней. 3 генерация на лету 
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
         {
             var requests = _configs.GetAll<RequestConfig>();

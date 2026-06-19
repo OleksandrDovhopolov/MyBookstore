@@ -38,6 +38,9 @@ namespace Book.Sell.Services
         /// <summary>Customer targeted a book and reserved it (soft-lock) before committing the sale. For the View's feedback log.</summary>
         event Action<Customer, string> BookReserved;
 
+        /// <summary>A reservation was released without a sale (customer aborted mid-purchase). For the View's feedback log.</summary>
+        event Action<Customer, string> BookReleased;
+
         UniTask StartDayAsync(int day, CancellationToken ct);
 
         /// <summary>Advance the simulation by dt seconds. No-op while the interaction lock is held (domain pause) or the day is done.</summary>

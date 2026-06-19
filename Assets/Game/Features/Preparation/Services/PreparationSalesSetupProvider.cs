@@ -48,9 +48,9 @@ namespace Game.Preparation.Services
 
             var decor = _decorPlacement.GetActiveDecorIds()?.ToArray() ?? Array.Empty<string>();
 
-            if (state == null || state.Day != day || state.SelectedBookIds == null || state.SelectedBookIds.Count == 0)
+            if (state == null || state.Day != day || state.SelectedBookIds == null || !state.Confirmed)
             {
-                Debug.LogWarning($"{LogPrefix} нет preparation.session для day={day} — fallback на каталог.");
+                Debug.LogWarning($"{LogPrefix} нет подтверждённой preparation.session для day={day} — fallback на каталог.");
                 return BuildFallback(day, decor);
             }
 

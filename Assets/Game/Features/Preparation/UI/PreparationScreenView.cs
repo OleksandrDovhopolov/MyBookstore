@@ -161,7 +161,14 @@ namespace Game.Preparation.UI
             if (_session == null) return;
             var validation = _session.Validate();
             if (_validationLabel != null)
-                _validationLabel.text = validation.IsValid ? string.Empty : string.Join("\n", validation.Errors);
+            {
+                if (!validation.IsValid)
+                    _validationLabel.text = string.Join("\n", validation.Errors);
+                else if (_session.CurrentState != null && _session.CurrentState.SelectedBookIds.Count == 0)
+                    _validationLabel.text = "Полка пуста — посетители уйдут без покупок";
+                else
+                    _validationLabel.text = string.Empty;
+            }
             SetButtonInteractable(validation.IsValid && !_randomSelectionRunning);
         }
 

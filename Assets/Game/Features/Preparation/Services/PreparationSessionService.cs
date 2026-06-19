@@ -19,7 +19,7 @@ namespace Game.Preparation.Services
         // dailyBookSlots — это параметр состояния игрока (CurrentBookCapacity), который растёт через улучшения
         // лавки (диапазон 12–20). Миграция в EconomyConfig / DayProgressState — отдельная задача.
         // Зафиксировано в docs/INPROGRESS/CORE_LOOP_STATUS.md → "Известные ограничения".
-        private const int DefaultMinDailyBooks = 1;
+        private const int DefaultMinDailyBooks = 0;
         private const int DefaultDailyBookSlots = 12;
         private const string DefaultLocationId = "loc_downtown";
 
@@ -109,7 +109,7 @@ namespace Game.Preparation.Services
             if (_state == null)
                 return PreparationValidationResult.Fail("Session not started");
 
-            if (_state.SelectedBookIds.Count < Capacity.MinDailyBooks)
+            if (Capacity.MinDailyBooks > 0 && _state.SelectedBookIds.Count < Capacity.MinDailyBooks)
                 return PreparationValidationResult.Fail($"Выберите хотя бы {Capacity.MinDailyBooks} книгу");
 
             return PreparationValidationResult.Ok();

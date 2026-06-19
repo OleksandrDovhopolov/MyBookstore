@@ -39,6 +39,7 @@ namespace Book.Sell.UI.Customer
         {
             _sales.CustomerPhaseChanged += OnCustomerPhaseChanged;
             _sales.BookReserved += OnBookReserved;
+            _sales.BookReleased += OnBookReleased;
             _sales.CustomerPassiveSaleHappened += OnCustomerPassiveSaleHappened;
             _sales.CustomerRecommendationResolved += OnCustomerRecommendationResolved;
             _registry.CustomerVisualDespawned += OnCustomerVisualDespawned;
@@ -48,6 +49,7 @@ namespace Book.Sell.UI.Customer
         {
             _sales.CustomerPhaseChanged -= OnCustomerPhaseChanged;
             _sales.BookReserved -= OnBookReserved;
+            _sales.BookReleased -= OnBookReleased;
             _sales.CustomerPassiveSaleHappened -= OnCustomerPassiveSaleHappened;
             _sales.CustomerRecommendationResolved -= OnCustomerRecommendationResolved;
             _registry.CustomerVisualDespawned -= OnCustomerVisualDespawned;
@@ -88,6 +90,11 @@ namespace Book.Sell.UI.Customer
         private void OnBookReserved(Book.Sell.Domain.Customer customer, string bookId)
         {
             EnsureBubbleAsync(customer, CustomerThoughtState.ThinkingNext, "Book locked").Forget();
+        }
+
+        private void OnBookReleased(Book.Sell.Domain.Customer customer, string bookId)
+        {
+            EnsureBubbleAsync(customer, CustomerThoughtState.PassiveSaleFailed, "Fail").Forget();
         }
 
         private void OnCustomerPassiveSaleHappened(Book.Sell.Domain.Customer customer, PassiveSaleEvent evt)

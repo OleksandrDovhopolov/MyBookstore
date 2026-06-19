@@ -76,6 +76,7 @@ namespace Book.Sell.Services
         public event Action<SalesDayResult> DayCompleted;
         public event Action<Customer> CustomerPhaseChanged;
         public event Action<Customer, string> BookReserved;
+        public event Action<Customer, string> BookReleased;
 
         public UniTask StartDayAsync(int day, CancellationToken ct)
         {
@@ -246,7 +247,10 @@ namespace Book.Sell.Services
         }
 
         void ISalesDaySink.OnBookReleased(Customer customer, string bookId)
-            => Debug.Log($"{LogPrefix} reservation released (no sale): book={bookId}, customer={customer.Id}");
+        {
+            Debug.Log($"{LogPrefix} reservation released (no sale): book={bookId}, customer={customer.Id}");
+            BookReleased?.Invoke(customer, bookId);
+        }
 
         void ISalesDaySink.OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent)
         {

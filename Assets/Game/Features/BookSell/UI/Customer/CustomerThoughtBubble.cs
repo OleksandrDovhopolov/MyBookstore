@@ -77,6 +77,7 @@ namespace Book.Sell.UI.Customer
                     if (_view.BookIcon != null) _view.BookIcon.sprite = payload.BookSprite;
                     break;
                 case CustomerThoughtState.Comment:
+                case CustomerThoughtState.PassiveSaleFailed:
                     if (_view.CommentText != null) _view.CommentText.text = payload.CommentText ?? string.Empty;
                     break;
                 case CustomerThoughtState.Rejected:
@@ -98,6 +99,7 @@ namespace Book.Sell.UI.Customer
                 CustomerThoughtState.BookPicked => "Active purchase",
                 CustomerThoughtState.Comment => "Bought book",
                 CustomerThoughtState.Rejected => "Active purchase",
+                CustomerThoughtState.PassiveSaleFailed => "Fail",
                 _ => string.Empty
             };
         }
@@ -109,6 +111,7 @@ namespace Book.Sell.UI.Customer
             CustomerThoughtState.BookPicked => _view?.BookGroup,
             CustomerThoughtState.Comment => _view?.CommentGroup,
             CustomerThoughtState.Rejected => _view?.RejectionGroup,
+            CustomerThoughtState.PassiveSaleFailed => _view?.CommentGroup,
             _ => null,
         };
 

@@ -29,6 +29,9 @@ namespace Book.Sell.Domain.Steps
         {
             if (_acquired) return StepStatus.Running;   // holding the lock, awaiting player input
 
+            if (ctx.Shelf.AvailableForSelection().Count == 0)
+                return StepStatus.Completed;
+            
             if (ctx.Lock.TryAcquire(self))
             {
                 _acquired = true;
