@@ -15,7 +15,16 @@ namespace Game.Bootstrap
     // No ISaveService / IDayProgressService — Sales is standalone for this iteration.
     public static class BookSellVContainerBindings
     {
-        public static void RegisterBookSell(this IContainerBuilder builder, CustomerVisual customerVisualPrefab, Transform customerSpawnRoot)
+        public static void RegisterBookSell(
+            this IContainerBuilder builder,
+            CustomerVisual customerVisualPrefab,
+            Transform customerSpawnRoot,
+            Transform customerEntryLeft = null,
+            Transform customerEntryRight = null,
+            Transform customerShopApproach = null,
+            Transform[] customerLaneAnchors = null,
+            Transform customerExitLeft = null,
+            Transform customerExitRight = null)
         {
             // Reused pure-domain services.
             builder.Register<ISalesRandom, UnityRandomSalesRandom>(Lifetime.Singleton);
@@ -36,7 +45,15 @@ namespace Game.Bootstrap
             builder.Register<ISalesDayController, SalesDayController>(Lifetime.Singleton);
 
             // Customer visualization + world-space thought bubbles (Phase 0 of World HUD).
-            builder.RegisterInstance(new CustomerVisualRegistryConfig(customerVisualPrefab, customerSpawnRoot));
+            builder.RegisterInstance(new CustomerVisualRegistryConfig(
+                customerVisualPrefab,
+                customerSpawnRoot,
+                customerEntryLeft,
+                customerEntryRight,
+                customerShopApproach,
+                customerLaneAnchors,
+                customerExitLeft,
+                customerExitRight));
             builder.Register<CustomerVisualRegistry>(Lifetime.Singleton)
                 .AsImplementedInterfaces() // exposes ICustomerVisualRegistry, IStartable, IDisposable
                 .AsSelf();
