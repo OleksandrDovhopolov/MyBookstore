@@ -12,7 +12,9 @@
         "Game.Core.UI",
         "Game.Resources.API",
         "Game.Shop.UI",
-        "MessagePipe"
+        "MessagePipe",
+        "DayCycle",
+        "Game.Preparation"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

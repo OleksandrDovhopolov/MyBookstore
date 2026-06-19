@@ -1,3 +1,6 @@
+using System.Linq;
+using Game.DayCycle.Morning.UI;
+using Game.Preparation.UI;
 using Game.UI;
 using TMPro;
 using UnityEngine;
@@ -7,14 +10,55 @@ public class GameplaySceneView : WindowView
 {
     [SerializeField] private Image _goldImage;
     [SerializeField] private TextMeshProUGUI _goldAmountText;
-    [SerializeField] private Image _reputationImage;
-    [SerializeField] private TextMeshProUGUI _reputationAmountText;
 
     [Header("Shop entry")]
     [SerializeField] private Button _openShopButton;
     [SerializeField] private Button _cheatButton;
+    [SerializeField] private Button _startDayButton;
+
+    //TODO remove it from here when migrate from this views
+    /*[Header("Next screen")]
+    [SerializeField] private GameObject _preparationScreenRoot;
+    [SerializeField] private GameObject _morningScreenRoot;*/
 
     public Button OpenShopButton => _openShopButton;
+    public Button StartDayButton => _startDayButton;
+
+
+    //TODO remove it from here when migrate from this views
+    private GameObject _preparationScreenRoot;
+    private GameObject _morningScreenRoot;
+    public GameObject PreparationScreenRoot
+    {
+        get
+        {
+            if (_preparationScreenRoot == null)
+            {
+                var result = GameObject.FindObjectsByType<PreparationScreenView>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None);
+                _preparationScreenRoot = result.FirstOrDefault()?.gameObject;
+            }
+
+            return _preparationScreenRoot;
+        }
+    }
+
+    public GameObject MorningScreenRoot
+    {
+        get
+        {
+            if (_morningScreenRoot == null)
+            {
+                var result = GameObject.FindObjectsByType<MorningScreenView>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None);
+                _morningScreenRoot = result.FirstOrDefault()?.gameObject;
+            }
+
+            return _morningScreenRoot;
+        }
+    }
 
     public void SetSceneButtonsInteractable(bool interactable)
     {
@@ -23,21 +67,27 @@ public class GameplaySceneView : WindowView
             _openShopButton.interactable = interactable;
             _openShopButton.gameObject.SetActive(interactable);
         }
-        
+
         if (_cheatButton != null)
         {
-            _openShopButton.interactable = interactable;
+            _cheatButton.interactable = interactable;
             _cheatButton.gameObject.SetActive(interactable);
+        }
+
+        SetStartButtonActive(interactable);
+    }
+
+    public void SetStartButtonActive(bool active)
+    {
+        if (_startDayButton != null)
+        {
+            _startDayButton.interactable = active;
+            _startDayButton.gameObject.SetActive(active);
         }
     }
 
     public void SetGoldAmount(int goldAmount)
     {
         _goldAmountText.text = goldAmount.ToString();
-    }
-
-    public void SetReputationAmount(int goldAmount)
-    {
-        _reputationAmountText.text = goldAmount.ToString();
     }
 }

@@ -735,8 +735,6 @@ MonoBehaviour:
   _summaryLabel: {fileID: 2024759771}
   _hintLabel: {fileID: 434716624}
   _modifierLabel: {fileID: 618073253}
-  _continueButton: {fileID: 1748925575}
-  _preparationScreenRoot: {fileID: 252495917}
 --- !u!1 &126257377
 GameObject:
   m_ObjectHideFlags: 0
@@ -5441,7 +5439,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1748925574
 RectTransform:
   m_ObjectHideFlags: 0

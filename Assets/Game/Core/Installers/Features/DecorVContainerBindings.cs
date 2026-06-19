@@ -32,7 +32,6 @@ Force this service to be constructed before save load (for example via the boots
                 .AsSelf();                  // self resolution for DecorRewardService
 
             builder.Register<IDecorModifierProvider, ConfigBasedDecorModifierProvider>(Lifetime.Singleton);
-            builder.Register<IDecorRewardService, DecorRewardService>(Lifetime.Singleton);
             builder.Register<IInventoryItemUseHandler, DecorActivationUseHandler>(Lifetime.Singleton);
             builder.Register<IInventoryItemInfoProvider, DecorPlacementInfoProvider>(Lifetime.Singleton);
 

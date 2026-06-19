@@ -4,7 +4,6 @@ using Cysharp.Threading.Tasks;
 using Game.DayCycle.Morning.Model;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using VContainer;
 
 namespace Game.DayCycle.Morning.UI
@@ -25,12 +24,6 @@ namespace Game.DayCycle.Morning.UI
         [SerializeField] private TMP_Text _hintLabel;
         [SerializeField] private TMP_Text _modifierLabel;
 
-        [Header("Continue")]
-        [SerializeField] private Button _continueButton;
-
-        [Header("Next screen")]
-        [SerializeField] private GameObject _preparationScreenRoot;
-
         private IMorningSessionService _session;
         private readonly CancellationTokenSource _cts = new();
 
@@ -38,12 +31,6 @@ namespace Game.DayCycle.Morning.UI
         public void Construct(IMorningSessionService session)
         {
             _session = session;
-        }
-
-        private void Awake()
-        {
-            if (_continueButton != null)
-                _continueButton.onClick.AddListener(OnContinueClicked);
         }
 
         private void Start()
@@ -59,10 +46,8 @@ namespace Game.DayCycle.Morning.UI
 
         private async UniTaskVoid RefreshAsync(CancellationToken ct)
         {
-            SetInteractable(false);
             var context = await _session.StartOrResumeAsync(ct);
             Render(context);
-            SetInteractable(true);
         }
 
         private void Render(MorningDayContext context)
@@ -80,29 +65,19 @@ namespace Game.DayCycle.Morning.UI
                     : "Спрос дня: нейтральный");
         }
 
-        private void OnContinueClicked()
+        public async UniTask<bool> ContinueToPreparationAsync(CancellationToken ct)
         {
-            if (_session == null) return;
-            ContinueAsync(_cts.Token).Forget();
-        }
+            if (_session == null)
+            {
+                Debug.LogWarning("[MorningScreenView] Cannot continue: IMorningSessionService is not injected.");
+                return false;
+            }
 
-        private async UniTaskVoid ContinueAsync(CancellationToken ct)
-        {
-            SetInteractable(false);
             var result = await _session.ContinueToPreparationAsync(ct);
-
-            Debug.Log($"[MorningScreenView] → Подготовка. День {result.Day}, " +
-                      $"модификаторы=[{string.Join(",", result.ActiveModifierIds)}], " +
-                      $"локации=[{string.Join(",", result.TargetLocationIds)}].");
-
-            if (_preparationScreenRoot != null) _preparationScreenRoot.SetActive(true);
-            gameObject.SetActive(false);
-        }
-
-        private void SetInteractable(bool value)
-        {
-            if (_continueButton != null)
-                _continueButton.interactable = value;
+            Debug.Log($"[MorningScreenView] -> Preparation. Day {result.Day}, " +
+                      $"modifiers=[{string.Join(",", result.ActiveModifierIds)}], " +
+                      $"locations=[{string.Join(",", result.TargetLocationIds)}].");
+            return true;
         }
 
         private static void Set(TMP_Text label, string value)
@@ -113,9 +88,6 @@ namespace Game.DayCycle.Morning.UI
 
         private void OnDestroy()
         {
-            if (_continueButton != null)
-                _continueButton.onClick.RemoveListener(OnContinueClicked);
-
             _cts.Cancel();
             _cts.Dispose();
         }
