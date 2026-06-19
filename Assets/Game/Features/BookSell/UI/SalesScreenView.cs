@@ -5,6 +5,7 @@ using Book.Sell.Domain;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
+using Game.DayCycle.Results.UI;
 using Game.UI;
 using MessagePipe;
 using TMPro;
@@ -66,16 +67,19 @@ namespace Book.Sell.UI
         private bool _dayRunning;
 
         private ICurrentDayProvider _dayProvider;
+        private IUIManager _uiManager;
         private IPublisher<GameplaySceneButtonsInteractableChanged> _gameplayButtonsPublisher;
 
         [Inject]
         public void Construct(
             ISalesDayController controller,
             ICurrentDayProvider dayProvider = null,
+            IUIManager uiManager = null,
             IPublisher<GameplaySceneButtonsInteractableChanged> gameplayButtonsPublisher = null)
         {
             _controller = controller;
             _dayProvider = dayProvider;
+            _uiManager = uiManager;
             _gameplayButtonsPublisher = gameplayButtonsPublisher;
         }
 
@@ -101,10 +105,9 @@ namespace Book.Sell.UI
 
             // On restart, the player may have already completed today's sales but not yet pressed
             // Next Day. In that case, skip Sales entirely and hand straight to Results.
-            if (_dayProvider != null && _dayProvider.IsCurrentDayCompleted && _resultsScreenRoot != null)
+            if (_dayProvider != null && _dayProvider.IsCurrentDayCompleted)
             {
-                _resultsScreenRoot.SetActive(true);
-                gameObject.SetActive(false);
+                ShowResultsWindowAsync().Forget();
                 return;
             }
 
@@ -197,15 +200,26 @@ namespace Book.Sell.UI
                       $"excellent={result.ExcellentCount}, normal={result.NormalCount}, " +
                       $"failed={result.FailedCount}, skipped={result.SkippedCount}");
 
-            // Hand over to the Results screen if it's wired in the scene; otherwise fall back to the
-            // legacy in-place day-end panel (kept for the prototype scene before Results is set up).
-            if (_resultsScreenRoot != null)
+            ShowResultsWindowAsync().Forget();
+        }
+
+        private async UniTaskVoid ShowResultsWindowAsync()
+        {
+            if (_uiManager == null)
             {
-                _resultsScreenRoot.SetActive(true);
-                gameObject.SetActive(false);
+                Debug.LogWarning("[SalesScreenView] IUIManager was not injected - cannot open ResultsWindow.");
+                ShowLegacyDayEndPanel();
                 return;
             }
 
+            var window = await _uiManager.ShowAsync<ResultsWindow>(ct: _cts.Token);
+            if (window != null)
+                gameObject.SetActive(false);
+        }
+
+        private void ShowLegacyDayEndPanel()
+        {
+            var result = _controller.AccumulatedResult;
             if (_dayEndPanel != null) _dayEndPanel.SetActive(true);
             if (_dayEndSummary != null)
             {

@@ -10,7 +10,8 @@
         "Book.Sell.API",
         "Game.Core.WorldHud",
         "Game.Core.UI",
-        "MessagePipe"
+        "MessagePipe",
+        "DayCycle"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

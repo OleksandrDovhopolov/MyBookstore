@@ -22,7 +22,7 @@ namespace Game.Bootstrap
 
         public override void InstallBindings(IContainerBuilder builder)
         {
-            builder.RegisterDayCycle();
+            builder.RegisterDayCycleSceneViews();
             builder.RegisterRewardDrop();
             builder.RegisterIap();
             builder.RegisterQuest();
