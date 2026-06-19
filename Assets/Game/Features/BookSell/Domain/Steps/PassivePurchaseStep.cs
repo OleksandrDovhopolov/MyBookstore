@@ -39,10 +39,18 @@ namespace Book.Sell.Domain.Steps
                     ctx.Shelf.AvailableForSelection(), ctx.Location, ctx.ActiveDecorIds, ctx.Random);
 
                 // Miss: nothing on the shelf matches the location demand → skip this book, continue plan.
-                if (candidate == null) return StepStatus.Completed;
+                if (candidate == null)
+                {
+                    ctx.Sink?.OnPassivePurchaseFailed(self);
+                    return StepStatus.Completed;
+                }
 
                 // Reserve-on-target. If the reservation race is lost, treat as a miss.
-                if (!ctx.Shelf.Reserve(candidate.Book.BookId)) return StepStatus.Completed;
+                if (!ctx.Shelf.Reserve(candidate.Book.BookId))
+                {
+                    ctx.Sink?.OnPassivePurchaseFailed(self);
+                    return StepStatus.Completed;
+                }
 
                 _targetId = candidate.Book.BookId;
                 _matchedGenres = candidate.MatchedGenres;
@@ -73,6 +81,7 @@ namespace Book.Sell.Domain.Steps
             {
                 ctx.Shelf.ReleaseReserve(_targetId);
                 ctx.Sink?.OnBookReleased(self, _targetId);
+                ctx.Sink?.OnPassivePurchaseFailed(self);
             }
         }
     }

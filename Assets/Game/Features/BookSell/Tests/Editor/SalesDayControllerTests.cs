@@ -99,6 +99,26 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void PassiveMiss_RaisesCustomerPassivePurchaseFailed()
+        {
+            var c = Build(
+                new BookConfig[0],
+                new RequestConfig[0],
+                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
+                new List<Customer> { Passive("c1") });
+
+            var failures = new List<string>();
+            c.CustomerPassivePurchaseFailed += customer => failures.Add(customer.Id);
+
+            StartDay(c);
+            Run(c);
+
+            Assert.IsTrue(c.IsDayCompleted);
+            CollectionAssert.AreEqual(new[] { "c1" }, failures);
+            Assert.AreEqual(0, c.AccumulatedResult.SalesCount);
+        }
+
+        [Test]
         public void ActiveRequest_OnlyOneMinigame_PausesOthers_ThenSequencesFifo()
         {
             var reqA = SalesTestKit.Request("reqA");

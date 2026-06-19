@@ -61,6 +61,8 @@ namespace Book.Sell.Tests.Editor.Steps
             step.Enter(self, ctx);
             Assert.AreEqual(StepStatus.Completed, step.Tick(self, ctx, 1f), "Miss completes the step.");
             Assert.IsEmpty(sink.PassiveSales);
+            Assert.AreEqual(1, sink.PassiveFailures.Count);
+            Assert.AreSame(self, sink.PassiveFailures[0]);
             Assert.AreEqual(ShelfBookState.Available, shelf.Find("b1").State);
         }
 

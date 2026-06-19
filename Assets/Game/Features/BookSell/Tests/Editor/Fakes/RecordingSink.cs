@@ -11,6 +11,7 @@ namespace Book.Sell.Tests.Editor.Fakes
         public List<(Customer customer, CustomerPhase phase)> Phases { get; } = new();
         public List<(Customer customer, string bookId)> Reserved { get; } = new();
         public List<(Customer customer, string bookId)> Released { get; } = new();
+        public List<Customer> PassiveFailures { get; } = new();
         public List<(Customer customer, PassiveSaleEvent evt)> PassiveSales { get; } = new();
         public List<(Customer customer, RequestConfig request)> ActiveStarted { get; } = new();
 
@@ -22,6 +23,9 @@ namespace Book.Sell.Tests.Editor.Fakes
 
         public void OnBookReleased(Customer customer, string bookId)
             => Released.Add((customer, bookId));
+
+        public void OnPassivePurchaseFailed(Customer customer)
+            => PassiveFailures.Add(customer);
 
         public void OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent)
             => PassiveSales.Add((customer, saleEvent));

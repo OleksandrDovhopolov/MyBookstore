@@ -8,6 +8,6 @@ namespace Book.Sell.UI.Customer
         Comment,            // text comment
         ThinkingNext,       // "..." dots again (after first purchase)
         Rejected,           // crossed-out book + replacement
-        PassiveSaleFailed,  // a reserved passive purchase was released without a sale
+        PassiveSaleFailed,  // passive purchase attempt ended without a sale
     }
 }

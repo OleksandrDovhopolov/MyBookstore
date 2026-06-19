@@ -18,6 +18,9 @@ namespace Book.Sell.Domain
         /// <summary>A reservation was released without a sale (customer aborted mid-purchase).</summary>
         void OnBookReleased(Customer customer, string bookId);
 
+        /// <summary>A passive purchase attempt ended without a sale.</summary>
+        void OnPassivePurchaseFailed(Customer customer);
+
         void OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent);
 
         /// <summary>A customer acquired the interaction lock and the active minigame opens for them.</summary>

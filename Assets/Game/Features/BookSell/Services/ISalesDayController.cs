@@ -30,6 +30,7 @@ namespace Book.Sell.Services
         event Action<PassiveSaleEvent> PassiveSaleHappened;
         event Action<Customer, RecommendationResult> CustomerRecommendationResolved;
         event Action<Customer, PassiveSaleEvent> CustomerPassiveSaleHappened;
+        event Action<Customer> CustomerPassivePurchaseFailed;
         event Action<SalesDayResult> DayCompleted;
 
         /// <summary>Fired whenever any customer changes phase (arrival / browsing / leaving / done). For the View.</summary>
