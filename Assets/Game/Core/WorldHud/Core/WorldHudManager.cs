@@ -35,6 +35,7 @@ namespace Game.WorldHud
 
             var cam = Camera.main; // Phase 0 — main camera is enough; revisit if multi-camera setup arrives.
             hud.AttachInternal(target, args, cam);
+            hud.transform.SetParent(target, worldPositionStays: false);
             hud.gameObject.SetActive(true);
 
             _attached[target] = hud;

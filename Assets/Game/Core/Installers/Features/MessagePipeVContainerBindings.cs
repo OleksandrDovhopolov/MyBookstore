@@ -1,4 +1,5 @@
 using MessagePipe;
+using Game.UI;
 using VContainer;
 
 namespace Game.Bootstrap
@@ -20,6 +21,7 @@ namespace Game.Bootstrap
             builder.RegisterBuildCallback(c => GlobalMessagePipe.SetProvider(c.AsServiceProvider()));
 
             builder.RegisterMessageBroker<MessagePipeSmokeEvent>(options);
+            builder.RegisterMessageBroker<GameplaySceneButtonsInteractableChanged>(options);
 
             return options;
         }

@@ -11,7 +11,8 @@
         "Game.Inventory",
         "Game.Core.UI",
         "Game.Resources.API",
-        "Game.Shop.UI"
+        "Game.Shop.UI",
+        "MessagePipe"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

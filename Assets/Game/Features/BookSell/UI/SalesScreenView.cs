@@ -5,6 +5,8 @@ using Book.Sell.Domain;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
+using Game.UI;
+using MessagePipe;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -64,12 +66,17 @@ namespace Book.Sell.UI
         private bool _dayRunning;
 
         private ICurrentDayProvider _dayProvider;
+        private IPublisher<GameplaySceneButtonsInteractableChanged> _gameplayButtonsPublisher;
 
         [Inject]
-        public void Construct(ISalesDayController controller, ICurrentDayProvider dayProvider = null)
+        public void Construct(
+            ISalesDayController controller,
+            ICurrentDayProvider dayProvider = null,
+            IPublisher<GameplaySceneButtonsInteractableChanged> gameplayButtonsPublisher = null)
         {
             _controller = controller;
             _dayProvider = dayProvider;
+            _gameplayButtonsPublisher = gameplayButtonsPublisher;
         }
 
         private void Awake()
@@ -127,6 +134,7 @@ namespace Book.Sell.UI
             PopulateShelfCards();
             RefreshHeader();
             _dayRunning = !_controller.IsDayCompleted;
+            SetGameplaySceneButtonsInteractable(!_dayRunning);
         }
 
         // ---------- controller events ----------
@@ -181,6 +189,7 @@ namespace Book.Sell.UI
             _dayRunning = false;
             _minigameOpen = false;
             SetActionsInteractable(false);
+            SetGameplaySceneButtonsInteractable(true);
             if (_requestPanel != null) _requestPanel.SetActive(false);
 
             Debug.Log($"[SalesScreenView] DayCompleted: day={result.Day}, customers={result.CustomersServed}, " +
@@ -237,6 +246,7 @@ namespace Book.Sell.UI
             if (_dayEndPanel != null) _dayEndPanel.SetActive(false);
             _selectedBookId = null;
             _minigameOpen = false;
+            SetGameplaySceneButtonsInteractable(false);
             StartDayFlowAsync(_cts.Token).Forget();
         }
 
@@ -385,8 +395,15 @@ namespace Book.Sell.UI
                 _skipButton.interactable = active;
         }
 
+        private void SetGameplaySceneButtonsInteractable(bool interactable)
+        {
+            _gameplayButtonsPublisher?.Publish(new GameplaySceneButtonsInteractableChanged(interactable));
+        }
+
         private void OnDestroy()
         {
+            SetGameplaySceneButtonsInteractable(true);
+
             if (_controller != null)
             {
                 _controller.ActiveRequestStarted -= OnActiveRequestStarted;

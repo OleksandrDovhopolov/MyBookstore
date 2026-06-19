@@ -65,12 +65,7 @@ namespace Game.WorldHud
 
             if (_args.Billboard && _camera != null)
             {
-                // Face the camera. For 2D-ish setups a Y-only billboard would do, but full LookAt is robust.
-                var forward = transform.position - _camera.transform.position;
-                if (forward.sqrMagnitude > 0.0001f)
-                {
-                    transform.rotation = Quaternion.LookRotation(forward, Vector3.up);
-                }
+                transform.rotation = _camera.transform.rotation;
             }
         }
     }

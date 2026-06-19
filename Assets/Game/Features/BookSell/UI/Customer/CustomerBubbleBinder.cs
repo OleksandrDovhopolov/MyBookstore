@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace Book.Sell.UI.Customer
     public sealed class CustomerBubbleBinder : IStartable, IDisposable
     {
         private static readonly WorldHudArgs BubbleAttachArgs =
-            new(offset: new Vector3(0f, 2.2f, 0f), billboard: true);
+            new(offset: Vector3.zero, billboard: false);
 
         private readonly ISalesDayController _sales;
         private readonly ICustomerVisualRegistry _registry;
@@ -40,12 +41,18 @@ namespace Book.Sell.UI.Customer
         public void Start()
         {
             _sales.CustomerPhaseChanged += OnCustomerPhaseChanged;
+            _sales.BookReserved += OnBookReserved;
+            _sales.CustomerPassiveSaleHappened += OnCustomerPassiveSaleHappened;
+            _sales.CustomerRecommendationResolved += OnCustomerRecommendationResolved;
             _registry.CustomerVisualDespawned += OnCustomerVisualDespawned;
         }
 
         public void Dispose()
         {
             _sales.CustomerPhaseChanged -= OnCustomerPhaseChanged;
+            _sales.BookReserved -= OnBookReserved;
+            _sales.CustomerPassiveSaleHappened -= OnCustomerPassiveSaleHappened;
+            _sales.CustomerRecommendationResolved -= OnCustomerRecommendationResolved;
             _registry.CustomerVisualDespawned -= OnCustomerVisualDespawned;
         }
 
@@ -68,7 +75,7 @@ namespace Book.Sell.UI.Customer
                 case CustomerPhase.InMinigame:
                     // Phase 0: book sprite is null (placeholder); BookPicked still shows the book sub-view
                     // so we can verify the state-machine plumbing.
-                    await EnsureBubbleAsync(customer, CustomerThoughtState.BookPicked);
+                    await EnsureBubbleAsync(customer, CustomerThoughtState.BookPicked, "Active purchase");
                     break;
 
                 case CustomerPhase.Leaving:
@@ -78,7 +85,41 @@ namespace Book.Sell.UI.Customer
             }
         }
 
-        private async UniTask EnsureBubbleAsync(Book.Sell.Domain.Customer customer, CustomerThoughtState state)
+        private void OnBookReserved(Book.Sell.Domain.Customer customer, string bookId)
+        {
+            EnsureBubbleAsync(customer, CustomerThoughtState.ThinkingNext, "Book locked").Forget();
+        }
+
+        private void OnCustomerPassiveSaleHappened(Book.Sell.Domain.Customer customer, PassiveSaleEvent evt)
+        {
+            EnsureBubbleAsync(customer, CustomerThoughtState.Comment, "Bought book").Forget();
+        }
+
+        private void OnCustomerRecommendationResolved(Book.Sell.Domain.Customer customer, RecommendationResult result)
+        {
+            if (result.Tier == RecommendationTier.Normal || result.Tier == RecommendationTier.Excellent)
+                EnsureBubbleAsync(customer, CustomerThoughtState.Comment, "Bought book").Forget();
+        }
+
+        private UniTask EnsureBubbleAsync(
+            Book.Sell.Domain.Customer customer,
+            CustomerThoughtState state,
+            string stateText)
+        {
+            var payload = string.IsNullOrEmpty(stateText)
+                ? CustomerThoughtPayload.Empty
+                : new CustomerThoughtPayload(commentText: stateText);
+
+            return EnsureBubbleAsync(customer, state, payload);
+        }
+
+        private UniTask EnsureBubbleAsync(Book.Sell.Domain.Customer customer, CustomerThoughtState state)
+            => EnsureBubbleAsync(customer, state, CustomerThoughtPayload.Empty);
+
+        private async UniTask EnsureBubbleAsync(
+            Book.Sell.Domain.Customer customer,
+            CustomerThoughtState state,
+            CustomerThoughtPayload payload)
         {
             var visual = _registry.GetById(customer.Id);
             if (visual == null || visual.BubbleAnchor == null) return;
@@ -90,7 +131,7 @@ namespace Book.Sell.UI.Customer
                 _bubbles[customer.Id] = bubble;
             }
 
-            await bubble.SetStateAsync(state);
+            await bubble.SetStateAsync(state, payload);
         }
 
         private async UniTask DetachBubbleAsync(string customerId)

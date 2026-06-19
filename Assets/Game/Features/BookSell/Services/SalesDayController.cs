@@ -71,6 +71,8 @@ namespace Book.Sell.Services
         public event Action<RequestConfig> ActiveRequestStarted;
         public event Action<RecommendationResult> RecommendationResolved;
         public event Action<PassiveSaleEvent> PassiveSaleHappened;
+        public event Action<Customer, RecommendationResult> CustomerRecommendationResolved;
+        public event Action<Customer, PassiveSaleEvent> CustomerPassiveSaleHappened;
         public event Action<SalesDayResult> DayCompleted;
         public event Action<Customer> CustomerPhaseChanged;
         public event Action<Customer, string> BookReserved;
@@ -165,6 +167,7 @@ namespace Book.Sell.Services
             CountTier(result.Tier);
             _result.Recommendations.Add(result);
 
+            CustomerRecommendationResolved?.Invoke(_activeCustomer, result);
             RecommendationResolved?.Invoke(result);
             ResolveActive();
         }
@@ -205,6 +208,7 @@ namespace Book.Sell.Services
             CountTier(RecommendationTier.Skipped);
             _result.Recommendations.Add(result);
 
+            CustomerRecommendationResolved?.Invoke(_activeCustomer, result);
             RecommendationResolved?.Invoke(result);
             ResolveActive();
         }
@@ -252,6 +256,7 @@ namespace Book.Sell.Services
             _result.PassiveSales.Add(saleEvent);
 
             // PassiveSaleHappened fires before the log so subscribers see the event first.
+            CustomerPassiveSaleHappened?.Invoke(customer, saleEvent);
             PassiveSaleHappened?.Invoke(saleEvent);
 
             Debug.Log($"{LogPrefix} passive sale: book={saleEvent.BookId}, gold={saleEvent.GoldEarned}, " +

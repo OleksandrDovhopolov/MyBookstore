@@ -308,6 +308,7 @@ MonoBehaviour:
   _reputationImage: {fileID: 5032416733315436105}
   _reputationAmountText: {fileID: 8701997900666402167}
   _openShopButton: {fileID: 4750886091079829569}
+  _cheatButton: {fileID: 6708479046218192797}
 --- !u!114 &8806919550172702141
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -672,6 +673,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7476914233747611523, guid: 0bce34c0c0833934788de58432e06750, type: 3}
   m_PrefabInstance: {fileID: 2560180163290334915}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6708479046218192797 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 9123967857981428062, guid: 0bce34c0c0833934788de58432e06750, type: 3}
+  m_PrefabInstance: {fileID: 2560180163290334915}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &4571243608026962207
 PrefabInstance:
   m_ObjectHideFlags: 0

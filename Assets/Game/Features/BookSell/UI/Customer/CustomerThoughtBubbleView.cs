@@ -19,6 +19,7 @@ namespace Book.Sell.UI.Customer
         [SerializeField] private Transform _bookScaleTarget;
 
         [Header("Comment sub-view content")]
+        [SerializeField] private TextMeshProUGUI _stateText;
         [SerializeField] private TextMeshProUGUI _commentText;
 
         [Header("Rejection sub-view content")]
@@ -35,6 +36,7 @@ namespace Book.Sell.UI.Customer
         public Transform BookScaleTarget => _bookScaleTarget;
 
         public TextMeshProUGUI CommentText => _commentText;
+        public TextMeshProUGUI StateText => _stateText != null ? _stateText : _commentText;
 
         public Image RejectedBookIcon => _rejectedBookIcon;
         public Image ReplacementBookIcon => _replacementBookIcon;

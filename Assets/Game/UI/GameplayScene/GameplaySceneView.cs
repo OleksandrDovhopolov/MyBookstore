@@ -12,8 +12,24 @@ public class GameplaySceneView : WindowView
 
     [Header("Shop entry")]
     [SerializeField] private Button _openShopButton;
+    [SerializeField] private Button _cheatButton;
 
     public Button OpenShopButton => _openShopButton;
+
+    public void SetSceneButtonsInteractable(bool interactable)
+    {
+        if (_openShopButton != null)
+        {
+            _openShopButton.interactable = interactable;
+            _openShopButton.gameObject.SetActive(interactable);
+        }
+        
+        if (_cheatButton != null)
+        {
+            _openShopButton.interactable = interactable;
+            _cheatButton.gameObject.SetActive(interactable);
+        }
+    }
 
     public void SetGoldAmount(int goldAmount)
     {

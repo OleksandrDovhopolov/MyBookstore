@@ -8,7 +8,9 @@
         "Save",
         "Unity.TextMeshPro",
         "Book.Sell.API",
-        "Game.Core.WorldHud"
+        "Game.Core.WorldHud",
+        "Game.Core.UI",
+        "MessagePipe"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

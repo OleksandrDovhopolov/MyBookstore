@@ -2,6 +2,8 @@ using Cysharp.Threading.Tasks;
 using Game.Resources.API;
 using Game.Shop.UI;
 using Game.UI;
+using MessagePipe;
+using System;
 using UnityEngine;
 using VContainer;
 
@@ -9,18 +11,26 @@ using VContainer;
 public class GameplaySceneController: WindowController<GameplaySceneView>
 {
     private IResourcesService _resources;
+    private ISubscriber<GameplaySceneButtonsInteractableChanged> _buttonsInteractableSubscriber;
+    private IDisposable _buttonsInteractableSubscription;
     //private IProgressionService _progression;
 
     [Inject]
-    public void Construct(IResourcesService resources)
+    public void Construct(
+        IResourcesService resources,
+        ISubscriber<GameplaySceneButtonsInteractableChanged> buttonsInteractableSubscriber)
     {
         _resources = resources;
+        _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
     }
 
     protected override void OnInit()
     {
         if (View.OpenShopButton != null)
             View.OpenShopButton.onClick.AddListener(OnOpenShopClicked);
+
+        _buttonsInteractableSubscription = _buttonsInteractableSubscriber.Subscribe(
+            e => SetSceneButtonsInteractable(e.Interactable));
     }
 
     protected override void OnShowStart()
@@ -55,8 +65,16 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
 
     protected override void OnDispose()
     {
+        _buttonsInteractableSubscription?.Dispose();
+        _buttonsInteractableSubscription = null;
+
         if (View != null && View.OpenShopButton != null)
             View.OpenShopButton.onClick.RemoveListener(OnOpenShopClicked);
+    }
+
+    public void SetSceneButtonsInteractable(bool interactable)
+    {
+        View?.SetSceneButtonsInteractable(interactable);
     }
 
     private void OnOpenShopClicked() => OpenShopAsync().Forget();

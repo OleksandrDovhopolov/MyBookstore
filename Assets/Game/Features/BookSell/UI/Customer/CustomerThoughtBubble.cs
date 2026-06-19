@@ -69,6 +69,7 @@ namespace Book.Sell.UI.Customer
         private void ApplyContent(CustomerThoughtState state, CustomerThoughtPayload payload)
         {
             if (_view == null) return;
+            if (_view.StateText != null) _view.StateText.text = ResolveStateLabel(state, payload);
 
             switch (state)
             {
@@ -83,6 +84,22 @@ namespace Book.Sell.UI.Customer
                     if (_view.ReplacementBookIcon != null) _view.ReplacementBookIcon.sprite = payload.ReplacementBookSprite;
                     break;
             }
+        }
+
+        private static string ResolveStateLabel(CustomerThoughtState state, CustomerThoughtPayload payload)
+        {
+            if (!string.IsNullOrEmpty(payload.CommentText))
+                return payload.CommentText;
+
+            return state switch
+            {
+                CustomerThoughtState.Thinking => "Choosing...",
+                CustomerThoughtState.ThinkingNext => "Book locked",
+                CustomerThoughtState.BookPicked => "Active purchase",
+                CustomerThoughtState.Comment => "Bought book",
+                CustomerThoughtState.Rejected => "Active purchase",
+                _ => string.Empty
+            };
         }
 
         private CanvasGroup ResolveGroup(CustomerThoughtState state) => state switch
