@@ -12,6 +12,9 @@ namespace Book.Sell.Domain
         Completed = 1,
 
         /// <summary>Step cannot progress right now (e.g. the shared interaction lock is held by someone else). Stay on it.</summary>
-        Blocked = 2
+        Blocked = 2,
+
+        /// <summary>Step finished; the customer abandons the remaining plan and goes straight to Leave.</summary>
+        CompletedAndLeave = 3
     }
 }

@@ -47,6 +47,24 @@ namespace Book.Sell.Domain
             var status = step.Tick(this, ctx, dt);
             if (status == StepStatus.Completed)
                 Advance(ctx);
+            else if (status == StepStatus.CompletedAndLeave)
+                AbandonPlanAndLeaveNow(ctx);
+        }
+
+        /// <summary>
+        /// Ends the visit immediately: exit the current step (frees any held reservation), drop the
+        /// rest of the plan, and emit Leaving→Done directly. NOTE: this deliberately does NOT run the
+        /// trailing LeaveStep — it is currently empty. If LeaveStep ever gains domain logic, route
+        /// through it here instead. Kept type-agnostic on purpose (no `is LeaveStep` check) so Customer
+        /// stays decoupled from concrete step types.
+        /// </summary>
+        private void AbandonPlanAndLeaveNow(CustomerContext ctx)
+        {
+            _plan[_index].Exit(this, ctx);
+            _index = _plan.Count;
+            _entered = false;
+            SetPhase(CustomerPhase.Leaving, ctx);
+            SetPhase(CustomerPhase.Done, ctx);
         }
 
         /// <summary>

@@ -119,6 +119,96 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void PassiveFailure_AbandonsRemainingPassiveSteps_AndLeaves()
+        {
+            // Empty shelf → every passive attempt misses. The first miss must end the visit, so the
+            // second PassivePurchaseStep never runs (one failure, not two).
+            var c = Build(
+                new BookConfig[0],
+                new RequestConfig[0],
+                SalesTestKit.Location(),
+                new List<Customer>
+                {
+                    new("c1", new ICustomerStep[]
+                    {
+                        new ApproachStep(), new PassivePurchaseStep(), new PassivePurchaseStep(), new LeaveStep()
+                    })
+                });
+
+            var failures = 0;
+            c.CustomerPassivePurchaseFailed += _ => failures++;
+
+            StartDay(c);
+            Run(c);
+
+            Assert.IsTrue(c.IsDayCompleted);
+            Assert.AreEqual(1, failures, "First passive miss aborts the plan → the second passive never runs.");
+            Assert.AreEqual(0, c.AccumulatedResult.SalesCount);
+            Assert.AreEqual(1, c.AccumulatedResult.CustomersServed, "The aborting customer still leaves (served).");
+        }
+
+        [Test]
+        public void PassiveFailure_BeforeActiveRequest_SkipsTheMinigame()
+        {
+            // Plan: Approach → Passive(miss) → Active → Leave. The passive miss ends the visit before
+            // the active step is reached, so the minigame never opens.
+            var req = SalesTestKit.Request("reqA");
+            var c = Build(
+                new BookConfig[0],
+                new[] { req },
+                SalesTestKit.Location(),
+                new List<Customer>
+                {
+                    new("c1", new ICustomerStep[]
+                    {
+                        new ApproachStep(), new PassivePurchaseStep(), new ActiveRequestStep(req), new LeaveStep()
+                    })
+                });
+
+            var activeStarted = 0;
+            c.ActiveRequestStarted += _ => activeStarted++;
+
+            StartDay(c);
+            Run(c);
+
+            Assert.IsTrue(c.IsDayCompleted);
+            Assert.IsNull(c.CurrentRequest, "No active minigame should ever open.");
+            Assert.AreEqual(0, activeStarted, "Passive failure aborts before the active step is entered.");
+        }
+
+        [Test]
+        public void PassiveSuccess_DoesNotAbort_ContinuesToNextPassive()
+        {
+            // Guard against over-aborting: a successful passive returns plain Completed, so a second
+            // passive step still runs. Two books so the day ends via "all customers done".
+            var c = Build(
+                new[]
+                {
+                    SalesTestKit.Book("b1", genre: "sci-fi", price: 80),
+                    SalesTestKit.Book("b2", genre: "sci-fi", price: 80)
+                },
+                new RequestConfig[0],
+                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
+                new List<Customer>
+                {
+                    new("c1", new ICustomerStep[]
+                    {
+                        new ApproachStep(), new PassivePurchaseStep(), new PassivePurchaseStep(), new LeaveStep()
+                    })
+                });
+
+            var passive = 0;
+            c.PassiveSaleHappened += _ => passive++;
+
+            StartDay(c);
+            Run(c);
+
+            Assert.IsTrue(c.IsDayCompleted);
+            Assert.AreEqual(2, passive, "Both passive steps succeed; success does not end the cycle.");
+            Assert.AreEqual(2, c.AccumulatedResult.SalesCount);
+        }
+
+        [Test]
         public void ActiveRequest_OnlyOneMinigame_PausesOthers_ThenSequencesFifo()
         {
             var reqA = SalesTestKit.Request("reqA");

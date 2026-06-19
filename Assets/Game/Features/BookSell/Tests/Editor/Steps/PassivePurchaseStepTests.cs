@@ -59,7 +59,8 @@ namespace Book.Sell.Tests.Editor.Steps
             var self = new Customer("c1", new[] { step });
 
             step.Enter(self, ctx);
-            Assert.AreEqual(StepStatus.Completed, step.Tick(self, ctx, 1f), "Miss completes the step.");
+            Assert.AreEqual(StepStatus.CompletedAndLeave, step.Tick(self, ctx, 1f),
+                "Miss ends the shopping cycle → the customer leaves.");
             Assert.IsEmpty(sink.PassiveSales);
             Assert.AreEqual(1, sink.PassiveFailures.Count);
             Assert.AreSame(self, sink.PassiveFailures[0]);

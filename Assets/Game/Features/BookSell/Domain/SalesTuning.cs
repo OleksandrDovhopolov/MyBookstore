@@ -16,7 +16,7 @@ namespace Book.Sell.Domain
         public float MaxApproachDuration { get; set; } = 6f;
 
         /// <summary>Seconds a customer "thinks" before each passive purchase attempt.</summary>
-        public float BrowseDuration { get; set; } = 1.2f;
+        public float BrowseDuration { get; set; } = 3.5f;
 
         /// <summary>Seconds between targeting a book (reserve) and committing the passive sale.</summary>
         public float PassiveCommitDelay { get; set; } = 0.6f;

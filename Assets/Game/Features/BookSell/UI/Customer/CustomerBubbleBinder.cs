@@ -25,6 +25,10 @@ namespace Book.Sell.UI.Customer
 
         private readonly Dictionary<string, CustomerThoughtBubble> _bubbles = new();
 
+        // Customers whose passive purchase failed: their "Fail" bubble must survive the Leaving/Done
+        // transition (which fire in the same tick as the failure) and only detach on visual despawn.
+        private readonly HashSet<string> _failedPassiveCustomers = new();
+
         public CustomerBubbleBinder(
             ISalesDayController sales,
             ICustomerVisualRegistry registry,
@@ -82,7 +86,9 @@ namespace Book.Sell.UI.Customer
 
                 case CustomerPhase.Leaving:
                 case CustomerPhase.Done:
-                    await DetachBubbleAsync(customer.Id);
+                    // Keep the "Fail" bubble up through the walk-away; it is cleaned up on despawn.
+                    if (!_failedPassiveCustomers.Contains(customer.Id))
+                        await DetachBubbleAsync(customer.Id);
                     break;
             }
         }
@@ -94,6 +100,7 @@ namespace Book.Sell.UI.Customer
 
         private void OnCustomerPassivePurchaseFailed(Book.Sell.Domain.Customer customer)
         {
+            _failedPassiveCustomers.Add(customer.Id);
             EnsureBubbleAsync(customer, CustomerThoughtState.PassiveSaleFailed, "Fail").Forget();
         }
 
@@ -150,6 +157,7 @@ namespace Book.Sell.UI.Customer
         private void OnCustomerVisualDespawned(CustomerVisual visual)
         {
             if (visual == null || visual.Customer == null) return;
+            _failedPassiveCustomers.Remove(visual.Customer.Id);
             DetachBubbleAsync(visual.Customer.Id).Forget();
         }
     }

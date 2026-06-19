@@ -38,18 +38,18 @@ namespace Book.Sell.Domain.Steps
                 var candidate = ctx.PassiveSelector.PickPassiveSale(
                     ctx.Shelf.AvailableForSelection(), ctx.Location, ctx.ActiveDecorIds, ctx.Random);
 
-                // Miss: nothing on the shelf matches the location demand → skip this book, continue plan.
+                // Miss: nothing on the shelf matches → the visit's shopping cycle ends, customer leaves.
                 if (candidate == null)
                 {
                     ctx.Sink?.OnPassivePurchaseFailed(self);
-                    return StepStatus.Completed;
+                    return StepStatus.CompletedAndLeave;
                 }
 
-                // Reserve-on-target. If the reservation race is lost, treat as a miss.
+                // Reserve-on-target. If the reservation race is lost, the cycle ends, customer leaves.
                 if (!ctx.Shelf.Reserve(candidate.Book.BookId))
                 {
                     ctx.Sink?.OnPassivePurchaseFailed(self);
-                    return StepStatus.Completed;
+                    return StepStatus.CompletedAndLeave;
                 }
 
                 _targetId = candidate.Book.BookId;
