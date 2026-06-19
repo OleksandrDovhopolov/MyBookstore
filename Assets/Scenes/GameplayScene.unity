@@ -5733,8 +5733,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Content: {fileID: 1468505914}
-  m_Horizontal: 1
-  m_Vertical: 0
+  m_Horizontal: 0
+  m_Vertical: 1
   m_MovementType: 1
   m_Elasticity: 0.1
   m_Inertia: 1
@@ -7187,6 +7187,14 @@ PrefabInstance:
     - target: {fileID: 7098429517097006845, guid: d8e3d542a507e1e45b044bd9b650d364, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -50
+      objectReference: {fileID: 0}
+    - target: {fileID: 7715209573087307492, guid: d8e3d542a507e1e45b044bd9b650d364, type: 3}
+      propertyPath: m_Vertical
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7715209573087307492, guid: d8e3d542a507e1e45b044bd9b650d364, type: 3}
+      propertyPath: m_Horizontal
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8976858716584855477, guid: d8e3d542a507e1e45b044bd9b650d364, type: 3}
       propertyPath: m_Name
