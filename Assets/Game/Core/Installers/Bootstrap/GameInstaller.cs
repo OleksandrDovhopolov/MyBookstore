@@ -1,3 +1,4 @@
+using Book.Sell.Services;
 using Book.Sell.UI.Customer;
 using UnityEngine;
 using VContainer;
@@ -20,6 +21,10 @@ namespace Game.Bootstrap
         [SerializeField] private Transform _customerExitLeft;
         [SerializeField] private Transform _customerExitRight;
 
+        [Header("BookSell — Tuning")]
+        [Tooltip("Sales timing/pacing asset. Leave empty to use code defaults.")]
+        [SerializeField] private SalesTuningConfig _salesTuningConfig;
+
         public override void InstallBindings(IContainerBuilder builder)
         {
             builder.RegisterDayCycleSceneViews();
@@ -35,7 +40,8 @@ namespace Game.Bootstrap
                 _customerShopApproach,
                 _customerLaneAnchors,
                 _customerExitLeft,
-                _customerExitRight);
+                _customerExitRight,
+                _salesTuningConfig);
         }
     }
 }

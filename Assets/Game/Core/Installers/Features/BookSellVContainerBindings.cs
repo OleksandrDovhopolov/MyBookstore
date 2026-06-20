@@ -24,7 +24,8 @@ namespace Game.Bootstrap
             Transform customerShopApproach = null,
             Transform[] customerLaneAnchors = null,
             Transform customerExitLeft = null,
-            Transform customerExitRight = null)
+            Transform customerExitRight = null,
+            SalesTuningConfig salesTuningConfig = null)
         {
             // Reused pure-domain services.
             builder.Register<ISalesRandom, UnityRandomSalesRandom>(Lifetime.Singleton);
@@ -47,7 +48,8 @@ namespace Game.Bootstrap
             builder.Register<ICustomerSpawner, OneToThreePassiveAttemptsCustomerSpawner>(Lifetime.Singleton); //TEST 1-N passive purchases
             
             
-            builder.RegisterInstance(new SalesTuning());
+            // Tuning comes from a designer-editable SO when assigned; otherwise code defaults.
+            builder.RegisterInstance(salesTuningConfig != null ? salesTuningConfig.BuildTuning() : new SalesTuning());
             builder.Register<ISalesDayController, SalesDayController>(Lifetime.Singleton);
 
             // Customer visualization + world-space thought bubbles (Phase 0 of World HUD).

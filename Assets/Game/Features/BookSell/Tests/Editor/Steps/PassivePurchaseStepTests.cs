@@ -16,11 +16,12 @@ namespace Book.Sell.Tests.Editor.Steps
             BrowseDuration = 1f,
             PassiveCommitDelay = 1f,
             PassiveFailureFeedbackDuration = 1f,
+            PassiveSaleFeedbackDuration = 1f,
             SpawnInterval = 0f
         };
 
         [Test]
-        public void ChanceHit_ReservesDuringWindow_ThenCommitsSale()
+        public void ChanceHit_ReservesCommits_ThenHoldsSaleFeedback()
         {
             var sink = new RecordingSink();
             var shelf = SalesTestKit.Shelf(SalesTestKit.Book("b1", genre: "sci-fi", price: 80));
@@ -41,13 +42,19 @@ namespace Book.Sell.Tests.Editor.Steps
             Assert.IsEmpty(shelf.AvailableForSelection(), "Reserved book is hidden from selection.");
             Assert.IsEmpty(sink.PassiveSales, "No sale until the commit delay passes.");
 
-            // Commit window done → sale.
-            Assert.AreEqual(StepStatus.Completed, step.Tick(self, ctx, 1f));
+            // Commit window done → sale fires, but the step holds sale feedback (still running).
+            Assert.AreEqual(StepStatus.Running, step.Tick(self, ctx, 1f),
+                "Bought-book feedback is held so the HUD shows it before the next attempt.");
             Assert.AreEqual(1, sink.PassiveSales.Count);
             Assert.AreEqual("b1", sink.PassiveSales[0].evt.BookId);
             Assert.AreEqual(80, sink.PassiveSales[0].evt.GoldEarned);
             Assert.AreEqual(ShelfBookState.SoldOut, shelf.Find("b1").State);
             Assert.IsFalse(shelf.IsReserved("b1"));
+
+            // Sale-feedback hold elapses → step completes.
+            Assert.AreEqual(StepStatus.Completed, step.Tick(self, ctx, 1f));
+            Assert.AreEqual(1, sink.PassiveSales.Count, "Sale fires exactly once.");
+            Assert.AreEqual(1, self.PassivePurchaseCount);
         }
 
         [Test]

@@ -2,6 +2,7 @@ using Book.Sell.Domain;
 using Book.Sell.Domain.Steps;
 using Book.Sell.Tests.Editor.Fakes;
 using NUnit.Framework;
+using System.Linq;
 
 namespace Book.Sell.Tests.Editor
 {
@@ -52,6 +53,31 @@ namespace Book.Sell.Tests.Editor
             Assert.AreEqual(1, sink.PurchaseCompletions[0].count);
             CollectionAssert.Contains(
                 System.Linq.Enumerable.Select(sink.Phases, p => p.phase), CustomerPhase.Leaving);
+        }
+
+        [Test]
+        public void ConsecutivePassiveAttempts_ReemitBrowsingPhase_ForChoosingHud()
+        {
+            var sink = new RecordingSink();
+            var shelf = SalesTestKit.Shelf(
+                SalesTestKit.Book("b1", genre: "sci-fi"),
+                SalesTestKit.Book("b2", genre: "sci-fi"));
+            var ctx = SalesTestKit.Context(
+                shelf,
+                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
+                sink,
+                passiveSelector: SalesTestKit.AlwaysHitPassiveSelector());
+
+            var customer = new Customer("c1", new ICustomerStep[]
+            {
+                new PassivePurchaseStep(), new PassivePurchaseStep(), new LeaveStep()
+            });
+
+            Drive(customer, ctx);
+
+            Assert.AreEqual(2, customer.PassivePurchaseCount);
+            Assert.AreEqual(2, sink.Phases.Count(p => p.phase == CustomerPhase.Browsing),
+                "Each passive attempt must refresh Browsing so the HUD shows Choosing again.");
         }
 
         [Test]

@@ -24,6 +24,10 @@ namespace Book.Sell.Domain
         /// <summary>Seconds the failed-passive HUD state is held before the customer closes the visit.</summary>
         public float PassiveFailureFeedbackDuration { get; set; } = 1.0f;
 
+        /// <summary>Seconds the "bought book" HUD state is held after a passive sale, so it stays visible
+        /// before the next attempt's "Choosing" overwrites it.</summary>
+        public float PassiveSaleFeedbackDuration { get; set; } = 1.0f;
+
         /// <summary>Seconds the purchase-completion animation holds (CompletePurchaseStep) when the
         /// customer bought at least one book passively.</summary>
         public float CompletePurchaseDuration { get; set; } = 1.5f;

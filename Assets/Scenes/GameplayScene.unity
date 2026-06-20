@@ -2957,6 +2957,7 @@ MonoBehaviour:
   - {fileID: 2042801245}
   _customerExitLeft: {fileID: 1201158295}
   _customerExitRight: {fileID: 1146450427}
+  _salesTuningConfig: {fileID: 11400000, guid: 24a2ff7b0ae533a449107be9c2a65b02, type: 2}
 --- !u!1 &1396287937
 GameObject:
   m_ObjectHideFlags: 0

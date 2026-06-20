@@ -17,7 +17,7 @@ namespace Book.Sell.Services
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
         {
             //var count = tuning.BaseCustomers;
-            var count = 1;
+            var count = 10;
             var customers = new List<Customer>(count);
 
             for (var i = 0; i < count; i++)

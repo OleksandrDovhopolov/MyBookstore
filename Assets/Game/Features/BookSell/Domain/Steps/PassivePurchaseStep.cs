@@ -14,7 +14,7 @@ namespace Book.Sell.Domain.Steps
     {
         private const string LogPrefix = "[Sales.Passive]";
 
-        private enum Sub { Browse, Commit, FailedFeedback }
+        private enum Sub { Browse, Commit, FailedFeedback, SaleFeedback }
 
         private Sub _sub;
         private float _t;
@@ -27,7 +27,7 @@ namespace Book.Sell.Domain.Steps
             _sub = Sub.Browse;
             _t = 0f;
             _targetId = null;
-            self.SetPhase(CustomerPhase.Browsing, ctx);
+            self.SetPhase(CustomerPhase.Browsing, ctx, forceNotify: true);
         }
 
         public StepStatus Tick(Customer self, CustomerContext ctx, float dt)
@@ -72,6 +72,12 @@ namespace Book.Sell.Domain.Steps
                     ? StepStatus.CompletedAndLeave
                     : StepStatus.Running;
 
+            // Sub.SaleFeedback: hold "bought book" so the HUD shows it before the next attempt's "Choosing".
+            if (_sub == Sub.SaleFeedback)
+                return _t >= ctx.Tuning.PassiveSaleFeedbackDuration
+                    ? StepStatus.Completed
+                    : StepStatus.Running;
+
             // Sub.Commit
             if (_t < ctx.Tuning.PassiveCommitDelay) return StepStatus.Running;
 
@@ -83,7 +89,18 @@ namespace Book.Sell.Domain.Steps
             ctx.Sink?.OnPassiveSale(self, saleEvent);
             self.RegisterPassivePurchase();
             Debug.Log($"{LogPrefix} customer={self.Id} BOUGHT book={_targetId} gold={gold} (passive books so far: {self.PassivePurchaseCount})");
-            return StepStatus.Completed;
+
+            return BeginSaleFeedback(ctx);
+        }
+
+        private StepStatus BeginSaleFeedback(CustomerContext ctx)
+        {
+            if (ctx.Tuning.PassiveSaleFeedbackDuration <= 0f)
+                return StepStatus.Completed;
+
+            _sub = Sub.SaleFeedback;
+            _t = 0f;
+            return StepStatus.Running;
         }
 
         private StepStatus BeginFailedFeedback(Customer self, CustomerContext ctx)

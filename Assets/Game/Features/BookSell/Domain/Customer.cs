@@ -31,9 +31,9 @@ namespace Book.Sell.Domain
 
         public ICustomerStep CurrentStep => _index < _plan.Count ? _plan[_index] : null;
 
-        public void SetPhase(CustomerPhase phase, CustomerContext ctx)
+        public void SetPhase(CustomerPhase phase, CustomerContext ctx, bool forceNotify = false)
         {
-            if (Phase == phase) return;
+            if (!forceNotify && Phase == phase) return;
             Phase = phase;
             ctx.Sink?.OnPhaseChanged(this, phase);
         }
