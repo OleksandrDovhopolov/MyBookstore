@@ -47,7 +47,13 @@ namespace Game.WorldHud
             CancellationToken ct)
         {
             if (canvasGroup == null) return UniTask.CompletedTask;
-            return LerpAsync(from, to, duration, value => canvasGroup.alpha = value, ct);
+            // Per-frame null-check: the target can be destroyed mid-fade (e.g. the customer visual the
+            // bubble is parented to despawns while it is detaching). Skip the set instead of throwing
+            // MissingReferenceException.
+            return LerpAsync(from, to, duration, value =>
+            {
+                if (canvasGroup != null) canvasGroup.alpha = value;
+            }, ct);
         }
 
         public static UniTask LerpScaleAsync(
@@ -58,7 +64,10 @@ namespace Game.WorldHud
             CancellationToken ct)
         {
             if (target == null) return UniTask.CompletedTask;
-            return LerpAsync(0f, 1f, duration, t => target.localScale = Vector3.LerpUnclamped(from, to, t), ct);
+            return LerpAsync(0f, 1f, duration, t =>
+            {
+                if (target != null) target.localScale = Vector3.LerpUnclamped(from, to, t);
+            }, ct);
         }
     }
 }

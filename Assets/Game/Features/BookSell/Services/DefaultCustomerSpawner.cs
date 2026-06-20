@@ -32,19 +32,20 @@ namespace Book.Sell.Services
             var requests = _configs.GetAll<RequestConfig>();
             var count = Math.Max(requests.Count, tuning.BaseCustomers);
 
+            //TODO в любого покупателя  должен быть минимум 1 пассивный / активный запрос. 
             var customers = new List<Customer>(count);
             for (var i = 0; i < count; i++)
             {
                 var steps = new List<ICustomerStep> { new ApproachStep(RandomApproachDuration(tuning, random)) };
 
-                var k = random.Range(0, MaxExtraPassivePerSide + 1);
+                var k = random.Range(1, MaxExtraPassivePerSide + 1);
                 for (var p = 0; p < k; p++) steps.Add(new PassivePurchaseStep());
 
-                if (i < requests.Count)
+                /*if (i < requests.Count)
                     steps.Add(new ActiveRequestStep(requests[i]));
 
                 var m = random.Range(0, MaxExtraPassivePerSide + 1);
-                for (var p = 0; p < m; p++) steps.Add(new PassivePurchaseStep());
+                for (var p = 0; p < m; p++) steps.Add(new PassivePurchaseStep());*/
 
                 steps.Add(new CompletePurchaseStep());
 

@@ -40,7 +40,13 @@ namespace Game.Bootstrap
 
             // Customer simulation.
             builder.Register<IInteractionLock, InteractionLock>(Lifetime.Singleton);
-            builder.Register<ICustomerSpawner, DefaultCustomerSpawner>(Lifetime.Singleton);
+            
+            
+            //builder.Register<ICustomerSpawner, DefaultCustomerSpawner>(Lifetime.Singleton);
+            builder.Register<ICustomerSpawner, FifteenCustomersSinglePassiveAttemptSpawner>(Lifetime.Singleton); //TEST was created to test zero books selected 
+            //builder.Register<ICustomerSpawner, OneToThreePassiveAttemptsCustomerSpawner>(Lifetime.Singleton); //TEST 1-N passive purchases
+            
+            
             builder.RegisterInstance(new SalesTuning());
             builder.Register<ISalesDayController, SalesDayController>(Lifetime.Singleton);
 
