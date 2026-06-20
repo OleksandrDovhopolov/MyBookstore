@@ -46,6 +46,7 @@ namespace Book.Sell.UI.Customer
             _sales.CustomerPassiveSaleHappened += OnCustomerPassiveSaleHappened;
             _sales.CustomerPassivePurchaseFailed += OnCustomerPassivePurchaseFailed;
             _sales.CustomerPurchaseCompleted += OnCustomerPurchaseCompleted;
+            _sales.CustomerThoughtBubbleHidden += OnCustomerThoughtBubbleHidden;
             _sales.CustomerRecommendationResolved += OnCustomerRecommendationResolved;
             _registry.CustomerVisualDespawned += OnCustomerVisualDespawned;
         }
@@ -57,6 +58,7 @@ namespace Book.Sell.UI.Customer
             _sales.CustomerPassiveSaleHappened -= OnCustomerPassiveSaleHappened;
             _sales.CustomerPassivePurchaseFailed -= OnCustomerPassivePurchaseFailed;
             _sales.CustomerPurchaseCompleted -= OnCustomerPurchaseCompleted;
+            _sales.CustomerThoughtBubbleHidden -= OnCustomerThoughtBubbleHidden;
             _sales.CustomerRecommendationResolved -= OnCustomerRecommendationResolved;
             _registry.CustomerVisualDespawned -= OnCustomerVisualDespawned;
         }
@@ -111,6 +113,14 @@ namespace Book.Sell.UI.Customer
         {
             _keepBubbleUntilDespawn.Add(customer.Id);
             EnsureBubbleAsync(customer, CustomerThoughtState.PurchaseCompleted, $"Bought {passiveCount} books").Forget();
+        }
+
+        private void OnCustomerThoughtBubbleHidden(Book.Sell.Domain.Customer customer)
+        {
+            // LeaveStep asked to clear the HUD: drop the keep-alive flag and detach so the customer
+            // walks away without a bubble (feedback already had its dwell in the prior steps).
+            _keepBubbleUntilDespawn.Remove(customer.Id);
+            DetachBubbleAsync(customer.Id).Forget();
         }
 
         private void OnCustomerPassiveSaleHappened(Book.Sell.Domain.Customer customer, PassiveSaleEvent evt)

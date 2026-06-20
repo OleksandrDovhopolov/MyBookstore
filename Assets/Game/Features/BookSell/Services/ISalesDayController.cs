@@ -39,6 +39,9 @@ namespace Book.Sell.Services
         event Action<Customer, PassiveSaleEvent> CustomerPassiveSaleHappened;
         event Action<Customer> CustomerPassivePurchaseFailed;
         event Action<Customer, int> CustomerPurchaseCompleted;
+
+        /// <summary>The customer started leaving — the View should clear its thought bubble.</summary>
+        event Action<Customer> CustomerThoughtBubbleHidden;
         event Action<SalesDayResult> DayCompleted;
 
         /// <summary>Fired whenever any customer changes phase (arrival / browsing / leaving / done). For the View.</summary>

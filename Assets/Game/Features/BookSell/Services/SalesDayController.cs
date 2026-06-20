@@ -77,6 +77,7 @@ namespace Book.Sell.Services
         public event Action<Customer, PassiveSaleEvent> CustomerPassiveSaleHappened;
         public event Action<Customer> CustomerPassivePurchaseFailed;
         public event Action<Customer, int> CustomerPurchaseCompleted;
+        public event Action<Customer> CustomerThoughtBubbleHidden;
         public event Action DayReadyToClose;
         public event Action<SalesDayResult> DayCompleted;
         public event Action<Customer> CustomerPhaseChanged;
@@ -299,6 +300,9 @@ namespace Book.Sell.Services
             _activeRequest = request;
             ActiveRequestStarted?.Invoke(request);
         }
+
+        void ISalesDaySink.OnHideThoughtBubble(Customer customer)
+            => CustomerThoughtBubbleHidden?.Invoke(customer);
 
         // ----- internals -----
 

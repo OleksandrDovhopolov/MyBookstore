@@ -32,5 +32,10 @@ namespace Book.Sell.Domain
 
         /// <summary>A customer acquired the interaction lock and the active minigame opens for them.</summary>
         void OnActiveRequestStarted(Customer customer, RequestConfig request);
+
+        /// <summary>The customer starts leaving — its thought bubble should be cleared so it walks away
+        /// without any HUD. Feedback (Failed / bought / completed) has already had its on-screen dwell
+        /// in the preceding steps.</summary>
+        void OnHideThoughtBubble(Customer customer);
     }
 }

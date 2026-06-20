@@ -36,5 +36,10 @@ namespace Book.Sell.Tests.Editor.Fakes
 
         public void OnActiveRequestStarted(Customer customer, RequestConfig request)
             => ActiveStarted.Add((customer, request));
+
+        public List<Customer> BubbleHidden { get; } = new();
+
+        public void OnHideThoughtBubble(Customer customer)
+            => BubbleHidden.Add(customer);
     }
 }

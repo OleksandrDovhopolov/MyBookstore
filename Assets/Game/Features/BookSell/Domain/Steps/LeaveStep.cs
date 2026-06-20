@@ -3,7 +3,8 @@ namespace Book.Sell.Domain.Steps
     /// <summary>
     /// The customer leaves. A pure-domain duration gate: accumulates dt until its configured leave
     /// duration, then completes — the customer becomes Done when the plan advances past this step.
-    /// The View plays the walk-away animation independently (see CustomerVisualRegistry).
+    /// The View plays the walk-away animation independently (see CustomerVisualRegistry). On entry it
+    /// clears the customer's thought bubble so it walks away without any HUD.
     /// </summary>
     public sealed class LeaveStep : IClosingStep
     {
@@ -19,6 +20,9 @@ namespace Book.Sell.Domain.Steps
         {
             _elapsed = 0f;
             self.SetPhase(CustomerPhase.Leaving, ctx);
+            // Any purchase/fail feedback already had its dwell in the prior steps; drop the bubble so
+            // the customer leaves with a clean HUD.
+            ctx.Sink?.OnHideThoughtBubble(self);
         }
 
         public StepStatus Tick(Customer self, CustomerContext ctx, float dt)
