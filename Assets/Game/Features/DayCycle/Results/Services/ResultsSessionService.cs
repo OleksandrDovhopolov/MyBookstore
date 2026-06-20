@@ -123,6 +123,9 @@ namespace Game.DayCycle.Results.Services
                 if (summary.BestMatch == null)
                     summary.BestMatch = _rewards.Compute(sales, _progression.Reputation).BestMatch;
 
+                await _dayProgress.MarkCurrentDayCompletedAsync(ct);
+                Debug.Log($"{LogPrefix} day {sales.Day} marked completed; phase={_dayProgress.Current.CurrentPhase}.");
+
                 _currentSummary = summary;
                 SummaryReady?.Invoke(summary);
             }
@@ -134,7 +137,11 @@ namespace Game.DayCycle.Results.Services
 
         public async UniTask AdvanceToNextDayAsync(CancellationToken ct)
         {
-            if (_advanceInProgress) return;
+            if (_advanceInProgress)
+            {
+                Debug.Log($"{LogPrefix} advance ignored: already in progress.");
+                return;
+            }
 
             var completedDay = _currentSummary?.Day;
             if (completedDay == null)
@@ -150,8 +157,13 @@ namespace Game.DayCycle.Results.Services
                 return;
             }
 
+            Debug.Log($"{LogPrefix} advance requested: completed day {completedDay.Value}, current day {_dayProgress.Current.CurrentDay}, phase={_dayProgress.Current.CurrentPhase}.");
+
             if (_advancedCompletedDay == completedDay)
+            {
+                Debug.Log($"{LogPrefix} advance ignored: day {completedDay.Value} already advanced in this session.");
                 return;
+            }
 
             if (_dayProgress.Current.CurrentDay != completedDay.Value)
             {
@@ -170,6 +182,7 @@ namespace Game.DayCycle.Results.Services
                 }
 
                 _advancedCompletedDay = completedDay;
+                Debug.Log($"{LogPrefix} advanced to day {_dayProgress.Current.CurrentDay}, phase={_dayProgress.Current.CurrentPhase}.");
             }
             finally
             {

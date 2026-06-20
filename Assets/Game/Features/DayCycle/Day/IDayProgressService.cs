@@ -19,6 +19,8 @@ namespace Game.DayCycle.Day
         /// <summary>Устанавливает фазу и сохраняет.</summary>
         UniTask SetPhaseAsync(DayPhase phase, CancellationToken ct);
 
+        UniTask MarkCurrentDayCompletedAsync(CancellationToken ct);
+
         /// <summary>Завершает цикл дня: помечает день завершённым, переходит на день+1 в фазу Morning, сохраняет.</summary>
         UniTask AdvanceToNextDayAsync(CancellationToken ct);
 

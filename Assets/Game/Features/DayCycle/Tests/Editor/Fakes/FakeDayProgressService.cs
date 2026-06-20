@@ -13,12 +13,24 @@ namespace Game.DayCycle.Tests.Editor.Fakes
 
         public int SaveCallCount { get; private set; }
         public int AdvanceCallCount { get; private set; }
+        public int MarkCompletedCallCount { get; private set; }
 
         public UniTask<DayProgressState> LoadAsync(CancellationToken ct) => UniTask.FromResult(State);
 
         public UniTask SetPhaseAsync(DayPhase phase, CancellationToken ct)
         {
             State.CurrentPhase = phase;
+            SaveCallCount++;
+            return UniTask.CompletedTask;
+        }
+
+        public UniTask MarkCurrentDayCompletedAsync(CancellationToken ct)
+        {
+            if (!State.CompletedDays.Contains(State.CurrentDay))
+                State.CompletedDays.Add(State.CurrentDay);
+
+            State.CurrentPhase = DayPhase.Results;
+            MarkCompletedCallCount++;
             SaveCallCount++;
             return UniTask.CompletedTask;
         }

@@ -33,6 +33,16 @@ namespace Game.DayCycle.Day
             await SaveAsync(ct);
         }
 
+        public async UniTask MarkCurrentDayCompletedAsync(CancellationToken ct)
+        {
+            var state = Current;
+            if (!state.CompletedDays.Contains(state.CurrentDay))
+                state.CompletedDays.Add(state.CurrentDay);
+
+            state.CurrentPhase = DayPhase.Results;
+            await SaveAsync(ct);
+        }
+
         public async UniTask AdvanceToNextDayAsync(CancellationToken ct)
         {
             var state = Current;

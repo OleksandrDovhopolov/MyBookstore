@@ -75,6 +75,9 @@ namespace Game.DayCycle.Morning.UI
             }
 
             var result = await _session.ContinueToPreparationAsync(ct);
+            if (result == null)
+                return false;
+
             Debug.Log($"[MorningScreenView] -> Preparation. Day {result.Day}, " +
                       $"modifiers=[{string.Join(",", result.ActiveModifierIds)}], " +
                       $"locations=[{string.Join(",", result.TargetLocationIds)}].");

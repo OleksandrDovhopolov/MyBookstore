@@ -113,5 +113,25 @@ namespace Game.DayCycle.Tests.Editor
             Assert.AreEqual(1, result.Day);
             Assert.AreEqual("day_001", result.DayId);
         }
+
+        [Test]
+        public void Continue_WhenCurrentDayCompleted_ReturnsNull_AndKeepsResultsPhase()
+        {
+            var save = new FakeSaveService();
+            var progress = new DayProgressService(save);
+            Run(progress.LoadAsync(CancellationToken.None));
+            progress.Current.CompletedDays.Add(progress.Current.CurrentDay);
+            progress.Current.CurrentPhase = DayPhase.Morning;
+            Run(progress.SaveAsync(CancellationToken.None));
+
+            var result = Run(Service(save, Configs()).ContinueToPreparationAsync(CancellationToken.None));
+
+            Assert.IsNull(result);
+
+            var reloaded = new DayProgressService(new FakeSaveService(save.Store));
+            Run(reloaded.LoadAsync(CancellationToken.None));
+            Assert.AreEqual(DayPhase.Results, reloaded.Current.CurrentPhase);
+            CollectionAssert.Contains(reloaded.Current.CompletedDays, 1);
+        }
     }
 }

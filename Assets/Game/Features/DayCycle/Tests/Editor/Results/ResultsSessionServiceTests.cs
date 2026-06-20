@@ -85,6 +85,9 @@ namespace Game.DayCycle.Tests.Editor.Results
 
             // Idempotency record persisted.
             Assert.IsTrue(h.Save.Store.ContainsKey(ResultsSessionService.AppliedRewardsModuleKey));
+            Assert.AreEqual(1, h.DayProgress.MarkCompletedCallCount);
+            Assert.AreEqual(DayPhase.Results, h.DayProgress.State.CurrentPhase);
+            CollectionAssert.Contains(h.DayProgress.State.CompletedDays, 1);
         }
 
         [Test]

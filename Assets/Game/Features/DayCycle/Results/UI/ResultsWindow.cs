@@ -155,7 +155,11 @@ namespace Game.DayCycle.Results.UI
                 : string.Empty;
         }
 
-        private void OnNextDayClicked() => AdvanceToNextDayAsync().Forget();
+        private void OnNextDayClicked()
+        {
+            Debug.Log("[ResultsWindow] NextDay clicked.");
+            AdvanceToNextDayAsync().Forget();
+        }
 
         private async UniTaskVoid AdvanceToNextDayAsync()
         {
