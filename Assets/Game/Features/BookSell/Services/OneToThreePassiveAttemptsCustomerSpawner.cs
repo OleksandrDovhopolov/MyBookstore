@@ -12,11 +12,12 @@ namespace Book.Sell.Services
     public sealed class OneToThreePassiveAttemptsCustomerSpawner : ICustomerSpawner
     {
         private const int MinPassiveAttempts = 1;
-        private const int MaxPassiveAttempts = 3;
+        private const int MaxPassiveAttempts = 5;
 
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
         {
-            var count = tuning.BaseCustomers;
+            //var count = tuning.BaseCustomers;
+            var count = 1;
             var customers = new List<Customer>(count);
 
             for (var i = 0; i < count; i++)

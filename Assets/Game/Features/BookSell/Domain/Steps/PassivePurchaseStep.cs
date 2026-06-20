@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Book.Sell.API;
+using UnityEngine;
 
 namespace Book.Sell.Domain.Steps
 {
@@ -11,6 +12,8 @@ namespace Book.Sell.Domain.Steps
     /// </summary>
     public sealed class PassivePurchaseStep : ICustomerStep
     {
+        private const string LogPrefix = "[Sales.Passive]";
+
         private enum Sub { Browse, Commit }
 
         private Sub _sub;
@@ -35,12 +38,16 @@ namespace Book.Sell.Domain.Steps
             {
                 if (_t < ctx.Tuning.BrowseDuration) return StepStatus.Running;
 
+                var available = ctx.Shelf.AvailableForSelection();
+                Debug.Log($"{LogPrefix} customer={self.Id} browsing → {available.Count} book(s) available, rolling the gate");
+
                 var candidate = ctx.PassiveSelector.PickPassiveSale(
-                    ctx.Shelf.AvailableForSelection(), ctx.Location, ctx.ActiveDecorIds, ctx.Random);
+                    available, ctx.Location, ctx.ActiveDecorIds, ctx.Random);
 
                 // Miss: nothing on the shelf matches → the visit's shopping cycle ends, customer leaves.
                 if (candidate == null)
                 {
+                    Debug.Log($"{LogPrefix} customer={self.Id} attempt #{self.PassivePurchaseCount + 1} MISSED → leaving");
                     ctx.Sink?.OnPassivePurchaseFailed(self);
                     return StepStatus.CompletedAndLeave;
                 }
@@ -48,6 +55,7 @@ namespace Book.Sell.Domain.Steps
                 // Reserve-on-target. If the reservation race is lost, the cycle ends, customer leaves.
                 if (!ctx.Shelf.Reserve(candidate.Book.BookId))
                 {
+                    Debug.Log($"{LogPrefix} customer={self.Id} lost the reserve race for book={candidate.Book.BookId} → leaving");
                     ctx.Sink?.OnPassivePurchaseFailed(self);
                     return StepStatus.CompletedAndLeave;
                 }
@@ -71,6 +79,7 @@ namespace Book.Sell.Domain.Steps
             var saleEvent = new PassiveSaleEvent(_targetId, gold, _matchedGenres, _matchedTags);
             ctx.Sink?.OnPassiveSale(self, saleEvent);
             self.RegisterPassivePurchase();
+            Debug.Log($"{LogPrefix} customer={self.Id} BOUGHT book={_targetId} gold={gold} (passive books so far: {self.PassivePurchaseCount})");
             return StepStatus.Completed;
         }
 
