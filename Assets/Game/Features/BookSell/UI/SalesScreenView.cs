@@ -49,9 +49,6 @@ namespace Book.Sell.UI
         [SerializeField] private FeedbackLogEntryView _feedbackLogEntryPrefab;
         [SerializeField] [Min(1)] private int _maxLogLines = 12;
 
-        [Header("Day end")]
-        [Tooltip("Root GameObject of the Results screen. Activated when the day completes; this view deactivates itself.")]
-        [SerializeField] private GameObject _resultsScreenRoot;
         [Header("Legacy day-end fallback (used only when Results Screen Root is empty)")]
         [SerializeField] private GameObject _dayEndPanel;
         [SerializeField] private TMP_Text _dayEndSummary;

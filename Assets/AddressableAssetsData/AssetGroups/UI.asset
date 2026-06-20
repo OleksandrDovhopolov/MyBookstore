@@ -30,6 +30,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 23f6a58c8f2e0c440ac586e5d9536ca2
+    m_Address: ResultsWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2e39b1b001153f04dbbb5968adcb8ff5
     m_Address: SmokeMainPage
     m_ReadOnly: 0

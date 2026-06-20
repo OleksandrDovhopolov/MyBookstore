@@ -40,6 +40,8 @@ namespace Game.DayCycle.Results.UI
             SetActive(View.ErrorPanel, false);
             if (View.AlreadyAppliedHint != null)
                 View.AlreadyAppliedHint.gameObject.SetActive(false);
+            
+            View.CloseButton.onClick.AddListener(OnCloseClicked);
         }
 
         protected override void OnShowStart()
@@ -68,12 +70,14 @@ namespace Game.DayCycle.Results.UI
 
             if (View != null)
             {
+                View.CloseButton.onClick.RemoveListener(OnCloseClicked);
+                
                 if (View.NextDayButton != null)
                     View.NextDayButton.onClick.RemoveListener(OnNextDayClicked);
                 if (View.OpenNewspaperButton != null)
                     View.OpenNewspaperButton.onClick.RemoveListener(OnOpenNewspaperClicked);
             }
-
+            
             _cts?.Cancel();
             _cts?.Dispose();
             _cts = null;
@@ -188,5 +192,7 @@ namespace Game.DayCycle.Results.UI
         {
             if (target != null) target.SetActive(active);
         }
+        
+        private void OnCloseClicked() => CloseAsync().Forget();
     }
 }
