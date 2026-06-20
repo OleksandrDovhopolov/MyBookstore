@@ -44,6 +44,9 @@ namespace Book.Sell.UI
         [SerializeField] private Button _confirmButton;
         [SerializeField] private Button _skipButton;
 
+        [Header("End of day")]
+        [SerializeField] private Button _closeShopButton;   // "Свернуть лавку" — shown when day is ReadyToClose
+
         [Header("Feedback log (vertical list of prefab entries)")]
         [SerializeField] private Transform _feedbackLogContainer;
         [SerializeField] private FeedbackLogEntryView _feedbackLogEntryPrefab;
@@ -85,6 +88,11 @@ namespace Book.Sell.UI
             if (_confirmButton != null) _confirmButton.onClick.AddListener(OnConfirmClicked);
             if (_skipButton != null) _skipButton.onClick.AddListener(OnSkipClicked);
             if (_restartButton != null) _restartButton.onClick.AddListener(OnRestartClicked);
+            if (_closeShopButton != null)
+            {
+                _closeShopButton.onClick.AddListener(OnCloseShopClicked);
+                _closeShopButton.gameObject.SetActive(false);
+            }
 
             if (_dayEndPanel != null) _dayEndPanel.SetActive(false);
             if (_requestPanel != null) _requestPanel.SetActive(false);
@@ -111,6 +119,7 @@ namespace Book.Sell.UI
             _controller.ActiveRequestStarted += OnActiveRequestStarted;
             _controller.RecommendationResolved += OnRecommendationResolved;
             _controller.PassiveSaleHappened += OnPassiveSaleHappened;
+            _controller.DayReadyToClose += OnDayReadyToClose;
             _controller.DayCompleted += OnDayCompleted;
             _controller.BookReserved += OnBookReserved;
 
@@ -184,12 +193,41 @@ namespace Book.Sell.UI
                 $"<i>passive sale: {evt.BookId}  +{evt.GoldEarned}{demandSuffix}</i>");
         }
 
+        private void OnDayReadyToClose()
+        {
+            // Day's work is done: stop pumping the sim and let the player close the shop manually.
+            _dayRunning = false;
+            _minigameOpen = false;
+            SetActionsInteractable(false);
+            if (_requestPanel != null) _requestPanel.SetActive(false);
+
+            RefreshShelfAvailability();
+            RefreshHeader();
+
+            if (_closeShopButton != null)
+            {
+                _closeShopButton.gameObject.SetActive(true);
+                _closeShopButton.interactable = true;
+            }
+        }
+
+        private void OnCloseShopClicked()
+        {
+            if (_controller == null) return;
+            if (_closeShopButton != null) _closeShopButton.interactable = false;
+
+            // Presentation hook: a short shop-closing animation can play here before concluding.
+            // MVP concludes immediately; OnDayCompleted then opens the ResultsWindow.
+            _controller.ConcludeDay();
+        }
+
         private void OnDayCompleted(SalesDayResult result)
         {
             _dayRunning = false;
             _minigameOpen = false;
             SetActionsInteractable(false);
             SetGameplaySceneButtonsInteractable(true);
+            if (_closeShopButton != null) _closeShopButton.gameObject.SetActive(false);
             if (_requestPanel != null) _requestPanel.SetActive(false);
 
             Debug.Log($"[SalesScreenView] DayCompleted: day={result.Day}, customers={result.CustomersServed}, " +
@@ -255,6 +293,7 @@ namespace Book.Sell.UI
         {
             ClearEntries();
             if (_dayEndPanel != null) _dayEndPanel.SetActive(false);
+            if (_closeShopButton != null) _closeShopButton.gameObject.SetActive(false);
             _selectedBookId = null;
             _minigameOpen = false;
             SetGameplaySceneButtonsInteractable(false);
@@ -420,6 +459,7 @@ namespace Book.Sell.UI
                 _controller.ActiveRequestStarted -= OnActiveRequestStarted;
                 _controller.RecommendationResolved -= OnRecommendationResolved;
                 _controller.PassiveSaleHappened -= OnPassiveSaleHappened;
+                _controller.DayReadyToClose -= OnDayReadyToClose;
                 _controller.DayCompleted -= OnDayCompleted;
                 _controller.BookReserved -= OnBookReserved;
             }
@@ -427,6 +467,7 @@ namespace Book.Sell.UI
             if (_confirmButton != null) _confirmButton.onClick.RemoveListener(OnConfirmClicked);
             if (_skipButton != null) _skipButton.onClick.RemoveListener(OnSkipClicked);
             if (_restartButton != null) _restartButton.onClick.RemoveListener(OnRestartClicked);
+            if (_closeShopButton != null) _closeShopButton.onClick.RemoveListener(OnCloseShopClicked);
 
             _cts.Cancel();
             _cts.Dispose();

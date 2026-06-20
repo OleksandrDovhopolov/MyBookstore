@@ -88,7 +88,7 @@ namespace Game.DayCycle.Tests.Editor.Results
         }
 
         [Test]
-        public void Apply_Twice_DoesNotDoubleRewards()
+        public void Apply_Twice_UsesCachedSummary_DoesNotDoubleRewards()
         {
             var h = new Harness(Sales(gold: 100, exc: 2));
             h.Run();
@@ -97,7 +97,8 @@ namespace Game.DayCycle.Tests.Editor.Results
             Assert.AreEqual(2, h.Summaries.Count, "Both runs emit a summary…");
             Assert.AreEqual(100, h.Gold, "…but balances mutate only once.");
             Assert.AreEqual(2, h.Reputation);
-            Assert.IsTrue(h.Summaries[1].AlreadyApplied);
+            Assert.AreSame(h.Summaries[0], h.Summaries[1], "Second run re-emits the cached summary.");
+            Assert.IsFalse(h.Summaries[1].AlreadyApplied);
             Assert.IsFalse(h.Summaries[0].AlreadyApplied);
         }
 
@@ -133,6 +134,19 @@ namespace Game.DayCycle.Tests.Editor.Results
             Assert.AreEqual(1, h.DayProgress.AdvanceCallCount);
             Assert.AreEqual(2, h.DayProgress.State.CurrentDay);
             Assert.AreEqual(DayPhase.Morning, h.DayProgress.State.CurrentPhase);
+            Assert.AreEqual(1, h.SceneTransition.TransitionCount);
+        }
+
+        [Test]
+        public void AdvanceToNextDay_Twice_ForSameCompletedDay_IsNoOpSecondTime()
+        {
+            var h = new Harness(Sales());
+            h.Run();
+            h.Advance();
+            h.Advance();
+
+            Assert.AreEqual(1, h.DayProgress.AdvanceCallCount);
+            Assert.AreEqual(2, h.DayProgress.State.CurrentDay);
             Assert.AreEqual(1, h.SceneTransition.TransitionCount);
         }
 

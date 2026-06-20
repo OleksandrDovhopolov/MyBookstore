@@ -21,7 +21,8 @@ namespace Book.Sell.Tests.Editor
             => new(id, new ICustomerStep[] { new ApproachStep(), new ActiveRequestStep(req), new LeaveStep() });
 
         private static SalesDayController Build(
-            BookConfig[] books, RequestConfig[] requests, LocationConfig location, IReadOnlyList<Customer> customers)
+            BookConfig[] books, RequestConfig[] requests, LocationConfig location, IReadOnlyList<Customer> customers,
+            SalesTuning tuning = null)
         {
             var configs = new FakeConfigsService();
             configs.SetAll(books);
@@ -36,35 +37,48 @@ namespace Book.Sell.Tests.Editor
                 new FakeSalesRandom(),
                 new StubCustomerSpawner(customers),
                 new InteractionLock(),
-                SalesTestKit.FastTuning());
+                tuning ?? SalesTestKit.FastTuning());
         }
 
         private static void StartDay(SalesDayController c)
             => c.StartDayAsync(1, CancellationToken.None).GetAwaiter().GetResult();
 
+        // Drives the day until it stops being Running (i.e. reaches ReadyToClose). The day no longer
+        // auto-completes; tests assert at ReadyToClose, then call ConcludeDay() when they need the
+        // published result.
         private static void Run(SalesDayController c, int maxTicks = 200)
         {
-            for (var i = 0; i < maxTicks && !c.IsDayCompleted; i++) c.Tick(0.1f);
+            for (var i = 0; i < maxTicks && c.Phase == SalesDayPhase.Running; i++) c.Tick(0.1f);
         }
 
         private static void DriveUntilActive(SalesDayController c, int maxTicks = 50)
         {
-            for (var i = 0; i < maxTicks && c.CurrentRequest == null && !c.IsDayCompleted; i++) c.Tick(0.1f);
+            for (var i = 0; i < maxTicks && c.CurrentRequest == null && c.Phase == SalesDayPhase.Running; i++) c.Tick(0.1f);
         }
 
         // ----- tests -----
 
         [Test]
-        public void StartDay_NoCustomers_CompletesImmediately()
+        public void StartDay_NoCustomers_BecomesReadyToClose_ThenConcludes()
         {
             var c = Build(
                 new[] { SalesTestKit.Book("b1") }, new RequestConfig[0],
                 SalesTestKit.Location(), new List<Customer>());
 
+            var readyToClose = false;
             var completed = false;
+            c.DayReadyToClose += () => readyToClose = true;
             c.DayCompleted += _ => completed = true;
 
             StartDay(c);
+            Run(c);
+
+            // No customers → day is immediately closable, but does NOT auto-complete.
+            Assert.IsTrue(readyToClose);
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
+            Assert.IsFalse(completed, "Day waits for the player to close the shop.");
+
+            c.ConcludeDay();
 
             Assert.IsTrue(completed);
             Assert.IsTrue(c.IsDayCompleted);
@@ -91,7 +105,7 @@ namespace Book.Sell.Tests.Editor
             StartDay(c);
             Run(c);
 
-            Assert.IsTrue(c.IsDayCompleted);
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
             Assert.AreEqual(1, passive, "One PassivePurchaseStep → one book bought.");
             Assert.AreEqual(1, c.AccumulatedResult.SalesCount);
             Assert.AreEqual(80, c.AccumulatedResult.GoldEarned);
@@ -113,7 +127,7 @@ namespace Book.Sell.Tests.Editor
             StartDay(c);
             Run(c);
 
-            Assert.IsTrue(c.IsDayCompleted);
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
             CollectionAssert.AreEqual(new[] { "c1" }, failures);
             Assert.AreEqual(0, c.AccumulatedResult.SalesCount);
         }
@@ -141,7 +155,7 @@ namespace Book.Sell.Tests.Editor
             StartDay(c);
             Run(c);
 
-            Assert.IsTrue(c.IsDayCompleted);
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
             Assert.AreEqual(1, failures, "First passive miss aborts the plan → the second passive never runs.");
             Assert.AreEqual(0, c.AccumulatedResult.SalesCount);
             Assert.AreEqual(1, c.AccumulatedResult.CustomersServed, "The aborting customer still leaves (served).");
@@ -171,7 +185,7 @@ namespace Book.Sell.Tests.Editor
             StartDay(c);
             Run(c);
 
-            Assert.IsTrue(c.IsDayCompleted);
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
             Assert.IsNull(c.CurrentRequest, "No active minigame should ever open.");
             Assert.AreEqual(0, activeStarted, "Passive failure aborts before the active step is entered.");
         }
@@ -203,7 +217,7 @@ namespace Book.Sell.Tests.Editor
             StartDay(c);
             Run(c);
 
-            Assert.IsTrue(c.IsDayCompleted);
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
             Assert.AreEqual(2, passive, "Both passive steps succeed; success does not end the cycle.");
             Assert.AreEqual(2, c.AccumulatedResult.SalesCount);
         }
@@ -237,7 +251,7 @@ namespace Book.Sell.Tests.Editor
             StartDay(c);
             Run(c);
 
-            Assert.IsTrue(c.IsDayCompleted);
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
             CollectionAssert.AreEqual(new[] { 2 }, completions, "Completion fires once with the passive count.");
         }
 
@@ -264,7 +278,7 @@ namespace Book.Sell.Tests.Editor
             StartDay(c);
             Run(c);
 
-            Assert.IsTrue(c.IsDayCompleted);
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
             Assert.AreEqual(0, completions, "No books bought → completion skipped.");
             Assert.AreEqual(1, c.AccumulatedResult.CustomersServed, "Customer still leaves (served).");
         }
@@ -302,7 +316,7 @@ namespace Book.Sell.Tests.Editor
             c.SkipCurrentRequest();
             Run(c);
 
-            Assert.IsTrue(c.IsDayCompleted);
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
             CollectionAssert.AreEqual(new[] { "reqA", "reqB" }, started);
             Assert.AreEqual(2, c.AccumulatedResult.SkippedCount);
         }
@@ -328,27 +342,78 @@ namespace Book.Sell.Tests.Editor
             StartDay(c);
             Run(c);
 
-            Assert.IsTrue(c.IsDayCompleted);
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
             Assert.AreEqual(2, soldIds.Count, "Both customers buy.");
             CollectionAssert.AreEquivalent(new[] { "b1", "b2" }, soldIds, "No double-reservation: customers pick distinct books.");
             Assert.IsTrue(c.Shelf.AllSoldOut());
         }
 
         [Test]
-        public void DayEnds_WhenBooksSoldOut_EvenWithCustomersRemaining()
+        public void SoldOut_StopsSpawning_FinishesInFlight_ThenReadyToClose()
         {
+            // Single book, three customers, spawned one-at-a-time (large SpawnInterval). c1 spawns and
+            // buys the only book; once sold out, spawning stops so c2/c3 never appear. c1 must still run
+            // its closing steps (LeaveStep → Done) before the day is closable — AllSoldOut no longer ends
+            // the day instantly.
+            var tuning = SalesTestKit.FastTuning();
+            tuning.SpawnInterval = 100f;   // only the first customer spawns within the test's tick budget
+
             var c = Build(
-                new[] { SalesTestKit.Book("b1", genre: "sci-fi") },   // single book
+                new[] { SalesTestKit.Book("b1", genre: "sci-fi") },
                 new RequestConfig[0],
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
-                new List<Customer> { Passive("c1"), Passive("c2"), Passive("c3") });
+                new List<Customer> { Passive("c1"), Passive("c2"), Passive("c3") },
+                tuning);
 
             StartDay(c);
             Run(c);
 
-            Assert.IsTrue(c.IsDayCompleted);
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase, "Day waits for the in-flight buyer to finish, then is closable.");
             Assert.AreEqual(1, c.AccumulatedResult.SalesCount, "Only one book to sell.");
             Assert.IsTrue(c.Shelf.AllSoldOut());
+            Assert.AreEqual(1, c.AccumulatedResult.CustomersServed,
+                "Only c1 was served; spawning stopped on sold-out so c2/c3 never appeared.");
+        }
+
+        [Test]
+        public void LastBookBought_RunsClosingSteps_ThenReadyToClose()
+        {
+            // Repro of the freeze bug: 1 book, 1 customer with the full closing tail. Buying the last
+            // book must NOT end the day before CompletePurchase + Leave run.
+            var c = Build(
+                new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 70) },
+                new RequestConfig[0],
+                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
+                new List<Customer>
+                {
+                    new("c1", new ICustomerStep[]
+                    {
+                        new ApproachStep(), new PassivePurchaseStep(),
+                        new CompletePurchaseStep(), new LeaveStep()
+                    })
+                });
+
+            var completions = new List<int>();
+            c.CustomerPurchaseCompleted += (_, count) => completions.Add(count);
+            SalesDayResult published = null;
+            c.DayCompleted += r => published = r;
+
+            StartDay(c);
+            Run(c);
+
+            // Day did NOT auto-complete; the customer finished its plan.
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
+            Assert.IsTrue(c.Shelf.AllSoldOut());
+            CollectionAssert.AreEqual(new[] { 1 }, completions, "CompletePurchase ran for the one bought book.");
+            Assert.AreEqual(1, c.AccumulatedResult.CustomersServed, "Buyer reached Done, not frozen.");
+            Assert.IsNull(published, "Results not published until the player closes the shop.");
+
+            c.ConcludeDay();
+
+            Assert.IsTrue(c.IsDayCompleted);
+            Assert.IsNotNull(published);
+            Assert.AreEqual(1, published.SalesCount);
+            Assert.AreEqual(1, published.CustomersServed);
         }
 
         [Test]
@@ -377,7 +442,7 @@ namespace Book.Sell.Tests.Editor
             Assert.AreEqual(80 + 25, c.AccumulatedResult.GoldEarned);
 
             Run(c);
-            Assert.IsTrue(c.IsDayCompleted);
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
         }
 
         [Test]

@@ -27,8 +27,11 @@ namespace Game.DayCycle.Results.Services
         private readonly IResultsRewardService _rewards;
         private readonly IResultsReviewTextProvider _reviewProvider;
         private readonly ISceneTransitionService _sceneTransition;
+        private readonly SemaphoreSlim _loadGate = new(1, 1);
 
         private ResultsSummary _currentSummary;
+        private int? _advancedCompletedDay;
+        private bool _advanceInProgress;
 
         public ResultsSessionService(
             ISaveService save,
@@ -55,71 +58,122 @@ namespace Game.DayCycle.Results.Services
 
         public async UniTask LoadAndApplyAsync(CancellationToken ct)
         {
-            var sales = await _save.GetModuleAsync<SalesDayResult>(
-                SalesSaveKeys.LastDayResult, ct);
-
-            if (sales == null)
+            await _loadGate.WaitAsync(ct);
+            try
             {
-                Debug.LogWarning($"{LogPrefix} no SalesDayResult in save module " +
-                                 $"'{SalesSaveKeys.LastDayResult}'.");
-                NoResultAvailable?.Invoke();
-                return;
-            }
+                var sales = await _save.GetModuleAsync<SalesDayResult>(
+                    SalesSaveKeys.LastDayResult, ct);
 
-            // Block autosave for the full apply + persist sequence so a debounced write cannot
-            // sneak between balance mutation and idempotency record persistence.
-            using var lease = _save.BlockAutosave();
-
-            var applied = await _save.GetModuleAsync<ResultsRewardsState>(AppliedRewardsModuleKey, ct)
-                          ?? new ResultsRewardsState();
-
-            var alreadyAppliedForDay = applied.AppliedDays.Find(a => a.CompletedDay == sales.Day);
-            ResultsSummary summary;
-
-            if (alreadyAppliedForDay != null)
-            {
-                Debug.Log($"{LogPrefix} day {sales.Day} already applied — rebuilding summary from stored deltas.");
-                summary = BuildSummary(sales, alreadyAppliedForDay.GoldDelta,
-                    alreadyAppliedForDay.ReputationDelta, alreadyApplied: true);
-            }
-            else
-            {
-                var computation = _rewards.Compute(sales, _progression.Reputation);
-
-                var reason = $"results_day_{sales.Day}";
-                await _resources.AddAsync(ResourceIds.Gold, computation.GoldDelta, reason, ct);
-                await _progression.AddReputationAsync(computation.ReputationDelta, reason, ct);
-
-                applied.AppliedDays.Add(new AppliedDayRewards
+                if (sales == null)
                 {
-                    CompletedDay = sales.Day,
-                    GoldDelta = computation.GoldDelta,
-                    ReputationDelta = computation.ReputationDelta,
-                    AppliedAtUtcMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-                });
-                await _save.UpdateModuleAsync(AppliedRewardsModuleKey, applied,
-                    AppliedRewardsSchemaVersion, ct);
+                    Debug.LogWarning($"{LogPrefix} no SalesDayResult in save module " +
+                                     $"'{SalesSaveKeys.LastDayResult}'.");
+                    NoResultAvailable?.Invoke();
+                    return;
+                }
 
-                Debug.Log($"{LogPrefix} day {sales.Day} applied: " +
-                          $"+{computation.GoldDelta} gold, +{computation.ReputationDelta} reputation.");
-                summary = BuildSummary(sales, computation.GoldDelta,
-                    computation.ReputationDelta, alreadyApplied: false);
-                summary.BestMatch = computation.BestMatch;
+                if (_currentSummary != null && _currentSummary.Day == sales.Day)
+                {
+                    SummaryReady?.Invoke(_currentSummary);
+                    return;
+                }
+
+                // Block autosave for the full apply + persist sequence so a debounced write cannot
+                // sneak between balance mutation and idempotency record persistence.
+                using var lease = _save.BlockAutosave();
+
+                var applied = await _save.GetModuleAsync<ResultsRewardsState>(AppliedRewardsModuleKey, ct)
+                              ?? new ResultsRewardsState();
+
+                var alreadyAppliedForDay = applied.AppliedDays.Find(a => a.CompletedDay == sales.Day);
+                ResultsSummary summary;
+
+                if (alreadyAppliedForDay != null)
+                {
+                    Debug.Log($"{LogPrefix} day {sales.Day} already applied - rebuilding summary from stored deltas.");
+                    summary = BuildSummary(sales, alreadyAppliedForDay.GoldDelta,
+                        alreadyAppliedForDay.ReputationDelta, alreadyApplied: true);
+                }
+                else
+                {
+                    var computation = _rewards.Compute(sales, _progression.Reputation);
+
+                    var reason = $"results_day_{sales.Day}";
+                    await _resources.AddAsync(ResourceIds.Gold, computation.GoldDelta, reason, ct);
+                    await _progression.AddReputationAsync(computation.ReputationDelta, reason, ct);
+
+                    applied.AppliedDays.Add(new AppliedDayRewards
+                    {
+                        CompletedDay = sales.Day,
+                        GoldDelta = computation.GoldDelta,
+                        ReputationDelta = computation.ReputationDelta,
+                        AppliedAtUtcMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                    });
+                    await _save.UpdateModuleAsync(AppliedRewardsModuleKey, applied,
+                        AppliedRewardsSchemaVersion, ct);
+
+                    Debug.Log($"{LogPrefix} day {sales.Day} applied: " +
+                              $"+{computation.GoldDelta} gold, +{computation.ReputationDelta} reputation.");
+                    summary = BuildSummary(sales, computation.GoldDelta,
+                        computation.ReputationDelta, alreadyApplied: false);
+                    summary.BestMatch = computation.BestMatch;
+                }
+
+                // Best-match for the already-applied path: recompute from sales (no balance side-effect).
+                if (summary.BestMatch == null)
+                    summary.BestMatch = _rewards.Compute(sales, _progression.Reputation).BestMatch;
+
+                _currentSummary = summary;
+                SummaryReady?.Invoke(summary);
             }
-
-            // Best-match for the already-applied path: recompute from sales (no balance side-effect).
-            if (summary.BestMatch == null)
-                summary.BestMatch = _rewards.Compute(sales, _progression.Reputation).BestMatch;
-
-            _currentSummary = summary;
-            SummaryReady?.Invoke(summary);
+            finally
+            {
+                _loadGate.Release();
+            }
         }
 
         public async UniTask AdvanceToNextDayAsync(CancellationToken ct)
         {
-            using (var lease = _save.BlockAutosave())
+            if (_advanceInProgress) return;
+
+            var completedDay = _currentSummary?.Day;
+            if (completedDay == null)
             {
-                await _dayProgress.AdvanceToNextDayAsync(ct);
+                var sales = await _save.GetModuleAsync<SalesDayResult>(
+                    SalesSaveKeys.LastDayResult, ct);
+                completedDay = sales?.Day;
+            }
+
+            if (completedDay == null)
+            {
+                Debug.LogWarning($"{LogPrefix} cannot advance: no completed SalesDayResult.");
+                return;
+            }
+
+            if (_advancedCompletedDay == completedDay)
+                return;
+
+            if (_dayProgress.Current.CurrentDay != completedDay.Value)
+            {
+                Debug.LogWarning($"{LogPrefix} skip advance for completed day {completedDay.Value}: " +
+                                 $"current day is already {_dayProgress.Current.CurrentDay}.");
+                _advancedCompletedDay = completedDay;
+                return;
+            }
+
+            _advanceInProgress = true;
+            try
+            {
+                using (var lease = _save.BlockAutosave())
+                {
+                    await _dayProgress.AdvanceToNextDayAsync(ct);
+                }
+
+                _advancedCompletedDay = completedDay;
+            }
+            finally
+            {
+                _advanceInProgress = false;
             }
 
             // Reload the active gameplay scene so all per-scene state (Sales screen, customers,

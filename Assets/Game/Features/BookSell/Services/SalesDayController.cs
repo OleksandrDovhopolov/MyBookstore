@@ -37,7 +37,8 @@ namespace Book.Sell.Services
 
         private float _spawnTimer;
         private int _nextToSpawn;
-        private bool _completed;
+        private SalesDayPhase _phase = SalesDayPhase.Running;
+        private bool _spawningStopped;
 
         public SalesDayController(
             IConfigsService configs,
@@ -66,7 +67,8 @@ namespace Book.Sell.Services
         public SalesShelf Shelf => _shelf;
         public SalesDayResult AccumulatedResult => _result;
         public RequestConfig CurrentRequest => _activeRequest;
-        public bool IsDayCompleted => _completed;
+        public SalesDayPhase Phase => _phase;
+        public bool IsDayCompleted => _phase == SalesDayPhase.Completed;
 
         public event Action<RequestConfig> ActiveRequestStarted;
         public event Action<RecommendationResult> RecommendationResolved;
@@ -75,6 +77,7 @@ namespace Book.Sell.Services
         public event Action<Customer, PassiveSaleEvent> CustomerPassiveSaleHappened;
         public event Action<Customer> CustomerPassivePurchaseFailed;
         public event Action<Customer, int> CustomerPurchaseCompleted;
+        public event Action DayReadyToClose;
         public event Action<SalesDayResult> DayCompleted;
         public event Action<Customer> CustomerPhaseChanged;
         public event Action<Customer, string> BookReserved;
@@ -103,12 +106,14 @@ namespace Book.Sell.Services
             _spawnTimer = _tuning.SpawnInterval;   // spawn the first customer on the first tick
             _activeCustomer = null;
             _activeRequest = null;
-            _completed = false;
+            _phase = SalesDayPhase.Running;
+            _spawningStopped = false;
 
             if (_customers.Count == 0)
             {
-                Debug.LogWarning($"{LogPrefix} No customers for day {setup.Day} — completing immediately.");
-                CompleteDay();
+                // No customers: the first Tick's UpdateDayPhase moves the day straight to ReadyToClose
+                // (allSpawned & spawnedDone are vacuously true), so the player can still close the shop.
+                Debug.LogWarning($"{LogPrefix} No customers for day {setup.Day} — day is immediately closable.");
             }
 
             return UniTask.CompletedTask;
@@ -116,7 +121,7 @@ namespace Book.Sell.Services
 
         public void Tick(float dt)
         {
-            if (_completed) return;
+            if (_phase != SalesDayPhase.Running) return;
             if (_lock.IsHeld) return;   // domain pause: an active minigame / dialogue is open
 
             SpawnDue(dt);
@@ -130,7 +135,7 @@ namespace Book.Sell.Services
                 if (_lock.IsHeld) break;
             }
 
-            CheckEndOfDay();
+            UpdateDayPhase();
         }
 
         public void RecommendBook(string bookId)
@@ -177,11 +182,11 @@ namespace Book.Sell.Services
 
         public void ForceCompleteDay(bool zeroOut)
         {
-            if (_completed) return;
+            if (_phase == SalesDayPhase.Completed) return;
 
             // Drop in-progress minigame state so the published result is consistent.
             // The IInteractionLock may still be held by the active step — that's fine: the next
-            // Tick short-circuits on _completed before reaching the lock check, and the View
+            // Tick short-circuits on the phase before reaching the lock check, and the View
             // stops pumping Update once _dayRunning flips to false in OnDayCompleted.
             _activeCustomer = null;
             _activeRequest = null;
@@ -191,8 +196,15 @@ namespace Book.Sell.Services
                 _result = new SalesDayResult { Day = Day };
             }
 
-            // Reuse the organic completion path: same save + event ordering as CheckEndOfDay.
-            _completed = true;
+            // Reuse the organic completion path: same save + event ordering as ConcludeDay.
+            _phase = SalesDayPhase.Completed;
+            PublishCompletionAsync().Forget();
+        }
+
+        public void ConcludeDay()
+        {
+            if (_phase != SalesDayPhase.ReadyToClose) return;
+            _phase = SalesDayPhase.Completed;
             PublishCompletionAsync().Forget();
         }
 
@@ -306,6 +318,7 @@ namespace Book.Sell.Services
 
         private void SpawnDue(float dt)
         {
+            if (_spawningStopped) return;   // shelf sold out — no new customers (in-flight ones still finish)
             if (_nextToSpawn >= _customers.Count) return;
             _spawnTimer += dt;
             while (_spawnTimer >= _tuning.SpawnInterval && _nextToSpawn < _customers.Count)
@@ -324,7 +337,7 @@ namespace Book.Sell.Services
             // Exits the ActiveRequestStep (releasing the lock) and advances the customer's plan.
             customer.ForceCompleteCurrentStep(_ctx);
 
-            CheckEndOfDay();
+            UpdateDayPhase();
         }
 
         private void CountTier(RecommendationTier tier)
@@ -338,30 +351,28 @@ namespace Book.Sell.Services
             }
         }
 
-        private void CheckEndOfDay()
+        private void UpdateDayPhase()
         {
-            if (_completed) return;
+            if (_phase != SalesDayPhase.Running) return;
 
-            var allSpawned = _nextToSpawn >= _customers.Count;
-            var allDone = true;
-            for (var i = 0; i < _customers.Count; i++)
+            // Sold out: no new customers — but the ones already on the floor must finish their plans
+            // (CompletePurchase → Leave → Done) before the day is closable. This is the fix for the
+            // "buyer of the last book freezes mid-plan" bug: AllSoldOut no longer ends the day.
+            if (_shelf.AllSoldOut()) _spawningStopped = true;
+
+            var noMoreCustomers = _nextToSpawn >= _customers.Count || _spawningStopped;
+            var spawnedDone = true;
+            for (var i = 0; i < _nextToSpawn; i++)
             {
-                if (!_customers[i].IsDone) { allDone = false; break; }
+                if (!_customers[i].IsDone) { spawnedDone = false; break; }
             }
 
-            if ((allSpawned && allDone) || _shelf.AllSoldOut())
-                CompleteDay();
-        }
-
-        private void CompleteDay()
-        {
-            // Flag the day completed synchronously so further ticks early-return.
-            // Actual publish (save write + event) runs as an async chain so the save module is
-            // populated BEFORE downstream subscribers (Results) react. Without this ordering the
-            // Results view reads an empty module in the same frame and bails with "no result".
-            if (_completed) return;
-            _completed = true;
-            PublishCompletionAsync().Forget();
+            if (noMoreCustomers && spawnedDone)
+            {
+                // The day's work is done; wait for the player to close the shop (ConcludeDay).
+                _phase = SalesDayPhase.ReadyToClose;
+                DayReadyToClose?.Invoke();
+            }
         }
 
         private async UniTaskVoid PublishCompletionAsync()
