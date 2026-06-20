@@ -113,6 +113,88 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void StartDay_RaisesShelfChanged_AfterShelfIsBuilt()
+        {
+            var c = Build(
+                new[] { SalesTestKit.Book("b1"), SalesTestKit.Book("b2") },
+                new RequestConfig[0],
+                SalesTestKit.Location(),
+                new List<Customer>());
+
+            var changes = 0;
+            c.ShelfChanged += () => changes++;
+
+            StartDay(c);
+
+            Assert.AreEqual(1, changes);
+            Assert.AreEqual(2, c.Shelf.Books.Count);
+        }
+
+        [Test]
+        public void RecommendBook_SuccessfulSale_RaisesShelfChanged()
+        {
+            var reqA = SalesTestKit.Request("reqA");
+            var c = Build(
+                new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
+                new[] { reqA },
+                SalesTestKit.Location(),
+                new List<Customer> { Active("c1", reqA) });
+
+            StartDay(c);
+            DriveUntilActive(c);
+
+            var changes = 0;
+            c.ShelfChanged += () => changes++;
+
+            c.RecommendBook("b1");
+
+            Assert.AreEqual(1, changes);
+            Assert.AreEqual(ShelfBookState.SoldOut, c.Shelf.Find("b1").State);
+        }
+
+        [Test]
+        public void SkipCurrentRequest_DoesNotRaiseShelfChanged()
+        {
+            var reqA = SalesTestKit.Request("reqA");
+            var c = Build(
+                new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
+                new[] { reqA },
+                SalesTestKit.Location(),
+                new List<Customer> { Active("c1", reqA) });
+
+            StartDay(c);
+            DriveUntilActive(c);
+
+            var changes = 0;
+            c.ShelfChanged += () => changes++;
+
+            c.SkipCurrentRequest();
+
+            Assert.AreEqual(0, changes);
+            Assert.AreEqual(ShelfBookState.Available, c.Shelf.Find("b1").State);
+        }
+
+        [Test]
+        public void PassiveSale_RaisesShelfChanged()
+        {
+            var c = Build(
+                new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
+                new RequestConfig[0],
+                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
+                new List<Customer> { Passive("c1") });
+
+            StartDay(c);
+
+            var changes = 0;
+            c.ShelfChanged += () => changes++;
+
+            Run(c);
+
+            Assert.AreEqual(1, changes);
+            Assert.AreEqual(ShelfBookState.SoldOut, c.Shelf.Find("b1").State);
+        }
+
+        [Test]
         public void PassiveMiss_RaisesCustomerPassivePurchaseFailed()
         {
             var c = Build(

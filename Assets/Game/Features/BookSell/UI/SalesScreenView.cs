@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Book.Sell.API;
@@ -69,18 +70,24 @@ namespace Book.Sell.UI
         private ICurrentDayProvider _dayProvider;
         private IUIManager _uiManager;
         private IPublisher<GameplaySceneButtonsInteractableChanged> _gameplayButtonsPublisher;
+        private IPublisher<GameplayGenreBookCountsChanged> _genreBookCountsPublisher;
+        private IDisposable _genreBookCountsRequestSubscription;
 
         [Inject]
         public void Construct(
             ISalesDayController controller,
             ICurrentDayProvider dayProvider = null,
             IUIManager uiManager = null,
-            IPublisher<GameplaySceneButtonsInteractableChanged> gameplayButtonsPublisher = null)
+            IPublisher<GameplaySceneButtonsInteractableChanged> gameplayButtonsPublisher = null,
+            IPublisher<GameplayGenreBookCountsChanged> genreBookCountsPublisher = null,
+            ISubscriber<GameplayGenreBookCountsRequested> genreBookCountsRequestSubscriber = null)
         {
             _controller = controller;
             _dayProvider = dayProvider;
             _uiManager = uiManager;
             _gameplayButtonsPublisher = gameplayButtonsPublisher;
+            _genreBookCountsPublisher = genreBookCountsPublisher;
+            _genreBookCountsRequestSubscription = genreBookCountsRequestSubscriber?.Subscribe(_ => PublishGenreBookCounts());
         }
 
         private void Awake()
@@ -122,6 +129,7 @@ namespace Book.Sell.UI
             _controller.DayReadyToClose += OnDayReadyToClose;
             _controller.DayCompleted += OnDayCompleted;
             _controller.BookReserved += OnBookReserved;
+            _controller.ShelfChanged += OnShelfChanged;
 
             StartDayFlowAsync(_cts.Token).Forget();
         }
@@ -179,6 +187,16 @@ namespace Book.Sell.UI
             AppendEntry(
                 FeedbackLogEntryView.EntryKind.BookReserved,
                 $"<i>{customer.Id} reserved {bookId}</i>");
+        }
+
+        private void OnShelfChanged()
+        {
+            PublishGenreBookCounts();
+        }
+
+        private void PublishGenreBookCounts()
+        {
+            _genreBookCountsPublisher?.Publish(new GameplayGenreBookCountsChanged(BuildGenreBookCounts()));
         }
 
         private void OnPassiveSaleHappened(PassiveSaleEvent evt)
@@ -450,9 +468,32 @@ namespace Book.Sell.UI
             _gameplayButtonsPublisher?.Publish(new GameplaySceneButtonsInteractableChanged(interactable));
         }
 
+        private Dictionary<string, int> BuildGenreBookCounts()
+        {
+            var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var books = _controller?.Shelf?.Books;
+            if (books == null) return counts;
+
+            for (var i = 0; i < books.Count; i++)
+            {
+                var book = books[i];
+                if (book == null || book.State != ShelfBookState.Available) continue;
+
+                var genre = book.Config?.Genre;
+                if (string.IsNullOrEmpty(genre)) continue;
+
+                counts.TryGetValue(genre, out var count);
+                counts[genre] = count + 1;
+            }
+
+            return counts;
+        }
+
         private void OnDestroy()
         {
             SetGameplaySceneButtonsInteractable(true);
+            _genreBookCountsRequestSubscription?.Dispose();
+            _genreBookCountsRequestSubscription = null;
 
             if (_controller != null)
             {
@@ -462,6 +503,7 @@ namespace Book.Sell.UI
                 _controller.DayReadyToClose -= OnDayReadyToClose;
                 _controller.DayCompleted -= OnDayCompleted;
                 _controller.BookReserved -= OnBookReserved;
+                _controller.ShelfChanged -= OnShelfChanged;
             }
 
             if (_confirmButton != null) _confirmButton.onClick.RemoveListener(OnConfirmClicked);

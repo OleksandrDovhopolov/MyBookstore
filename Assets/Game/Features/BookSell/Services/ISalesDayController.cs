@@ -53,6 +53,9 @@ namespace Book.Sell.Services
         /// <summary>A reservation was released without a sale (customer aborted mid-purchase). For the View's feedback log.</summary>
         event Action<Customer, string> BookReleased;
 
+        /// <summary>Fired when the shelf's sellable inventory changes or is rebuilt for a new day.</summary>
+        event Action ShelfChanged;
+
         UniTask StartDayAsync(int day, CancellationToken ct);
 
         /// <summary>Advance the simulation by dt seconds. No-op while the interaction lock is held (domain pause) or the day is done.</summary>

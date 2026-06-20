@@ -83,6 +83,7 @@ namespace Book.Sell.Services
         public event Action<Customer> CustomerPhaseChanged;
         public event Action<Customer, string> BookReserved;
         public event Action<Customer, string> BookReleased;
+        public event Action ShelfChanged;
 
         public UniTask StartDayAsync(int day, CancellationToken ct)
         {
@@ -117,6 +118,7 @@ namespace Book.Sell.Services
                 Debug.LogWarning($"{LogPrefix} No customers for day {setup.Day} — day is immediately closable.");
             }
 
+            ShelfChanged?.Invoke();
             return UniTask.CompletedTask;
         }
 
@@ -167,6 +169,7 @@ namespace Book.Sell.Services
                 _shelf.CommitSale(bookId);
                 _result.SoldBookIds.Add(bookId);
                 _result.SalesCount++;
+                ShelfChanged?.Invoke();
                 Debug.Log($"{LogPrefix} active sale: book={bookId}, tier={result.Tier}, " +
                           $"gold={result.GoldEarned}, request={request.Id}");
             }
@@ -285,6 +288,7 @@ namespace Book.Sell.Services
             _result.SalesCount++;
             _result.SoldBookIds.Add(saleEvent.BookId);
             _result.PassiveSales.Add(saleEvent);
+            ShelfChanged?.Invoke();
 
             // PassiveSaleHappened fires before the log so subscribers see the event first.
             CustomerPassiveSaleHappened?.Invoke(customer, saleEvent);

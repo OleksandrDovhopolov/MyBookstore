@@ -13,16 +13,23 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
 {
     private IResourcesService _resources;
     private ISubscriber<GameplaySceneButtonsInteractableChanged> _buttonsInteractableSubscriber;
+    private ISubscriber<GameplayGenreBookCountsChanged> _genreBookCountsSubscriber;
+    private IPublisher<GameplayGenreBookCountsRequested> _genreBookCountsRequestPublisher;
     private IDisposable _buttonsInteractableSubscription;
+    private IDisposable _genreBookCountsSubscription;
     //private IProgressionService _progression;
 
     [Inject]
     public void Construct(
         IResourcesService resources,
-        ISubscriber<GameplaySceneButtonsInteractableChanged> buttonsInteractableSubscriber)
+        ISubscriber<GameplaySceneButtonsInteractableChanged> buttonsInteractableSubscriber,
+        ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
+        IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null)
     {
         _resources = resources;
         _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
+        _genreBookCountsSubscriber = genreBookCountsSubscriber;
+        _genreBookCountsRequestPublisher = genreBookCountsRequestPublisher;
     }
 
     protected override void OnInit()
@@ -35,6 +42,9 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
 
         _buttonsInteractableSubscription = _buttonsInteractableSubscriber.Subscribe(
             e => SetSceneButtonsInteractable(e.Interactable));
+
+        _genreBookCountsSubscription = _genreBookCountsSubscriber?.Subscribe(
+            e => View.SetGenreBookCounts(e.Counts));
     }
 
     protected override void OnShowStart()
@@ -51,6 +61,8 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         var goldAmount = _resources.GetAmount(ResourceIds.Gold);
         Debug.LogWarning($"[GameplaySceneController] goldAmount {goldAmount}");
         View.SetGoldAmount(goldAmount);
+        View.SetGenreBookCounts(null);
+        _genreBookCountsRequestPublisher?.Publish(new GameplayGenreBookCountsRequested());
     }
 
     private void OnResourceChanged(ResourceChangeEvent _) => Refresh();
@@ -71,6 +83,9 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
     {
         _buttonsInteractableSubscription?.Dispose();
         _buttonsInteractableSubscription = null;
+
+        _genreBookCountsSubscription?.Dispose();
+        _genreBookCountsSubscription = null;
 
         if (View != null && View.OpenShopButton != null)
             View.OpenShopButton.onClick.RemoveListener(OnOpenShopClicked);

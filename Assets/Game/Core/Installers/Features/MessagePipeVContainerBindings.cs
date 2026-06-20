@@ -22,6 +22,8 @@ namespace Game.Bootstrap
 
             builder.RegisterMessageBroker<MessagePipeSmokeEvent>(options);
             builder.RegisterMessageBroker<GameplaySceneButtonsInteractableChanged>(options);
+            builder.RegisterMessageBroker<GameplayGenreBookCountsChanged>(options);
+            builder.RegisterMessageBroker<GameplayGenreBookCountsRequested>(options);
 
             return options;
         }

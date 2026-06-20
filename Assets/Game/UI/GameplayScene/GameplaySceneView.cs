@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Game.DayCycle.Morning.UI;
 using Game.Preparation.UI;
@@ -15,6 +16,9 @@ public class GameplaySceneView : WindowView
     [SerializeField] private Button _openShopButton;
     [SerializeField] private Button _cheatButton;
     [SerializeField] private Button _startDayButton;
+
+    [Header("Genre book counts")]
+    [SerializeField] private List<GameplayGenreBookCountItemView> _genreBookCountItems = new();
 
     //TODO remove it from here when migrate from this views
     /*[Header("Next screen")]
@@ -89,5 +93,22 @@ public class GameplaySceneView : WindowView
     public void SetGoldAmount(int goldAmount)
     {
         _goldAmountText.text = goldAmount.ToString();
+    }
+
+    public void SetGenreBookCounts(IReadOnlyDictionary<string, int> counts)
+    {
+        if (_genreBookCountItems == null) return;
+
+        for (var i = 0; i < _genreBookCountItems.Count; i++)
+        {
+            var item = _genreBookCountItems[i];
+            if (item == null) continue;
+
+            var count = 0;
+            if (counts != null && !string.IsNullOrEmpty(item.GenreId))
+                counts.TryGetValue(item.GenreId, out count);
+
+            item.SetCount(count);
+        }
     }
 }
