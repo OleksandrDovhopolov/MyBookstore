@@ -51,6 +51,7 @@ namespace Book.Sell.Tests.Editor.Fakes
                 MaxApproachDuration = 0f,
                 BrowseDuration = 0f,
                 PassiveCommitDelay = 0f,
+                PassiveFailureFeedbackDuration = 0f,
                 CompletePurchaseDuration = 0f,
                 LeaveDuration = 0f,
                 SpawnInterval = 0f,

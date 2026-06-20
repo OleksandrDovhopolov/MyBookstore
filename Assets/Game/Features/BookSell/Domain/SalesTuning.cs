@@ -21,6 +21,9 @@ namespace Book.Sell.Domain
         /// <summary>Seconds between targeting a book (reserve) and committing the passive sale.</summary>
         public float PassiveCommitDelay { get; set; } = 0.6f;
 
+        /// <summary>Seconds the failed-passive HUD state is held before the customer closes the visit.</summary>
+        public float PassiveFailureFeedbackDuration { get; set; } = 1.0f;
+
         /// <summary>Seconds the purchase-completion animation holds (CompletePurchaseStep) when the
         /// customer bought at least one book passively.</summary>
         public float CompletePurchaseDuration { get; set; } = 1.5f;

@@ -8,13 +8,13 @@ namespace Book.Sell.Domain.Steps
     /// <summary>
     /// One passive purchase attempt: the customer browses for a while, targets a demand-matching
     /// book (reserve-on-target), then commits the sale after a short delay. A miss (nothing matches)
-    /// completes the step without a sale — the customer just moves on to the next plan step (skip book).
+    /// holds failed-purchase feedback, then closes the customer's shopping cycle.
     /// </summary>
     public sealed class PassivePurchaseStep : ICustomerStep
     {
         private const string LogPrefix = "[Sales.Passive]";
 
-        private enum Sub { Browse, Commit }
+        private enum Sub { Browse, Commit, FailedFeedback }
 
         private Sub _sub;
         private float _t;
@@ -48,16 +48,14 @@ namespace Book.Sell.Domain.Steps
                 if (candidate == null)
                 {
                     Debug.Log($"{LogPrefix} customer={self.Id} attempt #{self.PassivePurchaseCount + 1} MISSED → leaving");
-                    ctx.Sink?.OnPassivePurchaseFailed(self);
-                    return StepStatus.CompletedAndLeave;
+                    return BeginFailedFeedback(self, ctx);
                 }
 
                 // Reserve-on-target. If the reservation race is lost, the cycle ends, customer leaves.
                 if (!ctx.Shelf.Reserve(candidate.Book.BookId))
                 {
                     Debug.Log($"{LogPrefix} customer={self.Id} lost the reserve race for book={candidate.Book.BookId} → leaving");
-                    ctx.Sink?.OnPassivePurchaseFailed(self);
-                    return StepStatus.CompletedAndLeave;
+                    return BeginFailedFeedback(self, ctx);
                 }
 
                 _targetId = candidate.Book.BookId;
@@ -68,6 +66,11 @@ namespace Book.Sell.Domain.Steps
                 ctx.Sink?.OnBookReserved(self, _targetId);
                 return StepStatus.Running;
             }
+
+            if (_sub == Sub.FailedFeedback)
+                return _t >= ctx.Tuning.PassiveFailureFeedbackDuration
+                    ? StepStatus.CompletedAndLeave
+                    : StepStatus.Running;
 
             // Sub.Commit
             if (_t < ctx.Tuning.PassiveCommitDelay) return StepStatus.Running;
@@ -81,6 +84,18 @@ namespace Book.Sell.Domain.Steps
             self.RegisterPassivePurchase();
             Debug.Log($"{LogPrefix} customer={self.Id} BOUGHT book={_targetId} gold={gold} (passive books so far: {self.PassivePurchaseCount})");
             return StepStatus.Completed;
+        }
+
+        private StepStatus BeginFailedFeedback(Customer self, CustomerContext ctx)
+        {
+            ctx.Sink?.OnPassivePurchaseFailed(self);
+
+            if (ctx.Tuning.PassiveFailureFeedbackDuration <= 0f)
+                return StepStatus.CompletedAndLeave;
+
+            _sub = Sub.FailedFeedback;
+            _t = 0f;
+            return StepStatus.Running;
         }
 
         public void Exit(Customer self, CustomerContext ctx)

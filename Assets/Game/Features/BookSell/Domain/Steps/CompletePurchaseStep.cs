@@ -7,7 +7,6 @@ namespace Book.Sell.Domain.Steps
     /// instantly and the plan moves on. Active-recommendation sales are not counted (see
     /// <see cref="Customer.PassivePurchaseCount"/>).
     /// </summary>
-    //TODO if zero bought books - need to hide Last fail hud, if > 0. Hide fail + play  @complete animation@
     public sealed class CompletePurchaseStep : IClosingStep
     {
         private const int MinBooksForCompletion = 1;

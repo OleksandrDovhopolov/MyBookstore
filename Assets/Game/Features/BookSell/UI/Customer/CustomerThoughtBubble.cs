@@ -100,7 +100,7 @@ namespace Book.Sell.UI.Customer
                 CustomerThoughtState.BookPicked => "Active purchase",
                 CustomerThoughtState.Comment => "Bought book",
                 CustomerThoughtState.Rejected => "Active purchase",
-                CustomerThoughtState.PassiveSaleFailed => "Fail",
+                CustomerThoughtState.PassiveSaleFailed => "Failed",
                 CustomerThoughtState.PurchaseCompleted => "Done shopping",
                 _ => string.Empty
             };

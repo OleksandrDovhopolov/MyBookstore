@@ -40,9 +40,6 @@ namespace Game.DayCycle.Results.UI
         [Header("Error")]
         [SerializeField] private GameObject _errorPanel;
 
-        [Header("Close")]
-        [SerializeField] private Button _closeButton;
-
         public TMP_Text DayLabel => _dayLabel;
         public TMP_Text SalesLabel => _salesLabel;
         public TMP_Text GoldLabel => _goldLabel;
@@ -65,6 +62,5 @@ namespace Game.DayCycle.Results.UI
         public Button NextDayButton => _nextDayButton;
         public Button OpenNewspaperButton => _openNewspaperButton;
         public GameObject ErrorPanel => _errorPanel;
-        public Button CloseButton => _closeButton;
     }
 }
