@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
-using Game.Preparation.UI;
 using Game.UI;
 using TMPro;
 using UnityEngine;
@@ -22,25 +20,6 @@ public class GameplaySceneView : WindowView
 
     public Button OpenShopButton => _openShopButton;
     public Button StartDayButton => _startDayButton;
-
-
-    //TODO remove it from here when migrate from this views
-    private GameObject _preparationScreenRoot;
-    public GameObject PreparationScreenRoot
-    {
-        get
-        {
-            if (_preparationScreenRoot == null)
-            {
-                var result = GameObject.FindObjectsByType<PreparationScreenView>(
-                    FindObjectsInactive.Include,
-                    FindObjectsSortMode.None);
-                _preparationScreenRoot = result.FirstOrDefault()?.gameObject;
-            }
-
-            return _preparationScreenRoot;
-        }
-    }
 
     public void SetSceneButtonsInteractable(bool interactable)
     {

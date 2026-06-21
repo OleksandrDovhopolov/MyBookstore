@@ -52,6 +52,7 @@ namespace Game.Bootstrap
             builder.RegisterProgression();
             builder.RegisterFtue();
             builder.RegisterBookSellSharedState(); // ISalesShelfStateService — общий для хаба и локации
+            builder.RegisterPreparation();         // Preparation services (окно PreparationWindow инжектится глобально)
 
         }
 

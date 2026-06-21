@@ -16,11 +16,12 @@ namespace Game.Bootstrap
             builder.RegisterRewardDrop();
             builder.RegisterIap();
             builder.RegisterQuest();
-            builder.RegisterPreparation();
+            // RegisterPreparation() переехал в BootstrapInstaller (Global): Preparation теперь окно
+            // PreparationWindow, инжектится глобальным resolver-ом фабрики окон.
 
             //TODO задача избавиться от FindAnyObjectByType
             // Scene-компоненты хаба: связывают visual-root и фазовую маршрутизацию хаба с DI.
-            // Регистрируются только если присутствуют в сцене (как MorningScreenView/PreparationScreenView).
+            // Регистрируются только если присутствуют в сцене (как MorningScreenView).
             if (Object.FindAnyObjectByType<HubRootBinder>(FindObjectsInactive.Include) != null)
                 builder.RegisterComponentInHierarchy<HubRootBinder>();
 

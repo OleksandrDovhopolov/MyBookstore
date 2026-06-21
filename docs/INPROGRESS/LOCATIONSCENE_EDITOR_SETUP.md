@@ -24,16 +24,24 @@
    - **Камера** локации + (опц.) свет.
 
 ## 3. GameplayScene (хаб) — правки
-1. **GameplayHubRoot**: обернуть визуал/UI хаба (фон, Morning/Preparation roots, камера хаба и т.п.) в один
+1. **GameplayHubRoot**: обернуть визуал/UI хаба (фон, Morning root, камера хаба и т.п.) в один
    родительский GameObject **GameplayHubRoot**. НЕ включать в него: `GameplayLifetimeScope`, глобальные сервисы,
    DontDestroyOnLoad-канвас UIManager, глобальный `EventSystem`.
 2. **HubRootBinder**: добавить компонент `HubRootBinder` на стабильный (не выключаемый) объект; поле `_hubRoot` = **GameplayHubRoot**.
-3. **HubPhaseRouter**: добавить компонент `HubPhaseRouter`; назначить `_morningScreenRoot` и `_preparationScreenRoot`
-   (те же корни, что в `GameplaySceneView`).
+3. **HubPhaseRouter**: добавить компонент `HubPhaseRouter`; назначить **только** `_morningScreenRoot`
+   (тот же корень, что в `GameplaySceneView`). Подготовка теперь — окно `PreparationWindow`, роутер ею не управляет.
 4. **GameInstaller**: у него больше нет полей customer-anchor (они уехали в `LocationInstaller`). Ничего назначать не нужно;
    `HubRootBinder` и `HubPhaseRouter` он подхватит автоматически (RegisterComponentInHierarchy).
-5. Поле `PreparationScreenView._salesScreenRoot` удалено из кода — выезд идёт только через
-   `IGameFlowService.EnterLocationAsync`. В сцене ссылку назначать не нужно.
+5. **Удалить из `GameplayScene` старый объект `PreparationScreen`** (с `PreparationScreenView`) — Подготовка стала окном.
+   `PreparationScreenView._salesScreenRoot` тоже удалён из кода.
+
+## 3a. PreparationWindow (окно Подготовки)
+Подготовка теперь — окно `WindowController` (как `ResultsWindow`):
+1. Создать префаб с компонентами `PreparationWindowView` (+ обязательные для `WindowView`: `RectTransform`/`CanvasGroup`/`Canvas`).
+2. Назначить во view: `_dayLabel`, `_locationLabel`, `_slotCountLabel`, `_validationLabel`, `_bookListContainer`,
+   `_bookRowPrefab` (`PreparationBookRowView`), `_openShopButton`, `_randomBooksButton`. Перенести вёрстку из старого экрана.
+3. Завести префаб в Addressables с адресом **`PreparationWindow`** (как в `[Window("PreparationWindow", WindowType.Page)]`).
+   Открывается автоматически из `GameplaySceneController.StartGameAsync` через `UIManager.ShowAsync<PreparationWindow>()`.
 
 ## 4. Камеры / Audio / EventSystem при additive (рекомендация: одна общая камера)
 В `GameplayScene` уже есть `Main Camera`, `Global Light 2D`, `EventSystem`. Рекомендуемый (самый простой)

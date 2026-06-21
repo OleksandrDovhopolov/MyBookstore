@@ -6,7 +6,7 @@ using MessagePipe;
 using System;
 using System.Threading;
 using Game.DayCycle.Morning;
-using TMPro;
+using Game.Preparation.UI;
 using UnityEngine;
 using VContainer;
 
@@ -60,13 +60,13 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         }
 
         _resources.Changed += OnResourceChanged;
-        
+
         var goldAmount = _resources.GetAmount(ResourceIds.Gold);
         Debug.LogWarning($"[GameplaySceneController] goldAmount {goldAmount}");
         View.SetGoldAmount(goldAmount);
         View.SetGenreBookCounts(null);
         _genreBookCountsRequestPublisher?.Publish(new GameplayGenreBookCountsRequested());
-        
+
         UpdateDayTextAsync().Forget();
     }
 
@@ -115,24 +115,46 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
 
     private async UniTaskVoid StartGameAsync()
     {
-        var preparationScreenRoot = View.PreparationScreenRoot;
-        if (preparationScreenRoot == null)
-        {
-            Debug.LogWarning("[GameplaySceneController] PreparationScreenView not found, cannot start day.");
-            return;
-        }
-
         View.SetStartButtonActive(false);
-        var continued = await StartPreparationAsync(View.destroyCancellationToken);
-        if (!continued)
-        {
-            View.SetStartButtonActive(true);
-            return;
-        }
 
-        preparationScreenRoot.SetActive(true);
+        try
+        {
+            var continued = await StartPreparationAsync(View.destroyCancellationToken);
+            if (!continued)
+            {
+                View.SetStartButtonActive(true);
+                return;
+            }
+
+            // Подготовка теперь — окно (PreparationWindow), а не scene-root.
+            var window = await UIManager.ShowAsync<PreparationWindow>(ct: View.destroyCancellationToken);
+            if (window == null)
+            {
+                View.SetStartButtonActive(true);
+                return;
+            }
+
+            window.Closed += OnPreparationWindowClosed;
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[GameplaySceneController] Failed to open PreparationWindow: {e}");
+            View.SetStartButtonActive(true);
+        }
     }
-    
+
+    private void OnPreparationWindowClosed(IWindowController controller)
+    {
+        if (controller is not PreparationWindow window) return;
+
+        window.Closed -= OnPreparationWindowClosed;
+        if (!window.IsConfirmed)
+            View.SetStartButtonActive(true);
+    }
+
     private async UniTask<bool> StartPreparationAsync(CancellationToken ct)
     {
         if (_session == null)
@@ -148,7 +170,7 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         Debug.Log($"[GameplaySceneController] -> Preparation. Day {result.Day}, " +
                   $"modifiers=[{string.Join(",", result.ActiveModifierIds)}], " +
                   $"locations=[{string.Join(",", result.TargetLocationIds)}].");
-        
+
         return true;
     }
 

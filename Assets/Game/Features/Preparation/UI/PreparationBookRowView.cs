@@ -8,7 +8,7 @@ namespace Game.Preparation.UI
 {
     /// <summary>
     /// Одна строка списка выбора книги. Префаб с TMP-полями и кнопкой-тогглом.
-    /// PreparationScreenView инстансит префаб на каждую SelectableBookItem и вызывает Bind.
+    /// PreparationWindow инстансит префаб на каждую SelectableBookItem и вызывает Bind.
     /// </summary>
     public sealed class PreparationBookRowView : MonoBehaviour
     {

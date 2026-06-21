@@ -9,20 +9,12 @@ namespace Game.DayCycle.Day
     // PhaseRouter-lite: отвечает ТОЛЬКО за визуальное состояние хаба при смене фазы дня.
     // Сценами не управляет (это GameFlowService) и про LocationScene не знает.
     //
-    // Слушает IDayProgressService.PhaseChanged и:
-    //   Morning  → показать Morning root, спрятать Preparation root, закрыть ResultsWindow;
-    //   Results  → спрятать Morning и Preparation roots (под окном Results — чистый хаб).
-    // Фазу Preparation выставляет GameplaySceneController (Morning → Preparation), здесь не дублируем.
-    // Фаза Sales — хаб целиком выключен GameFlowService, роутер ничего не делает.
-    //
-    // Размещается в GameplayScene на стабильном объекте; регистрируется через хаб-installer
-    // (RegisterComponentInHierarchy<HubPhaseRouter>()). _morningScreenRoot/_preparationScreenRoot —
-    // те же корни, что и в GameplaySceneView.
+    // Слушает IDayProgressService.PhaseChanged. Morning root виден ТОЛЬКО в фазе Morning; в остальных
+    // фазах скрыт. На Morning дополнительно закрывает ResultsWindow.
+    // Preparation — это окно (PreparationWindow), закрывается само на Confirm; роутер им не управляет.
+    // Sales — хаб целиком выключен GameFlowService, роутер ничего не делает.
     public sealed class HubPhaseRouter : MonoBehaviour
     {
-        [SerializeField] private GameObject _morningScreenRoot;
-        [SerializeField] private GameObject _preparationScreenRoot;
-
         private IDayProgressService _dayProgress;
         private IUIManager _uiManager;
 
@@ -55,34 +47,14 @@ namespace Game.DayCycle.Day
 
         private void ApplyPhase(DayPhase phase)
         {
-            switch (phase)
-            {
-                case DayPhase.Morning:
-                    SetActive(_morningScreenRoot, true);
-                    SetActive(_preparationScreenRoot, false);
-                    HideResults();
-                    break;
-
-                case DayPhase.Results:
-                    SetActive(_morningScreenRoot, false);
-                    SetActive(_preparationScreenRoot, false);
-                    break;
-
-                // Preparation: переключает GameplaySceneController.
-                // Sales: хаб выключен GameFlowService — здесь ничего не делаем.
-            }
+            if (phase == DayPhase.Morning)
+                HideResults();
         }
 
         private void HideResults()
         {
             if (_uiManager != null && _uiManager.IsWindowShown<ResultsWindow>())
                 _uiManager.HideAsync<ResultsWindow>().Forget();
-        }
-
-        private static void SetActive(GameObject target, bool active)
-        {
-            if (target != null && target.activeSelf != active)
-                target.SetActive(active);
         }
     }
 }

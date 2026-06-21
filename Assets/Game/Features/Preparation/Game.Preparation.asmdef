@@ -10,6 +10,7 @@
         "Book.Sell",
         "Book.Sell.API",
         "Game.Bootstrap.Loading",
+        "Game.Core.UI",
         "DayCycle",
         "Game.Inventory.API",
         "Game.Decor.API"
