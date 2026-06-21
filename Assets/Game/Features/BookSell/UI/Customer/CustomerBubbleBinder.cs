@@ -30,6 +30,10 @@ namespace Book.Sell.UI.Customer
         // AttachAsync resolves; caching the task makes both share one bubble instead of spawning two.
         private readonly Dictionary<string, UniTask<CustomerThoughtBubble>> _attaching = new();
 
+        // Detach can be requested while AttachAsync is still in flight (e.g. customer despawns before the
+        // addressable bubble finishes loading). Keep the intent so the late attach result is discarded.
+        private readonly HashSet<string> _detachRequested = new();
+
         // Customers showing a terminal bubble (passive "Failed" or "purchase completed"): it must survive
         // the Leaving/Done transition (which can fire in the same tick) and only detach on visual despawn.
         private readonly HashSet<string> _keepBubbleUntilDespawn = new();
@@ -170,34 +174,58 @@ namespace Book.Sell.UI.Customer
         // created — avoiding two overlapping world-space bubbles z-fighting (the active-purchase flicker).
         private async UniTask<CustomerThoughtBubble> GetOrAttachBubbleAsync(Book.Sell.Domain.Customer customer)
         {
-            if (_bubbles.TryGetValue(customer.Id, out var existing) && existing != null)
+            var customerId = customer.Id;
+            if (_detachRequested.Contains(customerId)) return null;
+
+            if (_bubbles.TryGetValue(customerId, out var existing) && existing != null)
                 return existing;
 
-            if (_attaching.TryGetValue(customer.Id, out var inFlight))
+            if (_attaching.TryGetValue(customerId, out var inFlight))
                 return await inFlight;
 
-            var visual = _registry.GetById(customer.Id);
+            var visual = _registry.GetById(customerId);
             if (visual == null || visual.BubbleAnchor == null) return null;
 
             var attachTask = _worldHud.AttachAsync<CustomerThoughtBubble>(visual.BubbleAnchor, BubbleAttachArgs).Preserve();
-            _attaching[customer.Id] = attachTask;
+            _attaching[customerId] = attachTask;
             try
             {
                 var bubble = await attachTask;
+                if (_detachRequested.Contains(customerId)) return null;
+
                 if (bubble != null)
-                    _bubbles[customer.Id] = bubble;
+                    _bubbles[customerId] = bubble;
                 return bubble;
             }
             finally
             {
-                _attaching.Remove(customer.Id);
+                _attaching.Remove(customerId);
             }
         }
 
         private async UniTask DetachBubbleAsync(string customerId)
         {
-            if (!_bubbles.Remove(customerId, out var bubble) || bubble == null) return;
-            await _worldHud.DetachAsync(bubble);
+            if (string.IsNullOrEmpty(customerId)) return;
+
+            _detachRequested.Add(customerId);
+            try
+            {
+                _bubbles.Remove(customerId, out var bubble);
+
+                if (bubble == null && _attaching.TryGetValue(customerId, out var inFlight))
+                    bubble = await inFlight;
+
+                if (bubble == null) return;
+
+                // If the attach continuation won the race and registered the bubble, remove it before
+                // detaching so no later event can reuse a HUD that is already on its way out.
+                _bubbles.Remove(customerId);
+                await _worldHud.DetachAsync(bubble);
+            }
+            finally
+            {
+                _detachRequested.Remove(customerId);
+            }
         }
 
         private void OnCustomerVisualDespawned(CustomerVisual visual)
