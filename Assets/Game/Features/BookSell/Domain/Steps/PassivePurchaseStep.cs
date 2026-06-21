@@ -47,7 +47,7 @@ namespace Book.Sell.Domain.Steps
                 // Miss: nothing on the shelf matches → the visit's shopping cycle ends, customer leaves.
                 if (candidate == null)
                 {
-                    Debug.Log($"{LogPrefix} customer={self.Id} attempt #{self.PassivePurchaseCount + 1} MISSED → leaving");
+                    Debug.Log($"{LogPrefix} customer={self.Id} passive attempt MISSED → leaving");
                     return BeginFailedFeedback(self, ctx);
                 }
 
@@ -87,8 +87,8 @@ namespace Book.Sell.Domain.Steps
 
             var saleEvent = new PassiveSaleEvent(_targetId, gold, _matchedGenres, _matchedTags);
             ctx.Sink?.OnPassiveSale(self, saleEvent);
-            self.RegisterPassivePurchase();
-            Debug.Log($"{LogPrefix} customer={self.Id} BOUGHT book={_targetId} gold={gold} (passive books so far: {self.PassivePurchaseCount})");
+            self.RegisterPurchasedBook();
+            Debug.Log($"{LogPrefix} customer={self.Id} BOUGHT book={_targetId} gold={gold} (books bought so far: {self.PurchasedBookCount})");
 
             return BeginSaleFeedback(ctx);
         }

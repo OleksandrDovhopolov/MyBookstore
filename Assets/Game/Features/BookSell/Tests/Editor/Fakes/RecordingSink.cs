@@ -28,8 +28,8 @@ namespace Book.Sell.Tests.Editor.Fakes
         public void OnPassivePurchaseFailed(Customer customer)
             => PassiveFailures.Add(customer);
 
-        public void OnPurchaseCompleted(Customer customer, int passiveCount)
-            => PurchaseCompletions.Add((customer, passiveCount));
+        public void OnPurchaseCompleted(Customer customer, int purchasedBookCount)
+            => PurchaseCompletions.Add((customer, purchasedBookCount));
 
         public void OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent)
             => PassiveSales.Add((customer, saleEvent));

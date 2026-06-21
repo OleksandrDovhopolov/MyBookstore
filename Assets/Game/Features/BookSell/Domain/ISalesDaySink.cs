@@ -24,11 +24,9 @@ namespace Book.Sell.Domain
         /// <summary>A passive purchase attempt ended without a sale.</summary>
         void OnPassivePurchaseFailed(Customer customer);
 
-        
-        //TODO should rename because name not very clear that all process is done ? 
-        /// <summary>The customer finished its visit having bought <paramref name="passiveCount"/> books
-        /// in passive mode (>= 1). For the HUD completion animation.</summary>
-        void OnPurchaseCompleted(Customer customer, int passiveCount);
+        /// <summary>The customer finished its visit having bought <paramref name="purchasedBookCount"/>
+        /// books (active recommendations + passive sales, >= 1). For the HUD completion animation.</summary>
+        void OnPurchaseCompleted(Customer customer, int purchasedBookCount);
 
         /// <summary>A customer acquired the interaction lock and the active minigame opens for them.</summary>
         void OnActiveRequestStarted(Customer customer, RequestConfig request);

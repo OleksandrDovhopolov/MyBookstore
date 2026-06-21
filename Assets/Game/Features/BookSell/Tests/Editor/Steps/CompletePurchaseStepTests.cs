@@ -7,10 +7,10 @@ namespace Book.Sell.Tests.Editor.Steps
 {
     public sealed class CompletePurchaseStepTests
     {
-        private static Customer CustomerWithPassives(int passiveCount)
+        private static Customer CustomerWithPurchases(int purchasedBooks)
         {
             var c = new Customer("c1", new ICustomerStep[] { new CompletePurchaseStep() });
-            for (var i = 0; i < passiveCount; i++) c.RegisterPassivePurchase();
+            for (var i = 0; i < purchasedBooks; i++) c.RegisterPurchasedBook();
             return c;
         }
 
@@ -20,7 +20,7 @@ namespace Book.Sell.Tests.Editor.Steps
             var sink = new RecordingSink();
             var ctx = SalesTestKit.Context(new SalesShelf(), SalesTestKit.Location(), sink);
             var step = new CompletePurchaseStep();
-            var self = CustomerWithPassives(0);
+            var self = CustomerWithPurchases(0);
 
             step.Enter(self, ctx);
             Assert.AreEqual(StepStatus.Completed, step.Tick(self, ctx, 1f), "0 passive books → skip immediately.");
@@ -34,7 +34,7 @@ namespace Book.Sell.Tests.Editor.Steps
             var tuning = new SalesTuning { CompletePurchaseDuration = 1f };
             var ctx = SalesTestKit.Context(new SalesShelf(), SalesTestKit.Location(), sink, tuning: tuning);
             var step = new CompletePurchaseStep();
-            var self = CustomerWithPassives(3);
+            var self = CustomerWithPurchases(3);
 
             step.Enter(self, ctx);
             Assert.AreEqual(1, sink.PurchaseCompletions.Count, "Completion fires once on enter.");
@@ -52,7 +52,7 @@ namespace Book.Sell.Tests.Editor.Steps
             var tuning = new SalesTuning { CompletePurchaseDuration = 10f };
             var ctx = SalesTestKit.Context(new SalesShelf(), SalesTestKit.Location(), sink, tuning: tuning);
             var step = new CompletePurchaseStep(duration: 1f);
-            var self = CustomerWithPassives(1);
+            var self = CustomerWithPurchases(1);
 
             step.Enter(self, ctx);
             Assert.AreEqual(StepStatus.Completed, step.Tick(self, ctx, 1f), "Override (1s) beats tuning (10s).");

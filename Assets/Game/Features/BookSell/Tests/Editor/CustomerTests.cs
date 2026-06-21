@@ -47,7 +47,7 @@ namespace Book.Sell.Tests.Editor
             Drive(customer, ctx);
 
             Assert.IsTrue(customer.IsDone);
-            Assert.AreEqual(1, customer.PassivePurchaseCount, "Only the first passive committed.");
+            Assert.AreEqual(1, customer.PurchasedBookCount, "Only the first passive committed.");
             Assert.AreEqual(1, sink.PassiveFailures.Count, "Second passive missed once.");
             Assert.AreEqual(1, sink.PurchaseCompletions.Count, "Completion still runs after the abort.");
             Assert.AreEqual(1, sink.PurchaseCompletions[0].count);
@@ -75,7 +75,7 @@ namespace Book.Sell.Tests.Editor
 
             Drive(customer, ctx);
 
-            Assert.AreEqual(2, customer.PassivePurchaseCount);
+            Assert.AreEqual(2, customer.PurchasedBookCount);
             Assert.AreEqual(2, sink.Phases.Count(p => p.phase == CustomerPhase.Browsing),
                 "Each passive attempt must refresh Browsing so the HUD shows Choosing again.");
         }
@@ -101,7 +101,7 @@ namespace Book.Sell.Tests.Editor
             for (var i = 0; i < 10 && sink.PassiveFailures.Count == 0; i++)
                 customer.Tick(ctx, 1f);
 
-            Assert.AreEqual(1, customer.PassivePurchaseCount);
+            Assert.AreEqual(1, customer.PurchasedBookCount);
             Assert.AreEqual(1, sink.PassiveFailures.Count);
             Assert.IsEmpty(sink.PurchaseCompletions, "Failed must be visible before CompletePurchase can overwrite it.");
             Assert.IsInstanceOf<PassivePurchaseStep>(customer.CurrentStep);
@@ -133,7 +133,7 @@ namespace Book.Sell.Tests.Editor
             Drive(customer, ctx);
 
             Assert.IsTrue(customer.IsDone);
-            Assert.AreEqual(0, customer.PassivePurchaseCount);
+            Assert.AreEqual(0, customer.PurchasedBookCount);
             Assert.IsEmpty(sink.PurchaseCompletions, "No books bought → completion skipped.");
             CollectionAssert.Contains(
                 System.Linq.Enumerable.Select(sink.Phases, p => p.phase), CustomerPhase.Leaving);

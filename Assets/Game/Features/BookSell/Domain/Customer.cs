@@ -16,10 +16,10 @@ namespace Book.Sell.Domain
         public string Id { get; }
         public CustomerPhase Phase { get; private set; } = CustomerPhase.Spawned;
 
-        /// <summary>Books this customer has bought in PASSIVE mode (active recommendations excluded).</summary>
-        public int PassivePurchaseCount { get; private set; }
+        /// <summary>Total books this customer has bought during the visit (active recommendations + passive sales).</summary>
+        public int PurchasedBookCount { get; private set; }
 
-        public void RegisterPassivePurchase() => PassivePurchaseCount++;
+        public void RegisterPurchasedBook() => PurchasedBookCount++;
 
         public Customer(string id, IReadOnlyList<ICustomerStep> plan)
         {

@@ -38,6 +38,9 @@ namespace Book.Sell.Services
         event Action<Customer, RecommendationResult> CustomerRecommendationResolved;
         event Action<Customer, PassiveSaleEvent> CustomerPassiveSaleHappened;
         event Action<Customer> CustomerPassivePurchaseFailed;
+
+        /// <summary>The customer finished its visit; the <c>int</c> is <c>purchasedBookCount</c>
+        /// (active recommendations + passive sales, >= 1). For the HUD completion bubble/animation.</summary>
         event Action<Customer, int> CustomerPurchaseCompleted;
 
         /// <summary>The customer started leaving — the View should clear its thought bubble.</summary>

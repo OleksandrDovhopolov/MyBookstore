@@ -20,6 +20,14 @@ namespace Book.Sell.Tests.Editor
         private static Customer Active(string id, RequestConfig req)
             => new(id, new ICustomerStep[] { new ApproachStep(), new ActiveRequestStep(req), new LeaveStep() });
 
+        // Active request with the full closing tail, so CompletePurchaseStep actually runs after the
+        // recommendation resolves (needed to assert the visit-completion event).
+        private static Customer ActiveWithCompletion(string id, RequestConfig req)
+            => new(id, new ICustomerStep[]
+            {
+                new ApproachStep(), new ActiveRequestStep(req), new CompletePurchaseStep(), new LeaveStep()
+            });
+
         private static SalesDayController Build(
             BookConfig[] books, RequestConfig[] requests, LocationConfig location, IReadOnlyList<Customer> customers,
             SalesTuning tuning = null,
@@ -152,6 +160,55 @@ namespace Book.Sell.Tests.Editor
 
             Assert.AreEqual(1, changes);
             Assert.AreEqual(ShelfBookState.SoldOut, c.Shelf.Find("b1").State);
+        }
+
+        [Test]
+        public void ActiveSale_CountsAsPurchasedBook_CompletionFiresWithCountOne()
+        {
+            // Two books so the day ends via "all customers done" (b2 remains), letting the customer
+            // reach CompletePurchase/Done after the active sale of b1.
+            var reqA = SalesTestKit.Request("reqA");
+            var c = Build(
+                new[]
+                {
+                    SalesTestKit.Book("b1", genre: "sci-fi", price: 80),
+                    SalesTestKit.Book("b2", genre: "sci-fi", price: 80)
+                },
+                new[] { reqA },
+                SalesTestKit.Location(),
+                new List<Customer> { ActiveWithCompletion("c1", reqA) });
+
+            (Customer customer, int count)? completion = null;
+            c.CustomerPurchaseCompleted += (cust, n) => completion = (cust, n);
+
+            StartDay(c);
+            DriveUntilActive(c);
+            c.RecommendBook("b1");
+            Run(c);
+
+            Assert.IsTrue(completion.HasValue, "An active sale must trigger the visit-completion bubble.");
+            Assert.AreEqual(1, completion.Value.count, "The active sale counts as one purchased book.");
+        }
+
+        [Test]
+        public void SkippedActiveRequest_BuysNothing_NoCompletion()
+        {
+            var reqA = SalesTestKit.Request("reqA");
+            var c = Build(
+                new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
+                new[] { reqA },
+                SalesTestKit.Location(),
+                new List<Customer> { ActiveWithCompletion("c1", reqA) });
+
+            var completionFired = false;
+            c.CustomerPurchaseCompleted += (_, _) => completionFired = true;
+
+            StartDay(c);
+            DriveUntilActive(c);
+            c.SkipCurrentRequest();
+            Run(c);
+
+            Assert.IsFalse(completionFired, "0 books bought → CompletePurchase is skipped, no completion bubble.");
         }
 
         [Test]

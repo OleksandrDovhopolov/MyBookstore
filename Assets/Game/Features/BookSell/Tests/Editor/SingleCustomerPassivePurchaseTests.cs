@@ -51,7 +51,7 @@ namespace Book.Sell.Tests.Editor
             Drive(customer, ctx);
 
             Assert.IsTrue(customer.IsDone, "Customer leaves.");
-            Assert.AreEqual(0, customer.PassivePurchaseCount, "Nothing bought.");
+            Assert.AreEqual(0, customer.PurchasedBookCount, "Nothing bought.");
             Assert.AreEqual(1, sink.PassiveFailures.Count, "First miss aborts → remaining passive steps never run.");
             Assert.IsEmpty(sink.PurchaseCompletions, "0 books bought → CompletePurchase skipped.");
         }
@@ -69,7 +69,7 @@ namespace Book.Sell.Tests.Editor
             Drive(customer, ctx);
 
             Assert.IsTrue(customer.IsDone);
-            Assert.AreEqual(n, customer.PassivePurchaseCount);
+            Assert.AreEqual(n, customer.PurchasedBookCount);
         }
 
         // 3) N passive steps, M > N books -> customer stops at its plan length, not at the shelf
@@ -86,7 +86,7 @@ namespace Book.Sell.Tests.Editor
             Drive(customer, ctx);
 
             Assert.IsTrue(customer.IsDone);
-            Assert.AreEqual(n, customer.PassivePurchaseCount);
+            Assert.AreEqual(n, customer.PurchasedBookCount);
         }
     }
 }

@@ -173,6 +173,7 @@ namespace Book.Sell.Services
                 _shelfState?.MarkSoldAsync(bookId, CancellationToken.None).Forget();
                 _result.SoldBookIds.Add(bookId);
                 _result.SalesCount++;
+                _activeCustomer.RegisterPurchasedBook();
                 ShelfChanged?.Invoke();
                 Debug.Log($"{LogPrefix} active sale: book={bookId}, tier={result.Tier}, " +
                           $"gold={result.GoldEarned}, request={request.Id}");
@@ -280,10 +281,10 @@ namespace Book.Sell.Services
             CustomerPassivePurchaseFailed?.Invoke(customer);
         }
 
-        void ISalesDaySink.OnPurchaseCompleted(Customer customer, int passiveCount)
+        void ISalesDaySink.OnPurchaseCompleted(Customer customer, int purchasedBookCount)
         {
-            Debug.Log($"{LogPrefix} purchase completed: customer={customer.Id}, passiveBooks={passiveCount}");
-            CustomerPurchaseCompleted?.Invoke(customer, passiveCount);
+            Debug.Log($"{LogPrefix} purchase completed: customer={customer.Id}, books={purchasedBookCount}");
+            CustomerPurchaseCompleted?.Invoke(customer, purchasedBookCount);
         }
 
         void ISalesDaySink.OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent)

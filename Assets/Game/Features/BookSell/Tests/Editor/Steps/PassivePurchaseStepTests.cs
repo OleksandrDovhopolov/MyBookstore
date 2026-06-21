@@ -54,7 +54,7 @@ namespace Book.Sell.Tests.Editor.Steps
             // Sale-feedback hold elapses → step completes.
             Assert.AreEqual(StepStatus.Completed, step.Tick(self, ctx, 1f));
             Assert.AreEqual(1, sink.PassiveSales.Count, "Sale fires exactly once.");
-            Assert.AreEqual(1, self.PassivePurchaseCount);
+            Assert.AreEqual(1, self.PurchasedBookCount);
         }
 
         [Test]

@@ -118,10 +118,10 @@ namespace Book.Sell.UI.Customer
             EnsureBubbleAsync(customer, CustomerThoughtState.PassiveSaleFailed, "Failed").Forget();
         }
 
-        private void OnCustomerPurchaseCompleted(Book.Sell.Domain.Customer customer, int passiveCount)
+        private void OnCustomerPurchaseCompleted(Book.Sell.Domain.Customer customer, int purchasedBookCount)
         {
             _keepBubbleUntilDespawn.Add(customer.Id);
-            EnsureBubbleAsync(customer, CustomerThoughtState.PurchaseCompleted, $"Bought {passiveCount} books").Forget();
+            EnsureBubbleAsync(customer, CustomerThoughtState.PurchaseCompleted, $"Bought {purchasedBookCount} books").Forget();
         }
 
         private void OnCustomerThoughtBubbleHidden(Book.Sell.Domain.Customer customer)
@@ -139,8 +139,11 @@ namespace Book.Sell.UI.Customer
 
         private void OnCustomerRecommendationResolved(Book.Sell.Domain.Customer customer, RecommendationResult result)
         {
-            if (result.Tier == RecommendationTier.Normal || result.Tier == RecommendationTier.Excellent)
-                EnsureBubbleAsync(customer, CustomerThoughtState.Comment, "Bought book").Forget();
+            // The active-sale reaction is shown inside the minigame window, not in the world HUD. Detach the
+            // active-request bubble (for all tiers) so it can't blink when the window closes and HUD
+            // suppression is released. If the customer bought a book, CompletePurchaseStep reattaches the
+            // final "Bought N books" bubble afterwards via OnCustomerPurchaseCompleted.
+            DetachBubbleAsync(customer.Id).Forget();
         }
 
         private UniTask EnsureBubbleAsync(

@@ -1,11 +1,11 @@
 namespace Book.Sell.Domain.Steps
 {
     /// <summary>
-    /// Closing step that celebrates the customer's passive purchases. If the customer bought at least
-    /// <see cref="MinBooksForCompletion"/> books in passive mode it raises a completion fact (for the
-    /// HUD) and holds for a configured duration so the animation can play; otherwise it completes
-    /// instantly and the plan moves on. Active-recommendation sales are not counted (see
-    /// <see cref="Customer.PassivePurchaseCount"/>).
+    /// Closing step that celebrates the customer's purchases. If the customer bought at least
+    /// <see cref="MinBooksForCompletion"/> books during the visit (active recommendations + passive sales,
+    /// see <see cref="Customer.PurchasedBookCount"/>) it raises a completion fact (for the HUD) and holds
+    /// for a configured duration so the animation can play; otherwise it completes instantly and the plan
+    /// moves on.
     /// </summary>
     public sealed class CompletePurchaseStep : IClosingStep
     {
@@ -23,9 +23,9 @@ namespace Book.Sell.Domain.Steps
         public void Enter(Customer self, CustomerContext ctx)
         {
             _elapsed = 0f;
-            _qualifies = self.PassivePurchaseCount >= MinBooksForCompletion;
+            _qualifies = self.PurchasedBookCount >= MinBooksForCompletion;
             if (_qualifies)
-                ctx.Sink?.OnPurchaseCompleted(self, self.PassivePurchaseCount);
+                ctx.Sink?.OnPurchaseCompleted(self, self.PurchasedBookCount);
         }
 
         public StepStatus Tick(Customer self, CustomerContext ctx, float dt)
