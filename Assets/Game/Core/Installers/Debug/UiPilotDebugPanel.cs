@@ -43,11 +43,11 @@ namespace Game.UI.DebugPanel
                 ShowStandaloneConfirmAsync().Forget();
             }*/
 
-            y += h + pad;
+            /*y += h + pad;
             if (GUI.Button(new Rect(x, y, w, h), "Hide Top"))
             {
                 _uiManager.HideTopAsync().Forget();
-            }
+            }*/
 
             y += h + pad;
             if (GUI.Button(new Rect(x, y, w, h), "Show Inventory"))
@@ -61,11 +61,11 @@ namespace Game.UI.DebugPanel
                 _uiManager.ShowAsync<DecorPlacementWindow>().Forget();
             }
 
-            y += h + pad;
+            /*y += h + pad;
             if (GUI.Button(new Rect(x, y, w, h), "Show Newspaper"))
             {
                 _uiManager.ShowAsync<NewspaperWindow>().Forget();
-            }
+            }*/
         }
 
         private async UniTask ShowStandaloneConfirmAsync()
