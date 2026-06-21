@@ -38,6 +38,7 @@ namespace Game.Bootstrap
             // IDecorModifierProvider is registered by RegisterDecor in Game.Decor module.
             builder.Register<IBaseSaleChanceCalculator, EconomyBasedSaleChanceCalculator>(Lifetime.Singleton);
             builder.Register<IPassiveSaleSelector, WeightedPassiveSaleSelector>(Lifetime.Singleton);
+            builder.Register<ISalesShelfStateService, SalesShelfStateService>(Lifetime.Singleton);
 
             // Customer simulation.
             builder.Register<IInteractionLock, InteractionLock>(Lifetime.Singleton);

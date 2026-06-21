@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
@@ -26,17 +27,20 @@ namespace Game.Preparation.Services
         private readonly ISaveService _save;
         private readonly IDayProgressService _dayProgress;
         private readonly IPreparationInventoryProvider _inventory;
+        private readonly ISalesShelfStateService _shelfState;
 
         private PreparationSessionState _state;
 
         public PreparationSessionService(
             ISaveService save,
             IDayProgressService dayProgress,
-            IPreparationInventoryProvider inventory)
+            IPreparationInventoryProvider inventory,
+            ISalesShelfStateService shelfState)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _dayProgress = dayProgress ?? throw new ArgumentNullException(nameof(dayProgress));
             _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
+            _shelfState = shelfState ?? throw new ArgumentNullException(nameof(shelfState));
 
             Capacity = new PreparationCapacity(DefaultMinDailyBooks, DefaultDailyBookSlots);
         }
@@ -59,7 +63,7 @@ namespace Game.Preparation.Services
                 {
                     Day = currentDay,
                     LocationId = DefaultLocationId,
-                    SelectedBookIds = new List<string>(),
+                    SelectedBookIds = BuildInitialShelfSelection(),
                     SelectedDecorIds = new List<string>(),
                     Confirmed = false
                 };
@@ -125,11 +129,29 @@ namespace Game.Preparation.Services
             }
 
             _state.Confirmed = true;
+            await _shelfState.SetShelfAsync(_state.SelectedBookIds, ct);
             await _save.UpdateModuleAsync(PreparationSaveKeys.Session, _state, PreparationSaveKeys.SessionSchemaVersion, ct);
             await _dayProgress.SetPhaseAsync(DayPhase.Sales, ct);
 
             Debug.Log($"{LogPrefix} day={_state.Day} location={_state.LocationId} shelf={_state.SelectedBookIds.Count} → Sales.");
             return true;
+        }
+
+        private List<string> BuildInitialShelfSelection()
+        {
+            var selected = new List<string>();
+            var shelfBookIds = _shelfState.ShelfBookIds;
+            var limit = Capacity.DailyBookSlots;
+
+            for (var i = 0; i < shelfBookIds.Count && selected.Count < limit; i++)
+            {
+                var bookId = shelfBookIds[i];
+                if (string.IsNullOrEmpty(bookId)) continue;
+                if (_shelfState.IsSold(bookId)) continue;
+                if (!selected.Contains(bookId)) selected.Add(bookId);
+            }
+
+            return selected;
         }
 
         private static IReadOnlyList<SelectableBookItem> BuildSelectableItems(IReadOnlyList<BookConfig> books, IReadOnlyList<string> selectedIds)

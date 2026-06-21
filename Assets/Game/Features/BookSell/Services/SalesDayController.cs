@@ -25,6 +25,7 @@ namespace Book.Sell.Services
         private readonly IInteractionLock _lock;
         private readonly SalesTuning _tuning;
         private readonly ISaveService _save;
+        private readonly ISalesShelfStateService _shelfState;
 
         private SalesShelf _shelf = new();
         private SalesDayResult _result = new();
@@ -49,7 +50,8 @@ namespace Book.Sell.Services
             ICustomerSpawner spawner,
             IInteractionLock interactionLock,
             SalesTuning tuning,
-            ISaveService save = null)
+            ISaveService save = null,
+            ISalesShelfStateService shelfState = null)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _setupProvider = setupProvider ?? throw new ArgumentNullException(nameof(setupProvider));
@@ -60,6 +62,7 @@ namespace Book.Sell.Services
             _lock = interactionLock ?? throw new ArgumentNullException(nameof(interactionLock));
             _tuning = tuning ?? throw new ArgumentNullException(nameof(tuning));
             _save = save;   // optional in tests; in prod injected via DI
+            _shelfState = shelfState;   // optional in older tests/prototype scenes
         }
 
         public int Day { get; private set; }
@@ -167,6 +170,7 @@ namespace Book.Sell.Services
             if (result.Tier == RecommendationTier.Normal || result.Tier == RecommendationTier.Excellent)
             {
                 _shelf.CommitSale(bookId);
+                _shelfState?.MarkSoldAsync(bookId, CancellationToken.None).Forget();
                 _result.SoldBookIds.Add(bookId);
                 _result.SalesCount++;
                 ShelfChanged?.Invoke();
@@ -284,6 +288,7 @@ namespace Book.Sell.Services
 
         void ISalesDaySink.OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent)
         {
+            _shelfState?.MarkSoldAsync(saleEvent.BookId, CancellationToken.None).Forget();
             _result.GoldEarned += saleEvent.GoldEarned;
             _result.SalesCount++;
             _result.SoldBookIds.Add(saleEvent.BookId);

@@ -22,7 +22,8 @@ namespace Book.Sell.Tests.Editor
 
         private static SalesDayController Build(
             BookConfig[] books, RequestConfig[] requests, LocationConfig location, IReadOnlyList<Customer> customers,
-            SalesTuning tuning = null)
+            SalesTuning tuning = null,
+            ISalesShelfStateService shelfState = null)
         {
             var configs = new FakeConfigsService();
             configs.SetAll(books);
@@ -37,7 +38,8 @@ namespace Book.Sell.Tests.Editor
                 new FakeSalesRandom(),
                 new StubCustomerSpawner(customers),
                 new InteractionLock(),
-                tuning ?? SalesTestKit.FastTuning());
+                tuning ?? SalesTestKit.FastTuning(),
+                shelfState: shelfState);
         }
 
         private static void StartDay(SalesDayController c)
@@ -153,6 +155,26 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void RecommendBook_SuccessfulSale_MarksBookSoldInPersistentShelf()
+        {
+            var shelfState = new RecordingShelfStateService();
+            var reqA = SalesTestKit.Request("reqA");
+            var c = Build(
+                new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
+                new[] { reqA },
+                SalesTestKit.Location(),
+                new List<Customer> { Active("c1", reqA) },
+                shelfState: shelfState);
+
+            StartDay(c);
+            DriveUntilActive(c);
+
+            c.RecommendBook("b1");
+
+            CollectionAssert.Contains(shelfState.Sold, "b1");
+        }
+
+        [Test]
         public void SkipCurrentRequest_DoesNotRaiseShelfChanged()
         {
             var reqA = SalesTestKit.Request("reqA");
@@ -175,6 +197,26 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void SkipCurrentRequest_DoesNotMarkBookSoldInPersistentShelf()
+        {
+            var shelfState = new RecordingShelfStateService();
+            var reqA = SalesTestKit.Request("reqA");
+            var c = Build(
+                new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
+                new[] { reqA },
+                SalesTestKit.Location(),
+                new List<Customer> { Active("c1", reqA) },
+                shelfState: shelfState);
+
+            StartDay(c);
+            DriveUntilActive(c);
+
+            c.SkipCurrentRequest();
+
+            CollectionAssert.IsEmpty(shelfState.Sold);
+        }
+
+        [Test]
         public void PassiveSale_RaisesShelfChanged()
         {
             var c = Build(
@@ -192,6 +234,23 @@ namespace Book.Sell.Tests.Editor
 
             Assert.AreEqual(1, changes);
             Assert.AreEqual(ShelfBookState.SoldOut, c.Shelf.Find("b1").State);
+        }
+
+        [Test]
+        public void PassiveSale_MarksBookSoldInPersistentShelf()
+        {
+            var shelfState = new RecordingShelfStateService();
+            var c = Build(
+                new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
+                new RequestConfig[0],
+                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
+                new List<Customer> { Passive("c1") },
+                shelfState: shelfState);
+
+            StartDay(c);
+            Run(c);
+
+            CollectionAssert.Contains(shelfState.Sold, "b1");
         }
 
         [Test]
