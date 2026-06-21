@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
@@ -10,6 +11,12 @@ namespace Game.DayCycle.Day
     /// </summary>
     public interface IDayProgressService
     {
+        /// <summary>
+        /// Срабатывает после смены фазы/дня (SetPhase / MarkCompleted / AdvanceToNextDay).
+        /// Используется HubPhaseRouter для восстановления визуального состояния хаба без перезагрузки сцены.
+        /// </summary>
+        event Action<DayProgressState> PhaseChanged;
+
         /// <summary>Текущее состояние (после <see cref="LoadAsync"/>). До загрузки — дефолт (день 1, утро).</summary>
         DayProgressState Current { get; }
 

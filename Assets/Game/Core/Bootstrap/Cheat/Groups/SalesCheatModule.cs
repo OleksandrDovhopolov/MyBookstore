@@ -10,7 +10,8 @@ namespace Game.Cheat
     /// what the player accumulated so far or zeroing the result out entirely. The controller is
     /// looked up via the active <see cref="SalesScreenView"/> in the scene because the cheat panel
     /// lives in a global-scope UI window prefab while <see cref="ISalesDayController"/> is
-    /// registered in the gameplay scope — direct VContainer resolution would fail.
+    /// registered in the location scope (LocationScene) — direct VContainer resolution would fail.
+    /// FindAnyObjectByType spans the additively-loaded LocationScene; returns null in the hub.
     /// </summary>
     public sealed class SalesCheatModule : ICheatsModule
     {

@@ -18,7 +18,6 @@ namespace Game.DayCycle.Tests.Editor.Results
             public FakeDayProgressService DayProgress { get; } = new();
             public FakeResourcesService Resources { get; } = new();
             public FakeProgressionService Progression { get; } = new();
-            public FakeSceneTransitionService SceneTransition { get; } = new();
             public ResultsSessionService Sut { get; }
 
             public List<ResultsSummary> Summaries { get; } = new();
@@ -38,8 +37,7 @@ namespace Game.DayCycle.Tests.Editor.Results
                 Sut = new ResultsSessionService(
                     Save, DayProgress, Resources, Progression,
                     new DefaultResultsRewardService(),
-                    new DefaultResultsReviewTextProvider(),
-                    SceneTransition);
+                    new DefaultResultsReviewTextProvider());
 
                 Sut.SummaryReady += s => Summaries.Add(s);
                 Sut.NoResultAvailable += () => NoResultEmits++;
@@ -128,16 +126,17 @@ namespace Game.DayCycle.Tests.Editor.Results
         }
 
         [Test]
-        public void AdvanceToNextDay_DelegatesToDayProgress_AndTriggersTransition()
+        public void AdvanceToNextDay_DelegatesToDayProgress()
         {
             var h = new Harness(Sales());
             h.Run();
             h.Advance();
 
+            // No scene reload anymore: the day advances and phase goes to Morning; HubPhaseRouter
+            // restores the hub visuals off the IDayProgressService.PhaseChanged event.
             Assert.AreEqual(1, h.DayProgress.AdvanceCallCount);
             Assert.AreEqual(2, h.DayProgress.State.CurrentDay);
             Assert.AreEqual(DayPhase.Morning, h.DayProgress.State.CurrentPhase);
-            Assert.AreEqual(1, h.SceneTransition.TransitionCount);
         }
 
         [Test]
@@ -150,7 +149,6 @@ namespace Game.DayCycle.Tests.Editor.Results
 
             Assert.AreEqual(1, h.DayProgress.AdvanceCallCount);
             Assert.AreEqual(2, h.DayProgress.State.CurrentDay);
-            Assert.AreEqual(1, h.SceneTransition.TransitionCount);
         }
 
         [Test]

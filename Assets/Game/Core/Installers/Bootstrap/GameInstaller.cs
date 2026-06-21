@@ -1,30 +1,16 @@
-using Book.Sell.Services;
-using Book.Sell.UI.Customer;
 using UnityEngine;
 using VContainer;
+using VContainer.Unity;
 
 namespace Game.Bootstrap
 {
-    // MonoInstaller — assign this component to GameplayLifetimeScope._monoInstallers.
-    // Registers scene-specific services. Can resolve global services from parent scope.
+    // MonoInstaller — assign this component to GameplayLifetimeScope._monoInstallers (HUB scene).
+    // Registers hub-scope services. Can resolve global services from the parent scope.
+    //
+    // BookSell / Sales (customers, shelf, SalesScreenView, customer anchors) больше НЕ здесь —
+    // они переехали в LocationInstaller (LocationScene). См. docs/GameFlowLoop.md.
     public sealed class GameInstaller : MonoInstaller
     {
-        [Header("BookSell — World HUD Phase 0")]
-        [Tooltip("Placeholder prefab for visualizing customer POCO in the scene. Required for CustomerThoughtBubble.")]
-        [SerializeField] private CustomerVisual _customerVisualPrefab;
-        [Tooltip("Optional parent Transform under which customer visuals are spawned. Leave empty to spawn at scene root.")]
-        [SerializeField] private Transform _customerSpawnRoot;
-        [SerializeField] private Transform _customerEntryLeft;
-        [SerializeField] private Transform _customerEntryRight;
-        [SerializeField] private Transform _customerShopApproach;
-        [SerializeField] private Transform[] _customerLaneAnchors;
-        [SerializeField] private Transform _customerExitLeft;
-        [SerializeField] private Transform _customerExitRight;
-
-        [Header("BookSell — Tuning")]
-        [Tooltip("Sales timing/pacing asset. Leave empty to use code defaults.")]
-        [SerializeField] private SalesTuningConfig _salesTuningConfig;
-
         public override void InstallBindings(IContainerBuilder builder)
         {
             builder.RegisterDayCycleSceneViews();
@@ -32,16 +18,16 @@ namespace Game.Bootstrap
             builder.RegisterIap();
             builder.RegisterQuest();
             builder.RegisterPreparation();
-            builder.RegisterBookSell(
-                _customerVisualPrefab,
-                _customerSpawnRoot,
-                _customerEntryLeft,
-                _customerEntryRight,
-                _customerShopApproach,
-                _customerLaneAnchors,
-                _customerExitLeft,
-                _customerExitRight,
-                _salesTuningConfig);
+
+            //TODO задача избавиться от FindAnyObjectByType
+            // Scene-компоненты хаба: связывают visual-root и фазовую маршрутизацию хаба с DI.
+            // Регистрируются только если присутствуют в сцене (как MorningScreenView/PreparationScreenView).
+            if (Object.FindAnyObjectByType<HubRootBinder>(FindObjectsInactive.Include) != null)
+                builder.RegisterComponentInHierarchy<HubRootBinder>();
+
+            //TODO задача избавиться от FindAnyObjectByType
+            if (Object.FindAnyObjectByType<Game.DayCycle.Day.HubPhaseRouter>(FindObjectsInactive.Include) != null)
+                builder.RegisterComponentInHierarchy<Game.DayCycle.Day.HubPhaseRouter>();
         }
     }
 }

@@ -5,6 +5,7 @@ using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
+using Game.Bootstrap.Loading;
 using Game.Configs;
 using Game.DayCycle.Results.UI;
 using Game.Configs.Models;
@@ -53,6 +54,7 @@ namespace Book.Sell.UI
 
         private ICurrentDayProvider _dayProvider;
         private IUIManager _uiManager;
+        private IGameFlowService _gameFlow;
         private IRecommendationMinigamePresenter _minigamePresenter;
         private ISalesShelfStateService _shelfState;
         private IConfigsService _configs;
@@ -65,6 +67,7 @@ namespace Book.Sell.UI
             ISalesDayController controller,
             ICurrentDayProvider dayProvider = null,
             IUIManager uiManager = null,
+            IGameFlowService gameFlow = null,
             IRecommendationMinigamePresenter minigamePresenter = null,
             ISalesShelfStateService shelfState = null,
             IConfigsService configs = null,
@@ -75,6 +78,7 @@ namespace Book.Sell.UI
             _controller = controller;
             _dayProvider = dayProvider;
             _uiManager = uiManager;
+            _gameFlow = gameFlow;
             _minigamePresenter = minigamePresenter;
             _shelfState = shelfState;
             _configs = configs;
@@ -209,7 +213,27 @@ namespace Book.Sell.UI
                       $"excellent={result.ExcellentCount}, normal={result.NormalCount}, " +
                       $"failed={result.FailedCount}, skipped={result.SkippedCount}");
 
-            ShowResultsWindowAsync().Forget();
+            if (_gameFlow != null)
+            {
+                // Обычный цикл: вернуться в хаб (выгрузка LocationScene), затем открыть Results в хабе.
+                // Захватываем глобальные ссылки в локали — этот view уничтожится при выгрузке сцены,
+                // поэтому статический хелпер не трогает `this`/_cts.
+                ReturnToHubAndShowResultsAsync(_gameFlow, _uiManager).Forget();
+            }
+            else
+            {
+                // Fallback для изолированных debug-сцен без GameFlow: Results прямо здесь.
+                ShowResultsWindowAsync().Forget();
+            }
+        }
+
+        private static async UniTaskVoid ReturnToHubAndShowResultsAsync(IGameFlowService gameFlow, IUIManager ui)
+        {
+            await gameFlow.ReturnToHubAsync(CancellationToken.None);
+            if (ui != null)
+                await ui.ShowAsync<ResultsWindow>(ct: CancellationToken.None);
+            else
+                Debug.LogError("[SalesScreenView] IUIManager was not injected - cannot open ResultsWindow.");
         }
 
         private async UniTaskVoid ShowResultsWindowAsync()

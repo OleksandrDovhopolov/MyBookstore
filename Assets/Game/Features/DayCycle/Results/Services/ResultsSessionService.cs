@@ -2,14 +2,12 @@ using System;
 using System.Threading;
 using Book.Sell.API;
 using Cysharp.Threading.Tasks;
-using Game.Bootstrap.Loading;
 using Game.DayCycle.Day;
 using Game.DayCycle.Results.Domain;
 using Game.Progression.API;
 using Game.Resources.API;
 using Save;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Game.DayCycle.Results.Services
 {
@@ -26,7 +24,6 @@ namespace Game.DayCycle.Results.Services
         private readonly IProgressionService _progression;
         private readonly IResultsRewardService _rewards;
         private readonly IResultsReviewTextProvider _reviewProvider;
-        private readonly ISceneTransitionService _sceneTransition;
         private readonly SemaphoreSlim _loadGate = new(1, 1);
 
         private ResultsSummary _currentSummary;
@@ -39,8 +36,7 @@ namespace Game.DayCycle.Results.Services
             IResourcesService resources,
             IProgressionService progression,
             IResultsRewardService rewards,
-            IResultsReviewTextProvider reviewProvider,
-            ISceneTransitionService sceneTransition)
+            IResultsReviewTextProvider reviewProvider)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _dayProgress = dayProgress ?? throw new ArgumentNullException(nameof(dayProgress));
@@ -48,7 +44,6 @@ namespace Game.DayCycle.Results.Services
             _progression = progression ?? throw new ArgumentNullException(nameof(progression));
             _rewards = rewards ?? throw new ArgumentNullException(nameof(rewards));
             _reviewProvider = reviewProvider ?? throw new ArgumentNullException(nameof(reviewProvider));
-            _sceneTransition = sceneTransition ?? throw new ArgumentNullException(nameof(sceneTransition));
         }
 
         public ResultsSummary CurrentSummary => _currentSummary;
@@ -189,10 +184,11 @@ namespace Game.DayCycle.Results.Services
                 _advanceInProgress = false;
             }
 
-            // Reload the active gameplay scene so all per-scene state (Sales screen, customers,
-            // etc.) is freshly recreated under the new CurrentDay.
-            var sceneName = SceneManager.GetActiveScene().name;
-            await _sceneTransition.TransitionToAsync(sceneName, progress: null, ct);
+            // Раньше здесь был reload активной сцены, чтобы пересоздать per-scene state под новый день.
+            // В additive-цикле (hub ↔ location) сцена НЕ перезагружается: AdvanceToNextDayAsync выставляет
+            // фазу Morning и поднимает IDayProgressService.PhaseChanged, а HubPhaseRouter восстанавливает
+            // визуальное состояние хаба (Morning on / Preparation off / Results закрыт). Управление сценами —
+            // в GameFlowService. См. docs/GameFlowLoop.md.
         }
 
         private ResultsSummary BuildSummary(SalesDayResult sales, int goldDelta, int repDelta, bool alreadyApplied)

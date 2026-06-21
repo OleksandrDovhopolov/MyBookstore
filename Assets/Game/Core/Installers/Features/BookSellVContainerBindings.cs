@@ -10,9 +10,10 @@ using VContainer.Unity;
 namespace Game.Bootstrap
 {
     // Main Feature (core loop) — Sales phase, real-time customer simulation (ADR-0003).
-    // Registered in: GameInstaller (GameplayLifetimeScope).
-    // Resolves from parent (GlobalLifetimeScope): IConfigsService.
-    // No ISaveService / IDayProgressService — Sales is standalone for this iteration.
+    // Registered in: LocationInstaller (LocationLifetimeScope — LocationScene, additive).
+    // Resolves from parent (GlobalLifetimeScope): IConfigsService, ISaveService, IDecorPlacementService.
+    // ISalesSetupProvider is registered alongside in LocationInstaller (PreparationSalesSetupProvider),
+    // which reads the player's choice from the preparation.session save module.
     public static class BookSellVContainerBindings
     {
         public static void RegisterBookSell(
@@ -29,7 +30,7 @@ namespace Game.Bootstrap
         {
             // Reused pure-domain services.
             builder.Register<ISalesRandom, UnityRandomSalesRandom>(Lifetime.Singleton);
-            // ISalesSetupProvider is registered by Preparation (PreparationSalesSetupProvider),
+            // ISalesSetupProvider is registered in LocationInstaller (PreparationSalesSetupProvider),
             // which reads the player's choice from preparation.session and falls back to the
             // catalog if no session exists yet.
             builder.Register<IRecommendationScoringService, RecommendationScoringService>(Lifetime.Singleton);

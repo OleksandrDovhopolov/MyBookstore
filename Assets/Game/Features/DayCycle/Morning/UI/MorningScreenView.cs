@@ -27,6 +27,7 @@ namespace Game.DayCycle.Morning.UI
 
         private IMorningSessionService _session;
         private readonly CancellationTokenSource _cts = new();
+        private bool _started;
 
         [Inject]
         public void Construct(IMorningSessionService session)
@@ -42,7 +43,16 @@ namespace Game.DayCycle.Morning.UI
                 return;
             }
 
+            _started = true;
             RefreshAsync(_cts.Token).Forget();
+        }
+
+        private void OnEnable()
+        {
+            // Повторный вход в новый день: HubPhaseRouter снова включил Morning root.
+            // Первый enable (до Start/инъекции) пропускаем — начальный refresh делает Start.
+            if (_started && _session != null)
+                RefreshAsync(_cts.Token).Forget();
         }
 
         private async UniTaskVoid RefreshAsync(CancellationToken ct)

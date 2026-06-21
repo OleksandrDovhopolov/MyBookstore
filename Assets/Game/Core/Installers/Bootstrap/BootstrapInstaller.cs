@@ -15,6 +15,10 @@ namespace Game.Bootstrap
         [Tooltip("Prefab with the UICanvasRoot component. Instantiated once into DontDestroyOnLoad.")]
         [SerializeField] private UICanvasRoot _uiCanvasRootPrefab;
 
+        [Header("Game Flow")]
+        [Tooltip("Scene names for the hub ↔ location loop (see docs/GameFlowLoop.md).")]
+        [SerializeField] private GameFlowSettings _gameFlowSettings;
+
 #if UNITY_EDITOR
         [Header("Debug Start (Editor only)")]
         [Tooltip("Master switch. When off, the debug flags below are ignored.")]
@@ -31,6 +35,7 @@ namespace Game.Bootstrap
             builder.RegisterMessagePipeBus();
             builder.RegisterMessagePipeSmokeTest(); // TODO: remove after first real message broker is wired up
             builder.RegisterGameLoading();
+            builder.RegisterGameFlow(_gameFlowSettings);
             builder.RegisterAnalytics();
             builder.RegisterSave();
             builder.RegisterInfrastructure();

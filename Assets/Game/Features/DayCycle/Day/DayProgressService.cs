@@ -19,6 +19,8 @@ namespace Game.DayCycle.Day
             _save = save ?? throw new ArgumentNullException(nameof(save));
         }
 
+        public event Action<DayProgressState> PhaseChanged;
+
         public DayProgressState Current => _state ??= new DayProgressState();
 
         public async UniTask<DayProgressState> LoadAsync(CancellationToken ct)
@@ -31,6 +33,7 @@ namespace Game.DayCycle.Day
         {
             Current.CurrentPhase = phase;
             await SaveAsync(ct);
+            PhaseChanged?.Invoke(Current);
         }
 
         public async UniTask MarkCurrentDayCompletedAsync(CancellationToken ct)
@@ -41,6 +44,7 @@ namespace Game.DayCycle.Day
 
             state.CurrentPhase = DayPhase.Results;
             await SaveAsync(ct);
+            PhaseChanged?.Invoke(Current);
         }
 
         public async UniTask AdvanceToNextDayAsync(CancellationToken ct)
@@ -52,6 +56,7 @@ namespace Game.DayCycle.Day
             state.CurrentDay += 1;
             state.CurrentPhase = DayPhase.Morning;
             await SaveAsync(ct);
+            PhaseChanged?.Invoke(Current);
         }
 
         public UniTask SaveAsync(CancellationToken ct)

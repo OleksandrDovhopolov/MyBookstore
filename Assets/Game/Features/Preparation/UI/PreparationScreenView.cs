@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Bootstrap.Loading;
 using Game.DayCycle.Day;
 using Game.Preparation.Domain;
 using Game.Preparation.Services;
@@ -34,10 +35,13 @@ namespace Game.Preparation.UI
         [SerializeField] private Button _randomBooksButton;
 
         [Header("Next screen")]
+        [Tooltip("Fallback-корень Sales в этой же сцене. Используется ТОЛЬКО когда IGameFlowService не " +
+                 "внедрён (напр. изолированная debug-сцена). В обычном цикле выезд идёт через GameFlow.")]
         [SerializeField] private GameObject _salesScreenRoot;
 
         private IPreparationSessionService _session;
         private IDayProgressService _dayProgress;
+        private IGameFlowService _gameFlow;
         private readonly CancellationTokenSource _cts = new();
         private readonly List<PreparationBookRowView> _rows = new();
         private readonly List<SelectableBookItem> _items = new();
@@ -45,10 +49,14 @@ namespace Game.Preparation.UI
         private bool _randomSelectionRunning;
 
         [Inject]
-        public void Construct(IPreparationSessionService session, IDayProgressService dayProgress)
+        public void Construct(
+            IPreparationSessionService session,
+            IDayProgressService dayProgress,
+            IGameFlowService gameFlow = null)
         {
             _session = session;
             _dayProgress = dayProgress;
+            _gameFlow = gameFlow;
         }
 
         private void Awake()
@@ -238,8 +246,19 @@ namespace Game.Preparation.UI
                 return;
             }
 
-            if (_salesScreenRoot != null) _salesScreenRoot.SetActive(true);
             gameObject.SetActive(false);
+
+            if (_gameFlow != null)
+            {
+                // Обычный цикл: выезд в локацию через GameFlowService (additive LocationScene).
+                // Токен не от этого view — переход не должен отменяться, если хаб гасится.
+                _gameFlow.EnterLocationAsync(CancellationToken.None).Forget();
+            }
+            else if (_salesScreenRoot != null)
+            {
+                // Fallback для изолированных debug-сцен без GameFlow: старое поведение in-scene.
+                _salesScreenRoot.SetActive(true);
+            }
         }
 
         private void SetButtonInteractable(bool value)

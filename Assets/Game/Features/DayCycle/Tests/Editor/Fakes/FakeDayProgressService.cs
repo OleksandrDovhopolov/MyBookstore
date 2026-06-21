@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.DayCycle.Day;
@@ -7,6 +8,8 @@ namespace Game.DayCycle.Tests.Editor.Fakes
     /// <summary>In-memory IDayProgressService for tests — no save round-trip, just direct mutation.</summary>
     public sealed class FakeDayProgressService : IDayProgressService
     {
+        public event Action<DayProgressState> PhaseChanged;
+
         public DayProgressState State { get; } = new();
 
         public DayProgressState Current => State;
@@ -21,6 +24,7 @@ namespace Game.DayCycle.Tests.Editor.Fakes
         {
             State.CurrentPhase = phase;
             SaveCallCount++;
+            PhaseChanged?.Invoke(State);
             return UniTask.CompletedTask;
         }
 
@@ -32,6 +36,7 @@ namespace Game.DayCycle.Tests.Editor.Fakes
             State.CurrentPhase = DayPhase.Results;
             MarkCompletedCallCount++;
             SaveCallCount++;
+            PhaseChanged?.Invoke(State);
             return UniTask.CompletedTask;
         }
 
@@ -42,6 +47,7 @@ namespace Game.DayCycle.Tests.Editor.Fakes
             State.CurrentDay += 1;
             State.CurrentPhase = DayPhase.Morning;
             AdvanceCallCount++;
+            PhaseChanged?.Invoke(State);
             return UniTask.CompletedTask;
         }
 
