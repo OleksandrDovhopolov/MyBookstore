@@ -5,6 +5,14 @@
 
 ---
 
+> ⚠️ **Reference-документ из проекта Research — НЕ описывает MyBookstore.**
+> Здесь cover/reveal на **DOTween**; в MyBookstore DOTween **не используется**. У нас сейчас
+> `ITransitionAnimationService` = `NoOpTransitionAnimationService` (хук), точки cover/reveal вызывает
+> `GameFlowService`; реальная анимация будет сделана своим UI-кодом отдельной задачей. Документ —
+> референс для будущей реализации. Актуально: [GameFlowLoop.md](../GameFlowLoop.md), [UI_SYSTEM.md](../UI_SYSTEM.md).
+
+---
+
 ## Общая схема
 
 ```

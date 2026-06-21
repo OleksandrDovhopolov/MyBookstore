@@ -5,6 +5,15 @@
 
 ---
 
+> ⚠️ **Reference-документ из проекта Research — НЕ описывает MyBookstore.**
+> В MyBookstore окна создаёт глобальный `AddressablesWindowFactory` (инжект глобальным resolver-ом), а
+> `WindowFactoryDI` / `SetResolver` / `ClearSceneResolver` **не используются**. Для окон со scene-scoped
+> зависимостями данные передаются через `WindowArgs` (как `RecommendationMinigameWindow`). Родительство
+> scene-скопов при additive — через `LifetimeScope.EnqueueParent` в `GameFlowService`.
+> Актуально: [GameFlowLoop.md](../GameFlowLoop.md), [UI_SYSTEM.md](../UI_SYSTEM.md), [BOOTSTRAP_AND_LOADING.md](../BOOTSTRAP_AND_LOADING.md).
+
+---
+
 ## Иерархия контейнеров
 
 ```

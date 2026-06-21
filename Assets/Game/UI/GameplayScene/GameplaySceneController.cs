@@ -4,7 +4,9 @@ using Game.Shop.UI;
 using Game.UI;
 using MessagePipe;
 using System;
-using Game.DayCycle.Morning.UI;
+using System.Threading;
+using Game.DayCycle.Morning;
+using TMPro;
 using UnityEngine;
 using VContainer;
 
@@ -12,21 +14,23 @@ using VContainer;
 public class GameplaySceneController: WindowController<GameplaySceneView>
 {
     private IResourcesService _resources;
+    private IMorningSessionService _session;
     private ISubscriber<GameplaySceneButtonsInteractableChanged> _buttonsInteractableSubscriber;
     private ISubscriber<GameplayGenreBookCountsChanged> _genreBookCountsSubscriber;
     private IPublisher<GameplayGenreBookCountsRequested> _genreBookCountsRequestPublisher;
     private IDisposable _buttonsInteractableSubscription;
     private IDisposable _genreBookCountsSubscription;
-    //private IProgressionService _progression;
 
     [Inject]
     public void Construct(
         IResourcesService resources,
+        IMorningSessionService morningSessionService,
         ISubscriber<GameplaySceneButtonsInteractableChanged> buttonsInteractableSubscriber,
         ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
         IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null)
     {
         _resources = resources;
+        _session = morningSessionService;
         _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
         _genreBookCountsSubscriber = genreBookCountsSubscriber;
         _genreBookCountsRequestPublisher = genreBookCountsRequestPublisher;
@@ -56,13 +60,20 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         }
 
         _resources.Changed += OnResourceChanged;
-        //_progression.Changed += OnProgressionChanged;
-
+        
         var goldAmount = _resources.GetAmount(ResourceIds.Gold);
         Debug.LogWarning($"[GameplaySceneController] goldAmount {goldAmount}");
         View.SetGoldAmount(goldAmount);
         View.SetGenreBookCounts(null);
         _genreBookCountsRequestPublisher?.Publish(new GameplayGenreBookCountsRequested());
+        
+        UpdateDayTextAsync().Forget();
+    }
+
+    private async UniTask UpdateDayTextAsync()
+    {
+        var context = await _session.StartOrResumeAsync(View.destroyCancellationToken);
+        View.SetDayText($"Day {context.Day}");
     }
 
     private void OnResourceChanged(ResourceChangeEvent _) => Refresh();
@@ -104,17 +115,6 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
 
     private async UniTaskVoid StartGameAsync()
     {
-        // TODO: Replace this temporary scene lookup with a proper phase router.
-        var morningScreen = View.MorningScreenRoot != null
-            ? View.MorningScreenRoot.GetComponent<MorningScreenView>()
-            : null;
-
-        if (morningScreen == null)
-        {
-            Debug.LogWarning("[GameplaySceneController] MorningScreenView not found, cannot start day.");
-            return;
-        }
-
         var preparationScreenRoot = View.PreparationScreenRoot;
         if (preparationScreenRoot == null)
         {
@@ -123,7 +123,7 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         }
 
         View.SetStartButtonActive(false);
-        var continued = await morningScreen.ContinueToPreparationAsync(View.destroyCancellationToken);
+        var continued = await StartPreparationAsync(View.destroyCancellationToken);
         if (!continued)
         {
             View.SetStartButtonActive(true);
@@ -131,7 +131,25 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         }
 
         preparationScreenRoot.SetActive(true);
-        View.MorningScreenRoot.SetActive(false);
+    }
+    
+    private async UniTask<bool> StartPreparationAsync(CancellationToken ct)
+    {
+        if (_session == null)
+        {
+            Debug.LogWarning("[GameplaySceneController] Cannot continue: IMorningSessionService is not injected.");
+            return false;
+        }
+
+        var result = await _session.ContinueToPreparationAsync(ct);
+        if (result == null)
+            return false;
+
+        Debug.Log($"[GameplaySceneController] -> Preparation. Day {result.Day}, " +
+                  $"modifiers=[{string.Join(",", result.ActiveModifierIds)}], " +
+                  $"locations=[{string.Join(",", result.TargetLocationIds)}].");
+        
+        return true;
     }
 
     private async UniTaskVoid OpenShopAsync()

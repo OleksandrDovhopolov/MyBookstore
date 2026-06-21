@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Game.DayCycle.Morning.UI;
 using Game.Preparation.UI;
 using Game.UI;
 using TMPro;
@@ -11,6 +10,7 @@ public class GameplaySceneView : WindowView
 {
     [SerializeField] private Image _goldImage;
     [SerializeField] private TextMeshProUGUI _goldAmountText;
+    [SerializeField] private TMP_Text _dayLabel;
 
     [Header("Shop entry")]
     [SerializeField] private Button _openShopButton;
@@ -20,18 +20,12 @@ public class GameplaySceneView : WindowView
     [Header("Genre book counts")]
     [SerializeField] private List<GameplayGenreBookCountItemView> _genreBookCountItems = new();
 
-    //TODO remove it from here when migrate from this views
-    /*[Header("Next screen")]
-    [SerializeField] private GameObject _preparationScreenRoot;
-    [SerializeField] private GameObject _morningScreenRoot;*/
-
     public Button OpenShopButton => _openShopButton;
     public Button StartDayButton => _startDayButton;
 
 
     //TODO remove it from here when migrate from this views
     private GameObject _preparationScreenRoot;
-    private GameObject _morningScreenRoot;
     public GameObject PreparationScreenRoot
     {
         get
@@ -45,22 +39,6 @@ public class GameplaySceneView : WindowView
             }
 
             return _preparationScreenRoot;
-        }
-    }
-
-    public GameObject MorningScreenRoot
-    {
-        get
-        {
-            if (_morningScreenRoot == null)
-            {
-                var result = GameObject.FindObjectsByType<MorningScreenView>(
-                    FindObjectsInactive.Include,
-                    FindObjectsSortMode.None);
-                _morningScreenRoot = result.FirstOrDefault()?.gameObject;
-            }
-
-            return _morningScreenRoot;
         }
     }
 
@@ -95,6 +73,13 @@ public class GameplaySceneView : WindowView
         _goldAmountText.text = goldAmount.ToString();
     }
 
+    
+    public void SetDayText(string value)
+    {
+        if (_dayLabel != null)
+            _dayLabel.text = value ?? string.Empty;
+    }
+    
     public void SetGenreBookCounts(IReadOnlyDictionary<string, int> counts)
     {
         if (_genreBookCountItems == null) return;

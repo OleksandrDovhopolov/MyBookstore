@@ -1,9 +1,15 @@
 # ADR-0005: Customer visuals live in LocationScene world space
 
-- **Status:** Proposed
-- **Date:** 2026-06-18
+- **Status:** Accepted
+- **Date:** 2026-06-18 (updated 2026-06-21)
 - **Deciders:** project owner
-- **Related:** [ADR-0003](0003-customer-simulation.md), [ADR-0004](0004-stock-model-hybrid-sale-chance.md), `docs/INPROGRESS/SCENE_ARCHITECTURE.md`, `docs/INPROGRESS/LOCATION_BUILDING.md`, `docs/INPROGRESS/WorldHud-Phase-0-Editor-Setup.md`, `Assets/Game/Features/BookSell/UI/SalesScreenView.cs`
+- **Related:** [ADR-0003](0003-customer-simulation.md), [ADR-0004](0004-stock-model-hybrid-sale-chance.md), [GameFlowLoop.md](../GameFlowLoop.md), `docs/INPROGRESS/SCENE_ARCHITECTURE.md`, `docs/INPROGRESS/LOCATION_BUILDING.md`, `docs/INPROGRESS/LOCATIONSCENE_EDITOR_SETUP.md`, `Assets/Game/Features/BookSell/UI/SalesScreenView.cs`
+
+> **Update 2026-06-21:** `LocationScene` теперь существует как отдельная сцена, грузится **additive** поверх
+> хаба (`GameplayScene`) через `IGameFlowService` — см. [GameFlowLoop.md](../GameFlowLoop.md). BookSell
+> (`SalesDayController`, спавнер, `CustomerVisualRegistry`, якоря, `SalesScreenView`) регистрируется в
+> `LocationInstaller` (`LocationLifetimeScope`). Контракт якорей (`EntryLeft/Right`, `ShopApproach`,
+> `LaneOffsets`, `ExitLeft/Right`) ниже соответствует сериализованным полям `LocationInstaller`.
 
 ## Resolved Questions
 

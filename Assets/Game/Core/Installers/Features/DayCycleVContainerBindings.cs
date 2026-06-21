@@ -1,7 +1,6 @@
 using Book.Sell.API;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
-using Game.DayCycle.Morning.UI;
 using Game.DayCycle.Results.Services;
 using UnityEngine;
 using VContainer;
@@ -24,12 +23,6 @@ namespace Game.Bootstrap
             builder.Register<IResultsRewardService, DefaultResultsRewardService>(Lifetime.Singleton);
             builder.Register<IResultsReviewTextProvider, DefaultResultsReviewTextProvider>(Lifetime.Singleton);
             builder.Register<IResultsSessionService, ResultsSessionService>(Lifetime.Singleton);
-        }
-
-        public static void RegisterDayCycleSceneViews(this IContainerBuilder builder)
-        {
-            if (Object.FindAnyObjectByType<MorningScreenView>(FindObjectsInactive.Include) != null)
-                builder.RegisterComponentInHierarchy<MorningScreenView>();
         }
     }
 }

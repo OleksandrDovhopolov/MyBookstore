@@ -165,6 +165,6 @@
 - Слои: brain/домен (`Domain/`, `Services/` — чистый C#), view (`UI/` — `MonoBehaviour`), контроллер (`SalesDayController`), арбитраж (`IInteractionLock`), спавн (`ICustomerSpawner`).
 - Переиспользуются без изменений: `IRecommendationScoringService`, `IPassiveSaleSelector` (+ фильтр резервов), `ISalesRandom`, `BookConfig`/`RequestConfig`/`LocationConfig`/`RequestDifficulty`.
 - `SalesSessionService` (пошаговый) — заменяется `SalesDayController`; миграция: сохранить скоринг/селектор-тесты, переписать session-тесты под tick-модель.
-- DI-регистрация — `BookSellVContainerBindings.RegisterBookSell()` (GameplayLifetimeScope); добавятся `IInteractionLock`, `ICustomerSpawner`, `SalesDayController`.
+- DI-регистрация — `BookSellVContainerBindings.RegisterBookSell()` в **`LocationLifetimeScope`** (LocationScene, additive — см. [GameFlowLoop.md](../GameFlowLoop.md)); включает `IInteractionLock`, `ICustomerSpawner`, `SalesDayController`. `ISalesShelfStateService` вынесен **глобально** (`RegisterBookSellSharedState` в `BootstrapInstaller`), т.к. общий с хабом (Preparation).
 - Все строки/комментарии в коде — английские (LANGUAGE_POLICY). Контент конфигов — отдельно.
 - Детальные поведенческие решения — `docs/INPROGRESS/customer-simulation-decisions.md` (источник истины по правилам; этот ADR — архитектурное решение).

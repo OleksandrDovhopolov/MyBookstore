@@ -356,7 +356,7 @@ Remove or replace before release — it's behind `#if UNITY_EDITOR || DEVELOPMEN
 - **Sorting via Unity SortingLayer doesn't work** for nested canvases under a Screen Space Overlay parent. We use `sortingOrder` ranges. Documented in §7.
 - **Settings cached forever during a session** — `keepInCache=true` never auto-evicts. `ClearCache<T>()` API is not exposed yet; add when needed.
 - **Sorting order grows monotonically per layer** if the closed window wasn't the top — small "holes" left in the counter. Cosmetic, doesn't affect correctness; up to 100 simultaneous windows per layer.
-- **`TransitionAnimationService`** (dim/fade between scenes) is deferred. Scene transitions currently use `ISceneTransitionService` from `Game.Bootstrap.Loading` directly without dim/fade.
+- **`ITransitionAnimationService`** exists as a **no-op hook** (`NoOpTransitionAnimationService` in `Game.Bootstrap.Loading`); `GameFlowService` calls its cover/reveal points around scene load/unload. The real dim/fade impl (own UI code, **no DOTween**) is deferred — see [GameFlowLoop.md](GameFlowLoop.md). Hub ↔ location transitions use `ISceneTransitionService` (additive) via `IGameFlowService`.
 - **HudRoot is currently empty** — `GameHudView` and other persistent HUD elements live as scene-placed MonoBehaviour in `Assets/Game/Features/Resources/UI/`. Migration tracked under [improvements/UI_SYSTEM_FUTURE_PHASES.md](improvements/UI_SYSTEM_FUTURE_PHASES.md).
 - **World-space UI** (over-NPC nameplates, damage numbers, speech bubbles) is **out of scope** for this system. When needed, build a separate `IWorldHudManager` — UI System is for screen-space windows only.
 
