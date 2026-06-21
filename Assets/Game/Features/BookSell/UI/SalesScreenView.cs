@@ -5,7 +5,9 @@ using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
+using Game.Configs;
 using Game.DayCycle.Results.UI;
+using Game.Configs.Models;
 using Game.UI;
 using MessagePipe;
 using TMPro;
@@ -52,6 +54,8 @@ namespace Book.Sell.UI
         private ICurrentDayProvider _dayProvider;
         private IUIManager _uiManager;
         private IRecommendationMinigamePresenter _minigamePresenter;
+        private ISalesShelfStateService _shelfState;
+        private IConfigsService _configs;
         private IPublisher<GameplaySceneButtonsInteractableChanged> _gameplayButtonsPublisher;
         private IPublisher<GameplayGenreBookCountsChanged> _genreBookCountsPublisher;
         private IDisposable _genreBookCountsRequestSubscription;
@@ -62,6 +66,8 @@ namespace Book.Sell.UI
             ICurrentDayProvider dayProvider = null,
             IUIManager uiManager = null,
             IRecommendationMinigamePresenter minigamePresenter = null,
+            ISalesShelfStateService shelfState = null,
+            IConfigsService configs = null,
             IPublisher<GameplaySceneButtonsInteractableChanged> gameplayButtonsPublisher = null,
             IPublisher<GameplayGenreBookCountsChanged> genreBookCountsPublisher = null,
             ISubscriber<GameplayGenreBookCountsRequested> genreBookCountsRequestSubscriber = null)
@@ -70,6 +76,8 @@ namespace Book.Sell.UI
             _dayProvider = dayProvider;
             _uiManager = uiManager;
             _minigamePresenter = minigamePresenter;
+            _shelfState = shelfState;
+            _configs = configs;
             _gameplayButtonsPublisher = gameplayButtonsPublisher;
             _genreBookCountsPublisher = genreBookCountsPublisher;
             _genreBookCountsRequestSubscription = genreBookCountsRequestSubscriber?.Subscribe(_ => PublishGenreBookCounts());
@@ -304,7 +312,8 @@ namespace Book.Sell.UI
         {
             var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             var books = _controller?.Shelf?.Books;
-            if (books == null) return counts;
+            if (books == null || books.Count == 0)
+                return BuildPersistentGenreBookCounts();
 
             for (var i = 0; i < books.Count; i++)
             {
@@ -312,6 +321,28 @@ namespace Book.Sell.UI
                 if (book == null || book.State != ShelfBookState.Available) continue;
 
                 var genre = book.Config?.Genre;
+                if (string.IsNullOrEmpty(genre)) continue;
+
+                counts.TryGetValue(genre, out var count);
+                counts[genre] = count + 1;
+            }
+
+            return counts;
+        }
+
+        private Dictionary<string, int> BuildPersistentGenreBookCounts()
+        {
+            var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var bookIds = _shelfState?.ShelfBookIds;
+            if (bookIds == null || _configs == null) return counts;
+
+            for (var i = 0; i < bookIds.Count; i++)
+            {
+                var bookId = bookIds[i];
+                if (string.IsNullOrEmpty(bookId) || _shelfState.IsSold(bookId)) continue;
+                if (!_configs.TryGet<BookConfig>(bookId, out var book) || book == null) continue;
+
+                var genre = book.Genre;
                 if (string.IsNullOrEmpty(genre)) continue;
 
                 counts.TryGetValue(genre, out var count);

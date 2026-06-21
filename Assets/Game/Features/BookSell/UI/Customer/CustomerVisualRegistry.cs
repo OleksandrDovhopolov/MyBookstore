@@ -21,6 +21,9 @@ namespace Book.Sell.UI.Customer
         private readonly ISalesDayController _sales;
         private readonly IObjectResolver _resolver;
         private readonly SalesTuning _tuning;
+        // Same pause source the day loop uses (SalesScreenView gates Tick on it): freezes customer
+        // movement while the minigame window is open so visuals don't drift past the paused logic.
+        private readonly Func<bool> _isPaused;
         private readonly CustomerVisual _visualPrefab;
         private readonly Transform _spawnRoot;
         private readonly Transform _entryLeft;
@@ -40,11 +43,13 @@ namespace Book.Sell.UI.Customer
             ISalesDayController sales,
             IObjectResolver resolver,
             SalesTuning tuning,
-            CustomerVisualRegistryConfig config)
+            CustomerVisualRegistryConfig config,
+            IRecommendationMinigamePresenter minigamePresenter = null)
         {
             _sales = sales;
             _resolver = resolver;
             _tuning = tuning;
+            _isPaused = () => minigamePresenter?.IsWindowOpen ?? false;
             _visualPrefab = config.VisualPrefab;
             _spawnRoot = config.SpawnRoot;
             _entryLeft = config.EntryLeft;
@@ -81,7 +86,7 @@ namespace Book.Sell.UI.Customer
             switch (customer.Phase)
             {
                 case CustomerPhase.Approaching:
-                    state.Visual.MoveToAsync(state.LanePosition, ResolveApproachDuration(customer)).Forget();
+                    state.Visual.MoveToAsync(state.LanePosition, ResolveApproachDuration(customer), _isPaused).Forget();
                     break;
                 case CustomerPhase.Leaving:
                     MoveToExitAndDespawnAsync(customer.Id, state, ResolveLeaveDuration(customer)).Forget();
@@ -117,7 +122,7 @@ namespace Book.Sell.UI.Customer
             if (state.DespawnStarted || state.Visual == null) return;
             state.DespawnStarted = true;
 
-            await state.Visual.MoveToAsync(ResolveExitPosition(), exitDuration);
+            await state.Visual.MoveToAsync(ResolveExitPosition(), exitDuration, _isPaused);
             DespawnNow(customerId);
         }
 

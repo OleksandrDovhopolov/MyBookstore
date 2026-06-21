@@ -55,7 +55,10 @@ namespace Book.Sell.UI.Customer
             }
         }
 
-        public async UniTask MoveToAsync(Vector3 target, float duration, CancellationToken ct = default)
+        // <paramref name="isPaused"/> lets the caller freeze the walk in lockstep with the paused day
+        // (e.g. while the recommendation minigame window is open), so the visual cannot drift ahead of the
+        // logical step that is no longer ticking.
+        public async UniTask MoveToAsync(Vector3 target, float duration, Func<bool> isPaused = null, CancellationToken ct = default)
         {
             _moveCts?.Cancel();
             var moveCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -71,9 +74,12 @@ namespace Book.Sell.UI.Customer
                 while (elapsed < safeDuration)
                 {
                     token.ThrowIfCancellationRequested();
-                    elapsed += Time.deltaTime;
-                    var t = Mathf.Clamp01(elapsed / safeDuration);
-                    transform.position = Vector3.Lerp(start, target, t);
+                    if (isPaused == null || !isPaused())
+                    {
+                        elapsed += Time.deltaTime;
+                        var t = Mathf.Clamp01(elapsed / safeDuration);
+                        transform.position = Vector3.Lerp(start, target, t);
+                    }
                     await UniTask.Yield(PlayerLoopTiming.Update, token);
                 }
 
