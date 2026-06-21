@@ -56,7 +56,7 @@ namespace Book.Sell.UI.Customer
                 ApplyContent(state, payload);
 
                 var next = ResolveGroup(state);
-                await CrossfadeAsync(_currentActive, next, ct);
+                await CrossfadeAsync(next, ct);
 
                 // Per-state secondary animation (subtle scale-in for book / rejection).
                 await PlaySecondaryAsync(state, ct);
@@ -118,30 +118,38 @@ namespace Book.Sell.UI.Customer
             _ => null,
         };
 
-        private async UniTask CrossfadeAsync(CanvasGroup from, CanvasGroup to, CancellationToken ct)
+        private async UniTask CrossfadeAsync(CanvasGroup to, CancellationToken ct)
         {
-            if (from == to)
-            {
-                if (to != null) to.alpha = 1f;
-                return;
-            }
-
-            // Fade out the current sub-view (if any), then fade in the new one. Could be parallelized,
-            // but sequential is more legible and the duration is short.
-            if (from != null)
-            {
-                await TweenAsync.LerpAlphaAsync(from, from.alpha, 0f, CrossfadeDuration, ct);
-                from.gameObject.SetActive(false);
-            }
-
-            if (to != null)
-            {
-                to.gameObject.SetActive(true);
-                to.alpha = 0f;
-                await TweenAsync.LerpAlphaAsync(to, 0f, 1f, CrossfadeDuration, ct);
-            }
+            // Supersede-safe: snap every other sub-view off immediately. Rapid state changes (e.g.
+            // AwaitingHelp -> InMinigame in a single tick) cancel an in-flight fade mid-way (OCE); hiding
+            // the others here guarantees we never leave two sub-views (dots + book) overlapping, which the
+            // previous fade-out-then-fade-in sequence did when cancelled.
+            HideGroupsExcept(to);
 
             _currentActive = to;
+            if (to == null) return;
+
+            to.gameObject.SetActive(true);
+            if (to.alpha < 1f)
+                await TweenAsync.LerpAlphaAsync(to, to.alpha, 1f, CrossfadeDuration, ct);
+            else
+                to.alpha = 1f;
+        }
+
+        private void HideGroupsExcept(CanvasGroup keep)
+        {
+            if (_view == null) return;
+            HideGroup(_view.DotsGroup, keep);
+            HideGroup(_view.BookGroup, keep);
+            HideGroup(_view.CommentGroup, keep);
+            HideGroup(_view.RejectionGroup, keep);
+        }
+
+        private static void HideGroup(CanvasGroup group, CanvasGroup keep)
+        {
+            if (group == null || group == keep) return;
+            group.alpha = 0f;
+            group.gameObject.SetActive(false);
         }
 
         private async UniTask PlaySecondaryAsync(CustomerThoughtState state, CancellationToken ct)

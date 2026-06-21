@@ -1366,8 +1366,8 @@ GameObject:
   - component: {fileID: 5725024303665411235}
   - component: {fileID: 303474359754135758}
   - component: {fileID: 5653145718807376124}
-  - component: {fileID: 2440060870501023053}
   - component: {fileID: 8752902291292818300}
+  - component: {fileID: 2182654254123060790}
   m_Layer: 5
   m_Name: RecommendationMinigameWindow
   m_TagString: Untagged
@@ -1444,38 +1444,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _duration: 0.25
---- !u!114 &2440060870501023053
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5883908850249204972}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8c7b897cfafb1574ab1ac41b8885b6bf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _animation: {fileID: 5653145718807376124}
-  _dayLabel: {fileID: 0}
-  _salesLabel: {fileID: 0}
-  _goldLabel: {fileID: 0}
-  _excLabel: {fileID: 0}
-  _normLabel: {fileID: 0}
-  _failLabel: {fileID: 0}
-  _skipLabel: {fileID: 0}
-  _bestMatchPanel: {fileID: 0}
-  _bestBookLabel: {fileID: 0}
-  _bestRequestLabel: {fileID: 0}
-  _bestTierLabel: {fileID: 0}
-  _bestReasonLabel: {fileID: 0}
-  _reviewLabel: {fileID: 0}
-  _goldDeltaLabel: {fileID: 0}
-  _repDeltaLabel: {fileID: 0}
-  _alreadyAppliedHint: {fileID: 0}
-  _nextDayButton: {fileID: 0}
-  _openNewspaperButton: {fileID: 0}
-  _errorPanel: {fileID: 0}
 --- !u!114 &8752902291292818300
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1492,7 +1460,7 @@ MonoBehaviour:
   _minigameRoot: {fileID: 9000035874164344811}
   _requestText: {fileID: 4540841737405967709}
   _difficultyLabel: {fileID: 3640929294258048286}
-  _shelfContainer: {fileID: 5055667254828719479}
+  _shelfContainer: {fileID: 8994141112224109922}
   _bookCardPrefab: {fileID: 8081508463598319099, guid: d78b5c7cb7cfe7d41a347d5e4dd21b74, type: 3}
   _detailPanel: {fileID: 7930770666052793752}
   _detailTitle: {fileID: 3546209710503832129}
@@ -1505,6 +1473,23 @@ MonoBehaviour:
   _resultPanel: {fileID: 2916365277762495274}
   _emotionLabel: {fileID: 177819975664626460}
   _finishButton: {fileID: 8160422995117916831}
+--- !u!114 &2182654254123060790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5883908850249204972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!1 &5998175902592412749
 GameObject:
   m_ObjectHideFlags: 0
@@ -1974,8 +1959,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

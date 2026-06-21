@@ -25,6 +25,11 @@ namespace Book.Sell.UI.Customer
 
         private readonly Dictionary<string, CustomerThoughtBubble> _bubbles = new();
 
+        // In-flight attach tasks, keyed by customer. During an active request, AwaitingHelp and InMinigame
+        // phase changes fire in the same tick, so two EnsureBubbleAsync calls run before the first
+        // AttachAsync resolves; caching the task makes both share one bubble instead of spawning two.
+        private readonly Dictionary<string, UniTask<CustomerThoughtBubble>> _attaching = new();
+
         // Customers showing a terminal bubble (passive "Failed" or "purchase completed"): it must survive
         // the Leaving/Done transition (which can fire in the same tick) and only detach on visual despawn.
         private readonly HashSet<string> _keepBubbleUntilDespawn = new();
@@ -154,17 +159,39 @@ namespace Book.Sell.UI.Customer
             CustomerThoughtState state,
             CustomerThoughtPayload payload)
         {
-            var visual = _registry.GetById(customer.Id);
-            if (visual == null || visual.BubbleAnchor == null) return;
-
-            if (!_bubbles.TryGetValue(customer.Id, out var bubble) || bubble == null)
-            {
-                bubble = await _worldHud.AttachAsync<CustomerThoughtBubble>(visual.BubbleAnchor, BubbleAttachArgs);
-                if (bubble == null) return;
-                _bubbles[customer.Id] = bubble;
-            }
+            var bubble = await GetOrAttachBubbleAsync(customer);
+            if (bubble == null) return;
 
             await bubble.SetStateAsync(state, payload);
+        }
+
+        // Returns the customer's bubble, attaching it on first use. Concurrent callers (the AwaitingHelp +
+        // InMinigame burst on an active request) await the same in-flight attach, so only one bubble is ever
+        // created — avoiding two overlapping world-space bubbles z-fighting (the active-purchase flicker).
+        private async UniTask<CustomerThoughtBubble> GetOrAttachBubbleAsync(Book.Sell.Domain.Customer customer)
+        {
+            if (_bubbles.TryGetValue(customer.Id, out var existing) && existing != null)
+                return existing;
+
+            if (_attaching.TryGetValue(customer.Id, out var inFlight))
+                return await inFlight;
+
+            var visual = _registry.GetById(customer.Id);
+            if (visual == null || visual.BubbleAnchor == null) return null;
+
+            var attachTask = _worldHud.AttachAsync<CustomerThoughtBubble>(visual.BubbleAnchor, BubbleAttachArgs).Preserve();
+            _attaching[customer.Id] = attachTask;
+            try
+            {
+                var bubble = await attachTask;
+                if (bubble != null)
+                    _bubbles[customer.Id] = bubble;
+                return bubble;
+            }
+            finally
+            {
+                _attaching.Remove(customer.Id);
+            }
         }
 
         private async UniTask DetachBubbleAsync(string customerId)

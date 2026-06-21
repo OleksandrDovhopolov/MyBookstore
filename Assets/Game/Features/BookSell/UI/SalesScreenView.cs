@@ -42,10 +42,6 @@ namespace Book.Sell.UI
         [SerializeField] private FeedbackLogEntryView _feedbackLogEntryPrefab;
         [SerializeField] [Min(1)] private int _maxLogLines = 12;
 
-        [Header("Legacy day-end fallback (used only when Results Screen Root is empty)")]
-        [SerializeField] private GameObject _dayEndPanel;
-        [SerializeField] private TMP_Text _dayEndSummary;
-        [SerializeField] private Button _restartButton;        // optional
 
         private ISalesDayController _controller;
         public ISalesDayController Controller => _controller;
@@ -81,14 +77,11 @@ namespace Book.Sell.UI
 
         private void Awake()
         {
-            if (_restartButton != null) _restartButton.onClick.AddListener(OnRestartClicked);
             if (_closeShopButton != null)
             {
                 _closeShopButton.onClick.AddListener(OnCloseShopClicked);
                 _closeShopButton.gameObject.SetActive(false);
             }
-
-            if (_dayEndPanel != null) _dayEndPanel.SetActive(false);
         }
 
         private void Start()
@@ -215,8 +208,7 @@ namespace Book.Sell.UI
         {
             if (_uiManager == null)
             {
-                Debug.LogWarning("[SalesScreenView] IUIManager was not injected - cannot open ResultsWindow.");
-                ShowLegacyDayEndPanel();
+                Debug.LogError("[SalesScreenView] IUIManager was not injected - cannot open ResultsWindow.");
                 return;
             }
 
@@ -225,31 +217,6 @@ namespace Book.Sell.UI
                 gameObject.SetActive(false);
         }
 
-        private void ShowLegacyDayEndPanel()
-        {
-            var result = _controller.AccumulatedResult;
-            if (_dayEndPanel != null) _dayEndPanel.SetActive(true);
-            if (_dayEndSummary != null)
-            {
-                _dayEndSummary.text =
-                    $"<b>Day {result.Day} completed</b>\n\n" +
-                    $"Sales: {result.SalesCount}  |  Revenue: {result.GoldEarned}\n" +
-                    $"Customers: {result.CustomersServed}\n" +
-                    $"Excellent: {result.ExcellentCount}   Normal: {result.NormalCount}   " +
-                    $"Failed: {result.FailedCount}   Skipped: {result.SkippedCount}";
-            }
-        }
-
-        // ---------- user input ----------
-
-        private void OnRestartClicked()
-        {
-            ClearEntries();
-            if (_dayEndPanel != null) _dayEndPanel.SetActive(false);
-            if (_closeShopButton != null) _closeShopButton.gameObject.SetActive(false);
-            SetGameplaySceneButtonsInteractable(false);
-            StartDayFlowAsync(_cts.Token).Forget();
-        }
 
         // ---------- feedback log ----------
 
@@ -296,16 +263,7 @@ namespace Book.Sell.UI
                 if (oldest != null) Destroy(oldest.gameObject);
             }
         }
-
-        private void ClearEntries()
-        {
-            while (_entries.Count > 0)
-            {
-                var e = _entries.Dequeue();
-                if (e != null) Destroy(e.gameObject);
-            }
-        }
-
+        
         private string BuildResultLine(RecommendationResult result)
         {
             var tierLabel = result.Tier switch
@@ -379,7 +337,6 @@ namespace Book.Sell.UI
                 _controller.ShelfChanged -= OnShelfChanged;
             }
 
-            if (_restartButton != null) _restartButton.onClick.RemoveListener(OnRestartClicked);
             if (_closeShopButton != null) _closeShopButton.onClick.RemoveListener(OnCloseShopClicked);
 
             _cts.Cancel();
