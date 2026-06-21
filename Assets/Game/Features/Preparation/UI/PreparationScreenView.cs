@@ -34,11 +34,6 @@ namespace Game.Preparation.UI
         [SerializeField] private Button _openShopButton;
         [SerializeField] private Button _randomBooksButton;
 
-        [Header("Next screen")]
-        [Tooltip("Fallback-корень Sales в этой же сцене. Используется ТОЛЬКО когда IGameFlowService не " +
-                 "внедрён (напр. изолированная debug-сцена). В обычном цикле выезд идёт через GameFlow.")]
-        [SerializeField] private GameObject _salesScreenRoot;
-
         private IPreparationSessionService _session;
         private IDayProgressService _dayProgress;
         private IGameFlowService _gameFlow;
@@ -250,14 +245,13 @@ namespace Game.Preparation.UI
 
             if (_gameFlow != null)
             {
-                // Обычный цикл: выезд в локацию через GameFlowService (additive LocationScene).
+                // Выезд в локацию через GameFlowService (additive LocationScene).
                 // Токен не от этого view — переход не должен отменяться, если хаб гасится.
                 _gameFlow.EnterLocationAsync(CancellationToken.None).Forget();
             }
-            else if (_salesScreenRoot != null)
+            else
             {
-                // Fallback для изолированных debug-сцен без GameFlow: старое поведение in-scene.
-                _salesScreenRoot.SetActive(true);
+                Debug.LogWarning("[PreparationScreenView] IGameFlowService не внедрён — выезд в локацию невозможен.");
             }
         }
 

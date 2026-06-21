@@ -51,6 +51,8 @@ namespace Game.Bootstrap
             builder.RegisterShop();
             builder.RegisterProgression();
             builder.RegisterFtue();
+            builder.RegisterBookSellSharedState(); // ISalesShelfStateService — общий для хаба и локации
+
         }
 
         private void ApplyDebugFlags()

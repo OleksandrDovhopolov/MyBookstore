@@ -32,14 +32,21 @@
    (те же корни, что в `GameplaySceneView`).
 4. **GameInstaller**: у него больше нет полей customer-anchor (они уехали в `LocationInstaller`). Ничего назначать не нужно;
    `HubRootBinder` и `HubPhaseRouter` он подхватит автоматически (RegisterComponentInHierarchy).
-5. Старое поле `PreparationScreenView._salesScreenRoot` больше не нужно в обычном цикле (fallback для debug-сцен);
-   можно оставить пустым.
+5. Поле `PreparationScreenView._salesScreenRoot` удалено из кода — выезд идёт только через
+   `IGameFlowService.EnterLocationAsync`. В сцене ссылку назначать не нужно.
 
-## 4. Камеры / Audio / EventSystem при additive
-- В каждый момент времени активна **одна** камера и **один** `AudioListener`. Варианты:
-  - камера хаба под `GameplayHubRoot` (гаснет вместе с ним при входе в локацию) + своя камера в `LocationScene`; **или**
-  - одна общая камера в хабе, локация без камеры (тогда не класть камеру в LocationScene).
-- **EventSystem** — ровно один (глобальный, в boot/DDOL или в хабе вне `GameplayHubRoot`). В `LocationScene` EventSystem НЕ добавлять.
+## 4. Камеры / Audio / EventSystem при additive (рекомендация: одна общая камера)
+В `GameplayScene` уже есть `Main Camera`, `Global Light 2D`, `EventSystem`. Рекомендуемый (самый простой)
+вариант — оставить их **persistent**, ВНЕ `GameplayHubRoot`, и НЕ класть камеру/EventSystem/AudioListener в
+`LocationScene`:
+- одна `Main Camera` рендерит и хаб, и контент локации (2D overlay-канвасы не зависят от камеры; для
+  Screen Space - Camera назначить эту же камеру);
+- один `AudioListener` (на этой камере), один `EventSystem`, один `Global Light 2D` (URP 2D освещает и спрайты локации).
+- Тогда при входе в локацию гаснет только визуал хаба (`GameplayHubRoot`), а камера/ввод/свет продолжают работать.
+
+Альтернатива (если у локации своя камера): держать камеру хаба ВНУТРИ `GameplayHubRoot` и добавить камеру в
+`LocationScene`. Минус — на 1 кадр при additive-загрузке могут оказаться активны 2 камеры/2 AudioListener
+(варнинг). Если выбираете этот путь — снимите `AudioListener` с одной из камер. По умолчанию берите общую камеру.
 
 ## 5. Проверка (smoke-loop)
 1. Play из `Bootstrap` → хаб (`GameplayScene`).

@@ -16,6 +16,15 @@ namespace Game.Bootstrap
     // which reads the player's choice from the preparation.session save module.
     public static class BookSellVContainerBindings
     {
+        // Общий save-backed сервис состояния полки. Нужен в ДВУХ скопах:
+        //   - хаб (Preparation → DayProgressInventoryProvider): фильтрует проданные книги при выборе;
+        //   - локация (Sales → SalesDayController): помечает проданное во время дня.
+        // Поэтому регистрируется ГЛОБАЛЬНО (BootstrapInstaller), чтобы оба скопа резолвили один инстанс.
+        public static void RegisterBookSellSharedState(this IContainerBuilder builder)
+        {
+            builder.Register<ISalesShelfStateService, SalesShelfStateService>(Lifetime.Singleton);
+        }
+
         public static void RegisterBookSell(
             this IContainerBuilder builder,
             CustomerVisual customerVisualPrefab,
@@ -39,7 +48,8 @@ namespace Game.Bootstrap
             // IDecorModifierProvider is registered by RegisterDecor in Game.Decor module.
             builder.Register<IBaseSaleChanceCalculator, EconomyBasedSaleChanceCalculator>(Lifetime.Singleton);
             builder.Register<IPassiveSaleSelector, WeightedPassiveSaleSelector>(Lifetime.Singleton);
-            builder.Register<ISalesShelfStateService, SalesShelfStateService>(Lifetime.Singleton);
+            // ISalesShelfStateService НЕ здесь — он общий для хаба (Preparation) и локации (Sales),
+            // регистрируется глобально через RegisterBookSellSharedState. См. ниже.
 
             // Customer simulation.
             builder.Register<IInteractionLock, InteractionLock>(Lifetime.Singleton);
