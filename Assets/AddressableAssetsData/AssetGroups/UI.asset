@@ -55,6 +55,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 56f012281286dd543a8c2971736bc95b
+    m_Address: RecommendationMinigameWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5e48b06b283d8de4482bb2f6f079e2af
     m_Address: WorldHud/CustomerThoughtBubble
     m_ReadOnly: 0

@@ -17,12 +17,14 @@ using VContainer;
 namespace Book.Sell.UI
 {
     // This class is used in SalesCheatModule FindAnyObjectByType. when refactor remove need update SalesCheatModule ( using DI ? ) //
-    
+
     /// <summary>
     /// Debug screen for the real-time Sales phase (ADR-0003). Pumps the day controller from Update,
-    /// renders the shelf live (reserved/sold books drop out), and exposes the active minigame via the
-    /// request panel + Confirm/Skip. All logic is in <see cref="ISalesDayController"/>; the view only
-    /// renders snapshots and forwards player input. Animated movement/popups are out of scope here.
+    /// renders the header + feedback log, and drives the end-of-day flow. The active recommendation
+    /// minigame (request + shelf + Confirm/Skip + book detail + result) now lives in
+    /// <see cref="RecommendationMinigameWindow"/>: when an active request starts, this screen pauses the
+    /// day and opens that window, resuming when it closes. All logic is in <see cref="ISalesDayController"/>;
+    /// the view only renders snapshots and forwards player input.
     /// </summary>
     public sealed class SalesScreenView : MonoBehaviour
     {
@@ -31,19 +33,6 @@ namespace Book.Sell.UI
         [SerializeField] private TMP_Text _locationLabel;
         [SerializeField] private TMP_Text _goldLabel;
         [SerializeField] private TMP_Text _progressLabel;       // "Served: N"
-
-        [Header("Active request (minigame)")]
-        [SerializeField] private GameObject _requestPanel;
-        [SerializeField] private TMP_Text _requestText;
-        [SerializeField] private TMP_Text _difficultyLabel;     // "Difficulty: 3/5" — empty when none/Unknown
-
-        [Header("Shelf (grid)")]
-        [SerializeField] private Transform _shelfContainer;
-        [SerializeField] private BookCardView _bookCardPrefab;
-
-        [Header("Actions")]
-        [SerializeField] private Button _confirmButton;
-        [SerializeField] private Button _skipButton;
 
         [Header("End of day")]
         [SerializeField] private Button _closeShopButton;   // "Свернуть лавку" — shown when day is ReadyToClose
@@ -61,10 +50,8 @@ namespace Book.Sell.UI
         private ISalesDayController _controller;
         public ISalesDayController Controller => _controller;
         private readonly CancellationTokenSource _cts = new();
-        private readonly List<BookCardView> _cards = new();
         private readonly Queue<FeedbackLogEntryView> _entries = new();
-        private string _selectedBookId;
-        private bool _minigameOpen;
+        private bool _minigameWindowOpen;
         private bool _dayRunning;
 
         private ICurrentDayProvider _dayProvider;
@@ -92,8 +79,6 @@ namespace Book.Sell.UI
 
         private void Awake()
         {
-            if (_confirmButton != null) _confirmButton.onClick.AddListener(OnConfirmClicked);
-            if (_skipButton != null) _skipButton.onClick.AddListener(OnSkipClicked);
             if (_restartButton != null) _restartButton.onClick.AddListener(OnRestartClicked);
             if (_closeShopButton != null)
             {
@@ -102,9 +87,6 @@ namespace Book.Sell.UI
             }
 
             if (_dayEndPanel != null) _dayEndPanel.SetActive(false);
-            if (_requestPanel != null) _requestPanel.SetActive(false);
-            if (_difficultyLabel != null) _difficultyLabel.text = "";
-            SetActionsInteractable(false);
         }
 
         private void Start()
@@ -136,9 +118,9 @@ namespace Book.Sell.UI
 
         private void Update()
         {
-            if (!_dayRunning || _controller == null) return;
+            // The day is paused while the recommendation minigame window is open.
+            if (!_dayRunning || _minigameWindowOpen || _controller == null) return;
             _controller.Tick(Time.deltaTime);
-            RefreshShelfAvailability();
             RefreshHeader();
         }
 
@@ -148,8 +130,8 @@ namespace Book.Sell.UI
             // When the adapter is not registered (e.g. early prototype scenes), fall back to day 1.
             var day = _dayProvider?.CurrentDay ?? 1;
             await _controller.StartDayAsync(day, ct);
-            PopulateShelfCards();
             RefreshHeader();
+            PublishGenreBookCounts();
             _dayRunning = !_controller.IsDayCompleted;
             SetGameplaySceneButtonsInteractable(!_dayRunning);
         }
@@ -158,28 +140,39 @@ namespace Book.Sell.UI
 
         private void OnActiveRequestStarted(RequestConfig req)
         {
-            _minigameOpen = true;
-            if (_requestPanel != null) _requestPanel.SetActive(true);
-            if (_requestText != null) _requestText.text = req.Text;
-            if (_difficultyLabel != null)
-                _difficultyLabel.text = req.Difficulty == RequestDifficulty.Unknown
-                    ? ""
-                    : $"Difficulty: {(int)req.Difficulty}/5";
+            // Pause the day and hand the request to the dedicated minigame window.
+            _minigameWindowOpen = true;
+            OpenMinigameWindowAsync().Forget();
+        }
 
-            _selectedBookId = null;
-            foreach (var c in _cards) c.SetSelected(false);
-            SetActionsInteractable(true);
+        private async UniTaskVoid OpenMinigameWindowAsync()
+        {
+            if (_uiManager == null)
+            {
+                Debug.LogWarning("[SalesScreenView] IUIManager was not injected — cannot open the recommendation minigame window.");
+                _minigameWindowOpen = false;   // don't leave the day paused with no UI to resolve it
+                return;
+            }
+
+            var window = await _uiManager.ShowAsync<RecommendationMinigameWindow>(
+                new RecommendationMinigameArgs(_controller), _cts.Token);
+
+            if (window != null)
+                window.Closed += OnMinigameWindowClosed;
+            else
+                _minigameWindowOpen = false;
+        }
+
+        private void OnMinigameWindowClosed(IWindowController _)
+        {
+            // Window is disposed after close; resume pumping the day.
+            _minigameWindowOpen = false;
         }
 
         private void OnRecommendationResolved(RecommendationResult result)
         {
+            // The minigame window owns the in-window result UI; here we only append to the feedback log.
             AppendActiveEntry(result);
-
-            _minigameOpen = false;
-            _selectedBookId = null;
-            if (_requestPanel != null) _requestPanel.SetActive(false);
-            if (_difficultyLabel != null) _difficultyLabel.text = "";
-            SetActionsInteractable(false);
         }
 
         private void OnBookReserved(Domain.Customer customer, string bookId)
@@ -215,11 +208,6 @@ namespace Book.Sell.UI
         {
             // Day's work is done: stop pumping the sim and let the player close the shop manually.
             _dayRunning = false;
-            _minigameOpen = false;
-            SetActionsInteractable(false);
-            if (_requestPanel != null) _requestPanel.SetActive(false);
-
-            RefreshShelfAvailability();
             RefreshHeader();
 
             if (_closeShopButton != null)
@@ -242,11 +230,8 @@ namespace Book.Sell.UI
         private void OnDayCompleted(SalesDayResult result)
         {
             _dayRunning = false;
-            _minigameOpen = false;
-            SetActionsInteractable(false);
             SetGameplaySceneButtonsInteractable(true);
             if (_closeShopButton != null) _closeShopButton.gameObject.SetActive(false);
-            if (_requestPanel != null) _requestPanel.SetActive(false);
 
             Debug.Log($"[SalesScreenView] DayCompleted: day={result.Day}, customers={result.CustomersServed}, " +
                       $"sales={result.SalesCount}, gold={result.GoldEarned}, " +
@@ -287,86 +272,14 @@ namespace Book.Sell.UI
 
         // ---------- user input ----------
 
-        private void OnBookCardClicked(string bookId)
-        {
-            if (!_minigameOpen) return;   // selection only matters during an active minigame
-            _selectedBookId = bookId;
-            foreach (var c in _cards) c.SetSelected(c.BookId == bookId);
-            SetActionsInteractable(true);
-        }
-
-        private void OnConfirmClicked()
-        {
-            if (!_minigameOpen || string.IsNullOrEmpty(_selectedBookId)) return;
-            _controller.RecommendBook(_selectedBookId);
-        }
-
-        private void OnSkipClicked()
-        {
-            if (!_minigameOpen) return;
-            _controller.SkipCurrentRequest();
-        }
-
         private void OnRestartClicked()
         {
             ClearEntries();
             if (_dayEndPanel != null) _dayEndPanel.SetActive(false);
             if (_closeShopButton != null) _closeShopButton.gameObject.SetActive(false);
-            _selectedBookId = null;
-            _minigameOpen = false;
+            _minigameWindowOpen = false;
             SetGameplaySceneButtonsInteractable(false);
             StartDayFlowAsync(_cts.Token).Forget();
-        }
-
-        // ---------- shelf ----------
-
-        private void PopulateShelfCards()
-        {
-            ClearCards();
-            if (_bookCardPrefab == null || _shelfContainer == null) return;
-
-            foreach (var shelfBook in _controller.Shelf.Books)
-            {
-                var card = Instantiate(_bookCardPrefab, _shelfContainer);
-                card.Bind(shelfBook.Config, OnBookCardClicked);
-                _cards.Add(card);
-            }
-            RefreshShelfAvailability();
-        }
-
-        private void RefreshShelfAvailability()
-        {
-            if (_cards.Count == 0) return;
-
-            var shelf = _controller.Shelf;
-            var selectionStillValid = false;
-
-            foreach (var card in _cards)
-            {
-                var book = shelf.Find(card.BookId);
-                var available = book != null
-                                && book.State == ShelfBookState.Available
-                                && !shelf.IsReserved(card.BookId);
-                card.SetSoldOut(!available);
-
-                if (available && card.BookId == _selectedBookId)
-                    selectionStillValid = true;
-            }
-
-            // Selected book got sold/reserved out from under the player → drop the selection.
-            if (!string.IsNullOrEmpty(_selectedBookId) && !selectionStillValid)
-            {
-                _selectedBookId = null;
-                foreach (var c in _cards) c.SetSelected(false);
-                if (_minigameOpen) SetActionsInteractable(true);
-            }
-        }
-
-        private void ClearCards()
-        {
-            foreach (var c in _cards)
-                if (c != null) Destroy(c.gameObject);
-            _cards.Clear();
         }
 
         // ---------- feedback log ----------
@@ -455,14 +368,6 @@ namespace Book.Sell.UI
             if (_progressLabel != null) _progressLabel.text = $"Served: {result.CustomersServed}";
         }
 
-        private void SetActionsInteractable(bool active)
-        {
-            if (_confirmButton != null)
-                _confirmButton.interactable = active && !string.IsNullOrEmpty(_selectedBookId);
-            if (_skipButton != null)
-                _skipButton.interactable = active;
-        }
-
         private void SetGameplaySceneButtonsInteractable(bool interactable)
         {
             _gameplayButtonsPublisher?.Publish(new GameplaySceneButtonsInteractableChanged(interactable));
@@ -506,8 +411,6 @@ namespace Book.Sell.UI
                 _controller.ShelfChanged -= OnShelfChanged;
             }
 
-            if (_confirmButton != null) _confirmButton.onClick.RemoveListener(OnConfirmClicked);
-            if (_skipButton != null) _skipButton.onClick.RemoveListener(OnSkipClicked);
             if (_restartButton != null) _restartButton.onClick.RemoveListener(OnRestartClicked);
             if (_closeShopButton != null) _closeShopButton.onClick.RemoveListener(OnCloseShopClicked);
 
