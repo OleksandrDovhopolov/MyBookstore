@@ -16,6 +16,8 @@ namespace Game.Configs.Models
 
         public int BasePrice { get; set; }
         public float RarityWeight { get; set; }
+        public int Published { get; set; }
+        public int Pages { get; set; }
 
         /// <summary>Темы/теги книги (survival, space, study, cozy, history, ...). Совпадение с запросом — +2 каждый.</summary>
         public string[] Tags { get; set; }

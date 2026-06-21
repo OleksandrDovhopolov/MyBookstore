@@ -44,8 +44,9 @@ namespace Game.Bootstrap
             
             
             //builder.Register<ICustomerSpawner, DefaultCustomerSpawner>(Lifetime.Singleton);
-            //builder.Register<ICustomerSpawner, FifteenCustomersSinglePassiveAttemptSpawner>(Lifetime.Singleton); //TEST was created to test zero books selected 
-            builder.Register<ICustomerSpawner, OneToThreePassiveAttemptsCustomerSpawner>(Lifetime.Singleton); //TEST 1-N passive purchases
+            //builder.Register<ICustomerSpawner, FifteenCustomersSinglePassiveAttemptSpawner>(Lifetime.Singleton); //TEST was created to test zero books selected
+            builder.Register<ICustomerSpawner, ActiveRequestsOnlyCustomerSpawner>(Lifetime.Singleton); //TEST 3-5 active-request-only customers (1 request each)
+            //builder.Register<ICustomerSpawner, OneToThreePassiveAttemptsCustomerSpawner>(Lifetime.Singleton); //TEST 1-N passive purchases
             
             
             // Tuning comes from a designer-editable SO when assigned; otherwise code defaults.
@@ -66,6 +67,12 @@ namespace Game.Bootstrap
                 .AsImplementedInterfaces() // exposes ICustomerVisualRegistry, IStartable, IDisposable
                 .AsSelf();
             builder.RegisterEntryPoint<CustomerBubbleBinder>(Lifetime.Singleton);
+
+            // Opens RecommendationMinigameWindow on active requests and pauses the day while it is up.
+            // IUIManager resolves from the parent (bootstrap) scope; the controller is passed via WindowArgs.
+            builder.RegisterEntryPoint<RecommendationMinigamePresenter>(Lifetime.Singleton)
+                .AsSelf()
+                .As<IRecommendationMinigamePresenter>();
 
             // Debug screen. Registered only if present in the scene, so the project runs before the UI
             // is wired. Same pattern as MorningScreenView.

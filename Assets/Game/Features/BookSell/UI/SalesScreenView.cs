@@ -5,7 +5,6 @@ using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
-using Game.Configs.Models;
 using Game.DayCycle.Results.UI;
 using Game.UI;
 using MessagePipe;
@@ -22,9 +21,10 @@ namespace Book.Sell.UI
     /// Debug screen for the real-time Sales phase (ADR-0003). Pumps the day controller from Update,
     /// renders the header + feedback log, and drives the end-of-day flow. The active recommendation
     /// minigame (request + shelf + Confirm/Skip + book detail + result) now lives in
-    /// <see cref="RecommendationMinigameWindow"/>: when an active request starts, this screen pauses the
-    /// day and opens that window, resuming when it closes. All logic is in <see cref="ISalesDayController"/>;
-    /// the view only renders snapshots and forwards player input.
+    /// <see cref="RecommendationMinigameWindow"/>, opened by <see cref="RecommendationMinigamePresenter"/>;
+    /// this screen only pauses the day while that window is open (via
+    /// <see cref="IRecommendationMinigamePresenter.IsWindowOpen"/>). All logic is in
+    /// <see cref="ISalesDayController"/>; the view only renders snapshots and forwards player input.
     /// </summary>
     public sealed class SalesScreenView : MonoBehaviour
     {
@@ -51,11 +51,11 @@ namespace Book.Sell.UI
         public ISalesDayController Controller => _controller;
         private readonly CancellationTokenSource _cts = new();
         private readonly Queue<FeedbackLogEntryView> _entries = new();
-        private bool _minigameWindowOpen;
         private bool _dayRunning;
 
         private ICurrentDayProvider _dayProvider;
         private IUIManager _uiManager;
+        private IRecommendationMinigamePresenter _minigamePresenter;
         private IPublisher<GameplaySceneButtonsInteractableChanged> _gameplayButtonsPublisher;
         private IPublisher<GameplayGenreBookCountsChanged> _genreBookCountsPublisher;
         private IDisposable _genreBookCountsRequestSubscription;
@@ -65,6 +65,7 @@ namespace Book.Sell.UI
             ISalesDayController controller,
             ICurrentDayProvider dayProvider = null,
             IUIManager uiManager = null,
+            IRecommendationMinigamePresenter minigamePresenter = null,
             IPublisher<GameplaySceneButtonsInteractableChanged> gameplayButtonsPublisher = null,
             IPublisher<GameplayGenreBookCountsChanged> genreBookCountsPublisher = null,
             ISubscriber<GameplayGenreBookCountsRequested> genreBookCountsRequestSubscriber = null)
@@ -72,6 +73,7 @@ namespace Book.Sell.UI
             _controller = controller;
             _dayProvider = dayProvider;
             _uiManager = uiManager;
+            _minigamePresenter = minigamePresenter;
             _gameplayButtonsPublisher = gameplayButtonsPublisher;
             _genreBookCountsPublisher = genreBookCountsPublisher;
             _genreBookCountsRequestSubscription = genreBookCountsRequestSubscriber?.Subscribe(_ => PublishGenreBookCounts());
@@ -105,7 +107,6 @@ namespace Book.Sell.UI
                 return;
             }
 
-            _controller.ActiveRequestStarted += OnActiveRequestStarted;
             _controller.RecommendationResolved += OnRecommendationResolved;
             _controller.PassiveSaleHappened += OnPassiveSaleHappened;
             _controller.DayReadyToClose += OnDayReadyToClose;
@@ -118,8 +119,8 @@ namespace Book.Sell.UI
 
         private void Update()
         {
-            // The day is paused while the recommendation minigame window is open.
-            if (!_dayRunning || _minigameWindowOpen || _controller == null) return;
+            // The day is paused while the recommendation minigame window is open (owned by the presenter).
+            if (!_dayRunning || _controller == null || (_minigamePresenter?.IsWindowOpen ?? false)) return;
             _controller.Tick(Time.deltaTime);
             RefreshHeader();
         }
@@ -137,37 +138,6 @@ namespace Book.Sell.UI
         }
 
         // ---------- controller events ----------
-
-        private void OnActiveRequestStarted(RequestConfig req)
-        {
-            // Pause the day and hand the request to the dedicated minigame window.
-            _minigameWindowOpen = true;
-            OpenMinigameWindowAsync().Forget();
-        }
-
-        private async UniTaskVoid OpenMinigameWindowAsync()
-        {
-            if (_uiManager == null)
-            {
-                Debug.LogWarning("[SalesScreenView] IUIManager was not injected — cannot open the recommendation minigame window.");
-                _minigameWindowOpen = false;   // don't leave the day paused with no UI to resolve it
-                return;
-            }
-
-            var window = await _uiManager.ShowAsync<RecommendationMinigameWindow>(
-                new RecommendationMinigameArgs(_controller), _cts.Token);
-
-            if (window != null)
-                window.Closed += OnMinigameWindowClosed;
-            else
-                _minigameWindowOpen = false;
-        }
-
-        private void OnMinigameWindowClosed(IWindowController _)
-        {
-            // Window is disposed after close; resume pumping the day.
-            _minigameWindowOpen = false;
-        }
 
         private void OnRecommendationResolved(RecommendationResult result)
         {
@@ -277,7 +247,6 @@ namespace Book.Sell.UI
             ClearEntries();
             if (_dayEndPanel != null) _dayEndPanel.SetActive(false);
             if (_closeShopButton != null) _closeShopButton.gameObject.SetActive(false);
-            _minigameWindowOpen = false;
             SetGameplaySceneButtonsInteractable(false);
             StartDayFlowAsync(_cts.Token).Forget();
         }
@@ -402,7 +371,6 @@ namespace Book.Sell.UI
 
             if (_controller != null)
             {
-                _controller.ActiveRequestStarted -= OnActiveRequestStarted;
                 _controller.RecommendationResolved -= OnRecommendationResolved;
                 _controller.PassiveSaleHappened -= OnPassiveSaleHappened;
                 _controller.DayReadyToClose -= OnDayReadyToClose;

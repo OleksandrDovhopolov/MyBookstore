@@ -151,8 +151,8 @@ namespace Book.Sell.UI
 
             // BookConfig has no description / publish date / page count yet — placeholder until added.
             Set(View.DetailDescription, TodoPlaceholder);
-            Set(View.DetailPublishDate, TodoPlaceholder);
-            Set(View.DetailPageCount, TodoPlaceholder);
+            Set(View.DetailPublishDate, book.Published.ToString());
+            Set(View.DetailPageCount, book.Pages.ToString());
         }
 
         private void ClearSelection()

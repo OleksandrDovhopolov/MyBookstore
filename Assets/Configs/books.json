@@ -6,6 +6,8 @@
     "genre": "Drama",
     "basePrice": 65,
     "rarityWeight": 0.35,
+    "published": 1893,
+    "pages": 189,
     "tags": ["sea", "winter", "history"],
     "mood": ["melancholic", "dark", "smart"]
   },
@@ -16,6 +18,8 @@
     "genre": "Fantasy",
     "basePrice": 95,
     "rarityWeight": 0.62,
+    "published": 1974,
+    "pages": 322,
     "tags": ["space", "engineering", "science"],
     "mood": ["optimistic", "smart", "tense"]
   },
@@ -26,6 +30,8 @@
     "genre": "Classic",
     "basePrice": 55,
     "rarityWeight": 0.22,
+    "published": 1771,
+    "pages": 249,
     "tags": ["letters", "rain", "first_love"],
     "mood": ["romantic", "warm", "melancholic"]
   },
@@ -36,6 +42,8 @@
     "genre": "Crime",
     "basePrice": 90,
     "rarityWeight": 0.71,
+    "published": 1979,
+    "pages": 296,
     "tags": ["investigation", "history", "small_town"],
     "mood": ["tense", "dark", "smart"]
   },
@@ -46,6 +54,8 @@
     "genre": "Travel",
     "basePrice": 70,
     "rarityWeight": 0.41,
+    "published": 1925,
+    "pages": 225,
     "tags": ["summer", "sea", "study"],
     "mood": ["warm", "optimistic", "cozy"]
   },
@@ -56,6 +66,8 @@
     "genre": "Fact",
     "basePrice": 120,
     "rarityWeight": 0.8,
+    "published": 1964,
+    "pages": 432,
     "tags": ["engineering", "space", "science"],
     "mood": ["smart", "optimistic", "tense"]
   },
@@ -66,6 +78,8 @@
     "genre": "Classic",
     "basePrice": 60,
     "rarityWeight": 0.27,
+    "published": 1839,
+    "pages": 341,
     "tags": ["sea", "rain", "small_town"],
     "mood": ["cozy", "warm", "melancholic"]
   },
@@ -76,6 +90,8 @@
     "genre": "Drama",
     "basePrice": 85,
     "rarityWeight": 0.53,
+    "published": 1984,
+    "pages": 392,
     "tags": ["loneliness", "study", "science"],
     "mood": ["smart", "melancholic", "dark"]
   },
@@ -86,6 +102,8 @@
     "genre": "Crime",
     "basePrice": 88,
     "rarityWeight": 0.68,
+    "published": 1946,
+    "pages": 391,
     "tags": ["investigation", "rain", "history"],
     "mood": ["tense", "dark", "smart"]
   },
@@ -96,6 +114,8 @@
     "genre": "Kids",
     "basePrice": 45,
     "rarityWeight": 0.18,
+    "published": 2000,
+    "pages": 78,
     "tags": ["summer", "small_town", "first_love"],
     "mood": ["warm", "cozy", "optimistic"]
   },
@@ -106,6 +126,8 @@
     "genre": "Fantasy",
     "basePrice": 100,
     "rarityWeight": 0.74,
+    "published": 1974,
+    "pages": 601,
     "tags": ["space", "survival", "engineering"],
     "mood": ["tense", "optimistic", "smart"]
   },
@@ -116,6 +138,8 @@
     "genre": "Fact",
     "basePrice": 78,
     "rarityWeight": 0.37,
+    "published": 2018,
+    "pages": 224,
     "tags": ["philosophy", "rain", "study"],
     "mood": ["smart", "melancholic", "warm"]
   },
@@ -126,6 +150,8 @@
     "genre": "Travel",
     "basePrice": 68,
     "rarityWeight": 0.33,
+    "published": 1872,
+    "pages": 133,
     "tags": ["letters", "winter", "history"],
     "mood": ["melancholic", "cozy", "warm"]
   },
@@ -136,7 +162,9 @@
     "genre": "Crime",
     "basePrice": 92,
     "rarityWeight": 0.72,
-    "tags": ["investigation", "science", "short"],
+    "published": 2001,
+    "pages": 226,
+    "tags": ["investigation", "science"],
     "mood": ["tense", "smart", "dark"]
   },
   {
@@ -146,6 +174,8 @@
     "genre": "Kids",
     "basePrice": 50,
     "rarityWeight": 0.24,
+    "published": 1952,
+    "pages": 163,
     "tags": ["sea", "small_town", "summer"],
     "mood": ["cozy", "warm", "optimistic"]
   },
@@ -156,6 +186,8 @@
     "genre": "Fantasy",
     "basePrice": 105,
     "rarityWeight": 0.81,
+    "published": 2009,
+    "pages": 396,
     "tags": ["space", "loneliness", "survival"],
     "mood": ["tense", "dark", "smart"]
   },
@@ -166,6 +198,8 @@
     "genre": "Classic",
     "basePrice": 62,
     "rarityWeight": 0.29,
+    "published": 1819,
+    "pages": 341,
     "tags": ["history", "small_town", "letters"],
     "mood": ["warm", "melancholic", "cozy"]
   },
@@ -176,6 +210,8 @@
     "genre": "Drama",
     "basePrice": 80,
     "rarityWeight": 0.48,
+    "published": 1979,
+    "pages": 372,
     "tags": ["science", "study", "philosophy"],
     "mood": ["smart", "melancholic", "optimistic"]
   },
@@ -186,6 +222,8 @@
     "genre": "Crime",
     "basePrice": 84,
     "rarityWeight": 0.59,
+    "published": 1968,
+    "pages": 321,
     "tags": ["investigation", "rain", "small_town"],
     "mood": ["tense", "cozy", "smart"]
   },
@@ -196,10 +234,11 @@
     "genre": "Travel",
     "basePrice": 73,
     "rarityWeight": 0.39,
+    "published": 1977,
+    "pages": 280,
     "tags": ["sea", "summer", "history"],
     "mood": ["optimistic", "warm", "cozy"]
   },
-
   {
     "id": "book_021",
     "title": "Станция Полярис",
@@ -207,6 +246,8 @@
     "genre": "Fantasy",
     "basePrice": 110,
     "rarityWeight": 0.84,
+    "published": 1981,
+    "pages": 551,
     "tags": ["space", "science", "survival"],
     "mood": ["tense", "smart", "optimistic"]
   },
@@ -217,6 +258,8 @@
     "genre": "Classic",
     "basePrice": 58,
     "rarityWeight": 0.26,
+    "published": 1904,
+    "pages": 226,
     "tags": ["letters", "first_love", "rain"],
     "mood": ["romantic", "warm", "melancholic"]
   },
@@ -227,6 +270,8 @@
     "genre": "Crime",
     "basePrice": 96,
     "rarityWeight": 0.76,
+    "published": 2012,
+    "pages": 397,
     "tags": ["investigation", "history", "philosophy"],
     "mood": ["dark", "smart", "tense"]
   },
@@ -237,6 +282,8 @@
     "genre": "Kids",
     "basePrice": 48,
     "rarityWeight": 0.21,
+    "published": 1997,
+    "pages": 176,
     "tags": ["small_town", "cozy", "history"],
     "mood": ["warm", "cozy", "optimistic"]
   },
@@ -247,6 +294,8 @@
     "genre": "Fact",
     "basePrice": 115,
     "rarityWeight": 0.77,
+    "published": 2022,
+    "pages": 275,
     "tags": ["science", "space", "study"],
     "mood": ["smart", "optimistic", "tense"]
   },
@@ -257,7 +306,9 @@
     "genre": "Travel",
     "basePrice": 67,
     "rarityWeight": 0.32,
-    "tags": ["winter", "history", "short"],
+    "published": 1894,
+    "pages": 146,
+    "tags": ["winter", "history"],
     "mood": ["melancholic", "warm", "cozy"]
   },
   {
@@ -267,6 +318,8 @@
     "genre": "Fantasy",
     "basePrice": 102,
     "rarityWeight": 0.69,
+    "published": 1960,
+    "pages": 377,
     "tags": ["engineering", "space", "survival"],
     "mood": ["smart", "tense", "dark"]
   },
@@ -277,6 +330,8 @@
     "genre": "Drama",
     "basePrice": 72,
     "rarityWeight": 0.44,
+    "published": 1974,
+    "pages": 352,
     "tags": ["summer", "first_love", "sea"],
     "mood": ["romantic", "warm", "melancholic"]
   },
@@ -287,6 +342,8 @@
     "genre": "Crime",
     "basePrice": 89,
     "rarityWeight": 0.63,
+    "published": 1990,
+    "pages": 251,
     "tags": ["winter", "investigation", "small_town"],
     "mood": ["tense", "dark", "smart"]
   },
@@ -297,10 +354,11 @@
     "genre": "Classic",
     "basePrice": 57,
     "rarityWeight": 0.25,
+    "published": 1850,
+    "pages": 180,
     "tags": ["sea", "cozy", "letters"],
     "mood": ["warm", "cozy", "romantic"]
   },
-
   {
     "id": "book_031",
     "title": "Атлас забытых миров",
@@ -308,6 +366,8 @@
     "genre": "Fantasy",
     "basePrice": 108,
     "rarityWeight": 0.82,
+    "published": 1988,
+    "pages": 501,
     "tags": ["space", "history", "science"],
     "mood": ["smart", "optimistic", "tense"]
   },
@@ -318,6 +378,8 @@
     "genre": "Drama",
     "basePrice": 69,
     "rarityWeight": 0.38,
+    "published": 1891,
+    "pages": 468,
     "tags": ["rain", "loneliness", "small_town"],
     "mood": ["melancholic", "dark", "warm"]
   },
@@ -328,7 +390,9 @@
     "genre": "Kids",
     "basePrice": 42,
     "rarityWeight": 0.16,
-    "tags": ["short", "sea", "summer"],
+    "published": 1969,
+    "pages": 49,
+    "tags": ["sea", "summer"],
     "mood": ["cozy", "warm", "optimistic"]
   },
   {
@@ -338,6 +402,8 @@
     "genre": "Crime",
     "basePrice": 86,
     "rarityWeight": 0.57,
+    "published": 1957,
+    "pages": 346,
     "tags": ["investigation", "history", "travel"],
     "mood": ["tense", "smart", "optimistic"]
   },
@@ -348,6 +414,8 @@
     "genre": "Fantasy",
     "basePrice": 98,
     "rarityWeight": 0.66,
+    "published": 2016,
+    "pages": 265,
     "tags": ["space", "letters", "science"],
     "mood": ["smart", "optimistic", "warm"]
   },
@@ -358,6 +426,8 @@
     "genre": "Classic",
     "basePrice": 61,
     "rarityWeight": 0.31,
+    "published": 1762,
+    "pages": 318,
     "tags": ["sea", "history", "first_love"],
     "mood": ["romantic", "melancholic", "warm"]
   },
@@ -368,6 +438,8 @@
     "genre": "Fact",
     "basePrice": 82,
     "rarityWeight": 0.47,
+    "published": 2017,
+    "pages": 289,
     "tags": ["study", "philosophy", "science"],
     "mood": ["smart", "optimistic", "warm"]
   },
@@ -378,6 +450,8 @@
     "genre": "Travel",
     "basePrice": 75,
     "rarityWeight": 0.43,
+    "published": 1901,
+    "pages": 138,
     "tags": ["winter", "history", "rain"],
     "mood": ["cozy", "melancholic", "warm"]
   },
@@ -388,6 +462,8 @@
     "genre": "Crime",
     "basePrice": 94,
     "rarityWeight": 0.73,
+    "published": 2012,
+    "pages": 441,
     "tags": ["investigation", "philosophy", "loneliness"],
     "mood": ["dark", "smart", "tense"]
   },
@@ -398,10 +474,11 @@
     "genre": "Fantasy",
     "basePrice": 99,
     "rarityWeight": 0.67,
+    "published": 1988,
+    "pages": 420,
     "tags": ["space", "engineering", "survival"],
     "mood": ["optimistic", "smart", "tense"]
   },
-
   {
     "id": "book_041",
     "title": "Дорога к морю",
@@ -409,6 +486,8 @@
     "genre": "Travel",
     "basePrice": 71,
     "rarityWeight": 0.4,
+    "published": 1946,
+    "pages": 201,
     "tags": ["sea", "summer", "history"],
     "mood": ["warm", "optimistic", "cozy"]
   },
@@ -419,6 +498,8 @@
     "genre": "Drama",
     "basePrice": 64,
     "rarityWeight": 0.34,
+    "published": 1886,
+    "pages": 448,
     "tags": ["small_town", "rain", "first_love"],
     "mood": ["romantic", "melancholic", "warm"]
   },
@@ -429,6 +510,8 @@
     "genre": "Fact",
     "basePrice": 118,
     "rarityWeight": 0.79,
+    "published": 1958,
+    "pages": 511,
     "tags": ["science", "travel", "study"],
     "mood": ["smart", "optimistic", "warm"]
   },
@@ -439,6 +522,8 @@
     "genre": "Classic",
     "basePrice": 59,
     "rarityWeight": 0.28,
+    "published": 1898,
+    "pages": 272,
     "tags": ["sea", "letters", "history"],
     "mood": ["cozy", "warm", "melancholic"]
   },
@@ -449,6 +534,8 @@
     "genre": "Fantasy",
     "basePrice": 112,
     "rarityWeight": 0.86,
+    "published": 1960,
+    "pages": 575,
     "tags": ["space", "survival", "engineering"],
     "mood": ["tense", "smart", "optimistic"]
   },
@@ -459,6 +546,8 @@
     "genre": "Drama",
     "basePrice": 66,
     "rarityWeight": 0.36,
+    "published": 1938,
+    "pages": 254,
     "tags": ["letters", "loneliness", "rain"],
     "mood": ["melancholic", "romantic", "dark"]
   },
@@ -469,6 +558,8 @@
     "genre": "Crime",
     "basePrice": 91,
     "rarityWeight": 0.7,
+    "published": 2012,
+    "pages": 333,
     "tags": ["investigation", "history", "science"],
     "mood": ["smart", "tense", "dark"]
   },
@@ -479,7 +570,9 @@
     "genre": "Kids",
     "basePrice": 44,
     "rarityWeight": 0.17,
-    "tags": ["summer", "winter", "short"],
+    "published": 1971,
+    "pages": 164,
+    "tags": ["summer", "winter"],
     "mood": ["warm", "cozy", "optimistic"]
   },
   {
@@ -489,6 +582,8 @@
     "genre": "Fact",
     "basePrice": 87,
     "rarityWeight": 0.52,
+    "published": 2012,
+    "pages": 303,
     "tags": ["philosophy", "science", "history"],
     "mood": ["smart", "melancholic", "optimistic"]
   },
@@ -499,10 +594,11 @@
     "genre": "Classic",
     "basePrice": 63,
     "rarityWeight": 0.3,
+    "published": 1810,
+    "pages": 180,
     "tags": ["sea", "loneliness", "rain"],
     "mood": ["melancholic", "warm", "cozy"]
   },
-
   {
     "id": "book_051",
     "title": "Орбитальный сад",
@@ -510,6 +606,8 @@
     "genre": "Fantasy",
     "basePrice": 104,
     "rarityWeight": 0.78,
+    "published": 2002,
+    "pages": 401,
     "tags": ["space", "engineering", "science"],
     "mood": ["smart", "optimistic", "warm"]
   },
@@ -520,6 +618,8 @@
     "genre": "Travel",
     "basePrice": 74,
     "rarityWeight": 0.42,
+    "published": 1938,
+    "pages": 172,
     "tags": ["history", "summer", "letters"],
     "mood": ["optimistic", "warm", "cozy"]
   },
@@ -530,6 +630,8 @@
     "genre": "Drama",
     "basePrice": 68,
     "rarityWeight": 0.39,
+    "published": 1894,
+    "pages": 457,
     "tags": ["winter", "first_love", "small_town"],
     "mood": ["romantic", "melancholic", "warm"]
   },
@@ -540,6 +642,8 @@
     "genre": "Fact",
     "basePrice": 109,
     "rarityWeight": 0.75,
+    "published": 1944,
+    "pages": 488,
     "tags": ["science", "philosophy", "space"],
     "mood": ["smart", "dark", "tense"]
   },
@@ -550,6 +654,8 @@
     "genre": "Crime",
     "basePrice": 83,
     "rarityWeight": 0.55,
+    "published": 2012,
+    "pages": 225,
     "tags": ["investigation", "small_town", "history"],
     "mood": ["cozy", "tense", "smart"]
   },
@@ -560,6 +666,8 @@
     "genre": "Classic",
     "basePrice": 56,
     "rarityWeight": 0.23,
+    "published": 1722,
+    "pages": 318,
     "tags": ["cozy", "rain", "letters"],
     "mood": ["warm", "cozy", "romantic"]
   },
@@ -570,6 +678,8 @@
     "genre": "Fantasy",
     "basePrice": 101,
     "rarityWeight": 0.65,
+    "published": 1981,
+    "pages": 587,
     "tags": ["space", "survival", "study"],
     "mood": ["tense", "optimistic", "smart"]
   },
@@ -580,6 +690,8 @@
     "genre": "Kids",
     "basePrice": 47,
     "rarityWeight": 0.19,
+    "published": 2021,
+    "pages": 54,
     "tags": ["study", "sea", "summer"],
     "mood": ["optimistic", "warm", "cozy"]
   },
@@ -590,6 +702,8 @@
     "genre": "Drama",
     "basePrice": 79,
     "rarityWeight": 0.46,
+    "published": 1972,
+    "pages": 321,
     "tags": ["history", "loneliness", "letters"],
     "mood": ["melancholic", "smart", "warm"]
   },
@@ -600,6 +714,8 @@
     "genre": "Fantasy",
     "basePrice": 113,
     "rarityWeight": 0.88,
+    "published": 2002,
+    "pages": 320,
     "tags": ["engineering", "space", "survival"],
     "mood": ["smart", "tense", "optimistic"]
   }
