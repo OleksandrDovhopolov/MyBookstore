@@ -16,9 +16,9 @@ namespace Game.Preparation.UI
         [SerializeField] private TMP_Text _slotCountLabel;
         [SerializeField] private TMP_Text _validationLabel;
 
-        [Header("List")]
-        [SerializeField] private Transform _bookListContainer;
-        [SerializeField] private PreparationBookRowView _bookRowPrefab;
+        [Header("Genre list")]
+        [SerializeField] private Transform _genreListContainer;
+        [SerializeField] private PreparationGenreRowView _genreRowPrefab;
 
         [Header("Actions")]
         [SerializeField] private Button _openShopButton;
@@ -26,8 +26,8 @@ namespace Game.Preparation.UI
 
         public Button OpenShopButton => _openShopButton;
         public Button RandomBooksButton => _randomBooksButton;
-        public Transform BookListContainer => _bookListContainer;
-        public PreparationBookRowView BookRowPrefab => _bookRowPrefab;
+        public Transform GenreListContainer => _genreListContainer;
+        public PreparationGenreRowView GenreRowPrefab => _genreRowPrefab;
 
         public void SetDay(string value) => Set(_dayLabel, value);
         public void SetLocation(string value) => Set(_locationLabel, value);

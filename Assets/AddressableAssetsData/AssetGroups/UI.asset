@@ -70,6 +70,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 83d7f17632a85ff48be4f7456c053062
+    m_Address: PreparationWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: aa9fdc7ac23d342798922793111065d0
     m_Address: Assets/Game/UI/Fonts/LilitaOne-Regular Outline 40 SDF Atlas.png
     m_ReadOnly: 0

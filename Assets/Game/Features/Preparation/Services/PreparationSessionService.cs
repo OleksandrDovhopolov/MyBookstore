@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
@@ -16,10 +17,7 @@ namespace Game.Preparation.Services
     {
         private const string LogPrefix = "[Preparation.Session]";
 
-        // MVP: capacity захардкожена временно. По спеке (docs/INPROGRESS/Подготовка.md, раздел "Лимиты")
-        // dailyBookSlots — это параметр состояния игрока (CurrentBookCapacity), который растёт через улучшения
-        // лавки (диапазон 12–20). Миграция в EconomyConfig / DayProgressState — отдельная задача.
-        // Зафиксировано в docs/INPROGRESS/CORE_LOOP_STATUS.md → "Известные ограничения".
+        // MVP: capacity захардкожена временно (см. CORE_LOOP_STATUS «Известные ограничения»).
         private const int DefaultMinDailyBooks = 0;
         private const int DefaultDailyBookSlots = 12;
         private const string DefaultLocationId = "loc_downtown";
@@ -30,6 +28,9 @@ namespace Game.Preparation.Services
         private readonly ISalesShelfStateService _shelfState;
 
         private PreparationSessionState _state;
+
+        // Кэш на сессию: непроданные книги игрока, сгруппированные по жанру (потолок квот + пул для резолва).
+        private readonly Dictionary<string, List<BookConfig>> _availableByGenre = new(StringComparer.OrdinalIgnoreCase);
 
         public PreparationSessionService(
             ISaveService save,
@@ -51,8 +52,12 @@ namespace Game.Preparation.Services
 
         public event Action<PreparationSessionState> StateChanged;
 
-        public async UniTask<IReadOnlyList<SelectableBookItem>> StartOrResumeAsync(CancellationToken ct)
+        public int TotalSelected => _state?.SelectedBookIds?.Count ?? 0;
+
+        public async UniTask<IReadOnlyList<GenreSelectionItem>> StartOrResumeAsync(CancellationToken ct)
         {
+            CacheAvailableByGenre();
+
             var saved = await _save.GetModuleAsync<PreparationSessionState>(PreparationSaveKeys.Session, ct);
             var currentDay = _dayProgress.Current.CurrentDay;
 
@@ -63,48 +68,74 @@ namespace Game.Preparation.Services
                 {
                     Day = currentDay,
                     LocationId = DefaultLocationId,
-                    SelectedBookIds = BuildInitialShelfSelection(),
+                    GenreQuantities = SeedInitialQuantities(),
                     SelectedDecorIds = new List<string>(),
                     Confirmed = false
                 };
-                await _save.UpdateModuleAsync(PreparationSaveKeys.Session, _state, PreparationSaveKeys.SessionSchemaVersion, ct);
             }
             else
             {
                 _state = saved;
+                _state.GenreQuantities ??= new Dictionary<string, int>();
+                if (_state.GenreQuantities.Count == 0 && _state.SelectedBookIds is { Count: > 0 })
+                    _state.GenreQuantities = BuildQuantitiesFromBookIds(_state.SelectedBookIds);
+                ClampQuantitiesToAvailable(_state.GenreQuantities);
             }
+
+            _state.SelectedBookIds = ResolveSelectedBookIds(_state.GenreQuantities);
+            await PersistAsync(ct);
 
             if (_dayProgress.Current.CurrentPhase != DayPhase.Preparation)
                 await _dayProgress.SetPhaseAsync(DayPhase.Preparation, ct);
 
-            return BuildSelectableItems(_inventory.GetOwnedBooks(), _state.SelectedBookIds);
+            return BuildGenreItems();
         }
 
-        public async UniTask ToggleBookAsync(string bookId, CancellationToken ct)
+        public async UniTask SetGenreQuantityAsync(string genre, int quantity, CancellationToken ct)
         {
             if (_state == null)
             {
-                Debug.LogWarning($"{LogPrefix} ToggleBookAsync вызван до StartOrResumeAsync.");
+                Debug.LogWarning($"{LogPrefix} SetGenreQuantityAsync вызван до StartOrResumeAsync.");
                 return;
             }
 
-            if (string.IsNullOrEmpty(bookId)) return;
+            if (string.IsNullOrEmpty(genre) || !_availableByGenre.ContainsKey(genre)) return;
 
-            if (_state.SelectedBookIds.Remove(bookId))
+            var available = AvailableCount(genre);
+            var otherTotal = _state.GenreQuantities
+                .Where(kv => !string.Equals(kv.Key, genre, StringComparison.OrdinalIgnoreCase))
+                .Sum(kv => kv.Value);
+            var maxForThis = Mathf.Max(0, Capacity.DailyBookSlots - otherTotal);
+
+            var clamped = Mathf.Clamp(quantity, 0, Mathf.Min(available, maxForThis));
+            _state.GenreQuantities[genre] = clamped;
+
+            _state.SelectedBookIds = ResolveSelectedBookIds(_state.GenreQuantities);
+            await PersistAsync(ct);
+            StateChanged?.Invoke(_state);
+        }
+
+        public async UniTask RandomizeAsync(CancellationToken ct)
+        {
+            if (_state == null) return;
+
+            // Берём весь пул непроданных книг, перемешиваем, отрезаем по лимиту → квоты по жанрам.
+            var pool = _availableByGenre.Values.SelectMany(b => b).ToList();
+            Shuffle(pool);
+
+            var take = Mathf.Min(Capacity.DailyBookSlots, pool.Count);
+            var quantities = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < take; i++)
             {
-                // Был выбран — сняли.
-            }
-            else
-            {
-                if (_state.SelectedBookIds.Count >= Capacity.DailyBookSlots)
-                {
-                    Debug.LogWarning($"{LogPrefix} достигнут лимит {Capacity.DailyBookSlots} книг — '{bookId}' не добавлен.");
-                    return;
-                }
-                _state.SelectedBookIds.Add(bookId);
+                var genre = pool[i].Genre;
+                if (string.IsNullOrEmpty(genre)) continue;
+                quantities.TryGetValue(genre, out var c);
+                quantities[genre] = c + 1;
             }
 
-            await _save.UpdateModuleAsync(PreparationSaveKeys.Session, _state, PreparationSaveKeys.SessionSchemaVersion, ct);
+            _state.GenreQuantities = quantities;
+            _state.SelectedBookIds = ResolveSelectedBookIds(quantities);
+            await PersistAsync(ct);
             StateChanged?.Invoke(_state);
         }
 
@@ -113,7 +144,7 @@ namespace Game.Preparation.Services
             if (_state == null)
                 return PreparationValidationResult.Fail("Session not started");
 
-            if (Capacity.MinDailyBooks > 0 && _state.SelectedBookIds.Count < Capacity.MinDailyBooks)
+            if (Capacity.MinDailyBooks > 0 && TotalSelected < Capacity.MinDailyBooks)
                 return PreparationValidationResult.Fail($"Выберите хотя бы {Capacity.MinDailyBooks} книгу");
 
             return PreparationValidationResult.Ok();
@@ -129,46 +160,154 @@ namespace Game.Preparation.Services
             }
 
             _state.Confirmed = true;
+            _state.SelectedBookIds = ResolveSelectedBookIds(_state.GenreQuantities);
             await _shelfState.SetShelfAsync(_state.SelectedBookIds, ct);
-            await _save.UpdateModuleAsync(PreparationSaveKeys.Session, _state, PreparationSaveKeys.SessionSchemaVersion, ct);
+            await PersistAsync(ct);
             await _dayProgress.SetPhaseAsync(DayPhase.Sales, ct);
 
             Debug.Log($"{LogPrefix} day={_state.Day} location={_state.LocationId} shelf={_state.SelectedBookIds.Count} → Sales.");
             return true;
         }
 
-        private List<string> BuildInitialShelfSelection()
+        // ---------- internals ----------
+
+        private void CacheAvailableByGenre()
         {
-            var selected = new List<string>();
-            var shelfBookIds = _shelfState.ShelfBookIds;
-            var limit = Capacity.DailyBookSlots;
-
-            for (var i = 0; i < shelfBookIds.Count && selected.Count < limit; i++)
+            _availableByGenre.Clear();
+            // GetOwnedBooks() уже исключает проданные книги (DayProgressInventoryProvider).
+            foreach (var book in _inventory.GetOwnedBooks())
             {
-                var bookId = shelfBookIds[i];
-                if (string.IsNullOrEmpty(bookId)) continue;
-                if (_shelfState.IsSold(bookId)) continue;
-                if (!selected.Contains(bookId)) selected.Add(bookId);
+                if (book == null || string.IsNullOrEmpty(book.Genre)) continue;
+                if (!_availableByGenre.TryGetValue(book.Genre, out var list))
+                {
+                    list = new List<BookConfig>();
+                    _availableByGenre[book.Genre] = list;
+                }
+                list.Add(book);
             }
-
-            return selected;
         }
 
-        private static IReadOnlyList<SelectableBookItem> BuildSelectableItems(IReadOnlyList<BookConfig> books, IReadOnlyList<string> selectedIds)
+        private int AvailableCount(string genre)
+            => _availableByGenre.TryGetValue(genre, out var books) ? books.Count : 0;
+
+        // Стартовые квоты = непроданные книги с прошлой полки, посчитанные по жанрам (continuity/restock).
+        private Dictionary<string, int> SeedInitialQuantities()
         {
-            var selectedSet = new HashSet<string>(selectedIds);
-            var items = new List<SelectableBookItem>(books.Count);
-            foreach (var book in books)
+            var quantities = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var genreById = BuildGenreById();
+
+            foreach (var bookId in _shelfState.ShelfBookIds)
             {
-                items.Add(new SelectableBookItem(
-                    book.Id,
-                    book.Title,
-                    book.Author,
-                    book.Genre,
-                    book.BasePrice,
-                    selectedSet.Contains(book.Id)));
+                if (string.IsNullOrEmpty(bookId)) continue;
+                if (!genreById.TryGetValue(bookId, out var genre)) continue; // продана/не во владении — пропускаем
+                quantities.TryGetValue(genre, out var c);
+                quantities[genre] = c + 1;
             }
-            return items;
+
+            ClampQuantitiesToAvailable(quantities);
+            return quantities;
+        }
+
+        private void ClampQuantitiesToAvailable(Dictionary<string, int> quantities)
+        {
+            // Клампим каждую квоту к доступному и убираем жанры без наличия.
+            foreach (var genre in quantities.Keys.ToList())
+            {
+                var available = AvailableCount(genre);
+                if (available <= 0) quantities.Remove(genre);
+                else quantities[genre] = Mathf.Clamp(quantities[genre], 0, available);
+            }
+            TrimToCapacity(quantities);
+        }
+
+        private void TrimToCapacity(Dictionary<string, int> quantities)
+        {
+            var total = quantities.Values.Sum();
+            while (total > Capacity.DailyBookSlots)
+            {
+                var genre = quantities.FirstOrDefault(kv => kv.Value > 0).Key;
+                if (genre == null) break;
+                quantities[genre] -= 1;
+                total -= 1;
+            }
+        }
+
+        private Dictionary<string, string> BuildGenreById()
+        {
+            var map = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var kv in _availableByGenre)
+                foreach (var book in kv.Value)
+                    if (!string.IsNullOrEmpty(book.Id)) map[book.Id] = kv.Key;
+            return map;
+        }
+
+        private Dictionary<string, int> BuildQuantitiesFromBookIds(IReadOnlyList<string> bookIds)
+        {
+            var quantities = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            if (bookIds == null || bookIds.Count == 0) return quantities;
+
+            var genreById = BuildGenreById();
+            for (var i = 0; i < bookIds.Count; i++)
+            {
+                var bookId = bookIds[i];
+                if (string.IsNullOrEmpty(bookId)) continue;
+                if (!genreById.TryGetValue(bookId, out var genre)) continue;
+
+                quantities.TryGetValue(genre, out var count);
+                quantities[genre] = count + 1;
+            }
+
+            return quantities;
+        }
+
+        // Резолв квот в конкретные id: непроданные с прошлой полки первыми, затем добор случайно.
+        private List<string> ResolveSelectedBookIds(IReadOnlyDictionary<string, int> quantities)
+        {
+            var result = new List<string>();
+            if (quantities == null) return result;
+
+            var priorSet = new HashSet<string>(_shelfState.ShelfBookIds ?? Array.Empty<string>(), StringComparer.Ordinal);
+
+            foreach (var kv in quantities)
+            {
+                var genre = kv.Key;
+                var qty = kv.Value;
+                if (qty <= 0) continue;
+                if (!_availableByGenre.TryGetValue(genre, out var books) || books.Count == 0) continue;
+
+                var prior = books.Where(b => priorSet.Contains(b.Id)).ToList();
+                var rest = books.Where(b => !priorSet.Contains(b.Id)).ToList();
+                Shuffle(rest);
+
+                var take = Mathf.Min(qty, books.Count);
+                foreach (var book in prior.Concat(rest).Take(take))
+                    result.Add(book.Id);
+            }
+
+            return result;
+        }
+
+        private IReadOnlyList<GenreSelectionItem> BuildGenreItems()
+        {
+            return _availableByGenre
+                .OrderBy(kv => kv.Key, StringComparer.OrdinalIgnoreCase)
+                .Select(kv => new GenreSelectionItem(
+                    kv.Key,
+                    kv.Value.Count,
+                    _state.GenreQuantities.TryGetValue(kv.Key, out var q) ? q : 0))
+                .ToList();
+        }
+
+        private UniTask PersistAsync(CancellationToken ct)
+            => _save.UpdateModuleAsync(PreparationSaveKeys.Session, _state, PreparationSaveKeys.SessionSchemaVersion, ct);
+
+        private static void Shuffle<T>(IList<T> list)
+        {
+            for (var i = list.Count - 1; i > 0; i--)
+            {
+                var j = UnityEngine.Random.Range(0, i + 1);
+                (list[i], list[j]) = (list[j], list[i]);
+            }
         }
     }
 }

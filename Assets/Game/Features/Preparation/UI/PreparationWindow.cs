@@ -11,9 +11,9 @@ using VContainer;
 namespace Game.Preparation.UI
 {
     /// <summary>
-    /// Окно Подготовки (выбор книг на день). Заменяет прежний scene-MonoBehaviour PreparationScreenView.
-    /// Открывается через UIManager.ShowAsync (см. GameplaySceneController.StartGameAsync). Вся логика здесь;
-    /// view (PreparationWindowView) — только ссылки на UI. Confirm → закрыть окно → выезд в локацию (GameFlow).
+    /// Окно Подготовки. Гибридная модель: игрок задаёт КВОТЫ по жанрам (−/+), сервис разворачивает их
+    /// в конкретные книги. Открывается через UIManager.ShowAsync (см. GameplaySceneController.StartGameAsync).
+    /// Confirm → закрыть окно → выезд в локацию (GameFlow). См. docs/GameFlowLoop.md.
     /// </summary>
     [Window("PreparationWindow", WindowType.Page)]
     public sealed class PreparationWindow : WindowController<PreparationWindowView>
@@ -22,9 +22,8 @@ namespace Game.Preparation.UI
         private IGameFlowService _gameFlow;
 
         private CancellationTokenSource _cts;
-        private readonly List<PreparationBookRowView> _rows = new();
-        private readonly List<SelectableBookItem> _items = new();
-        private bool _randomSelectionRunning;
+        private readonly Dictionary<string, PreparationGenreRowView> _rows = new();
+        private bool _randomRunning;
         private bool _confirmRunning;
         private bool _subscribed;
 
@@ -107,55 +106,54 @@ namespace Game.Preparation.UI
             SetRandomBooksButtonInteractable(false);
             var items = await _session.StartOrResumeAsync(ct);
             Render(items);
-            UpdateCounter();
-            UpdateValidation();
-            SetRandomBooksButtonInteractable(_items.Count > 0);
+            OnStateChanged(_session.CurrentState);
+            SetRandomBooksButtonInteractable(_rows.Count > 0);
         }
 
-        private void Render(IReadOnlyList<SelectableBookItem> items)
+        private void Render(IReadOnlyList<GenreSelectionItem> items)
         {
             ClearRows();
-            _items.Clear();
-            _items.AddRange(items);
 
-            var container = View.BookListContainer;
-            var prefab = View.BookRowPrefab;
+            var container = View.GenreListContainer;
+            var prefab = View.GenreRowPrefab;
             if (prefab == null || container == null) return;
 
             for (var i = 0; i < items.Count; i++)
             {
+                var item = items[i];
                 var row = Object.Instantiate(prefab, container);
-                row.Bind(items[i], OnBookClicked);
-                _rows.Add(row);
+                row.Bind(item, OnSetGenreQuantity);
+                _rows[item.Genre] = row;
             }
         }
 
         private void ClearRows()
         {
-            for (var i = 0; i < _rows.Count; i++)
-            {
-                if (_rows[i] != null) Object.Destroy(_rows[i].gameObject);
-            }
+            foreach (var row in _rows.Values)
+                if (row != null) Object.Destroy(row.gameObject);
             _rows.Clear();
         }
 
-        private void OnBookClicked(string bookId) => ToggleAsync(bookId, _cts.Token).Forget();
+        private void OnSetGenreQuantity(string genre, int quantity)
+            => SetGenreQuantityAsync(genre, quantity, _cts.Token).Forget();
 
-        private async UniTaskVoid ToggleAsync(string bookId, CancellationToken ct)
+        private async UniTaskVoid SetGenreQuantityAsync(string genre, int quantity, CancellationToken ct)
         {
-            await _session.ToggleBookAsync(bookId, ct);
+            await _session.SetGenreQuantityAsync(genre, quantity, ct);
         }
 
         private void OnStateChanged(PreparationSessionState state)
         {
             if (state == null) return;
-            var selectedSet = new HashSet<string>(state.SelectedBookIds);
-            for (var i = 0; i < _rows.Count; i++)
+
+            var canAddMore = _session.TotalSelected < _session.Capacity.DailyBookSlots;
+            foreach (var pair in _rows)
             {
-                var row = _rows[i];
-                if (row == null) continue;
-                row.SetSelected(selectedSet.Contains(row.BookId));
+                if (pair.Value == null) continue;
+                state.GenreQuantities.TryGetValue(pair.Key, out var qty);
+                pair.Value.SetState(qty, canAddMore);
             }
+
             UpdateCounter();
             UpdateValidation();
         }
@@ -164,9 +162,7 @@ namespace Game.Preparation.UI
         {
             if (_session == null) return;
 
-            var count = _session.CurrentState?.SelectedBookIds.Count ?? 0;
-            var max = _session.Capacity.DailyBookSlots;
-            View.SetSlotCount($"{count}/{max}");
+            View.SetSlotCount($"{_session.TotalSelected}/{_session.Capacity.DailyBookSlots}");
 
             if (_session.CurrentState != null)
             {
@@ -182,56 +178,36 @@ namespace Game.Preparation.UI
             var validation = _session.Validate();
             if (!validation.IsValid)
                 View.SetValidation(string.Join("\n", validation.Errors));
-            else if (_session.CurrentState != null && _session.CurrentState.SelectedBookIds.Count == 0)
+            else if (_session.TotalSelected == 0)
                 View.SetValidation("Полка пуста — посетители уйдут без покупок");
             else
                 View.SetValidation(string.Empty);
 
-            SetButtonInteractable(validation.IsValid && !_randomSelectionRunning);
+            SetButtonInteractable(validation.IsValid && !_randomRunning);
         }
 
         private void OnOpenShopClicked() => ConfirmAsync(_cts.Token).Forget();
 
-        private void OnRandomBooksClicked() => SelectRandomBooksAsync(_cts.Token).Forget();
+        private void OnRandomBooksClicked() => RandomizeAsync(_cts.Token).Forget();
 
-        private async UniTaskVoid SelectRandomBooksAsync(CancellationToken ct)
+        private async UniTaskVoid RandomizeAsync(CancellationToken ct)
         {
-            if (_session == null || _items.Count == 0) return;
+            if (_session == null || _rows.Count == 0 || _randomRunning) return;
 
-            _randomSelectionRunning = true;
+            _randomRunning = true;
             SetRandomBooksButtonInteractable(false);
             SetButtonInteractable(false);
-
             try
             {
-                var selectedIds = _session.CurrentState?.SelectedBookIds != null
-                    ? new List<string>(_session.CurrentState.SelectedBookIds)
-                    : new List<string>();
-
-                for (var i = 0; i < selectedIds.Count; i++)
-                    await _session.ToggleBookAsync(selectedIds[i], ct);
-
-                var candidates = new List<string>(_items.Count);
-                for (var i = 0; i < _items.Count; i++)
-                {
-                    if (!string.IsNullOrEmpty(_items[i].BookId))
-                        candidates.Add(_items[i].BookId);
-                }
-
-                Shuffle(candidates);
-
-                var targetCount = Mathf.Min(_session.Capacity.DailyBookSlots, candidates.Count);
-                for (var i = 0; i < targetCount; i++)
-                    await _session.ToggleBookAsync(candidates[i], ct);
+                await _session.RandomizeAsync(ct); // StateChanged обновит строки/счётчик
             }
             catch (System.OperationCanceledException)
             {
             }
             finally
             {
-                _randomSelectionRunning = false;
+                _randomRunning = false;
                 SetRandomBooksButtonInteractable(true);
-                UpdateCounter();
                 UpdateValidation();
             }
         }
@@ -318,15 +294,6 @@ namespace Game.Preparation.UI
         {
             if (View.RandomBooksButton != null)
                 View.RandomBooksButton.interactable = value;
-        }
-
-        private static void Shuffle<T>(IList<T> items)
-        {
-            for (var i = items.Count - 1; i > 0; i--)
-            {
-                var j = Random.Range(0, i + 1);
-                (items[i], items[j]) = (items[j], items[i]);
-            }
         }
     }
 }

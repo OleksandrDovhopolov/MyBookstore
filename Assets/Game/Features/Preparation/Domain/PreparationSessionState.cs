@@ -15,6 +15,15 @@ namespace Game.Preparation.Domain
         /// <summary>В MVP захардкожено loc_downtown — выбор локации откроется в следующей итерации.</summary>
         public string LocationId { get; set; } = "loc_downtown";
 
+        /// <summary>
+        /// Намерение игрока: сколько книг каждого жанра выставить на полку (genre → count).
+        /// Источник правды для UI. Конкретные книги резолвятся из этих квот в SelectedBookIds.
+        /// </summary>
+        public Dictionary<string, int> GenreQuantities { get; set; } = new();
+
+        /// <summary>
+        /// Резолв квот в конкретные id книг (выход). Downstream (Sales/shelf/scoring) читает именно это.
+        /// </summary>
         public List<string> SelectedBookIds { get; set; } = new();
 
         /// <summary>В MVP всегда пусто — декор подключается в задаче baseSaleChance.</summary>

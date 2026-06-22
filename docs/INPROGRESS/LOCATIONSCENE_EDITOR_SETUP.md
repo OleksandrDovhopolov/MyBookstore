@@ -35,13 +35,17 @@
 5. **Удалить из `GameplayScene` старый объект `PreparationScreen`** (с `PreparationScreenView`) — Подготовка стала окном.
    `PreparationScreenView._salesScreenRoot` тоже удалён из кода.
 
-## 3a. PreparationWindow (окно Подготовки)
-Подготовка теперь — окно `WindowController` (как `ResultsWindow`):
+## 3a. PreparationWindow (окно Подготовки) — гибрид «квоты по жанрам»
+Подготовка теперь — окно `WindowController` (как `ResultsWindow`). Игрок задаёт **кол-во книг по жанрам**
+(кнопки −/+), система авто-разворачивает квоты в конкретные книги (непроданные с прошлой полки → добор случайно).
 1. Создать префаб с компонентами `PreparationWindowView` (+ обязательные для `WindowView`: `RectTransform`/`CanvasGroup`/`Canvas`).
-2. Назначить во view: `_dayLabel`, `_locationLabel`, `_slotCountLabel`, `_validationLabel`, `_bookListContainer`,
-   `_bookRowPrefab` (`PreparationBookRowView`), `_openShopButton`, `_randomBooksButton`. Перенести вёрстку из старого экрана.
-3. Завести префаб в Addressables с адресом **`PreparationWindow`** (как в `[Window("PreparationWindow", WindowType.Page)]`).
-   Открывается автоматически из `GameplaySceneController.StartGameAsync` через `UIManager.ShowAsync<PreparationWindow>()`.
+2. Назначить во view: `_dayLabel`, `_locationLabel`, `_slotCountLabel`, `_validationLabel`,
+   `_genreListContainer` (Transform под строки жанров), `_genreRowPrefab` (`PreparationGenreRowView`),
+   `_openShopButton`, `_randomBooksButton`.
+3. Префаб строки жанра: компонент `PreparationGenreRowView` с полями `_genreLabel`, `_countLabel` («q/available»),
+   `_minusButton`, `_plusButton`.
+4. Завести окно в Addressables с адресом **`PreparationWindow`** (как в `[Window("PreparationWindow", WindowType.Page)]`).
+   Открывается из `GameplaySceneController.StartGameAsync` через `UIManager.ShowAsync<PreparationWindow>()`.
 
 ## 4. Камеры / Audio / EventSystem при additive (рекомендация: одна общая камера)
 В `GameplayScene` уже есть `Main Camera`, `Global Light 2D`, `EventSystem`. Рекомендуемый (самый простой)
