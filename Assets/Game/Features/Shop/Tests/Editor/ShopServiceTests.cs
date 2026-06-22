@@ -7,6 +7,8 @@ using Game.Shop.API;
 using Game.Shop.Services;
 using Game.Shop.Tests.Editor.Fakes;
 using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Game.Shop.Tests.Editor
 {
@@ -40,7 +42,10 @@ namespace Game.Shop.Tests.Editor
             public SaveBackedShopRepository Repo;
         }
 
-        private static Harness Build(IReadOnlyList<ShopConfig> lots, bool runAfterLoad = true)
+        private static Harness Build(
+            IReadOnlyList<ShopConfig> lots,
+            bool runAfterLoad = true,
+            IShopRewardSpecProvider rewardSpecs = null)
         {
             var h = new Harness
             {
@@ -52,7 +57,14 @@ namespace Game.Shop.Tests.Editor
             };
             h.Configs.Seed(lots ?? new List<ShopConfig>());
             h.Repo = new SaveBackedShopRepository(h.Save);
-            h.Svc = new ShopService(h.Save, h.Repo, h.Resources, h.Rewards, h.Configs, h.Inventory);
+            h.Svc = new ShopService(
+                h.Save,
+                h.Repo,
+                h.Resources,
+                h.Rewards,
+                rewardSpecs ?? new ShopConfigRewardSpecProvider(h.Configs),
+                h.Configs,
+                h.Inventory);
             if (runAfterLoad)
                 h.Svc.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
             return h;
@@ -180,6 +192,22 @@ namespace Game.Shop.Tests.Editor
 
             Assert.AreEqual(ShopPurchaseStatus.NotEnoughCurrency, result.Status);
             Assert.AreEqual(20, h.Resources.GetAmount(Gold));
+            Assert.AreEqual(0, h.Resources.RemoveCalls.Count);
+            Assert.AreEqual(0, h.Rewards.GrantCalls.Count);
+        }
+
+        [Test]
+        public void Buy_MissingRewardSpec_ReturnsInternalError_NoCharge()
+        {
+            var h = Build(new[] { DecorLot("lot_a", 50) }, rewardSpecs: new MissingRewardSpecProvider());
+            h.Resources.Seed(Gold, 100);
+
+            LogAssert.Expect(LogType.Error, "[Shop] Missing RewardSpec for lot 'lot_a' (rewardId='reward_lot_a'). Purchase was blocked before charging currency.");
+
+            var result = h.Svc.BuyAsync("lot_a", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(ShopPurchaseStatus.InternalError, result.Status);
+            Assert.AreEqual(100, h.Resources.GetAmount(Gold));
             Assert.AreEqual(0, h.Resources.RemoveCalls.Count);
             Assert.AreEqual(0, h.Rewards.GrantCalls.Count);
         }
@@ -366,6 +394,15 @@ namespace Game.Shop.Tests.Editor
             Assert.IsTrue(captured.HasValue);
             Assert.AreEqual("lot_a", captured.Value.Lot.LotId);
             Assert.AreSame(expandedSpec, captured.Value.Granted);
+        }
+
+        private sealed class MissingRewardSpecProvider : IShopRewardSpecProvider
+        {
+            public bool TryBuild(ShopLot lot, out RewardSpec spec)
+            {
+                spec = null;
+                return false;
+            }
         }
     }
 }

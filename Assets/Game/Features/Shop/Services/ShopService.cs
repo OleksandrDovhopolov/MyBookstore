@@ -29,12 +29,12 @@ namespace Game.Shop.Services
         private readonly SaveBackedShopRepository _repository;
         private readonly IResourcesService _resources;
         private readonly IRewardGrantService _rewards;
+        private readonly IShopRewardSpecProvider _rewardSpecs;
         private readonly IConfigsService _configs;
         private readonly IInventoryService _inventory;
 
         private readonly Dictionary<string, ShopLot> _lotsById = new(StringComparer.Ordinal);
         private readonly Dictionary<string, List<ShopLot>> _lotsByStorefront = new(StringComparer.Ordinal);
-        private readonly Dictionary<string, RewardSpec> _specsByLotId = new(StringComparer.Ordinal);
 
         private ShopStateDto _state = new ShopStateDto();
         private bool _loaded;
@@ -44,6 +44,7 @@ namespace Game.Shop.Services
             SaveBackedShopRepository repository,
             IResourcesService resources,
             IRewardGrantService rewards,
+            IShopRewardSpecProvider rewardSpecs,
             IConfigsService configs,
             IInventoryService inventory)
         {
@@ -51,6 +52,7 @@ namespace Game.Shop.Services
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _resources = resources ?? throw new ArgumentNullException(nameof(resources));
             _rewards = rewards ?? throw new ArgumentNullException(nameof(rewards));
+            _rewardSpecs = rewardSpecs ?? throw new ArgumentNullException(nameof(rewardSpecs));
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
 
@@ -143,7 +145,8 @@ namespace Game.Shop.Services
         {
             if (!TryGetLot(lotId, out var lot)) return false;
             if (!IsWithinLimit(lotId, lot)) return false;
-            if (HasOwnedInlineRewardItem(lotId)) return false;
+            if (!_rewardSpecs.TryBuild(lot, out var spec)) return false;
+            if (HasOwnedInlineRewardItem(spec)) return false;
             return true;
         }
 
@@ -161,9 +164,9 @@ namespace Game.Shop.Services
         /// rewardItems (expander fills at grant time), so this check is a no-op for them — their own
         /// owned-filter logic lives inside <c>BookBoxRewardExpander</c>.
         /// </summary>
-        private bool HasOwnedInlineRewardItem(string lotId)
+        private bool HasOwnedInlineRewardItem(RewardSpec spec)
         {
-            if (!_specsByLotId.TryGetValue(lotId, out var spec) || spec.Items == null) return false;
+            if (spec == null || spec.Items == null) return false;
             for (var i = 0; i < spec.Items.Count; i++)
             {
                 var item = spec.Items[i];
@@ -183,9 +186,16 @@ namespace Game.Shop.Services
             if (!TryGetLot(lotId, out var lot))
                 return ShopPurchaseResult.Fail(ShopPurchaseStatus.LotNotFound);
 
+            if (!_rewardSpecs.TryBuild(lot, out var spec))
+            {
+                Debug.LogError($"{LogPrefix} Missing RewardSpec for lot '{lotId}' (rewardId='{lot.RewardId}'). " +
+                               "Purchase was blocked before charging currency.");
+                return ShopPurchaseResult.Fail(ShopPurchaseStatus.InternalError, lot);
+            }
+
             // AlreadyOwned takes priority over LimitReached so UI can display a clear reason — both
             // collapse into IsAvailable=false but their causes (and player-facing messages) differ.
-            if (HasOwnedInlineRewardItem(lotId))
+            if (HasOwnedInlineRewardItem(spec))
             {
                 Debug.LogWarning($"{LogPrefix} Lot '{lotId}' grants an item already owned. Purchase blocked.");
                 return ShopPurchaseResult.Fail(ShopPurchaseStatus.AlreadyOwned, lot);
@@ -203,13 +213,6 @@ namespace Game.Shop.Services
                 var removed = await _resources.RemoveAsync(price.Currency, price.Amount, SourcePrefix + lotId, ct);
                 if (!removed)
                     return ShopPurchaseResult.Fail(ShopPurchaseStatus.NotEnoughCurrency, lot);
-            }
-
-            if (!_specsByLotId.TryGetValue(lotId, out var spec))
-            {
-                Debug.LogError($"{LogPrefix} Missing RewardSpec for lot '{lotId}' (rewardId='{lot.RewardId}'). " +
-                               "Gold has been charged but nothing was granted — manual recovery needed.");
-                return ShopPurchaseResult.Fail(ShopPurchaseStatus.InternalError, lot);
             }
 
             var grant = await _rewards.GrantAsync(spec, SourcePrefix + lotId, ct);
@@ -244,7 +247,6 @@ namespace Game.Shop.Services
         {
             _lotsById.Clear();
             _lotsByStorefront.Clear();
-            _specsByLotId.Clear();
 
             var configs = _configs.GetAll<ShopConfig>();
             if (configs == null) return;
@@ -274,26 +276,7 @@ namespace Game.Shop.Services
                     _lotsByStorefront[lot.StorefrontId] = list;
                 }
                 list.Add(lot);
-
-                _specsByLotId[lot.LotId] = BuildSpec(cfg, lot);
             }
-        }
-
-        private static RewardSpec BuildSpec(ShopConfig cfg, ShopLot lot)
-        {
-            var items = cfg.RewardItems;
-            if (items == null || items.Length == 0)
-                return new RewardSpec(lot.RewardId, Array.Empty<RewardItem>());
-
-            var rewardItems = new RewardItem[items.Length];
-            for (var i = 0; i < items.Length; i++)
-            {
-                var src = items[i];
-                rewardItems[i] = src.Kind == RewardKind.Resource
-                    ? RewardItem.Resource(src.Id, src.Amount)
-                    : RewardItem.InventoryItem(src.Id, src.Category, src.Amount);
-            }
-            return new RewardSpec(lot.RewardId, rewardItems);
         }
     }
 }

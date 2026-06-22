@@ -14,6 +14,7 @@ namespace Game.Bootstrap
         public static void RegisterShop(this IContainerBuilder builder)
         {
             builder.Register<SaveBackedShopRepository>(Lifetime.Singleton);
+            builder.Register<IShopRewardSpecProvider, ShopConfigRewardSpecProvider>(Lifetime.Singleton);
 
             // ShopService self-registers as ISaveHook in its constructor.
             builder.Register<ShopService>(Lifetime.Singleton)
