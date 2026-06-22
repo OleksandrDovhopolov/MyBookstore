@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
+using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.Preparation.Domain;
@@ -26,22 +27,25 @@ namespace Game.Preparation.Services
         private readonly IDayProgressService _dayProgress;
         private readonly IPreparationInventoryProvider _inventory;
         private readonly ISalesShelfStateService _shelfState;
+        private readonly IConfigsService _configs;
 
         private PreparationSessionState _state;
 
-        // Кэш на сессию: непроданные книги игрока, сгруппированные по жанру (потолок квот + пул для резолва).
+        // Session cache: owned books from inventory, grouped by genre for quota limits and id resolution.
         private readonly Dictionary<string, List<BookConfig>> _availableByGenre = new(StringComparer.OrdinalIgnoreCase);
 
         public PreparationSessionService(
             ISaveService save,
             IDayProgressService dayProgress,
             IPreparationInventoryProvider inventory,
-            ISalesShelfStateService shelfState)
+            ISalesShelfStateService shelfState,
+            IConfigsService configs)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _dayProgress = dayProgress ?? throw new ArgumentNullException(nameof(dayProgress));
             _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
             _shelfState = shelfState ?? throw new ArgumentNullException(nameof(shelfState));
+            _configs = configs ?? throw new ArgumentNullException(nameof(configs));
 
             Capacity = new PreparationCapacity(DefaultMinDailyBooks, DefaultDailyBookSlots);
         }
@@ -132,11 +136,15 @@ namespace Game.Preparation.Services
         {
             if (_state == null) return;
 
-            // Берём весь пул непроданных книг, перемешиваем, отрезаем по лимиту → квоты по жанрам.
+            // Перемешиваем текущий объём подготовки. После завершённого дня это важно:
+            // если на полке осталось 6 книг, Random не должен заново добирать до DailyBookSlots
+            // из всего инвентаря. Для пустого выбора оставляем удобный bootstrap: заполнить до лимита.
             var pool = _availableByGenre.Values.SelectMany(b => b).ToList();
             Shuffle(pool);
 
-            var take = Mathf.Min(Capacity.DailyBookSlots, pool.Count);
+            var currentSelectionCount = Mathf.Max(0, _state.SelectedBookIds?.Count ?? 0);
+            var targetCount = currentSelectionCount > 0 ? currentSelectionCount : Capacity.DailyBookSlots;
+            var take = Mathf.Min(targetCount, pool.Count);
             var quantities = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             for (var i = 0; i < take; i++)
             {
@@ -187,7 +195,15 @@ namespace Game.Preparation.Services
         private void CacheAvailableByGenre()
         {
             _availableByGenre.Clear();
-            // GetOwnedBooks() уже исключает проданные книги (DayProgressInventoryProvider).
+
+            foreach (var book in _configs.GetAll<BookConfig>())
+            {
+                if (book == null || string.IsNullOrEmpty(book.Genre)) continue;
+                if (!_availableByGenre.ContainsKey(book.Genre))
+                    _availableByGenre[book.Genre] = new List<BookConfig>();
+            }
+
+            // Inventory is the ownership source of truth; sold books are removed by Sales.
             foreach (var book in _inventory.GetOwnedBooks())
             {
                 if (book == null || string.IsNullOrEmpty(book.Genre)) continue;
@@ -203,7 +219,7 @@ namespace Game.Preparation.Services
         private int AvailableCount(string genre)
             => _availableByGenre.TryGetValue(genre, out var books) ? books.Count : 0;
 
-        // Стартовые квоты = непроданные книги с прошлой полки, посчитанные по жанрам (continuity/restock).
+        // Initial quotas preserve unsold books still present on the previous shelf (continuity/restock).
         private Dictionary<string, int> SeedInitialQuantities()
         {
             var quantities = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -212,7 +228,7 @@ namespace Game.Preparation.Services
             foreach (var bookId in _shelfState.ShelfBookIds)
             {
                 if (string.IsNullOrEmpty(bookId)) continue;
-                if (!genreById.TryGetValue(bookId, out var genre)) continue; // продана/не во владении — пропускаем
+                if (!genreById.TryGetValue(bookId, out var genre)) continue; // Sold or no longer owned.
                 quantities.TryGetValue(genre, out var c);
                 quantities[genre] = c + 1;
             }
@@ -273,7 +289,7 @@ namespace Game.Preparation.Services
             return quantities;
         }
 
-        // Резолв квот в конкретные id: непроданные с прошлой полки первыми, затем добор случайно.
+        // Resolve quotas to concrete ids: previous shelf survivors first, then random refill.
         private List<string> ResolveSelectedBookIds(IReadOnlyDictionary<string, int> quantities)
         {
             var result = new List<string>();

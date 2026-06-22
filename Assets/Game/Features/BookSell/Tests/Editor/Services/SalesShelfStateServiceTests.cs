@@ -63,5 +63,21 @@ namespace Book.Sell.Tests.Editor.Services
             Assert.AreEqual(1, state.SoldBookIds.Count(id => id == "a"));
             CollectionAssert.AreEqual(new[] { "b" }, state.ShelfBookIds);
         }
+
+        [Test]
+        public void SetShelf_StartsNewShelfSession_AndClearsSoldBookIds()
+        {
+            var save = new FakeSaveService();
+            var service = new SalesShelfStateService(save);
+            service.SetShelfAsync(new[] { "a", "b" }, CancellationToken.None).GetAwaiter().GetResult();
+            service.MarkSoldAsync("a", CancellationToken.None).GetAwaiter().GetResult();
+
+            service.SetShelfAsync(new[] { "a", "c" }, CancellationToken.None).GetAwaiter().GetResult();
+
+            var state = save.GetModuleAsync<SalesShelfState>(SalesSaveKeys.ShelfState, CancellationToken.None)
+                .GetAwaiter().GetResult();
+            CollectionAssert.AreEqual(new[] { "a", "c" }, state.ShelfBookIds);
+            CollectionAssert.IsEmpty(state.SoldBookIds);
+        }
     }
 }

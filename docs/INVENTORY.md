@@ -281,15 +281,20 @@ the `ftue.applied` marker, so a crash mid-bootstrap leaves a recoverable state.
 ### Preparation
 
 `DayProgressInventoryProvider` reads `IInventoryService.GetByCategory("book")`, maps ids
-to `BookConfig` via `IConfigsService.TryGet<BookConfig>`, and returns the list. If the
-category is empty (FTUE skipped, manual wipe), it falls back to the entire catalog with
-a warning so Preparation does not stall on an empty list.
+to `BookConfig` via `IConfigsService.TryGet<BookConfig>`, and returns only those books.
+If the category is empty, it returns an empty list and logs a warning. There is no
+catalog fallback here: inventory is the ownership source of truth.
 
 ### Sales
 
-Sales does not read inventory directly. It receives `SalesSessionSetup` from
-`PreparationSalesSetupProvider`, which is itself populated from the player's
-Preparation choices.
+Sales does not read inventory directly to build the day setup. It receives
+`SalesSessionSetup` from `PreparationSalesSetupProvider`, which is itself populated from
+the player's Preparation choices.
+
+On a successful sale, Sales consumes the sold book by calling
+`IInventoryService.RemoveAsync(bookId, 1, ct)`. `SalesShelfState` remains a current
+shelf/session state for UI and day flow; it is not the source of truth for whether the
+player owns a book.
 
 ### Debug UI
 

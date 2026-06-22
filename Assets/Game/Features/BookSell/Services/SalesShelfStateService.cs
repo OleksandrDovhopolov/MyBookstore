@@ -35,8 +35,8 @@ namespace Book.Sell.Services
             try
             {
                 var state = await LoadAsync(ct);
-                var sold = new HashSet<string>(state.SoldBookIds ?? new List<string>(), StringComparer.Ordinal);
-                state.ShelfBookIds = DistinctValid(bookIds, skip: sold);
+                state.ShelfBookIds = DistinctValid(bookIds);
+                state.SoldBookIds = new List<string>();
                 await SaveAsync(state, ct);
             }
             finally

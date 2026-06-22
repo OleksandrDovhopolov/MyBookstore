@@ -1,12 +1,20 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Domain.Steps;
 using Book.Sell.Services;
 using Book.Sell.Tests.Editor.Fakes;
+using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
+using Game.DayCycle.Day;
+using Game.Inventory.API;
+using Game.Preparation.Services;
 using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Book.Sell.Tests.Editor
 {
@@ -31,12 +39,15 @@ namespace Book.Sell.Tests.Editor
         private static SalesDayController Build(
             BookConfig[] books, RequestConfig[] requests, LocationConfig location, IReadOnlyList<Customer> customers,
             SalesTuning tuning = null,
-            ISalesShelfStateService shelfState = null)
+            ISalesShelfStateService shelfState = null,
+            RecordingInventoryService inventory = null)
         {
             var configs = new FakeConfigsService();
             configs.SetAll(books);
             configs.SetAll(requests);
             configs.SetAll(new[] { location });
+
+            inventory ??= RecordingInventoryService.WithBooks(books);
 
             return new SalesDayController(
                 configs,
@@ -47,6 +58,7 @@ namespace Book.Sell.Tests.Editor
                 new StubCustomerSpawner(customers),
                 new InteractionLock(),
                 tuning ?? SalesTestKit.FastTuning(),
+                inventory: inventory,
                 shelfState: shelfState);
         }
 
@@ -64,6 +76,120 @@ namespace Book.Sell.Tests.Editor
         private static void DriveUntilActive(SalesDayController c, int maxTicks = 50)
         {
             for (var i = 0; i < maxTicks && c.CurrentRequest == null && c.Phase == SalesDayPhase.Running; i++) c.Tick(0.1f);
+        }
+
+        private sealed class RecordingInventoryService : IInventoryService
+        {
+            private readonly List<InventoryItem> _items = new();
+
+            public List<(string ItemId, int Amount)> RemoveCalls { get; } = new();
+
+            public event System.Action<InventoryChangeEvent> Changed;
+
+            public static RecordingInventoryService WithBooks(IEnumerable<BookConfig> books)
+            {
+                var inventory = new RecordingInventoryService();
+                if (books == null) return inventory;
+
+                foreach (var book in books)
+                {
+                    if (book == null || string.IsNullOrEmpty(book.Id)) continue;
+                    inventory.Seed(book.Id, InventoryCategories.Book);
+                }
+                return inventory;
+            }
+
+            public RecordingInventoryService Seed(string itemId, string categoryId, int count = 1)
+            {
+                if (!_items.Any(i => i.ItemId == itemId))
+                    _items.Add(new InventoryItem(itemId, categoryId, count));
+                return this;
+            }
+
+            public IReadOnlyList<InventoryItem> GetAll() => _items.ToList();
+
+            public IReadOnlyList<InventoryItem> GetByCategory(string categoryId)
+                => _items.Where(i => i.CategoryId == categoryId).ToList();
+
+            public bool Has(string itemId) => GetCount(itemId) > 0;
+
+            public int GetCount(string itemId)
+                => _items.FirstOrDefault(i => i.ItemId == itemId)?.Count ?? 0;
+
+            public UniTask AddAsync(string itemId, string categoryId, int amount, CancellationToken ct)
+            {
+                Seed(itemId, categoryId, amount);
+                Changed?.Invoke(new InventoryChangeEvent(categoryId, itemId, InventoryChangeKind.Added, amount));
+                return UniTask.CompletedTask;
+            }
+
+            public UniTask AddBatchAsync(IEnumerable<InventoryItem> items, CancellationToken ct)
+            {
+                foreach (var item in items)
+                    Seed(item.ItemId, item.CategoryId, item.Count);
+                return UniTask.CompletedTask;
+            }
+
+            public UniTask<bool> RemoveAsync(string itemId, int amount, CancellationToken ct)
+            {
+                RemoveCalls.Add((itemId, amount));
+
+                var existing = _items.FirstOrDefault(i => i.ItemId == itemId);
+                if (existing == null || existing.Count < amount)
+                    return UniTask.FromResult(false);
+
+                _items.Remove(existing);
+                var newCount = existing.Count - amount;
+                if (newCount > 0)
+                    _items.Add(new InventoryItem(itemId, existing.CategoryId, newCount));
+
+                Changed?.Invoke(new InventoryChangeEvent(existing.CategoryId, itemId, InventoryChangeKind.Removed, newCount));
+                return UniTask.FromResult(true);
+            }
+        }
+
+        private sealed class StaticPreparationInventoryProvider : IPreparationInventoryProvider
+        {
+            private readonly IReadOnlyList<BookConfig> _ownedBooks;
+
+            public StaticPreparationInventoryProvider(IReadOnlyList<BookConfig> ownedBooks)
+                => _ownedBooks = ownedBooks;
+
+            public IReadOnlyList<BookConfig> GetOwnedBooks() => _ownedBooks;
+        }
+
+        private sealed class FakeDayProgressService : IDayProgressService
+        {
+            public event System.Action<DayProgressState> PhaseChanged;
+
+            public DayProgressState Current { get; } = new();
+
+            public UniTask<DayProgressState> LoadAsync(CancellationToken ct) => UniTask.FromResult(Current);
+
+            public UniTask SetPhaseAsync(DayPhase phase, CancellationToken ct)
+            {
+                Current.CurrentPhase = phase;
+                PhaseChanged?.Invoke(Current);
+                return UniTask.CompletedTask;
+            }
+
+            public UniTask MarkCurrentDayCompletedAsync(CancellationToken ct)
+            {
+                Current.CompletedDays.Add(Current.CurrentDay);
+                Current.CurrentPhase = DayPhase.Results;
+                PhaseChanged?.Invoke(Current);
+                return UniTask.CompletedTask;
+            }
+
+            public UniTask AdvanceToNextDayAsync(CancellationToken ct)
+            {
+                Current.CurrentDay++;
+                Current.CurrentPhase = DayPhase.Morning;
+                PhaseChanged?.Invoke(Current);
+                return UniTask.CompletedTask;
+            }
+
+            public UniTask SaveAsync(CancellationToken ct) => UniTask.CompletedTask;
         }
 
         // ----- tests -----
@@ -215,13 +341,15 @@ namespace Book.Sell.Tests.Editor
         public void RecommendBook_SuccessfulSale_MarksBookSoldInPersistentShelf()
         {
             var shelfState = new RecordingShelfStateService();
+            var inventory = new RecordingInventoryService().Seed("b1", InventoryCategories.Book);
             var reqA = SalesTestKit.Request("reqA");
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
                 new[] { reqA },
                 SalesTestKit.Location(),
                 new List<Customer> { Active("c1", reqA) },
-                shelfState: shelfState);
+                shelfState: shelfState,
+                inventory: inventory);
 
             StartDay(c);
             DriveUntilActive(c);
@@ -229,6 +357,10 @@ namespace Book.Sell.Tests.Editor
             c.RecommendBook("b1");
 
             CollectionAssert.Contains(shelfState.Sold, "b1");
+            Assert.AreEqual(1, inventory.RemoveCalls.Count);
+            Assert.AreEqual("b1", inventory.RemoveCalls[0].ItemId);
+            Assert.AreEqual(1, inventory.RemoveCalls[0].Amount);
+            Assert.IsFalse(inventory.Has("b1"));
         }
 
         [Test]
@@ -257,13 +389,15 @@ namespace Book.Sell.Tests.Editor
         public void SkipCurrentRequest_DoesNotMarkBookSoldInPersistentShelf()
         {
             var shelfState = new RecordingShelfStateService();
+            var inventory = new RecordingInventoryService().Seed("b1", InventoryCategories.Book);
             var reqA = SalesTestKit.Request("reqA");
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
                 new[] { reqA },
                 SalesTestKit.Location(),
                 new List<Customer> { Active("c1", reqA) },
-                shelfState: shelfState);
+                shelfState: shelfState,
+                inventory: inventory);
 
             StartDay(c);
             DriveUntilActive(c);
@@ -271,6 +405,8 @@ namespace Book.Sell.Tests.Editor
             c.SkipCurrentRequest();
 
             CollectionAssert.IsEmpty(shelfState.Sold);
+            CollectionAssert.IsEmpty(inventory.RemoveCalls);
+            Assert.IsTrue(inventory.Has("b1"));
         }
 
         [Test]
@@ -297,17 +433,100 @@ namespace Book.Sell.Tests.Editor
         public void PassiveSale_MarksBookSoldInPersistentShelf()
         {
             var shelfState = new RecordingShelfStateService();
+            var inventory = new RecordingInventoryService().Seed("b1", InventoryCategories.Book);
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
                 new RequestConfig[0],
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
                 new List<Customer> { Passive("c1") },
-                shelfState: shelfState);
+                shelfState: shelfState,
+                inventory: inventory);
 
             StartDay(c);
             Run(c);
 
             CollectionAssert.Contains(shelfState.Sold, "b1");
+            Assert.AreEqual(1, inventory.RemoveCalls.Count);
+            Assert.AreEqual("b1", inventory.RemoveCalls[0].ItemId);
+            Assert.AreEqual(1, inventory.RemoveCalls[0].Amount);
+            Assert.IsFalse(inventory.Has("b1"));
+        }
+
+        [Test]
+        public void RecommendBook_SoldBookMissingFromInventory_LogsError()
+        {
+            var shelfState = new RecordingShelfStateService();
+            var inventory = new RecordingInventoryService();
+            var reqA = SalesTestKit.Request("reqA");
+            var c = Build(
+                new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
+                new[] { reqA },
+                SalesTestKit.Location(),
+                new List<Customer> { Active("c1", reqA) },
+                shelfState: shelfState,
+                inventory: inventory);
+
+            StartDay(c);
+            DriveUntilActive(c);
+
+            LogAssert.Expect(LogType.Error, "[Sales.Day] sold book 'b1' was not present in inventory during active sale.");
+
+            c.RecommendBook("b1");
+
+            CollectionAssert.Contains(shelfState.Sold, "b1");
+            Assert.AreEqual(1, inventory.RemoveCalls.Count);
+            Assert.AreEqual("b1", inventory.RemoveCalls[0].ItemId);
+            Assert.AreEqual(1, inventory.RemoveCalls[0].Amount);
+        }
+
+        [Test]
+        public void PreparationInventoryProvider_EmptyInventory_ReturnsEmptyList()
+        {
+            var configs = new FakeConfigsService();
+            configs.SetAll(new[] { SalesTestKit.Book("b1"), SalesTestKit.Book("b2") });
+            var provider = new DayProgressInventoryProvider(new RecordingInventoryService(), configs);
+
+            LogAssert.Expect(LogType.Warning, "[Preparation.Inventory] inventory book category is empty - no owned books available.");
+
+            var owned = provider.GetOwnedBooks();
+
+            CollectionAssert.IsEmpty(owned);
+        }
+
+        [Test]
+        public void PreparationInventoryProvider_ReturnsOnlyBooksOwnedInInventory()
+        {
+            var configs = new FakeConfigsService();
+            configs.SetAll(new[] { SalesTestKit.Book("b1"), SalesTestKit.Book("b2") });
+            var inventory = new RecordingInventoryService().Seed("b2", InventoryCategories.Book);
+            var provider = new DayProgressInventoryProvider(inventory, configs);
+
+            var owned = provider.GetOwnedBooks();
+
+            CollectionAssert.AreEqual(new[] { "b2" }, owned.Select(b => b.Id).ToArray());
+        }
+
+        [Test]
+        public void PreparationSession_IncludesCatalogGenresWithZeroOwnedBooks()
+        {
+            var sciFi = SalesTestKit.Book("b1", genre: "sci-fi");
+            var romance = SalesTestKit.Book("b2", genre: "romance");
+            var configs = new FakeConfigsService();
+            configs.SetAll(new[] { sciFi, romance });
+
+            var service = new PreparationSessionService(
+                new FakeSaveService(),
+                new FakeDayProgressService(),
+                new StaticPreparationInventoryProvider(new[] { sciFi }),
+                new RecordingShelfStateService(),
+                configs);
+
+            var items = service.StartOrResumeAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            var byGenre = items.ToDictionary(item => item.Genre, StringComparer.OrdinalIgnoreCase);
+            Assert.AreEqual(1, byGenre["sci-fi"].Available);
+            Assert.AreEqual(0, byGenre["romance"].Available);
+            Assert.AreEqual(0, byGenre["romance"].Quantity);
         }
 
         [Test]

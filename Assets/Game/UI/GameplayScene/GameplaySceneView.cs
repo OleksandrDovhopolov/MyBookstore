@@ -14,12 +14,16 @@ public class GameplaySceneView : WindowView
     [SerializeField] private Button _openShopButton;
     [SerializeField] private Button _cheatButton;
     [SerializeField] private Button _startDayButton;
+    [SerializeField] private Button _inventoryButton;
+    [SerializeField] private Button _decorButton;
 
     [Header("Genre book counts")]
     [SerializeField] private List<GameplayGenreBookCountItemView> _genreBookCountItems = new();
 
     public Button OpenShopButton => _openShopButton;
     public Button StartDayButton => _startDayButton;
+    public Button InventoryButton => _inventoryButton;
+    public Button DecorButton => _decorButton;
 
     public void SetSceneButtonsInteractable(bool interactable)
     {
@@ -33,6 +37,18 @@ public class GameplaySceneView : WindowView
         {
             _cheatButton.interactable = interactable;
             _cheatButton.gameObject.SetActive(interactable);
+        }
+
+        if (_inventoryButton != null)
+        {
+            _inventoryButton.interactable = interactable;
+            _inventoryButton.gameObject.SetActive(interactable);
+        }
+
+        if (_decorButton != null)
+        {
+            _decorButton.interactable = interactable;
+            _decorButton.gameObject.SetActive(interactable);
         }
 
         SetStartButtonActive(interactable);
@@ -51,7 +67,6 @@ public class GameplaySceneView : WindowView
     {
         _goldAmountText.text = goldAmount.ToString();
     }
-
     
     public void SetDayText(string value)
     {

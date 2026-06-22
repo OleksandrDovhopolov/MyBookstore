@@ -12,7 +12,8 @@
         "Game.Core.WorldHud",
         "Game.Core.UI",
         "MessagePipe",
-        "DayCycle"
+        "DayCycle",
+        "Game.Inventory.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -186,8 +186,7 @@ namespace Game.Preparation.UI
 
             if (_session.CurrentState != null)
             {
-                View.SetDay($"День {_session.CurrentState.Day}");
-                View.SetLocation(_session.CurrentState.LocationId);
+                View.SetLocation("To " + _session.CurrentState.LocationId);
             }
         }
 
@@ -197,11 +196,13 @@ namespace Game.Preparation.UI
 
             var validation = _session.Validate();
             if (!validation.IsValid)
-                View.SetValidation(string.Join("\n", validation.Errors));
+            {
+                Debug.LogWarning(string.Join("\n", validation.Errors));
+            }
             else if (_session.TotalSelected == 0)
-                View.SetValidation("Полка пуста — посетители уйдут без покупок");
-            else
-                View.SetValidation(string.Empty);
+            {
+                Debug.LogWarning($"Shelf is empty - clients will leave");
+            }
 
             SetButtonInteractable(validation.IsValid && !_randomRunning);
         }

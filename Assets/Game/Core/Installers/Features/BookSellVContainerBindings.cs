@@ -16,10 +16,10 @@ namespace Game.Bootstrap
     // which reads the player's choice from the preparation.session save module.
     public static class BookSellVContainerBindings
     {
-        // Общий save-backed сервис состояния полки. Нужен в ДВУХ скопах:
-        //   - хаб (Preparation → DayProgressInventoryProvider): фильтрует проданные книги при выборе;
-        //   - локация (Sales → SalesDayController): помечает проданное во время дня.
-        // Поэтому регистрируется ГЛОБАЛЬНО (BootstrapInstaller), чтобы оба скопа резолвили один инстанс.
+        // Shared save-backed shelf-session state. Used in two scopes:
+        //   - hub (Preparation): preserves previous shelf survivors for continuity/restock;
+        //   - location (Sales): marks books sold during the current sales session for UI/day flow.
+        // Ownership truth lives in inventory; this service is registered globally so both scopes share one instance.
         public static void RegisterBookSellSharedState(this IContainerBuilder builder)
         {
             builder.Register<ISalesShelfStateService, SalesShelfStateService>(Lifetime.Singleton);

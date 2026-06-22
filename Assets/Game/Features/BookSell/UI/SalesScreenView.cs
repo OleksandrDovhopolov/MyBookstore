@@ -32,10 +32,7 @@ namespace Book.Sell.UI
     public sealed class SalesScreenView : MonoBehaviour
     {
         [Header("Header")]
-        [SerializeField] private TMP_Text _dayLabel;
-        [SerializeField] private TMP_Text _locationLabel;
         [SerializeField] private TMP_Text _goldLabel;
-        [SerializeField] private TMP_Text _progressLabel;       // "Served: N"
 
         [Header("End of day")]
         [SerializeField] private Button _closeShopButton;   // "Свернуть лавку" — shown when day is ReadyToClose
@@ -321,10 +318,7 @@ namespace Book.Sell.UI
         private void RefreshHeader()
         {
             var result = _controller.AccumulatedResult;
-            if (_dayLabel != null) _dayLabel.text = $"Day {_controller.Day}";
-            if (_locationLabel != null) _locationLabel.text = _controller.LocationId ?? "—";
             if (_goldLabel != null) _goldLabel.text = result.GoldEarned.ToString();
-            if (_progressLabel != null) _progressLabel.text = $"Served: {result.CustomersServed}";
         }
 
         private void SetGameplaySceneButtonsInteractable(bool interactable)

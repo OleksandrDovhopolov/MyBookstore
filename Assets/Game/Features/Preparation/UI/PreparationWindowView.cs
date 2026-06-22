@@ -11,10 +11,8 @@ namespace Game.Preparation.UI
     public sealed class PreparationWindowView : WindowView
     {
         [Header("Texts")]
-        [SerializeField] private TMP_Text _dayLabel;
         [SerializeField] private TMP_Text _locationLabel;
         [SerializeField] private TMP_Text _slotCountLabel;
-        [SerializeField] private TMP_Text _validationLabel;
 
         [Header("Genre list")]
         [SerializeField] private Transform _genreListContainer;
@@ -29,10 +27,8 @@ namespace Game.Preparation.UI
         public Transform GenreListContainer => _genreListContainer;
         public PreparationGenreRowView GenreRowPrefab => _genreRowPrefab;
 
-        public void SetDay(string value) => Set(_dayLabel, value);
         public void SetLocation(string value) => Set(_locationLabel, value);
         public void SetSlotCount(string value) => Set(_slotCountLabel, value);
-        public void SetValidation(string value) => Set(_validationLabel, value);
 
         private static void Set(TMP_Text label, string value)
         {
