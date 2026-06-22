@@ -258,7 +258,14 @@ namespace Game.Shop.Services
                     ? new ShopLotLimit(cfg.Limit.Mode, cfg.Limit.MaxPurchases)
                     : ShopLotLimit.Unlimited();
 
-                var lot = new ShopLot(cfg.Id, cfg.StorefrontId, price, cfg.RewardId ?? cfg.Id, limit);
+                var lot = new ShopLot(
+                    cfg.Id,
+                    cfg.StorefrontId,
+                    price,
+                    cfg.RewardId ?? cfg.Id,
+                    limit,
+                    cfg.DisplayName,
+                    cfg.Description);
                 _lotsById[lot.LotId] = lot;
 
                 if (!_lotsByStorefront.TryGetValue(lot.StorefrontId, out var list))

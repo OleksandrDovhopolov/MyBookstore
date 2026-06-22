@@ -78,6 +78,72 @@ namespace Game.Shop.Tests.Editor
         }
 
         [Test]
+        public void AfterLoadAsync_NewspaperBooks_LoadsFourLotsWithDisplayTextInConfigOrder()
+        {
+            var lots = new[]
+            {
+                new ShopConfig
+                {
+                    Id = "newspaper_book_common_15",
+                    StorefrontId = NewspaperShopLotIds.StorefrontBooks,
+                    DisplayName = "Young Adult Favorites",
+                    Description = "15 mixed books",
+                    Price = new ShopPriceData { Currency = Gold, Amount = 20 },
+                    RewardId = "book_box_common_15",
+                    RewardItems = new RewardItemData[0],
+                    Limit = new ShopLotLimitData { Mode = ShopLimitMode.Unlimited }
+                },
+                new ShopConfig
+                {
+                    Id = "newspaper_book_rare_8",
+                    StorefrontId = NewspaperShopLotIds.StorefrontBooks,
+                    DisplayName = "Fantasy Treasures",
+                    Description = "8 rare books",
+                    Price = new ShopPriceData { Currency = Gold, Amount = 30 },
+                    RewardId = "book_box_rare_8",
+                    RewardItems = new RewardItemData[0],
+                    Limit = new ShopLotLimitData { Mode = ShopLimitMode.Unlimited }
+                },
+                new ShopConfig
+                {
+                    Id = "newspaper_book_genre_dystopic_1",
+                    StorefrontId = NewspaperShopLotIds.StorefrontBooks,
+                    DisplayName = "World Explorers",
+                    Description = "1 dark fantasy pick",
+                    Price = new ShopPriceData { Currency = Gold, Amount = 40 },
+                    RewardId = "book_box_genre_dystopic_1",
+                    RewardItems = new RewardItemData[0],
+                    Limit = new ShopLotLimitData { Mode = ShopLimitMode.Unlimited }
+                },
+                new ShopConfig
+                {
+                    Id = NewspaperShopLotIds.BookBoxGenreHeartfelt1,
+                    StorefrontId = NewspaperShopLotIds.StorefrontBooks,
+                    DisplayName = "Heartfelt Stories",
+                    Description = "1 romantic drama pick",
+                    Price = new ShopPriceData { Currency = Gold, Amount = 40 },
+                    RewardId = "book_box_genre_heartfelt_1",
+                    RewardItems = new RewardItemData[0],
+                    Limit = new ShopLotLimitData { Mode = ShopLimitMode.Unlimited }
+                },
+            };
+
+            var h = Build(lots);
+
+            var books = h.Svc.GetLots(NewspaperShopLotIds.StorefrontBooks);
+
+            Assert.AreEqual(4, books.Count);
+            Assert.AreEqual("newspaper_book_common_15", books[0].LotId);
+            Assert.AreEqual("newspaper_book_rare_8", books[1].LotId);
+            Assert.AreEqual("newspaper_book_genre_dystopic_1", books[2].LotId);
+            Assert.AreEqual(NewspaperShopLotIds.BookBoxGenreHeartfelt1, books[3].LotId);
+            Assert.AreEqual("Young Adult Favorites", books[0].DisplayName);
+            Assert.AreEqual("15 mixed books", books[0].Description);
+            Assert.AreEqual("Heartfelt Stories", books[3].DisplayName);
+            Assert.AreEqual("1 romantic drama pick", books[3].Description);
+        }
+
+        [Test]
         public void AfterLoadAsync_NullDtoFromSave_TreatedAsEmpty()
         {
             // FakeSaveService returns null for any unseeded module — exercise that path explicitly.

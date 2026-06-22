@@ -80,6 +80,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bc5c515f71dbfe2408eea4e5b93bd08d
+    m_Address: NewspaperWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: cc763ba3347e9e840bb83177ef17287d
     m_Address: NewspaperWindow
     m_ReadOnly: 0

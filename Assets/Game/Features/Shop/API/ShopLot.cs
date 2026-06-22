@@ -10,14 +10,25 @@ namespace Game.Shop.API
     {
         public string LotId { get; }
         public string StorefrontId { get; }
+        public string DisplayName { get; }
+        public string Description { get; }
         public ShopPrice Price { get; }
         public string RewardId { get; }
         public ShopLotLimit Limit { get; }
 
-        public ShopLot(string lotId, string storefrontId, ShopPrice price, string rewardId, ShopLotLimit limit)
+        public ShopLot(
+            string lotId,
+            string storefrontId,
+            ShopPrice price,
+            string rewardId,
+            ShopLotLimit limit,
+            string displayName = null,
+            string description = null)
         {
             LotId = lotId ?? throw new ArgumentNullException(nameof(lotId));
             StorefrontId = storefrontId ?? throw new ArgumentNullException(nameof(storefrontId));
+            DisplayName = displayName;
+            Description = description;
             Price = price;
             RewardId = rewardId ?? throw new ArgumentNullException(nameof(rewardId));
             Limit = limit;

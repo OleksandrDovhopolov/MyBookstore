@@ -49,6 +49,7 @@ namespace Game.Bootstrap
             builder.RegisterResources();
             builder.RegisterRewards();
             builder.RegisterShop();
+            builder.RegisterNewspaper();
             builder.RegisterProgression();
             builder.RegisterFtue();
             builder.RegisterBookSellSharedState(); // ISalesShelfStateService — общий для хаба и локации
