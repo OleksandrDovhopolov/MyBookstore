@@ -30,10 +30,22 @@ namespace Game.DayCycle.Tests.Editor.Fakes
 
         public UniTask MarkCurrentDayCompletedAsync(CancellationToken ct)
         {
+            var changed = false;
             if (!State.CompletedDays.Contains(State.CurrentDay))
+            {
                 State.CompletedDays.Add(State.CurrentDay);
+                changed = true;
+            }
 
-            State.CurrentPhase = DayPhase.Results;
+            if (State.CurrentPhase != DayPhase.Results)
+            {
+                State.CurrentPhase = DayPhase.Results;
+                changed = true;
+            }
+
+            if (!changed)
+                return UniTask.CompletedTask;
+
             MarkCompletedCallCount++;
             SaveCallCount++;
             PhaseChanged?.Invoke(State);

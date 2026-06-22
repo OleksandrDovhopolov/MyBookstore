@@ -17,7 +17,7 @@ namespace Book.Sell.Services
     /// </summary>
     public sealed class TenCustomersThreeActiveAfterPassiveSpawner : ICustomerSpawner
     {
-        private const int CustomerCount = 10;
+        private const int CustomerCount = 5;
         private const int ActiveCustomerCount = 3;
         private const int MinPassiveAttempts = 1;
         private const int MaxPassiveAttempts = 2;

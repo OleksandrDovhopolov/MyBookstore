@@ -39,10 +39,21 @@ namespace Game.DayCycle.Day
         public async UniTask MarkCurrentDayCompletedAsync(CancellationToken ct)
         {
             var state = Current;
+            var changed = false;
             if (!state.CompletedDays.Contains(state.CurrentDay))
+            {
                 state.CompletedDays.Add(state.CurrentDay);
+                changed = true;
+            }
 
-            state.CurrentPhase = DayPhase.Results;
+            if (state.CurrentPhase != DayPhase.Results)
+            {
+                state.CurrentPhase = DayPhase.Results;
+                changed = true;
+            }
+
+            if (!changed) return;
+
             await SaveAsync(ct);
             PhaseChanged?.Invoke(Current);
         }

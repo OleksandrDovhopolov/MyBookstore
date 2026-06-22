@@ -1,3 +1,5 @@
+using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.DayCycle.Results.UI;
 using Game.UI;
@@ -17,6 +19,7 @@ namespace Game.DayCycle.Day
     {
         private IDayProgressService _dayProgress;
         private IUIManager _uiManager;
+        private bool _resultsShowInProgress;
 
         [Inject]
         public void Construct(IDayProgressService dayProgress, IUIManager uiManager)
@@ -34,7 +37,7 @@ namespace Game.DayCycle.Day
             }
 
             _dayProgress.PhaseChanged += OnPhaseChanged;
-            ApplyPhase(_dayProgress.Current.CurrentPhase);
+            RestorePhaseAsync(this.GetCancellationTokenOnDestroy()).Forget();
         }
 
         private void OnDestroy()
@@ -45,16 +48,58 @@ namespace Game.DayCycle.Day
 
         private void OnPhaseChanged(DayProgressState state) => ApplyPhase(state.CurrentPhase);
 
+        private async UniTaskVoid RestorePhaseAsync(CancellationToken ct)
+        {
+            try
+            {
+                var state = await _dayProgress.LoadAsync(ct);
+                ApplyPhase(state.CurrentPhase);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
         private void ApplyPhase(DayPhase phase)
         {
             if (phase == DayPhase.Morning)
                 HideResults();
+            else if (phase == DayPhase.Results)
+                ShowResults();
         }
 
         private void HideResults()
         {
             if (_uiManager != null && _uiManager.IsWindowShown<ResultsWindow>())
                 _uiManager.HideAsync<ResultsWindow>().Forget();
+        }
+
+        private void ShowResults()
+        {
+            ShowResultsAsync(this.GetCancellationTokenOnDestroy()).Forget();
+        }
+
+        //TODO this checks should be part of ui manager ? 
+        private async UniTaskVoid ShowResultsAsync(CancellationToken ct)
+        {
+            if (_uiManager == null || _resultsShowInProgress)
+                return;
+
+            if (_uiManager.IsWindowShown<ResultsWindow>() || _uiManager.IsWindowSpawned<ResultsWindow>())
+                return;
+
+            _resultsShowInProgress = true;
+            try
+            {
+                await _uiManager.ShowAsync<ResultsWindow>(ct: ct);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            finally
+            {
+                _resultsShowInProgress = false;
+            }
         }
     }
 }

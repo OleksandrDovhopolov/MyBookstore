@@ -50,8 +50,7 @@ namespace Game.DayCycle.Morning
             var state = await _progress.LoadAsync(ct);
             if (state.CompletedDays.Contains(state.CurrentDay))
             {
-                if (state.CurrentPhase != DayPhase.Results)
-                    await _progress.SetPhaseAsync(DayPhase.Results, ct);
+                await _progress.SetPhaseAsync(DayPhase.Results, ct);
 
                 Debug.LogWarning($"[MorningSession] cannot continue completed day {state.CurrentDay}; waiting for Results Next Day.");
                 return null;

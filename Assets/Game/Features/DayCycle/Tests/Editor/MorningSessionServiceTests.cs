@@ -133,5 +133,31 @@ namespace Game.DayCycle.Tests.Editor
             Assert.AreEqual(DayPhase.Results, reloaded.Current.CurrentPhase);
             CollectionAssert.Contains(reloaded.Current.CompletedDays, 1);
         }
+
+        [Test]
+        public void Continue_WhenCurrentDayCompletedAndAlreadyResults_ReemitsResultsPhase()
+        {
+            var save = new FakeSaveService();
+            var progress = new DayProgressService(save);
+            Run(progress.LoadAsync(CancellationToken.None));
+            progress.Current.CompletedDays.Add(progress.Current.CurrentDay);
+            progress.Current.CurrentPhase = DayPhase.Results;
+            Run(progress.SaveAsync(CancellationToken.None));
+
+            var phaseChangedCount = 0;
+            DayProgressState emitted = null;
+            progress.PhaseChanged += state =>
+            {
+                phaseChangedCount++;
+                emitted = state;
+            };
+
+            var service = new MorningSessionService(progress, new MorningContextResolver(Configs()));
+            var result = Run(service.ContinueToPreparationAsync(CancellationToken.None));
+
+            Assert.IsNull(result);
+            Assert.AreEqual(1, phaseChangedCount);
+            Assert.AreEqual(DayPhase.Results, emitted.CurrentPhase);
+        }
     }
 }
