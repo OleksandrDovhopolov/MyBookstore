@@ -6,6 +6,8 @@ using MessagePipe;
 using System;
 using System.Threading;
 using Game.DayCycle.Morning;
+using Game.Decor.UI;
+using Game.Inventory.UI;
 using Game.Preparation.Services;
 using Game.Preparation.UI;
 using UnityEngine;
@@ -47,6 +49,12 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
 
         if (View.StartDayButton != null)
             View.StartDayButton.onClick.AddListener(OnStartGameClicked);
+
+        if (View.InventoryButton != null)
+            View.InventoryButton.onClick.AddListener(OnOpenInventoryClicked);
+
+        if (View.DecorButton != null)
+            View.DecorButton.onClick.AddListener(OnOpenDecorationClicked);
 
         _buttonsInteractableSubscription = _buttonsInteractableSubscriber.Subscribe(
             e => SetSceneButtonsInteractable(e.Interactable));
@@ -116,10 +124,16 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         _genreBookCountsSubscription = null;
 
         if (View != null && View.OpenShopButton != null)
-            View.OpenShopButton.onClick.RemoveListener(OnOpenShopClicked);
+            View.OpenShopButton.onClick.RemoveAllListeners();
 
         if (View != null && View.StartDayButton != null)
-            View.StartDayButton.onClick.RemoveListener(OnStartGameClicked);
+            View.StartDayButton.onClick.RemoveAllListeners();
+        
+        if (View != null && View.InventoryButton != null)
+            View.InventoryButton.onClick.RemoveAllListeners();
+        
+        if (View != null && View.DecorButton != null)
+            View.DecorButton.onClick.RemoveAllListeners();
     }
 
     public void SetSceneButtonsInteractable(bool interactable)
@@ -129,7 +143,17 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
 
     private void OnOpenShopClicked() => OpenShopAsync().Forget();
     private void OnStartGameClicked() => StartGameAsync().Forget();
-
+    
+    private void OnOpenInventoryClicked()
+    {
+        UIManager.ShowAsync<InventoryWindowController>().Forget();
+    }
+    
+    private void OnOpenDecorationClicked()
+    {
+        UIManager.ShowAsync<DecorPlacementWindow>().Forget();
+    }
+    
     private async UniTaskVoid StartGameAsync()
     {
         View.SetStartButtonActive(false);

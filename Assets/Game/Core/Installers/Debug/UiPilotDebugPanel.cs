@@ -49,7 +49,7 @@ namespace Game.UI.DebugPanel
                 _uiManager.HideTopAsync().Forget();
             }*/
 
-            y += h + pad;
+            /*y += h + pad;
             if (GUI.Button(new Rect(x, y, w, h), "Show Inventory"))
             {
                 _uiManager.ShowAsync<InventoryWindowController>().Forget();
@@ -59,7 +59,7 @@ namespace Game.UI.DebugPanel
             if (GUI.Button(new Rect(x, y, w, h), "Show Decoration"))
             {
                 _uiManager.ShowAsync<DecorPlacementWindow>().Forget();
-            }
+            }*/
 
             /*y += h + pad;
             if (GUI.Button(new Rect(x, y, w, h), "Show Newspaper"))
