@@ -6,6 +6,7 @@ using MessagePipe;
 using System;
 using System.Threading;
 using Game.DayCycle.Morning;
+using Game.Preparation.Services;
 using Game.Preparation.UI;
 using UnityEngine;
 using VContainer;
@@ -15,6 +16,7 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
 {
     private IResourcesService _resources;
     private IMorningSessionService _session;
+    private IPreparationSessionService _preparationSession;
     private ISubscriber<GameplaySceneButtonsInteractableChanged> _buttonsInteractableSubscriber;
     private ISubscriber<GameplayGenreBookCountsChanged> _genreBookCountsSubscriber;
     private IPublisher<GameplayGenreBookCountsRequested> _genreBookCountsRequestPublisher;
@@ -26,11 +28,13 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         IResourcesService resources,
         IMorningSessionService morningSessionService,
         ISubscriber<GameplaySceneButtonsInteractableChanged> buttonsInteractableSubscriber,
+        IPreparationSessionService preparationSession = null,
         ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
         IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null)
     {
         _resources = resources;
         _session = morningSessionService;
+        _preparationSession = preparationSession;
         _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
         _genreBookCountsSubscriber = genreBookCountsSubscriber;
         _genreBookCountsRequestPublisher = genreBookCountsRequestPublisher;
@@ -64,16 +68,29 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         var goldAmount = _resources.GetAmount(ResourceIds.Gold);
         Debug.LogWarning($"[GameplaySceneController] goldAmount {goldAmount}");
         View.SetGoldAmount(goldAmount);
-        View.SetGenreBookCounts(null);
-        _genreBookCountsRequestPublisher?.Publish(new GameplayGenreBookCountsRequested());
 
-        UpdateDayTextAsync().Forget();
+        RefreshDayAndGenreCountsAsync().Forget();
     }
 
-    private async UniTask UpdateDayTextAsync()
+    private async UniTask RefreshDayAndGenreCountsAsync()
     {
-        var context = await _session.StartOrResumeAsync(View.destroyCancellationToken);
-        View.SetDayText($"Day {context.Day}");
+        try
+        {
+            var ct = View.destroyCancellationToken;
+            var context = await _session.StartOrResumeAsync(ct);
+            View.SetDayText($"Day {context.Day}");
+
+            if (_preparationSession != null)
+            {
+                var counts = await _preparationSession.GetGenreQuantitiesPreviewAsync(ct);
+                View.SetGenreBookCounts(counts);
+            }
+
+            _genreBookCountsRequestPublisher?.Publish(new GameplayGenreBookCountsRequested());
+        }
+        catch (OperationCanceledException)
+        {
+        }
     }
 
     private void OnResourceChanged(ResourceChangeEvent _) => Refresh();

@@ -14,7 +14,8 @@
         "Game.Shop.UI",
         "MessagePipe",
         "DayCycle",
-        "Game.Preparation"
+        "Game.Preparation",
+        "Configs"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

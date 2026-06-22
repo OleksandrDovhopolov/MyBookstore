@@ -28,6 +28,12 @@ namespace Game.Preparation.Services
         /// </summary>
         UniTask<IReadOnlyList<GenreSelectionItem>> StartOrResumeAsync(CancellationToken ct);
 
+        /// <summary>
+        /// Возвращает те же квоты по жанрам, которые покажет Preparation UI, но не переводит день в фазу Preparation.
+        /// Используется HUD для первичного отображения выбранных книг при входе в hub.
+        /// </summary>
+        UniTask<IReadOnlyDictionary<string, int>> GetGenreQuantitiesPreviewAsync(CancellationToken ct);
+
         /// <summary>Задаёт квоту жанра (клампится в [0, available] и под общий лимит DailyBookSlots).</summary>
         UniTask SetGenreQuantityAsync(string genre, int quantity, CancellationToken ct);
 

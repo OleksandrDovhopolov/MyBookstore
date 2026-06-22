@@ -54,7 +54,20 @@ namespace Game.Preparation.Services
 
         public int TotalSelected => _state?.SelectedBookIds?.Count ?? 0;
 
-        public async UniTask<IReadOnlyList<GenreSelectionItem>> StartOrResumeAsync(CancellationToken ct)
+        public UniTask<IReadOnlyList<GenreSelectionItem>> StartOrResumeAsync(CancellationToken ct)
+            => StartOrResumeCoreAsync(ct, setPreparationPhase: true);
+
+        public async UniTask<IReadOnlyDictionary<string, int>> GetGenreQuantitiesPreviewAsync(CancellationToken ct)
+        {
+            await StartOrResumeCoreAsync(ct, setPreparationPhase: false);
+            return _state?.GenreQuantities != null
+                ? new Dictionary<string, int>(_state.GenreQuantities, StringComparer.OrdinalIgnoreCase)
+                : new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        private async UniTask<IReadOnlyList<GenreSelectionItem>> StartOrResumeCoreAsync(
+            CancellationToken ct,
+            bool setPreparationPhase)
         {
             CacheAvailableByGenre();
 
@@ -85,7 +98,7 @@ namespace Game.Preparation.Services
             _state.SelectedBookIds = ResolveSelectedBookIds(_state.GenreQuantities);
             await PersistAsync(ct);
 
-            if (_dayProgress.Current.CurrentPhase != DayPhase.Preparation)
+            if (setPreparationPhase && _dayProgress.Current.CurrentPhase != DayPhase.Preparation)
                 await _dayProgress.SetPhaseAsync(DayPhase.Preparation, ct);
 
             return BuildGenreItems();
