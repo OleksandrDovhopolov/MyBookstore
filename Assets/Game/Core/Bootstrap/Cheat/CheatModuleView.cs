@@ -44,6 +44,26 @@ namespace Game.Cheat
         public void Start()
         {
             InitializeRootPanel();
+            // Cheat-модули читают конфиги синхронно (GetAll<DecorConfig> и т.п.). Если Start успел до
+            // ConfigsService.WarmupAsync — список будет пустым + warning. Ждём прогрев (идемпотентный) и
+            // только потом строим модули.
+            InitializeCheatsModulesAsync().Forget();
+        }
+
+        private async UniTaskVoid InitializeCheatsModulesAsync()
+        {
+            if (_configs != null)
+            {
+                try
+                {
+                    await _configs.WarmupAsync(this.GetCancellationTokenOnDestroy());
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+            }
+
             InitializeCheatsModules();
         }
 

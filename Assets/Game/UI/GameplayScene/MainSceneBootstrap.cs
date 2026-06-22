@@ -8,9 +8,9 @@ using VContainer;
 public class MainSceneBootstrap : MonoBehaviour
 {
     private UIManager _uiManager;
-        
+
     private CancellationToken _destroyToken;
-        
+
     [Inject]
     public void Install(UIManager uiManager)
     {
@@ -26,7 +26,7 @@ public class MainSceneBootstrap : MonoBehaviour
     {
         LoadGameplayAsync(_destroyToken).Forget();
     }
-        
+
     private async UniTaskVoid LoadGameplayAsync(CancellationToken ct)
     {
         try
@@ -34,7 +34,7 @@ public class MainSceneBootstrap : MonoBehaviour
             ct.ThrowIfCancellationRequested();
 
             await _uiManager.ShowAsync<GameplaySceneController>(ct: ct);
-            
+
             await UniTask.WaitUntil(() => _uiManager.IsWindowShown<GameplaySceneController>(), cancellationToken: ct);
             ct.ThrowIfCancellationRequested();
         }
