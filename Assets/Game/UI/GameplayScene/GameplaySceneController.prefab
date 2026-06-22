@@ -486,6 +486,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _animation: {fileID: 0}
+  _closeButtons: []
   _goldImage: {fileID: 5032416733315436105}
   _goldAmountText: {fileID: 8701997900666402167}
   _dayLabel: {fileID: 5625417834210162507}

@@ -114,8 +114,6 @@ namespace Game.DayCycle.Results.UI
             if (View.AlreadyAppliedHint != null)
                 View.AlreadyAppliedHint.gameObject.SetActive(summary.AlreadyApplied);
 
-            RenderBestMatch(summary.BestMatch);
-
             if (View.NextDayButton != null) View.NextDayButton.interactable = true;
         }
 
@@ -124,35 +122,6 @@ namespace Game.DayCycle.Results.UI
             SetActive(View.ErrorPanel, true);
             if (View.NextDayButton != null) View.NextDayButton.interactable = false;
             Debug.LogError("[ResultsWindow] no SalesDayResult - Results cannot proceed.");
-        }
-
-        private void RenderBestMatch(BestMatchCard best)
-        {
-            SetActive(View.BestMatchPanel, best != null);
-            if (best == null) return;
-
-            Set(View.BestBookLabel, best.BookId);
-            Set(View.BestRequestLabel, best.RequestId);
-            Set(View.BestTierLabel, $"{best.Tier} (score {best.Score})");
-
-            if (View.BestReasonLabel == null) return;
-
-            var parts = new List<string>(5);
-            if (best.Reason != null)
-            {
-                if (best.Reason.MatchedGenres.Count > 0)
-                    parts.Add($"genre({string.Join(",", best.Reason.MatchedGenres)})");
-                if (best.Reason.MatchedTags.Count > 0)
-                    parts.Add($"tags({string.Join(",", best.Reason.MatchedTags)})");
-                if (best.Reason.MatchedMood.Count > 0)
-                    parts.Add($"mood({string.Join(",", best.Reason.MatchedMood)})");
-                if (best.Reason.PriceFits) parts.Add("price");
-                if (best.Reason.LocationBonus) parts.Add("location");
-            }
-
-            View.BestReasonLabel.text = parts.Count > 0
-                ? $"matched: {string.Join(", ", parts)}"
-                : string.Empty;
         }
 
         private void OnNextDayClicked()

@@ -18,13 +18,6 @@ namespace Game.DayCycle.Results.UI
         [SerializeField] private TMP_Text _failLabel;
         [SerializeField] private TMP_Text _skipLabel;
 
-        [Header("Best match")]
-        [SerializeField] private GameObject _bestMatchPanel;
-        [SerializeField] private TMP_Text _bestBookLabel;
-        [SerializeField] private TMP_Text _bestRequestLabel;
-        [SerializeField] private TMP_Text _bestTierLabel;
-        [SerializeField] private TMP_Text _bestReasonLabel;
-
         [Header("Review")]
         [SerializeField] private TMP_Text _reviewLabel;
 
@@ -47,12 +40,6 @@ namespace Game.DayCycle.Results.UI
         public TMP_Text NormalLabel => _normLabel;
         public TMP_Text FailedLabel => _failLabel;
         public TMP_Text SkippedLabel => _skipLabel;
-
-        public GameObject BestMatchPanel => _bestMatchPanel;
-        public TMP_Text BestBookLabel => _bestBookLabel;
-        public TMP_Text BestRequestLabel => _bestRequestLabel;
-        public TMP_Text BestTierLabel => _bestTierLabel;
-        public TMP_Text BestReasonLabel => _bestReasonLabel;
 
         public TMP_Text ReviewLabel => _reviewLabel;
         public TMP_Text GoldDeltaLabel => _goldDeltaLabel;

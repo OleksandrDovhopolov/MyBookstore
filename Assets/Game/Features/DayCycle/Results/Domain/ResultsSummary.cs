@@ -18,6 +18,7 @@ namespace Game.DayCycle.Results.Domain
         public int FailedCount { get; set; }
         public int SkippedCount { get; set; }
 
+        //TODO should delete  ? 
         // Best match card (null when there were no recommendations at all).
         public BestMatchCard BestMatch { get; set; }
 
