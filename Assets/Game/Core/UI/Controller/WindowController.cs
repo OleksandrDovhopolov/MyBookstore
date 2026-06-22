@@ -37,6 +37,7 @@ namespace Game.UI
 
             View = typedView;
             Attribute = attribute;
+            View.CloseClick += OnCloseClicked;
         }
 
         public void ApplyArguments(WindowArgs args)
@@ -98,9 +99,16 @@ namespace Game.UI
 
         public void Dispose()
         {
+            if (View != null)
+            {
+                View.CloseClick -= OnCloseClicked;
+            }
+
             OnDispose();
             Closed = null;
         }
+
+        private void OnCloseClicked() => CloseAsync().Forget();
 
         protected virtual void OnInit() { }
         protected virtual void OnShowStart() { }

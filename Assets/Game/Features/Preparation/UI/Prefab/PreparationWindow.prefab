@@ -1161,6 +1161,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _animation: {fileID: 8564571989903992922}
+  _closeButtons:
+  - {fileID: 718839318352162672}
   _dayLabel: {fileID: 6931047207241693394}
   _locationLabel: {fileID: 5449041431388548787}
   _slotCountLabel: {fileID: 1780073458149358897}
