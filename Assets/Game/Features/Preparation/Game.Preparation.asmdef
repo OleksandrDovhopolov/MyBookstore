@@ -11,6 +11,7 @@
         "Book.Sell.API",
         "Game.Bootstrap.Loading",
         "Game.Core.UI",
+        "MessagePipe",
         "DayCycle",
         "Game.Inventory.API",
         "Game.Decor.API"

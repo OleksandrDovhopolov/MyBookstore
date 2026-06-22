@@ -5,6 +5,7 @@ using Game.Bootstrap.Loading;
 using Game.Preparation.Domain;
 using Game.Preparation.Services;
 using Game.UI;
+using MessagePipe;
 using UnityEngine;
 using VContainer;
 
@@ -20,6 +21,7 @@ namespace Game.Preparation.UI
     {
         private IPreparationSessionService _session;
         private IGameFlowService _gameFlow;
+        private IPublisher<GameplayGenreBookCountsChanged> _genreCountsPublisher;
 
         private CancellationTokenSource _cts;
         private readonly Dictionary<string, PreparationGenreRowView> _rows = new();
@@ -30,10 +32,14 @@ namespace Game.Preparation.UI
         public bool IsConfirmed { get; private set; }
 
         [Inject]
-        public void InjectServices(IPreparationSessionService session, IGameFlowService gameFlow)
+        public void InjectServices(
+            IPreparationSessionService session,
+            IGameFlowService gameFlow,
+            IPublisher<GameplayGenreBookCountsChanged> genreCountsPublisher = null)
         {
             _session = session;
             _gameFlow = gameFlow;
+            _genreCountsPublisher = genreCountsPublisher;
         }
 
         protected override void OnInit()
@@ -156,6 +162,20 @@ namespace Game.Preparation.UI
 
             UpdateCounter();
             UpdateValidation();
+            PublishGenreCounts(state);
+        }
+
+        // Прокидываем выбранные кол-ва по жанрам в HUD (GameplaySceneView._genreBookCountItems)
+        // через тот же сигнал, что использует Sales. GameplaySceneController подписан и обновит счётчики.
+        private void PublishGenreCounts(PreparationSessionState state)
+        {
+            if (_genreCountsPublisher == null || state?.GenreQuantities == null) return;
+
+            var counts = new Dictionary<string, int>(state.GenreQuantities.Count);
+            foreach (var kv in state.GenreQuantities)
+                counts[kv.Key] = kv.Value;
+
+            _genreCountsPublisher.Publish(new GameplayGenreBookCountsChanged(counts));
         }
 
         private void UpdateCounter()
