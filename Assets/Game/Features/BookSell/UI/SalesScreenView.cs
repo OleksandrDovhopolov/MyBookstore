@@ -12,16 +12,12 @@ using Game.Configs.Models;
 using Game.UI;
 using MessagePipe;
 using UnityEngine;
-using UnityEngine.UI;
 using VContainer;
 
 namespace Book.Sell.UI
 {
     public sealed class SalesScreenView : MonoBehaviour
     {
-        [Header("End of day")]
-        [SerializeField] private Button _closeShopButton;
-        
         private bool _dayRunning;
         private readonly CancellationTokenSource _cts = new();
 
@@ -64,15 +60,6 @@ namespace Book.Sell.UI
             _genreBookCountsPublisher = genreBookCountsPublisher;
             _salesGoldPublisher = salesGoldPublisher;
             _genreBookCountsRequestSubscription = genreBookCountsRequestSubscriber?.Subscribe(_ => PublishGenreBookCounts());
-        }
-
-        private void Awake()
-        {
-            if (_closeShopButton != null)
-            {
-                _closeShopButton.onClick.AddListener(OnCloseShopClicked);
-                _closeShopButton.gameObject.SetActive(false);
-            }
         }
 
         private void Start()
@@ -134,32 +121,15 @@ namespace Book.Sell.UI
 
         private void OnDayReadyToClose()
         {
-            // Day's work is done: stop pumping the sim and let the player close the shop manually.
             _dayRunning = false;
             RefreshHeader();
-
-            if (_closeShopButton != null)
-            {
-                _closeShopButton.gameObject.SetActive(true);
-                _closeShopButton.interactable = true;
-            }
-        }
-
-        private void OnCloseShopClicked()
-        {
-            if (_controller == null) return;
-            if (_closeShopButton != null) _closeShopButton.interactable = false;
-
-            // Presentation hook: a short shop-closing animation can play here before concluding.
-            // MVP concludes immediately; OnDayCompleted then opens the ResultsWindow.
-            _controller.ConcludeDay();
+            _controller?.ConcludeDay();
         }
 
         private void OnDayCompleted(SalesDayResult result)
         {
             _dayRunning = false;
             SetGameplaySceneButtonsInteractable(true);
-            if (_closeShopButton != null) _closeShopButton.gameObject.SetActive(false);
 
             Debug.Log($"[SalesScreenView] DayCompleted: day={result.Day}, customers={result.CustomersServed}, " +
                       $"sales={result.SalesCount}, gold={result.GoldEarned}, " +
@@ -271,8 +241,6 @@ namespace Book.Sell.UI
                 _controller.DayCompleted -= OnDayCompleted;
                 _controller.ShelfChanged -= OnShelfChanged;
             }
-
-            if (_closeShopButton != null) _closeShopButton.onClick.RemoveListener(OnCloseShopClicked);
 
             _cts.Cancel();
             _cts.Dispose();

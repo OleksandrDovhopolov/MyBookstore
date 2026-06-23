@@ -50,6 +50,7 @@ namespace Book.Sell.Tests.Editor
 
             inventory ??= RecordingInventoryService.WithBooks(books);
             soldBookCommitter ??= new SoldBookCommitter(inventory, shelfState);
+            var shelfBuilder = new SalesShelfBuilder(configs);
 
             return new SalesDayController(
                 configs,
@@ -60,6 +61,7 @@ namespace Book.Sell.Tests.Editor
                 new StubCustomerSpawner(customers),
                 new InteractionLock(),
                 tuning ?? SalesTestKit.FastTuning(),
+                shelfBuilder: shelfBuilder,
                 soldBookCommitter: soldBookCommitter);
         }
 
@@ -248,6 +250,50 @@ namespace Book.Sell.Tests.Editor
         }
 
         // ----- tests -----
+
+        [Test]
+        public void SalesShelfBuilder_BuildsShelfFromBookIds()
+        {
+            var configs = new FakeConfigsService();
+            configs.SetAll(new[]
+            {
+                SalesTestKit.Book("b1"),
+                SalesTestKit.Book("b2")
+            });
+            var builder = new SalesShelfBuilder(configs);
+
+            var shelf = builder.Build(new[] { "b1", "b2" });
+
+            Assert.AreEqual(2, shelf.Books.Count);
+            Assert.AreEqual("b1", shelf.Books[0].Config.Id);
+            Assert.AreEqual("b2", shelf.Books[1].Config.Id);
+        }
+
+        [Test]
+        public void SalesShelfBuilder_MissingBookConfig_SkipsAndLogsWarning()
+        {
+            var configs = new FakeConfigsService();
+            configs.SetAll(new[] { SalesTestKit.Book("b1") });
+            var builder = new SalesShelfBuilder(configs);
+
+            LogAssert.Expect(LogType.Warning, "[Sales.Day] BookConfig 'missing' not found - skipping.");
+
+            var shelf = builder.Build(new[] { "b1", "missing" });
+
+            Assert.AreEqual(1, shelf.Books.Count);
+            Assert.AreEqual("b1", shelf.Books[0].Config.Id);
+        }
+
+        [Test]
+        public void SalesShelfBuilder_EmptyOrNullIds_ReturnsEmptyShelf()
+        {
+            var configs = new FakeConfigsService();
+            configs.SetAll(new[] { SalesTestKit.Book("b1") });
+            var builder = new SalesShelfBuilder(configs);
+
+            Assert.AreEqual(0, builder.Build(Array.Empty<string>()).Books.Count);
+            Assert.AreEqual(0, builder.Build(null).Books.Count);
+        }
 
         [Test]
         public void SoldBookCommitter_EmptyBookId_DoesNothing()

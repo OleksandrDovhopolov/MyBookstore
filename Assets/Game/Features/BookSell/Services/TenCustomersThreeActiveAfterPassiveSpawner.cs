@@ -44,8 +44,8 @@ namespace Book.Sell.Services
                 for (var p = 0; p < passiveAttempts; p++)
                     steps.Add(new PassivePurchaseStep());
 
-                if (activeIndices.Contains(i) && requests.Count > 0)
-                    steps.Add(new ActiveRequestStep(requests[activeOrder++ % requests.Count]));
+                /*if (activeIndices.Contains(i) && requests.Count > 0)
+                    steps.Add(new ActiveRequestStep(requests[activeOrder++ % requests.Count]));*/
 
                 steps.Add(new CompletePurchaseStep());
                 steps.Add(new LeaveStep(RandomLeaveDuration(tuning, random)));

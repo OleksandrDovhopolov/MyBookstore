@@ -27,6 +27,7 @@ namespace Book.Sell.Services
         private readonly IInteractionLock _lock;
         private readonly SalesTuning _tuning;
         private readonly ISaveService _save;
+        private readonly ISalesShelfBuilder _shelfBuilder;
         private readonly ISoldBookCommitter _soldBookCommitter;
 
         private SalesShelf _shelf = new();
@@ -52,6 +53,7 @@ namespace Book.Sell.Services
             ICustomerSpawner spawner,
             IInteractionLock interactionLock,
             SalesTuning tuning,
+            ISalesShelfBuilder shelfBuilder = null,
             ISoldBookCommitter soldBookCommitter = null,
             IInventoryService inventory = null,
             ISaveService save = null,
@@ -65,6 +67,7 @@ namespace Book.Sell.Services
             _spawner = spawner ?? throw new ArgumentNullException(nameof(spawner));
             _lock = interactionLock ?? throw new ArgumentNullException(nameof(interactionLock));
             _tuning = tuning ?? throw new ArgumentNullException(nameof(tuning));
+            _shelfBuilder = shelfBuilder ?? new SalesShelfBuilder(_configs);
             _soldBookCommitter = soldBookCommitter ?? CreateLegacySoldBookCommitter(inventory, shelfState);
             _save = save;   // optional in tests; in prod injected via DI
         }
@@ -104,8 +107,7 @@ namespace Book.Sell.Services
                 ? _configs.Get<LocationConfig>(setup.LocationId)
                 : null;
 
-            _shelf = new SalesShelf();
-            BuildShelf(setup.ShelfBookIds);
+            _shelf = _shelfBuilder.Build(setup.ShelfBookIds);
 
             _result = new SalesDayResult { Day = setup.Day };
             _ctx = new CustomerContext(_shelf, _lock, _random, _passiveSelector, _location, setup.DecorIds, this, _tuning);
@@ -323,20 +325,6 @@ namespace Book.Sell.Services
             => CustomerThoughtBubbleHidden?.Invoke(customer);
 
         // ----- internals -----
-
-        private void BuildShelf(IReadOnlyList<string> ids)
-        {
-            for (var i = 0; i < ids.Count; i++)
-            {
-                var book = _configs.Get<BookConfig>(ids[i]);
-                if (book == null)
-                {
-                    Debug.LogWarning($"{LogPrefix} BookConfig '{ids[i]}' not found — skipping.");
-                    continue;
-                }
-                _shelf.Add(new ShelfBook(book));
-            }
-        }
 
         private void SpawnDue(float dt)
         {

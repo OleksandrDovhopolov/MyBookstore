@@ -65,6 +65,7 @@ namespace Game.Bootstrap
             
             // Tuning comes from a designer-editable SO when assigned; otherwise code defaults.
             builder.RegisterInstance(salesTuningConfig != null ? salesTuningConfig.BuildTuning() : new SalesTuning());
+            builder.Register<ISalesShelfBuilder, SalesShelfBuilder>(Lifetime.Singleton);
             builder.Register<ISoldBookCommitter, SoldBookCommitter>(Lifetime.Singleton);
             builder.Register<ISalesDayController, SalesDayController>(Lifetime.Singleton);
 
