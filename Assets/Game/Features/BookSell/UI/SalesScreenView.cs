@@ -11,7 +11,6 @@ using Game.DayCycle.Results.UI;
 using Game.Configs.Models;
 using Game.UI;
 using MessagePipe;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
@@ -31,11 +30,8 @@ namespace Book.Sell.UI
     /// </summary>
     public sealed class SalesScreenView : MonoBehaviour
     {
-        [Header("Header")]
-        [SerializeField] private TMP_Text _goldLabel;
-
         [Header("End of day")]
-        [SerializeField] private Button _closeShopButton;   // "Свернуть лавку" — shown when day is ReadyToClose
+        [SerializeField] private Button _closeShopButton;
 
         [Header("Feedback log (vertical list of prefab entries)")]
         [SerializeField] private Transform _feedbackLogContainer;
@@ -57,6 +53,7 @@ namespace Book.Sell.UI
         private IConfigsService _configs;
         private IPublisher<GameplaySceneButtonsInteractableChanged> _gameplayButtonsPublisher;
         private IPublisher<GameplayGenreBookCountsChanged> _genreBookCountsPublisher;
+        private IPublisher<GameplaySalesGoldChanged> _salesGoldPublisher;
         private IDisposable _genreBookCountsRequestSubscription;
 
         [Inject]
@@ -70,6 +67,7 @@ namespace Book.Sell.UI
             IConfigsService configs = null,
             IPublisher<GameplaySceneButtonsInteractableChanged> gameplayButtonsPublisher = null,
             IPublisher<GameplayGenreBookCountsChanged> genreBookCountsPublisher = null,
+            IPublisher<GameplaySalesGoldChanged> salesGoldPublisher = null,
             ISubscriber<GameplayGenreBookCountsRequested> genreBookCountsRequestSubscriber = null)
         {
             _controller = controller;
@@ -81,6 +79,7 @@ namespace Book.Sell.UI
             _configs = configs;
             _gameplayButtonsPublisher = gameplayButtonsPublisher;
             _genreBookCountsPublisher = genreBookCountsPublisher;
+            _salesGoldPublisher = salesGoldPublisher;
             _genreBookCountsRequestSubscription = genreBookCountsRequestSubscriber?.Subscribe(_ => PublishGenreBookCounts());
         }
 
@@ -132,6 +131,7 @@ namespace Book.Sell.UI
             // Day comes from DayCycle.DayProgressService via the ICurrentDayProvider adapter.
             // When the adapter is not registered (e.g. early prototype scenes), fall back to day 1.
             var day = _dayProvider?.CurrentDay ?? 1;
+            PublishSalesGold(0, true);
             await _controller.StartDayAsync(day, ct);
             RefreshHeader();
             PublishGenreBookCounts();
@@ -318,12 +318,17 @@ namespace Book.Sell.UI
         private void RefreshHeader()
         {
             var result = _controller.AccumulatedResult;
-            if (_goldLabel != null) _goldLabel.text = result.GoldEarned.ToString();
+            PublishSalesGold(result.GoldEarned, true);
         }
 
         private void SetGameplaySceneButtonsInteractable(bool interactable)
         {
             _gameplayButtonsPublisher?.Publish(new GameplaySceneButtonsInteractableChanged(interactable));
+        }
+
+        private void PublishSalesGold(int goldEarned, bool visible)
+        {
+            _salesGoldPublisher?.Publish(new GameplaySalesGoldChanged(goldEarned, visible));
         }
 
         private Dictionary<string, int> BuildGenreBookCounts()
@@ -373,6 +378,7 @@ namespace Book.Sell.UI
         private void OnDestroy()
         {
             SetGameplaySceneButtonsInteractable(true);
+            PublishSalesGold(0, false);
             _genreBookCountsRequestSubscription?.Dispose();
             _genreBookCountsRequestSubscription = null;
 

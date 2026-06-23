@@ -24,6 +24,7 @@ namespace Game.Bootstrap
             builder.RegisterMessageBroker<GameplaySceneButtonsInteractableChanged>(options);
             builder.RegisterMessageBroker<GameplayGenreBookCountsChanged>(options);
             builder.RegisterMessageBroker<GameplayGenreBookCountsRequested>(options);
+            builder.RegisterMessageBroker<GameplaySalesGoldChanged>(options);
 
             return options;
         }

@@ -2434,7 +2434,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8b25b347ab23194392e4a4c06f7e632, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _goldLabel: {fileID: 1840241147567695543}
   _closeShopButton: {fileID: 1094402742937115743}
   _feedbackLogContainer: {fileID: 7081319285485849305}
   _feedbackLogEntryPrefab: {fileID: 7086948156596461415, guid: 1d9d31e9686ee3f4582547b5770e7c6f, type: 3}
@@ -2456,7 +2455,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2357443980069743921
 RectTransform:
   m_ObjectHideFlags: 0

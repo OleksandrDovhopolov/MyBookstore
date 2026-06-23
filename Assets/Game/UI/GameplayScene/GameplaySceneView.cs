@@ -8,8 +8,9 @@ using UnityEngine.UI;
 
 public class GameplaySceneView : WindowView
 {
-    [SerializeField] private Image _goldImage;
     [SerializeField] private TextMeshProUGUI _goldAmountText;
+    [SerializeField] private GameObject _salesGoldRoot;
+    [SerializeField] private TMP_Text _salesGoldLabel;
     [SerializeField] private TMP_Text _dayLabel;
 
     [Header("Shop entry")]
@@ -33,6 +34,7 @@ public class GameplaySceneView : WindowView
     private void Awake()
     {
         HideLegacyGenreBookCountItemsIfNeeded();
+        SetSalesGoldVisible(false);
     }
 
     public void SetSceneButtonsInteractable(bool interactable)
@@ -58,6 +60,18 @@ public class GameplaySceneView : WindowView
     public void SetGoldAmount(int goldAmount)
     {
         _goldAmountText.text = goldAmount.ToString();
+    }
+
+    public void SetSalesGoldAmount(int amount)
+    {
+        if (_salesGoldLabel != null)
+            _salesGoldLabel.text = amount.ToString();
+    }
+
+    public void SetSalesGoldVisible(bool visible)
+    {
+        if (_salesGoldRoot != null)
+            _salesGoldRoot.gameObject.SetActive(visible);
     }
     
     public void SetDayText(string value)

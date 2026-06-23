@@ -18,9 +18,11 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
     private IPreparationSessionService _preparationSession;
     private ISubscriber<GameplaySceneButtonsInteractableChanged> _buttonsInteractableSubscriber;
     private ISubscriber<GameplayGenreBookCountsChanged> _genreBookCountsSubscriber;
+    private ISubscriber<GameplaySalesGoldChanged> _salesGoldSubscriber;
     private IPublisher<GameplayGenreBookCountsRequested> _genreBookCountsRequestPublisher;
     private IDisposable _buttonsInteractableSubscription;
     private IDisposable _genreBookCountsSubscription;
+    private IDisposable _salesGoldSubscription;
 
     [Inject]
     public void Construct(
@@ -29,6 +31,7 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         ISubscriber<GameplaySceneButtonsInteractableChanged> buttonsInteractableSubscriber,
         IPreparationSessionService preparationSession = null,
         ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
+        ISubscriber<GameplaySalesGoldChanged> salesGoldSubscriber = null,
         IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null)
     {
         _resources = resources;
@@ -36,6 +39,7 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         _preparationSession = preparationSession;
         _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
         _genreBookCountsSubscriber = genreBookCountsSubscriber;
+        _salesGoldSubscriber = salesGoldSubscriber;
         _genreBookCountsRequestPublisher = genreBookCountsRequestPublisher;
     }
 
@@ -49,6 +53,8 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
 
         _genreBookCountsSubscription = _genreBookCountsSubscriber?.Subscribe(
             e => View.SetGenreBookCounts(e.Counts));
+
+        _salesGoldSubscription = _salesGoldSubscriber?.Subscribe(OnSalesGoldChanged);
     }
 
     protected override void OnShowStart()
@@ -62,6 +68,7 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         _resources.Changed += OnResourceChanged;
 
         View.SetGoldAmount(_resources.GetAmount(ResourceIds.Gold));
+        View.SetSalesGoldVisible(false);
 
         RefreshDayAndGenreCountsAsync().Forget();
     }
@@ -88,7 +95,6 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
     }
 
     private void OnResourceChanged(ResourceChangeEvent _) => Refresh();
-    //private void OnProgressionChanged(ProgressionChangeEvent _) => Refresh();
 
     private void Refresh()
     {
@@ -109,6 +115,9 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         _genreBookCountsSubscription?.Dispose();
         _genreBookCountsSubscription = null;
 
+        _salesGoldSubscription?.Dispose();
+        _salesGoldSubscription = null;
+
         if (View != null && View.StartDayButton != null)
             View.StartDayButton.onClick.RemoveAllListeners();
     }
@@ -117,6 +126,15 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
     {
         View?.SetSceneButtonsInteractable(interactable);
     }
+
+    private void OnSalesGoldChanged(GameplaySalesGoldChanged e)
+    {
+        if (View == null) return;
+
+        View.SetSalesGoldAmount(e.GoldEarned);
+        View.SetSalesGoldVisible(e.Visible);
+    }
+
     private void OnStartGameClicked() => StartGameAsync().Forget();
     
     private async UniTaskVoid StartGameAsync()
