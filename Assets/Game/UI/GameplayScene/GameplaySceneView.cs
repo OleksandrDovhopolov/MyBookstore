@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Game.Configs.Models;
 using Game.UI;
@@ -74,12 +73,14 @@ public class GameplaySceneView : WindowView
         HideLegacyGenreBookCountItemsIfNeeded();
         _genreBookCountPool.DisableAll();
 
-        var genres = BuildGenresToDisplay(counts);
-        for (var i = 0; i < genres.Count; i++)
+        var normalizedCounts = BookGenreCounts.Normalize(counts);
+        foreach (var pair in normalizedCounts)
         {
-            var genre = genres[i];
+            if (!BookGenreExtensions.TryParseGenre(pair.Key, out var genre))
+                continue;
+
             var item = _genreBookCountPool.GetNext();
-            item.Bind(genre, GetGenreSprite(genre), ResolveGenreCount(counts, genre));
+            item.Bind(genre, GetGenreSprite(genre), pair.Value);
         }
 
         _genreBookCountPool.DisableNonActive();
@@ -121,44 +122,4 @@ public class GameplaySceneView : WindowView
         }
     }
 
-    private static int ResolveGenreCount(IReadOnlyDictionary<string, int> counts, BookGenre genre)
-    {
-        if (counts == null)
-            return 0;
-
-        var genreId = genre.ToConfigValue();
-        if (counts.TryGetValue(genreId, out var count))
-            return count;
-
-        foreach (var pair in counts)
-            if (string.Equals(pair.Key, genreId, StringComparison.OrdinalIgnoreCase))
-                return pair.Value;
-
-        return 0;
-    }
-
-    private static List<BookGenre> BuildGenresToDisplay(IReadOnlyDictionary<string, int> counts)
-    {
-        var result = new List<BookGenre>();
-        var added = new HashSet<BookGenre>();
-
-        if (counts != null)
-        {
-            foreach (var pair in counts)
-            {
-                if (!BookGenreExtensions.TryParseGenre(pair.Key, out var genre) || !added.Add(genre))
-                    continue;
-
-                result.Add(genre);
-            }
-        }
-
-        foreach (BookGenre genre in Enum.GetValues(typeof(BookGenre)))
-        {
-            if (added.Add(genre))
-                result.Add(genre);
-        }
-
-        return result;
-    }
 }

@@ -345,7 +345,7 @@ namespace Book.Sell.UI
                 counts[genre] = count + 1;
             }
 
-            return counts;
+            return BookGenreCounts.Normalize(counts);
         }
 
         private Dictionary<string, int> BuildPersistentGenreBookCounts()
@@ -367,7 +367,7 @@ namespace Book.Sell.UI
                 counts[genre] = count + 1;
             }
 
-            return counts;
+            return BookGenreCounts.Normalize(counts);
         }
 
         private void OnDestroy()

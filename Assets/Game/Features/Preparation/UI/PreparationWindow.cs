@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
+using Game.Configs.Models;
 using Game.Preparation.Domain;
 using Game.Preparation.Services;
 using Game.UI;
@@ -165,17 +166,13 @@ namespace Game.Preparation.UI
             PublishGenreCounts(state);
         }
 
-        // Прокидываем выбранные кол-ва по жанрам в HUD (GameplaySceneView._genreBookCountItems)
-        // через тот же сигнал, что использует Sales. GameplaySceneController подписан и обновит счётчики.
+        // Прокидываем выбранные кол-ва по жанрам в HUD через тот же сигнал, что использует Sales.
         private void PublishGenreCounts(PreparationSessionState state)
         {
             if (_genreCountsPublisher == null || state?.GenreQuantities == null) return;
 
-            var counts = new Dictionary<string, int>(state.GenreQuantities.Count);
-            foreach (var kv in state.GenreQuantities)
-                counts[kv.Key] = kv.Value;
-
-            _genreCountsPublisher.Publish(new GameplayGenreBookCountsChanged(counts));
+            _genreCountsPublisher.Publish(
+                new GameplayGenreBookCountsChanged(BookGenreCounts.Normalize(state.GenreQuantities)));
         }
 
         private void UpdateCounter()

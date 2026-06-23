@@ -64,9 +64,7 @@ namespace Game.Preparation.Services
         public async UniTask<IReadOnlyDictionary<string, int>> GetGenreQuantitiesPreviewAsync(CancellationToken ct)
         {
             await StartOrResumeCoreAsync(ct, setPreparationPhase: false);
-            return _state?.GenreQuantities != null
-                ? new Dictionary<string, int>(_state.GenreQuantities, StringComparer.OrdinalIgnoreCase)
-                : new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            return BookGenreCounts.Normalize(_state?.GenreQuantities);
         }
 
         private async UniTask<IReadOnlyList<GenreSelectionItem>> StartOrResumeCoreAsync(
