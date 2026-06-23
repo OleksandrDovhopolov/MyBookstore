@@ -9,7 +9,10 @@
         "Configs",
         "Game.Inventory.API",
         "Game.Resources.API",
-        "Book.Sell"
+        "Book.Sell",
+        "Game.Inventory",
+        "Game.Decor",
+        "Game.Shop.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

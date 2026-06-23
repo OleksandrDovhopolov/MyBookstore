@@ -1,15 +1,12 @@
-using Cysharp.Threading.Tasks;
-using Game.Resources.API;
-using Game.Shop.UI;
-using Game.UI;
-using MessagePipe;
 using System;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using Game.DayCycle.Morning;
-using Game.Decor.UI;
-using Game.Inventory.UI;
 using Game.Preparation.Services;
 using Game.Preparation.UI;
+using Game.Resources.API;
+using Game.UI;
+using MessagePipe;
 using UnityEngine;
 using VContainer;
 
@@ -44,17 +41,8 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
 
     protected override void OnInit()
     {
-        if (View.OpenShopButton != null)
-            View.OpenShopButton.onClick.AddListener(OnOpenShopClicked);
-
         if (View.StartDayButton != null)
             View.StartDayButton.onClick.AddListener(OnStartGameClicked);
-
-        if (View.InventoryButton != null)
-            View.InventoryButton.onClick.AddListener(OnOpenInventoryClicked);
-
-        if (View.DecorButton != null)
-            View.DecorButton.onClick.AddListener(OnOpenDecorationClicked);
 
         _buttonsInteractableSubscription = _buttonsInteractableSubscriber.Subscribe(
             e => SetSceneButtonsInteractable(e.Interactable));
@@ -73,9 +61,7 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
 
         _resources.Changed += OnResourceChanged;
 
-        var goldAmount = _resources.GetAmount(ResourceIds.Gold);
-        Debug.LogWarning($"[GameplaySceneController] goldAmount {goldAmount}");
-        View.SetGoldAmount(goldAmount);
+        View.SetGoldAmount(_resources.GetAmount(ResourceIds.Gold));
 
         RefreshDayAndGenreCountsAsync().Forget();
     }
@@ -123,36 +109,15 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         _genreBookCountsSubscription?.Dispose();
         _genreBookCountsSubscription = null;
 
-        if (View != null && View.OpenShopButton != null)
-            View.OpenShopButton.onClick.RemoveAllListeners();
-
         if (View != null && View.StartDayButton != null)
             View.StartDayButton.onClick.RemoveAllListeners();
-        
-        if (View != null && View.InventoryButton != null)
-            View.InventoryButton.onClick.RemoveAllListeners();
-        
-        if (View != null && View.DecorButton != null)
-            View.DecorButton.onClick.RemoveAllListeners();
     }
 
-    public void SetSceneButtonsInteractable(bool interactable)
+    private void SetSceneButtonsInteractable(bool interactable)
     {
         View?.SetSceneButtonsInteractable(interactable);
     }
-
-    private void OnOpenShopClicked() => OpenShopAsync().Forget();
     private void OnStartGameClicked() => StartGameAsync().Forget();
-    
-    private void OnOpenInventoryClicked()
-    {
-        UIManager.ShowAsync<InventoryWindowController>().Forget();
-    }
-    
-    private void OnOpenDecorationClicked()
-    {
-        UIManager.ShowAsync<DecorPlacementWindow>().Forget();
-    }
     
     private async UniTaskVoid StartGameAsync()
     {
@@ -166,8 +131,7 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
                 View.SetStartButtonActive(true);
                 return;
             }
-
-            // Подготовка теперь — окно (PreparationWindow), а не scene-root.
+            
             var window = await UIManager.ShowAsync<PreparationWindow>(ct: View.destroyCancellationToken);
             if (window == null)
             {
@@ -213,11 +177,5 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
                   $"locations=[{string.Join(",", result.TargetLocationIds)}].");
 
         return true;
-    }
-
-    private async UniTaskVoid OpenShopAsync()
-    {
-        if (UIManager == null) return;
-        await UIManager.ShowAsync<ClassicShopWindow>();
     }
 }
