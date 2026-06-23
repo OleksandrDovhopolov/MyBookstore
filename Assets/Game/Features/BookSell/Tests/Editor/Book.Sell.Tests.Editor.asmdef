@@ -11,7 +11,8 @@
         "Save",
         "Game.Inventory.API",
         "Game.Preparation",
-        "DayCycle"
+        "DayCycle",
+        "Game.Resources.API"
     ],
     "includePlatforms": [
         "Editor"

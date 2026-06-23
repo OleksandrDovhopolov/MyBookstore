@@ -16,13 +16,15 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
     private IResourcesService _resources;
     private IMorningSessionService _session;
     private IPreparationSessionService _preparationSession;
-    private ISubscriber<GameplaySceneButtonsInteractableChanged> _buttonsInteractableSubscriber;
-    private ISubscriber<GameplayGenreBookCountsChanged> _genreBookCountsSubscriber;
-    private ISubscriber<GameplaySalesGoldChanged> _salesGoldSubscriber;
-    private IPublisher<GameplayGenreBookCountsRequested> _genreBookCountsRequestPublisher;
-    private IDisposable _buttonsInteractableSubscription;
-    private IDisposable _genreBookCountsSubscription;
+    
     private IDisposable _salesGoldSubscription;
+    private IDisposable _genreBookCountsSubscription;
+    private IDisposable _buttonsInteractableSubscription;
+    
+    private ISubscriber<GameplaySalesGoldChanged> _salesGoldSubscriber;
+    private ISubscriber<GameplayGenreBookCountsChanged> _genreBookCountsSubscriber;
+    private IPublisher<GameplayGenreBookCountsRequested> _genreBookCountsRequestPublisher;
+    private ISubscriber<GameplaySceneButtonsInteractableChanged> _buttonsInteractableSubscriber;
 
     [Inject]
     public void Construct(

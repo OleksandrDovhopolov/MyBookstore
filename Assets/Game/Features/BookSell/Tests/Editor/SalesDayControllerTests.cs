@@ -12,6 +12,7 @@ using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.Inventory.API;
 using Game.Preparation.Services;
+using Game.Resources.API;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -41,7 +42,8 @@ namespace Book.Sell.Tests.Editor
             SalesTuning tuning = null,
             ISalesShelfStateService shelfState = null,
             RecordingInventoryService inventory = null,
-            ISoldBookCommitter soldBookCommitter = null)
+            ISoldBookCommitter soldBookCommitter = null,
+            ISalesGoldCollector salesGoldCollector = null)
         {
             var configs = new FakeConfigsService();
             configs.SetAll(books);
@@ -62,7 +64,8 @@ namespace Book.Sell.Tests.Editor
                 new InteractionLock(),
                 tuning ?? SalesTestKit.FastTuning(),
                 shelfBuilder: shelfBuilder,
-                soldBookCommitter: soldBookCommitter);
+                soldBookCommitter: soldBookCommitter,
+                salesGoldCollector: salesGoldCollector);
         }
 
         private static void StartDay(SalesDayController c)
@@ -203,6 +206,61 @@ namespace Book.Sell.Tests.Editor
                 FlushCalled = true;
                 return UniTask.CompletedTask;
             }
+        }
+
+        private sealed class RecordingSalesGoldCollector : ISalesGoldCollector
+        {
+            public bool ResetCalled { get; private set; }
+            public bool FlushCalled { get; private set; }
+            public List<(int Day, string BookId, int Amount, string Source)> CollectCalls { get; } = new();
+
+            public void Reset()
+            {
+                ResetCalled = true;
+            }
+
+            public void CollectSaleGold(int day, string bookId, int amount, string source)
+            {
+                CollectCalls.Add((day, bookId, amount, source));
+            }
+
+            public UniTask FlushAsync(CancellationToken ct)
+            {
+                FlushCalled = true;
+                return UniTask.CompletedTask;
+            }
+        }
+
+        private sealed class RecordingResourcesService : IResourcesService
+        {
+            private readonly Dictionary<string, int> _amounts = new(StringComparer.Ordinal);
+
+            public List<(string ResourceId, int Amount, string Reason)> AddCalls { get; } = new();
+
+            public event Action<ResourceChangeEvent> Changed;
+
+            public IReadOnlyDictionary<string, int> GetAll() => _amounts;
+
+            public int GetAmount(string resourceId)
+                => !string.IsNullOrEmpty(resourceId) && _amounts.TryGetValue(resourceId, out var amount) ? amount : 0;
+
+            public bool Has(string resourceId, int amount)
+                => amount <= 0 || GetAmount(resourceId) >= amount;
+
+            public UniTask AddAsync(string resourceId, int amount, string reason, CancellationToken ct)
+            {
+                AddCalls.Add((resourceId, amount, reason));
+                if (string.IsNullOrEmpty(resourceId) || amount <= 0) return UniTask.CompletedTask;
+
+                var old = GetAmount(resourceId);
+                var next = old + amount;
+                _amounts[resourceId] = next;
+                Changed?.Invoke(new ResourceChangeEvent(resourceId, old, next, amount, reason));
+                return UniTask.CompletedTask;
+            }
+
+            public UniTask<bool> RemoveAsync(string resourceId, int amount, string reason, CancellationToken ct)
+                => UniTask.FromResult(false);
         }
 
         private sealed class StaticPreparationInventoryProvider : IPreparationInventoryProvider
@@ -362,18 +420,76 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void SalesGoldCollector_ZeroOrNegativeAmount_DoesNothing()
+        {
+            var resources = new RecordingResourcesService();
+            var collector = new SalesGoldCollector(resources);
+
+            collector.CollectSaleGold(1, "b1", 0, "test");
+            collector.CollectSaleGold(1, "b1", -5, "test");
+            collector.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            CollectionAssert.IsEmpty(resources.AddCalls);
+            Assert.AreEqual(0, resources.GetAmount(ResourceIds.Gold));
+        }
+
+        [Test]
+        public void SalesGoldCollector_AddsGoldWithSaleReason()
+        {
+            var resources = new RecordingResourcesService();
+            var collector = new SalesGoldCollector(resources);
+
+            collector.CollectSaleGold(2, "b1", 80, "active");
+            collector.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(80, resources.GetAmount(ResourceIds.Gold));
+            Assert.AreEqual(1, resources.AddCalls.Count);
+            Assert.AreEqual(ResourceIds.Gold, resources.AddCalls[0].ResourceId);
+            Assert.AreEqual(80, resources.AddCalls[0].Amount);
+            Assert.AreEqual("sales_day_2_active_b1", resources.AddCalls[0].Reason);
+        }
+
+        [Test]
+        public void SalesGoldCollector_MissingResourcesService_LogsError()
+        {
+            var collector = new SalesGoldCollector(null);
+
+            LogAssert.Expect(LogType.Error,
+                "[Sales.Day] cannot collect 80 gold for sold book 'b1' (test): IResourcesService is not available.");
+
+            collector.CollectSaleGold(1, "b1", 80, "test");
+            collector.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
+        }
+
+        [Test]
+        public void SalesGoldCollector_Flush_CanBeCalledRepeatedly()
+        {
+            var resources = new RecordingResourcesService();
+            var collector = new SalesGoldCollector(resources);
+
+            collector.CollectSaleGold(1, "b1", 80, "passive");
+            collector.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
+            collector.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, resources.AddCalls.Count);
+            Assert.AreEqual(80, resources.GetAmount(ResourceIds.Gold));
+        }
+
+        [Test]
         public void DayCompleted_FlushesSoldBookCommitsBeforePublishing()
         {
             var committer = new RecordingSoldBookCommitter();
+            var goldCollector = new RecordingSalesGoldCollector();
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
                 new RequestConfig[0],
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
                 new List<Customer> { Passive("c1") },
-                soldBookCommitter: committer);
+                soldBookCommitter: committer,
+                salesGoldCollector: goldCollector);
 
             var completedAfterFlush = false;
-            c.DayCompleted += _ => completedAfterFlush = committer.FlushCalled;
+            c.DayCompleted += _ => completedAfterFlush = committer.FlushCalled && goldCollector.FlushCalled;
 
             StartDay(c);
             Run(c);
@@ -381,6 +497,8 @@ namespace Book.Sell.Tests.Editor
 
             Assert.IsTrue(committer.ResetCalled);
             Assert.IsTrue(committer.CommitCalled);
+            Assert.IsTrue(goldCollector.ResetCalled);
+            Assert.AreEqual(1, goldCollector.CollectCalls.Count);
             Assert.IsTrue(completedAfterFlush);
         }
 
@@ -479,6 +597,27 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void RecommendBook_SuccessfulSale_CollectsGoldImmediately()
+        {
+            var goldCollector = new RecordingSalesGoldCollector();
+            var reqA = SalesTestKit.Request("reqA");
+            var c = Build(
+                new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
+                new[] { reqA },
+                SalesTestKit.Location(),
+                new List<Customer> { Active("c1", reqA) },
+                salesGoldCollector: goldCollector);
+
+            StartDay(c);
+            DriveUntilActive(c);
+
+            c.RecommendBook("b1");
+
+            Assert.AreEqual(1, goldCollector.CollectCalls.Count);
+            Assert.AreEqual((1, "b1", 105, "active"), goldCollector.CollectCalls[0]);
+        }
+
+        [Test]
         public void ActiveSale_CountsAsPurchasedBook_CompletionFiresWithCountOne()
         {
             // Two books so the day ends via "all customers done" (b2 remains), letting the customer
@@ -509,12 +648,14 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void SkippedActiveRequest_BuysNothing_NoCompletion()
         {
+            var goldCollector = new RecordingSalesGoldCollector();
             var reqA = SalesTestKit.Request("reqA");
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
                 new[] { reqA },
                 SalesTestKit.Location(),
-                new List<Customer> { ActiveWithCompletion("c1", reqA) });
+                new List<Customer> { ActiveWithCompletion("c1", reqA) },
+                salesGoldCollector: goldCollector);
 
             var completionFired = false;
             c.CustomerPurchaseCompleted += (_, _) => completionFired = true;
@@ -525,6 +666,7 @@ namespace Book.Sell.Tests.Editor
             Run(c);
 
             Assert.IsFalse(completionFired, "0 books bought → CompletePurchase is skipped, no completion bubble.");
+            CollectionAssert.IsEmpty(goldCollector.CollectCalls);
         }
 
         [Test]
@@ -617,6 +759,24 @@ namespace Book.Sell.Tests.Editor
 
             Assert.AreEqual(1, changes);
             Assert.AreEqual(ShelfBookState.SoldOut, c.Shelf.Find("b1").State);
+        }
+
+        [Test]
+        public void PassiveSale_CollectsGoldImmediately()
+        {
+            var goldCollector = new RecordingSalesGoldCollector();
+            var c = Build(
+                new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
+                new RequestConfig[0],
+                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
+                new List<Customer> { Passive("c1") },
+                salesGoldCollector: goldCollector);
+
+            StartDay(c);
+            Run(c);
+
+            Assert.AreEqual(1, goldCollector.CollectCalls.Count);
+            Assert.AreEqual((1, "b1", 80, "passive"), goldCollector.CollectCalls[0]);
         }
 
         [Test]

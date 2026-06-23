@@ -54,49 +54,5 @@ namespace Game.DayCycle.Tests.Editor.Results
             var result = Sut().Compute(SalesWith(0, exc: 0, norm: 0, fail: 5, skip: 0), currentReputation: 0);
             Assert.AreEqual(0, result.ReputationDelta, "Clamp delta so currentRep + delta >= 0.");
         }
-
-        [Test]
-        public void BestMatch_PicksHighestScore()
-        {
-            var sales = SalesWith(0, 0, 0, 0, 0,
-                Rec("a", RecommendationTier.Normal, 4),
-                Rec("b", RecommendationTier.Excellent, 9),
-                Rec("c", RecommendationTier.Normal, 5));
-
-            var best = Sut().Compute(sales, 0).BestMatch;
-            Assert.IsNotNull(best);
-            Assert.AreEqual("book_b", best.BookId);
-            Assert.AreEqual(9, best.Score);
-        }
-
-        [Test]
-        public void BestMatch_TieBreaker_PrefersHigherTier()
-        {
-            var sales = SalesWith(0, 0, 0, 0, 0,
-                Rec("a", RecommendationTier.Normal, 5),
-                Rec("b", RecommendationTier.Excellent, 5));
-
-            var best = Sut().Compute(sales, 0).BestMatch;
-            Assert.AreEqual("book_b", best.BookId);
-            Assert.AreEqual(RecommendationTier.Excellent, best.Tier);
-        }
-
-        [Test]
-        public void BestMatch_NoRecommendations_IsNull()
-        {
-            var best = Sut().Compute(SalesWith(0, 0, 0, 0, 0), 0).BestMatch;
-            Assert.IsNull(best);
-        }
-
-        [Test]
-        public void BestMatch_OnlySkipped_IsNull()
-        {
-            var sales = SalesWith(0, 0, 0, 0, 0,
-                RecommendationResult.Skipped("r1"),
-                RecommendationResult.Skipped("r2"));
-
-            var best = Sut().Compute(sales, 0).BestMatch;
-            Assert.IsNull(best);
-        }
     }
 }

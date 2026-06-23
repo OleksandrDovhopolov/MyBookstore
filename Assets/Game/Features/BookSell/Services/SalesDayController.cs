@@ -29,6 +29,7 @@ namespace Book.Sell.Services
         private readonly ISaveService _save;
         private readonly ISalesShelfBuilder _shelfBuilder;
         private readonly ISoldBookCommitter _soldBookCommitter;
+        private readonly ISalesGoldCollector _salesGoldCollector;
 
         private SalesShelf _shelf = new();
         private SalesDayResult _result = new();
@@ -55,6 +56,7 @@ namespace Book.Sell.Services
             SalesTuning tuning,
             ISalesShelfBuilder shelfBuilder = null,
             ISoldBookCommitter soldBookCommitter = null,
+            ISalesGoldCollector salesGoldCollector = null,
             IInventoryService inventory = null,
             ISaveService save = null,
             ISalesShelfStateService shelfState = null)
@@ -69,6 +71,7 @@ namespace Book.Sell.Services
             _tuning = tuning ?? throw new ArgumentNullException(nameof(tuning));
             _shelfBuilder = shelfBuilder ?? new SalesShelfBuilder(_configs);
             _soldBookCommitter = soldBookCommitter ?? CreateLegacySoldBookCommitter(inventory, shelfState);
+            _salesGoldCollector = salesGoldCollector ?? new NoOpSalesGoldCollector();
             _save = save;   // optional in tests; in prod injected via DI
         }
 
@@ -114,6 +117,7 @@ namespace Book.Sell.Services
 
             _customers = new List<Customer>(_spawner.BuildCustomers(setup, _tuning, _random));
             _soldBookCommitter.Reset();
+            _salesGoldCollector.Reset();
             _nextToSpawn = 0;
             _spawnTimer = _tuning.SpawnInterval;   // spawn the first customer on the first tick
             _activeCustomer = null;
@@ -180,6 +184,7 @@ namespace Book.Sell.Services
 
                 //TODO active should be const in config class
                 _soldBookCommitter.CommitSoldBook(bookId, "active");
+                _salesGoldCollector.CollectSaleGold(Day, bookId, result.GoldEarned, "active");
                 _result.SoldBookIds.Add(bookId);
                 _result.SalesCount++;
                 _activeCustomer.RegisterPurchasedBook();
@@ -300,6 +305,7 @@ namespace Book.Sell.Services
         {
             //TODO passive should be const in config class
             _soldBookCommitter.CommitSoldBook(saleEvent.BookId, "passive");
+            _salesGoldCollector.CollectSaleGold(Day, saleEvent.BookId, saleEvent.GoldEarned, "passive");
             _result.GoldEarned += saleEvent.GoldEarned;
             _result.SalesCount++;
             _result.SoldBookIds.Add(saleEvent.BookId);
@@ -391,6 +397,7 @@ namespace Book.Sell.Services
             var snapshot = _result;
 
             await _soldBookCommitter.FlushAsync(CancellationToken.None);
+            await _salesGoldCollector.FlushAsync(CancellationToken.None);
 
             // 1) Persist BEFORE emitting so anyone listening to DayCompleted can immediately read
             //    book_sell.last_day_result. UpdateModuleAsync only returns after the in-memory

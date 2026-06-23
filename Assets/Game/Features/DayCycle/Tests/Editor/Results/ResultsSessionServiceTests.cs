@@ -18,7 +18,7 @@ namespace Game.DayCycle.Tests.Editor.Results
             public FakeDayProgressService DayProgress { get; } = new();
             public FakeResourcesService Resources { get; } = new();
             public FakeProgressionService Progression { get; } = new();
-            public ResultsSessionService Sut { get; }
+            public ResultsSummarySessionService Sut { get; }
 
             public List<ResultsSummary> Summaries { get; } = new();
             public int NoResultEmits { get; private set; }
@@ -34,10 +34,10 @@ namespace Game.DayCycle.Tests.Editor.Results
                         .GetAwaiter().GetResult();
                 }
 
-                Sut = new ResultsSessionService(
-                    Save, DayProgress, Resources, Progression,
-                    new DefaultResultsRewardService(),
-                    new DefaultResultsReviewTextProvider());
+                Sut = new ResultsSummarySessionService(
+                    Save,
+                    DayProgress,
+                    new ResultsSummaryBuilder(new DefaultResultsReviewTextProvider()));
 
                 Sut.SummaryReady += s => Summaries.Add(s);
                 Sut.NoResultAvailable += () => NoResultEmits++;
@@ -63,66 +63,58 @@ namespace Game.DayCycle.Tests.Editor.Results
         [Test]
         public void NoSalesResult_EmitsNoResultAvailable_NoMutation()
         {
-            var h = new Harness();   // no preload
+            var h = new Harness();
             h.Run();
 
             Assert.AreEqual(1, h.NoResultEmits);
             Assert.AreEqual(0, h.Summaries.Count);
             Assert.AreEqual(0, h.Gold);
+            Assert.AreEqual(0, h.Reputation);
         }
 
         [Test]
-        public void Apply_Once_MutatesBalances_AndPersistsAppliedRecord()
+        public void Load_Once_BuildsSummary_WithoutMutatingBalances()
         {
             var h = new Harness(Sales(gold: 150, exc: 3));
             h.Run();
 
             Assert.AreEqual(1, h.Summaries.Count);
-            Assert.AreEqual(150, h.Gold);
-            Assert.AreEqual(3, h.Reputation);
-
-            // Idempotency record persisted.
-            Assert.IsTrue(h.Save.Store.ContainsKey(ResultsSessionService.AppliedRewardsModuleKey));
+            Assert.AreEqual(0, h.Gold);
+            Assert.AreEqual(0, h.Reputation);
+            Assert.IsFalse(h.Save.Store.ContainsKey("results.applied_rewards"));
             Assert.AreEqual(1, h.DayProgress.MarkCompletedCallCount);
             Assert.AreEqual(DayPhase.Results, h.DayProgress.State.CurrentPhase);
             CollectionAssert.Contains(h.DayProgress.State.CompletedDays, 1);
         }
 
         [Test]
-        public void Apply_Twice_UsesCachedSummary_DoesNotDoubleRewards()
+        public void Load_Twice_UsesCachedSummary_DoesNotMutateBalances()
         {
             var h = new Harness(Sales(gold: 100, exc: 2));
             h.Run();
             h.Run();
 
-            Assert.AreEqual(2, h.Summaries.Count, "Both runs emit a summary…");
-            Assert.AreEqual(100, h.Gold, "…but balances mutate only once.");
-            Assert.AreEqual(2, h.Reputation);
+            Assert.AreEqual(2, h.Summaries.Count, "Both runs emit a summary.");
+            Assert.AreEqual(0, h.Gold);
+            Assert.AreEqual(0, h.Reputation);
             Assert.AreSame(h.Summaries[0], h.Summaries[1], "Second run re-emits the cached summary.");
-            Assert.IsFalse(h.Summaries[1].AlreadyApplied);
             Assert.IsFalse(h.Summaries[0].AlreadyApplied);
+            Assert.IsFalse(h.Summaries[1].AlreadyApplied);
         }
 
         [Test]
-        public void Restart_NewServiceOverSameSaveStore_DoesNotDouble()
+        public void Restart_NewServiceOverSameSaveStore_DoesNotUseAppliedRewards()
         {
-            // First session: applies day 1.
             var first = new Harness(Sales(gold: 100, exc: 1));
             first.Run();
-            Assert.AreEqual(100, first.Gold);
 
-            // Restart: brand-new service, but Save store carries over the applied record
-            // *and* the last day result. Pre-seed the second resources/progression with the
-            // persisted balances (in production they would come from their own save modules).
             var second = new Harness(sharedStore: first.Save.Store);
-            second.Resources.AddAsync(ResourceIds.Gold, first.Gold, "preseed", CancellationToken.None)
-                .GetAwaiter().GetResult();
-            second.Progression.SetReputation(first.Reputation);
             second.Run();
 
-            Assert.AreEqual(100, second.Gold,
-                "Restart on Results must not re-apply rewards.");
-            Assert.IsTrue(second.Summaries[0].AlreadyApplied);
+            Assert.AreEqual(0, second.Gold);
+            Assert.AreEqual(0, second.Reputation);
+            Assert.IsFalse(second.Save.Store.ContainsKey("results.applied_rewards"));
+            Assert.IsFalse(second.Summaries[0].AlreadyApplied);
         }
 
         [Test]
@@ -132,8 +124,6 @@ namespace Game.DayCycle.Tests.Editor.Results
             h.Run();
             h.Advance();
 
-            // No scene reload anymore: the day advances and phase goes to Morning; HubPhaseRouter
-            // restores the hub visuals off the IDayProgressService.PhaseChanged event.
             Assert.AreEqual(1, h.DayProgress.AdvanceCallCount);
             Assert.AreEqual(2, h.DayProgress.State.CurrentDay);
             Assert.AreEqual(DayPhase.Morning, h.DayProgress.State.CurrentPhase);
@@ -164,6 +154,8 @@ namespace Game.DayCycle.Tests.Editor.Results
 
             var s = h.Summaries[0];
             Assert.AreEqual(77, s.GoldEarned, "View receives gold-earned verbatim from sales.");
+            Assert.AreEqual(0, s.GoldDelta);
+            Assert.AreEqual(0, s.ReputationDelta);
             Assert.AreEqual(5, s.SalesCount);
             Assert.AreEqual(4, s.ExcellentCount);
             Assert.AreEqual(1, s.FailedCount);

@@ -67,6 +67,7 @@ namespace Game.Bootstrap
             builder.RegisterInstance(salesTuningConfig != null ? salesTuningConfig.BuildTuning() : new SalesTuning());
             builder.Register<ISalesShelfBuilder, SalesShelfBuilder>(Lifetime.Singleton);
             builder.Register<ISoldBookCommitter, SoldBookCommitter>(Lifetime.Singleton);
+            builder.Register<ISalesGoldCollector, SalesGoldCollector>(Lifetime.Singleton);
             builder.Register<ISalesDayController, SalesDayController>(Lifetime.Singleton);
 
             // Customer visualization + world-space thought bubbles (Phase 0 of World HUD).

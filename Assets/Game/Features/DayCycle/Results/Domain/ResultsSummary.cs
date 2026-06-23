@@ -4,7 +4,7 @@ namespace Game.DayCycle.Results.Domain
 {
     /// <summary>
     /// Read-only snapshot the Results screen renders. Built once per day from the persisted
-    /// <see cref="SalesDayResult"/>; numbers come straight from sales, deltas from the reward service.
+    /// <see cref="SalesDayResult"/>; numbers come straight from sales.
     /// </summary>
     public sealed class ResultsSummary
     {
@@ -18,14 +18,10 @@ namespace Game.DayCycle.Results.Domain
         public int FailedCount { get; set; }
         public int SkippedCount { get; set; }
 
-        //TODO should delete  ? 
-        // Best match card (null when there were no recommendations at all).
-        public BestMatchCard BestMatch { get; set; }
-
         // Cozy one-line review of the day.
         public string ReviewText { get; set; }
 
-        // Reward line.
+        // Results no longer applies rewards. These stay for the existing UI contract.
         public int GoldDelta { get; set; }
         public int ReputationDelta { get; set; }
 

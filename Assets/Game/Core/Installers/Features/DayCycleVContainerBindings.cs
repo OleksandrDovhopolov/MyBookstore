@@ -22,7 +22,8 @@ namespace Game.Bootstrap
 
             builder.Register<IResultsRewardService, DefaultResultsRewardService>(Lifetime.Singleton);
             builder.Register<IResultsReviewTextProvider, DefaultResultsReviewTextProvider>(Lifetime.Singleton);
-            builder.Register<IResultsSessionService, ResultsSessionService>(Lifetime.Singleton);
+            builder.Register<IResultsSummaryBuilder, ResultsSummaryBuilder>(Lifetime.Singleton);
+            builder.Register<IResultsSessionService, ResultsSummarySessionService>(Lifetime.Singleton);
         }
     }
 }

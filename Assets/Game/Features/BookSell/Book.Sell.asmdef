@@ -13,7 +13,8 @@
         "Game.Core.UI",
         "MessagePipe",
         "DayCycle",
-        "Game.Inventory.API"
+        "Game.Inventory.API",
+        "Game.Resources.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
