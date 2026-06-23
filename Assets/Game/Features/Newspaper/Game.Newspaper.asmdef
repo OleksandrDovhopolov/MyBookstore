@@ -5,8 +5,10 @@
         "VContainer",
         "UniTask",
         "Game.Core.UI",
+        "Configs",
         "Game.Shop.API",
         "Game.Rewards.API",
+        "Game.Inventory.API",
         "Unity.TextMeshPro"
     ],
     "includePlatforms": [],

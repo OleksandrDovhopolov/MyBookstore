@@ -2,11 +2,12 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Game.Newspaper
+namespace Game.Newspaper.UI
 {
     public class RewardItemView : MonoBehaviour
     {
         [SerializeField] private Image _rewardImage;
+        [SerializeField] private TextMeshProUGUI _rewardNameText;
         [SerializeField] private TextMeshProUGUI _rewardAmountText;
         [SerializeField] private RectTransform _animationStartPosition;
         
@@ -15,13 +16,20 @@ namespace Game.Newspaper
         public void SetResourceData(RewardSpecResource rewardSpecResource)
         {
             _rewardSpecResource =  rewardSpecResource;
-            SetReward(_rewardSpecResource.Icon,  rewardSpecResource.Amount);
+            SetReward(
+                _rewardSpecResource.Icon,
+                _rewardSpecResource.DisplayName ?? _rewardSpecResource.ResourceId,
+                rewardSpecResource.Amount);
         }
         
-        public void SetReward(Sprite sprite, int amount)
+        public void SetReward(Sprite sprite, string displayName, int amount)
         {
-            _rewardImage.sprite = sprite;
-            _rewardAmountText.text = Mathf.Max(0, amount).ToString();
+            if (_rewardImage != null)
+                _rewardImage.sprite = sprite;
+            if (_rewardNameText != null)
+                _rewardNameText.text = displayName ?? string.Empty;
+            if (_rewardAmountText != null)
+                _rewardAmountText.text = Mathf.Max(0, amount).ToString();
         }
         
         public bool TryGetAnimationStartPosition(out Vector3 animationStartPosition)
@@ -45,8 +53,12 @@ namespace Game.Newspaper
         public void ResetView()
         {
             _rewardSpecResource = null;
-            _rewardImage.sprite = null;
-            _rewardAmountText.text = string.Empty;
+            if (_rewardImage != null)
+                _rewardImage.sprite = null;
+            if (_rewardNameText != null)
+                _rewardNameText.text = string.Empty;
+            if (_rewardAmountText != null)
+                _rewardAmountText.text = string.Empty;
         }
     }
 }

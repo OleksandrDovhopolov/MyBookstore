@@ -1,23 +1,18 @@
 using System;
 using System.Collections.Generic;
+using Game.Rewards.API;
 using Game.UI;
 using UIShared;
 using UnityEngine;
 
-namespace Game.Newspaper
+namespace Game.Newspaper.UI
 {
-    public enum RewardKind
-    {
-        Unknown = 0,
-        Resource = 1,
-        InventoryItem = 2,
-    }
-    
     [Serializable]
     public class RewardSpecResource
     {
         public string ResourceId;
-        public RewardKind Kind = RewardKind.Unknown;
+        public string DisplayName;
+        public RewardKind Kind;
         public int Amount;
         public string Category;
         public Sprite Icon;
@@ -27,15 +22,30 @@ namespace Game.Newspaper
     {
         [SerializeField] private UIListPool<RewardItemView> _cardGroupsPool;
 
+        [Header("Genre icons")]
+        [SerializeField] private Sprite _classicSprite;
+        [SerializeField] private Sprite _crimeSprite;
+        [SerializeField] private Sprite _dramaSprite;
+        [SerializeField] private Sprite _factSprite;
+        [SerializeField] private Sprite _fantasySprite;
+        [SerializeField] private Sprite _kidsSprite;
+        [SerializeField] private Sprite _travelSprite;
+
+        [Header("Fallback icons")]
+        [SerializeField] private Sprite _nonBookRewardSprite;
+
         private readonly Dictionary<RewardSpecResource, RewardItemView> _rewardItemViews = new();
         
-        public void SetReward(List<RewardSpecResource> rewardSpecResources)
+        public void SetReward(IReadOnlyList<RewardSpecResource> rewardSpecResources)
         {
-            _rewardItemViews.Clear();
-            _cardGroupsPool.DisableNonActive();
+            ResetView();
+            if (rewardSpecResources == null || _cardGroupsPool == null) return;
             
-            foreach (var rewardSpecResource in rewardSpecResources)
+            for (var i = 0; i < rewardSpecResources.Count; i++)
             {
+                var rewardSpecResource = rewardSpecResources[i];
+                if (rewardSpecResource == null) continue;
+
                 var rewardItemView = _cardGroupsPool.GetNext();
                 rewardItemView.SetResourceData(rewardSpecResource);
                 _rewardItemViews.Add(rewardSpecResource, rewardItemView);
@@ -54,7 +64,20 @@ namespace Game.Newspaper
                 rewardItemView.ResetView();
             }
             _rewardItemViews.Clear();
-            _cardGroupsPool.DisableAll();
+            _cardGroupsPool?.DisableAll();
+        }
+
+        public Sprite GetIconForReward(string resourceId)
+        {
+            if (string.Equals(resourceId, "Classic", StringComparison.OrdinalIgnoreCase)) return _classicSprite;
+            if (string.Equals(resourceId, "Crime", StringComparison.OrdinalIgnoreCase)) return _crimeSprite;
+            if (string.Equals(resourceId, "Drama", StringComparison.OrdinalIgnoreCase)) return _dramaSprite;
+            if (string.Equals(resourceId, "Fact", StringComparison.OrdinalIgnoreCase)) return _factSprite;
+            if (string.Equals(resourceId, "Fantasy", StringComparison.OrdinalIgnoreCase)) return _fantasySprite;
+            if (string.Equals(resourceId, "Kids", StringComparison.OrdinalIgnoreCase)) return _kidsSprite;
+            if (string.Equals(resourceId, "Travel", StringComparison.OrdinalIgnoreCase)) return _travelSprite;
+
+            return _nonBookRewardSprite;
         }
     }
 }
