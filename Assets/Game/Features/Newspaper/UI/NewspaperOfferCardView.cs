@@ -23,11 +23,12 @@ namespace Game.Newspaper.UI
         public Button BuyButton => _buyButton;
         public Image Icon => _icon;
 
-        public void Bind(NewspaperOffer offer, Action onBuyClicked)
+        public void Bind(NewspaperOffer offer, Action onBuyClicked, Sprite icon = null)
         {
             if (offer == null) return;
 
             LotId = offer.LotId;
+            SetIcon(icon);
             if (_titleLabel != null) _titleLabel.text = offer.DisplayName;
             if (_descriptionLabel != null) _descriptionLabel.text = offer.Description;
             if (_priceLabel != null) _priceLabel.text = offer.PriceText;
@@ -52,6 +53,12 @@ namespace Game.Newspaper.UI
             }
         }
 
+        public void SetIcon(Sprite sprite)
+        {
+            if (_icon != null)
+                _icon.sprite = sprite;
+        }
+
         private void OnBuyClickedInternal() => _onBuyClicked?.Invoke();
 
         public void Cleanup()
@@ -61,6 +68,7 @@ namespace Game.Newspaper.UI
 
             _onBuyClicked = null;
             LotId = null;
+            SetIcon(null);
         }
 
         private void OnDestroy() => Cleanup();

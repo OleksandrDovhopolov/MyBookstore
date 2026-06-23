@@ -2,14 +2,15 @@
     "name": "Game.Newspaper",
     "rootNamespace": "Game.Newspaper",
     "references": [
+        "Unity.TextMeshPro",
         "VContainer",
         "UniTask",
-        "Game.Core.UI",
         "Configs",
+        "Infrastructure",
+        "Game.Core.UI",
         "Game.Shop.API",
         "Game.Rewards.API",
-        "Game.Inventory.API",
-        "Unity.TextMeshPro"
+        "Game.Inventory.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

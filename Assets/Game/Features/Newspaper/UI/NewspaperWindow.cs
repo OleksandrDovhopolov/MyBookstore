@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -34,7 +35,11 @@ namespace Game.Newspaper.UI
             _cts = new CancellationTokenSource();
         }
 
-        protected override void OnShowStart() => RefreshOffers();
+        protected override void OnShowStart()
+        {
+            RefreshOffers();
+            LoadSpritesAndRefreshAsync(_cts.Token).Forget();
+        }
 
         protected override void OnDispose()
         {
@@ -42,6 +47,7 @@ namespace Game.Newspaper.UI
             _cts?.Dispose();
             _cts = null;
 
+            View?.ReleaseLoadedSprites();
             View?.BookCardsPool?.DisableAll();
             View?.DecorCardsPool?.DisableAll();
         }
@@ -52,13 +58,16 @@ namespace Game.Newspaper.UI
 
             View.BookCardsPool.DisableAll();
             View.DecorCardsPool.DisableAll();
-            SpawnOffers(_offerSource.GetBookOffers(), View.BookCardsPool);
-            SpawnOffers(_offerSource.GetDecorOffers(), View.DecorCardsPool);
+            SpawnOffers(_offerSource.GetBookOffers(), View.BookCardsPool, isDecorOffer: false);
+            SpawnOffers(_offerSource.GetDecorOffers(), View.DecorCardsPool, isDecorOffer: true);
             View.BookCardsPool.DisableNonActive();
             View.DecorCardsPool.DisableNonActive();
         }
 
-        private void SpawnOffers(IReadOnlyList<NewspaperOffer> offers, UIListPool<NewspaperOfferCardView> pool)
+        private void SpawnOffers(
+            IReadOnlyList<NewspaperOffer> offers,
+            UIListPool<NewspaperOfferCardView> pool,
+            bool isDecorOffer)
         {
             if (offers == null || offers.Count == 0 || pool == null) return;
 
@@ -69,7 +78,50 @@ namespace Game.Newspaper.UI
 
                 var card = pool.GetNext();
                 var capturedLotId = offer.LotId;
-                card.Bind(offer, () => TryBuyAsync(capturedLotId).Forget());
+                var icon = isDecorOffer
+                    ? View?.GetDecorOfferIcon(offer.LotId)
+                    : View?.GetBookOfferIcon();
+                card.Bind(offer, () => TryBuyAsync(capturedLotId).Forget(), icon);
+            }
+        }
+
+        private async UniTaskVoid LoadSpritesAndRefreshAsync(CancellationToken ct)
+        {
+            if (View == null) return;
+
+            try
+            {
+                await View.PreloadSpritesAsync(ct);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+
+            if (ct.IsCancellationRequested || View == null) return;
+            UpdateVisibleOfferIcons();
+        }
+
+        private void UpdateVisibleOfferIcons()
+        {
+            if (View == null) return;
+
+            UpdateVisibleOfferIcons(View.BookCardsPool, isDecorOffer: false);
+            UpdateVisibleOfferIcons(View.DecorCardsPool, isDecorOffer: true);
+        }
+
+        private void UpdateVisibleOfferIcons(UIListPool<NewspaperOfferCardView> pool, bool isDecorOffer)
+        {
+            if (pool == null) return;
+
+            foreach (var card in pool.ActiveElements())
+            {
+                if (card == null) continue;
+
+                var icon = isDecorOffer
+                    ? View?.GetDecorOfferIcon(card.LotId)
+                    : View?.GetBookOfferIcon();
+                card.SetIcon(icon);
             }
         }
 
