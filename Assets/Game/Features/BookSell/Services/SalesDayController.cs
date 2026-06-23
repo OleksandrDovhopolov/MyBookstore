@@ -26,16 +26,14 @@ namespace Book.Sell.Services
         private readonly ICustomerSpawner _spawner;
         private readonly IInteractionLock _lock;
         private readonly SalesTuning _tuning;
-        private readonly IInventoryService _inventory;
         private readonly ISaveService _save;
-        private readonly ISalesShelfStateService _shelfState;
+        private readonly ISoldBookCommitter _soldBookCommitter;
 
         private SalesShelf _shelf = new();
         private SalesDayResult _result = new();
         private LocationConfig _location;
         private CustomerContext _ctx;
         private List<Customer> _customers = new();
-        private readonly List<UniTask> _pendingSaleCommits = new();
 
         private Customer _activeCustomer;
         private RequestConfig _activeRequest;
@@ -54,6 +52,7 @@ namespace Book.Sell.Services
             ICustomerSpawner spawner,
             IInteractionLock interactionLock,
             SalesTuning tuning,
+            ISoldBookCommitter soldBookCommitter = null,
             IInventoryService inventory = null,
             ISaveService save = null,
             ISalesShelfStateService shelfState = null)
@@ -66,9 +65,8 @@ namespace Book.Sell.Services
             _spawner = spawner ?? throw new ArgumentNullException(nameof(spawner));
             _lock = interactionLock ?? throw new ArgumentNullException(nameof(interactionLock));
             _tuning = tuning ?? throw new ArgumentNullException(nameof(tuning));
-            _inventory = inventory; // optional in tests/legacy prototype scenes; required in production DI
+            _soldBookCommitter = soldBookCommitter ?? CreateLegacySoldBookCommitter(inventory, shelfState);
             _save = save;   // optional in tests; in prod injected via DI
-            _shelfState = shelfState;   // optional in older tests/prototype scenes
         }
 
         public int Day { get; private set; }
@@ -113,7 +111,7 @@ namespace Book.Sell.Services
             _ctx = new CustomerContext(_shelf, _lock, _random, _passiveSelector, _location, setup.DecorIds, this, _tuning);
 
             _customers = new List<Customer>(_spawner.BuildCustomers(setup, _tuning, _random));
-            _pendingSaleCommits.Clear();
+            _soldBookCommitter.Reset();
             _nextToSpawn = 0;
             _spawnTimer = _tuning.SpawnInterval;   // spawn the first customer on the first tick
             _activeCustomer = null;
@@ -179,7 +177,7 @@ namespace Book.Sell.Services
                 _shelf.CommitSale(bookId);
 
                 //TODO active should be const in config class
-                CommitSoldBook(bookId, "active");
+                _soldBookCommitter.CommitSoldBook(bookId, "active");
                 _result.SoldBookIds.Add(bookId);
                 _result.SalesCount++;
                 _activeCustomer.RegisterPurchasedBook();
@@ -299,7 +297,7 @@ namespace Book.Sell.Services
         void ISalesDaySink.OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent)
         {
             //TODO passive should be const in config class
-            CommitSoldBook(saleEvent.BookId, "passive");
+            _soldBookCommitter.CommitSoldBook(saleEvent.BookId, "passive");
             _result.GoldEarned += saleEvent.GoldEarned;
             _result.SalesCount++;
             _result.SoldBookIds.Add(saleEvent.BookId);
@@ -337,47 +335,6 @@ namespace Book.Sell.Services
                     continue;
                 }
                 _shelf.Add(new ShelfBook(book));
-            }
-        }
-
-        private void CommitSoldBook(string bookId, string source)
-        {
-            var commit = CommitSoldBookAsync(bookId, source).Preserve();
-            _pendingSaleCommits.Add(commit);
-            commit.Forget();
-        }
-
-        private async UniTask CommitSoldBookAsync(string bookId, string source)
-        {
-            if (string.IsNullOrEmpty(bookId)) return;
-
-            if (_shelfState != null)
-            {
-                try
-                {
-                    await _shelfState.MarkSoldAsync(bookId, CancellationToken.None);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"{LogPrefix} failed to mark sold shelf state for '{bookId}' ({source}): {ex.Message}");
-                }
-            }
-
-            if (_inventory == null)
-            {
-                Debug.LogError($"{LogPrefix} cannot remove sold book '{bookId}' from inventory ({source}): IInventoryService is not available.");
-                return;
-            }
-
-            try
-            {
-                var removed = await _inventory.RemoveAsync(bookId, 1, CancellationToken.None);
-                if (!removed)
-                    Debug.LogError($"{LogPrefix} sold book '{bookId}' was not present in inventory during {source} sale.");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"{LogPrefix} failed to remove sold book '{bookId}' from inventory ({source}): {ex.Message}");
             }
         }
 
@@ -445,7 +402,7 @@ namespace Book.Sell.Services
             // Snapshot the result reference so a late reset doesn't race the publish.
             var snapshot = _result;
 
-            await FlushPendingSaleCommitsAsync();
+            await _soldBookCommitter.FlushAsync(CancellationToken.None);
 
             // 1) Persist BEFORE emitting so anyone listening to DayCompleted can immediately read
             //    book_sell.last_day_result. UpdateModuleAsync only returns after the in-memory
@@ -467,22 +424,13 @@ namespace Book.Sell.Services
             DayCompleted?.Invoke(snapshot);
         }
 
-        private async UniTask FlushPendingSaleCommitsAsync()
+        private static ISoldBookCommitter CreateLegacySoldBookCommitter(
+            IInventoryService inventory,
+            ISalesShelfStateService shelfState)
         {
-            if (_pendingSaleCommits.Count == 0) return;
-
-            try
-            {
-                await UniTask.WhenAll(_pendingSaleCommits);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"{LogPrefix} failed while waiting for pending inventory sale commits: {ex.Message}");
-            }
-            finally
-            {
-                _pendingSaleCommits.Clear();
-            }
+            return inventory != null || shelfState != null
+                ? new SoldBookCommitter(inventory, shelfState)
+                : new NoOpSoldBookCommitter();
         }
     }
 }

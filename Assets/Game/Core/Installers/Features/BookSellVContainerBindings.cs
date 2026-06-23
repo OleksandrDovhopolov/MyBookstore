@@ -65,6 +65,7 @@ namespace Game.Bootstrap
             
             // Tuning comes from a designer-editable SO when assigned; otherwise code defaults.
             builder.RegisterInstance(salesTuningConfig != null ? salesTuningConfig.BuildTuning() : new SalesTuning());
+            builder.Register<ISoldBookCommitter, SoldBookCommitter>(Lifetime.Singleton);
             builder.Register<ISalesDayController, SalesDayController>(Lifetime.Singleton);
 
             // Customer visualization + world-space thought bubbles (Phase 0 of World HUD).
