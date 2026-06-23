@@ -2,9 +2,7 @@ using Book.Sell.API;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
 using Game.DayCycle.Results.Services;
-using UnityEngine;
 using VContainer;
-using VContainer.Unity;
 
 namespace Game.Bootstrap
 {
@@ -20,7 +18,6 @@ namespace Game.Bootstrap
             builder.Register<IMorningContextResolver, MorningContextResolver>(Lifetime.Singleton);
             builder.Register<IMorningSessionService, MorningSessionService>(Lifetime.Singleton);
 
-            builder.Register<IResultsRewardService, DefaultResultsRewardService>(Lifetime.Singleton);
             builder.Register<IResultsReviewTextProvider, DefaultResultsReviewTextProvider>(Lifetime.Singleton);
             builder.Register<IResultsSummaryBuilder, ResultsSummaryBuilder>(Lifetime.Singleton);
             builder.Register<IResultsSessionService, ResultsSummarySessionService>(Lifetime.Singleton);
