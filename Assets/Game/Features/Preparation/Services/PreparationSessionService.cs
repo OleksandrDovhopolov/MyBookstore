@@ -136,26 +136,27 @@ namespace Game.Preparation.Services
         {
             if (_state == null) return;
 
-            // Перемешиваем текущий объём подготовки. После завершённого дня это важно:
-            // если на полке осталось 6 книг, Random не должен заново добирать до DailyBookSlots
-            // из всего инвентаря. Для пустого выбора оставляем удобный bootstrap: заполнить до лимита.
             var pool = _availableByGenre.Values.SelectMany(b => b).ToList();
             Shuffle(pool);
 
-            var currentSelectionCount = Mathf.Max(0, _state.SelectedBookIds?.Count ?? 0);
-            var targetCount = currentSelectionCount > 0 ? currentSelectionCount : Capacity.DailyBookSlots;
-            var take = Mathf.Min(targetCount, pool.Count);
+            var take = Mathf.Min(Capacity.DailyBookSlots, pool.Count);
             var quantities = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var selectedBookIds = new List<string>(take);
             for (var i = 0; i < take; i++)
             {
-                var genre = pool[i].Genre;
+                var book = pool[i];
+                if (book == null || string.IsNullOrEmpty(book.Id)) continue;
+
+                selectedBookIds.Add(book.Id);
+
+                var genre = book.Genre;
                 if (string.IsNullOrEmpty(genre)) continue;
                 quantities.TryGetValue(genre, out var c);
                 quantities[genre] = c + 1;
             }
 
             _state.GenreQuantities = quantities;
-            _state.SelectedBookIds = ResolveSelectedBookIds(quantities);
+            _state.SelectedBookIds = selectedBookIds;
             await PersistAsync(ct);
             StateChanged?.Invoke(_state);
         }
