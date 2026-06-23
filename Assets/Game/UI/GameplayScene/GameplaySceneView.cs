@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
+using Game.Configs.Models;
 using Game.UI;
 using TMPro;
+using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,9 +18,23 @@ public class GameplaySceneView : WindowView
     [SerializeField] private Button _startDayButton;
 
     [Header("Genre book counts")]
-    [SerializeField] private List<GameplayGenreBookCountItemView> _genreBookCountItems = new();
+    [SerializeField] private UIListPool<GameplayGenreBookCountItemView> _genreBookCountPool = new();
+    [SerializeField] private Sprite _classicGenreSprite;
+    [SerializeField] private Sprite _crimeGenreSprite;
+    [SerializeField] private Sprite _dramaGenreSprite;
+    [SerializeField] private Sprite _factGenreSprite;
+    [SerializeField] private Sprite _kidsGenreSprite;
+    [SerializeField] private Sprite _travelGenreSprite;
+    [SerializeField] private Sprite _fantasyGenreSprite;
+
+    private bool _legacyGenreBookCountItemsHidden;
 
     public Button StartDayButton => _startDayButton;
+
+    private void Awake()
+    {
+        HideLegacyGenreBookCountItemsIfNeeded();
+    }
 
     public void SetSceneButtonsInteractable(bool interactable)
     {
@@ -52,18 +69,96 @@ public class GameplaySceneView : WindowView
     
     public void SetGenreBookCounts(IReadOnlyDictionary<string, int> counts)
     {
-        if (_genreBookCountItems == null) return;
+        if (_genreBookCountPool == null) return;
 
-        for (var i = 0; i < _genreBookCountItems.Count; i++)
+        HideLegacyGenreBookCountItemsIfNeeded();
+        _genreBookCountPool.DisableAll();
+
+        var genres = BuildGenresToDisplay(counts);
+        for (var i = 0; i < genres.Count; i++)
         {
-            var item = _genreBookCountItems[i];
-            if (item == null) continue;
-
-            var count = 0;
-            if (counts != null && !string.IsNullOrEmpty(item.GenreId))
-                counts.TryGetValue(item.GenreId, out count);
-
-            item.SetCount(count);
+            var genre = genres[i];
+            var item = _genreBookCountPool.GetNext();
+            item.Bind(genre, GetGenreSprite(genre), ResolveGenreCount(counts, genre));
         }
+
+        _genreBookCountPool.DisableNonActive();
+    }
+
+    private void HideLegacyGenreBookCountItemsIfNeeded()
+    {
+        if (_legacyGenreBookCountItemsHidden) return;
+
+        var parent = _genreBookCountPool?.Parent;
+        if (parent == null) return;
+
+        for (var i = 0; i < parent.childCount; i++)
+            parent.GetChild(i).gameObject.SetActive(false);
+
+        _legacyGenreBookCountItemsHidden = true;
+    }
+
+    private Sprite GetGenreSprite(BookGenre genre)
+    {
+        switch (genre)
+        {
+            case BookGenre.Classic:
+                return _classicGenreSprite;
+            case BookGenre.Crime:
+                return _crimeGenreSprite;
+            case BookGenre.Drama:
+                return _dramaGenreSprite;
+            case BookGenre.Fact:
+                return _factGenreSprite;
+            case BookGenre.Kids:
+                return _kidsGenreSprite;
+            case BookGenre.Travel:
+                return _travelGenreSprite;
+            case BookGenre.Fantasy:
+                return _fantasyGenreSprite;
+            default:
+                return null;
+        }
+    }
+
+    private static int ResolveGenreCount(IReadOnlyDictionary<string, int> counts, BookGenre genre)
+    {
+        if (counts == null)
+            return 0;
+
+        var genreId = genre.ToConfigValue();
+        if (counts.TryGetValue(genreId, out var count))
+            return count;
+
+        foreach (var pair in counts)
+            if (string.Equals(pair.Key, genreId, StringComparison.OrdinalIgnoreCase))
+                return pair.Value;
+
+        return 0;
+    }
+
+    private static List<BookGenre> BuildGenresToDisplay(IReadOnlyDictionary<string, int> counts)
+    {
+        var result = new List<BookGenre>();
+        var added = new HashSet<BookGenre>();
+
+        if (counts != null)
+        {
+            foreach (var pair in counts)
+            {
+                if (!BookGenreExtensions.TryParseGenre(pair.Key, out var genre) || !added.Add(genre))
+                    continue;
+
+                result.Add(genre);
+            }
+        }
+
+        foreach (BookGenre genre in Enum.GetValues(typeof(BookGenre)))
+        {
+            if (added.Add(genre))
+                result.Add(genre);
+        }
+
+        return result;
     }
 }

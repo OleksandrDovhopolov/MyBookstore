@@ -223,7 +223,7 @@ GameObject:
   - component: {fileID: 1392394797470741580}
   - component: {fileID: 5702062717761012274}
   m_Layer: 5
-  m_Name: ClassicView
+  m_Name: GameplayGenreBookCountItemView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

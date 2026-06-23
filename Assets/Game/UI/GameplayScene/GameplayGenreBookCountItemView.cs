@@ -1,25 +1,20 @@
+using Game.Configs.Models;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public sealed class GameplayGenreBookCountItemView : MonoBehaviour
 {
-    [SerializeField] private string _genreId;
     [SerializeField] private Image _genreImage;
-    [SerializeField] private Sprite _genreSprite;
     [SerializeField] private TMP_Text _countText;
 
-    public string GenreId => _genreId;
+    public BookGenre Genre { get; private set; }
 
-    private void Awake()
+    public void Bind(BookGenre genre, Sprite genreSprite, int count)
     {
-        ApplySprite();
-        SetCount(0);
-    }
-
-    private void OnValidate()
-    {
-        ApplySprite();
+        Genre = genre;
+        SetSprite(genreSprite);
+        SetCount(count);
     }
 
     public void SetCount(int count)
@@ -28,9 +23,9 @@ public sealed class GameplayGenreBookCountItemView : MonoBehaviour
             _countText.text = count.ToString();
     }
 
-    private void ApplySprite()
+    public void SetSprite(Sprite sprite)
     {
         if (_genreImage != null)
-            _genreImage.sprite = _genreSprite;
+            _genreImage.sprite = sprite;
     }
 }
