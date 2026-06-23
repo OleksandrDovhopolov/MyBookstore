@@ -17,45 +17,28 @@ using VContainer;
 
 namespace Book.Sell.UI
 {
-    // This class is used in SalesCheatModule FindAnyObjectByType. when refactor remove need update SalesCheatModule ( using DI ? ) //
-
-    /// <summary>
-    /// Debug screen for the real-time Sales phase (ADR-0003). Pumps the day controller from Update,
-    /// renders the header + feedback log, and drives the end-of-day flow. The active recommendation
-    /// minigame (request + shelf + Confirm/Skip + book detail + result) now lives in
-    /// <see cref="RecommendationMinigameWindow"/>, opened by <see cref="RecommendationMinigamePresenter"/>;
-    /// this screen only pauses the day while that window is open (via
-    /// <see cref="IRecommendationMinigamePresenter.IsWindowOpen"/>). All logic is in
-    /// <see cref="ISalesDayController"/>; the view only renders snapshots and forwards player input.
-    /// </summary>
     public sealed class SalesScreenView : MonoBehaviour
     {
         [Header("End of day")]
         [SerializeField] private Button _closeShopButton;
-
-        [Header("Feedback log (vertical list of prefab entries)")]
-        [SerializeField] private Transform _feedbackLogContainer;
-        [SerializeField] private FeedbackLogEntryView _feedbackLogEntryPrefab;
-        [SerializeField] [Min(1)] private int _maxLogLines = 12;
-
-
-        private ISalesDayController _controller;
-        public ISalesDayController Controller => _controller;
-        private readonly CancellationTokenSource _cts = new();
-        private readonly Queue<FeedbackLogEntryView> _entries = new();
+        
         private bool _dayRunning;
+        private readonly CancellationTokenSource _cts = new();
 
-        private ICurrentDayProvider _dayProvider;
         private IUIManager _uiManager;
-        private IGameFlowService _gameFlow;
-        private IRecommendationMinigamePresenter _minigamePresenter;
-        private ISalesShelfStateService _shelfState;
         private IConfigsService _configs;
-        private IPublisher<GameplaySceneButtonsInteractableChanged> _gameplayButtonsPublisher;
-        private IPublisher<GameplayGenreBookCountsChanged> _genreBookCountsPublisher;
-        private IPublisher<GameplaySalesGoldChanged> _salesGoldPublisher;
+        private IGameFlowService _gameFlow;
+        private ISalesDayController _controller;
+        private ICurrentDayProvider _dayProvider;
+        private ISalesShelfStateService _shelfState;
+        private IRecommendationMinigamePresenter _minigamePresenter;
+        
         private IDisposable _genreBookCountsRequestSubscription;
-
+        
+        private IPublisher<GameplaySalesGoldChanged> _salesGoldPublisher;
+        private IPublisher<GameplayGenreBookCountsChanged> _genreBookCountsPublisher;
+        private IPublisher<GameplaySceneButtonsInteractableChanged> _gameplayButtonsPublisher;
+        
         [Inject]
         public void Construct(
             ISalesDayController controller,
@@ -102,17 +85,14 @@ namespace Book.Sell.UI
 
             // On restart, the player may have already completed today's sales but not yet pressed
             // Next Day. In that case, skip Sales entirely and hand straight to Results.
-            if (_dayProvider != null && _dayProvider.IsCurrentDayCompleted)
+            if (_dayProvider is { IsCurrentDayCompleted: true })
             {
                 ShowResultsWindowAsync().Forget();
                 return;
             }
 
-            _controller.RecommendationResolved += OnRecommendationResolved;
-            _controller.PassiveSaleHappened += OnPassiveSaleHappened;
             _controller.DayReadyToClose += OnDayReadyToClose;
             _controller.DayCompleted += OnDayCompleted;
-            _controller.BookReserved += OnBookReserved;
             _controller.ShelfChanged += OnShelfChanged;
 
             StartDayFlowAsync(_cts.Token).Forget();
@@ -141,18 +121,6 @@ namespace Book.Sell.UI
 
         // ---------- controller events ----------
 
-        private void OnRecommendationResolved(RecommendationResult result)
-        {
-            // The minigame window owns the in-window result UI; here we only append to the feedback log.
-            AppendActiveEntry(result);
-        }
-
-        private void OnBookReserved(Domain.Customer customer, string bookId)
-        {
-            AppendEntry(
-                FeedbackLogEntryView.EntryKind.BookReserved,
-                $"<i>{customer.Id} reserved {bookId}</i>");
-        }
 
         private void OnShelfChanged()
         {
@@ -162,18 +130,6 @@ namespace Book.Sell.UI
         private void PublishGenreBookCounts()
         {
             _genreBookCountsPublisher?.Publish(new GameplayGenreBookCountsChanged(BuildGenreBookCounts()));
-        }
-
-        private void OnPassiveSaleHappened(PassiveSaleEvent evt)
-        {
-            var demand = new List<string>(evt.MatchedGenres.Count + evt.MatchedTags.Count);
-            demand.AddRange(evt.MatchedGenres);
-            demand.AddRange(evt.MatchedTags);
-            var demandSuffix = demand.Count > 0 ? $"  demand: {string.Join(", ", demand)}" : "";
-
-            AppendEntry(
-                FeedbackLogEntryView.EntryKind.PassiveSale,
-                $"<i>passive sale: {evt.BookId}  +{evt.GoldEarned}{demandSuffix}</i>");
         }
 
         private void OnDayReadyToClose()
@@ -212,14 +168,10 @@ namespace Book.Sell.UI
 
             if (_gameFlow != null)
             {
-                // Обычный цикл: вернуться в хаб (выгрузка LocationScene), затем открыть Results в хабе.
-                // Захватываем глобальные ссылки в локали — этот view уничтожится при выгрузке сцены,
-                // поэтому статический хелпер не трогает `this`/_cts.
                 ReturnToHubAndShowResultsAsync(_gameFlow, _uiManager).Forget();
             }
             else
             {
-                // Fallback для изолированных debug-сцен без GameFlow: Results прямо здесь.
                 ShowResultsWindowAsync().Forget();
             }
         }
@@ -245,76 +197,7 @@ namespace Book.Sell.UI
             if (window != null)
                 gameObject.SetActive(false);
         }
-
-
-        // ---------- feedback log ----------
-
-        private void AppendActiveEntry(RecommendationResult result)
-        {
-            FeedbackLogEntryView.EntryKind kind;
-            string text;
-
-            switch (result.Tier)
-            {
-                case RecommendationTier.Excellent:
-                    kind = FeedbackLogEntryView.EntryKind.ActiveExcellent;
-                    text = BuildResultLine(result);
-                    break;
-                case RecommendationTier.Normal:
-                    kind = FeedbackLogEntryView.EntryKind.ActiveNormal;
-                    text = BuildResultLine(result);
-                    break;
-                case RecommendationTier.Failed:
-                    kind = FeedbackLogEntryView.EntryKind.ActiveFailed;
-                    text = BuildResultLine(result);
-                    break;
-                case RecommendationTier.Skipped:
-                default:
-                    kind = FeedbackLogEntryView.EntryKind.ActiveSkipped;
-                    text = "<i>— nothing offered</i>";
-                    break;
-            }
-
-            AppendEntry(kind, text);
-        }
-
-        private void AppendEntry(FeedbackLogEntryView.EntryKind kind, string text)
-        {
-            if (_feedbackLogEntryPrefab == null || _feedbackLogContainer == null) return;
-
-            var entry = Instantiate(_feedbackLogEntryPrefab, _feedbackLogContainer);
-            entry.Bind(kind, text);
-            _entries.Enqueue(entry);
-
-            while (_entries.Count > _maxLogLines)
-            {
-                var oldest = _entries.Dequeue();
-                if (oldest != null) Destroy(oldest.gameObject);
-            }
-        }
         
-        private string BuildResultLine(RecommendationResult result)
-        {
-            var tierLabel = result.Tier switch
-            {
-                RecommendationTier.Excellent => "<b>Excellent</b>",
-                RecommendationTier.Normal => "<b>Normal</b>",
-                RecommendationTier.Failed => "<b>Failed</b>",
-                _ => result.Tier.ToString()
-            };
-
-            var matched = new List<string>(5);
-            if (result.Reason.MatchedGenres.Count > 0) matched.Add($"genre({string.Join(",", result.Reason.MatchedGenres)})");
-            if (result.Reason.MatchedTags.Count > 0) matched.Add($"tags({string.Join(",", result.Reason.MatchedTags)})");
-            if (result.Reason.MatchedMood.Count > 0) matched.Add($"mood({string.Join(",", result.Reason.MatchedMood)})");
-            if (result.Reason.PriceFits) matched.Add("price");
-            if (result.Reason.LocationBonus) matched.Add("location");
-
-            var why = matched.Count > 0 ? $"  matched: {string.Join(", ", matched)}" : "";
-            var gold = result.GoldEarned > 0 ? $"  +{result.GoldEarned}" : "";
-            return $"{tierLabel}: {result.BookId}{why}{gold}";
-        }
-
         private void RefreshHeader()
         {
             var result = _controller.AccumulatedResult;
@@ -384,11 +267,8 @@ namespace Book.Sell.UI
 
             if (_controller != null)
             {
-                _controller.RecommendationResolved -= OnRecommendationResolved;
-                _controller.PassiveSaleHappened -= OnPassiveSaleHappened;
                 _controller.DayReadyToClose -= OnDayReadyToClose;
                 _controller.DayCompleted -= OnDayCompleted;
-                _controller.BookReserved -= OnBookReserved;
                 _controller.ShelfChanged -= OnShelfChanged;
             }
 

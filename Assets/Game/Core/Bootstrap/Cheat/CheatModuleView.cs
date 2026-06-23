@@ -115,8 +115,7 @@ namespace Game.Cheat
             {
                 new DefaultCheatModule(_uiManager),
                 new DecorationCheatModule(_uiManager, _inventory, _configs, destroyCt),
-                new ResourcesCheatModule(_resources, destroyCt),
-                new SalesCheatModule(),
+                new ResourcesCheatModule(_resources, destroyCt)
             };
 
             return cheatsModules;
