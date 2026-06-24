@@ -19,6 +19,10 @@ namespace Game.Bootstrap
         [Tooltip("Scene names for the hub ↔ location loop (see docs/GameFlowLoop.md).")]
         [SerializeField] private GameFlowSettings _gameFlowSettings;
 
+        [Header("UI Sprites")]
+        [Tooltip("Addressable addresses of newspaper/rewards UI sprites, preloaded once at bootstrap.")]
+        [SerializeField] private Game.Newspaper.UI.UiSpriteCatalog _uiSpriteCatalog;
+
 #if UNITY_EDITOR
         [Header("Debug Start (Editor only)")]
         [Tooltip("Master switch. When off, the debug flags below are ignored.")]
@@ -50,6 +54,7 @@ namespace Game.Bootstrap
             builder.RegisterRewards();
             builder.RegisterShop();
             builder.RegisterNewspaper();
+            builder.RegisterUiSprites(_uiSpriteCatalog);
             builder.RegisterProgression();
             builder.RegisterFtue();
             builder.RegisterBookSellSharedState(); // ISalesShelfStateService — общий для хаба и локации

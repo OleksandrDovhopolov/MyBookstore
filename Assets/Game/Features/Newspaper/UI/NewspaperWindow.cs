@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Shop.API;
@@ -14,20 +15,25 @@ namespace Game.Newspaper.UI
     [Window("NewspaperWindow", WindowType.Page)]
     public sealed class NewspaperWindow : WindowController<NewspaperWindowView>
     {
+        private const string BookOfferSpriteId = "book_box";
+
         private IShopService _shop;
         private IShopConfirmationPolicy _confirmPolicy;
         private INewspaperOfferSource _offerSource;
+        private IUiSpriteProvider _uiSprites;
         private CancellationTokenSource _cts;
 
         [Inject]
         public void InjectServices(
             IShopService shop,
             IShopConfirmationPolicy confirmPolicy,
-            INewspaperOfferSource offerSource)
+            INewspaperOfferSource offerSource,
+            IUiSpriteProvider uiSprites)
         {
             _shop = shop;
             _confirmPolicy = confirmPolicy;
             _offerSource = offerSource;
+            _uiSprites = uiSprites;
         }
 
         protected override void OnInit()
@@ -38,7 +44,7 @@ namespace Game.Newspaper.UI
         protected override void OnShowStart()
         {
             RefreshOffers();
-            LoadSpritesAndRefreshAsync(_cts.Token).Forget();
+            LoadOfferIconsAsync(_cts.Token).Forget();
         }
 
         protected override void OnDispose()
@@ -47,7 +53,6 @@ namespace Game.Newspaper.UI
             _cts?.Dispose();
             _cts = null;
 
-            View?.ReleaseLoadedSprites();
             View?.BookCardsPool?.DisableAll();
             View?.DecorCardsPool?.DisableAll();
         }
@@ -78,50 +83,43 @@ namespace Game.Newspaper.UI
 
                 var card = pool.GetNext();
                 var capturedLotId = offer.LotId;
-                var icon = isDecorOffer
-                    ? View?.GetDecorOfferIcon(offer.LotId)
-                    : View?.GetBookOfferIcon();
-                card.Bind(offer, () => TryBuyAsync(capturedLotId).Forget(), icon);
+                card.Bind(offer, () => TryBuyAsync(capturedLotId).Forget());
             }
         }
 
-        private async UniTaskVoid LoadSpritesAndRefreshAsync(CancellationToken ct)
+        private async UniTaskVoid LoadOfferIconsAsync(CancellationToken ct)
         {
-            if (View == null) return;
+            if (View == null || _uiSprites == null) return;
 
             try
             {
-                await View.PreloadSpritesAsync(ct);
+                await LoadIconsForPoolAsync(View.BookCardsPool, isDecorOffer: false, ct);
+                await LoadIconsForPoolAsync(View.DecorCardsPool, isDecorOffer: true, ct);
             }
             catch (OperationCanceledException)
             {
-                return;
+                // window closed mid-load — ok
             }
-
-            if (ct.IsCancellationRequested || View == null) return;
-            UpdateVisibleOfferIcons();
         }
 
-        private void UpdateVisibleOfferIcons()
-        {
-            if (View == null) return;
-
-            UpdateVisibleOfferIcons(View.BookCardsPool, isDecorOffer: false);
-            UpdateVisibleOfferIcons(View.DecorCardsPool, isDecorOffer: true);
-        }
-
-        private void UpdateVisibleOfferIcons(UIListPool<NewspaperOfferCardView> pool, bool isDecorOffer)
+        private async UniTask LoadIconsForPoolAsync(
+            UIListPool<NewspaperOfferCardView> pool,
+            bool isDecorOffer,
+            CancellationToken ct)
         {
             if (pool == null) return;
 
-            foreach (var card in pool.ActiveElements())
+            // Snapshot: ActiveElements() is a lazy iterator over the live pool; awaiting inside a
+            // foreach over it would break if the pool changes (e.g. RefreshOffers after a purchase).
+            var cards = pool.ActiveElements().ToList();
+            foreach (var card in cards)
             {
                 if (card == null) continue;
 
-                var icon = isDecorOffer
-                    ? View?.GetDecorOfferIcon(card.LotId)
-                    : View?.GetBookOfferIcon();
-                card.SetIcon(icon);
+                var id = isDecorOffer ? card.LotId : BookOfferSpriteId;
+                var sprite = await _uiSprites.GetSpriteAsync(id, ct);
+                if (ct.IsCancellationRequested) return;
+                if (card != null) card.SetIcon(sprite);
             }
         }
 
@@ -156,6 +154,7 @@ namespace Game.Newspaper.UI
             }
 
             RefreshOffers();
+            LoadOfferIconsAsync(_cts.Token).Forget();
         }
 
         private async UniTask<bool> ShowConfirmAsync(ShopLot lot)

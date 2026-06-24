@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _uiCanvasRootPrefab: {fileID: 134780185855202316, guid: 3f215f261b2be9042b7901f9c2ad2870, type: 3}
   _gameFlowSettings: {fileID: 11400000, guid: 32fcefb14dcd8074caba55bdcb1ae0d3, type: 2}
+  _uiSpriteCatalog: {fileID: 11400000, guid: 8c0cfc98d85764fdb892f085b67ca784, type: 2}
   _useDebugFeatures: 0
   _skipFullLoading: 0

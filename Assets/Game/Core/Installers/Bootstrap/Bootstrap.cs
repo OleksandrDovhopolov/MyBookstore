@@ -8,6 +8,7 @@ using Game.Configs.Remote;
 using Game.Ftue.Services;
 using Game.Inventory.API;
 using Game.Inventory.Services;
+using Game.Newspaper.UI;
 using Game.Progression.API;
 using Game.Resources.API;
 using Infrastructure;
@@ -54,6 +55,7 @@ namespace Game.Bootstrap
         private ISaveService _save;
         private ISceneTransitionService _sceneTransition;
         private IFtueBootstrapper _ftue;
+        private IUiSpriteProvider _uiSprites;
 
         // Injected to force construction (and therefore ISaveHook self-registration) before
         // SaveDataLoadOperation runs LoadAsync. We never invoke methods on these fields directly.
@@ -79,6 +81,7 @@ namespace Game.Bootstrap
             ISaveService save,
             ISceneTransitionService sceneTransition,
             IFtueBootstrapper ftue,
+            IUiSpriteProvider uiSprites,
             IInventoryService inventory,
             IResourcesService resources,
             IProgressionService progression)
@@ -90,6 +93,7 @@ namespace Game.Bootstrap
             _save = save;
             _sceneTransition = sceneTransition;
             _ftue = ftue;
+            _uiSprites = uiSprites;
             _inventory = inventory;
             _resources = resources;
             _progression = progression;
@@ -229,6 +233,7 @@ namespace Game.Bootstrap
                 new LoadingGroup("phase_finalization_seq", LoadingGroupExecutionMode.Sequential, new ILoadingOperation[]
                 {
                     new WarmupOperation(),
+                    new UiSpritePreloadOperation(_uiSprites),
                     new SceneTransitionOperation(_sceneTransition, _mainSceneName)
                 })
             });

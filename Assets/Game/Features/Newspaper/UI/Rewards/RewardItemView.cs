@@ -22,6 +22,12 @@ namespace Game.Newspaper.UI
                 rewardSpecResource.Amount);
         }
         
+        public void SetIcon(Sprite sprite)
+        {
+            if (_rewardImage != null)
+                _rewardImage.sprite = sprite;
+        }
+
         public void SetReward(Sprite sprite, string displayName, int amount)
         {
             if (_rewardImage != null)
