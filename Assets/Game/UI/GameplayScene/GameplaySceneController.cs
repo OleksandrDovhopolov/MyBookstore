@@ -181,7 +181,9 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
                 return;
             }
             
-            var window = await UIManager.ShowAsync<PreparationWindow>(ct: View.destroyCancellationToken);
+            var window = await UIManager.ShowAsync<PreparationWindow>(
+                new PreparationWindowArgs("loc_downtown", "Downtown"),
+                View.destroyCancellationToken);
             if (window == null)
             {
                 View.SetStartButtonActive(true);

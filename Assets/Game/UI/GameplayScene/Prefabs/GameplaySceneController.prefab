@@ -792,13 +792,6 @@ MonoBehaviour:
   _genreBookCountPool:
     prefab: {fileID: 7371654899001429017, guid: eb886298356464341818e1dcf9116f23, type: 3}
     parent: {fileID: 365764072721181027}
-  _classicGenreSprite: {fileID: 6188995845722658638, guid: 3a0282d134a0ab34ca672b6747044f6d, type: 3}
-  _crimeGenreSprite: {fileID: -3938546511409372009, guid: ce5c12c00e88a154ab25f58b569dda27, type: 3}
-  _dramaGenreSprite: {fileID: 930916770392014569, guid: 12ba210409adeef46833afd178ec2e81, type: 3}
-  _factGenreSprite: {fileID: 8615600270506131005, guid: 206f074573da1684b8291e0cdb337cce, type: 3}
-  _kidsGenreSprite: {fileID: 7268009926508590019, guid: 913dab9a7930aaf4db302aa573d7b9f9, type: 3}
-  _travelGenreSprite: {fileID: 7698902239456329044, guid: baa6909a30a15ea4daeae7720b21a8ce, type: 3}
-  _fantasyGenreSprite: {fileID: 4751973072151165927, guid: 0798a10248885d34487c4faf78a650a9, type: 3}
 --- !u!114 &8806919550172702141
 MonoBehaviour:
   m_ObjectHideFlags: 0

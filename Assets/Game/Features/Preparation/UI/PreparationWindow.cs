@@ -12,11 +12,6 @@ using VContainer;
 
 namespace Game.Preparation.UI
 {
-    /// <summary>
-    /// Окно Подготовки. Гибридная модель: игрок задаёт КВОТЫ по жанрам (−/+), сервис разворачивает их
-    /// в конкретные книги. Открывается через UIManager.ShowAsync (см. GameplaySceneController.StartGameAsync).
-    /// Confirm → закрыть окно → выезд в локацию (GameFlow). См. docs/GameFlowLoop.md.
-    /// </summary>
     [Window("PreparationWindow", WindowType.Page)]
     public sealed class PreparationWindow : WindowController<PreparationWindowView>
     {
@@ -26,6 +21,7 @@ namespace Game.Preparation.UI
 
         private CancellationTokenSource _cts;
         private readonly Dictionary<string, PreparationGenreRowView> _rows = new();
+        private IReadOnlyList<GenreSelectionItem> _items;
         private bool _randomRunning;
         private bool _confirmRunning;
         private bool _subscribed;
@@ -120,6 +116,7 @@ namespace Game.Preparation.UI
         private void Render(IReadOnlyList<GenreSelectionItem> items)
         {
             ClearRows();
+            _items = items;
 
             var container = View.GenreListContainer;
             var prefab = View.GenreRowPrefab;
@@ -161,9 +158,37 @@ namespace Game.Preparation.UI
                 pair.Value.SetState(qty, canAddMore);
             }
 
+            UpdateShelfPreview(state);
             UpdateCounter();
             UpdateValidation();
             PublishGenreCounts(state);
+        }
+
+        private void UpdateShelfPreview(PreparationSessionState state)
+        {
+            if (_items == null) return;
+
+            // Keep the ordered items in sync with the authoritative quotas, then render the bar from them.
+            for (var i = 0; i < _items.Count; i++)
+            {
+                var item = _items[i];
+                if (item == null) continue;
+                state.GenreQuantities.TryGetValue(item.Genre, out var qty);
+                item.Quantity = qty;
+            }
+
+            View.RenderShelfPreview(_items, OnShelfSegmentClicked);
+        }
+
+        private void OnShelfSegmentClicked(string genre)
+        {
+            var state = _session?.CurrentState;
+            if (state == null) return;
+
+            state.GenreQuantities.TryGetValue(genre, out var qty);
+            if (qty <= 0) return;
+
+            OnSetGenreQuantity(genre, qty - 1);
         }
 
         // Прокидываем выбранные кол-ва по жанрам в HUD через тот же сигнал, что использует Sales.
@@ -181,11 +206,14 @@ namespace Game.Preparation.UI
 
             View.SetSlotCount($"{_session.TotalSelected}/{_session.Capacity.DailyBookSlots}");
 
-            if (_session.CurrentState != null)
-            {
-                View.SetLocation("To " + _session.CurrentState.LocationId);
-            }
+            // Prefer the human-readable name passed via args; fall back to the session's location id.
+            var locationText = (Arguments as PreparationWindowArgs)?.DisplayName
+                               ?? _session.CurrentState?.LocationId;
+            if (!string.IsNullOrEmpty(locationText))
+                View.SetLocation(locationText);
         }
+
+        protected override void UpdateWindow() => UpdateCounter();
 
         private void UpdateValidation()
         {

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9df5f7ac54550c342a107b8d11202890, type: 3}
+  m_Name: GenrePalette
+  m_EditorClassIdentifier: 
+  _entries:
+  - Genre: 0
+    Color: {r: 0.29, g: 0.53, b: 0.79, a: 1}
+  - Genre: 1
+    Color: {r: 0.65, g: 0.21, b: 0.27, a: 1}
+  - Genre: 2
+    Color: {r: 0.9, g: 0.45, b: 0.3, a: 1}
+  - Genre: 3
+    Color: {r: 0.24, g: 0.64, b: 0.67, a: 1}
+  - Genre: 4
+    Color: {r: 0.55, g: 0.4, b: 0.71, a: 1}
+  - Genre: 5
+    Color: {r: 0.46, g: 0.66, b: 0.35, a: 1}
+  - Genre: 6
+    Color: {r: 0.91, g: 0.72, b: 0.3, a: 1}
+  _fallback: {r: 0.5, g: 0.5, b: 0.5, a: 1}

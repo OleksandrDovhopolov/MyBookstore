@@ -13,8 +13,6 @@ namespace Game.Preparation.UI
     public sealed class PreparationGenreRowView : MonoBehaviour
     {
         [SerializeField] private TMP_Text _genreLabel;
-        [Tooltip("Опционально: совмещённый счётчик «на полке/всего» ({quantity}/{available}).")]
-        [SerializeField] private TMP_Text _countLabel;
         [Tooltip("Сколько книг этого жанра осталось в инвентаре (Available − на полке).")]
         [SerializeField] private TMP_Text _inventoryCountLabel;
         [Tooltip("Сколько книг этого жанра выставлено на полку.")]
@@ -60,9 +58,8 @@ namespace Game.Preparation.UI
             // В инвентаре остаётся всё непроданное минус то, что уже на полке.
             var inInventory = Mathf.Max(0, _available - _quantity);
 
-            if (_countLabel != null) _countLabel.text = $"{_quantity}/{_available}";
             if (_inventoryCountLabel != null) _inventoryCountLabel.text = "Inventory - " + inInventory;
-            if (_shelfCountLabel != null) _shelfCountLabel.text = "Shelf - " + _quantity;
+            if (_shelfCountLabel != null) _shelfCountLabel.text = "" + _quantity;
             if (_minusButton != null) _minusButton.interactable = _quantity > 0;
             if (_plusButton != null) _plusButton.interactable = _quantity < _available && _canAddMore;
         }

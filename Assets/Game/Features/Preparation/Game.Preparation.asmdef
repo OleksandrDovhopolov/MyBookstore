@@ -14,7 +14,8 @@
         "MessagePipe",
         "DayCycle",
         "Game.Inventory.API",
-        "Game.Decor.API"
+        "Game.Decor.API",
+        "Infrastructure"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
