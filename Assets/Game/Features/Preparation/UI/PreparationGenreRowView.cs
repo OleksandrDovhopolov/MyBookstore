@@ -1,4 +1,5 @@
 using System;
+using Game.Configs.Models;
 using Game.Preparation.Domain;
 using TMPro;
 using UnityEngine;
@@ -19,6 +20,9 @@ namespace Game.Preparation.UI
         [SerializeField] private TMP_Text _shelfCountLabel;
         [SerializeField] private Button _minusButton;
         [SerializeField] private Button _plusButton;
+        [Tooltip("Источник фоновых спрайтов кнопок −/+ по жанру.")]
+        [SerializeField] private GenrePalette _palette;
+        [SerializeField] private Image _iconImage;
 
         private string _genre;
         private int _available;
@@ -42,7 +46,27 @@ namespace Game.Preparation.UI
             _onSetQuantity = onSetQuantity;
 
             if (_genreLabel != null) _genreLabel.text = item.Genre;
+            ApplyButtonBackground();
             Refresh();
+        }
+
+        // Уникальный фон кнопок −/+ под жанр (из палитры). Общая для жанра подложка на обе кнопки.
+        private void ApplyButtonBackground()
+        {
+            if (_palette == null || !BookGenreExtensions.TryParseGenre(_genre, out var genre))
+                return;
+
+            var background = _palette.GetButtonBackground(genre);
+            if (background == null) return;
+
+            if (_minusButton != null && _minusButton.image != null) _minusButton.image.sprite = background;
+            if (_plusButton != null && _plusButton.image != null) _plusButton.image.sprite = background;
+        }
+
+        /// <summary>Иконка жанра. Спрайт грузит контроллер по id жанра (Addressables) и передаёт сюда.</summary>
+        public void SetIcon(Sprite sprite)
+        {
+            if (_iconImage != null) _iconImage.sprite = sprite;
         }
 
         /// <param name="canAddMore">false, когда общий лимит полки уже достигнут.</param>
@@ -58,7 +82,7 @@ namespace Game.Preparation.UI
             // В инвентаре остаётся всё непроданное минус то, что уже на полке.
             var inInventory = Mathf.Max(0, _available - _quantity);
 
-            if (_inventoryCountLabel != null) _inventoryCountLabel.text = "Inventory - " + inInventory;
+            if (_inventoryCountLabel != null) _inventoryCountLabel.text = "in storage : " + inInventory;
             if (_shelfCountLabel != null) _shelfCountLabel.text = "" + _quantity;
             if (_minusButton != null) _minusButton.interactable = _quantity > 0;
             if (_plusButton != null) _plusButton.interactable = _quantity < _available && _canAddMore;

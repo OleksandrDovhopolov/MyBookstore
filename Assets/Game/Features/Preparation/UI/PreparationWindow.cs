@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.Configs.Models;
+using Game.Newspaper.UI;
 using Game.Preparation.Domain;
 using Game.Preparation.Services;
 using Game.UI;
@@ -17,6 +19,7 @@ namespace Game.Preparation.UI
     {
         private IPreparationSessionService _session;
         private IGameFlowService _gameFlow;
+        private IUiSpriteProvider _uiSprites;
         private IPublisher<GameplayGenreBookCountsChanged> _genreCountsPublisher;
 
         private CancellationTokenSource _cts;
@@ -32,10 +35,12 @@ namespace Game.Preparation.UI
         public void InjectServices(
             IPreparationSessionService session,
             IGameFlowService gameFlow,
+            IUiSpriteProvider uiSprites,
             IPublisher<GameplayGenreBookCountsChanged> genreCountsPublisher = null)
         {
             _session = session;
             _gameFlow = gameFlow;
+            _uiSprites = uiSprites;
             _genreCountsPublisher = genreCountsPublisher;
         }
 
@@ -111,6 +116,30 @@ namespace Game.Preparation.UI
             Render(items);
             OnStateChanged(_session.CurrentState);
             SetRandomBooksButtonInteractable(_rows.Count > 0);
+            LoadGenreIconsAsync(ct).Forget();
+        }
+
+        // Грузим иконки жанров по id (= имя жанра) через общий кэширующий провайдер и раздаём строкам.
+        private async UniTaskVoid LoadGenreIconsAsync(CancellationToken ct)
+        {
+            if (_uiSprites == null) return;
+
+            // Снимок: _rows может быть пересоздан/очищен (ClearRows) пока мы ждём загрузку.
+            var rows = _rows.Values.ToList();
+            try
+            {
+                foreach (var row in rows)
+                {
+                    if (row == null) continue;
+
+                    var sprite = await _uiSprites.GetSpriteAsync(row.Genre, ct);
+                    if (ct.IsCancellationRequested) return;
+                    if (row != null) row.SetIcon(sprite);
+                }
+            }
+            catch (System.OperationCanceledException)
+            {
+            }
         }
 
         private void Render(IReadOnlyList<GenreSelectionItem> items)

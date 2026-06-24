@@ -20,26 +20,42 @@ namespace Game.Preparation.UI
         [Tooltip("Optional placeholder shown when nothing is picked (e.g. \"No books selected\").")]
         [SerializeField] private GameObject _emptyState;
 
+        // Reused between renders so sorting the picked genres allocates nothing per update.
+        private readonly List<GenreSelectionItem> _ordered = new();
+
+        // Largest picked count first (left → right). Ties broken by genre id for a stable order.
+        private static readonly Comparison<GenreSelectionItem> ByPickedDescending = (a, b) =>
+        {
+            var byQuantity = b.Quantity.CompareTo(a.Quantity);
+            return byQuantity != 0 ? byQuantity : string.CompareOrdinal(a.Genre, b.Genre);
+        };
+
         public void Render(IReadOnlyList<GenreSelectionItem> items, Action<string> onSegmentClicked)
         {
             _segmentPool.DisableAll();
 
-            var anyPicked = false;
+            _ordered.Clear();
             if (items != null)
             {
                 for (var i = 0; i < items.Count; i++)
                 {
                     var item = items[i];
-                    if (item == null || item.Quantity <= 0) continue;
-
-                    anyPicked = true;
-                    _segmentPool.GetNext().Bind(item.Genre, ResolveColor(item.Genre), item.Quantity, onSegmentClicked);
+                    if (item != null && item.Quantity > 0)
+                        _ordered.Add(item);
                 }
+            }
+
+            _ordered.Sort(ByPickedDescending);
+
+            for (var i = 0; i < _ordered.Count; i++)
+            {
+                var item = _ordered[i];
+                _segmentPool.GetNext().Bind(item.Genre, ResolveColor(item.Genre), item.Quantity, onSegmentClicked);
             }
 
             _segmentPool.DisableNonActive();
 
-            if (_emptyState != null) _emptyState.SetActive(!anyPicked);
+            if (_emptyState != null) _emptyState.SetActive(_ordered.Count == 0);
         }
 
         private Color ResolveColor(string genreId)

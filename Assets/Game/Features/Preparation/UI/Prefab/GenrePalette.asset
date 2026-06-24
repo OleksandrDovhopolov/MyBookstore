@@ -15,16 +15,23 @@ MonoBehaviour:
   _entries:
   - Genre: 0
     Color: {r: 0.29, g: 0.53, b: 0.79, a: 1}
+    ButtonBackground: {fileID: 21300000, guid: 2bc701b63b63f40e0893a9fabeaa0a78, type: 3}
   - Genre: 1
     Color: {r: 0.65, g: 0.21, b: 0.27, a: 1}
+    ButtonBackground: {fileID: 21300000, guid: 681db73f19fb24efe843aad713eccb43, type: 3}
   - Genre: 2
     Color: {r: 0.9, g: 0.45, b: 0.3, a: 1}
+    ButtonBackground: {fileID: 21300000, guid: 23d2f9d15f15a43c5bf2c57de1a27879, type: 3}
   - Genre: 3
     Color: {r: 0.24, g: 0.64, b: 0.67, a: 1}
+    ButtonBackground: {fileID: 21300000, guid: 362cdbc283a1c43a7abec33080b04398, type: 3}
   - Genre: 4
     Color: {r: 0.55, g: 0.4, b: 0.71, a: 1}
+    ButtonBackground: {fileID: 21300000, guid: 86ad28a37b0134b33b88df67b42b7fe0, type: 3}
   - Genre: 5
     Color: {r: 0.46, g: 0.66, b: 0.35, a: 1}
+    ButtonBackground: {fileID: 21300000, guid: cb37917483ee24fea8fab306393441e5, type: 3}
   - Genre: 6
     Color: {r: 0.91, g: 0.72, b: 0.3, a: 1}
+    ButtonBackground: {fileID: 21300000, guid: 804461bef59b141dba258fc997c8ca15, type: 3}
   _fallback: {r: 0.5, g: 0.5, b: 0.5, a: 1}
