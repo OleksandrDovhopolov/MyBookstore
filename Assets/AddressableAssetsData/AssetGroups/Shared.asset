@@ -16,12 +16,12 @@ MonoBehaviour:
   m_GUID: 9d448088a7b284a8aa48875cd780de0d
   m_SerializeEntries:
   - m_GUID: 050ac53f83d914b418d4578bbe177569
-    m_Address: newspaper_decor_coffee_pot
+    m_Address: coffee_pot
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 06756ce84d8ad4037baebd78c80b61d5
-    m_Address: newspaper_decor_vintage_globe
+    m_Address: vintage_globe
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

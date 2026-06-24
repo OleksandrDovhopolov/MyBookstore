@@ -557,9 +557,6 @@ MonoBehaviour:
   _decorCardsPool:
     prefab: {fileID: 9206211088325021329, guid: 5bd190fe4cb0332429c94c7c962a43af, type: 3}
     parent: {fileID: 451753660479194207}
-  _bookOfferSpriteAddress: BooksBox
-  _vintageGlobeSpriteAddress: VintageGlobe
-  _coffeePotSpriteAddress: CoffeeMachine
 --- !u!1 &8046791362518292104
 GameObject:
   m_ObjectHideFlags: 0

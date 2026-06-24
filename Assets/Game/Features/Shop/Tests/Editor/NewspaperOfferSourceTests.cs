@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Configs;
+using Game.Configs.Models;
 using Game.Newspaper.UI;
 using Game.Shop.API;
 using NUnit.Framework;
@@ -41,22 +44,31 @@ namespace Game.Shop.Tests.Editor
                     "Paid decor"),
             };
             var shop = new FakeShopService(lots, unavailableLotId: "decor_sold");
-            var source = new ShopBackedNewspaperOfferSource(shop);
+            var configs = new FakeConfigsService(new Dictionary<string, string>
+            {
+                ["decor_free"] = "vintage_globe",
+                ["decor_sold"] = "coffee_pot",
+            });
+            var source = new ShopBackedNewspaperOfferSource(shop, configs);
 
             var books = source.GetBookOffers();
             var decor = source.GetDecorOffers();
 
             Assert.AreEqual(1, books.Count);
             Assert.AreEqual("book_a", books[0].LotId);
+            Assert.AreEqual("book_box", books[0].IconId);
             Assert.AreEqual("Book A", books[0].DisplayName);
             Assert.AreEqual("30", books[0].PriceText);
             Assert.AreEqual("NEW!", books[0].StateText);
             Assert.IsTrue(books[0].IsAvailable);
 
             Assert.AreEqual(2, decor.Count);
+            // Icon id comes from decors.json (the lot's decor reward item id), not the shop lot id.
+            Assert.AreEqual("vintage_globe", decor[0].IconId);
             Assert.AreEqual("FREE", decor[0].PriceText);
             Assert.AreEqual("NEW!", decor[0].StateText);
             Assert.IsTrue(decor[0].IsAvailable);
+            Assert.AreEqual("coffee_pot", decor[1].IconId);
             Assert.AreEqual("50", decor[1].PriceText);
             Assert.AreEqual("SOLD", decor[1].StateText);
             Assert.IsFalse(decor[1].IsAvailable);
@@ -108,6 +120,62 @@ namespace Game.Shop.Tests.Editor
                 UniTask.FromResult(ShopPurchaseResult.Fail(ShopPurchaseStatus.InternalError));
 
             public event Action<ShopPurchaseEvent> LotPurchased;
+        }
+
+        // Returns a ShopConfig (keyed by lot id) whose single decor reward item carries the decors.json id.
+        private sealed class FakeConfigsService : IConfigsService
+        {
+            private readonly Dictionary<string, ShopConfig> _shopConfigs;
+
+            public FakeConfigsService(IReadOnlyDictionary<string, string> decorIdByLotId)
+            {
+                _shopConfigs = decorIdByLotId.ToDictionary(
+                    pair => pair.Key,
+                    pair => new ShopConfig
+                    {
+                        Id = pair.Key,
+                        RewardItems = new[]
+                        {
+                            new RewardItemData
+                            {
+                                Id = pair.Value,
+                                Category = "decor",
+                                Amount = 1,
+                                Kind = Rewards.API.RewardKind.InventoryItem,
+                            },
+                        },
+                    },
+                    StringComparer.Ordinal);
+            }
+
+            public UniTask WarmupAsync(CancellationToken ct) => UniTask.CompletedTask;
+
+            public IReadOnlyList<T> GetAll<T>() where T : class, IConfig => Array.Empty<T>();
+
+            public T Get<T>(string id) where T : class, IConfig
+            {
+                TryGet<T>(id, out var config);
+                return config;
+            }
+
+            public bool TryGet<T>(string id, out T config) where T : class, IConfig
+            {
+                if (typeof(T) == typeof(ShopConfig)
+                    && !string.IsNullOrEmpty(id)
+                    && _shopConfigs.TryGetValue(id, out var cfg))
+                {
+                    config = cfg as T;
+                    return true;
+                }
+
+                config = null;
+                return false;
+            }
+
+            public UniTask<T> GetAsync<T>(string id) where T : class, IConfig =>
+                UniTask.FromResult(Get<T>(id));
+
+            public bool IsExists<T>(string id) where T : class, IConfig => TryGet<T>(id, out _);
         }
     }
 }

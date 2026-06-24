@@ -52,7 +52,7 @@ namespace Game.Newspaper.UI
             _cts?.Dispose();
             _cts = new CancellationTokenSource();
 
-            var rewards = RewardsWindowRewardBuilder.Build(args.Granted, _configs, _ => null);
+            var rewards = RewardsWindowRewardBuilder.Build(args.Granted, _configs);
             View.SetReward(rewards);
             LoadRewardIconsAsync(_cts.Token).Forget();
         }

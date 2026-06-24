@@ -259,14 +259,6 @@ MonoBehaviour:
   _cardGroupsPool:
     prefab: {fileID: 7159866281013524648, guid: 9cdb9bb1b72bc1749b8238c9797bf2d8, type: 3}
     parent: {fileID: 7674609569218369206}
-  _classicSprite: {fileID: 6188995845722658638, guid: 3a0282d134a0ab34ca672b6747044f6d, type: 3}
-  _crimeSprite: {fileID: -3938546511409372009, guid: ce5c12c00e88a154ab25f58b569dda27, type: 3}
-  _dramaSprite: {fileID: 930916770392014569, guid: 12ba210409adeef46833afd178ec2e81, type: 3}
-  _factSprite: {fileID: 8615600270506131005, guid: 206f074573da1684b8291e0cdb337cce, type: 3}
-  _fantasySprite: {fileID: 4751973072151165927, guid: 0798a10248885d34487c4faf78a650a9, type: 3}
-  _kidsSprite: {fileID: 7268009926508590019, guid: 913dab9a7930aaf4db302aa573d7b9f9, type: 3}
-  _travelSprite: {fileID: 7698902239456329044, guid: baa6909a30a15ea4daeae7720b21a8ce, type: 3}
-  _nonBookRewardSprite: {fileID: 21300000, guid: 68a3cdecef36744d8a9f77eca93e595d, type: 3}
 --- !u!1 &5785641560693006099
 GameObject:
   m_ObjectHideFlags: 0

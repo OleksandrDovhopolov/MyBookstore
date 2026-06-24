@@ -12,6 +12,7 @@ namespace Game.Configs.Models
     {
         public string Id { get; set; }
         public string DisplayName { get; set; }
+        //TODO now everywhere used decor id for sprite loading via addressabbles . should delete this ? 
         public string IconAddress { get; set; }
 
         // Placement constraints

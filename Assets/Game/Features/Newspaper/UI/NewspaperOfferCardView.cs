@@ -20,6 +20,7 @@ namespace Game.Newspaper.UI
         private Action _onBuyClicked;
 
         public string LotId { get; private set; }
+        public string IconId { get; private set; }
         public Button BuyButton => _buyButton;
         public Image Icon => _icon;
 
@@ -28,6 +29,7 @@ namespace Game.Newspaper.UI
             if (offer == null) return;
 
             LotId = offer.LotId;
+            IconId = offer.IconId;
             SetIcon(icon);
             if (_titleLabel != null) _titleLabel.text = offer.DisplayName;
             if (_descriptionLabel != null) _descriptionLabel.text = offer.Description;
@@ -68,6 +70,7 @@ namespace Game.Newspaper.UI
 
             _onBuyClicked = null;
             LotId = null;
+            IconId = null;
             SetIcon(null);
         }
 

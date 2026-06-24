@@ -15,8 +15,6 @@ namespace Game.Newspaper.UI
     [Window("NewspaperWindow", WindowType.Page)]
     public sealed class NewspaperWindow : WindowController<NewspaperWindowView>
     {
-        private const string BookOfferSpriteId = "book_box";
-
         private IShopService _shop;
         private IShopConfirmationPolicy _confirmPolicy;
         private INewspaperOfferSource _offerSource;
@@ -63,16 +61,15 @@ namespace Game.Newspaper.UI
 
             View.BookCardsPool.DisableAll();
             View.DecorCardsPool.DisableAll();
-            SpawnOffers(_offerSource.GetBookOffers(), View.BookCardsPool, isDecorOffer: false);
-            SpawnOffers(_offerSource.GetDecorOffers(), View.DecorCardsPool, isDecorOffer: true);
+            SpawnOffers(_offerSource.GetBookOffers(), View.BookCardsPool);
+            SpawnOffers(_offerSource.GetDecorOffers(), View.DecorCardsPool);
             View.BookCardsPool.DisableNonActive();
             View.DecorCardsPool.DisableNonActive();
         }
 
         private void SpawnOffers(
             IReadOnlyList<NewspaperOffer> offers,
-            UIListPool<NewspaperOfferCardView> pool,
-            bool isDecorOffer)
+            UIListPool<NewspaperOfferCardView> pool)
         {
             if (offers == null || offers.Count == 0 || pool == null) return;
 
@@ -93,8 +90,8 @@ namespace Game.Newspaper.UI
 
             try
             {
-                await LoadIconsForPoolAsync(View.BookCardsPool, isDecorOffer: false, ct);
-                await LoadIconsForPoolAsync(View.DecorCardsPool, isDecorOffer: true, ct);
+                await LoadIconsForPoolAsync(View.BookCardsPool, ct);
+                await LoadIconsForPoolAsync(View.DecorCardsPool, ct);
             }
             catch (OperationCanceledException)
             {
@@ -104,7 +101,6 @@ namespace Game.Newspaper.UI
 
         private async UniTask LoadIconsForPoolAsync(
             UIListPool<NewspaperOfferCardView> pool,
-            bool isDecorOffer,
             CancellationToken ct)
         {
             if (pool == null) return;
@@ -116,8 +112,7 @@ namespace Game.Newspaper.UI
             {
                 if (card == null) continue;
 
-                var id = isDecorOffer ? card.LotId : BookOfferSpriteId;
-                var sprite = await _uiSprites.GetSpriteAsync(id, ct);
+                var sprite = await _uiSprites.GetSpriteAsync(card.IconId, ct);
                 if (ct.IsCancellationRequested) return;
                 if (card != null) card.SetIcon(sprite);
             }

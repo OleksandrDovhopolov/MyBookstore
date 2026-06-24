@@ -10,31 +10,15 @@ namespace Game.Newspaper.UI
 {
     public static class RewardsWindowRewardBuilder
     {
-        public const string NonBookRewardId = "non_book_reward";
-        private const string NonBookDisplayName = "Reward";
-
-        private static readonly string[] KnownGenreOrder =
-        {
-            "Classic",
-            "Crime",
-            "Drama",
-            "Fact",
-            "Fantasy",
-            "Kids",
-            "Travel",
-        };
-
-        public static List<RewardSpecResource> Build(
-            RewardSpec granted,
-            IConfigsService configs,
-            Func<string, Sprite> resolveIcon)
+        public static List<RewardSpecResource> Build(RewardSpec granted, IConfigsService configs)
         {
             var result = new List<RewardSpecResource>();
             if (granted?.Items == null || granted.Items.Count == 0) return result;
 
-            var genreAmounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var genreDisplayNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            var nonBookAmount = 0;
+            var genreAmounts = new Dictionary<BookGenre, int>();
+            var decorOrder = new List<string>();
+            var decorAmounts = new Dictionary<string, int>(StringComparer.Ordinal);
+            var decorConfigs = new Dictionary<string, DecorConfig>(StringComparer.Ordinal);
 
             for (var i = 0; i < granted.Items.Count; i++)
             {
@@ -42,109 +26,121 @@ namespace Game.Newspaper.UI
                 var amount = Mathf.Max(0, item.Amount);
                 if (amount <= 0) continue;
 
-                if (IsBookItem(item))
+                if (IsCategory(item, InventoryCategories.Book))
                 {
-                    if (configs != null
-                        && configs.TryGet<BookConfig>(item.Id, out var book)
-                        && book != null
-                        && !string.IsNullOrEmpty(book.Genre))
-                    {
-                        AddGenre(genreAmounts, genreDisplayNames, book.Genre, amount);
-                        continue;
-                    }
-
-                    Debug.LogWarning($"[RewardsWindow] BookConfig '{item.Id}' not found for granted book reward. Using fallback reward icon.");
+                    AccumulateBook(item, amount, configs, genreAmounts);
+                    continue;
                 }
 
-                nonBookAmount += amount;
-            }
-
-            AddKnownGenres(result, genreAmounts, genreDisplayNames, resolveIcon);
-            AddUnknownGenres(result, genreAmounts, genreDisplayNames, resolveIcon);
-
-            if (nonBookAmount > 0)
-            {
-                result.Add(new RewardSpecResource
+                if (IsCategory(item, InventoryCategories.Decor))
                 {
-                    ResourceId = NonBookRewardId,
-                    DisplayName = NonBookDisplayName,
-                    Kind = RewardKind.Resource,
-                    Amount = nonBookAmount,
-                    Icon = resolveIcon?.Invoke(NonBookRewardId)
-                });
+                    AccumulateDecor(item, amount, configs, decorOrder, decorAmounts, decorConfigs);
+                    continue;
+                }
+
+                Debug.LogWarning(
+                    $"[RewardsWindow] Invalid reward item '{item.Id}' (kind={item.Kind}, category='{item.Category}'). Skipped.");
             }
 
+            AddGenreResources(result, genreAmounts);
+            AddDecorResources(result, decorOrder, decorAmounts, decorConfigs);
             return result;
         }
 
-        private static bool IsBookItem(RewardItem item) =>
+        private static bool IsCategory(RewardItem item, string category) =>
             item.Kind == RewardKind.InventoryItem
-            && string.Equals(item.Category, InventoryCategories.Book, StringComparison.OrdinalIgnoreCase);
+            && string.Equals(item.Category, category, StringComparison.OrdinalIgnoreCase);
 
-        private static void AddGenre(
-            IDictionary<string, int> amounts,
-            IDictionary<string, string> displayNames,
-            string genre,
-            int amount)
-        {
-            amounts.TryGetValue(genre, out var current);
-            amounts[genre] = current + amount;
-            if (!displayNames.ContainsKey(genre))
-                displayNames[genre] = genre;
-        }
-
-        private static void AddKnownGenres(
-            ICollection<RewardSpecResource> result,
-            IDictionary<string, int> amounts,
-            IReadOnlyDictionary<string, string> displayNames,
-            Func<string, Sprite> resolveIcon)
-        {
-            for (var i = 0; i < KnownGenreOrder.Length; i++)
-            {
-                var genre = KnownGenreOrder[i];
-                if (!amounts.TryGetValue(genre, out var amount) || amount <= 0) continue;
-
-                result.Add(CreateGenreResource(genre, displayNames, amount, resolveIcon));
-            }
-        }
-
-        private static void AddUnknownGenres(
-            ICollection<RewardSpecResource> result,
-            IDictionary<string, int> amounts,
-            IReadOnlyDictionary<string, string> displayNames,
-            Func<string, Sprite> resolveIcon)
-        {
-            foreach (var pair in amounts)
-            {
-                if (pair.Value <= 0 || IsKnownGenre(pair.Key)) continue;
-                result.Add(CreateGenreResource(pair.Key, displayNames, pair.Value, resolveIcon));
-            }
-        }
-
-        private static bool IsKnownGenre(string genre)
-        {
-            for (var i = 0; i < KnownGenreOrder.Length; i++)
-                if (string.Equals(KnownGenreOrder[i], genre, StringComparison.OrdinalIgnoreCase))
-                    return true;
-            return false;
-        }
-
-        private static RewardSpecResource CreateGenreResource(
-            string genre,
-            IReadOnlyDictionary<string, string> displayNames,
+        private static void AccumulateBook(
+            RewardItem item,
             int amount,
-            Func<string, Sprite> resolveIcon)
+            IConfigsService configs,
+            IDictionary<BookGenre, int> genreAmounts)
         {
-            displayNames.TryGetValue(genre, out var displayName);
-            return new RewardSpecResource
+            if (configs == null
+                || !configs.TryGet<BookConfig>(item.Id, out var book)
+                || book == null
+                || !BookGenreExtensions.TryParseGenre(book.Genre, out var genre))
             {
-                ResourceId = genre,
-                DisplayName = displayName ?? genre,
-                Kind = RewardKind.InventoryItem,
-                Category = InventoryCategories.Book,
-                Amount = amount,
-                Icon = resolveIcon?.Invoke(genre)
-            };
+                Debug.LogWarning(
+                    $"[RewardsWindow] Book reward '{item.Id}' has no valid BookConfig/genre. Skipped.");
+                return;
+            }
+
+            genreAmounts.TryGetValue(genre, out var current);
+            genreAmounts[genre] = current + amount;
+        }
+
+        private static void AccumulateDecor(
+            RewardItem item,
+            int amount,
+            IConfigsService configs,
+            ICollection<string> decorOrder,
+            IDictionary<string, int> decorAmounts,
+            IDictionary<string, DecorConfig> decorConfigs)
+        {
+            if (configs == null
+                || !configs.TryGet<DecorConfig>(item.Id, out var decor)
+                || decor == null)
+            {
+                Debug.LogWarning(
+                    $"[RewardsWindow] Decor reward '{item.Id}' has no DecorConfig. Skipped.");
+                return;
+            }
+
+            if (!decorAmounts.ContainsKey(item.Id))
+            {
+                decorOrder.Add(item.Id);
+                decorConfigs[item.Id] = decor;
+            }
+
+            decorAmounts.TryGetValue(item.Id, out var current);
+            decorAmounts[item.Id] = current + amount;
+        }
+
+        private static void AddGenreResources(
+            ICollection<RewardSpecResource> result,
+            IReadOnlyDictionary<BookGenre, int> genreAmounts)
+        {
+            foreach (BookGenre genre in Enum.GetValues(typeof(BookGenre)))
+            {
+                if (!genreAmounts.TryGetValue(genre, out var amount) || amount <= 0) continue;
+
+                var name = genre.ToString();
+                result.Add(new RewardSpecResource
+                {
+                    ResourceId = name,
+                    DisplayName = name,
+                    Kind = RewardKind.InventoryItem,
+                    Category = InventoryCategories.Book,
+                    Amount = amount,
+                    Icon = null
+                });
+            }
+        }
+
+        private static void AddDecorResources(
+            ICollection<RewardSpecResource> result,
+            IReadOnlyList<string> decorOrder,
+            IReadOnlyDictionary<string, int> decorAmounts,
+            IReadOnlyDictionary<string, DecorConfig> decorConfigs)
+        {
+            for (var i = 0; i < decorOrder.Count; i++)
+            {
+                var id = decorOrder[i];
+                if (!decorAmounts.TryGetValue(id, out var amount) || amount <= 0) continue;
+                if (!decorConfigs.TryGetValue(id, out var decor) || decor == null) continue;
+
+                result.Add(new RewardSpecResource
+                {
+                    ResourceId = decor.Id,
+                    DisplayName = decor.DisplayName,
+                    Kind = RewardKind.InventoryItem,
+                    Category = InventoryCategories.Decor,
+                    Amount = amount,
+                    Icon = null
+                });
+            }
         }
     }
 }

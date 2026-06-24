@@ -19,10 +19,13 @@ namespace Game.Newspaper.Tests.Editor
         public void Build_BookRewards_GroupsByGenreAndSkipsZeroAmounts()
         {
             var configs = new FakeConfigsService(
-                Book("classic_1", "Classic"),
-                Book("classic_2", "Classic"),
-                Book("crime_1", "Crime"),
-                Book("kids_1", "Kids"));
+                books: new[]
+                {
+                    Book("classic_1", "Classic"),
+                    Book("classic_2", "Classic"),
+                    Book("crime_1", "Crime"),
+                    Book("kids_1", "Kids"),
+                });
             var spec = new RewardSpec("book_box", new[]
             {
                 RewardItem.InventoryItem("classic_1", InventoryCategories.Book, 1),
@@ -31,7 +34,7 @@ namespace Game.Newspaper.Tests.Editor
                 RewardItem.InventoryItem("kids_1", InventoryCategories.Book, 0),
             });
 
-            var rewards = RewardsWindowRewardBuilder.Build(spec, configs, resolveIcon: null);
+            var rewards = RewardsWindowRewardBuilder.Build(spec, configs);
 
             Assert.AreEqual(2, rewards.Count);
             Assert.AreEqual("Classic", rewards[0].ResourceId);
@@ -42,23 +45,31 @@ namespace Game.Newspaper.Tests.Editor
         }
 
         [Test]
-        public void Build_NonBookRewards_CreatesSingleFallbackEntry()
+        public void Build_DecorReward_EmitsDecorAndSkipsResource()
         {
+            var configs = new FakeConfigsService(
+                decors: new[] { Decor("vintage_globe", "Vintage Globe", "Decor/VintageGlobe") });
             var spec = new RewardSpec("decor_reward", new[]
             {
-                RewardItem.InventoryItem("decor_clock", InventoryCategories.Decor, 1),
+                RewardItem.InventoryItem("vintage_globe", InventoryCategories.Decor, 1),
                 RewardItem.Resource("gold", 100),
             });
 
-            var rewards = RewardsWindowRewardBuilder.Build(spec, new FakeConfigsService(), resolveIcon: null);
+            LogAssert.Expect(
+                UnityEngine.LogType.Warning,
+                "[RewardsWindow] Invalid reward item 'gold' (kind=Resource, category=''). Skipped.");
+
+            var rewards = RewardsWindowRewardBuilder.Build(spec, configs);
 
             Assert.AreEqual(1, rewards.Count);
-            Assert.AreEqual(RewardsWindowRewardBuilder.NonBookRewardId, rewards[0].ResourceId);
-            Assert.AreEqual(101, rewards[0].Amount);
+            Assert.AreEqual("Decor/VintageGlobe", rewards[0].ResourceId);
+            Assert.AreEqual("Vintage Globe", rewards[0].DisplayName);
+            Assert.AreEqual(InventoryCategories.Decor, rewards[0].Category);
+            Assert.AreEqual(1, rewards[0].Amount);
         }
 
         [Test]
-        public void Build_MissingBookConfig_UsesFallbackEntry()
+        public void Build_MissingBookConfig_WarnsAndSkips()
         {
             var spec = new RewardSpec("book_box", new[]
             {
@@ -67,27 +78,49 @@ namespace Game.Newspaper.Tests.Editor
 
             LogAssert.Expect(
                 UnityEngine.LogType.Warning,
-                "[RewardsWindow] BookConfig 'missing_book' not found for granted book reward. Using fallback reward icon.");
+                "[RewardsWindow] Book reward 'missing_book' has no valid BookConfig/genre. Skipped.");
 
-            var rewards = RewardsWindowRewardBuilder.Build(spec, new FakeConfigsService(), resolveIcon: null);
+            var rewards = RewardsWindowRewardBuilder.Build(spec, new FakeConfigsService());
 
-            Assert.AreEqual(1, rewards.Count);
-            Assert.AreEqual(RewardsWindowRewardBuilder.NonBookRewardId, rewards[0].ResourceId);
-            Assert.AreEqual(2, rewards[0].Amount);
+            Assert.AreEqual(0, rewards.Count);
+        }
+
+        [Test]
+        public void Build_MissingDecorConfig_WarnsAndSkips()
+        {
+            var spec = new RewardSpec("decor_reward", new[]
+            {
+                RewardItem.InventoryItem("missing_decor", InventoryCategories.Decor, 1),
+            });
+
+            LogAssert.Expect(
+                UnityEngine.LogType.Warning,
+                "[RewardsWindow] Decor reward 'missing_decor' has no DecorConfig. Skipped.");
+
+            var rewards = RewardsWindowRewardBuilder.Build(spec, new FakeConfigsService());
+
+            Assert.AreEqual(0, rewards.Count);
         }
 
         private static BookConfig Book(string id, string genre) =>
             new BookConfig { Id = id, Genre = genre };
 
+        private static DecorConfig Decor(string id, string displayName, string iconAddress) =>
+            new DecorConfig { Id = id, DisplayName = displayName, IconAddress = iconAddress };
+
         private sealed class FakeConfigsService : IConfigsService
         {
             private readonly Dictionary<string, BookConfig> _books;
+            private readonly Dictionary<string, DecorConfig> _decors;
 
-            public FakeConfigsService(params BookConfig[] books)
+            public FakeConfigsService(BookConfig[] books = null, DecorConfig[] decors = null)
             {
                 _books = (books ?? Array.Empty<BookConfig>())
                     .Where(b => b != null && !string.IsNullOrEmpty(b.Id))
                     .ToDictionary(b => b.Id, StringComparer.Ordinal);
+                _decors = (decors ?? Array.Empty<DecorConfig>())
+                    .Where(d => d != null && !string.IsNullOrEmpty(d.Id))
+                    .ToDictionary(d => d.Id, StringComparer.Ordinal);
             }
 
             public UniTask WarmupAsync(CancellationToken ct) => UniTask.CompletedTask;
@@ -96,6 +129,8 @@ namespace Game.Newspaper.Tests.Editor
             {
                 if (typeof(T) == typeof(BookConfig))
                     return _books.Values.Cast<T>().ToList();
+                if (typeof(T) == typeof(DecorConfig))
+                    return _decors.Values.Cast<T>().ToList();
                 return Array.Empty<T>();
             }
 
@@ -107,12 +142,19 @@ namespace Game.Newspaper.Tests.Editor
 
             public bool TryGet<T>(string id, out T config) where T : class, IConfig
             {
-                if (typeof(T) == typeof(BookConfig)
-                    && !string.IsNullOrEmpty(id)
-                    && _books.TryGetValue(id, out var book))
+                if (!string.IsNullOrEmpty(id))
                 {
-                    config = book as T;
-                    return true;
+                    if (typeof(T) == typeof(BookConfig) && _books.TryGetValue(id, out var book))
+                    {
+                        config = book as T;
+                        return true;
+                    }
+
+                    if (typeof(T) == typeof(DecorConfig) && _decors.TryGetValue(id, out var decor))
+                    {
+                        config = decor as T;
+                        return true;
+                    }
                 }
 
                 config = null;
