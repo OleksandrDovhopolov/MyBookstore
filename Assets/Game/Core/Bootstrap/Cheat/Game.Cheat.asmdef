@@ -12,7 +12,8 @@
         "Book.Sell",
         "Game.Inventory",
         "Game.Decor",
-        "Game.Shop.UI"
+        "Game.Shop.UI",
+        "Game.Newspaper"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
