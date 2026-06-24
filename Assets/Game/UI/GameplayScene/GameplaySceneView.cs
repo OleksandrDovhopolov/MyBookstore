@@ -81,6 +81,12 @@ public class GameplaySceneView : WindowView
     }
     
     public void SetGenreBookCounts(IReadOnlyDictionary<string, int> counts)
+        => SetGenreBookCounts(counts, null, false);
+
+    public void SetGenreBookCounts(
+        IReadOnlyDictionary<string, int> counts,
+        IReadOnlyDictionary<string, int> purchasedCounts,
+        bool showPurchasedCounts)
     {
         if (_genreBookCountPool == null) return;
 
@@ -88,13 +94,15 @@ public class GameplaySceneView : WindowView
         _genreBookCountPool.DisableAll();
 
         var normalizedCounts = BookGenreCounts.Normalize(counts);
+        var normalizedPurchasedCounts = BookGenreCounts.Normalize(purchasedCounts);
         foreach (var pair in normalizedCounts)
         {
             if (!BookGenreExtensions.TryParseGenre(pair.Key, out var genre))
                 continue;
 
             var item = _genreBookCountPool.GetNext();
-            item.Bind(genre, GetGenreSprite(genre), pair.Value);
+            normalizedPurchasedCounts.TryGetValue(pair.Key, out var purchasedAmount);
+            item.Bind(genre, GetGenreSprite(genre), pair.Value, purchasedAmount, showPurchasedCounts);
         }
 
         _genreBookCountPool.DisableNonActive();

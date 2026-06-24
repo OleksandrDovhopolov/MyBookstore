@@ -54,7 +54,7 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
             e => SetSceneButtonsInteractable(e.Interactable));
 
         _genreBookCountsSubscription = _genreBookCountsSubscriber?.Subscribe(
-            e => View.SetGenreBookCounts(e.Counts));
+            e => View.SetGenreBookCounts(e.Counts, e.PurchasedCounts, e.ShowPurchasedCounts));
 
         _salesGoldSubscription = _salesGoldSubscriber?.Subscribe(OnSalesGoldChanged);
     }

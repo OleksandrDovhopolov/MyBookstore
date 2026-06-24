@@ -34,6 +34,7 @@ namespace Book.Sell.UI
         private IPublisher<GameplaySalesGoldChanged> _salesGoldPublisher;
         private IPublisher<GameplayGenreBookCountsChanged> _genreBookCountsPublisher;
         private IPublisher<GameplaySceneButtonsInteractableChanged> _gameplayButtonsPublisher;
+        private Dictionary<string, int> _salesDayGenreBaseline;
         
         [Inject]
         public void Construct(
@@ -100,6 +101,7 @@ namespace Book.Sell.UI
             var day = _dayProvider?.CurrentDay ?? 1;
             PublishSalesGold(0, true);
             await _controller.StartDayAsync(day, ct);
+            _salesDayGenreBaseline = BuildGenreBookCounts();
             RefreshHeader();
             PublishGenreBookCounts();
             _dayRunning = !_controller.IsDayCompleted;
@@ -115,6 +117,14 @@ namespace Book.Sell.UI
         }
 
         private void PublishGenreBookCounts()
+        {
+            var currentCounts = BuildGenreBookCounts();
+            var purchasedCounts = BuildPurchasedGenreBookCounts(currentCounts);
+            _genreBookCountsPublisher?.Publish(
+                new GameplayGenreBookCountsChanged(currentCounts, purchasedCounts, _salesDayGenreBaseline != null));
+        }
+
+        private void PublishGenreBookCountsWithoutPurchased()
         {
             _genreBookCountsPublisher?.Publish(new GameplayGenreBookCountsChanged(BuildGenreBookCounts()));
         }
@@ -228,10 +238,28 @@ namespace Book.Sell.UI
             return BookGenreCounts.Normalize(counts);
         }
 
+        private Dictionary<string, int> BuildPurchasedGenreBookCounts(IReadOnlyDictionary<string, int> currentCounts)
+        {
+            var purchasedCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            if (_salesDayGenreBaseline == null) return purchasedCounts;
+
+            var normalizedCurrentCounts = BookGenreCounts.Normalize(currentCounts);
+            foreach (var pair in _salesDayGenreBaseline)
+            {
+                normalizedCurrentCounts.TryGetValue(pair.Key, out var current);
+                var purchased = pair.Value - current;
+                if (purchased > 0)
+                    purchasedCounts[pair.Key] = purchased;
+            }
+
+            return BookGenreCounts.Normalize(purchasedCounts);
+        }
+
         private void OnDestroy()
         {
             SetGameplaySceneButtonsInteractable(true);
             PublishSalesGold(0, false);
+            PublishGenreBookCountsWithoutPurchased();
             _genreBookCountsRequestSubscription?.Dispose();
             _genreBookCountsRequestSubscription = null;
 
