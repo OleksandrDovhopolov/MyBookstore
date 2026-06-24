@@ -15,7 +15,7 @@ _(пока нет задач)_
 
 ## 🛠️ Инфраструктура
 
-- [ ] **INF-1. Загрузка спрайтов жанровых книг из Addressables + gating бутстрапа.**
+- [~] **INF-1. Загрузка спрайтов жанровых книг из Addressables + gating бутстрапа.**
   Сейчас `GameplaySceneView` ([GameplaySceneView.cs](../Assets/Game/UI/GameplayScene/GameplaySceneView.cs))
   держит спрайты жанров (`_classicGenreSprite` … `_fantasyGenreSprite`) как serialized-поля и резолвит
   их в `GetGenreSprite(BookGenre)`. Нужно грузить их из Addressables (через `IUiSpriteProvider` /
@@ -24,6 +24,11 @@ _(пока нет задач)_
   должен дождаться загрузки этих спрайтов перед показом контента:
   `await UniTask.WaitUntil(() => IsWindowShown && spritesLoaded)` — проверять **оба** условия
   (окно показано И спрайты загружены).
+  Код готов: serialized-поля и `GetGenreSprite` убраны из view; маппинг `BookGenre → address`
+  через `UiSpriteCatalog.TryGetAddress`; загрузку владеет `GameplaySceneController`
+  (`LoadGenreSpritesAsync` + флаг `SpritesLoaded`); bootstrap ждёт оба условия.
+  **Осталось (Unity Editor, вручную):** пометить 7 жанровых спрайтов как Addressable и заполнить
+  `UiSpriteCatalog.asset` записями (Key = имя жанра, Address).
 
 - [ ] **INF-2. Подключить DoTween** (импорт пакета + asmdef-ссылки + базовая обёртка/хелперы под анимации).
 

@@ -26,5 +26,6 @@ namespace Game.Newspaper.UI
         [SerializeField] private KeyedSpriteAddress[] _spritesById = Array.Empty<KeyedSpriteAddress>();
 
         public KeyedSpriteAddress[] SpritesById => _spritesById;
+
     }
 }

@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Configs.Models;
 using Game.DayCycle.Morning;
+using Game.Newspaper.UI;
 using Game.Preparation.Services;
 using Game.Preparation.UI;
 using Game.Resources.API;
@@ -16,7 +19,10 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
     private IResourcesService _resources;
     private IMorningSessionService _session;
     private IPreparationSessionService _preparationSession;
-    
+    private IUiSpriteProvider _uiSprites;
+
+    public bool SpritesLoaded { get; private set; }
+
     private IDisposable _salesGoldSubscription;
     private IDisposable _genreBookCountsSubscription;
     private IDisposable _buttonsInteractableSubscription;
@@ -30,6 +36,7 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
     public void Construct(
         IResourcesService resources,
         IMorningSessionService morningSessionService,
+        IUiSpriteProvider uiSprites,
         ISubscriber<GameplaySceneButtonsInteractableChanged> buttonsInteractableSubscriber,
         IPreparationSessionService preparationSession = null,
         ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
@@ -38,6 +45,7 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
     {
         _resources = resources;
         _session = morningSessionService;
+        _uiSprites = uiSprites;
         _preparationSession = preparationSession;
         _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
         _genreBookCountsSubscriber = genreBookCountsSubscriber;
@@ -72,7 +80,28 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         View.SetGoldAmount(_resources.GetAmount(ResourceIds.Gold));
         View.SetSalesGoldVisible(false);
 
+        LoadGenreSpritesAsync(View.destroyCancellationToken).Forget();
         RefreshDayAndGenreCountsAsync().Forget();
+    }
+
+    private async UniTaskVoid LoadGenreSpritesAsync(CancellationToken ct)
+    {
+        try
+        {
+            var sprites = new Dictionary<BookGenre, Sprite>();
+            foreach (BookGenre genre in Enum.GetValues(typeof(BookGenre)))
+            {
+                var sprite = await _uiSprites.GetSpriteAsync(genre.ToString(), ct);
+                if (ct.IsCancellationRequested) return;
+                if (sprite != null) sprites[genre] = sprite;
+            }
+
+            View.SetGenreSprites(sprites);
+            SpritesLoaded = true;
+        }
+        catch (OperationCanceledException)
+        {
+        }
     }
 
     private async UniTask RefreshDayAndGenreCountsAsync()

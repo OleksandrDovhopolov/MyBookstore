@@ -33,9 +33,8 @@ public class MainSceneBootstrap : MonoBehaviour
         {
             ct.ThrowIfCancellationRequested();
 
-            await _uiManager.ShowAsync<GameplaySceneController>(ct: ct);
-
-            await UniTask.WaitUntil(() => _uiManager.IsWindowShown<GameplaySceneController>(), cancellationToken: ct);
+            var controller = await _uiManager.ShowAsync<GameplaySceneController>(ct: ct);
+            await UniTask.WaitUntil(() => controller.IsShown && controller.SpritesLoaded, cancellationToken: ct);
             ct.ThrowIfCancellationRequested();
         }
         catch (OperationCanceledException)

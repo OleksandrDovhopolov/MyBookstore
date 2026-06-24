@@ -19,13 +19,8 @@ public class GameplaySceneView : WindowView
 
     [Header("Genre book counts")]
     [SerializeField] private UIListPool<GameplayGenreBookCountItemView> _genreBookCountPool = new();
-    [SerializeField] private Sprite _classicGenreSprite;
-    [SerializeField] private Sprite _crimeGenreSprite;
-    [SerializeField] private Sprite _dramaGenreSprite;
-    [SerializeField] private Sprite _factGenreSprite;
-    [SerializeField] private Sprite _kidsGenreSprite;
-    [SerializeField] private Sprite _travelGenreSprite;
-    [SerializeField] private Sprite _fantasyGenreSprite;
+
+    private readonly Dictionary<BookGenre, Sprite> _genreSprites = new();
 
     private bool _legacyGenreBookCountItemsHidden;
 
@@ -102,7 +97,7 @@ public class GameplaySceneView : WindowView
 
             var item = _genreBookCountPool.GetNext();
             normalizedPurchasedCounts.TryGetValue(pair.Key, out var purchasedAmount);
-            item.Bind(genre, GetGenreSprite(genre), pair.Value, purchasedAmount, showPurchasedCounts);
+            item.Bind(genre, ResolveGenreSprite(genre), pair.Value, purchasedAmount, showPurchasedCounts);
         }
 
         _genreBookCountPool.DisableNonActive();
@@ -121,27 +116,25 @@ public class GameplaySceneView : WindowView
         _legacyGenreBookCountItemsHidden = true;
     }
 
-    private Sprite GetGenreSprite(BookGenre genre)
+    /// <summary>
+    /// Receives genre sprites loaded by the controller (from Addressables). Re-applies them to any
+    /// items already spawned, since genre counts may have been bound before sprites finished loading.
+    /// </summary>
+    public void SetGenreSprites(IReadOnlyDictionary<BookGenre, Sprite> sprites)
     {
-        switch (genre)
-        {
-            case BookGenre.Classic:
-                return _classicGenreSprite;
-            case BookGenre.Crime:
-                return _crimeGenreSprite;
-            case BookGenre.Drama:
-                return _dramaGenreSprite;
-            case BookGenre.Fact:
-                return _factGenreSprite;
-            case BookGenre.Kids:
-                return _kidsGenreSprite;
-            case BookGenre.Travel:
-                return _travelGenreSprite;
-            case BookGenre.Fantasy:
-                return _fantasyGenreSprite;
-            default:
-                return null;
-        }
+        _genreSprites.Clear();
+        if (sprites != null)
+            foreach (var kv in sprites)
+                _genreSprites[kv.Key] = kv.Value;
+
+        if (_genreBookCountPool == null) return;
+
+        foreach (var item in _genreBookCountPool.ActiveElements())
+            if (item != null)
+                item.SetSprite(ResolveGenreSprite(item.Genre));
     }
+
+    private Sprite ResolveGenreSprite(BookGenre genre)
+        => _genreSprites.TryGetValue(genre, out var sprite) ? sprite : null;
 
 }
