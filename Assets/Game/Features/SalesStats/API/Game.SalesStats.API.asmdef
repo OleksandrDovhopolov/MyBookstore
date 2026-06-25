@@ -1,0 +1,17 @@
+{
+    "name": "Game.SalesStats.API",
+    "rootNamespace": "Game.SalesStats.API",
+    "references": [
+        "UniTask",
+        "Configs"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

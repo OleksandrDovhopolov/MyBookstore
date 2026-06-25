@@ -1,19 +1,13 @@
 {
-    "name": "Book.Sell.Tests.Editor",
-    "rootNamespace": "Book.Sell.Tests.Editor",
+    "name": "Game.SalesStats.Tests.Editor",
+    "rootNamespace": "Game.SalesStats.Tests.Editor",
     "references": [
         "UniTask",
-        "Book.Sell",
-        "Book.Sell.API",
-        "Configs",
-        "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner",
         "Save",
-        "Game.Inventory.API",
-        "Game.Preparation",
-        "DayCycle",
-        "Game.Resources.API",
-        "Game.SalesStats.API"
+        "Configs",
+        "Game.SalesStats.API",
+        "Game.SalesStats",
+        "UnityEngine.TestRunner"
     ],
     "includePlatforms": [
         "Editor"
@@ -22,7 +16,8 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "nunit.framework.dll"
+        "nunit.framework.dll",
+        "Newtonsoft.Json.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [

@@ -22,6 +22,8 @@
         "Game.Resources.API",
         "Game.Progression",
         "Game.Progression.API",
+        "Game.SalesStats",
+        "Game.SalesStats.API",
         "MessagePipe",
         "MessagePipe.VContainer",
         "Game.Core.UI",

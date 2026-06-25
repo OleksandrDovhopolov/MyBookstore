@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Inventory.API;
+using Game.SalesStats.API;
 using UnityEngine;
 
 namespace Book.Sell.Services
@@ -13,14 +14,17 @@ namespace Book.Sell.Services
 
         private readonly IInventoryService _inventory;
         private readonly ISalesShelfStateService _shelfState;
+        private readonly ISalesStatsRecorder _salesStats;
         private readonly List<UniTask> _pendingCommits = new();
 
         public SoldBookCommitter(
             IInventoryService inventory = null,
-            ISalesShelfStateService shelfState = null)
+            ISalesShelfStateService shelfState = null,
+            ISalesStatsRecorder salesStats = null)
         {
             _inventory = inventory;
             _shelfState = shelfState;
+            _salesStats = salesStats;
         }
 
         public void Reset()
@@ -58,6 +62,10 @@ namespace Book.Sell.Services
         private async UniTask CommitSoldBookAsync(string bookId, string source)
         {
             if (string.IsNullOrEmpty(bookId)) return;
+
+            // Count the sale toward per-genre stats (unlock-condition source). Single chokepoint for
+            // both active and passive sales; in-memory + batched, so it adds no I/O on the hot path.
+            _salesStats?.RecordSold(bookId);
 
             if (_shelfState != null)
             {
