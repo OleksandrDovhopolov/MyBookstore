@@ -63,7 +63,7 @@ namespace Book.Sell.Tests.Editor
                 configs,
                 new DefaultSalesSetupProvider(configs),
                 new RecommendationScoringService(),
-                SalesTestKit.AlwaysHitPassiveSelector(),
+                SalesTestKit.LegacyResolver(),
                 new FakeSalesRandom(),
                 new StubCustomerSpawner(customers),
                 new InteractionLock(),
@@ -956,7 +956,7 @@ namespace Book.Sell.Tests.Editor
                 new List<Customer> { Passive("c1") });
 
             var failures = new List<string>();
-            c.CustomerPassivePurchaseFailed += customer => failures.Add(customer.Id);
+            c.CustomerPassivePurchaseFailed += (customer, _) => failures.Add(customer.Id);
 
             StartDay(c);
             Run(c);
@@ -984,7 +984,7 @@ namespace Book.Sell.Tests.Editor
                 });
 
             var failures = 0;
-            c.CustomerPassivePurchaseFailed += _ => failures++;
+            c.CustomerPassivePurchaseFailed += (_, _) => failures++;
 
             StartDay(c);
             Run(c);

@@ -16,15 +16,20 @@ namespace Book.Sell.Domain
         public string Id { get; }
         public CustomerPhase Phase { get; private set; } = CustomerPhase.Spawned;
 
+        /// <summary>Desire profile (genres) used by the requested-genre passive model. Empty by default
+        /// (legacy passive model ignores it).</summary>
+        public CustomerProfile Profile { get; }
+
         /// <summary>Total books this customer has bought during the visit (active recommendations + passive sales).</summary>
         public int PurchasedBookCount { get; private set; }
 
         public void RegisterPurchasedBook() => PurchasedBookCount++;
 
-        public Customer(string id, IReadOnlyList<ICustomerStep> plan)
+        public Customer(string id, IReadOnlyList<ICustomerStep> plan, CustomerProfile profile = null)
         {
             Id = id;
             _plan = new List<ICustomerStep>(plan);
+            Profile = profile ?? CustomerProfile.Empty;
         }
 
         public bool IsDone => _index >= _plan.Count;

@@ -51,5 +51,9 @@ namespace Book.Sell.Domain
         /// <summary>Maximum customers present on the floor at once (spawned and not yet Done).
         /// Spawning is gated until a slot frees. <c>&lt;= 0</c> means no limit.</summary>
         public int MaxConcurrentCustomers { get; set; } = 3;
+
+        /// <summary>How many genres a customer's passive desire profile holds (requested-genre model).
+        /// Clamped to the available genres by the profile provider.</summary>
+        public int PassiveRequestGenreCount { get; set; } = 2;
     }
 }

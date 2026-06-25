@@ -128,7 +128,7 @@ namespace Book.Sell.UI.Customer
         {
             try
             {
-                var sprite = await ResolveGenreSpriteAsync(bookId);
+                var sprite = await ResolveBookGenreSpriteAsync(bookId);
 
                 var bubble = await GetOrAttachBubbleAsync(customer);
                 if (bubble == null) return;
@@ -142,19 +142,41 @@ namespace Book.Sell.UI.Customer
             }
         }
 
-        private async UniTask<Sprite> ResolveGenreSpriteAsync(string bookId)
+        private async UniTask<Sprite> ResolveBookGenreSpriteAsync(string bookId)
         {
-            if (string.IsNullOrEmpty(bookId)) return null;
-            if (!_configs.TryGet<BookConfig>(bookId, out var cfg) || string.IsNullOrEmpty(cfg.Genre)) return null;
-            if (!BookGenreExtensions.TryParseGenre(cfg.Genre, out var genre)) return null;
-
-            return await _uiSprites.GetSpriteAsync(genre.ToString(), _cts.Token);
+            if (string.IsNullOrEmpty(bookId) || !_configs.TryGet<BookConfig>(bookId, out var cfg)) return null;
+            return await ResolveGenreSpriteAsync(cfg?.Genre);
         }
 
-        private void OnCustomerPassivePurchaseFailed(Book.Sell.Domain.Customer customer)
+        private async UniTask<Sprite> ResolveGenreSpriteAsync(string genre)
+        {
+            if (string.IsNullOrEmpty(genre) || !BookGenreExtensions.TryParseGenre(genre, out var parsed)) return null;
+            return await _uiSprites.GetSpriteAsync(parsed.ToString(), _cts.Token);
+        }
+
+        private void OnCustomerPassivePurchaseFailed(Book.Sell.Domain.Customer customer, string genre)
         {
             _keepBubbleUntilDespawn.Add(customer.Id);
-            EnsureBubbleAsync(customer, CustomerThoughtState.PassiveSaleFailed, "Failed").Forget();
+            ShowFailedAsync(customer, genre).Forget();
+        }
+
+        // Passive attempt failed: show the Fail icon plus the genre sprite (which genre missed), when known.
+        private async UniTaskVoid ShowFailedAsync(Book.Sell.Domain.Customer customer, string genre)
+        {
+            try
+            {
+                var sprite = await ResolveGenreSpriteAsync(genre);
+
+                var bubble = await GetOrAttachBubbleAsync(customer);
+                if (bubble == null) return;
+
+                await bubble.SetStateAsync(
+                    CustomerThoughtState.PassiveSaleFailed, new CustomerThoughtPayload(bookSprite: sprite));
+            }
+            catch (OperationCanceledException)
+            {
+                // binder disposed / sprite load cancelled — ignore
+            }
         }
 
         private void OnCustomerPurchaseCompleted(Book.Sell.Domain.Customer customer, int purchasedBookCount)

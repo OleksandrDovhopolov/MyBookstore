@@ -99,7 +99,7 @@ That logic can be forced into existing steps, but then `PassivePurchaseStep` bec
 - Reduce duplication in spawners.
 - Make the mandatory skeleton centralized: approach, middle, closing tail.
 - Support runtime step insertion without making individual steps know about unrelated systems.
-- Keep `IClosingStep` semantics: passive failure skips remaining purchase steps but still runs completion and leave.
+- Keep updated passive-failure semantics: a passive failure ends further passive purchase attempts for that visit, but may still continue into later non-passive middle steps before completion and leave.
 - Keep active recommendations, passive sales, decor actions, comments, and quests as composable behaviors.
 
 ## Non-goals
@@ -434,9 +434,9 @@ Avoid making comments part of `PassivePurchaseStep`. It would couple purchase ec
 
 HUD ordering must be designed together with `Fail` and `CompletePurchase` bubbles:
 
-- If passive failure happens after at least one passive sale, `CompletePurchaseStep` should be allowed to replace the fail bubble with the completion bubble.
-- If passive failure happens with zero passive sales, the fail bubble can remain through the walk-away.
-- A comment should not be injected after a passive failure abort, because comments are middle steps and `SkipToClosing` should skip the middle.
+- If passive failure happens after at least one passive sale, `CompletePurchaseStep` should be allowed to replace the fail bubble with the completion bubble when the customer proceeds to closing without an extra non-passive beat.
+- If passive failure happens with zero passive sales, the fail bubble can remain until the next allowed step starts; if the customer goes straight to closing, it may remain through the walk-away.
+- A passive failure must block any further passive purchase step for that visit, but it may still transition into an allowed non-passive middle step such as `ActiveRequestStep`, `CommentStep`, `DialogueStep`, or another future interaction step.
 
 ### Coffee machine / decor action
 
@@ -519,7 +519,7 @@ No architecture change.
 - Keep current spawners.
 - Keep runtime scenario spawners.
 - Add/maintain tests around:
-  - passive failure routes to closing steps,
+  - passive failure blocks later passive purchase steps but still allows non-passive continuation,
   - complete purchase runs after prior passive sales,
   - active requests still hold the lock.
 
@@ -561,8 +561,8 @@ Expected result:
 - Add tests for insertion and closing-tail protection:
   - `InsertNext` puts a runtime step immediately after the current step.
   - `InsertBeforeClosing` never inserts after the first `IClosingStep`.
-  - `SkipToClosing` skips injected middle steps as well as initially authored middle steps.
-  - injection followed by passive-failure abort routes to `CompletePurchaseStep`/`LeaveStep`, not to an injected comment/decor step.
+  - `SkipToClosing` skips injected middle steps as well as initially authored middle steps when a real closing abort is requested.
+  - passive failure never advances into another passive purchase step; if the next planned or injected step is an allowed non-passive step, it may still run before `CompletePurchaseStep`/`LeaveStep`.
 
 Expected result:
 

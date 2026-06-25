@@ -19,6 +19,7 @@ namespace Book.Sell.Domain.Steps
         private Sub _sub;
         private float _t;
         private string _targetId;
+        private string _resolvedGenre;
         private IReadOnlyList<string> _matchedGenres = Array.Empty<string>();
         private IReadOnlyList<string> _matchedTags = Array.Empty<string>();
 
@@ -27,6 +28,7 @@ namespace Book.Sell.Domain.Steps
             _sub = Sub.Browse;
             _t = 0f;
             _targetId = null;
+            _resolvedGenre = null;
             self.SetPhase(CustomerPhase.Browsing, ctx, forceNotify: true);
         }
 
@@ -41,26 +43,26 @@ namespace Book.Sell.Domain.Steps
                 var available = ctx.Shelf.AvailableForSelection();
                 Debug.Log($"{LogPrefix} customer={self.Id} browsing → {available.Count} book(s) available, rolling the gate");
 
-                var candidate = ctx.PassiveSelector.PickPassiveSale(
-                    available, ctx.Location, ctx.ActiveDecorIds, ctx.Random);
+                var result = ctx.PassiveResolver.Resolve(self, ctx, available);
+                _resolvedGenre = result.ResolvedGenre;
 
-                // Miss: nothing on the shelf matches → the visit's shopping cycle ends, customer leaves.
-                if (candidate == null)
+                // Miss: the chosen genre didn't pass (or nothing eligible) → shopping cycle ends, customer leaves.
+                if (!result.Success || result.Book == null)
                 {
-                    Debug.Log($"{LogPrefix} customer={self.Id} passive attempt MISSED → leaving");
+                    Debug.Log($"{LogPrefix} customer={self.Id} passive attempt MISSED (genre={_resolvedGenre}) → leaving");
                     return BeginFailedFeedback(self, ctx);
                 }
 
                 // Reserve-on-target. If the reservation race is lost, the cycle ends, customer leaves.
-                if (!ctx.Shelf.Reserve(candidate.Book.BookId))
+                if (!ctx.Shelf.Reserve(result.Book.BookId))
                 {
-                    Debug.Log($"{LogPrefix} customer={self.Id} lost the reserve race for book={candidate.Book.BookId} → leaving");
+                    Debug.Log($"{LogPrefix} customer={self.Id} lost the reserve race for book={result.Book.BookId} → leaving");
                     return BeginFailedFeedback(self, ctx);
                 }
 
-                _targetId = candidate.Book.BookId;
-                _matchedGenres = candidate.MatchedGenres;
-                _matchedTags = candidate.MatchedTags;
+                _targetId = result.Book.BookId;
+                _matchedGenres = result.MatchedGenres;
+                _matchedTags = result.MatchedTags;
                 _sub = Sub.Commit;
                 _t = 0f;
                 ctx.Sink?.OnBookReserved(self, _targetId);
@@ -105,7 +107,7 @@ namespace Book.Sell.Domain.Steps
 
         private StepStatus BeginFailedFeedback(Customer self, CustomerContext ctx)
         {
-            ctx.Sink?.OnPassivePurchaseFailed(self);
+            ctx.Sink?.OnPassivePurchaseFailed(self, _resolvedGenre);
 
             if (ctx.Tuning.PassiveFailureFeedbackDuration <= 0f)
                 return StepStatus.CompletedAndLeave;
@@ -123,7 +125,7 @@ namespace Book.Sell.Domain.Steps
             {
                 ctx.Shelf.ReleaseReserve(_targetId);
                 ctx.Sink?.OnBookReleased(self, _targetId);
-                ctx.Sink?.OnPassivePurchaseFailed(self);
+                ctx.Sink?.OnPassivePurchaseFailed(self, _resolvedGenre);
             }
         }
     }

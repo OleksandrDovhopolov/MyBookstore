@@ -21,8 +21,9 @@ namespace Book.Sell.Domain
         //TODO should rename to OnPassivePurchase ? 
         void OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent);
 
-        /// <summary>A passive purchase attempt ended without a sale.</summary>
-        void OnPassivePurchaseFailed(Customer customer);
+        /// <summary>A passive purchase attempt ended without a sale. <paramref name="genre"/> is the genre
+        /// the attempt was made on (may be null for the legacy model, which can't attribute a miss).</summary>
+        void OnPassivePurchaseFailed(Customer customer, string genre);
 
         /// <summary>The customer finished its visit having bought <paramref name="purchasedBookCount"/>
         /// books (active recommendations + passive sales, >= 1). For the HUD completion animation.</summary>

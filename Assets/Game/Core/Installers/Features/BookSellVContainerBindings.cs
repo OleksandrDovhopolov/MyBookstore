@@ -25,6 +25,20 @@ namespace Game.Bootstrap
             builder.Register<ISalesShelfStateService, SalesShelfStateService>(Lifetime.Singleton);
         }
 
+        // Passive sales v2 (requested-genre): each customer rolls one genre from its profile.
+        // Both hit and miss carry the chosen genre. Default model.
+        public static void RegisterRequestedGenrePassiveSales(this IContainerBuilder builder)
+        {
+            builder.Register<IPassivePurchaseResolver, RequestedGenrePassiveResolver>(Lifetime.Singleton);
+        }
+
+        // Legacy passive (ADR-0004 shelf-roll): kept behind the seam for rollback. Not called by default.
+        public static void RegisterLegacyPassiveSales(this IContainerBuilder builder)
+        {
+            builder.Register<IPassiveSaleSelector, WeightedPassiveSaleSelector>(Lifetime.Singleton);
+            builder.Register<IPassivePurchaseResolver, LegacyShelfPassiveResolver>(Lifetime.Singleton);
+        }
+
         public static void RegisterBookSell(
             this IContainerBuilder builder,
             CustomerVisual customerVisualPrefab,
@@ -44,10 +58,13 @@ namespace Game.Bootstrap
             // catalog if no session exists yet.
             builder.Register<IRecommendationScoringService, RecommendationScoringService>(Lifetime.Singleton);
 
-            // Probabilistic passive sale (ADR-0004): chance gate per genre, then weighted pick by RarityWeight.
-            // IDecorModifierProvider is registered by RegisterDecor in Game.Decor module.
+            // Passive sale chance gate (ADR-0004). IDecorModifierProvider is registered by RegisterDecor.
             builder.Register<IBaseSaleChanceCalculator, EconomyBasedSaleChanceCalculator>(Lifetime.Singleton);
-            builder.Register<IPassiveSaleSelector, WeightedPassiveSaleSelector>(Lifetime.Singleton);
+            // Per-customer desire profile — used by the spawner in both passive models.
+            builder.Register<ICustomerProfileProvider, LocationDemandProfileProvider>(Lifetime.Singleton);
+            // Passive model behind the IPassivePurchaseResolver seam. Default = requested-genre (v2).
+            // To roll back to the old shelf-roll model, call RegisterLegacyPassiveSales(builder) instead.
+            RegisterRequestedGenrePassiveSales(builder);
             // ISalesShelfStateService НЕ здесь — он общий для хаба (Preparation) и локации (Sales),
             // регистрируется глобально через RegisterBookSellSharedState. См. ниже.
 

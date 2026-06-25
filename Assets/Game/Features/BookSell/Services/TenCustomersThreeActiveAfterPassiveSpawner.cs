@@ -17,16 +17,18 @@ namespace Book.Sell.Services
     /// </summary>
     public sealed class TenCustomersThreeActiveAfterPassiveSpawner : ICustomerSpawner
     {
-        private const int CustomerCount = 5;
+        private const int CustomerCount = 2;
         private const int ActiveCustomerCount = 3;
         private const int MinPassiveAttempts = 1;
-        private const int MaxPassiveAttempts = 2;
+        private const int MaxPassiveAttempts = 5;
 
         private readonly IConfigsService _configs;
+        private readonly ICustomerProfileProvider _profiles;
 
-        public TenCustomersThreeActiveAfterPassiveSpawner(IConfigsService configs)
+        public TenCustomersThreeActiveAfterPassiveSpawner(IConfigsService configs, ICustomerProfileProvider profiles)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
+            _profiles = profiles ?? throw new ArgumentNullException(nameof(profiles));
         }
 
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
@@ -50,7 +52,7 @@ namespace Book.Sell.Services
                 steps.Add(new CompletePurchaseStep());
                 steps.Add(new LeaveStep(RandomLeaveDuration(tuning, random)));
 
-                customers.Add(new Customer($"cust_{i + 1}", steps));
+                customers.Add(new Customer($"cust_{i + 1}", steps, _profiles.Create(setup, random)));
             }
 
             return customers;

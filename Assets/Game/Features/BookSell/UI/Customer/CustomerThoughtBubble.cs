@@ -62,9 +62,12 @@ namespace Book.Sell.UI.Customer
             //   PassiveSaleFailed -> fail icon
             //   everything else   -> State text label
             var showDots = state == CustomerThoughtState.Thinking;
-            var showBook = state == CustomerThoughtState.ThinkingNext;
             var showSuccess = state == CustomerThoughtState.Comment;
             var showFail = state == CustomerThoughtState.PassiveSaleFailed;
+            // Book icon shows the locked book (ThinkingNext) and, on a failed attempt, the missed genre
+            // (alongside the Fail icon) when a sprite is available.
+            var showBook = state == CustomerThoughtState.ThinkingNext
+                           || (showFail && payload.BookSprite != null);
             var showText = !showDots && !showBook && !showSuccess && !showFail;
 
             UpdateDots(showDots);

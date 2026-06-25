@@ -21,7 +21,7 @@ namespace Book.Sell.Services
         private readonly IConfigsService _configs;
         private readonly ISalesSetupProvider _setupProvider;
         private readonly IRecommendationScoringService _scoring;
-        private readonly IPassiveSaleSelector _passiveSelector;
+        private readonly IPassivePurchaseResolver _passiveResolver;
         private readonly ISalesRandom _random;
         private readonly ICustomerSpawner _spawner;
         private readonly IInteractionLock _lock;
@@ -49,7 +49,7 @@ namespace Book.Sell.Services
             IConfigsService configs,
             ISalesSetupProvider setupProvider,
             IRecommendationScoringService scoring,
-            IPassiveSaleSelector passiveSelector,
+            IPassivePurchaseResolver passiveResolver,
             ISalesRandom random,
             ICustomerSpawner spawner,
             IInteractionLock interactionLock,
@@ -64,7 +64,7 @@ namespace Book.Sell.Services
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _setupProvider = setupProvider ?? throw new ArgumentNullException(nameof(setupProvider));
             _scoring = scoring ?? throw new ArgumentNullException(nameof(scoring));
-            _passiveSelector = passiveSelector ?? throw new ArgumentNullException(nameof(passiveSelector));
+            _passiveResolver = passiveResolver ?? throw new ArgumentNullException(nameof(passiveResolver));
             _random = random ?? throw new ArgumentNullException(nameof(random));
             _spawner = spawner ?? throw new ArgumentNullException(nameof(spawner));
             _lock = interactionLock ?? throw new ArgumentNullException(nameof(interactionLock));
@@ -88,7 +88,7 @@ namespace Book.Sell.Services
         public event Action<PassiveSaleEvent> PassiveSaleHappened;
         public event Action<Customer, RecommendationResult> CustomerRecommendationResolved;
         public event Action<Customer, PassiveSaleEvent> CustomerPassiveSaleHappened;
-        public event Action<Customer> CustomerPassivePurchaseFailed;
+        public event Action<Customer, string> CustomerPassivePurchaseFailed;
         public event Action<Customer, int> CustomerPurchaseCompleted;
         public event Action<Customer> CustomerThoughtBubbleHidden;
         public event Action DayReadyToClose;
@@ -113,7 +113,7 @@ namespace Book.Sell.Services
             _shelf = _shelfBuilder.Build(setup.ShelfBookIds);
 
             _result = new SalesDayResult { Day = setup.Day };
-            _ctx = new CustomerContext(_shelf, _lock, _random, _passiveSelector, _location, setup.DecorIds, this, _tuning);
+            _ctx = new CustomerContext(_shelf, _lock, _random, _passiveResolver, _location, setup.DecorIds, this, _tuning);
 
             _customers = new List<Customer>(_spawner.BuildCustomers(setup, _tuning, _random));
             _soldBookCommitter.Reset();
@@ -289,10 +289,10 @@ namespace Book.Sell.Services
             BookReleased?.Invoke(customer, bookId);
         }
 
-        void ISalesDaySink.OnPassivePurchaseFailed(Customer customer)
+        void ISalesDaySink.OnPassivePurchaseFailed(Customer customer, string genre)
         {
-            Debug.Log($"{LogPrefix} passive purchase failed: customer={customer.Id}");
-            CustomerPassivePurchaseFailed?.Invoke(customer);
+            Debug.Log($"{LogPrefix} passive purchase failed: customer={customer.Id} genre={genre}");
+            CustomerPassivePurchaseFailed?.Invoke(customer, genre);
         }
 
         void ISalesDaySink.OnPurchaseCompleted(Customer customer, int purchasedBookCount)

@@ -10,6 +10,14 @@
 
 ---
 
+## 🗂 Навигация / meta
+
+| Документ | Что описывает | Связи |
+|---|---|---|
+| ✅ [CATALOG.md](CATALOG.md) | Главная карта `docs/`: какие документы есть в проекте, как они сгруппированы и где отмечены связи между ними. | Ссылается на все актуальные разделы каталога; не включает `docs/archive/` в рабочий контур. |
+
+---
+
 ## Легенда
 
 **Тип документа:**
@@ -74,8 +82,9 @@
 | ✅ [0001](adr/0001-save-data-modular-payload.md) | **Save data — modular opaque payload.** `SaveData` = `Dictionary<string, ModulePayload>`; каждая фича владеет своей моделью и версией схемы, ядро Save не знает о данных фич. | Accepted | Указывается из [0003](adr/0003-customer-simulation.md); история — [archive/SAVE_SYSTEM.md](archive/SAVE_SYSTEM.md), [archive/SAVE_PATTERNS_FROM_PROD.md](archive/SAVE_PATTERNS_FROM_PROD.md), [archive/RESEARCH_SAVE_SYSTEM.md](archive/RESEARCH_SAVE_SYSTEM.md), [archive/SAVE_MIGRATION_FROM_RESEARCH.md](archive/SAVE_MIGRATION_FROM_RESEARCH.md) |
 | ✅ [0002](adr/0002-config-system-architecture.md) | **Config system — клиентская архитектура.** Data-driven конфиги (`BookConfig`/`LocationConfig`/…), редактируемые без ребилда, версионирование, A/B. | Accepted | [CONFIG_CACHE_SYSTEM.md](CONFIG_CACHE_SYSTEM.md), [CONFIG_SERVER_API.md](CONFIG_SERVER_API.md), [CONFIG_EDITOR_WINDOW_MVP_SPEC.md](CONFIG_EDITOR_WINDOW_MVP_SPEC.md) + серверный ADR |
 | ✅ [0003](adr/0003-customer-simulation.md) | **Customer simulation — фаза «Продажа» как real-time симуляция** конкурентных агентов-покупателей (приход → бродят → пассивные/активные покупки). | Accepted | Supersedes пошаговый Sales MVP. Related: [0001](adr/0001-save-data-modular-payload.md), [CORE_LOOP.md](CORE_LOOP.md), [INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md](INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md). Уточняется [0004](adr/0004-stock-model-hybrid-sale-chance.md) |
-| ✅ [0004](adr/0004-stock-model-hybrid-sale-chance.md) | **Stock model (hybrid) + passive sale chance.** Сток книг = per-title + агрегат по жанрам; пассивная продажа — вероятностный `baseSaleChance`, падающий по мере распродажи. | Accepted | Уточняет пассивную часть [0003](adr/0003-customer-simulation.md). Related: [CORE_LOOP.md](CORE_LOOP.md), [FTUE.md](FTUE.md) |
+| ✅ [0004](adr/0004-stock-model-hybrid-sale-chance.md) | **Stock model (hybrid) + passive sale chance.** Сток книг = per-title + агрегат по жанрам; пассивная продажа — вероятностный `baseSaleChance`, падающий по мере распродажи. | Accepted | Уточняет пассивную часть [0003](adr/0003-customer-simulation.md). Стадия-1 уточнена [0006](adr/0006-passive-sales-requested-genre.md). Related: [CORE_LOOP.md](CORE_LOOP.md), [FTUE.md](FTUE.md) |
 | ✅ [0005](adr/0005-customer-visuals-in-location-scene.md) | **Customer visuals в world-space `LocationScene`.** Визуалы покупателей живут в отдельной additive-сцене поверх хаба; якоря/спавнер регистрируются в `LocationInstaller`. | Accepted (upd 2026-06-21) | Related: [0003](adr/0003-customer-simulation.md), [0004](adr/0004-stock-model-hybrid-sale-chance.md), [GameFlowLoop.md](GameFlowLoop.md), [INPROGRESS/SCENE_ARCHITECTURE.md](INPROGRESS/SCENE_ARCHITECTURE.md), [INPROGRESS/LOCATION_BUILDING.md](INPROGRESS/LOCATION_BUILDING.md), [INPROGRESS/LOCATIONSCENE_EDITOR_SETUP.md](INPROGRESS/LOCATIONSCENE_EDITOR_SETUP.md) |
+| ✅ [0006](adr/0006-passive-sales-requested-genre.md) | **Passive sales — per-customer requested-genre roll.** Покупатель приходит с профилем 1‑3 жанров; попытка катит **один** жанр из запроса → жанр известен и в успехе, и в провале. Уточняет стадию-1 [0004](adr/0004-stock-model-hybrid-sale-chance.md); seam `IPassivePurchaseResolver`, старая модель сохранена за `LegacyShelfPassiveResolver`. | Accepted | Уточняет [0004](adr/0004-stock-model-hybrid-sale-chance.md). Related: [0003](adr/0003-customer-simulation.md), [CORE_LOOP.md](CORE_LOOP.md) |
 
 ---
 
@@ -148,7 +157,7 @@
 
 - **Фундамент:** [ADDRESSABLES.md](ADDRESSABLES.md) 🧱 — ни от чего не зависит; на неё опираются [UI_SYSTEM.md](UI_SYSTEM.md) и sprite-сервисы.
 - **UI:** [UI_SYSTEM.md](UI_SYSTEM.md) → [ADDRESSABLES.md](ADDRESSABLES.md); вокруг неё — future-phases и in-progress спеки фабрики окон/переходов.
-- **Sales-цепочка ADR:** [0003](adr/0003-customer-simulation.md) → уточняется [0004](adr/0004-stock-model-hybrid-sale-chance.md) → визуальная часть [0005](adr/0005-customer-visuals-in-location-scene.md); все опираются на дизайн [CORE_LOOP.md](CORE_LOOP.md).
+- **Sales-цепочка ADR:** [0003](adr/0003-customer-simulation.md) → уточняется [0004](adr/0004-stock-model-hybrid-sale-chance.md) → пассив-стадия-1 уточнена [0006](adr/0006-passive-sales-requested-genre.md) → визуальная часть [0005](adr/0005-customer-visuals-in-location-scene.md); все опираются на дизайн [CORE_LOOP.md](CORE_LOOP.md).
 - **Config-кластер:** [ADR-0002](adr/0002-config-system-architecture.md) ↔ `CONFIG_*` документы.
 - **Save-кластер:** [ADR-0001](adr/0001-save-data-modular-payload.md) ↔ архивные SAVE_*-доки.
 - **Правила формата** ([ASMDEF_RULES.md](ASMDEF_RULES.md), [LANGUAGE_POLICY.md](LANGUAGE_POLICY.md)) 📐 действуют поперёк всего и не описывают функционал.

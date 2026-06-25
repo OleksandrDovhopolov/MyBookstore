@@ -20,7 +20,7 @@
 - Строгие asmdef-правила; Unity 6, VContainer, UniTask, Newtonsoft.
 - ADR-0001: «No shared C# code between client and server is planned»; server-authoritative logic — триггер пересмотра.
 
-Зафиксированные владельцем решения по поведению (полностью — в `customer-simulation-decisions.md`): унифицированный агент (intent'ы passive/active в любом порядке, активный не обязан следовать за пассивным); общий FIFO-lock на миниигру+диалог; пауза замораживает чужие тики; reserve-on-target; вместимость лавки не нужна; concurrency бесконечно; спавн за интерфейсом; конец дня = все обслужены ИЛИ книги кончились; miss пассивки пропускает книгу; save во время дня пересоздаётся.
+Зафиксированные владельцем решения по поведению (полностью — в `customer-simulation-decisions.md`): унифицированный агент (intent'ы passive/active в любом порядке, активный не обязан следовать за пассивным); общий FIFO-lock на миниигру+диалог; пауза замораживает чужие тики; reserve-on-target; вместимость лавки не нужна; concurrency бесконечно; спавн за интерфейсом; конец дня = все обслужены ИЛИ книги кончились; miss пассивки завершает passive-цепочку покупателя (новых passive-intent'ов после miss нет, но дальше возможны non-passive шаги: active / comment / dialogue / etc.); save во время дня пересоздаётся.
 
 Рассмотренные и **отклонённые** подходы к рантайму (детально — ниже в «Что НЕ выбрано»): паттерн `Game.Commands.ICommand`, серверный deterministic-replay, коммерческий Behavior Designer.
 
@@ -31,6 +31,7 @@
 ### 1. Customer = Plan (данные) + tick-FSM (исполнитель)
 
 - **Plan** — упорядоченный список шагов (`IReadOnlyList<ICustomerStep>`): `Approach → Browse → {passive|active}* → (опц. Dialogue) → Leave`. Это **данные**, которые выдаёт спавнер.
+- После первого `PassivePurchaseStep`, завершившегося miss/fail, план больше не должен содержать новых passive-шагов для этого визита; допустимо продолжение только non-passive шагами (`ActiveRequestStep`, `DialogueStep`, comment/quest/etc.) и затем closing.
 - **Шаг** — резюмируемое состояние, не одноразовый `Execute()`:
   ```
   interface ICustomerStep { void Enter(ctx); StepStatus Tick(ctx, dt); void Exit(ctx); }
@@ -46,7 +47,7 @@
 
 ### 3. Унифицированный агент
 
-Покупатель = последовательность intent'ов покупки (каждый — passive или active, в любом порядке) + опциональный диалог. Допустим один active-intent на одну книгу без пассива. После активного intent'а — возможен возврат в пассивный режим. «Active/passive» — режимы поведения, не разные классы.
+Покупатель = последовательность intent'ов покупки (каждый — passive или active, в любом порядке) + опциональный диалог. Допустим один active-intent на одну книгу без пассива. После активного intent'а — возможен возврат в пассивный режим, пока не случился miss в passive-ветке. После passive-miss новые passive-intent'ы в этом визите не планируются, но возможны non-passive продолжения (active/comment/dialogue/etc.). «Active/passive» — режимы поведения, не разные классы.
 
 ### 4. Общий арбитраж — `IInteractionLock`
 
