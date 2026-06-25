@@ -56,7 +56,8 @@ namespace Book.Sell.Tests.Editor.Fakes
                 CompletePurchaseDuration = 0f,
                 LeaveDuration = 0f,
                 SpawnInterval = 0f,
-                BaseCustomers = 0
+                BaseCustomers = 0,
+                MaxConcurrentCustomers = 0   // no concurrency cap by default — all customers spawn at once
             };
 
         /// <summary>Selector that passes the stage-1 gate every time. Useful for flow-focused tests.</summary>

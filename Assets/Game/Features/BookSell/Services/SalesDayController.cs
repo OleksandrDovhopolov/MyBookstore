@@ -337,11 +337,30 @@ namespace Book.Sell.Services
             if (_spawningStopped) return;   // shelf sold out — no new customers (in-flight ones still finish)
             if (_nextToSpawn >= _customers.Count) return;
             _spawnTimer += dt;
-            while (_spawnTimer >= _tuning.SpawnInterval && _nextToSpawn < _customers.Count)
+            // Cap check inside the loop prevents bursts: one freed slot lets at most one new customer in.
+            while (_spawnTimer >= _tuning.SpawnInterval
+                   && _nextToSpawn < _customers.Count
+                   && !IsConcurrencyCapReached())
             {
                 _spawnTimer -= _tuning.SpawnInterval;
                 _nextToSpawn++;   // include the next customer in the tick loop
             }
+        }
+
+        private bool IsConcurrencyCapReached()
+        {
+            var cap = _tuning.MaxConcurrentCustomers;
+            if (cap <= 0) return false;   // no limit
+            return ActiveCustomerCount() >= cap;
+        }
+
+        // Customers present on the floor = spawned [0.._nextToSpawn) that are not yet Done.
+        private int ActiveCustomerCount()
+        {
+            var count = 0;
+            for (var i = 0; i < _nextToSpawn; i++)
+                if (!_customers[i].IsDone) count++;
+            return count;
         }
 
         private void ResolveActive()

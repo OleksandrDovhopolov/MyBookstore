@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb073179077b9c54682653d639aeb329, type: 3}
   m_Name: SalesTuningExpress
   m_EditorClassIdentifier: 
-  _approachDuration: 0.5
+  _approachDuration: 2.5
   _minApproachDuration: 0.5
-  _maxApproachDuration: 1.5
+  _maxApproachDuration: 5
   _browseDuration: 1.5
   _passiveCommitDelay: 0.2
   _passiveFailureFeedbackDuration: 1
@@ -25,3 +25,4 @@ MonoBehaviour:
   _maxLeaveDuration: 1.5
   _spawnInterval: 2
   _baseCustomers: 5
+  _maxConcurrentCustomers: 3

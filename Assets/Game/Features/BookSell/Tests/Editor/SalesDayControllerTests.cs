@@ -26,6 +26,11 @@ namespace Book.Sell.Tests.Editor
         private static Customer Passive(string id)
             => new(id, new ICustomerStep[] { new ApproachStep(), new PassivePurchaseStep(), new LeaveStep() });
 
+        // Approach + Leave only: no purchase step, so the shelf never depletes and spawning is gated
+        // purely by the concurrency cap (used by the MaxConcurrentCustomers test).
+        private static Customer ApproachLeave(string id)
+            => new(id, new ICustomerStep[] { new ApproachStep(), new LeaveStep() });
+
         private static Customer Active(string id, RequestConfig req)
             => new(id, new ICustomerStep[] { new ApproachStep(), new ActiveRequestStep(req), new LeaveStep() });
 
@@ -500,6 +505,38 @@ namespace Book.Sell.Tests.Editor
             Assert.IsTrue(goldCollector.ResetCalled);
             Assert.AreEqual(1, goldCollector.CollectCalls.Count);
             Assert.IsTrue(completedAfterFlush);
+        }
+
+        [Test]
+        public void Spawning_RespectsMaxConcurrentCustomers_AndRefillsWhenSlotFrees()
+        {
+            // 10 customers, cap 3. Approach+Leave only (no purchase) so the shelf never depletes and
+            // every customer eventually reaches Done — letting the spawner refill freed slots.
+            var customers = new List<Customer>();
+            for (var i = 0; i < 10; i++) customers.Add(ApproachLeave($"c{i}"));
+
+            var tuning = SalesTestKit.FastTuning();   // zero durations, SpawnInterval 0
+            tuning.MaxConcurrentCustomers = 3;
+
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") }, new RequestConfig[0],
+                SalesTestKit.Location(), customers, tuning: tuning);
+
+            StartDay(c);
+
+            var maxPresent = 0;
+            for (var i = 0; i < 200 && c.Phase == SalesDayPhase.Running; i++)
+            {
+                c.Tick(0.1f);
+                // Present = spawned and not yet Done. The cap must never be exceeded.
+                var present = customers.Count(x => !x.IsDone && x.Phase != CustomerPhase.Spawned);
+                Assert.LessOrEqual(present, 3, "More than 3 customers were present at once.");
+                if (present > maxPresent) maxPresent = present;
+            }
+
+            Assert.AreEqual(3, maxPresent, "Cap of 3 was never reached — the gate is not being exercised.");
+            Assert.IsTrue(customers.All(x => x.IsDone), "Not all customers were eventually served.");
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
         }
 
         [Test]

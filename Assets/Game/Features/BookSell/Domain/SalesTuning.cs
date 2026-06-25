@@ -47,5 +47,9 @@ namespace Book.Sell.Domain
 
         /// <summary>Minimum customers per day in the stub spawner.</summary>
         public int BaseCustomers { get; set; } = 6;
+
+        /// <summary>Maximum customers present on the floor at once (spawned and not yet Done).
+        /// Spawning is gated until a slot frees. <c>&lt;= 0</c> means no limit.</summary>
+        public int MaxConcurrentCustomers { get; set; } = 3;
     }
 }
