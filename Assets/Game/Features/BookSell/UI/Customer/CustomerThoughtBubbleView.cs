@@ -12,10 +12,12 @@ namespace Book.Sell.UI.Customer
         [SerializeField] private TextMeshProUGUI _dotsText;
         [SerializeField] private Image _successIcon;
         [SerializeField] private Image _failIcon;
+        [SerializeField] private Image _bookIcon;
 
         public TextMeshProUGUI StateText => _stateText;
         public TextMeshProUGUI DotsText => _dotsText;
         public Image SuccessIcon => _successIcon;
         public Image FailIcon => _failIcon;
+        public Image BookIcon => _bookIcon;
     }
 }

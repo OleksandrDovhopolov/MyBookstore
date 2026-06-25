@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
+using Game.Configs;
+using Game.Configs.Models;
+using Game.Newspaper.UI;
 using Game.WorldHud;
 using UnityEngine;
 using VContainer.Unity;
@@ -22,6 +26,9 @@ namespace Book.Sell.UI.Customer
         private readonly ISalesDayController _sales;
         private readonly ICustomerVisualRegistry _registry;
         private readonly IWorldHudManager _worldHud;
+        private readonly IConfigsService _configs;
+        private readonly IUiSpriteProvider _uiSprites;
+        private readonly CancellationTokenSource _cts = new();
 
         private readonly Dictionary<string, CustomerThoughtBubble> _bubbles = new();
 
@@ -41,11 +48,15 @@ namespace Book.Sell.UI.Customer
         public CustomerBubbleBinder(
             ISalesDayController sales,
             ICustomerVisualRegistry registry,
-            IWorldHudManager worldHud)
+            IWorldHudManager worldHud,
+            IConfigsService configs,
+            IUiSpriteProvider uiSprites)
         {
             _sales = sales;
             _registry = registry;
             _worldHud = worldHud;
+            _configs = configs;
+            _uiSprites = uiSprites;
         }
 
         public void Start()
@@ -70,6 +81,9 @@ namespace Book.Sell.UI.Customer
             _sales.CustomerThoughtBubbleHidden -= OnCustomerThoughtBubbleHidden;
             _sales.CustomerRecommendationResolved -= OnCustomerRecommendationResolved;
             _registry.CustomerVisualDespawned -= OnCustomerVisualDespawned;
+
+            _cts.Cancel();
+            _cts.Dispose();
         }
 
         private void OnCustomerPhaseChanged(Book.Sell.Domain.Customer customer)
@@ -106,7 +120,35 @@ namespace Book.Sell.UI.Customer
 
         private void OnBookReserved(Book.Sell.Domain.Customer customer, string bookId)
         {
-            EnsureBubbleAsync(customer, CustomerThoughtState.ThinkingNext, "Book locked").Forget();
+            ShowLockedBookAsync(customer, bookId).Forget();
+        }
+
+        // Book locked (commit delay): show the book's genre sprite in the bubble's BookIcon.
+        private async UniTaskVoid ShowLockedBookAsync(Book.Sell.Domain.Customer customer, string bookId)
+        {
+            try
+            {
+                var sprite = await ResolveGenreSpriteAsync(bookId);
+
+                var bubble = await GetOrAttachBubbleAsync(customer);
+                if (bubble == null) return;
+
+                await bubble.SetStateAsync(
+                    CustomerThoughtState.ThinkingNext, new CustomerThoughtPayload(bookSprite: sprite));
+            }
+            catch (OperationCanceledException)
+            {
+                // binder disposed / sprite load cancelled — ignore
+            }
+        }
+
+        private async UniTask<Sprite> ResolveGenreSpriteAsync(string bookId)
+        {
+            if (string.IsNullOrEmpty(bookId)) return null;
+            if (!_configs.TryGet<BookConfig>(bookId, out var cfg) || string.IsNullOrEmpty(cfg.Genre)) return null;
+            if (!BookGenreExtensions.TryParseGenre(cfg.Genre, out var genre)) return null;
+
+            return await _uiSprites.GetSpriteAsync(genre.ToString(), _cts.Token);
         }
 
         private void OnCustomerPassivePurchaseFailed(Book.Sell.Domain.Customer customer)

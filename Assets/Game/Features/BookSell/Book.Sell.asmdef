@@ -5,6 +5,7 @@
         "UniTask",
         "VContainer",
         "Configs",
+        "Infrastructure",
         "Save",
         "Unity.TextMeshPro",
         "Book.Sell.API",

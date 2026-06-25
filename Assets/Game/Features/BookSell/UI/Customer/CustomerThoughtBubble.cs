@@ -55,35 +55,35 @@ namespace Book.Sell.UI.Customer
         {
             if (_view == null) return;
 
-            // ThinkingNext forces an empty label so the old "Book locked" never shows.
-            var label = state == CustomerThoughtState.ThinkingNext
-                ? string.Empty
-                : ResolveStateLabel(state, payload);
-            if (_view.StateText != null) _view.StateText.text = label;
-
-            // Thinking states with no label animate dots in the dedicated Dots text. The loop persists
-            // across consecutive thinking states so it doesn't restart when the passive-commit delay begins.
-            UpdateDots(IsThinking(state) && string.IsNullOrEmpty(label));
-
-            ApplySaleIcons(state);
-        }
-
-        // Passive sale result shows a Success/Fail image instead of the State text.
-        // Success ← Comment (passive sale happened), Fail ← PassiveSaleFailed. Other states keep the text.
-        private void ApplySaleIcons(CustomerThoughtState state)
-        {
+            // One visual channel per state:
+            //   Thinking      -> animated dots   (browse / _browseDuration)
+            //   ThinkingNext  -> book icon       (locked / _passiveCommitDelay)
+            //   Comment       -> success icon
+            //   PassiveSaleFailed -> fail icon
+            //   everything else   -> State text label
+            var showDots = state == CustomerThoughtState.Thinking;
+            var showBook = state == CustomerThoughtState.ThinkingNext;
             var showSuccess = state == CustomerThoughtState.Comment;
             var showFail = state == CustomerThoughtState.PassiveSaleFailed;
+            var showText = !showDots && !showBook && !showSuccess && !showFail;
+
+            UpdateDots(showDots);
+
+            if (_view.BookIcon != null)
+            {
+                if (showBook && payload.BookSprite != null) _view.BookIcon.sprite = payload.BookSprite;
+                _view.BookIcon.gameObject.SetActive(showBook);
+            }
 
             if (_view.SuccessIcon != null) _view.SuccessIcon.gameObject.SetActive(showSuccess);
             if (_view.FailIcon != null) _view.FailIcon.gameObject.SetActive(showFail);
 
             if (_view.StateText != null)
-                _view.StateText.gameObject.SetActive(!showSuccess && !showFail);
+            {
+                _view.StateText.text = showText ? ResolveStateLabel(state, payload) : string.Empty;
+                _view.StateText.gameObject.SetActive(showText);
+            }
         }
-
-        private static bool IsThinking(CustomerThoughtState state)
-            => state == CustomerThoughtState.Thinking || state == CustomerThoughtState.ThinkingNext;
 
         private void UpdateDots(bool animate)
         {
@@ -155,6 +155,7 @@ namespace Book.Sell.UI.Customer
             if (_view == null) return;
             if (_view.SuccessIcon != null) _view.SuccessIcon.gameObject.SetActive(false);
             if (_view.FailIcon != null) _view.FailIcon.gameObject.SetActive(false);
+            if (_view.BookIcon != null) _view.BookIcon.gameObject.SetActive(false);
             StopDots();
         }
     }
