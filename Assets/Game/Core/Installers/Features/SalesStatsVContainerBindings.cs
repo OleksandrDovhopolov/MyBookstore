@@ -1,4 +1,6 @@
+using Game.Conditions.API;
 using Game.SalesStats.API;
+using Game.SalesStats.Conditions;
 using Game.SalesStats.Services;
 using VContainer;
 
@@ -20,6 +22,10 @@ namespace Game.Bootstrap
                 .As<ISalesStatsService>()
                 .As<ISalesStatsReader>()
                 .As<ISalesStatsRecorder>();
+
+            // SalesStats ships its own condition adapter ("soldGenre"); the condition engine discovers
+            // it via the IConditionFactory collection — no engine change needed for new condition types.
+            builder.Register<IConditionFactory, SoldGenreConditionFactory>(Lifetime.Singleton);
         }
     }
 }

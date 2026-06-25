@@ -1,12 +1,7 @@
 {
-    "name": "Game.SalesStats",
-    "rootNamespace": "Game.SalesStats",
+    "name": "Game.Conditions",
+    "rootNamespace": "Game.Conditions",
     "references": [
-        "UniTask",
-        "VContainer",
-        "Save",
-        "Configs",
-        "Game.SalesStats.API",
         "Game.Conditions.API"
     ],
     "includePlatforms": [],

@@ -1,12 +1,7 @@
 {
-    "name": "Game.SalesStats.Tests.Editor",
-    "rootNamespace": "Game.SalesStats.Tests.Editor",
+    "name": "Game.Conditions.Tests.Editor",
+    "rootNamespace": "Game.Conditions.Tests.Editor",
     "references": [
-        "UniTask",
-        "Save",
-        "Configs",
-        "Game.SalesStats.API",
-        "Game.SalesStats",
         "Game.Conditions.API",
         "Game.Conditions",
         "UnityEngine.TestRunner"

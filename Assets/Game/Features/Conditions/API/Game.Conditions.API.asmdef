@@ -1,14 +1,7 @@
 {
-    "name": "Game.SalesStats",
-    "rootNamespace": "Game.SalesStats",
-    "references": [
-        "UniTask",
-        "VContainer",
-        "Save",
-        "Configs",
-        "Game.SalesStats.API",
-        "Game.Conditions.API"
-    ],
+    "name": "Game.Conditions.API",
+    "rootNamespace": "Game.Conditions.API",
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
@@ -16,7 +9,7 @@
     "precompiledReferences": [
         "Newtonsoft.Json.dll"
     ],
-    "autoReferenced": true,
+    "autoReferenced": false,
     "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false

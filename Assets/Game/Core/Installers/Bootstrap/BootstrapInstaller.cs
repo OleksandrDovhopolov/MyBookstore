@@ -56,7 +56,8 @@ namespace Game.Bootstrap
             builder.RegisterNewspaper();
             builder.RegisterUiSprites(_uiSpriteCatalog);
             builder.RegisterProgression();
-            builder.RegisterSalesStats();          // persistent per-genre sold counters (unlock conditions source)
+            builder.RegisterConditions();          // domain-agnostic condition engine (registry + parser)
+            builder.RegisterSalesStats();          // persistent per-genre sold counters + "soldGenre" condition factory
             builder.RegisterFtue();
             builder.RegisterBookSellSharedState(); // ISalesShelfStateService — общий для хаба и локации
             builder.RegisterPreparation();         // Preparation services (окно PreparationWindow инжектится глобально)
