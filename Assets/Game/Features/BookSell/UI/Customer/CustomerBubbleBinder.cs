@@ -28,6 +28,7 @@ namespace Book.Sell.UI.Customer
         private readonly IWorldHudManager _worldHud;
         private readonly IConfigsService _configs;
         private readonly IUiSpriteProvider _uiSprites;
+        private readonly SalesTuning _tuning;
         private readonly CancellationTokenSource _cts = new();
 
         private readonly Dictionary<string, CustomerThoughtBubble> _bubbles = new();
@@ -50,13 +51,15 @@ namespace Book.Sell.UI.Customer
             ICustomerVisualRegistry registry,
             IWorldHudManager worldHud,
             IConfigsService configs,
-            IUiSpriteProvider uiSprites)
+            IUiSpriteProvider uiSprites,
+            SalesTuning tuning)
         {
             _sales = sales;
             _registry = registry;
             _worldHud = worldHud;
             _configs = configs;
             _uiSprites = uiSprites;
+            _tuning = tuning;
         }
 
         public void Start()
@@ -160,7 +163,8 @@ namespace Book.Sell.UI.Customer
             ShowFailedAsync(customer, genre).Forget();
         }
 
-        // Passive attempt failed: show the Fail icon plus the genre sprite (which genre missed), when known.
+        // Passive attempt failed: mirror the success flow — show the (missed) genre sprite for the
+        // commit-delay window first, then switch to the Fail icon.
         private async UniTaskVoid ShowFailedAsync(Book.Sell.Domain.Customer customer, string genre)
         {
             try
@@ -170,8 +174,18 @@ namespace Book.Sell.UI.Customer
                 var bubble = await GetOrAttachBubbleAsync(customer);
                 if (bubble == null) return;
 
-                await bubble.SetStateAsync(
-                    CustomerThoughtState.PassiveSaleFailed, new CustomerThoughtPayload(bookSprite: sprite));
+                if (sprite != null)
+                {
+                    // Phase 1: show the genre sprite (book-icon state), held for the configured delay.
+                    await bubble.SetStateAsync(
+                        CustomerThoughtState.ThinkingNext, new CustomerThoughtPayload(bookSprite: sprite));
+                    await UniTask.Delay(
+                        TimeSpan.FromSeconds(_tuning.PassiveCommitDelay), ignoreTimeScale: true, cancellationToken: _cts.Token);
+                    if (bubble == null) return;   // detached/destroyed during the delay
+                }
+
+                // Phase 2: the Fail icon.
+                await bubble.SetStateAsync(CustomerThoughtState.PassiveSaleFailed, CustomerThoughtPayload.Empty);
             }
             catch (OperationCanceledException)
             {
