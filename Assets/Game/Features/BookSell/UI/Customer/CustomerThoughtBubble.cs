@@ -11,16 +11,13 @@ namespace Book.Sell.UI.Customer
     public sealed class CustomerThoughtBubble : WorldHud
     {
         private const float CrossfadeDuration = 0.2f;
-        private const float ScaleInDuration = 0.15f;
-        private const float DotsFrameInterval = 0.3f;   // seconds per "..." frame
+        private const float DotsFrameInterval = 0.4f;   // seconds per "..." frame
         private const int MaxDots = 5;
-        private static readonly Vector3 ScaleInFrom = Vector3.one * 0.5f;
-        private static readonly Vector3 ScaleInTo = Vector3.one;
 
         private CustomerThoughtBubbleView _view;
-        private CanvasGroup _currentActive;
-        private CancellationTokenSource _stateCts;
-        private bool _dotsAnimating;
+        // Owns the dots loop independently of state changes, so the animation keeps running smoothly
+        // across consecutive thinking states (Thinking -> ThinkingNext) instead of restarting.
+        private CancellationTokenSource _dotsCts;
 
         public CustomerThoughtState State { get; private set; } = CustomerThoughtState.None;
 
@@ -34,8 +31,7 @@ namespace Book.Sell.UI.Customer
 
         protected override async UniTask OnDetachAsync(CancellationToken ct)
         {
-            _stateCts?.Cancel();
-            _stateCts = null;
+            StopDots();
 
             if (CanvasGroup != null)
             {
@@ -43,76 +39,36 @@ namespace Book.Sell.UI.Customer
             }
         }
 
-        public async UniTask SetStateAsync(
+        public UniTask SetStateAsync(
             CustomerThoughtState state,
             CustomerThoughtPayload payload = null,
             CancellationToken externalCt = default)
         {
             payload ??= CustomerThoughtPayload.Empty;
 
-            _stateCts?.Cancel();
-            _stateCts = CancellationTokenSource.CreateLinkedTokenSource(externalCt);
-            var ct = _stateCts.Token;
-
-            try
-            {
-                ApplyContent(state, payload);
-
-                var next = ResolveGroup(state);
-                await CrossfadeAsync(next, ct);
-
-                // Per-state secondary animation (subtle scale-in for book / rejection).
-                await PlaySecondaryAsync(state, ct);
-
-                // Run the animated dots (in the dedicated Dots text) until the next state cancels _stateCts.
-                if (_dotsAnimating)
-                    RunThinkingDotsAsync(ct).Forget();
-
-                State = state;
-            }
-            catch (OperationCanceledException) { /* superseded — swallow */ }
+            ApplyContent(state, payload);   // starts/stops/keeps the dots loop as needed
+            State = state;
+            return UniTask.CompletedTask;
         }
 
         private void ApplyContent(CustomerThoughtState state, CustomerThoughtPayload payload)
         {
             if (_view == null) return;
 
-            // State text shows the phase label as before (e.g. "moving" for Approaching). ThinkingNext
-            // forces an empty label so the old "Book locked" never shows.
+            // ThinkingNext forces an empty label so the old "Book locked" never shows.
             var label = state == CustomerThoughtState.ThinkingNext
                 ? string.Empty
                 : ResolveStateLabel(state, payload);
             if (_view.StateText != null) _view.StateText.text = label;
 
-            // Animated dots run in their own Dots text, only when a thinking state has no label to show
-            // (Approaching keeps its "moving" text; Browsing / ThinkingNext get the dots).
-            _dotsAnimating = IsThinking(state) && string.IsNullOrEmpty(label);
-            if (_view.DotsText != null)
-            {
-                _view.DotsText.gameObject.SetActive(_dotsAnimating);
-                if (_dotsAnimating) _view.DotsText.text = ".";   // seed to avoid a blank first frame
-            }
+            // Thinking states with no label animate dots in the dedicated Dots text. The loop persists
+            // across consecutive thinking states so it doesn't restart when the passive-commit delay begins.
+            UpdateDots(IsThinking(state) && string.IsNullOrEmpty(label));
 
             ApplySaleIcons(state);
-
-            switch (state)
-            {
-                case CustomerThoughtState.BookPicked:
-                    if (_view.BookIcon != null) _view.BookIcon.sprite = payload.BookSprite;
-                    break;
-                case CustomerThoughtState.Comment:
-                case CustomerThoughtState.PassiveSaleFailed:
-                case CustomerThoughtState.PurchaseCompleted:
-                    if (_view.CommentText != null) _view.CommentText.text = payload.CommentText ?? string.Empty;
-                    break;
-                case CustomerThoughtState.Rejected:
-                    if (_view.RejectedBookIcon != null) _view.RejectedBookIcon.sprite = payload.RejectedBookSprite;
-                    if (_view.ReplacementBookIcon != null) _view.ReplacementBookIcon.sprite = payload.ReplacementBookSprite;
-                    break;
-            }
         }
 
-        // Stage 1: passive sale result shows a Success/Fail image instead of the State text.
+        // Passive sale result shows a Success/Fail image instead of the State text.
         // Success ← Comment (passive sale happened), Fail ← PassiveSaleFailed. Other states keep the text.
         private void ApplySaleIcons(CustomerThoughtState state)
         {
@@ -129,8 +85,35 @@ namespace Book.Sell.UI.Customer
         private static bool IsThinking(CustomerThoughtState state)
             => state == CustomerThoughtState.Thinking || state == CustomerThoughtState.ThinkingNext;
 
-        // Animates the Dots text "." -> "....." (1..MaxDots) and loops, until _stateCts cancels on the
-        // next state change (or on detach). Fire-and-forget under the state token.
+        private void UpdateDots(bool animate)
+        {
+            if (!animate)
+            {
+                StopDots();
+                return;
+            }
+
+            if (_view != null && _view.DotsText != null) _view.DotsText.gameObject.SetActive(true);
+
+            // Already running (the previous state was also a thinking-dots state): keep it going so the
+            // animation doesn't visibly reset on Thinking -> ThinkingNext.
+            if (_dotsCts != null) return;
+
+            if (_view != null && _view.DotsText != null) _view.DotsText.text = ".";   // seed
+            _dotsCts = new CancellationTokenSource();
+            RunThinkingDotsAsync(_dotsCts.Token).Forget();
+        }
+
+        private void StopDots()
+        {
+            _dotsCts?.Cancel();
+            _dotsCts?.Dispose();
+            _dotsCts = null;
+            if (_view != null && _view.DotsText != null) _view.DotsText.gameObject.SetActive(false);
+        }
+
+        // Animates the Dots text "." -> "....." (1..MaxDots) and loops, until _dotsCts cancels (leaving a
+        // thinking state or on detach). Fire-and-forget under the dots token.
         private async UniTaskVoid RunThinkingDotsAsync(CancellationToken ct)
         {
             try
@@ -138,7 +121,8 @@ namespace Book.Sell.UI.Customer
                 var count = 1;
                 while (!ct.IsCancellationRequested)
                 {
-                    if (_view != null && _view.DotsText != null)
+                    if (_view == null) return;   // bubble destroyed — stop the loop
+                    if (_view.DotsText != null)
                         _view.DotsText.text = new string('.', count);
 
                     count = count >= MaxDots ? 1 : count + 1;
@@ -160,86 +144,18 @@ namespace Book.Sell.UI.Customer
                 CustomerThoughtState.ThinkingNext => string.Empty,  // dots indicator instead of text
                 CustomerThoughtState.BookPicked => "Active purchase",
                 CustomerThoughtState.Comment => "Bought book",
-                CustomerThoughtState.Rejected => "Active purchase",
                 CustomerThoughtState.PassiveSaleFailed => "Failed",
                 CustomerThoughtState.PurchaseCompleted => "Done shopping",
                 _ => string.Empty
             };
         }
 
-        private CanvasGroup ResolveGroup(CustomerThoughtState state) => state switch
-        {
-            CustomerThoughtState.Thinking => _view?.DotsGroup,
-            CustomerThoughtState.ThinkingNext => _view?.DotsGroup,
-            CustomerThoughtState.BookPicked => _view?.BookGroup,
-            CustomerThoughtState.Comment => _view?.CommentGroup,
-            CustomerThoughtState.Rejected => _view?.RejectionGroup,
-            CustomerThoughtState.PassiveSaleFailed => _view?.CommentGroup,
-            CustomerThoughtState.PurchaseCompleted => _view?.CommentGroup,
-            _ => null,
-        };
-
-        private async UniTask CrossfadeAsync(CanvasGroup to, CancellationToken ct)
-        {
-            // Supersede-safe: snap every other sub-view off immediately. Rapid state changes (e.g.
-            // AwaitingHelp -> InMinigame in a single tick) cancel an in-flight fade mid-way (OCE); hiding
-            // the others here guarantees we never leave two sub-views (dots + book) overlapping, which the
-            // previous fade-out-then-fade-in sequence did when cancelled.
-            HideGroupsExcept(to);
-
-            _currentActive = to;
-            if (to == null) return;
-
-            to.gameObject.SetActive(true);
-            if (to.alpha < 1f)
-                await TweenAsync.LerpAlphaAsync(to, to.alpha, 1f, CrossfadeDuration, ct);
-            else
-                to.alpha = 1f;
-        }
-
-        private void HideGroupsExcept(CanvasGroup keep)
-        {
-            if (_view == null) return;
-            HideGroup(_view.DotsGroup, keep);
-            HideGroup(_view.BookGroup, keep);
-            HideGroup(_view.CommentGroup, keep);
-            HideGroup(_view.RejectionGroup, keep);
-        }
-
-        private static void HideGroup(CanvasGroup group, CanvasGroup keep)
-        {
-            if (group == null || group == keep) return;
-            group.alpha = 0f;
-            group.gameObject.SetActive(false);
-        }
-
-        private async UniTask PlaySecondaryAsync(CustomerThoughtState state, CancellationToken ct)
-        {
-            if (_view == null) return;
-
-            switch (state)
-            {
-                case CustomerThoughtState.BookPicked when _view.BookScaleTarget != null:
-                    await TweenAsync.LerpScaleAsync(_view.BookScaleTarget, ScaleInFrom, ScaleInTo, ScaleInDuration, ct);
-                    break;
-                case CustomerThoughtState.Rejected when _view.RejectionScaleTarget != null:
-                    await TweenAsync.LerpScaleAsync(_view.RejectionScaleTarget, ScaleInFrom, ScaleInTo, ScaleInDuration, ct);
-                    break;
-            }
-        }
-
         private void DeactivateAll()
         {
             if (_view == null) return;
-            if (_view.DotsGroup != null) { _view.DotsGroup.alpha = 0f; _view.DotsGroup.gameObject.SetActive(false); }
-            if (_view.BookGroup != null) { _view.BookGroup.alpha = 0f; _view.BookGroup.gameObject.SetActive(false); }
-            if (_view.CommentGroup != null) { _view.CommentGroup.alpha = 0f; _view.CommentGroup.gameObject.SetActive(false); }
-            if (_view.RejectionGroup != null) { _view.RejectionGroup.alpha = 0f; _view.RejectionGroup.gameObject.SetActive(false); }
             if (_view.SuccessIcon != null) _view.SuccessIcon.gameObject.SetActive(false);
             if (_view.FailIcon != null) _view.FailIcon.gameObject.SetActive(false);
-            if (_view.DotsText != null) _view.DotsText.gameObject.SetActive(false);
-            _dotsAnimating = false;
-            _currentActive = null;
+            StopDots();
         }
     }
 }

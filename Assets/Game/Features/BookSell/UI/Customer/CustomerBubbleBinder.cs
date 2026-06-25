@@ -81,11 +81,8 @@ namespace Book.Sell.UI.Customer
         {
             switch (customer.Phase)
             {
-                case CustomerPhase.Approaching:
-                    await EnsureBubbleAsync(customer, CustomerThoughtState.Thinking, "moving");
-                    break;
-
-                case CustomerPhase.Spawned:
+                // No bubble while the customer is spawning / walking up (Spawned, Approaching).
+                // It first appears once they reach the shelf and start choosing (Browsing).
                 case CustomerPhase.Browsing:
                 case CustomerPhase.AwaitingHelp:
                     await EnsureBubbleAsync(customer, CustomerThoughtState.Thinking);

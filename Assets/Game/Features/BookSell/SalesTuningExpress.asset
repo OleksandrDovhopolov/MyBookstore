@@ -15,7 +15,7 @@ MonoBehaviour:
   _approachDuration: 2.5
   _minApproachDuration: 0.5
   _maxApproachDuration: 5
-  _browseDuration: 1.5
+  _browseDuration: 2.5
   _passiveCommitDelay: 0.6
   _passiveFailureFeedbackDuration: 1.5
   _passiveSaleFeedbackDuration: 1.5
