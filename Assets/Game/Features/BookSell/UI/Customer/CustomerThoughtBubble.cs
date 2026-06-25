@@ -71,6 +71,8 @@ namespace Book.Sell.UI.Customer
             if (_view == null) return;
             if (_view.StateText != null) _view.StateText.text = ResolveStateLabel(state, payload);
 
+            ApplySaleIcons(state);
+
             switch (state)
             {
                 case CustomerThoughtState.BookPicked:
@@ -86,6 +88,20 @@ namespace Book.Sell.UI.Customer
                     if (_view.ReplacementBookIcon != null) _view.ReplacementBookIcon.sprite = payload.ReplacementBookSprite;
                     break;
             }
+        }
+
+        // Stage 1: passive sale result shows a Success/Fail image instead of the State text.
+        // Success ← Comment (passive sale happened), Fail ← PassiveSaleFailed. Other states keep the text.
+        private void ApplySaleIcons(CustomerThoughtState state)
+        {
+            var showSuccess = state == CustomerThoughtState.Comment;
+            var showFail = state == CustomerThoughtState.PassiveSaleFailed;
+
+            if (_view.SuccessIcon != null) _view.SuccessIcon.gameObject.SetActive(showSuccess);
+            if (_view.FailIcon != null) _view.FailIcon.gameObject.SetActive(showFail);
+
+            if (_view.StateText != null)
+                _view.StateText.gameObject.SetActive(!showSuccess && !showFail);
         }
 
         private static string ResolveStateLabel(CustomerThoughtState state, CustomerThoughtPayload payload)
@@ -174,6 +190,8 @@ namespace Book.Sell.UI.Customer
             if (_view.BookGroup != null) { _view.BookGroup.alpha = 0f; _view.BookGroup.gameObject.SetActive(false); }
             if (_view.CommentGroup != null) { _view.CommentGroup.alpha = 0f; _view.CommentGroup.gameObject.SetActive(false); }
             if (_view.RejectionGroup != null) { _view.RejectionGroup.alpha = 0f; _view.RejectionGroup.gameObject.SetActive(false); }
+            if (_view.SuccessIcon != null) _view.SuccessIcon.gameObject.SetActive(false);
+            if (_view.FailIcon != null) _view.FailIcon.gameObject.SetActive(false);
             _currentActive = null;
         }
     }

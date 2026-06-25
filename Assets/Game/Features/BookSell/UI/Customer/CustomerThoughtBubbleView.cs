@@ -27,6 +27,10 @@ namespace Book.Sell.UI.Customer
         [SerializeField] private Image _replacementBookIcon;
         [SerializeField] private Transform _rejectionScaleTarget;
 
+        [Header("Sale result icons")]
+        [SerializeField] private Image _successIcon;
+        [SerializeField] private Image _failIcon;
+
         public CanvasGroup DotsGroup => _dotsGroup;
         public CanvasGroup BookGroup => _bookGroup;
         public CanvasGroup CommentGroup => _commentGroup;
@@ -41,5 +45,8 @@ namespace Book.Sell.UI.Customer
         public Image RejectedBookIcon => _rejectedBookIcon;
         public Image ReplacementBookIcon => _replacementBookIcon;
         public Transform RejectionScaleTarget => _rejectionScaleTarget;
+
+        public Image SuccessIcon => _successIcon;
+        public Image FailIcon => _failIcon;
     }
 }
