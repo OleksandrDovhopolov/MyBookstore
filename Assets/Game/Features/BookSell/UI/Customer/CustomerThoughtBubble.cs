@@ -12,12 +12,15 @@ namespace Book.Sell.UI.Customer
     {
         private const float CrossfadeDuration = 0.2f;
         private const float ScaleInDuration = 0.15f;
+        private const float DotsFrameInterval = 0.3f;   // seconds per "..." frame
+        private const int MaxDots = 5;
         private static readonly Vector3 ScaleInFrom = Vector3.one * 0.5f;
         private static readonly Vector3 ScaleInTo = Vector3.one;
 
         private CustomerThoughtBubbleView _view;
         private CanvasGroup _currentActive;
         private CancellationTokenSource _stateCts;
+        private bool _dotsAnimating;
 
         public CustomerThoughtState State { get; private set; } = CustomerThoughtState.None;
 
@@ -61,6 +64,10 @@ namespace Book.Sell.UI.Customer
                 // Per-state secondary animation (subtle scale-in for book / rejection).
                 await PlaySecondaryAsync(state, ct);
 
+                // Run the animated dots (in the dedicated Dots text) until the next state cancels _stateCts.
+                if (_dotsAnimating)
+                    RunThinkingDotsAsync(ct).Forget();
+
                 State = state;
             }
             catch (OperationCanceledException) { /* superseded — swallow */ }
@@ -69,7 +76,22 @@ namespace Book.Sell.UI.Customer
         private void ApplyContent(CustomerThoughtState state, CustomerThoughtPayload payload)
         {
             if (_view == null) return;
-            if (_view.StateText != null) _view.StateText.text = ResolveStateLabel(state, payload);
+
+            // State text shows the phase label as before (e.g. "moving" for Approaching). ThinkingNext
+            // forces an empty label so the old "Book locked" never shows.
+            var label = state == CustomerThoughtState.ThinkingNext
+                ? string.Empty
+                : ResolveStateLabel(state, payload);
+            if (_view.StateText != null) _view.StateText.text = label;
+
+            // Animated dots run in their own Dots text, only when a thinking state has no label to show
+            // (Approaching keeps its "moving" text; Browsing / ThinkingNext get the dots).
+            _dotsAnimating = IsThinking(state) && string.IsNullOrEmpty(label);
+            if (_view.DotsText != null)
+            {
+                _view.DotsText.gameObject.SetActive(_dotsAnimating);
+                if (_dotsAnimating) _view.DotsText.text = ".";   // seed to avoid a blank first frame
+            }
 
             ApplySaleIcons(state);
 
@@ -104,6 +126,29 @@ namespace Book.Sell.UI.Customer
                 _view.StateText.gameObject.SetActive(!showSuccess && !showFail);
         }
 
+        private static bool IsThinking(CustomerThoughtState state)
+            => state == CustomerThoughtState.Thinking || state == CustomerThoughtState.ThinkingNext;
+
+        // Animates the Dots text "." -> "....." (1..MaxDots) and loops, until _stateCts cancels on the
+        // next state change (or on detach). Fire-and-forget under the state token.
+        private async UniTaskVoid RunThinkingDotsAsync(CancellationToken ct)
+        {
+            try
+            {
+                var count = 1;
+                while (!ct.IsCancellationRequested)
+                {
+                    if (_view != null && _view.DotsText != null)
+                        _view.DotsText.text = new string('.', count);
+
+                    count = count >= MaxDots ? 1 : count + 1;
+                    await UniTask.Delay(
+                        TimeSpan.FromSeconds(DotsFrameInterval), ignoreTimeScale: true, cancellationToken: ct);
+                }
+            }
+            catch (OperationCanceledException) { /* superseded — stop */ }
+        }
+
         private static string ResolveStateLabel(CustomerThoughtState state, CustomerThoughtPayload payload)
         {
             if (!string.IsNullOrEmpty(payload.CommentText))
@@ -111,8 +156,8 @@ namespace Book.Sell.UI.Customer
 
             return state switch
             {
-                CustomerThoughtState.Thinking => "Choosing...",
-                CustomerThoughtState.ThinkingNext => "Book locked",
+                CustomerThoughtState.Thinking => string.Empty,      // dots indicator instead of text
+                CustomerThoughtState.ThinkingNext => string.Empty,  // dots indicator instead of text
                 CustomerThoughtState.BookPicked => "Active purchase",
                 CustomerThoughtState.Comment => "Bought book",
                 CustomerThoughtState.Rejected => "Active purchase",
@@ -192,6 +237,8 @@ namespace Book.Sell.UI.Customer
             if (_view.RejectionGroup != null) { _view.RejectionGroup.alpha = 0f; _view.RejectionGroup.gameObject.SetActive(false); }
             if (_view.SuccessIcon != null) _view.SuccessIcon.gameObject.SetActive(false);
             if (_view.FailIcon != null) _view.FailIcon.gameObject.SetActive(false);
+            if (_view.DotsText != null) _view.DotsText.gameObject.SetActive(false);
+            _dotsAnimating = false;
             _currentActive = null;
         }
     }

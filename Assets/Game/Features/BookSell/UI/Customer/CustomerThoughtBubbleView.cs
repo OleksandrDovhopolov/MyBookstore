@@ -22,6 +22,9 @@ namespace Book.Sell.UI.Customer
         [SerializeField] private TextMeshProUGUI _stateText;
         [SerializeField] private TextMeshProUGUI _commentText;
 
+        [Header("Dots (animated thinking indicator)")]
+        [SerializeField] private TextMeshProUGUI _dotsText;
+
         [Header("Rejection sub-view content")]
         [SerializeField] private Image _rejectedBookIcon;
         [SerializeField] private Image _replacementBookIcon;
@@ -41,6 +44,7 @@ namespace Book.Sell.UI.Customer
 
         public TextMeshProUGUI CommentText => _commentText;
         public TextMeshProUGUI StateText => _stateText != null ? _stateText : _commentText;
+        public TextMeshProUGUI DotsText => _dotsText;
 
         public Image RejectedBookIcon => _rejectedBookIcon;
         public Image ReplacementBookIcon => _replacementBookIcon;
