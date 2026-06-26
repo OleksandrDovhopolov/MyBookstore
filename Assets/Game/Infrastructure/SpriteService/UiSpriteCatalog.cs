@@ -22,6 +22,7 @@ namespace Game.Newspaper.UI
             public string Address;
         }
 
+        //TODO rename . this is only prewarned sprites by UiSpriteProvider
         [Tooltip("Sprites to preload, keyed by id. Empty for now.")]
         [SerializeField] private KeyedSpriteAddress[] _spritesById = Array.Empty<KeyedSpriteAddress>();
 

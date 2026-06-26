@@ -116,10 +116,6 @@ public class GameplaySceneView : WindowView
         _legacyGenreBookCountItemsHidden = true;
     }
 
-    /// <summary>
-    /// Receives genre sprites loaded by the controller (from Addressables). Re-applies them to any
-    /// items already spawned, since genre counts may have been bound before sprites finished loading.
-    /// </summary>
     public void SetGenreSprites(IReadOnlyDictionary<BookGenre, Sprite> sprites)
     {
         _genreSprites.Clear();

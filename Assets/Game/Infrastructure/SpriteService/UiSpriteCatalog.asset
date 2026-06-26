@@ -12,13 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b71f81f5a03f844878ec715950702073, type: 3}
   m_Name: UiSpriteCatalog
   m_EditorClassIdentifier: 
-  _bookOfferAddress: 
-  _decorByLotId:
-  - Key: 
-    Address: 
-  _rewardByResourceId:
-  - Key: 
-    Address: 
-  - Key: 
-    Address: 
-  _nonBookRewardAddress: 
+  _spritesById:
+  - Key: Classic
+    Address: Classic
+  - Key: Crime
+    Address: Crime
+  - Key: Drama
+    Address: Drama
+  - Key: Fact
+    Address: Fact
+  - Key: Fantasy
+    Address: Fantasy
+  - Key: Kids
+    Address: Kids
+  - Key: Travel
+    Address: Travel
