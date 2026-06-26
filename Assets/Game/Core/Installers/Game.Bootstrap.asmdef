@@ -26,6 +26,8 @@
         "Game.SalesStats.API",
         "Game.Conditions",
         "Game.Conditions.API",
+        "Game.LocationUnlock",
+        "Game.LocationUnlock.API",
         "MessagePipe",
         "MessagePipe.VContainer",
         "Game.Core.UI",

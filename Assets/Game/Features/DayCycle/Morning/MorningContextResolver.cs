@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Morning.Model;
+using Game.LocationUnlock.API;
 
 namespace Game.DayCycle.Morning
 {
@@ -10,16 +11,36 @@ namespace Game.DayCycle.Morning
     public sealed class MorningContextResolver : IMorningContextResolver
     {
         private readonly IConfigsService _configs;
+        private readonly ILocationUnlockService _locationUnlock;
 
-        public MorningContextResolver(IConfigsService configs)
+        public MorningContextResolver(IConfigsService configs, ILocationUnlockService locationUnlock = null)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
+            _locationUnlock = locationUnlock;   // optional: when absent, no unlock filtering is applied
         }
 
         public MorningDayContext Resolve(int dayIndex)
         {
             var config = FindByDayIndex(dayIndex);
-            return config != null ? FromConfig(dayIndex, config) : Fallback(dayIndex);
+            var context = config != null ? FromConfig(dayIndex, config) : Fallback(dayIndex);
+            context.TargetLocationIds = FilterUnlocked(context.TargetLocationIds);
+            return context;
+        }
+
+        // Morning must not advertise a location the player has not unlocked yet. With no unlock
+        // service wired (e.g. tests) the list passes through unchanged.
+        private IReadOnlyList<string> FilterUnlocked(IReadOnlyList<string> targetLocationIds)
+        {
+            if (_locationUnlock == null || targetLocationIds == null || targetLocationIds.Count == 0)
+                return targetLocationIds;
+
+            var unlocked = new List<string>(targetLocationIds.Count);
+            for (var i = 0; i < targetLocationIds.Count; i++)
+            {
+                if (_locationUnlock.IsUnlocked(targetLocationIds[i]))
+                    unlocked.Add(targetLocationIds[i]);
+            }
+            return unlocked;
         }
 
         private DayConfig FindByDayIndex(int dayIndex)

@@ -3,6 +3,13 @@
 > Статус: INPROGRESS. Референс-паттерн (приоритеты доступности, реактивность) взят из
 > [archive/REF_FEATURES_SERVICE.md](../archive/REF_FEATURES_SERVICE.md) — это сервис из **другой**
 > кодовой базы, в MyBookstore его нет. Берём идею, а не код.
+>
+> **Реализовано (вертикальный срез):**
+> - Слой 1 — `SalesStats` (persistent счётчики продаж по жанрам, батч-запись). `Assets/Game/Features/SalesStats/`.
+> - Слой 2 — `Conditions` engine (`ICondition`, AllOf/AnyOf/Not, parser/registry, fail-closed) + лист `soldGenre`. `Assets/Game/Features/Conditions/`.
+> - Слой 3 — `LocationUnlock` (`Locked/Unlockable/Unlocked`, `TryUnlockAsync` со списанием `UnlockCost`, реактивность по `Changed`) + фильтрация `DayConfig.TargetLocationIds` в `MorningContextResolver`. `Assets/Game/Features/LocationUnlock/`.
+>
+> Тесты написаны (edit-mode), но не прогонялись из CLI — требуется Unity Editor. Открытые провайдеры (`playerLevel`, per-character репутация) — см. раздел 12.
 
 ## 1. Задача
 

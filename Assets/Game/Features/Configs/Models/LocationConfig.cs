@@ -12,8 +12,23 @@ namespace Game.Configs.Models
     {
         public string Id { get; set; }
         public string DisplayName { get; set; }
+
+        /// <summary>Цена открытия локации (валюта gold), списывается при покупке после выполнения условий.</summary>
         public int UnlockCost { get; set; }
+
+        /// <summary>
+        /// Legacy-ярлык порога уровня. Источник истины об условиях — <see cref="Unlock"/>: если он
+        /// задан, <see cref="RequiredLevel"/> игнорируется (одна истина). Самостоятельная поддержка
+        /// ждёт появления провайдера уровня игрока.
+        /// </summary>
         public int RequiredLevel { get; set; }
+
+        /// <summary>
+        /// Data-driven дерево условий разблокировки (движок Conditions): композиты all/any/not +
+        /// листья с дискриминатором type (например soldGenre). Хранится сырым, парсится
+        /// <c>ILocationUnlockService</c> — фича Configs не знает про доменные условия. null = нет условий.
+        /// </summary>
+        public Newtonsoft.Json.Linq.JObject Unlock { get; set; }
 
         /// <summary>Жанры повышенного спроса в этой локации (университет → science, парк → kids/romance).</summary>
         public string[] DemandGenres { get; set; }
