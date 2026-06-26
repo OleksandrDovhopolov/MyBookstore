@@ -26,7 +26,7 @@ public class GameplaySceneView : WindowView
 
     public Button StartDayButton => _startDayButton;
 
-    private void Awake()
+    protected override void Awake()
     {
         HideLegacyGenreBookCountItemsIfNeeded();
         SetSalesGoldVisible(false);

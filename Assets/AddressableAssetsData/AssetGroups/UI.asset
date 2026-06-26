@@ -60,6 +60,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 593f0fbb47416004dbb514dd32fdd74d
+    m_Address: WelcomeWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5e48b06b283d8de4482bb2f6f079e2af
     m_Address: WorldHud/CustomerThoughtBubble
     m_ReadOnly: 0

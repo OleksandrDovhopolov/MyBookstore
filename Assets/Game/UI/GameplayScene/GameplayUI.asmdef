@@ -16,7 +16,9 @@
         "DayCycle",
         "Game.Preparation",
         "Configs",
-        "Game.Decor"
+        "Game.Decor",
+        "Game.Ftue",
+        "Save"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

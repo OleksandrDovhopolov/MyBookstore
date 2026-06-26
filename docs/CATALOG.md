@@ -94,6 +94,7 @@
 |---|---|---|
 | ⏳ [CORE_LOOP.md](CORE_LOOP.md) | _на будущее_ (дизайн дневного цикла Morning→Preparation→Sales→Results) | [ADR-0003](adr/0003-customer-simulation.md), [ADR-0004](adr/0004-stock-model-hybrid-sale-chance.md), [FTUE.md](FTUE.md) |
 | ⏳ [GameFlowLoop.md](GameFlowLoop.md) | _на будущее_ | [ADR-0005](adr/0005-customer-visuals-in-location-scene.md) |
+| ✅ [SAVE_DAY_FLOW.md](SAVE_DAY_FLOW.md) | Текущее поведение modular save + day flow, включая последствия выхода из `LocationScene` посреди дня. | [ADR-0001](adr/0001-save-data-modular-payload.md), [ADR-0003](adr/0003-customer-simulation.md), [GameFlowLoop.md](GameFlowLoop.md), [FTUE.md](FTUE.md) |
 | ⏳ [FTUE.md](FTUE.md) | _на будущее_ | [CORE_LOOP.md](CORE_LOOP.md) |
 | ⏳ [SHOP.md](SHOP.md) | _на будущее_ | — |
 | ⏳ [INVENTORY.md](INVENTORY.md) | _на будущее_ | — |
