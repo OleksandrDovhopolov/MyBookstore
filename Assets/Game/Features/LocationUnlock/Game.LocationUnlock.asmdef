@@ -1,0 +1,24 @@
+{
+    "name": "Game.LocationUnlock",
+    "rootNamespace": "Game.LocationUnlock",
+    "references": [
+        "UniTask",
+        "Save",
+        "Configs",
+        "Game.Conditions.API",
+        "Game.LocationUnlock.API",
+        "Game.Resources.API",
+        "Game.SalesStats.API"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

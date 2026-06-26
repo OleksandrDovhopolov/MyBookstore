@@ -1,0 +1,17 @@
+{
+    "name": "Game.LocationUnlock.API",
+    "rootNamespace": "Game.LocationUnlock.API",
+    "references": [
+        "UniTask",
+        "Game.Conditions.API"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

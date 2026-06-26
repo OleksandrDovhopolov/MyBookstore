@@ -1,0 +1,32 @@
+{
+    "name": "Game.LocationUnlock.Tests.Editor",
+    "rootNamespace": "Game.LocationUnlock.Tests.Editor",
+    "references": [
+        "UniTask",
+        "Save",
+        "Configs",
+        "Game.Conditions.API",
+        "Game.Conditions",
+        "Game.LocationUnlock.API",
+        "Game.LocationUnlock",
+        "Game.Resources.API",
+        "Game.SalesStats.API",
+        "UnityEngine.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
