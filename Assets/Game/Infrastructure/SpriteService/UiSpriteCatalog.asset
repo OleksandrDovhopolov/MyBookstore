@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b71f81f5a03f844878ec715950702073, type: 3}
   m_Name: UiSpriteCatalog
   m_EditorClassIdentifier: 
-  _spritesById:
+  _preloadSprites:
   - Key: Classic
     Address: Classic
   - Key: Crime

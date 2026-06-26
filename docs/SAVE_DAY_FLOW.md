@@ -237,9 +237,122 @@ prepared setup.
 - `SalesShelfStateService`: avoid writing sold shelf state during the running
   day, or separate runtime shelf state from persisted shelf state.
 - `SalesStatsService`: avoid flushing day sales through autosave before final
-  commit.
-- Final commit: make the full day application idempotent through
-  `CompletedDays` / `last_day_result` guards.
+  commit. `RecordSold` currently sets `_dirty` and calls `_save.MarkDirty()`,
+  so it must NOT be called per sale during a transactional day — accumulate the
+  sold ids / delta in the day buffer and update stats only at final commit.
+- Final commit: make the full day application idempotent (see Idempotency below).
+
+### Entry Fee (Sunk Visit Cost)
+
+Entering a location costs gold per visit. The amount is per-location and can be
+raised (or lowered) by active decor. This is a **per-visit fee**, distinct from
+`LocationConfig.UnlockCost`, which is the one-time unlock price owned by the
+LocationUnlock feature.
+
+The entry fee is the save-scum lever. The chosen rule:
+
+> The entry fee is a **committed visit-attempt cost** — it is NOT part of the
+> sales transaction and does NOT roll back on exit. Only the day's **sales
+> effects** roll back.
+
+So the accurate model is *"the Sales effects did not happen; the entry attempt
+did happen"* — not *"the whole day did not happen"*. Use that wording in design
+docs.
+
+Why sunk and not refunded:
+
+- Refunding the fee on exit makes re-entry free → infinite save-scum (enter,
+  see bad RNG, quit, re-enter at no net cost).
+- A sunk fee makes every fresh attempt cost gold, so quitting is always at least
+  as bad as finishing the day.
+- Related lever: persisting a per-day seed would make a re-entered day identical
+  (save-scum pointless) and could allow a softer fee. With no seed today, the
+  fee is the practical deterrent. (Open decision — see below.)
+
+New data + seam:
+
+- `LocationConfig.EntryCost` (gold; separate from `UnlockCost`).
+- `DecorConfig.EntryCostDelta` — **neutral, signed** contribution (allow negative
+  so decor can also discount; do not frame decor purely as a penalty). Do not
+  conflate with a future `DailyUpkeepCost` mechanic.
+- `ILocationEntryCostCalculator` (mirror of `IDecorModifierProvider`):
+  `cost = EntryCost(location) + Σ EntryCostDelta(activeDecor)`, clamped ≥ 0.
+  Active decor from `IDecorPlacementService.GetActiveDecorIds()`.
+- Preparation UI shows the cost breakdown (base + decor) and disables Confirm
+  when the player cannot afford it.
+
+### Confirm / Entry Order (do gold check BEFORE confirm)
+
+`PreparationWindow.ConfirmAsync` today calls `_session.ConfirmAsync` first
+(which writes `preparation.session`, `shelf_state`, and phase `Sales`) and only
+then `EnterLocationAsync`. Charging/validating the fee after confirm risks the
+state *"preparation confirmed but entry blocked"*. Correct order:
+
+```text
+1. calculate entry cost (location + active decor)
+2. Has(gold, cost)?  -> if not, do NOT confirm; show shortfall, keep window open
+3. _session.ConfirmAsync   (commit shelf selection + phase Sales)
+4. RemoveAsync(gold, cost)  (commit the sunk visit fee)
+5. EnterLocationAsync
+```
+
+Failure path: if `EnterLocationAsync` fails, the recovery must restore **both**
+the gold (refund the fee) **and** the Preparation UX — not just gold. Note that
+`preparation.session.Confirmed == true` will make `StartOrResume` build a fresh
+state, so `ReopenAfterTransitionFailureAsync` must account for that, not assume a
+clean reopen.
+
+### Commit Ownership and Boundaries
+
+- `Preparation confirm` = input committed (shelf selection).
+- `Enter location` = ante committed (entry fee, sunk). **Never rolled back.**
+- `Sales` = provisional, runtime buffer only.
+- `Results` = output committed (sales effects applied).
+- `Exit mid-day` = discard the buffer; entry fee stays spent; replay the day.
+
+Keep `CompletedDays` ownership with **Results**, not the sales commit.
+`ResultsSummarySessionService.LoadAndApplyAsync` marks the day completed today
+([ResultsSummarySessionService.cs:64](Assets/Game/Features/DayCycle/Results/Services/ResultsSummarySessionService.cs)).
+The sales commit should atomically apply sales effects + `last_day_result`;
+Results then idempotently marks the day completed. Moving `CompletedDays` into
+the sales commit changes that contract (Sales would drive DayCycle phase) and
+must be a separate, explicit decision with updated Results tests.
+
+### Dedicated Commit Service (do not bloat `SalesDayController`)
+
+`SalesDayController` is already near a god object. Introduce
+`ISalesDayCommitService.CommitAsync(SalesDayCommit commit, ct)`. The controller
+only assembles the result and calls commit; the service does the work: take a
+`BlockAutosave` lease, apply resources / inventory / shelf / stats /
+`last_day_result`, then one forced save.
+
+Also rename the buffering seams so intent is clear after defer-commit: today
+`FlushAsync` means "await launched write-through tasks"
+([SalesGoldCollector.cs:36](Assets/Game/Features/BookSell/Services/SalesGoldCollector.cs),
+[SoldBookCommitter.cs:42](Assets/Game/Features/BookSell/Services/SoldBookCommitter.cs)).
+After defer-commit it means "apply the accumulated effects". Prefer
+`Collect...` + `ApplyAsync`, or fold both into one `SalesDayEffectsBuffer`.
+
+### Idempotency
+
+`CompletedDays` alone is not enough. If the commit fails after
+`resources.AddAsync` but before `last_day_result`, a retry could double-grant
+gold. Mitigations:
+
+- Apply all effects inside one `BlockAutosave` lease followed by a single forced
+  save, so the persistence window is one file write (minimizes the partial-state
+  gap).
+- Add a stronger guard: a commit id in `last_day_result` (or a
+  `book_sell.applied_day_commits` marker) so a re-run of the same day's commit is
+  a no-op. Document the residual crash-mid-commit risk explicitly.
+
+### Open Decisions
+
+1. Entry fee on exit — **sunk (recommended)** vs refunded. Drives save-scum.
+2. Persist a per-day seed? If yes, re-entry is deterministic (save-scum moot) and
+   the fee can be softer; if no, the fee is the main deterrent.
+3. Tutorial day is excluded from RNG rollback — it keeps its own checkpoint state
+   (`ftue.first_location_tutorial`), authored content must not be re-rolled.
 
 ---
 
