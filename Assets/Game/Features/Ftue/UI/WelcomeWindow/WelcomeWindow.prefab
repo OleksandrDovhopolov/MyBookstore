@@ -183,7 +183,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _animator: {fileID: 7666706526294176552}
-  _defaultDuration: 0.25
+  _appearDuration: 1.4
+  _letterClickDuration: 1.4
+  _disappearDuration: 1.05
 --- !u!1 &984675401865770073
 GameObject:
   m_ObjectHideFlags: 0
