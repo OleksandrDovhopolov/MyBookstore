@@ -84,7 +84,18 @@ namespace Book.Sell.Services
                 await _save.UpdateModuleAsync(SalesSaveKeys.LastDayResult, result,
                     SalesSaveKeys.LastDayResultSchemaVersion, ct);
 
-                await _dayProgress.MarkCurrentDayCompletedAsync(ct);
+                // Persist completion for anti-replay/atomicity, but DO NOT fire the phase→Results
+                // transition here. That live UI routing is owned by the Results flow
+                // (ResultsSummarySessionService), which runs after ResultsWindow is shown. Firing
+                // PhaseChanged during the commit makes HubPhaseRouter open ResultsWindow prematurely
+                // (still in the location), double-opening it alongside SalesScreenView's own show.
+                // StartOrResume routes a day already in CompletedDays to Results on the next boot, so
+                // anti-replay does not need the phase set here.
+                if (!_dayProgress.Current.CompletedDays.Contains(result.Day))
+                {
+                    _dayProgress.Current.CompletedDays.Add(result.Day);
+                    await _dayProgress.SaveAsync(ct);
+                }
             }
 
             await _save.SaveAsync(ct, SaveMode.ForceWithSync);
