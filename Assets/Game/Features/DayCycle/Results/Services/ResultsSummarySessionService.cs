@@ -119,6 +119,8 @@ namespace Game.DayCycle.Results.Services
                     await _dayProgress.AdvanceToNextDayAsync(ct);
                 }
 
+                await _save.SaveAsync(ct, SaveMode.ForceWithSync);
+
                 _advancedCompletedDay = completedDay;
                 Debug.Log($"{LogPrefix} advanced to day {_dayProgress.Current.CurrentDay}, phase={_dayProgress.Current.CurrentPhase}.");
             }

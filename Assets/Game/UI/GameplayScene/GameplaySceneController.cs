@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
+using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
 using Game.Newspaper.UI;
 using Game.Preparation.Services;
@@ -17,6 +18,7 @@ using VContainer;
 public class GameplaySceneController : WindowController<GameplaySceneView>
 {
     private IResourcesService _resources;
+    private IDayProgressService _dayProgress;
     private IMorningSessionService _session;
     private IPreparationSessionService _preparationSession;
     private IUiSpriteProvider _uiSprites;
@@ -36,6 +38,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
     public void Construct(
         IResourcesService resources,
         IUiSpriteProvider uiSprites,
+        IDayProgressService dayProgress,
         IMorningSessionService morningSessionService,
         ISubscriber<GameplaySceneButtonsInteractableChanged> buttonsInteractableSubscriber,
         IPreparationSessionService preparationSession = null,
@@ -45,6 +48,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
     {
         _resources = resources;
         _uiSprites = uiSprites;
+        _dayProgress = dayProgress;
         _session = morningSessionService;
         _preparationSession = preparationSession;
         _salesGoldSubscriber = salesGoldSubscriber;
@@ -65,6 +69,9 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
             e => View.SetGenreBookCounts(e.Counts, e.PurchasedCounts, e.ShowPurchasedCounts));
 
         _salesGoldSubscription = _salesGoldSubscriber?.Subscribe(OnSalesGoldChanged);
+
+        if (_dayProgress != null)
+            _dayProgress.PhaseChanged += OnDayPhaseChanged;
     }
 
     protected override void OnShowStart()
@@ -151,6 +158,9 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
 
         if (View != null && View.StartDayButton != null)
             View.StartDayButton.onClick.RemoveAllListeners();
+
+        if (_dayProgress != null)
+            _dayProgress.PhaseChanged -= OnDayPhaseChanged;
     }
 
     private void SetSceneButtonsInteractable(bool interactable)
@@ -164,6 +174,12 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
 
         View.SetSalesGoldAmount(e.GoldEarned);
         View.SetSalesGoldVisible(e.Visible);
+    }
+
+    private void OnDayPhaseChanged(DayProgressState state)
+    {
+        if (state?.CurrentPhase == DayPhase.Morning)
+            RefreshDayAndGenreCountsAsync().Forget();
     }
 
     private void OnStartGameClicked() => StartGameAsync().Forget();

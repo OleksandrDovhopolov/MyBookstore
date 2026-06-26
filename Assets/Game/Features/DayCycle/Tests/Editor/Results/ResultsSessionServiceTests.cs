@@ -130,6 +130,16 @@ namespace Game.DayCycle.Tests.Editor.Results
         }
 
         [Test]
+        public void AdvanceToNextDay_ForcesSaveAfterProgressAdvance()
+        {
+            var h = new Harness(Sales());
+            h.Run();
+            h.Advance();
+
+            Assert.AreEqual(1, h.Save.ForceWithSyncSaveCallCount);
+        }
+
+        [Test]
         public void AdvanceToNextDay_Twice_ForSameCompletedDay_IsNoOpSecondTime()
         {
             var h = new Harness(Sales());

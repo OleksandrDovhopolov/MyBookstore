@@ -13,6 +13,7 @@ namespace Game.DayCycle.Day
 
         private readonly ISaveService _save;
         private DayProgressState _state;
+        private bool _loaded;
 
         public DayProgressService(ISaveService save)
         {
@@ -25,7 +26,10 @@ namespace Game.DayCycle.Day
 
         public async UniTask<DayProgressState> LoadAsync(CancellationToken ct)
         {
+            if (_loaded) return Current;
+
             _state = await _save.GetModuleAsync<DayProgressState>(ModuleKey, ct) ?? new DayProgressState();
+            _loaded = true;
             return _state;
         }
 

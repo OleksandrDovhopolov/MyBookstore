@@ -24,6 +24,7 @@ namespace Game.DayCycle.Tests.Editor.Fakes
         public Dictionary<string, string> Store => _store;
 
         public int SaveCallCount { get; private set; }
+        public int ForceWithSyncSaveCallCount { get; private set; }
 
         public UniTask<T> GetModuleAsync<T>(string moduleKey, CancellationToken ct) where T : class
         {
@@ -40,7 +41,13 @@ namespace Game.DayCycle.Tests.Editor.Fakes
         }
 
         public UniTask LoadAsync(CancellationToken ct) => UniTask.CompletedTask;
-        public UniTask SaveAsync(CancellationToken ct, SaveMode mode = SaveMode.Regular) => UniTask.CompletedTask;
+        public UniTask SaveAsync(CancellationToken ct, SaveMode mode = SaveMode.Regular)
+        {
+            if (mode == SaveMode.ForceWithSync)
+                ForceWithSyncSaveCallCount++;
+
+            return UniTask.CompletedTask;
+        }
         public void MarkDirty() { }
         public void RegisterHook(ISaveHook hook) { }
         public IDisposable BlockAutosave() => new NoopLease();
