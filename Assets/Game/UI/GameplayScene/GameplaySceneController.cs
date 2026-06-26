@@ -4,27 +4,22 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
 using Game.DayCycle.Morning;
-using Game.Ftue;
-using Game.Ftue.Domain;
-using Game.Ftue.Services;
 using Game.Newspaper.UI;
 using Game.Preparation.Services;
 using Game.Preparation.UI;
 using Game.Resources.API;
 using Game.UI;
 using MessagePipe;
-using Save;
 using UnityEngine;
 using VContainer;
 
 [Window("GameplaySceneController", WindowType.HUD)]
-public class GameplaySceneController: WindowController<GameplaySceneView>
+public class GameplaySceneController : WindowController<GameplaySceneView>
 {
     private IResourcesService _resources;
     private IMorningSessionService _session;
     private IPreparationSessionService _preparationSession;
     private IUiSpriteProvider _uiSprites;
-    private ISaveService _save;
 
     public bool SpritesLoaded { get; private set; }
 
@@ -39,7 +34,6 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
 
     [Inject]
     public void Construct(
-        ISaveService save,
         IResourcesService resources,
         IUiSpriteProvider uiSprites,
         IMorningSessionService morningSessionService,
@@ -49,7 +43,6 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
         ISubscriber<GameplaySalesGoldChanged> salesGoldSubscriber = null,
         IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null)
     {
-        _save = save;
         _resources = resources;
         _uiSprites = uiSprites;
         _session = morningSessionService;
@@ -89,25 +82,6 @@ public class GameplaySceneController: WindowController<GameplaySceneView>
 
         LoadGenreSpritesAsync(View.destroyCancellationToken).Forget();
         RefreshDayAndGenreCountsAsync().Forget();
-        TryShowWelcomeAsync(View.destroyCancellationToken).Forget();
-    }
-
-    // First entry: show the welcome letter unless it was already completed (Start pressed).
-    // Module absent OR Completed == false -> show; the window persists the flag on Start.
-    private async UniTaskVoid TryShowWelcomeAsync(CancellationToken ct)
-    {
-        if (_save == null) return;
-
-        try
-        {
-            var welcome = await _save.GetModuleAsync<WelcomeCompletedState>(FtueSaveKeys.WelcomeCompleted, ct);
-            if (welcome != null && welcome.Completed) return;
-
-            await UIManager.ShowAsync<WelcomeWindowController>(ct: ct);
-        }
-        catch (OperationCanceledException)
-        {
-        }
     }
 
     private async UniTaskVoid LoadGenreSpritesAsync(CancellationToken ct)

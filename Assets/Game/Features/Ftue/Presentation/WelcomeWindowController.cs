@@ -93,7 +93,6 @@ namespace Game.Ftue
         {
             View.SetStartInteractable(false);    // guard against a double click
 
-            Debug.LogError($"{LogPrefix} StartAsync");
             await WriteWelcomeCompletedAsync(ct);
 
             try

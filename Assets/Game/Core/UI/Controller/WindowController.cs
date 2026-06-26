@@ -45,6 +45,16 @@ namespace Game.UI
             Arguments = args;
         }
 
+        public void SetHudVisible(bool visible)
+        {
+            if (View == null) return;
+
+            var canvasGroup = View.CanvasGroup;
+            canvasGroup.alpha = visible ? 1f : 0f;
+            canvasGroup.interactable = visible;
+            canvasGroup.blocksRaycasts = visible;
+        }
+
         public async UniTask ShowAsync(CancellationToken ct)
         {
             if (!_isInitialized)
