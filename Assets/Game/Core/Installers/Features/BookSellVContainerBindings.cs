@@ -83,8 +83,10 @@ namespace Game.Bootstrap
             // Tuning comes from a designer-editable SO when assigned; otherwise code defaults.
             builder.RegisterInstance(salesTuningConfig != null ? salesTuningConfig.BuildTuning() : new SalesTuning());
             builder.Register<ISalesShelfBuilder, SalesShelfBuilder>(Lifetime.Singleton);
-            builder.Register<ISoldBookCommitter, SoldBookCommitter>(Lifetime.Singleton);
-            builder.Register<ISalesGoldCollector, SalesGoldCollector>(Lifetime.Singleton);
+            // Transactional day commit: applies gold/books/shelf/stats/result + day completion atomically
+            // at day end. Deps (resources/inventory/shelf-state/sales-stats/day-progress/save) resolve
+            // from the parent (global) scope.
+            builder.Register<ISalesDayCommitService, SalesDayCommitService>(Lifetime.Singleton);
             builder.Register<ISalesDayController, SalesDayController>(Lifetime.Singleton);
 
             // Customer visualization + world-space thought bubbles (Phase 0 of World HUD).

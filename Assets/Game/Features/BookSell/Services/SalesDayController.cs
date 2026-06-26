@@ -6,8 +6,6 @@ using Book.Sell.Domain;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
-using Game.Inventory.API;
-using Save;
 using UnityEngine;
 
 namespace Book.Sell.Services
@@ -26,10 +24,8 @@ namespace Book.Sell.Services
         private readonly ICustomerSpawner _spawner;
         private readonly IInteractionLock _lock;
         private readonly SalesTuning _tuning;
-        private readonly ISaveService _save;
         private readonly ISalesShelfBuilder _shelfBuilder;
-        private readonly ISoldBookCommitter _soldBookCommitter;
-        private readonly ISalesGoldCollector _salesGoldCollector;
+        private readonly ISalesDayCommitService _commitService;
 
         private SalesShelf _shelf = new();
         private SalesDayResult _result = new();
@@ -55,11 +51,7 @@ namespace Book.Sell.Services
             IInteractionLock interactionLock,
             SalesTuning tuning,
             ISalesShelfBuilder shelfBuilder = null,
-            ISoldBookCommitter soldBookCommitter = null,
-            ISalesGoldCollector salesGoldCollector = null,
-            IInventoryService inventory = null,
-            ISaveService save = null,
-            ISalesShelfStateService shelfState = null)
+            ISalesDayCommitService commitService = null)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _setupProvider = setupProvider ?? throw new ArgumentNullException(nameof(setupProvider));
@@ -70,9 +62,7 @@ namespace Book.Sell.Services
             _lock = interactionLock ?? throw new ArgumentNullException(nameof(interactionLock));
             _tuning = tuning ?? throw new ArgumentNullException(nameof(tuning));
             _shelfBuilder = shelfBuilder ?? new SalesShelfBuilder(_configs);
-            _soldBookCommitter = soldBookCommitter ?? CreateLegacySoldBookCommitter(inventory, shelfState);
-            _salesGoldCollector = salesGoldCollector ?? new NoOpSalesGoldCollector();
-            _save = save;   // optional in tests; in prod injected via DI
+            _commitService = commitService;   // optional in tests; in prod injected via DI
         }
 
         public int Day { get; private set; }
@@ -116,8 +106,6 @@ namespace Book.Sell.Services
             _ctx = new CustomerContext(_shelf, _lock, _random, _passiveResolver, _location, setup.DecorIds, this, _tuning);
 
             _customers = new List<Customer>(_spawner.BuildCustomers(setup, _tuning, _random));
-            _soldBookCommitter.Reset();
-            _salesGoldCollector.Reset();
             _nextToSpawn = 0;
             _spawnTimer = _tuning.SpawnInterval;   // spawn the first customer on the first tick
             _activeCustomer = null;
@@ -183,8 +171,7 @@ namespace Book.Sell.Services
                 _shelf.CommitSale(bookId);
 
                 //TODO active should be const in config class
-                _soldBookCommitter.CommitSoldBook(bookId, "active");
-                _salesGoldCollector.CollectSaleGold(Day, bookId, result.GoldEarned, "active");
+                // Provisional only: accumulate into _result; persisted atomically at day completion.
                 _result.SoldBookIds.Add(bookId);
                 _result.SalesCount++;
                 _activeCustomer.RegisterPurchasedBook();
@@ -303,9 +290,7 @@ namespace Book.Sell.Services
 
         void ISalesDaySink.OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent)
         {
-            //TODO passive should be const in config class
-            _soldBookCommitter.CommitSoldBook(saleEvent.BookId, "passive");
-            _salesGoldCollector.CollectSaleGold(Day, saleEvent.BookId, saleEvent.GoldEarned, "passive");
+            // Provisional only: accumulate into _result; persisted atomically at day completion.
             _result.GoldEarned += saleEvent.GoldEarned;
             _result.SalesCount++;
             _result.SoldBookIds.Add(saleEvent.BookId);
@@ -415,36 +400,23 @@ namespace Book.Sell.Services
             // Snapshot the result reference so a late reset doesn't race the publish.
             var snapshot = _result;
 
-            await _soldBookCommitter.FlushAsync(CancellationToken.None);
-            await _salesGoldCollector.FlushAsync(CancellationToken.None);
-
-            // 1) Persist BEFORE emitting so anyone listening to DayCompleted can immediately read
-            //    book_sell.last_day_result. UpdateModuleAsync only returns after the in-memory
-            //    module table is updated (it awaits its own semaphore internally).
-            if (_save != null)
+            // Atomic transactional commit: gold, sold books, shelf, stats, last_day_result and day
+            // completion are applied here in one shot (and only here). Until this runs nothing day-scoped
+            // is persisted, so exiting mid-day rolls the whole day back. See docs/SAVE_DAY_FLOW.md.
+            if (_commitService != null)
             {
                 try
                 {
-                    await _save.UpdateModuleAsync(SalesSaveKeys.LastDayResult, snapshot,
-                        SalesSaveKeys.LastDayResultSchemaVersion, CancellationToken.None);
+                    await _commitService.CommitAsync(snapshot, CancellationToken.None);
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError($"{LogPrefix} failed to persist SalesDayResult: {ex.Message}");
+                    Debug.LogError($"{LogPrefix} failed to commit SalesDayResult: {ex.Message}");
                 }
             }
 
-            // 2) Now it is safe to notify the View; Results will see a populated save module.
+            // Now it is safe to notify the View; Results will see a populated, completed save state.
             DayCompleted?.Invoke(snapshot);
-        }
-
-        private static ISoldBookCommitter CreateLegacySoldBookCommitter(
-            IInventoryService inventory,
-            ISalesShelfStateService shelfState)
-        {
-            return inventory != null || shelfState != null
-                ? new SoldBookCommitter(inventory, shelfState)
-                : new NoOpSoldBookCommitter();
         }
     }
 }

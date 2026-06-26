@@ -45,18 +45,13 @@ namespace Book.Sell.Tests.Editor
         private static SalesDayController Build(
             BookConfig[] books, RequestConfig[] requests, LocationConfig location, IReadOnlyList<Customer> customers,
             SalesTuning tuning = null,
-            ISalesShelfStateService shelfState = null,
-            RecordingInventoryService inventory = null,
-            ISoldBookCommitter soldBookCommitter = null,
-            ISalesGoldCollector salesGoldCollector = null)
+            ISalesDayCommitService commitService = null)
         {
             var configs = new FakeConfigsService();
             configs.SetAll(books);
             configs.SetAll(requests);
             configs.SetAll(new[] { location });
 
-            inventory ??= RecordingInventoryService.WithBooks(books);
-            soldBookCommitter ??= new SoldBookCommitter(inventory, shelfState);
             var shelfBuilder = new SalesShelfBuilder(configs);
 
             return new SalesDayController(
@@ -69,8 +64,21 @@ namespace Book.Sell.Tests.Editor
                 new InteractionLock(),
                 tuning ?? SalesTestKit.FastTuning(),
                 shelfBuilder: shelfBuilder,
-                soldBookCommitter: soldBookCommitter,
-                salesGoldCollector: salesGoldCollector);
+                commitService: commitService);
+        }
+
+        // Records the day result handed to the transactional commit at day completion.
+        private sealed class RecordingSalesDayCommitService : ISalesDayCommitService
+        {
+            public int CommitCalls { get; private set; }
+            public SalesDayResult LastResult { get; private set; }
+
+            public UniTask CommitAsync(SalesDayResult result, CancellationToken ct)
+            {
+                CommitCalls++;
+                LastResult = result;
+                return UniTask.CompletedTask;
+            }
         }
 
         private static void StartDay(SalesDayController c)
@@ -481,30 +489,27 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
-        public void DayCompleted_FlushesSoldBookCommitsBeforePublishing()
+        public void DayCompletion_CommitsResultOnce_BeforePublishing()
         {
-            var committer = new RecordingSoldBookCommitter();
-            var goldCollector = new RecordingSalesGoldCollector();
+            var commit = new RecordingSalesDayCommitService();
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
                 new RequestConfig[0],
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
                 new List<Customer> { Passive("c1") },
-                soldBookCommitter: committer,
-                salesGoldCollector: goldCollector);
+                commitService: commit);
 
-            var completedAfterFlush = false;
-            c.DayCompleted += _ => completedAfterFlush = committer.FlushCalled && goldCollector.FlushCalled;
+            var committedBeforePublish = false;
+            c.DayCompleted += _ => committedBeforePublish = commit.CommitCalls == 1;
 
             StartDay(c);
             Run(c);
             c.ConcludeDay();
 
-            Assert.IsTrue(committer.ResetCalled);
-            Assert.IsTrue(committer.CommitCalled);
-            Assert.IsTrue(goldCollector.ResetCalled);
-            Assert.AreEqual(1, goldCollector.CollectCalls.Count);
-            Assert.IsTrue(completedAfterFlush);
+            Assert.AreEqual(1, commit.CommitCalls, "The day result is committed exactly once at completion.");
+            Assert.AreEqual(1, commit.LastResult.SalesCount);
+            Assert.AreEqual(80, commit.LastResult.GoldEarned);
+            Assert.IsTrue(committedBeforePublish, "Commit runs before DayCompleted is emitted.");
         }
 
         [Test]
@@ -634,24 +639,23 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
-        public void RecommendBook_SuccessfulSale_CollectsGoldImmediately()
+        public void RecommendBook_SuccessfulSale_AccumulatesGoldInResult()
         {
-            var goldCollector = new RecordingSalesGoldCollector();
             var reqA = SalesTestKit.Request("reqA");
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
                 new[] { reqA },
                 SalesTestKit.Location(),
-                new List<Customer> { Active("c1", reqA) },
-                salesGoldCollector: goldCollector);
+                new List<Customer> { Active("c1", reqA) });
 
             StartDay(c);
             DriveUntilActive(c);
 
             c.RecommendBook("b1");
 
-            Assert.AreEqual(1, goldCollector.CollectCalls.Count);
-            Assert.AreEqual((1, "b1", 105, "active"), goldCollector.CollectCalls[0]);
+            // Provisional only: gold lands in the day result, not the wallet, until the day commits.
+            Assert.AreEqual(105, c.AccumulatedResult.GoldEarned);
+            CollectionAssert.Contains(c.AccumulatedResult.SoldBookIds, "b1");
         }
 
         [Test]
@@ -685,14 +689,12 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void SkippedActiveRequest_BuysNothing_NoCompletion()
         {
-            var goldCollector = new RecordingSalesGoldCollector();
             var reqA = SalesTestKit.Request("reqA");
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
                 new[] { reqA },
                 SalesTestKit.Location(),
-                new List<Customer> { ActiveWithCompletion("c1", reqA) },
-                salesGoldCollector: goldCollector);
+                new List<Customer> { ActiveWithCompletion("c1", reqA) });
 
             var completionFired = false;
             c.CustomerPurchaseCompleted += (_, _) => completionFired = true;
@@ -703,34 +705,12 @@ namespace Book.Sell.Tests.Editor
             Run(c);
 
             Assert.IsFalse(completionFired, "0 books bought → CompletePurchase is skipped, no completion bubble.");
-            CollectionAssert.IsEmpty(goldCollector.CollectCalls);
+            Assert.AreEqual(0, c.AccumulatedResult.GoldEarned);
+            CollectionAssert.IsEmpty(c.AccumulatedResult.SoldBookIds);
         }
 
-        [Test]
-        public void RecommendBook_SuccessfulSale_MarksBookSoldInPersistentShelf()
-        {
-            var shelfState = new RecordingShelfStateService();
-            var inventory = new RecordingInventoryService().Seed("b1", InventoryCategories.Book);
-            var reqA = SalesTestKit.Request("reqA");
-            var c = Build(
-                new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
-                new[] { reqA },
-                SalesTestKit.Location(),
-                new List<Customer> { Active("c1", reqA) },
-                shelfState: shelfState,
-                inventory: inventory);
-
-            StartDay(c);
-            DriveUntilActive(c);
-
-            c.RecommendBook("b1");
-
-            CollectionAssert.Contains(shelfState.Sold, "b1");
-            Assert.AreEqual(1, inventory.RemoveCalls.Count);
-            Assert.AreEqual("b1", inventory.RemoveCalls[0].ItemId);
-            Assert.AreEqual(1, inventory.RemoveCalls[0].Amount);
-            Assert.IsFalse(inventory.Has("b1"));
-        }
+        // NOTE: per-sale persistence (inventory removal + persistent shelf state) moved to the
+        // transactional commit at day completion; it is covered by SalesDayCommitServiceTests, not here.
 
         [Test]
         public void SkipCurrentRequest_DoesNotRaiseShelfChanged()
@@ -755,30 +735,6 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
-        public void SkipCurrentRequest_DoesNotMarkBookSoldInPersistentShelf()
-        {
-            var shelfState = new RecordingShelfStateService();
-            var inventory = new RecordingInventoryService().Seed("b1", InventoryCategories.Book);
-            var reqA = SalesTestKit.Request("reqA");
-            var c = Build(
-                new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
-                new[] { reqA },
-                SalesTestKit.Location(),
-                new List<Customer> { Active("c1", reqA) },
-                shelfState: shelfState,
-                inventory: inventory);
-
-            StartDay(c);
-            DriveUntilActive(c);
-
-            c.SkipCurrentRequest();
-
-            CollectionAssert.IsEmpty(shelfState.Sold);
-            CollectionAssert.IsEmpty(inventory.RemoveCalls);
-            Assert.IsTrue(inventory.Has("b1"));
-        }
-
-        [Test]
         public void PassiveSale_RaisesShelfChanged()
         {
             var c = Build(
@@ -799,71 +755,19 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
-        public void PassiveSale_CollectsGoldImmediately()
+        public void PassiveSale_AccumulatesGoldInResult()
         {
-            var goldCollector = new RecordingSalesGoldCollector();
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
                 new RequestConfig[0],
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
-                new List<Customer> { Passive("c1") },
-                salesGoldCollector: goldCollector);
+                new List<Customer> { Passive("c1") });
 
             StartDay(c);
             Run(c);
 
-            Assert.AreEqual(1, goldCollector.CollectCalls.Count);
-            Assert.AreEqual((1, "b1", 80, "passive"), goldCollector.CollectCalls[0]);
-        }
-
-        [Test]
-        public void PassiveSale_MarksBookSoldInPersistentShelf()
-        {
-            var shelfState = new RecordingShelfStateService();
-            var inventory = new RecordingInventoryService().Seed("b1", InventoryCategories.Book);
-            var c = Build(
-                new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
-                new RequestConfig[0],
-                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
-                new List<Customer> { Passive("c1") },
-                shelfState: shelfState,
-                inventory: inventory);
-
-            StartDay(c);
-            Run(c);
-
-            CollectionAssert.Contains(shelfState.Sold, "b1");
-            Assert.AreEqual(1, inventory.RemoveCalls.Count);
-            Assert.AreEqual("b1", inventory.RemoveCalls[0].ItemId);
-            Assert.AreEqual(1, inventory.RemoveCalls[0].Amount);
-            Assert.IsFalse(inventory.Has("b1"));
-        }
-
-        [Test]
-        public void RecommendBook_SoldBookMissingFromInventory_LogsError()
-        {
-            var shelfState = new RecordingShelfStateService();
-            var inventory = new RecordingInventoryService();
-            var reqA = SalesTestKit.Request("reqA");
-            var c = Build(
-                new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
-                new[] { reqA },
-                SalesTestKit.Location(),
-                new List<Customer> { Active("c1", reqA) },
-                shelfState: shelfState,
-                inventory: inventory);
-
-            StartDay(c);
-            DriveUntilActive(c);
-
-            LogAssert.Expect(LogType.Error, "[Sales.Day] sold book 'b1' was not present in inventory during active sale.");
-
-            c.RecommendBook("b1");
-
-            CollectionAssert.Contains(shelfState.Sold, "b1");
-            Assert.AreEqual(1, inventory.RemoveCalls.Count);
-            Assert.AreEqual("b1", inventory.RemoveCalls[0].ItemId);
-            Assert.AreEqual(1, inventory.RemoveCalls[0].Amount);
+            Assert.AreEqual(80, c.AccumulatedResult.GoldEarned);
+            CollectionAssert.Contains(c.AccumulatedResult.SoldBookIds, "b1");
         }
 
         [Test]

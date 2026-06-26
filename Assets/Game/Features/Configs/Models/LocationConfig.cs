@@ -17,6 +17,13 @@ namespace Game.Configs.Models
         public int UnlockCost { get; set; }
 
         /// <summary>
+        /// Плата за визит (валюта gold), списывается при каждом входе в локацию как sunk-ставка
+        /// (см. docs/SAVE_DAY_FLOW.md). Отличается от <see cref="UnlockCost"/> (разовая разблокировка).
+        /// Может сдвигаться активным декором (<c>DecorConfig.VisitCostDelta</c>).
+        /// </summary>
+        public int EntryCost { get; set; }
+
+        /// <summary>
         /// Legacy-ярлык порога уровня. Источник истины об условиях — <see cref="Unlock"/>: если он
         /// задан, <see cref="RequiredLevel"/> игнорируется (одна истина). Самостоятельная поддержка
         /// ждёт появления провайдера уровня игрока.
