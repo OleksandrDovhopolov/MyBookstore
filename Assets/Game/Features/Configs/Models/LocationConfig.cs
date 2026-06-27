@@ -13,22 +13,20 @@ namespace Game.Configs.Models
         public string Id { get; set; }
         public string DisplayName { get; set; }
 
-        /// <summary>Цена открытия локации (валюта gold), списывается при покупке после выполнения условий.</summary>
-        public int UnlockCost { get; set; }
-
         /// <summary>
         /// Плата за визит (валюта gold), списывается при каждом входе в локацию как sunk-ставка
-        /// (см. docs/SAVE_DAY_FLOW.md). Отличается от <see cref="UnlockCost"/> (разовая разблокировка).
-        /// Может сдвигаться активным декором (<c>DecorConfig.VisitCostDelta</c>).
+        /// (см. docs/SAVE_DAY_FLOW.md). Отличается от разовой разблокировки (которая теперь бесплатна
+        /// и автоматическая при выполнении <see cref="Unlock"/>). Может сдвигаться активным декором
+        /// (<c>DecorConfig.VisitCostDelta</c>).
         /// </summary>
         public int EntryCost { get; set; }
 
         /// <summary>
-        /// Legacy-ярлык порога уровня. Источник истины об условиях — <see cref="Unlock"/>: если он
-        /// задан, <see cref="RequiredLevel"/> игнорируется (одна истина). Самостоятельная поддержка
-        /// ждёт появления провайдера уровня игрока.
+        /// Адрес собранной сцены локации (Addressables) — задел на будущее. null = fallback на
+        /// единственную <c>LocationScene</c> (<c>GameFlowSettings.LocationSceneName</c>). Пока только
+        /// хранится; загрузка сцены этим полем ещё не управляется.
         /// </summary>
-        public int RequiredLevel { get; set; }
+        public string LocationAddress { get; set; }
 
         /// <summary>
         /// Data-driven дерево условий разблокировки (движок Conditions): композиты all/any/not +

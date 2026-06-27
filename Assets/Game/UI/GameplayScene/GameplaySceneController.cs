@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
+using Game.Location.UI;
 using Game.Newspaper.UI;
 using Game.Preparation.Services;
 using Game.Preparation.UI;
@@ -21,6 +23,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
     private IDayProgressService _dayProgress;
     private IMorningSessionService _session;
     private IPreparationSessionService _preparationSession;
+    private IConfigsService _configs;
     private IUiSpriteProvider _uiSprites;
 
     public bool SpritesLoaded { get; private set; }
@@ -42,6 +45,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
         IMorningSessionService morningSessionService,
         ISubscriber<GameplaySceneButtonsInteractableChanged> buttonsInteractableSubscriber,
         IPreparationSessionService preparationSession = null,
+        IConfigsService configs = null,
         ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
         ISubscriber<GameplaySalesGoldChanged> salesGoldSubscriber = null,
         IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null)
@@ -51,6 +55,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
         _dayProgress = dayProgress;
         _session = morningSessionService;
         _preparationSession = preparationSession;
+        _configs = configs;
         _salesGoldSubscriber = salesGoldSubscriber;
         _genreBookCountsSubscriber = genreBookCountsSubscriber;
         _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
@@ -190,15 +195,23 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
 
         try
         {
+            var locationId = await PickLocationAsync(View.destroyCancellationToken);
+            if (string.IsNullOrEmpty(locationId))
+            {
+                View.SetStartButtonActive(true);
+                return;
+            }
+
             var continued = await StartPreparationAsync(View.destroyCancellationToken);
             if (!continued)
             {
                 View.SetStartButtonActive(true);
                 return;
             }
-            
+
+            var displayName = ResolveLocationDisplayName(locationId);
             var window = await UIManager.ShowAsync<PreparationWindow>(
-                new PreparationWindowArgs("loc_downtown", "Downtown"),
+                new PreparationWindowArgs(locationId, displayName),
                 View.destroyCancellationToken);
             if (window == null)
             {
@@ -213,9 +226,26 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
         }
         catch (Exception e)
         {
-            Debug.LogError($"[GameplaySceneController] Failed to open PreparationWindow: {e}");
+            Debug.LogError($"[GameplaySceneController] Failed to start the day: {e}");
             View.SetStartButtonActive(true);
         }
+    }
+
+    // Opens the Location Window and waits for the player to pick an unlocked location (Start).
+    // Returns null if the window was closed without a choice.
+    private async UniTask<string> PickLocationAsync(CancellationToken ct)
+    {
+        var window = await UIManager.ShowAsync<LocationWindow>(new LocationWindowArgs(), ct);
+        if (window == null) return null;
+        return await window.WaitForResultAsync<string>(ct);
+    }
+
+    private string ResolveLocationDisplayName(string locationId)
+    {
+        if (_configs != null && _configs.TryGet<LocationConfig>(locationId, out var config)
+            && !string.IsNullOrEmpty(config.DisplayName))
+            return config.DisplayName;
+        return locationId;
     }
 
     private void OnPreparationWindowClosed(IWindowController controller)

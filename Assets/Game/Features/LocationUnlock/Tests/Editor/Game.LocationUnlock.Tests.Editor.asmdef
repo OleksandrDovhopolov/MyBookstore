@@ -9,7 +9,6 @@
         "Game.Conditions",
         "Game.LocationUnlock.API",
         "Game.LocationUnlock",
-        "Game.Resources.API",
         "Game.SalesStats.API",
         "UnityEngine.TestRunner"
     ],

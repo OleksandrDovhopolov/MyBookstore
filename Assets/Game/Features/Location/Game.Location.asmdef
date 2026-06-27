@@ -1,21 +1,20 @@
 {
-    "name": "Game.LocationUnlock",
-    "rootNamespace": "Game.LocationUnlock",
+    "name": "Game.Location",
+    "rootNamespace": "Game.Location",
     "references": [
+        "VContainer",
         "UniTask",
-        "Save",
         "Configs",
-        "Game.Conditions.API",
         "Game.LocationUnlock.API",
-        "Game.SalesStats.API"
+        "Game.Conditions.API",
+        "Game.Core.UI",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": true,
-    "precompiledReferences": [
-        "Newtonsoft.Json.dll"
-    ],
+    "overrideReferences": false,
+    "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],

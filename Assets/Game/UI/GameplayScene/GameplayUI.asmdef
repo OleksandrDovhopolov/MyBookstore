@@ -15,6 +15,7 @@
         "MessagePipe",
         "DayCycle",
         "Game.Preparation",
+        "Game.Location",
         "Configs",
         "Game.Decor",
         "Game.Ftue",

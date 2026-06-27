@@ -6,7 +6,6 @@ using Game.Conditions.API;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.LocationUnlock.API;
-using Game.Resources.API;
 using Game.SalesStats.API;
 using Save;
 using UnityEngine;
@@ -15,11 +14,15 @@ namespace Game.LocationUnlock.Services
 {
     /// <summary>
     /// Default <see cref="ILocationUnlockService"/>. Self-registers as <see cref="ISaveHook"/>:
-    /// on <see cref="AfterLoadAsync"/> it loads purchased ids and parses every location's unlock
-    /// conditions once (configs are warm by then, same as <c>ShopService</c>). Unlocks are rare, so
-    /// the purchase fact is written through on <see cref="TryUnlockAsync"/> (unlike the batched sales
-    /// counters). Reacts to <see cref="ISalesStatsService.Changed"/> to re-evaluate not-yet-unlocked
-    /// locations and raise <see cref="StatusChanged"/>.
+    /// on <see cref="AfterLoadAsync"/> it loads already-opened ids and parses every location's unlock
+    /// conditions once (configs are warm by then, same as <c>ShopService</c>).
+    /// <para>
+    /// Unlock is free and automatic: there is no <c>UnlockCost</c> and no "buy" step. The moment a
+    /// location's conditions are met the location is opened and persisted — both at load time and
+    /// reactively when a data source (<see cref="ISalesStatsService.Changed"/>) moves. Opened locations
+    /// stay opened forever (persisted in <see cref="LocationUnlockStateDto.UnlockedIds"/>), even if the
+    /// config conditions later change.
+    /// </para>
     /// </summary>
     public sealed class LocationUnlockService : ILocationUnlockService, ISaveHook
     {
@@ -27,13 +30,10 @@ namespace Game.LocationUnlock.Services
 
         private readonly ILocationUnlockRepository _repository;
         private readonly IConfigsService _configs;
-        private readonly IResourcesService _resources;
         private readonly LocationUnlockConditionBuilder _conditionBuilder;
 
         private readonly Dictionary<string, ICondition> _conditions = new(StringComparer.Ordinal);
-        private readonly Dictionary<string, int> _cost = new(StringComparer.Ordinal);
         private readonly HashSet<string> _unlocked = new(StringComparer.Ordinal);
-        private readonly Dictionary<string, LocationUnlockState> _lastState = new(StringComparer.Ordinal);
 
         private bool _loaded;
 
@@ -42,13 +42,11 @@ namespace Game.LocationUnlock.Services
             ILocationUnlockRepository repository,
             IConfigsService configs,
             IConditionParser parser,
-            IResourcesService resources,
             ISalesStatsService salesStats)
         {
             if (save == null) throw new ArgumentNullException(nameof(save));
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
-            _resources = resources ?? throw new ArgumentNullException(nameof(resources));
             _conditionBuilder = new LocationUnlockConditionBuilder(
                 parser ?? throw new ArgumentNullException(nameof(parser)));
 
@@ -74,11 +72,18 @@ namespace Game.LocationUnlock.Services
 
             BuildCatalog();
 
-            _lastState.Clear();
-            foreach (var id in _conditions.Keys)
-                _lastState[id] = ComputeState(id, out _);
+            // Auto-unlock anything already satisfied (e.g. a config change lowered a threshold, or the
+            // starting location with no conditions). Persist once if the set grew.
+            var newlyUnlocked = CollectNewlyUnlocked();
+            if (newlyUnlocked != null)
+                await _repository.SaveAsync(BuildDto(), ct);
 
             _loaded = true;
+
+            if (newlyUnlocked != null)
+                foreach (var id in newlyUnlocked)
+                    Unlocked?.Invoke(id);
+
             Debug.Log($"{LogPrefix} loaded: {_unlocked.Count} unlocked of {_conditions.Count} locations.");
         }
 
@@ -94,12 +99,12 @@ namespace Game.LocationUnlock.Services
             if (string.IsNullOrEmpty(locationId) || !_conditions.ContainsKey(locationId))
             {
                 Debug.LogWarning($"{LogPrefix} GetStatus for unknown location '{locationId}'.");
-                return new LocationUnlockStatus(locationId, LocationUnlockState.Locked, 0,
+                return new LocationUnlockStatus(locationId, LocationUnlockState.Locked,
                     ConditionResult.Boolean(false, "unknown.location"));
             }
 
             var state = ComputeState(locationId, out var progress);
-            return new LocationUnlockStatus(locationId, state, GetCost(locationId), progress);
+            return new LocationUnlockStatus(locationId, state, progress);
         }
 
         // ----- async write -----
@@ -115,22 +120,10 @@ namespace Game.LocationUnlock.Services
             if (!_conditions[locationId].Evaluate().IsMet)
                 return UnlockResult.ConditionsNotMet;
 
-            var cost = GetCost(locationId);
-            if (cost > 0)
-            {
-                if (!_resources.Has(ResourceIds.Gold, cost))
-                    return UnlockResult.NotEnoughCurrency;
-
-                var removed = await _resources.RemoveAsync(ResourceIds.Gold, cost, $"unlock_location:{locationId}", ct);
-                if (!removed)
-                    return UnlockResult.NotEnoughCurrency;
-            }
-
             _unlocked.Add(locationId);
-            _lastState[locationId] = LocationUnlockState.Unlocked;
             await _repository.SaveAsync(BuildDto(), ct);
 
-            Debug.Log($"{LogPrefix} unlocked '{locationId}' (cost {cost}).");
+            Debug.Log($"{LogPrefix} unlocked '{locationId}'.");
             Unlocked?.Invoke(locationId);
             return UnlockResult.Ok;
         }
@@ -141,40 +134,65 @@ namespace Game.LocationUnlock.Services
         {
             if (!_loaded) return;
 
+            var newlyUnlocked = CollectNewlyUnlocked(out var stillLocked);
+
+            if (newlyUnlocked != null)
+            {
+                _repository.SaveAsync(BuildDto(), CancellationToken.None).Forget();
+                foreach (var id in newlyUnlocked)
+                {
+                    Debug.Log($"{LogPrefix} auto-unlocked '{id}' (conditions met).");
+                    Unlocked?.Invoke(id);
+                }
+            }
+
+            // Progress of still-locked locations may have moved — let reactive UI refresh.
+            if (stillLocked != null)
+                foreach (var id in stillLocked)
+                    StatusChanged?.Invoke(id);
+        }
+
+        private List<string> CollectNewlyUnlocked() => CollectNewlyUnlocked(out _);
+
+        private List<string> CollectNewlyUnlocked(out List<string> stillLocked)
+        {
+            List<string> newlyUnlocked = null;
+            stillLocked = null;
+
             foreach (var id in _conditions.Keys)
             {
                 if (_unlocked.Contains(id)) continue;   // Unlocked is terminal.
 
-                var newState = ComputeState(id, out _);
-                if (_lastState.TryGetValue(id, out var prev) && prev == newState) continue;
-
-                _lastState[id] = newState;
-                StatusChanged?.Invoke(id);
+                if (_conditions[id].Evaluate().IsMet)
+                {
+                    _unlocked.Add(id);
+                    (newlyUnlocked ??= new List<string>()).Add(id);
+                }
+                else
+                {
+                    (stillLocked ??= new List<string>()).Add(id);
+                }
             }
+
+            return newlyUnlocked;
         }
 
         private LocationUnlockState ComputeState(string locationId, out ConditionResult progress)
         {
             progress = _conditions[locationId].Evaluate();
-            if (_unlocked.Contains(locationId)) return LocationUnlockState.Unlocked;
-            return progress.IsMet ? LocationUnlockState.Unlockable : LocationUnlockState.Locked;
+            return _unlocked.Contains(locationId) ? LocationUnlockState.Unlocked : LocationUnlockState.Locked;
         }
 
         private void BuildCatalog()
         {
             _conditions.Clear();
-            _cost.Clear();
 
             foreach (var config in _configs.GetAll<LocationConfig>())
             {
                 if (config == null || string.IsNullOrEmpty(config.Id)) continue;
                 _conditions[config.Id] = _conditionBuilder.Build(config);
-                _cost[config.Id] = config.UnlockCost;
             }
         }
-
-        private int GetCost(string locationId)
-            => _cost.TryGetValue(locationId, out var cost) ? cost : 0;
 
         private LocationUnlockStateDto BuildDto()
             => new LocationUnlockStateDto { UnlockedIds = new List<string>(_unlocked) };

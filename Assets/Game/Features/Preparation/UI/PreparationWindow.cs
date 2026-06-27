@@ -112,7 +112,8 @@ namespace Game.Preparation.UI
         {
             SetButtonInteractable(false);
             SetRandomBooksButtonInteractable(false);
-            var items = await _session.StartOrResumeAsync(ct);
+            var locationId = (Arguments as PreparationWindowArgs)?.LocationId;
+            var items = await _session.StartOrResumeAsync(ct, locationId);
             Render(items);
             OnStateChanged(_session.CurrentState);
             SetRandomBooksButtonInteractable(_rows.Count > 0);

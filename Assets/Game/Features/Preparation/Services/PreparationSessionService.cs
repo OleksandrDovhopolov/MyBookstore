@@ -21,6 +21,10 @@ namespace Game.Preparation.Services
         // MVP: capacity захардкожена временно (см. CORE_LOOP_STATUS «Известные ограничения»).
         private const int DefaultMinDailyBooks = 0;
         private const int DefaultDailyBookSlots = 12;
+
+        // Fallback only: the location is normally chosen by the player (Location Window → Start) and
+        // passed into StartOrResumeAsync. Used when no selection is supplied (e.g. resume of a session
+        // saved before a location was picked).
         private const string DefaultLocationId = "loc_downtown";
 
         private readonly ISaveService _save;
@@ -58,8 +62,8 @@ namespace Game.Preparation.Services
 
         public int TotalSelected => _state?.SelectedBookIds?.Count ?? 0;
 
-        public UniTask<IReadOnlyList<GenreSelectionItem>> StartOrResumeAsync(CancellationToken ct)
-            => StartOrResumeCoreAsync(ct, setPreparationPhase: true);
+        public UniTask<IReadOnlyList<GenreSelectionItem>> StartOrResumeAsync(CancellationToken ct, string locationId = null)
+            => StartOrResumeCoreAsync(ct, setPreparationPhase: true, locationId: locationId);
 
         public async UniTask<IReadOnlyDictionary<string, int>> GetGenreQuantitiesPreviewAsync(CancellationToken ct)
         {
@@ -69,7 +73,8 @@ namespace Game.Preparation.Services
 
         private async UniTask<IReadOnlyList<GenreSelectionItem>> StartOrResumeCoreAsync(
             CancellationToken ct,
-            bool setPreparationPhase)
+            bool setPreparationPhase,
+            string locationId = null)
         {
             CacheAvailableByGenre();
 
@@ -82,7 +87,7 @@ namespace Game.Preparation.Services
                 _state = new PreparationSessionState
                 {
                     Day = currentDay,
-                    LocationId = DefaultLocationId,
+                    LocationId = string.IsNullOrEmpty(locationId) ? DefaultLocationId : locationId,
                     GenreQuantities = SeedInitialQuantities(),
                     SelectedDecorIds = new List<string>(),
                     Confirmed = false
@@ -91,6 +96,7 @@ namespace Game.Preparation.Services
             else
             {
                 _state = saved;
+                if (!string.IsNullOrEmpty(locationId)) _state.LocationId = locationId;   // player re-picked
                 _state.GenreQuantities ??= new Dictionary<string, int>();
                 if (_state.GenreQuantities.Count == 0 && _state.SelectedBookIds is { Count: > 0 })
                     _state.GenreQuantities = BuildQuantitiesFromBookIds(_state.SelectedBookIds);

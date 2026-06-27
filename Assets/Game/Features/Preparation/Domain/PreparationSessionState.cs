@@ -12,7 +12,10 @@ namespace Game.Preparation.Domain
     {
         public int Day { get; set; } = 1;
 
-        /// <summary>В MVP захардкожено loc_downtown — выбор локации откроется в следующей итерации.</summary>
+        /// <summary>
+        /// Выбранная игроком локация (Location Window → Start). Дефолт — fallback-локация на случай
+        /// state, созданного до выбора; в норме перезаписывается выбором игрока.
+        /// </summary>
         public string LocationId { get; set; } = "loc_downtown";
 
         /// <summary>

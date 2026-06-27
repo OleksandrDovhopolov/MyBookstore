@@ -6,7 +6,6 @@ using Game.Conditions.API;
 using Game.Conditions.Services;
 using Game.Configs;
 using Game.LocationUnlock.API;
-using Game.Resources.API;
 using Game.SalesStats.API;
 using Game.Configs.Models;
 using Newtonsoft.Json;
@@ -65,33 +64,6 @@ namespace Game.LocationUnlock.Tests.Editor.Fakes
         }
     }
 
-    public sealed class FakeResourcesService : IResourcesService
-    {
-        private readonly Dictionary<string, int> _wallet = new(StringComparer.Ordinal);
-
-        public void Set(string resourceId, int amount) => _wallet[resourceId] = amount;
-
-        public IReadOnlyDictionary<string, int> GetAll() => _wallet;
-        public int GetAmount(string resourceId) => _wallet.TryGetValue(resourceId, out var v) ? v : 0;
-        public bool Has(string resourceId, int amount) => GetAmount(resourceId) >= amount;
-
-        public UniTask AddAsync(string resourceId, int amount, string reason, CancellationToken ct)
-        {
-            if (amount > 0) _wallet[resourceId] = GetAmount(resourceId) + amount;
-            return UniTask.CompletedTask;
-        }
-
-        public UniTask<bool> RemoveAsync(string resourceId, int amount, string reason, CancellationToken ct)
-        {
-            if (amount <= 0) return UniTask.FromResult(true);
-            if (GetAmount(resourceId) < amount) return UniTask.FromResult(false);
-            _wallet[resourceId] = GetAmount(resourceId) - amount;
-            return UniTask.FromResult(true);
-        }
-
-        public event Action<ResourceChangeEvent> Changed;
-    }
-
     public sealed class FakeSalesStatsService : ISalesStatsService
     {
         public int GetSold(BookGenre genre) => 0;
@@ -102,7 +74,7 @@ namespace Game.LocationUnlock.Tests.Editor.Fakes
         public void RaiseChanged() => Changed?.Invoke(new SalesStatsChange(BookGenre.Crime, 0, 0, "test"));
     }
 
-    /// <summary>Condition whose met-state can be flipped to drive Locked/Unlockable transitions.</summary>
+    /// <summary>Condition whose met-state can be flipped to drive Locked → Unlocked transitions.</summary>
     public sealed class MutableCondition : ICondition
     {
         public bool Met;

@@ -25,8 +25,10 @@ namespace Game.Preparation.Services
         /// <summary>
         /// Поднимает state из Save или создаёт новый, гарантирует фазу Preparation,
         /// возвращает по одному GenreSelectionItem на доступный жанр (с текущей квотой).
+        /// <paramref name="locationId"/> — выбранная игроком локация: записывается в state при создании
+        /// нового и применяется при ресьюме (перевыбор). null → используется fallback-локация.
         /// </summary>
-        UniTask<IReadOnlyList<GenreSelectionItem>> StartOrResumeAsync(CancellationToken ct);
+        UniTask<IReadOnlyList<GenreSelectionItem>> StartOrResumeAsync(CancellationToken ct, string locationId = null);
 
         /// <summary>
         /// Возвращает те же квоты по жанрам, которые покажет Preparation UI, но не переводит день в фазу Preparation.

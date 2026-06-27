@@ -6,8 +6,8 @@ namespace Game.Bootstrap
 {
     // Registered in: BootstrapInstaller (GlobalLifetimeScope). Domain layer over the Conditions
     // engine. Resolves from the same scope: ISaveService, IConfigsService, IConditionParser,
-    // IResourcesService, ISalesStatsService. Must be registered after RegisterConditions /
-    // RegisterSalesStats / RegisterResources (registration order is irrelevant to resolution).
+    // ISalesStatsService. Must be registered after RegisterConditions / RegisterSalesStats
+    // (registration order is irrelevant to resolution).
     public static class LocationUnlockVContainerBindings
     {
         public static void RegisterLocationUnlock(this IContainerBuilder builder)
