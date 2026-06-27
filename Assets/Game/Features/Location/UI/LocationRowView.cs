@@ -13,6 +13,7 @@ namespace Game.Location.UI
 {
     public sealed class LocationRowView : MonoBehaviour, ICleanup
     {
+        [SerializeField] private Image _locationImage;
         [SerializeField] private TextMeshProUGUI _nameLabel;
         [SerializeField] private GameObject _lockedPanel;
         [SerializeField] private UIListPool<LocationConditionItemView> _conditionsPool = new();
@@ -40,10 +41,11 @@ namespace Game.Location.UI
             if (_startButton != null) _startButton.interactable = model.StartEnabled;
             if (_lockedPanel != null) _lockedPanel.SetActive(!model.IsUnlocked);
 
-            RenderConditions(model.Conditions, sprites);
+            RenderConditions(model.Conditions);
+            LoadIcons(model.LocationId, sprites);
         }
 
-        private void RenderConditions(IReadOnlyList<LocationConditionProgress> conditions, IUiSpriteProvider sprites)
+        private void RenderConditions(IReadOnlyList<LocationConditionProgress> conditions)
         {
             _conditionsPool.DisableAll();
 
@@ -54,26 +56,32 @@ namespace Game.Location.UI
             }
 
             _conditionsPool.DisableNonActive();
-
-            LoadIcons(sprites);
         }
 
-        // Genre icons come from Addressables (async); pull them off the shared cache and push into chips.
-        private void LoadIcons(IUiSpriteProvider sprites)
+        // Location art (by location id) and genre chip icons come from Addressables (async); pull them off
+        // the shared cache and push into the views under one cancellation token.
+        private void LoadIcons(string locationId, IUiSpriteProvider sprites)
         {
             CancelIconLoad();
             if (sprites == null) return;
 
             _iconCts = new CancellationTokenSource();
-            LoadIconsAsync(sprites, _iconCts.Token).Forget();
+            LoadIconsAsync(locationId, sprites, _iconCts.Token).Forget();
         }
 
-        private async UniTaskVoid LoadIconsAsync(IUiSpriteProvider sprites, CancellationToken ct)
+        private async UniTaskVoid LoadIconsAsync(string locationId, IUiSpriteProvider sprites, CancellationToken ct)
         {
             // Snapshot active chips: the pool may be reused while we await.
             var items = _conditionsPool.ActiveElements().ToList();
             try
             {
+                if (_locationImage != null && !string.IsNullOrEmpty(locationId))
+                {
+                    var locationSprite = await sprites.GetSpriteAsync(locationId, ct);
+                    if (ct.IsCancellationRequested) return;
+                    if (_locationImage != null) _locationImage.sprite = locationSprite;
+                }
+
                 foreach (var item in items)
                 {
                     if (item == null) continue;
@@ -92,6 +100,7 @@ namespace Game.Location.UI
             _onStart = null;
             _locationId = null;
             CancelIconLoad();
+            if (_locationImage != null) _locationImage.sprite = null;
             _conditionsPool.DisableAll();
         }
 

@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 051d0f9ee2fd4104f8fdf6781c78f41e
+    m_Address: loc_train_station
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 06756ce84d8ad4037baebd78c80b61d5
     m_Address: vintage_globe
     m_ReadOnly: 0
@@ -35,6 +40,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1425550bb6b95cb46a25da040d808684
+    m_Address: loc_downtown
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 143c5db1bda88e04cbb356c988f2f87a
+    m_Address: loc_mall
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 206f074573da1684b8291e0cdb337cce
     m_Address: Fact
     m_ReadOnly: 0
@@ -45,6 +60,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7405d3beb7b1e3947a94fe1abbb50846
+    m_Address: loc_riverside_park
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 913dab9a7930aaf4db302aa573d7b9f9
     m_Address: Kids
     m_ReadOnly: 0
@@ -52,6 +72,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9a796c3d323f847c9bf9e8e167111f61
     m_Address: book_box
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ab8811f57efe48241b6671e7edca91db
+    m_Address: loc_old_town
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
