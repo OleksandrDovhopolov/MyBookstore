@@ -16,6 +16,7 @@
         "DayCycle",
         "Game.Preparation",
         "Game.Location",
+        "Game.LocationUnlock.API",
         "Configs",
         "Game.Decor",
         "Game.Ftue",

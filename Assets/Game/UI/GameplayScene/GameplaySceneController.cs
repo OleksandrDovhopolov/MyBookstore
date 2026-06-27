@@ -7,6 +7,7 @@ using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
 using Game.Location.UI;
+using Game.LocationUnlock.API;
 using Game.Newspaper.UI;
 using Game.Preparation.Services;
 using Game.Preparation.UI;
@@ -23,6 +24,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
     private IDayProgressService _dayProgress;
     private IMorningSessionService _session;
     private IPreparationSessionService _preparationSession;
+    private ILocationUnlockService _locationUnlock;
     private IConfigsService _configs;
     private IUiSpriteProvider _uiSprites;
 
@@ -45,6 +47,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
         IMorningSessionService morningSessionService,
         ISubscriber<GameplaySceneButtonsInteractableChanged> buttonsInteractableSubscriber,
         IPreparationSessionService preparationSession = null,
+        ILocationUnlockService locationUnlock = null,
         IConfigsService configs = null,
         ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
         ISubscriber<GameplaySalesGoldChanged> salesGoldSubscriber = null,
@@ -55,6 +58,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
         _dayProgress = dayProgress;
         _session = morningSessionService;
         _preparationSession = preparationSession;
+        _locationUnlock = locationUnlock;
         _configs = configs;
         _salesGoldSubscriber = salesGoldSubscriber;
         _genreBookCountsSubscriber = genreBookCountsSubscriber;
@@ -235,9 +239,26 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
     // Returns null if the window was closed without a choice.
     private async UniTask<string> PickLocationAsync(CancellationToken ct)
     {
-        var window = await UIManager.ShowAsync<LocationWindow>(new LocationWindowArgs(), ct);
-        if (window == null) return null;
-        return await window.WaitForResultAsync<string>(ct);
+        try
+        {
+            var window = await UIManager.ShowAsync<LocationWindow>(new LocationWindowArgs(), ct);
+            if (window == null) return null;
+            return await window.WaitForResultAsync<string>(ct);
+        }
+        catch (InvalidOperationException ex)
+        {
+            var fallback = PickFirstUnlockedLocationId();
+            if (!string.IsNullOrEmpty(fallback))
+            {
+                Debug.LogWarning($"[GameplaySceneController] LocationWindow unavailable; " +
+                                 $"falling back to '{fallback}'. {ex.Message}");
+                return fallback;
+            }
+
+            Debug.LogError($"[GameplaySceneController] LocationWindow unavailable and no unlocked " +
+                           $"fallback location was found. {ex}");
+            return null;
+        }
     }
 
     private string ResolveLocationDisplayName(string locationId)
@@ -246,6 +267,20 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
             && !string.IsNullOrEmpty(config.DisplayName))
             return config.DisplayName;
         return locationId;
+    }
+
+    private string PickFirstUnlockedLocationId()
+    {
+        if (_configs == null) return null;
+
+        foreach (var config in _configs.GetAll<LocationConfig>())
+        {
+            if (config == null || string.IsNullOrEmpty(config.Id)) continue;
+            if (_locationUnlock == null || _locationUnlock.IsUnlocked(config.Id))
+                return config.Id;
+        }
+
+        return null;
     }
 
     private void OnPreparationWindowClosed(IWindowController controller)
