@@ -9,12 +9,14 @@ using VContainer;
 
 namespace Game.Location.UI
 {
-    [Window("UI/Location/LocationWindow", WindowType.Page)]
+    [Window("LocationWindow", WindowType.Page)]
     public sealed class LocationWindow : WindowController<LocationWindowView>, IResultWindow<string>
     {
         private IConfigsService _configs;
         private ILocationUnlockService _unlock;
-        private readonly List<LocationRowView> _rows = new();
+
+        // Reused between renders so building the row list allocates nothing per update.
+        private readonly List<LocationListItemModel> _models = new();
 
         public string Result { get; private set; }
 
@@ -27,8 +29,6 @@ namespace Game.Location.UI
 
         protected override void OnInit()
         {
-            if (View.RowTemplate != null) View.RowTemplate.gameObject.SetActive(false);
-            if (View.CloseButton != null) View.CloseButton.onClick.AddListener(OnCloseClicked);
         }
 
         protected override void OnShowStart()
@@ -53,18 +53,19 @@ namespace Game.Location.UI
             }
         }
 
-        protected override void OnDispose() => ClearRows();
+        protected override void OnDispose() => View.Clear();
 
         //TODO check is this possible that location status could be changed during LocationWindow opened
         private void OnUnlockChanged(string _) => Render();
 
         private void Render()
         {
-            ClearRows();
+            _models.Clear();
 
-            if (_configs == null || View.RowTemplate == null || View.ListRoot == null)
+            if (_configs == null)
             {
-                Debug.LogWarning("[LocationWindow] missing configs service or view template; nothing to render.");
+                Debug.LogWarning("[LocationWindow] missing configs service; nothing to render.");
+                View.Clear();
                 return;
             }
 
@@ -73,29 +74,16 @@ namespace Game.Location.UI
                 if (config == null || string.IsNullOrEmpty(config.Id)) continue;
 
                 var status = _unlock?.GetStatus(config.Id);
-                var model = LocationListItemModel.From(config, status);
-
-                var row = Object.Instantiate(View.RowTemplate, View.ListRoot);
-                var locationId = model.LocationId;
-                row.Bind(model, () => OnStartClicked(locationId));
-                row.gameObject.SetActive(true);
-                _rows.Add(row);
+                _models.Add(LocationListItemModel.From(config, status));
             }
+
+            View.Render(_models, OnStartClicked);
         }
 
         private void OnStartClicked(string locationId)
         {
             Result = locationId;
             CloseAsync().Forget();
-        }
-
-        private void OnCloseClicked() => CloseAsync().Forget();
-
-        private void ClearRows()
-        {
-            for (var i = 0; i < _rows.Count; i++)
-                if (_rows[i] != null) Object.Destroy(_rows[i].gameObject);
-            _rows.Clear();
         }
     }
 }

@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using Game.UI;
+using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,14 +10,25 @@ namespace Game.Location.UI
     public sealed class LocationWindowView : WindowView
     {
         [Header("List")]
-        [SerializeField] private Transform _listRoot;
-        [SerializeField] private LocationRowView _rowTemplate;
+        [SerializeField] private UIListPool<LocationRowView> _rowPool = new();
 
-        [Header("Footer")]
-        [SerializeField] private Button _closeButton;
+        public void Render(IReadOnlyList<LocationListItemModel> models, Action<string> onStart)
+        {
+            _rowPool.DisableAll();
 
-        public Transform ListRoot => _listRoot;
-        public LocationRowView RowTemplate => _rowTemplate;
-        public Button CloseButton => _closeButton;
+            if (models != null)
+            {
+                for (var i = 0; i < models.Count; i++)
+                {
+                    var model = models[i];
+                    if (model == null) continue;
+                    _rowPool.GetNext().Bind(model, onStart);
+                }
+            }
+
+            _rowPool.DisableNonActive();
+        }
+
+        public void Clear() => _rowPool.DisableAll();
     }
 }
