@@ -11,17 +11,12 @@ using UnityEngine.UI;
 
 namespace Game.Location.UI
 {
-    /// <summary>
-    /// One location row. Unlocked → shows only the Start button; locked → shows a pooled list of
-    /// requirement chips (genre icon + count) and hides Start. Driven by <see cref="LocationListItemModel"/>
-    /// (no config/JObject here). Pooled via <c>UIListPool</c>; <see cref="Cleanup"/> cancels pending icon
-    /// loads and drops the per-row callback on reuse/disable.
-    /// </summary>
     public sealed class LocationRowView : MonoBehaviour, ICleanup
     {
         [SerializeField] private TextMeshProUGUI _nameLabel;
         [SerializeField] private GameObject _lockedPanel;
         [SerializeField] private UIListPool<LocationConditionItemView> _conditionsPool = new();
+        [SerializeField] private TextMeshProUGUI _entryCostLabel;
         [SerializeField] private Button _startButton;
 
         private Action<string> _onStart;
@@ -40,6 +35,7 @@ namespace Game.Location.UI
             _locationId = model.LocationId;
 
             if (_nameLabel != null) _nameLabel.text = model.DisplayName;
+            if (_entryCostLabel != null) _entryCostLabel.text = $"{model.EntryCost} {model.EntryCurrencyId}";
 
             if (_startButton != null) _startButton.interactable = model.StartEnabled;
             if (_lockedPanel != null) _lockedPanel.SetActive(!model.IsUnlocked);

@@ -48,5 +48,11 @@ namespace Game.Preparation.Services
         /// Подтверждает выбор и переключает фазу на Sales. Возвращает false, если Validate() не прошёл.
         /// </summary>
         UniTask<bool> ConfirmAsync(CancellationToken ct);
+
+        /// <summary>
+        /// Restores the Preparation session after a failed location entry attempt: clears the confirmed
+        /// flag, keeps the same chosen location/books, and returns the day phase to Preparation.
+        /// </summary>
+        UniTask RestoreAfterEntryFailureAsync(string locationId, CancellationToken ct);
     }
 }

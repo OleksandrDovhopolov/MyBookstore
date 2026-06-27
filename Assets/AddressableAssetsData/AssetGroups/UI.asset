@@ -81,7 +81,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8f6cd99a84b9bdf47a3ed0d64dfa479b
-    m_Address: Assets/Game/Features/Location/UI/Prefab/LocationWindow.prefab
+    m_Address: LocationWindow
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

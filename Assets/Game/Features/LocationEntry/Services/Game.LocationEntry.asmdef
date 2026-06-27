@@ -1,17 +1,11 @@
 {
-    "name": "Game.Location",
-    "rootNamespace": "Game.Location",
+    "name": "Game.LocationEntry",
+    "rootNamespace": "Game.LocationEntry",
     "references": [
-        "VContainer",
-        "UniTask",
         "Configs",
-        "Game.LocationUnlock.API",
-        "Game.LocationEntry.API",
-        "Game.Conditions.API",
+        "Game.Decor.API",
         "Game.Resources.API",
-        "Game.Core.UI",
-        "Infrastructure",
-        "Unity.TextMeshPro"
+        "Game.LocationEntry.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

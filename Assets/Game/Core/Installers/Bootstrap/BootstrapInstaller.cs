@@ -59,6 +59,7 @@ namespace Game.Bootstrap
             builder.RegisterConditions();          // domain-agnostic condition engine (registry + parser)
             builder.RegisterSalesStats();          // persistent per-genre sold counters + "soldGenre" condition factory
             builder.RegisterLocationUnlock();      // location unlock states/purchase over the condition engine
+            builder.RegisterLocationEntry();       // per-visit entry fee calculator (location base + decor delta)
             builder.RegisterFtue();
             builder.RegisterBookSellSharedState(); // ISalesShelfStateService — общий для хаба и локации
             builder.RegisterPreparation();         // Preparation services (окно PreparationWindow инжектится глобально)

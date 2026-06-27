@@ -2,8 +2,10 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
+using Game.LocationEntry.API;
 using Game.LocationUnlock.API;
 using Game.Newspaper.UI;
+using Game.Resources.API;
 using Game.UI;
 using UnityEngine;
 using VContainer;
@@ -15,6 +17,8 @@ namespace Game.Location.UI
     {
         private IConfigsService _configs;
         private ILocationUnlockService _unlock;
+        private ILocationEntryCostCalculator _entryCost;
+        private IResourcesService _resources;
         private IUiSpriteProvider _uiSprites;
 
         // Reused between renders so building the row list allocates nothing per update.
@@ -24,10 +28,13 @@ namespace Game.Location.UI
 
         [Inject]
         public void InjectServices(IConfigsService configs, ILocationUnlockService unlock,
+            ILocationEntryCostCalculator entryCost = null, IResourcesService resources = null,
             IUiSpriteProvider uiSprites = null)
         {
             _configs = configs;
             _unlock = unlock;
+            _entryCost = entryCost;
+            _resources = resources;
             _uiSprites = uiSprites;
         }
 
@@ -45,6 +52,9 @@ namespace Game.Location.UI
                 _unlock.StatusChanged += OnUnlockChanged;
             }
 
+            // Balance change can flip affordability → re-enable/disable Start without reopening.
+            if (_resources != null) _resources.Changed += OnResourcesChanged;
+
             Render();
         }
 
@@ -55,12 +65,16 @@ namespace Game.Location.UI
                 _unlock.Unlocked -= OnUnlockChanged;
                 _unlock.StatusChanged -= OnUnlockChanged;
             }
+
+            if (_resources != null) _resources.Changed -= OnResourcesChanged;
         }
 
         protected override void OnDispose() => View.Clear();
 
         //TODO check is this possible that location status could be changed during LocationWindow opened
         private void OnUnlockChanged(string _) => Render();
+
+        private void OnResourcesChanged(ResourceChangeEvent _) => Render();
 
         private void Render()
         {
@@ -78,7 +92,11 @@ namespace Game.Location.UI
                 if (config == null || string.IsNullOrEmpty(config.Id)) continue;
 
                 var status = _unlock?.GetStatus(config.Id);
-                _models.Add(LocationListItemModel.From(config, status));
+                var cost = _entryCost != null
+                    ? _entryCost.Calculate(config.Id)
+                    : new LocationEntryCost(ResourceIds.Gold, config.EntryCost, config.EntryCost, 0);
+                var canAfford = _resources == null || _resources.Has(cost.CurrencyId, cost.Total);
+                _models.Add(LocationListItemModel.From(config, status, cost, canAfford));
             }
 
             View.Render(_models, OnStartClicked, _uiSprites);

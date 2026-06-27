@@ -4,9 +4,11 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.Configs.Models;
+using Game.LocationEntry.API;
 using Game.Newspaper.UI;
 using Game.Preparation.Domain;
 using Game.Preparation.Services;
+using Game.Resources.API;
 using Game.UI;
 using MessagePipe;
 using UnityEngine;
@@ -20,6 +22,8 @@ namespace Game.Preparation.UI
         private IPreparationSessionService _session;
         private IGameFlowService _gameFlow;
         private IUiSpriteProvider _uiSprites;
+        private ILocationEntryCostCalculator _entryCost;
+        private IResourcesService _resources;
         private IPublisher<GameplayGenreBookCountsChanged> _genreCountsPublisher;
 
         private CancellationTokenSource _cts;
@@ -36,11 +40,15 @@ namespace Game.Preparation.UI
             IPreparationSessionService session,
             IGameFlowService gameFlow,
             IUiSpriteProvider uiSprites,
+            ILocationEntryCostCalculator entryCost = null,
+            IResourcesService resources = null,
             IPublisher<GameplayGenreBookCountsChanged> genreCountsPublisher = null)
         {
             _session = session;
             _gameFlow = gameFlow;
             _uiSprites = uiSprites;
+            _entryCost = entryCost;
+            _resources = resources;
             _genreCountsPublisher = genreCountsPublisher;
         }
 
@@ -304,11 +312,41 @@ namespace Game.Preparation.UI
                     return;
                 }
 
+                // Resolve the sunk per-visit entry fee for the chosen location (base + active decor).
+                var locationId = _session.CurrentState?.LocationId;
+                var displayName = (Arguments as PreparationWindowArgs)?.DisplayName;
+                var cost = _entryCost != null
+                    ? _entryCost.Calculate(locationId)
+                    : new LocationEntryCost(ResourceIds.Gold, 0, 0, 0);
+                var charge = cost.Total > 0 && _resources != null;
+
+                // Afford-check BEFORE confirm: keep the window open if the player cannot pay.
+                if (charge && !_resources.Has(cost.CurrencyId, cost.Total))
+                {
+                    Debug.Log($"[PreparationWindow] cannot enter '{locationId}': needs {cost.Total} {cost.CurrencyId}.");
+                    UpdateValidation();
+                    return;
+                }
+
                 var ok = await _session.ConfirmAsync(ct);
                 if (!ok)
                 {
                     UpdateValidation();
                     return;
+                }
+
+                // Commit the sunk visit fee. If it somehow fails post-confirm, do not enter and do not reopen.
+                if (charge)
+                {
+                    var removed = await _resources.RemoveAsync(
+                        cost.CurrencyId, cost.Total, $"enter_location:{locationId}", ct);
+                    if (!removed)
+                    {
+                        Debug.LogError($"[PreparationWindow] entry fee charge failed for '{locationId}'.");
+                        await _session.RestoreAfterEntryFailureAsync(locationId, ct);
+                        UpdateValidation();
+                        return;
+                    }
                 }
 
                 // Окно уничтожится при закрытии — захватываем GameFlow в локаль до await.
@@ -322,14 +360,15 @@ namespace Game.Preparation.UI
                 {
                     await gameFlow.EnterLocationAsync(CancellationToken.None);
                 }
-                catch (System.OperationCanceledException)
-                {
-                    // Application shutdown / editor stop.
-                }
                 catch (System.Exception e)
                 {
+                    // Technical entry failure → refund the sunk fee and reopen with the same location.
                     Debug.LogError($"[PreparationWindow] EnterLocationAsync failed after confirm: {e}");
-                    await ReopenAfterTransitionFailureAsync();
+                    if (charge)
+                        await _resources.AddAsync(
+                            cost.CurrencyId, cost.Total, $"refund_enter_location:{locationId}", CancellationToken.None);
+                    await _session.RestoreAfterEntryFailureAsync(locationId, CancellationToken.None);
+                    await ReopenAfterTransitionFailureAsync(locationId, displayName);
                 }
             }
             catch (System.OperationCanceledException)
@@ -346,13 +385,15 @@ namespace Game.Preparation.UI
             }
         }
 
-        private async UniTask ReopenAfterTransitionFailureAsync()
+        private async UniTask ReopenAfterTransitionFailureAsync(string locationId, string displayName)
         {
             if (UIManager == null) return;
 
             try
             {
-                await UIManager.ShowAsync<PreparationWindow>(ct: CancellationToken.None);
+                // Reopen with the SAME location so the player keeps their choice (no loc_downtown fallback).
+                await UIManager.ShowAsync<PreparationWindow>(
+                    new PreparationWindowArgs(locationId, displayName), CancellationToken.None);
             }
             catch (System.Exception e)
             {

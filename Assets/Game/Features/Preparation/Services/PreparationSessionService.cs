@@ -195,6 +195,31 @@ namespace Game.Preparation.Services
             return true;
         }
 
+        public async UniTask RestoreAfterEntryFailureAsync(string locationId, CancellationToken ct)
+        {
+            if (_state == null)
+            {
+                await StartOrResumeCoreAsync(ct, setPreparationPhase: false, locationId: locationId);
+            }
+
+            if (_state == null) return;
+
+            if (!string.IsNullOrEmpty(locationId))
+                _state.LocationId = locationId;
+
+            _state.Confirmed = false;
+            _state.SelectedBookIds = ResolveSelectedBookIds(_state.GenreQuantities);
+
+            await _shelfState.SetShelfAsync(_state.SelectedBookIds, ct);
+            await PersistAsync(ct);
+
+            if (_dayProgress.Current.CurrentPhase != DayPhase.Preparation)
+                await _dayProgress.SetPhaseAsync(DayPhase.Preparation, ct);
+
+            StateChanged?.Invoke(_state);
+            Debug.Log($"{LogPrefix} restored after failed location entry. day={_state.Day} location={_state.LocationId}.");
+        }
+
         // ---------- internals ----------
 
         private void CacheAvailableByGenre()

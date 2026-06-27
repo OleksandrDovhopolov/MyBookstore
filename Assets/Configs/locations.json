@@ -2,12 +2,14 @@
   {
     "id": "loc_downtown",
     "displayName": "Downtown / Near University",
+    "entryCost": 0,
     "demandGenres": ["Fantasy", "Classic", "Fact"],
     "demandTags": ["study", "short", "science"]
   },
   {
     "id": "loc_mall",
     "displayName": "Shopping Mall",
+    "entryCost": 30,
     "unlock": {
       "all": [
         { "type": "soldGenre", "genre": "Crime", "min": 15 }
@@ -19,6 +21,7 @@
   {
     "id": "loc_riverside_park",
     "displayName": "Riverside Park",
+    "entryCost": 50,
     "unlock": {
       "all": [
         { "type": "soldGenre", "genre": "Kids", "min": 25 },
@@ -31,6 +34,7 @@
   {
     "id": "loc_old_town",
     "displayName": "Old Town",
+    "entryCost": 80,
     "unlock": {
       "all": [
         { "type": "soldGenre", "genre": "Classic", "min": 40 },
@@ -44,6 +48,7 @@
   {
     "id": "loc_train_station",
     "displayName": "Train Station",
+    "entryCost": 120,
     "unlock": {
       "all": [
         { "type": "soldGenre", "genre": "Travel", "min": 60 },

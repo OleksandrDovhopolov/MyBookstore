@@ -64,6 +64,11 @@ on the wrong day is a quiet day.
 The MVP ships with one functional location; the UI and data model still treat
 "location" as a list so locked entries can be added without rework.
 
+Entering a location costs a per-visit **entry fee** (`LocationConfig.EntryCost`,
+currency `EntryCurrencyId`, default gold), shiftable by active decor
+(`DecorConfig.VisitCostDelta`). It is charged on Preparation confirm as a sunk
+cost — see `docs/SAVE_DAY_FLOW.md`.
+
 ### 2.2 Books
 
 The player picks N books from inventory to put on today's shelf, limited by a

@@ -28,6 +28,8 @@
         "Game.Conditions.API",
         "Game.LocationUnlock",
         "Game.LocationUnlock.API",
+        "Game.LocationEntry",
+        "Game.LocationEntry.API",
         "MessagePipe",
         "MessagePipe.VContainer",
         "Game.Core.UI",

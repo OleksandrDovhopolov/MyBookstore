@@ -305,7 +305,9 @@ clean reopen.
 ### Commit Ownership and Boundaries
 
 - `Preparation confirm` = input committed (shelf selection).
-- `Enter location` = ante committed (entry fee, sunk). **Never rolled back.**
+- `Enter location` = ante committed (entry fee, sunk). **Refunded only on a technical
+  entry failure** (`EnterLocationAsync` threw → the visit never started). **Never rolled
+  back on a normal exit/quit during the day.**
 - `Sales` = provisional, runtime buffer only.
 - `Results` = output committed (sales effects applied).
 - `Exit mid-day` = discard the buffer; entry fee stays spent; replay the day.
@@ -348,7 +350,9 @@ gold. Mitigations:
 
 ### Open Decisions
 
-1. Entry fee on exit — **sunk (recommended)** vs refunded. Drives save-scum.
+1. ✅ ~~Entry fee on exit — sunk vs refunded~~ — **Resolved:** sunk on normal exit/quit; the
+   only refund is on a technical `EnterLocationAsync` failure (the visit did not start). One
+   contract, no save-scum loophole.
 2. Persist a per-day seed? If yes, re-entry is deterministic (save-scum moot) and
    the fee can be softer; if no, the fee is the main deterrent.
 3. Tutorial day is excluded from RNG rollback — it keeps its own checkpoint state

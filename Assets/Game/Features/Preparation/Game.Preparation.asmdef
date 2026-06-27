@@ -15,6 +15,8 @@
         "DayCycle",
         "Game.Inventory.API",
         "Game.Decor.API",
+        "Game.LocationEntry.API",
+        "Game.Resources.API",
         "Infrastructure"
     ],
     "includePlatforms": [],
