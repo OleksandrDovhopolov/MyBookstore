@@ -9,7 +9,7 @@ namespace Game.Location.UI
     /// Presentation model for one row in the Location Window. Built by the controller from a
     /// <see cref="LocationConfig"/> + the live <see cref="LocationUnlockStatus"/>, so the view never
     /// touches raw configs or the condition <see cref="JObject"/>: unlocked rows show only Start,
-    /// locked rows show <see cref="ProgressLines"/> ("Crime 3/10").
+    /// locked rows show <see cref="Conditions"/> (genre icon + "current/target").
     /// </summary>
     public sealed class LocationListItemModel
     {
@@ -17,57 +17,53 @@ namespace Game.Location.UI
         public string DisplayName { get; }
         public bool IsUnlocked { get; }
         public bool StartEnabled { get; }
-        public IReadOnlyList<string> ProgressLines { get; }
+        public IReadOnlyList<LocationConditionProgress> Conditions { get; }
 
         public LocationListItemModel(string locationId, string displayName, bool isUnlocked,
-            bool startEnabled, IReadOnlyList<string> progressLines)
+            bool startEnabled, IReadOnlyList<LocationConditionProgress> conditions)
         {
             LocationId = locationId;
             DisplayName = displayName;
             IsUnlocked = isUnlocked;
             StartEnabled = startEnabled;
-            ProgressLines = progressLines ?? System.Array.Empty<string>();
+            Conditions = conditions ?? System.Array.Empty<LocationConditionProgress>();
         }
 
         public static LocationListItemModel From(LocationConfig config, LocationUnlockStatus status)
         {
             var unlocked = status != null && status.State == LocationUnlockState.Unlocked;
 
-            List<string> lines = null;
+            List<LocationConditionProgress> conditions = null;
             if (!unlocked && status != null)
             {
-                lines = new List<string>();
-                CollectLeafLines(status.Progress, lines);
+                conditions = new List<LocationConditionProgress>();
+                CollectLeaves(status.Progress, conditions);
             }
 
             return new LocationListItemModel(
-                config.Id, config.DisplayName, unlocked, startEnabled: unlocked, lines);
+                config.Id, config.DisplayName, unlocked, startEnabled: unlocked, conditions);
         }
 
-        // Only leaves carry a human requirement ("Crime 3/10"); composite all/any/not nodes are flattened.
-        private static void CollectLeafLines(ConditionResult node, List<string> lines)
+        // Only leaves carry a concrete requirement; composite all/any/not nodes are flattened away.
+        private static void CollectLeaves(ConditionResult node, List<LocationConditionProgress> result)
         {
             if (node.Children != null && node.Children.Count > 0)
             {
                 foreach (var child in node.Children)
-                    CollectLeafLines(child, lines);
+                    CollectLeaves(child, result);
                 return;
             }
 
-            lines.Add(FormatLeaf(node));
+            result.Add(new LocationConditionProgress(
+                ExtractGenre(node.ReasonKey), node.Current, node.Target, node.IsMet));
         }
 
-        private static string FormatLeaf(ConditionResult node)
+        // "soldGenre.Crime" → "Crime" (sprite/Addressables id); falls back to the raw key.
+        private static string ExtractGenre(string reasonKey)
         {
-            var label = node.ReasonKey ?? "requirement";
-            var dot = label.LastIndexOf('.');           // "soldGenre.Crime" → "Crime"
-            if (dot >= 0 && dot < label.Length - 1)
-                label = label.Substring(dot + 1);
-
-            var mark = node.IsMet ? "✓" : "•";
-            return node.Target > 0
-                ? $"{mark} {label} {node.Current}/{node.Target}"
-                : $"{mark} {label}";
+            if (string.IsNullOrEmpty(reasonKey)) return reasonKey;
+            var dot = reasonKey.LastIndexOf('.');
+            return dot >= 0 && dot < reasonKey.Length - 1 ? reasonKey.Substring(dot + 1) : reasonKey;
         }
     }
 }

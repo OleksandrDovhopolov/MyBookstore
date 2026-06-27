@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using Game.Newspaper.UI;
 using Game.UI;
 using UIShared;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Game.Location.UI
 {
@@ -12,7 +12,8 @@ namespace Game.Location.UI
         [Header("List")]
         [SerializeField] private UIListPool<LocationRowView> _rowPool = new();
 
-        public void Render(IReadOnlyList<LocationListItemModel> models, Action<string> onStart)
+        public void Render(IReadOnlyList<LocationListItemModel> models, Action<string> onStart,
+            IUiSpriteProvider sprites)
         {
             _rowPool.DisableAll();
 
@@ -22,7 +23,7 @@ namespace Game.Location.UI
                 {
                     var model = models[i];
                     if (model == null) continue;
-                    _rowPool.GetNext().Bind(model, onStart);
+                    _rowPool.GetNext().Bind(model, onStart, sprites);
                 }
             }
 

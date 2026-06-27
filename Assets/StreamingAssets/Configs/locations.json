@@ -1,17 +1,16 @@
 [
   {
     "id": "loc_downtown",
-    "displayName": "Центр / у университета",
+    "displayName": "Downtown / Near University",
     "demandGenres": ["Fantasy", "Classic", "Fact"],
     "demandTags": ["study", "short", "science"]
   },
   {
     "id": "loc_mall",
-    "displayName": "Торговый центр",
+    "displayName": "Shopping Mall",
     "unlock": {
       "all": [
-        { "type": "soldGenre", "genre": "Crime", "min": 10 },
-        { "type": "soldGenre", "genre": "Kids", "min": 5 }
+        { "type": "soldGenre", "genre": "Crime", "min": 15 }
       ]
     },
     "demandGenres": ["Drama", "Crime"],
@@ -19,11 +18,11 @@
   },
   {
     "id": "loc_riverside_park",
-    "displayName": "Парк у реки",
+    "displayName": "Riverside Park",
     "unlock": {
       "all": [
-        { "type": "soldGenre", "genre": "Kids", "min": 8 },
-        { "type": "soldGenre", "genre": "Fantasy", "min": 6 }
+        { "type": "soldGenre", "genre": "Kids", "min": 25 },
+        { "type": "soldGenre", "genre": "Fantasy", "min": 20 }
       ]
     },
     "demandGenres": ["Kids", "Fantasy", "Travel"],
@@ -31,11 +30,12 @@
   },
   {
     "id": "loc_old_town",
-    "displayName": "Старый город",
+    "displayName": "Old Town",
     "unlock": {
       "all": [
-        { "type": "soldGenre", "genre": "Classic", "min": 12 },
-        { "type": "soldGenre", "genre": "Drama", "min": 7 }
+        { "type": "soldGenre", "genre": "Classic", "min": 40 },
+        { "type": "soldGenre", "genre": "Drama", "min": 35 },
+        { "type": "soldGenre", "genre": "Fact", "min": 30 }
       ]
     },
     "demandGenres": ["Classic", "Drama", "Fact"],
@@ -43,11 +43,12 @@
   },
   {
     "id": "loc_train_station",
-    "displayName": "Вокзал",
+    "displayName": "Train Station",
     "unlock": {
       "all": [
-        { "type": "soldGenre", "genre": "Travel", "min": 10 },
-        { "type": "soldGenre", "genre": "Fact", "min": 6 }
+        { "type": "soldGenre", "genre": "Travel", "min": 60 },
+        { "type": "soldGenre", "genre": "Crime", "min": 50 },
+        { "type": "soldGenre", "genre": "Fact", "min": 45 }
       ]
     },
     "demandGenres": ["Travel", "Crime", "Fact"],

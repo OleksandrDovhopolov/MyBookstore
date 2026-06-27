@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.LocationUnlock.API;
+using Game.Newspaper.UI;
 using Game.UI;
 using UnityEngine;
 using VContainer;
@@ -14,6 +15,7 @@ namespace Game.Location.UI
     {
         private IConfigsService _configs;
         private ILocationUnlockService _unlock;
+        private IUiSpriteProvider _uiSprites;
 
         // Reused between renders so building the row list allocates nothing per update.
         private readonly List<LocationListItemModel> _models = new();
@@ -21,10 +23,12 @@ namespace Game.Location.UI
         public string Result { get; private set; }
 
         [Inject]
-        public void InjectServices(IConfigsService configs, ILocationUnlockService unlock)
+        public void InjectServices(IConfigsService configs, ILocationUnlockService unlock,
+            IUiSpriteProvider uiSprites = null)
         {
             _configs = configs;
             _unlock = unlock;
+            _uiSprites = uiSprites;
         }
 
         protected override void OnInit()
@@ -77,7 +81,7 @@ namespace Game.Location.UI
                 _models.Add(LocationListItemModel.From(config, status));
             }
 
-            View.Render(_models, OnStartClicked);
+            View.Render(_models, OnStartClicked, _uiSprites);
         }
 
         private void OnStartClicked(string locationId)
