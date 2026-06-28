@@ -9,6 +9,7 @@ using Game.Ftue.Services;
 using Game.Inventory.API;
 using Game.Inventory.Services;
 using Game.LocationUnlock.API;
+using Game.Quest.API;
 using Game.Newspaper.UI;
 using Game.Progression.API;
 using Game.Resources.API;
@@ -65,6 +66,7 @@ namespace Game.Bootstrap
         private IResourcesService _resources;
         private IProgressionService _progression;
         private ILocationUnlockService _locationUnlock;
+        private IQuestsService _quests;
         // ReSharper restore NotAccessedField.Local
 
         // NOT GetCancellationTokenOnDestroy(): the boot GameObject is destroyed during
@@ -87,7 +89,8 @@ namespace Game.Bootstrap
             IInventoryService inventory,
             IResourcesService resources,
             IProgressionService progression,
-            ILocationUnlockService locationUnlock)
+            ILocationUnlockService locationUnlock,
+            IQuestsService quests)
         {
             _orchestrator = orchestrator;
             _catalog = catalog;
@@ -101,6 +104,7 @@ namespace Game.Bootstrap
             _resources = resources;
             _progression = progression;
             _locationUnlock = locationUnlock;
+            _quests = quests;
         }
 
         private void Awake()

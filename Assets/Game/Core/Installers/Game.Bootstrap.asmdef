@@ -41,6 +41,8 @@
         "Game.Newspaper",
         "Game.Shop",
         "Game.Shop.API",
+        "Game.Quest",
+        "Game.Quest.API",
         "Analytics"
     ],
     "includePlatforms": [],

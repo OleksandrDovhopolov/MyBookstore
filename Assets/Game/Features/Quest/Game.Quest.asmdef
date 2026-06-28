@@ -4,14 +4,21 @@
     "references": [
         "UniTask",
         "Configs",
+        "Save",
         "Game.Quest.API",
-        "Game.Conditions.API"
+        "Game.Conditions.API",
+        "Game.SalesStats.API",
+        "Game.Decor.API",
+        "Game.Inventory.API",
+        "DayCycle"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],

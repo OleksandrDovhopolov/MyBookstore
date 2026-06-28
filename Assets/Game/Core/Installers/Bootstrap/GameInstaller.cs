@@ -15,7 +15,8 @@ namespace Game.Bootstrap
         {
             builder.RegisterRewardDrop();
             builder.RegisterIap();
-            builder.RegisterQuest();
+            // RegisterQuest() переехал в BootstrapInstaller (Global): QuestsService — ISaveHook, его нужно
+            // сконструировать до SaveDataLoadOperation (force-construct в Bootstrap.Construct).
             // RegisterPreparation() переехал в BootstrapInstaller (Global): Preparation теперь окно
             // PreparationWindow, инжектится глобальным resolver-ом фабрики окон.
 

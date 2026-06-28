@@ -5,6 +5,14 @@
         "UniTask",
         "Configs",
         "Game.Quest.API",
+        "Game.Quest",
+        "Game.Conditions.API",
+        "Game.Conditions",
+        "Save",
+        "Game.SalesStats.API",
+        "Game.Decor.API",
+        "Game.Inventory.API",
+        "DayCycle",
         "UnityEngine.TestRunner"
     ],
     "includePlatforms": [
