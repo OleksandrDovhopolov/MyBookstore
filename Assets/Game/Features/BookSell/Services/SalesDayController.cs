@@ -102,7 +102,7 @@ namespace Book.Sell.Services
 
             _shelf = _shelfBuilder.Build(setup.ShelfBookIds);
 
-            _result = new SalesDayResult { Day = setup.Day };
+            _result = new SalesDayResult { Day = setup.Day, LocationId = setup.LocationId };
             _ctx = new CustomerContext(_shelf, _lock, _random, _passiveResolver, _location, setup.DecorIds, this, _tuning);
 
             _customers = new List<Customer>(_spawner.BuildCustomers(setup, _tuning, _random));
@@ -203,7 +203,7 @@ namespace Book.Sell.Services
 
             if (zeroOut)
             {
-                _result = new SalesDayResult { Day = Day };
+                _result = new SalesDayResult { Day = Day, LocationId = LocationId };
             }
 
             // Reuse the organic completion path: same save + event ordering as ConcludeDay.

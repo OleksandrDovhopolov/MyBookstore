@@ -6,9 +6,9 @@ using VContainer;
 
 namespace Game.Bootstrap
 {
-    // Registered in: BootstrapInstaller (GlobalLifetimeScope) — persistent per-genre sold counters.
-    // Written during the Sales phase via the SoldBookCommitter врезка (ISalesStatsRecorder, resolved
-    // from this parent scope by the location-scoped committer) and read by future unlock conditions.
+    // Registered in: BootstrapInstaller (GlobalLifetimeScope) — persistent sold counters
+    // (per genre, per location×genre, per day×genre). Written at the single sold-book chokepoint
+    // (SalesDayCommitService, ISalesStatsRecorder) and read by unlock/quest conditions.
     // Resolves from the same scope: ISaveService, IConfigsService.
     public static class SalesStatsVContainerBindings
     {
@@ -23,9 +23,11 @@ namespace Game.Bootstrap
                 .As<ISalesStatsReader>()
                 .As<ISalesStatsRecorder>();
 
-            // SalesStats ships its own condition adapter ("soldGenre"); the condition engine discovers
-            // it via the IConditionFactory collection — no engine change needed for new condition types.
+            // SalesStats ships its own condition adapters; the condition engine discovers them via the
+            // IConditionFactory collection — no engine change needed for new condition types.
             builder.Register<IConditionFactory, SoldGenreConditionFactory>(Lifetime.Singleton);
+            builder.Register<IConditionFactory, SoldGenreAtLocationConditionFactory>(Lifetime.Singleton);
+            builder.Register<IConditionFactory, SoldGenreInSingleDayConditionFactory>(Lifetime.Singleton);
         }
     }
 }
