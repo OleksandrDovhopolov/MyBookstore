@@ -36,6 +36,9 @@ namespace Book.Sell.Services
 
         private List<string> ResolvePool(SalesSessionSetup setup)
         {
+            // TODO Gameplay: this currently treats LocationConfig.DemandGenres like an allowed-genre pool.
+            // Tiny Bookshop-style demand should be wider: any stocked genre can sell, while location demand
+            // genres get a higher chance/weight instead of excluding all other genres.
             // 1) Location demand genres (one source, not the truth about the customer).
             var location = !string.IsNullOrEmpty(setup?.LocationId)
                 ? _configs.Get<LocationConfig>(setup.LocationId)

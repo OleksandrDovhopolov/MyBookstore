@@ -9,7 +9,8 @@
 
 ## 🎮 Геймплей
 
-_(пока нет задач)_
+- [ ] **GAME-1. Replace location demand genre whitelist with weighted demand.**
+  Current `LocationDemandProfileProvider` treats `LocationConfig.DemandGenres` as the pool of genres customers can request/passively buy. This is too strict for a Tiny Bookshop-like model: every stocked genre should remain sellable, while location demand genres get a higher chance/weight. Rework passive demand calculation so `DemandGenres` means boosted/preferred genres, not allowed-only genres. Update tests around `LocationDemandProfileProvider` / `RequestedGenrePassiveResolver` to cover non-demand genres still being sellable with lower chance.
 
 ---
 
