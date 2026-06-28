@@ -7,14 +7,17 @@
         "Save",
         "Configs",
         "Game.Inventory.API",
+        "Game.Conditions.API",
         "Unity.TextMeshPro",
         "Game.Core.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],

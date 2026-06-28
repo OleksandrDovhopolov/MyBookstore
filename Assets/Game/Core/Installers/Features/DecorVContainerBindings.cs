@@ -1,5 +1,7 @@
 using Book.Sell.API;
+using Game.Conditions.API;
 using Game.Decor;
+using Game.Decor.Conditions;
 using Game.Decor.Services;
 using Game.Inventory.API;
 using VContainer;
@@ -30,6 +32,9 @@ Force this service to be constructed before save load (for example via the boots
             builder.Register<DecorPlacementService>(Lifetime.Singleton)
                 .AsImplementedInterfaces() // exposes IDecorPlacementService + ISaveHook
                 .AsSelf();                  // self resolution for DecorRewardService
+
+            // Quest/unlock condition adapter ("decorEquipped"); discovered via the IConditionFactory collection.
+            builder.Register<IConditionFactory, DecorEquippedConditionFactory>(Lifetime.Singleton);
 
             builder.Register<IDecorModifierProvider, ConfigBasedDecorModifierProvider>(Lifetime.Singleton);
             builder.Register<IInventoryItemUseHandler, DecorActivationUseHandler>(Lifetime.Singleton);

@@ -1,4 +1,6 @@
 using Book.Sell.API;
+using Game.Conditions.API;
+using Game.DayCycle.Conditions;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
 using Game.DayCycle.Results.Services;
@@ -17,6 +19,10 @@ namespace Game.Bootstrap
 
             builder.Register<IMorningContextResolver, MorningContextResolver>(Lifetime.Singleton);
             builder.Register<IMorningSessionService, MorningSessionService>(Lifetime.Singleton);
+
+            // Current-day weather read seam + "weatherIs" condition adapter (discovered via IConditionFactory).
+            builder.Register<ICurrentDayWeatherProvider, CurrentDayWeatherProvider>(Lifetime.Singleton);
+            builder.Register<IConditionFactory, WeatherIsConditionFactory>(Lifetime.Singleton);
 
             builder.Register<IResultsReviewTextProvider, DefaultResultsReviewTextProvider>(Lifetime.Singleton);
             builder.Register<IResultsSummaryBuilder, ResultsSummaryBuilder>(Lifetime.Singleton);

@@ -132,16 +132,18 @@ QuestTaskConfig
 | Условие | Пример | Статус |
 |---|---|---|
 | `soldGenre` | продать N книг жанра (глобально) | **есть** — `SoldGenreCondition` |
-| `soldGenreAtLocation` | продать 15 `Fantasy` на `FarBeach` | требует расширения `SalesStats` (разрез по локации) — Prereq §0 |
-| `soldGenreInSingleDay` | продать 15 `Fantasy` за один день | требует дневного счётчика в `SalesStats` — Prereq §0 |
+| `soldGenreAtLocation` | продать 15 `Fantasy` на `FarBeach` | **готово** (GAME-4) — `Game.SalesStats` |
+| `soldGenreInSingleDay` | продать 15 `Fantasy` за один день | **готово** (GAME-4) — `Game.SalesStats` |
 | `soldByTags` | продать книги с тегами `{nature, academic}` жанра `Fact` | требует учёта продаж по `Tags` (есть `BookConfig.Tags/Mood`) — см. §12 |
-| `visitLocation` | посетить `FarBeach` 3 раза | новый factory |
-| `equipDecor` | установить `harper_castle_donation_box` | новый factory (`Game.Decor`) |
-| `decorEquippedForDays` | ездить с `fireplace` 3 игровых дня | новый factory |
-| `collectResourceBySales` | собрать 100 монет через копилку | новый factory |
-| `weatherIs` | дождь, шторм, снег, солнце | реализуем сразу (`MorningDayContext.WeatherId`) |
-| `clickWorldObject` | лодка у маяка, мусорный бак, ящик | новый factory |
-| `haveItem` / `consumeItem` | найден журнал, нож, пакет семян | новый factory (`Game.Inventory` / quest items) |
+| `decorEquipped` | установить `harper_castle_donation_box` / `fireplace` | **готово** (Этап 3) — `Game.Decor` (`IDecorPlacementService`) |
+| `haveItem` | найден журнал, нож, пакет семян | **готово** (Этап 3) — `Game.Inventory` (`Has/GetCount`) |
+| `weatherIs` | дождь, шторм, снег, солнце | **готово** (Этап 3) — `Game.DayCycle` (`ICurrentDayWeatherProvider` поверх `IMorningContextResolver`) |
+| `visitLocation` | посетить `FarBeach` 3 раза | **GAME-5** — нужна persisted-подсистема визитов |
+| `locationIs` | находиться на `FarBeach` | **GAME-5** — нужен current-location seam |
+| `decorEquippedForDays` | ездить с `fireplace` 3 игровых дня | позже (нужен дневной таймер декора) |
+| `collectResourceBySales` | собрать 100 монет через копилку | позже (механика копилки) |
+| `clickWorldObject` | лодка у маяка, мусорный бак, ящик | позже |
+| `consumeItem` | израсходовать квест-предмет | позже (quest items) |
 | ~~`seasonIs`~~ | ~~сезон~~ | **вне MVP** — сезонов нет (Prereq §0). |
 | `pinInvestigationCase` | дело на доске расследований | отложено до Investigation Board |
 

@@ -1,13 +1,15 @@
 {
-    "name": "Game.Inventory.Tests.Editor",
-    "rootNamespace": "Game.Inventory.Tests.Editor",
+    "name": "Game.Quest.ConditionsIntegration.Tests.Editor",
+    "rootNamespace": "Game.Quest.Tests.ConditionsIntegration",
     "references": [
         "UniTask",
-        "Save",
-        "Game.Inventory.API",
-        "Game.Inventory",
         "Game.Conditions.API",
         "Game.Conditions",
+        "Game.Decor",
+        "Game.Decor.API",
+        "Game.Inventory",
+        "Game.Inventory.API",
+        "DayCycle",
         "UnityEngine.TestRunner"
     ],
     "includePlatforms": [
