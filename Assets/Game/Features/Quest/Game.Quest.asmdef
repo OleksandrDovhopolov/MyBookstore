@@ -1,0 +1,19 @@
+{
+    "name": "Game.Quest",
+    "rootNamespace": "Game.Quest",
+    "references": [
+        "UniTask",
+        "Configs",
+        "Game.Quest.API",
+        "Game.Conditions.API"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
