@@ -11,13 +11,13 @@ namespace Book.Sell.UI.Customer
     public sealed class CustomerThoughtBubble : WorldHud
     {
         private const float CrossfadeDuration = 0.2f;
-        private const float ScaleInDuration = 0.15f;
-        private static readonly Vector3 ScaleInFrom = Vector3.one * 0.5f;
-        private static readonly Vector3 ScaleInTo = Vector3.one;
+        private const float DotsFrameInterval = 0.4f;   // seconds per "..." frame
+        private const int MaxDots = 5;
 
         private CustomerThoughtBubbleView _view;
-        private CanvasGroup _currentActive;
-        private CancellationTokenSource _stateCts;
+        // Owns the dots loop independently of state changes, so the animation keeps running smoothly
+        // across consecutive thinking states (Thinking -> ThinkingNext) instead of restarting.
+        private CancellationTokenSource _dotsCts;
 
         public CustomerThoughtState State { get; private set; } = CustomerThoughtState.None;
 
@@ -31,8 +31,7 @@ namespace Book.Sell.UI.Customer
 
         protected override async UniTask OnDetachAsync(CancellationToken ct)
         {
-            _stateCts?.Cancel();
-            _stateCts = null;
+            StopDots();
 
             if (CanvasGroup != null)
             {
@@ -40,110 +39,124 @@ namespace Book.Sell.UI.Customer
             }
         }
 
-        public async UniTask SetStateAsync(
+        public UniTask SetStateAsync(
             CustomerThoughtState state,
             CustomerThoughtPayload payload = null,
             CancellationToken externalCt = default)
         {
             payload ??= CustomerThoughtPayload.Empty;
 
-            _stateCts?.Cancel();
-            _stateCts = CancellationTokenSource.CreateLinkedTokenSource(externalCt);
-            var ct = _stateCts.Token;
-
-            try
-            {
-                ApplyContent(state, payload);
-
-                var next = ResolveGroup(state);
-                await CrossfadeAsync(_currentActive, next, ct);
-
-                // Per-state secondary animation (subtle scale-in for book / rejection).
-                await PlaySecondaryAsync(state, ct);
-
-                State = state;
-            }
-            catch (OperationCanceledException) { /* superseded — swallow */ }
+            ApplyContent(state, payload);   // starts/stops/keeps the dots loop as needed
+            State = state;
+            return UniTask.CompletedTask;
         }
 
         private void ApplyContent(CustomerThoughtState state, CustomerThoughtPayload payload)
         {
             if (_view == null) return;
 
-            switch (state)
+            // One visual channel per state:
+            //   Thinking      -> animated dots   (browse / _browseDuration)
+            //   ThinkingNext  -> book icon       (locked / _passiveCommitDelay)
+            //   Comment       -> success icon
+            //   PassiveSaleFailed -> fail icon
+            //   everything else   -> State text label
+            var showDots = state == CustomerThoughtState.Thinking;
+            var showBook = state == CustomerThoughtState.ThinkingNext;   // locked book OR fail's genre phase
+            var showSuccess = state == CustomerThoughtState.Comment;
+            var showFail = state == CustomerThoughtState.PassiveSaleFailed;
+            var showText = !showDots && !showBook && !showSuccess && !showFail;
+
+            UpdateDots(showDots);
+
+            if (_view.BookIcon != null)
             {
-                case CustomerThoughtState.BookPicked:
-                    if (_view.BookIcon != null) _view.BookIcon.sprite = payload.BookSprite;
-                    break;
-                case CustomerThoughtState.Comment:
-                    if (_view.CommentText != null) _view.CommentText.text = payload.CommentText ?? string.Empty;
-                    break;
-                case CustomerThoughtState.Rejected:
-                    if (_view.RejectedBookIcon != null) _view.RejectedBookIcon.sprite = payload.RejectedBookSprite;
-                    if (_view.ReplacementBookIcon != null) _view.ReplacementBookIcon.sprite = payload.ReplacementBookSprite;
-                    break;
+                if (showBook && payload.BookSprite != null) _view.BookIcon.sprite = payload.BookSprite;
+                _view.BookIcon.gameObject.SetActive(showBook);
+            }
+
+            if (_view.SuccessIcon != null) _view.SuccessIcon.gameObject.SetActive(showSuccess);
+            if (_view.FailIcon != null) _view.FailIcon.gameObject.SetActive(showFail);
+
+            if (_view.StateText != null)
+            {
+                _view.StateText.text = showText ? ResolveStateLabel(state, payload) : string.Empty;
+                _view.StateText.gameObject.SetActive(showText);
             }
         }
 
-        private CanvasGroup ResolveGroup(CustomerThoughtState state) => state switch
+        private void UpdateDots(bool animate)
         {
-            CustomerThoughtState.Thinking => _view?.DotsGroup,
-            CustomerThoughtState.ThinkingNext => _view?.DotsGroup,
-            CustomerThoughtState.BookPicked => _view?.BookGroup,
-            CustomerThoughtState.Comment => _view?.CommentGroup,
-            CustomerThoughtState.Rejected => _view?.RejectionGroup,
-            _ => null,
-        };
-
-        private async UniTask CrossfadeAsync(CanvasGroup from, CanvasGroup to, CancellationToken ct)
-        {
-            if (from == to)
+            if (!animate)
             {
-                if (to != null) to.alpha = 1f;
+                StopDots();
                 return;
             }
 
-            // Fade out the current sub-view (if any), then fade in the new one. Could be parallelized,
-            // but sequential is more legible and the duration is short.
-            if (from != null)
-            {
-                await TweenAsync.LerpAlphaAsync(from, from.alpha, 0f, CrossfadeDuration, ct);
-                from.gameObject.SetActive(false);
-            }
+            if (_view != null && _view.DotsText != null) _view.DotsText.gameObject.SetActive(true);
 
-            if (to != null)
-            {
-                to.gameObject.SetActive(true);
-                to.alpha = 0f;
-                await TweenAsync.LerpAlphaAsync(to, 0f, 1f, CrossfadeDuration, ct);
-            }
+            // Already running (the previous state was also a thinking-dots state): keep it going so the
+            // animation doesn't visibly reset on Thinking -> ThinkingNext.
+            if (_dotsCts != null) return;
 
-            _currentActive = to;
+            if (_view != null && _view.DotsText != null) _view.DotsText.text = ".";   // seed
+            _dotsCts = new CancellationTokenSource();
+            RunThinkingDotsAsync(_dotsCts.Token).Forget();
         }
 
-        private async UniTask PlaySecondaryAsync(CustomerThoughtState state, CancellationToken ct)
+        private void StopDots()
         {
-            if (_view == null) return;
+            _dotsCts?.Cancel();
+            _dotsCts?.Dispose();
+            _dotsCts = null;
+            if (_view != null && _view.DotsText != null) _view.DotsText.gameObject.SetActive(false);
+        }
 
-            switch (state)
+        // Animates the Dots text "." -> "....." (1..MaxDots) and loops, until _dotsCts cancels (leaving a
+        // thinking state or on detach). Fire-and-forget under the dots token.
+        private async UniTaskVoid RunThinkingDotsAsync(CancellationToken ct)
+        {
+            try
             {
-                case CustomerThoughtState.BookPicked when _view.BookScaleTarget != null:
-                    await TweenAsync.LerpScaleAsync(_view.BookScaleTarget, ScaleInFrom, ScaleInTo, ScaleInDuration, ct);
-                    break;
-                case CustomerThoughtState.Rejected when _view.RejectionScaleTarget != null:
-                    await TweenAsync.LerpScaleAsync(_view.RejectionScaleTarget, ScaleInFrom, ScaleInTo, ScaleInDuration, ct);
-                    break;
+                var count = 1;
+                while (!ct.IsCancellationRequested)
+                {
+                    if (_view == null) return;   // bubble destroyed — stop the loop
+                    if (_view.DotsText != null)
+                        _view.DotsText.text = new string('.', count);
+
+                    count = count >= MaxDots ? 1 : count + 1;
+                    await UniTask.Delay(
+                        TimeSpan.FromSeconds(DotsFrameInterval), ignoreTimeScale: true, cancellationToken: ct);
+                }
             }
+            catch (OperationCanceledException) { /* superseded — stop */ }
+        }
+
+        private static string ResolveStateLabel(CustomerThoughtState state, CustomerThoughtPayload payload)
+        {
+            if (!string.IsNullOrEmpty(payload.CommentText))
+                return payload.CommentText;
+
+            return state switch
+            {
+                CustomerThoughtState.Thinking => string.Empty,      // dots indicator instead of text
+                CustomerThoughtState.ThinkingNext => string.Empty,  // dots indicator instead of text
+                CustomerThoughtState.BookPicked => "Active purchase",
+                CustomerThoughtState.Comment => "Bought book",
+                CustomerThoughtState.PassiveSaleFailed => "Failed",
+                CustomerThoughtState.PurchaseCompleted => "Done shopping",
+                _ => string.Empty
+            };
         }
 
         private void DeactivateAll()
         {
             if (_view == null) return;
-            if (_view.DotsGroup != null) { _view.DotsGroup.alpha = 0f; _view.DotsGroup.gameObject.SetActive(false); }
-            if (_view.BookGroup != null) { _view.BookGroup.alpha = 0f; _view.BookGroup.gameObject.SetActive(false); }
-            if (_view.CommentGroup != null) { _view.CommentGroup.alpha = 0f; _view.CommentGroup.gameObject.SetActive(false); }
-            if (_view.RejectionGroup != null) { _view.RejectionGroup.alpha = 0f; _view.RejectionGroup.gameObject.SetActive(false); }
-            _currentActive = null;
+            if (_view.SuccessIcon != null) _view.SuccessIcon.gameObject.SetActive(false);
+            if (_view.FailIcon != null) _view.FailIcon.gameObject.SetActive(false);
+            if (_view.BookIcon != null) _view.BookIcon.gameObject.SetActive(false);
+            StopDots();
         }
     }
 }

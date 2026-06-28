@@ -37,11 +37,22 @@ namespace Game.UI
 
             View = typedView;
             Attribute = attribute;
+            View.CloseClick += OnCloseClicked;
         }
 
         public void ApplyArguments(WindowArgs args)
         {
             Arguments = args;
+        }
+
+        public void SetHudVisible(bool visible)
+        {
+            if (View == null) return;
+
+            var canvasGroup = View.CanvasGroup;
+            canvasGroup.alpha = visible ? 1f : 0f;
+            canvasGroup.interactable = visible;
+            canvasGroup.blocksRaycasts = visible;
         }
 
         public async UniTask ShowAsync(CancellationToken ct)
@@ -98,9 +109,16 @@ namespace Game.UI
 
         public void Dispose()
         {
+            if (View != null)
+            {
+                View.CloseClick -= OnCloseClicked;
+            }
+
             OnDispose();
             Closed = null;
         }
+
+        private void OnCloseClicked() => CloseAsync().Forget();
 
         protected virtual void OnInit() { }
         protected virtual void OnShowStart() { }

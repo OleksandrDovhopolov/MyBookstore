@@ -69,10 +69,20 @@ namespace Game.Ftue.Services
                 return;
             }
 
-            // Clean first launch: seed gold via resources, seed books in inventory.
+            // Clean first launch. Сначала резолвим стартовые книги — если каталог пуст (конфиги не
+            // прогрелись / пустой books.json), НЕ помечаем applied и НЕ сеем ничего: иначе пустой
+            // инвентарь «прилипнет» навсегда (applied=true). Повторим на следующем запуске.
+            var presetIds = BuildPresetBookIds();
+            if (presetIds.Count == 0)
+            {
+                Debug.LogError($"{LogPrefix} aborting — no starter books resolved (BookConfig catalog empty?). " +
+                               "Not marking applied; will retry next launch.");
+                return;
+            }
+
             await _resources.AddAsync(ResourceIds.Gold, StartingGold, "ftue", ct);
 
-            var preset = BuildPresetBookIds()
+            var preset = presetIds
                 .Select(id => new InventoryItem(id, InventoryCategories.Book, count: 1))
                 .ToList();
             await _inventory.AddBatchAsync(preset, ct);

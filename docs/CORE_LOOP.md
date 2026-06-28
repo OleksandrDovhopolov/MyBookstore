@@ -64,6 +64,11 @@ on the wrong day is a quiet day.
 The MVP ships with one functional location; the UI and data model still treat
 "location" as a list so locked entries can be added without rework.
 
+Entering a location costs a per-visit **entry fee** (`LocationConfig.EntryCost`,
+currency `EntryCurrencyId`, default gold), shiftable by active decor
+(`DecorConfig.VisitCostDelta`). It is charged on Preparation confirm as a sunk
+cost — see `docs/SAVE_DAY_FLOW.md`.
+
 ### 2.2 Books
 
 The player picks N books from inventory to put on today's shelf, limited by a
@@ -118,10 +123,20 @@ Two interaction modes coexist on the same shelf:
 Customers walk in, browse, and either buy or leave on their own. The player
 sees this as quiet income with small per-genre feedback ("sold: *Quiet Orbit*").
 
-Each browse tick rolls a per-genre probabilistic gate
-(`baseSaleChance × locationMod × decorMod`); on success a specific title is
-chosen by weighted random over `RarityWeight`. Passive sales **do not** use
-tag/mood matching — that depth belongs to the active mini-game.
+Each customer arrives with a small **desire profile** — 1–3 genres (usually 2).
+Each passive attempt picks **one** of those genres at random (among the ones that
+are actually stocked) and rolls **only that genre's** probabilistic gate
+(`baseSaleChance × locationMod × decorMod`); on success a specific title is chosen
+by weighted random over `RarityWeight`. Because the attempt commits to one genre
+up front, the chosen genre is known on **both** a hit and a miss — so the feedback
+bubble can show that genre's sprite either way. Passive sales **do not** use
+tag/mood matching — that depth belongs to the active mini-game. (Design: see
+[ADR-0006](adr/0006-passive-sales-requested-genre.md), refining the stage-1 gate
+of [ADR-0004](adr/0004-stock-model-hybrid-sale-chance.md).)
+
+If a passive roll fails, that ends the passive part of that customer's visit:
+no further passive attempts are allowed, but the customer may still continue
+into non-passive beats such as an active recommendation, a comment, or dialogue.
 
 The shelf is a per-title inventory; the genre count is an aggregate over the
 shelf, not a separate entity. The right-hand panel shows the count and, on

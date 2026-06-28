@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb073179077b9c54682653d639aeb329, type: 3}
+  m_Name: SalesTuningExpress
+  m_EditorClassIdentifier: 
+  _approachDuration: 2.5
+  _minApproachDuration: 0.5
+  _maxApproachDuration: 5
+  _browseDuration: 3.5
+  _passiveCommitDelay: 1
+  _passiveFailureFeedbackDuration: 1.5
+  _passiveSaleFeedbackDuration: 1.5
+  _completePurchaseDuration: 1.5
+  _leaveDuration: 0.5
+  _minLeaveDuration: 0.5
+  _maxLeaveDuration: 1.5
+  _spawnInterval: 2
+  _baseCustomers: 5
+  _maxConcurrentCustomers: 3

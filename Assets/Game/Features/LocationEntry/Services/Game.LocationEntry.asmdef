@@ -1,0 +1,19 @@
+{
+    "name": "Game.LocationEntry",
+    "rootNamespace": "Game.LocationEntry",
+    "references": [
+        "Configs",
+        "Game.Decor.API",
+        "Game.Resources.API",
+        "Game.LocationEntry.API"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

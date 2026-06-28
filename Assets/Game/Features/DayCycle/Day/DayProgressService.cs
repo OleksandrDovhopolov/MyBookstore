@@ -13,17 +13,23 @@ namespace Game.DayCycle.Day
 
         private readonly ISaveService _save;
         private DayProgressState _state;
+        private bool _loaded;
 
         public DayProgressService(ISaveService save)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
         }
 
+        public event Action<DayProgressState> PhaseChanged;
+
         public DayProgressState Current => _state ??= new DayProgressState();
 
         public async UniTask<DayProgressState> LoadAsync(CancellationToken ct)
         {
+            if (_loaded) return Current;
+
             _state = await _save.GetModuleAsync<DayProgressState>(ModuleKey, ct) ?? new DayProgressState();
+            _loaded = true;
             return _state;
         }
 
@@ -31,6 +37,29 @@ namespace Game.DayCycle.Day
         {
             Current.CurrentPhase = phase;
             await SaveAsync(ct);
+            PhaseChanged?.Invoke(Current);
+        }
+
+        public async UniTask MarkCurrentDayCompletedAsync(CancellationToken ct)
+        {
+            var state = Current;
+            var changed = false;
+            if (!state.CompletedDays.Contains(state.CurrentDay))
+            {
+                state.CompletedDays.Add(state.CurrentDay);
+                changed = true;
+            }
+
+            if (state.CurrentPhase != DayPhase.Results)
+            {
+                state.CurrentPhase = DayPhase.Results;
+                changed = true;
+            }
+
+            if (!changed) return;
+
+            await SaveAsync(ct);
+            PhaseChanged?.Invoke(Current);
         }
 
         public async UniTask AdvanceToNextDayAsync(CancellationToken ct)
@@ -42,6 +71,7 @@ namespace Game.DayCycle.Day
             state.CurrentDay += 1;
             state.CurrentPhase = DayPhase.Morning;
             await SaveAsync(ct);
+            PhaseChanged?.Invoke(Current);
         }
 
         public UniTask SaveAsync(CancellationToken ct)

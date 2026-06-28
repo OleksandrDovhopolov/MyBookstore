@@ -44,6 +44,8 @@ namespace Game.UI
         public async UniTask<T> ShowAsync<T>(WindowArgs args = null, CancellationToken ct = default)
             where T : class, IWindowController, new()
         {
+            Debug.Log($"{Tag} {typeof(T).Name} ShowAsync");
+
             if (!_filter.CanBeShown(typeof(T)))
             {
                 Debug.Log($"{Tag} {typeof(T).Name} blocked by filter.");

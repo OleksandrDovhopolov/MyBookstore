@@ -15,8 +15,10 @@ namespace Book.Sell.Domain
         public SalesShelf Shelf { get; }
         public IInteractionLock Lock { get; }
         public ISalesRandom Random { get; }
-        public IPassiveSaleSelector PassiveSelector { get; }
+        public IPassivePurchaseResolver PassiveResolver { get; }
+        //TODO check почему покупатель хранит какую-то информацию про локацию . скорее всего он не должен это знать  
         public LocationConfig Location { get; }
+        //TODO check почему покупатель хранит какую-то информацию про декорации. скорее всего он не должен это знать  
         public IReadOnlyList<string> ActiveDecorIds { get; }
         public ISalesDaySink Sink { get; }
         public SalesTuning Tuning { get; }
@@ -25,7 +27,7 @@ namespace Book.Sell.Domain
             SalesShelf shelf,
             IInteractionLock interactionLock,
             ISalesRandom random,
-            IPassiveSaleSelector passiveSelector,
+            IPassivePurchaseResolver passiveResolver,
             LocationConfig location,
             IReadOnlyList<string> activeDecorIds,
             ISalesDaySink sink,
@@ -34,7 +36,7 @@ namespace Book.Sell.Domain
             Shelf = shelf;
             Lock = interactionLock;
             Random = random;
-            PassiveSelector = passiveSelector;
+            PassiveResolver = passiveResolver;
             Location = location;
             ActiveDecorIds = activeDecorIds ?? Array.Empty<string>();
             Sink = sink;

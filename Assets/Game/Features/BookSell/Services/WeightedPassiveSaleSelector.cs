@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Book.Sell.Domain;
 using Game.Configs.Models;
+using UnityEngine;
 
 namespace Book.Sell.Services
 {
@@ -17,6 +18,8 @@ namespace Book.Sell.Services
     /// </summary>
     public sealed class WeightedPassiveSaleSelector : IPassiveSaleSelector
     {
+        private const string LogPrefix = "[Sales.Passive]";
+
         // Floor for books whose authored weight is non-positive so they remain reachable.
         private const float RarityWeightFloor = 1e-4f;
 
@@ -38,17 +41,30 @@ namespace Book.Sell.Services
             var groups = GroupByGenre(shelf);
             if (groups.Count == 0) return null;
 
-            // Stage 1: per-genre gate.
+            // Stage 1: per-genre gate. One dice roll per genre present on the shelf.
             var winners = new List<KeyValuePair<string, List<ShelfBook>>>();
             foreach (var kv in groups)
             {
-                var chance = _calculator.Compute(kv.Key, kv.Value.Count, location, activeDecorIds);
-                if (chance <= 0d) continue;
-                if (random.NextDouble() < chance)
-                    winners.Add(kv);
+                var copies = kv.Value.Count;
+                var chance = _calculator.Compute(kv.Key, copies, location, activeDecorIds);
+                if (chance <= 0d)
+                {
+                    Debug.Log($"{LogPrefix}   gate genre={kv.Key} copies={copies} chance=0.000 → SKIP (no chance)");
+                    continue;
+                }
+
+                // NextDouble() is consumed only when chance > 0 — keep that order so seeds stay stable.
+                var roll = random.NextDouble();
+                var hit = roll < chance;
+                Debug.Log($"{LogPrefix}   gate genre={kv.Key} copies={copies} chance={chance:F3} roll={roll:F3} → {(hit ? "HIT" : "MISS")}");
+                if (hit) winners.Add(kv);
             }
 
-            if (winners.Count == 0) return null;
+            if (winners.Count == 0)
+            {
+                Debug.Log($"{LogPrefix} no genre passed the gate → passive MISS");
+                return null;
+            }
 
             // Stage 2a: uniformly choose one winning genre.
             var pickedIdx = winners.Count == 1 ? 0 : random.Range(0, winners.Count);
@@ -57,7 +73,13 @@ namespace Book.Sell.Services
 
             // Stage 2b: weighted pick by RarityWeight.
             var book = WeightedPick(genreBooks, random);
-            if (book == null) return null;
+            if (book == null)
+            {
+                Debug.Log($"{LogPrefix} winner genre={pickedGenre} but no book could be picked → passive MISS");
+                return null;
+            }
+
+            Debug.Log($"{LogPrefix} winner genre={pickedGenre} ({winners.Count} genre(s) passed) → book={book.BookId} \"{book.Config?.Title}\" rarity={EffectiveWeight(book):F3} price={book.Config?.BasePrice}");
 
             return new PassiveSaleCandidate(
                 book,

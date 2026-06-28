@@ -58,7 +58,14 @@ namespace Game.Shop.Tests.Editor
             };
             h.Configs.Seed(DecorLots());
             h.Repo = new SaveBackedShopRepository(h.Save);
-            h.Svc = new ShopService(h.Save, h.Repo, h.Resources, h.Rewards, h.Configs, h.Inventory);
+            h.Svc = new ShopService(
+                h.Save,
+                h.Repo,
+                h.Resources,
+                h.Rewards,
+                new ShopConfigRewardSpecProvider(h.Configs),
+                h.Configs,
+                h.Inventory);
             return h;
         }
 

@@ -5,7 +5,9 @@ using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Inventory.API;
 using Game.Resources.API;
+using Game.SalesStats.API;
 using Game.UI;
+using Save;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
@@ -25,6 +27,9 @@ namespace Game.Cheat
         private IInventoryService _inventory;
         private IConfigsService _configs;
         private IResourcesService _resources;
+        private ISalesStatsRecorder _salesStatsRecorder;
+        private ISalesStatsReader _salesStatsReader;
+        private ISaveService _save;
 
         // ISalesDayController is intentionally NOT injected here: this view lives in a UI window
         // prefab instantiated by the global UI factory, while the controller is registered in the
@@ -33,17 +38,42 @@ namespace Game.Cheat
         // active SalesScreenView in the scene instead.
 
         [Inject]
-        private void Construct(UIManager uiManager, IInventoryService inventory, IConfigsService configs, IResourcesService resources)
+        private void Construct(UIManager uiManager, IInventoryService inventory, IConfigsService configs,
+            IResourcesService resources, ISalesStatsRecorder salesStatsRecorder, ISalesStatsReader salesStatsReader,
+            ISaveService save)
         {
             _uiManager = uiManager;
             _inventory = inventory;
             _configs = configs;
             _resources = resources;
+            _salesStatsRecorder = salesStatsRecorder;
+            _salesStatsReader = salesStatsReader;
+            _save = save;
         }
 
         public void Start()
         {
             InitializeRootPanel();
+            // Cheat-модули читают конфиги синхронно (GetAll<DecorConfig> и т.п.). Если Start успел до
+            // ConfigsService.WarmupAsync — список будет пустым + warning. Ждём прогрев (идемпотентный) и
+            // только потом строим модули.
+            InitializeCheatsModulesAsync().Forget();
+        }
+
+        private async UniTaskVoid InitializeCheatsModulesAsync()
+        {
+            if (_configs != null)
+            {
+                try
+                {
+                    await _configs.WarmupAsync(this.GetCancellationTokenOnDestroy());
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+            }
+
             InitializeCheatsModules();
         }
 
@@ -93,9 +123,10 @@ namespace Game.Cheat
 
             var cheatsModules = new List<ICheatsModule>
             {
+                new DefaultCheatModule(_uiManager),
                 new DecorationCheatModule(_uiManager, _inventory, _configs, destroyCt),
                 new ResourcesCheatModule(_resources, destroyCt),
-                new SalesCheatModule(),
+                new SalesStatsCheatModule(_salesStatsRecorder, _salesStatsReader, _configs, _save, destroyCt)
             };
 
             return cheatsModules;

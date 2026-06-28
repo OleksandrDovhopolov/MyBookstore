@@ -1,21 +1,34 @@
-using System.Text;
+using System;
+using System.Linq;
+using System.Threading;
 using Cysharp.Threading.Tasks;
-using Game.Rewards.API;
+using Game.Configs;
 using Game.UI;
+using VContainer;
 
 namespace Game.Newspaper.UI
 {
     //TODO should remove this from Game.Newspaper.UI and move closer to its domain
     /// <summary>
-    /// Popup that summarises what a player received from a purchase. Phase 1 MVP: textual list
-    /// (item id × amount per line). Phase 2+: icons, animations, claim flow per spec.
+    /// Popup that summarises what a player received from a purchase.
     /// </summary>
     [Window("RewardsWindow", WindowType.Popup)]
-    public sealed class RewardsWindow : WindowController<RewardsWindowView>
+    public sealed class RewardsWindow : WindowController<RewardWindowView>
     {
+        private IConfigsService _configs;
+        private IUiSpriteProvider _uiSprites;
+        private CancellationTokenSource _cts;
+
+        [Inject]
+        public void InjectServices(IConfigsService configs, IUiSpriteProvider uiSprites)
+        {
+            _configs = configs;
+            _uiSprites = uiSprites;
+        }
+
         protected override void OnInit()
         {
-            View.OkButton.onClick.AddListener(OnOkClicked);
+            _cts = new CancellationTokenSource();
         }
 
         protected override void OnShowStart() => ApplyArgsToView();
@@ -24,42 +37,51 @@ namespace Game.Newspaper.UI
 
         protected override void OnDispose()
         {
-            if (View != null)
-                View.OkButton.onClick.RemoveListener(OnOkClicked);
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
         }
 
         private void ApplyArgsToView()
         {
+            View.ResetView();
             if (Arguments is not RewardsWindowArgs args) return;
 
-            if (View.TitleLabel != null)
-                View.TitleLabel.text = args.Title;
+            // Cancel any in-flight icon load from a previous Apply (OnShowStart/UpdateWindow).
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = new CancellationTokenSource();
 
-            if (View.BodyLabel != null)
-                View.BodyLabel.text = BuildBody(args.Granted);
+            var rewards = RewardsWindowRewardBuilder.Build(args.Granted, _configs);
+            View.SetReward(rewards);
+            LoadRewardIconsAsync(_cts.Token).Forget();
         }
 
-        private static string BuildBody(RewardSpec granted)
+        private async UniTaskVoid LoadRewardIconsAsync(CancellationToken ct)
         {
-            if (granted == null || granted.Items == null || granted.Items.Count == 0)
-                return "Nothing received.";
+            if (View == null || _uiSprites == null) return;
 
-            var sb = new StringBuilder();
-            for (var i = 0; i < granted.Items.Count; i++)
+            // Snapshot: the view's dictionary is rebuilt by ResetView/SetReward, so avoid iterating
+            // the live collection across awaits.
+            var entries = View.GetViews().ToList();
+
+            try
             {
-                var item = granted.Items[i];
-                sb.Append("• ");
-                sb.Append(item.Id);
-                if (item.Amount > 1)
+                foreach (var pair in entries)
                 {
-                    sb.Append(" ×");
-                    sb.Append(item.Amount);
-                }
-                if (i < granted.Items.Count - 1) sb.AppendLine();
-            }
-            return sb.ToString();
-        }
+                    var resource = pair.Key;
+                    var view = pair.Value;
+                    if (resource == null || view == null) continue;
 
-        private void OnOkClicked() => CloseAsync().Forget();
+                    var sprite = await _uiSprites.GetSpriteAsync(resource.ResourceId, ct);
+                    if (ct.IsCancellationRequested) return;
+                    if (view != null) view.SetIcon(sprite);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // window closed / re-applied mid-load — ok
+            }
+        }
     }
 }

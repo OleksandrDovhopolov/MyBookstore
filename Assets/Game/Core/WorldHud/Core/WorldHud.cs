@@ -14,6 +14,8 @@ namespace Game.WorldHud
         private WorldHudArgs _args;
         private Camera _camera;
         private bool _isAttached;
+        private bool _suppressed;
+        private float _alphaBeforeSuppress;
 
         public Transform Target => _target;
         public WorldHudArgs Args => _args;
@@ -50,6 +52,25 @@ namespace Game.WorldHud
             if (this != null && gameObject != null) Destroy(gameObject);
         }
 
+        // Globally hides/shows this HUD (e.g. while a focused window is up) without detaching it.
+        // Idempotent; saves the current alpha on suppress and restores it on release so the HUD reappears
+        // exactly as it was. Driven by WorldHudManager.SuppressAll().
+        public void SetGloballySuppressed(bool suppressed)
+        {
+            if (_canvasGroup == null || suppressed == _suppressed) return;
+            _suppressed = suppressed;
+
+            if (suppressed)
+            {
+                _alphaBeforeSuppress = _canvasGroup.alpha;
+                _canvasGroup.alpha = 0f;
+            }
+            else
+            {
+                _canvasGroup.alpha = _alphaBeforeSuppress;
+            }
+        }
+
         protected virtual void OnAttached() { }
         protected virtual UniTask OnDetachAsync(CancellationToken ct) => UniTask.CompletedTask;
 
@@ -65,12 +86,7 @@ namespace Game.WorldHud
 
             if (_args.Billboard && _camera != null)
             {
-                // Face the camera. For 2D-ish setups a Y-only billboard would do, but full LookAt is robust.
-                var forward = transform.position - _camera.transform.position;
-                if (forward.sqrMagnitude > 0.0001f)
-                {
-                    transform.rotation = Quaternion.LookRotation(forward, Vector3.up);
-                }
+                transform.rotation = _camera.transform.rotation;
             }
         }
     }

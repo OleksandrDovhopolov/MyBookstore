@@ -1,21 +1,25 @@
 using System;
 using System.Collections.Generic;
 using Book.Sell.API;
+using UnityEngine;
 
 namespace Book.Sell.Domain.Steps
 {
     /// <summary>
     /// One passive purchase attempt: the customer browses for a while, targets a demand-matching
     /// book (reserve-on-target), then commits the sale after a short delay. A miss (nothing matches)
-    /// completes the step without a sale — the customer just moves on to the next plan step (skip book).
+    /// holds failed-purchase feedback, then closes the customer's shopping cycle.
     /// </summary>
     public sealed class PassivePurchaseStep : ICustomerStep
     {
-        private enum Sub { Browse, Commit }
+        private const string LogPrefix = "[Sales.Passive]";
+
+        private enum Sub { Browse, Commit, FailedFeedback, SaleFeedback }
 
         private Sub _sub;
         private float _t;
         private string _targetId;
+        private string _resolvedGenre;
         private IReadOnlyList<string> _matchedGenres = Array.Empty<string>();
         private IReadOnlyList<string> _matchedTags = Array.Empty<string>();
 
@@ -24,7 +28,8 @@ namespace Book.Sell.Domain.Steps
             _sub = Sub.Browse;
             _t = 0f;
             _targetId = null;
-            self.SetPhase(CustomerPhase.Browsing, ctx);
+            _resolvedGenre = null;
+            self.SetPhase(CustomerPhase.Browsing, ctx, forceNotify: true);
         }
 
         public StepStatus Tick(Customer self, CustomerContext ctx, float dt)
@@ -35,23 +40,45 @@ namespace Book.Sell.Domain.Steps
             {
                 if (_t < ctx.Tuning.BrowseDuration) return StepStatus.Running;
 
-                var candidate = ctx.PassiveSelector.PickPassiveSale(
-                    ctx.Shelf.AvailableForSelection(), ctx.Location, ctx.ActiveDecorIds, ctx.Random);
+                var available = ctx.Shelf.AvailableForSelection();
+                Debug.Log($"{LogPrefix} customer={self.Id} browsing → {available.Count} book(s) available, rolling the gate");
 
-                // Miss: nothing on the shelf matches the location demand → skip this book, continue plan.
-                if (candidate == null) return StepStatus.Completed;
+                var result = ctx.PassiveResolver.Resolve(self, ctx, available);
+                _resolvedGenre = result.ResolvedGenre;
 
-                // Reserve-on-target. If the reservation race is lost, treat as a miss.
-                if (!ctx.Shelf.Reserve(candidate.Book.BookId)) return StepStatus.Completed;
+                // Miss: the chosen genre didn't pass (or nothing eligible) → shopping cycle ends, customer leaves.
+                if (!result.Success || result.Book == null)
+                {
+                    Debug.Log($"{LogPrefix} customer={self.Id} passive attempt MISSED (genre={_resolvedGenre}) → leaving");
+                    return BeginFailedFeedback(self, ctx);
+                }
 
-                _targetId = candidate.Book.BookId;
-                _matchedGenres = candidate.MatchedGenres;
-                _matchedTags = candidate.MatchedTags;
+                // Reserve-on-target. If the reservation race is lost, the cycle ends, customer leaves.
+                if (!ctx.Shelf.Reserve(result.Book.BookId))
+                {
+                    Debug.Log($"{LogPrefix} customer={self.Id} lost the reserve race for book={result.Book.BookId} → leaving");
+                    return BeginFailedFeedback(self, ctx);
+                }
+
+                _targetId = result.Book.BookId;
+                _matchedGenres = result.MatchedGenres;
+                _matchedTags = result.MatchedTags;
                 _sub = Sub.Commit;
                 _t = 0f;
                 ctx.Sink?.OnBookReserved(self, _targetId);
                 return StepStatus.Running;
             }
+
+            if (_sub == Sub.FailedFeedback)
+                return _t >= ctx.Tuning.PassiveFailureFeedbackDuration
+                    ? StepStatus.CompletedAndLeave
+                    : StepStatus.Running;
+
+            // Sub.SaleFeedback: hold "bought book" so the HUD shows it before the next attempt's "Choosing".
+            if (_sub == Sub.SaleFeedback)
+                return _t >= ctx.Tuning.PassiveSaleFeedbackDuration
+                    ? StepStatus.Completed
+                    : StepStatus.Running;
 
             // Sub.Commit
             if (_t < ctx.Tuning.PassiveCommitDelay) return StepStatus.Running;
@@ -62,7 +89,32 @@ namespace Book.Sell.Domain.Steps
 
             var saleEvent = new PassiveSaleEvent(_targetId, gold, _matchedGenres, _matchedTags);
             ctx.Sink?.OnPassiveSale(self, saleEvent);
-            return StepStatus.Completed;
+            self.RegisterPurchasedBook();
+            Debug.Log($"{LogPrefix} customer={self.Id} BOUGHT book={_targetId} gold={gold} (books bought so far: {self.PurchasedBookCount})");
+
+            return BeginSaleFeedback(ctx);
+        }
+
+        private StepStatus BeginSaleFeedback(CustomerContext ctx)
+        {
+            if (ctx.Tuning.PassiveSaleFeedbackDuration <= 0f)
+                return StepStatus.Completed;
+
+            _sub = Sub.SaleFeedback;
+            _t = 0f;
+            return StepStatus.Running;
+        }
+
+        private StepStatus BeginFailedFeedback(Customer self, CustomerContext ctx)
+        {
+            ctx.Sink?.OnPassivePurchaseFailed(self, _resolvedGenre);
+
+            if (ctx.Tuning.PassiveFailureFeedbackDuration <= 0f)
+                return StepStatus.CompletedAndLeave;
+
+            _sub = Sub.FailedFeedback;
+            _t = 0f;
+            return StepStatus.Running;
         }
 
         public void Exit(Customer self, CustomerContext ctx)
@@ -73,6 +125,7 @@ namespace Book.Sell.Domain.Steps
             {
                 ctx.Shelf.ReleaseReserve(_targetId);
                 ctx.Sink?.OnBookReleased(self, _targetId);
+                ctx.Sink?.OnPassivePurchaseFailed(self, _resolvedGenre);
             }
         }
     }

@@ -1,8 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
+using Game.Configs;
+using Game.Configs.Models;
+using Game.Newspaper.UI;
 using Game.WorldHud;
 using UnityEngine;
 using VContainer.Unity;
@@ -11,42 +16,77 @@ namespace Book.Sell.UI.Customer
 {
     // Phase 0 binder: maps Customer phase transitions to bubble state transitions.
     //
-    // PassiveSaleHappened and RecommendationResolved are NOT wired to bubble overrides yet — they
-    // need a "which customer" mapping that the current events don't carry (PassiveSaleEvent has no
-    // customer id; RecommendationResult correlates to whatever customer currently holds the
-    // minigame lock). Phase 1 will add a richer correlation source and richer state transitions
-    // (Comment after a passive sale, Rejected on Failed tier, etc.).
+    // Phase 0 keeps bubble content intentionally coarse: movement, locked book, active purchase,
+    // and bought-book feedback. Richer rejection/reason bubbles can layer on the same events later.
     public sealed class CustomerBubbleBinder : IStartable, IDisposable
     {
         private static readonly WorldHudArgs BubbleAttachArgs =
-            new(offset: new Vector3(0f, 2.2f, 0f), billboard: true);
+            new(offset: Vector3.zero, billboard: false);
 
         private readonly ISalesDayController _sales;
         private readonly ICustomerVisualRegistry _registry;
         private readonly IWorldHudManager _worldHud;
+        private readonly IConfigsService _configs;
+        private readonly IUiSpriteProvider _uiSprites;
+        private readonly SalesTuning _tuning;
+        private readonly CancellationTokenSource _cts = new();
 
         private readonly Dictionary<string, CustomerThoughtBubble> _bubbles = new();
+
+        // In-flight attach tasks, keyed by customer. During an active request, AwaitingHelp and InMinigame
+        // phase changes fire in the same tick, so two EnsureBubbleAsync calls run before the first
+        // AttachAsync resolves; caching the task makes both share one bubble instead of spawning two.
+        private readonly Dictionary<string, UniTask<CustomerThoughtBubble>> _attaching = new();
+
+        // Detach can be requested while AttachAsync is still in flight (e.g. customer despawns before the
+        // addressable bubble finishes loading). Keep the intent so the late attach result is discarded.
+        private readonly HashSet<string> _detachRequested = new();
+
+        // Customers showing a terminal bubble (passive "Failed" or "purchase completed"): it must survive
+        // the Leaving/Done transition (which can fire in the same tick) and only detach on visual despawn.
+        private readonly HashSet<string> _keepBubbleUntilDespawn = new();
 
         public CustomerBubbleBinder(
             ISalesDayController sales,
             ICustomerVisualRegistry registry,
-            IWorldHudManager worldHud)
+            IWorldHudManager worldHud,
+            IConfigsService configs,
+            IUiSpriteProvider uiSprites,
+            SalesTuning tuning)
         {
             _sales = sales;
             _registry = registry;
             _worldHud = worldHud;
+            _configs = configs;
+            _uiSprites = uiSprites;
+            _tuning = tuning;
         }
 
         public void Start()
         {
             _sales.CustomerPhaseChanged += OnCustomerPhaseChanged;
+            _sales.BookReserved += OnBookReserved;
+            _sales.CustomerPassiveSaleHappened += OnCustomerPassiveSaleHappened;
+            _sales.CustomerPassivePurchaseFailed += OnCustomerPassivePurchaseFailed;
+            _sales.CustomerPurchaseCompleted += OnCustomerPurchaseCompleted;
+            _sales.CustomerThoughtBubbleHidden += OnCustomerThoughtBubbleHidden;
+            _sales.CustomerRecommendationResolved += OnCustomerRecommendationResolved;
             _registry.CustomerVisualDespawned += OnCustomerVisualDespawned;
         }
 
         public void Dispose()
         {
             _sales.CustomerPhaseChanged -= OnCustomerPhaseChanged;
+            _sales.BookReserved -= OnBookReserved;
+            _sales.CustomerPassiveSaleHappened -= OnCustomerPassiveSaleHappened;
+            _sales.CustomerPassivePurchaseFailed -= OnCustomerPassivePurchaseFailed;
+            _sales.CustomerPurchaseCompleted -= OnCustomerPurchaseCompleted;
+            _sales.CustomerThoughtBubbleHidden -= OnCustomerThoughtBubbleHidden;
+            _sales.CustomerRecommendationResolved -= OnCustomerRecommendationResolved;
             _registry.CustomerVisualDespawned -= OnCustomerVisualDespawned;
+
+            _cts.Cancel();
+            _cts.Dispose();
         }
 
         private void OnCustomerPhaseChanged(Book.Sell.Domain.Customer customer)
@@ -58,8 +98,8 @@ namespace Book.Sell.UI.Customer
         {
             switch (customer.Phase)
             {
-                case CustomerPhase.Spawned:
-                case CustomerPhase.Approaching:
+                // No bubble while the customer is spawning / walking up (Spawned, Approaching).
+                // It first appears once they reach the shelf and start choosing (Browsing).
                 case CustomerPhase.Browsing:
                 case CustomerPhase.AwaitingHelp:
                     await EnsureBubbleAsync(customer, CustomerThoughtState.Thinking);
@@ -68,40 +108,208 @@ namespace Book.Sell.UI.Customer
                 case CustomerPhase.InMinigame:
                     // Phase 0: book sprite is null (placeholder); BookPicked still shows the book sub-view
                     // so we can verify the state-machine plumbing.
-                    await EnsureBubbleAsync(customer, CustomerThoughtState.BookPicked);
+                    await EnsureBubbleAsync(customer, CustomerThoughtState.BookPicked, "Active purchase");
                     break;
 
                 case CustomerPhase.Leaving:
                 case CustomerPhase.Done:
-                    await DetachBubbleAsync(customer.Id);
+                    // Keep a terminal bubble (Failed / purchase completed) up through the walk-away;
+                    // it is cleaned up on despawn.
+                    if (!_keepBubbleUntilDespawn.Contains(customer.Id))
+                        await DetachBubbleAsync(customer.Id);
                     break;
             }
         }
 
-        private async UniTask EnsureBubbleAsync(Book.Sell.Domain.Customer customer, CustomerThoughtState state)
+        private void OnBookReserved(Book.Sell.Domain.Customer customer, string bookId)
         {
-            var visual = _registry.GetById(customer.Id);
-            if (visual == null || visual.BubbleAnchor == null) return;
+            ShowLockedBookAsync(customer, bookId).Forget();
+        }
 
-            if (!_bubbles.TryGetValue(customer.Id, out var bubble) || bubble == null)
+        // Book locked (commit delay): show the book's genre sprite in the bubble's BookIcon.
+        private async UniTaskVoid ShowLockedBookAsync(Book.Sell.Domain.Customer customer, string bookId)
+        {
+            try
             {
-                bubble = await _worldHud.AttachAsync<CustomerThoughtBubble>(visual.BubbleAnchor, BubbleAttachArgs);
-                if (bubble == null) return;
-                _bubbles[customer.Id] = bubble;
-            }
+                var sprite = await ResolveBookGenreSpriteAsync(bookId);
 
-            await bubble.SetStateAsync(state);
+                var bubble = await GetOrAttachBubbleAsync(customer);
+                if (bubble == null) return;
+
+                await bubble.SetStateAsync(
+                    CustomerThoughtState.ThinkingNext, new CustomerThoughtPayload(bookSprite: sprite));
+            }
+            catch (OperationCanceledException)
+            {
+                // binder disposed / sprite load cancelled — ignore
+            }
+        }
+
+        private async UniTask<Sprite> ResolveBookGenreSpriteAsync(string bookId)
+        {
+            if (string.IsNullOrEmpty(bookId) || !_configs.TryGet<BookConfig>(bookId, out var cfg)) return null;
+            return await ResolveGenreSpriteAsync(cfg?.Genre);
+        }
+
+        private async UniTask<Sprite> ResolveGenreSpriteAsync(string genre)
+        {
+            if (string.IsNullOrEmpty(genre) || !BookGenreExtensions.TryParseGenre(genre, out var parsed)) return null;
+            return await _uiSprites.GetSpriteAsync(parsed.ToString(), _cts.Token);
+        }
+
+        private void OnCustomerPassivePurchaseFailed(Book.Sell.Domain.Customer customer, string genre)
+        {
+            _keepBubbleUntilDespawn.Add(customer.Id);
+            ShowFailedAsync(customer, genre).Forget();
+        }
+
+        // Passive attempt failed: mirror the success flow — show the (missed) genre sprite for the
+        // commit-delay window first, then switch to the Fail icon.
+        private async UniTaskVoid ShowFailedAsync(Book.Sell.Domain.Customer customer, string genre)
+        {
+            try
+            {
+                var sprite = await ResolveGenreSpriteAsync(genre);
+
+                var bubble = await GetOrAttachBubbleAsync(customer);
+                if (bubble == null) return;
+
+                if (sprite != null)
+                {
+                    // Phase 1: show the genre sprite (book-icon state), held for the configured delay.
+                    await bubble.SetStateAsync(
+                        CustomerThoughtState.ThinkingNext, new CustomerThoughtPayload(bookSprite: sprite));
+                    await UniTask.Delay(
+                        TimeSpan.FromSeconds(_tuning.PassiveCommitDelay), ignoreTimeScale: true, cancellationToken: _cts.Token);
+                    if (bubble == null) return;   // detached/destroyed during the delay
+                }
+
+                // Phase 2: the Fail icon.
+                await bubble.SetStateAsync(CustomerThoughtState.PassiveSaleFailed, CustomerThoughtPayload.Empty);
+            }
+            catch (OperationCanceledException)
+            {
+                // binder disposed / sprite load cancelled — ignore
+            }
+        }
+
+        private void OnCustomerPurchaseCompleted(Book.Sell.Domain.Customer customer, int purchasedBookCount)
+        {
+            _keepBubbleUntilDespawn.Add(customer.Id);
+            EnsureBubbleAsync(customer, CustomerThoughtState.PurchaseCompleted, $"Bought {purchasedBookCount} books").Forget();
+        }
+
+        private void OnCustomerThoughtBubbleHidden(Book.Sell.Domain.Customer customer)
+        {
+            // LeaveStep asked to clear the HUD: drop the keep-alive flag and detach so the customer
+            // walks away without a bubble (feedback already had its dwell in the prior steps).
+            _keepBubbleUntilDespawn.Remove(customer.Id);
+            DetachBubbleAsync(customer.Id).Forget();
+        }
+
+        private void OnCustomerPassiveSaleHappened(Book.Sell.Domain.Customer customer, PassiveSaleEvent evt)
+        {
+            EnsureBubbleAsync(customer, CustomerThoughtState.Comment, "Bought book").Forget();
+        }
+
+        private void OnCustomerRecommendationResolved(Book.Sell.Domain.Customer customer, RecommendationResult result)
+        {
+            // The active-sale reaction is shown inside the minigame window, not in the world HUD. Detach the
+            // active-request bubble (for all tiers) so it can't blink when the window closes and HUD
+            // suppression is released. If the customer bought a book, CompletePurchaseStep reattaches the
+            // final "Bought N books" bubble afterwards via OnCustomerPurchaseCompleted.
+            DetachBubbleAsync(customer.Id).Forget();
+        }
+
+        private UniTask EnsureBubbleAsync(
+            Book.Sell.Domain.Customer customer,
+            CustomerThoughtState state,
+            string stateText)
+        {
+            var payload = string.IsNullOrEmpty(stateText)
+                ? CustomerThoughtPayload.Empty
+                : new CustomerThoughtPayload(commentText: stateText);
+
+            return EnsureBubbleAsync(customer, state, payload);
+        }
+
+        private UniTask EnsureBubbleAsync(Book.Sell.Domain.Customer customer, CustomerThoughtState state)
+            => EnsureBubbleAsync(customer, state, CustomerThoughtPayload.Empty);
+
+        private async UniTask EnsureBubbleAsync(
+            Book.Sell.Domain.Customer customer,
+            CustomerThoughtState state,
+            CustomerThoughtPayload payload)
+        {
+            var bubble = await GetOrAttachBubbleAsync(customer);
+            if (bubble == null) return;
+
+            await bubble.SetStateAsync(state, payload);
+        }
+
+        // Returns the customer's bubble, attaching it on first use. Concurrent callers (the AwaitingHelp +
+        // InMinigame burst on an active request) await the same in-flight attach, so only one bubble is ever
+        // created — avoiding two overlapping world-space bubbles z-fighting (the active-purchase flicker).
+        private async UniTask<CustomerThoughtBubble> GetOrAttachBubbleAsync(Book.Sell.Domain.Customer customer)
+        {
+            var customerId = customer.Id;
+            if (_detachRequested.Contains(customerId)) return null;
+
+            if (_bubbles.TryGetValue(customerId, out var existing) && existing != null)
+                return existing;
+
+            if (_attaching.TryGetValue(customerId, out var inFlight))
+                return await inFlight;
+
+            var visual = _registry.GetById(customerId);
+            if (visual == null || visual.BubbleAnchor == null) return null;
+
+            var attachTask = _worldHud.AttachAsync<CustomerThoughtBubble>(visual.BubbleAnchor, BubbleAttachArgs).Preserve();
+            _attaching[customerId] = attachTask;
+            try
+            {
+                var bubble = await attachTask;
+                if (_detachRequested.Contains(customerId)) return null;
+
+                if (bubble != null)
+                    _bubbles[customerId] = bubble;
+                return bubble;
+            }
+            finally
+            {
+                _attaching.Remove(customerId);
+            }
         }
 
         private async UniTask DetachBubbleAsync(string customerId)
         {
-            if (!_bubbles.Remove(customerId, out var bubble) || bubble == null) return;
-            await _worldHud.DetachAsync(bubble);
+            if (string.IsNullOrEmpty(customerId)) return;
+
+            _detachRequested.Add(customerId);
+            try
+            {
+                _bubbles.Remove(customerId, out var bubble);
+
+                if (bubble == null && _attaching.TryGetValue(customerId, out var inFlight))
+                    bubble = await inFlight;
+
+                if (bubble == null) return;
+
+                // If the attach continuation won the race and registered the bubble, remove it before
+                // detaching so no later event can reuse a HUD that is already on its way out.
+                _bubbles.Remove(customerId);
+                await _worldHud.DetachAsync(bubble);
+            }
+            finally
+            {
+                _detachRequested.Remove(customerId);
+            }
         }
 
         private void OnCustomerVisualDespawned(CustomerVisual visual)
         {
             if (visual == null || visual.Customer == null) return;
+            _keepBubbleUntilDespawn.Remove(visual.Customer.Id);
             DetachBubbleAsync(visual.Customer.Id).Forget();
         }
     }

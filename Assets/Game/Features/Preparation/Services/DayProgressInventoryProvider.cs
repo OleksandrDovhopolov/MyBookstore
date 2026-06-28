@@ -10,8 +10,6 @@ namespace Game.Preparation.Services
     /// <summary>
     /// Player book inventory adapter for Preparation: returns BookConfigs for ids stored under
     /// category <see cref="InventoryCategories.Book"/> in the inventory.
-    /// Fallback: if the inventory has no books (FTUE skipped, dev scenario, manual wipe), returns
-    /// the full catalog with a warning — so Preparation doesn't stall on an empty list.
     /// </summary>
     public sealed class DayProgressInventoryProvider : IPreparationInventoryProvider
     {
@@ -31,8 +29,8 @@ namespace Game.Preparation.Services
             var owned = _inventory.GetByCategory(InventoryCategories.Book);
             if (owned == null || owned.Count == 0)
             {
-                Debug.LogWarning($"{LogPrefix} inventory book category is empty — falling back to the full catalog.");
-                return _configs.GetAll<BookConfig>();
+                Debug.LogWarning($"{LogPrefix} inventory book category is empty - no owned books available.");
+                return Array.Empty<BookConfig>();
             }
 
             var result = new List<BookConfig>(owned.Count);
@@ -41,9 +39,10 @@ namespace Game.Preparation.Services
                 if (_configs.TryGet<BookConfig>(owned[i].ItemId, out var book))
                     result.Add(book);
                 else
-                    Debug.LogWarning($"{LogPrefix} BookConfig '{owned[i].ItemId}' not found in catalog — skipping.");
+                    Debug.LogWarning($"{LogPrefix} BookConfig '{owned[i].ItemId}' not found in catalog - skipping.");
             }
             return result;
         }
+
     }
 }

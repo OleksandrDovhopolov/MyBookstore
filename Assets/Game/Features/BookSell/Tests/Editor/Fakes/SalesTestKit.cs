@@ -47,10 +47,18 @@ namespace Book.Sell.Tests.Editor.Fakes
             => new()
             {
                 ApproachDuration = 0f,
+                MinApproachDuration = 0f,
+                MaxApproachDuration = 0f,
                 BrowseDuration = 0f,
                 PassiveCommitDelay = 0f,
+                PassiveFailureFeedbackDuration = 0f,
+                PassiveSaleFeedbackDuration = 0f,
+                CompletePurchaseDuration = 0f,
+                LeaveDuration = 0f,
                 SpawnInterval = 0f,
-                BaseCustomers = 0
+                BaseCustomers = 0,
+                MaxConcurrentCustomers = 0,  // no concurrency cap by default — all customers spawn at once
+                PassiveRequestGenreCount = 2
             };
 
         /// <summary>Selector that passes the stage-1 gate every time. Useful for flow-focused tests.</summary>
@@ -61,6 +69,11 @@ namespace Book.Sell.Tests.Editor.Fakes
         public static IPassiveSaleSelector AlwaysMissPassiveSelector()
             => new WeightedPassiveSaleSelector(new FakeBaseSaleChanceCalculator(0.0));
 
+        /// <summary>Wraps a (legacy) selector as an <see cref="IPassivePurchaseResolver"/> for the step/controller
+        /// flow. Defaults to the always-hit selector. Keeps existing flow tests on the legacy resolver path.</summary>
+        public static IPassivePurchaseResolver LegacyResolver(IPassiveSaleSelector selector = null)
+            => new LegacyShelfPassiveResolver(selector ?? AlwaysHitPassiveSelector());
+
         public static CustomerContext Context(SalesShelf shelf, LocationConfig location, ISalesDaySink sink,
             IInteractionLock interactionLock = null, ISalesRandom random = null, SalesTuning tuning = null,
             IPassiveSaleSelector passiveSelector = null, IReadOnlyList<string> activeDecorIds = null)
@@ -68,7 +81,7 @@ namespace Book.Sell.Tests.Editor.Fakes
                 shelf,
                 interactionLock ?? new InteractionLock(),
                 random ?? new FakeSalesRandom(),
-                passiveSelector ?? AlwaysHitPassiveSelector(),
+                LegacyResolver(passiveSelector),
                 location,
                 activeDecorIds,
                 sink,

@@ -11,6 +11,7 @@
         "Game.Bootstrap.Loading",
         "Game.Resources.API",
         "Game.Progression.API",
+        "Game.LocationUnlock.API",
         "Game.Core.UI",
         "Game.Newspaper"
     ],

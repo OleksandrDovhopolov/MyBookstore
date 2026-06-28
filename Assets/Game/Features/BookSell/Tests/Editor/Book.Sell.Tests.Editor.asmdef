@@ -8,7 +8,12 @@
         "Configs",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Save"
+        "Save",
+        "Game.Inventory.API",
+        "Game.Preparation",
+        "DayCycle",
+        "Game.Resources.API",
+        "Game.SalesStats.API"
     ],
     "includePlatforms": [
         "Editor"

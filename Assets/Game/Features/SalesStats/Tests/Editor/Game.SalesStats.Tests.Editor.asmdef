@@ -1,0 +1,30 @@
+{
+    "name": "Game.SalesStats.Tests.Editor",
+    "rootNamespace": "Game.SalesStats.Tests.Editor",
+    "references": [
+        "UniTask",
+        "Save",
+        "Configs",
+        "Game.SalesStats.API",
+        "Game.SalesStats",
+        "Game.Conditions.API",
+        "Game.Conditions",
+        "UnityEngine.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

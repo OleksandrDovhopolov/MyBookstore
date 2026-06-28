@@ -9,5 +9,9 @@ namespace Book.Sell.API
         /// <summary>Holds the latest <see cref="SalesDayResult"/>; written by the Sales controller on day completion.</summary>
         public const string LastDayResult = "book_sell.last_day_result";
         public const int LastDayResultSchemaVersion = 1;
+
+        /// <summary>Persistent physical shelf/stock state that survives day transitions.</summary>
+        public const string ShelfState = "book_sell.shelf_state";
+        public const int ShelfStateSchemaVersion = 1;
     }
 }

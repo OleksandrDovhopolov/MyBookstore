@@ -15,6 +15,14 @@ namespace Game.Bootstrap
         [Tooltip("Prefab with the UICanvasRoot component. Instantiated once into DontDestroyOnLoad.")]
         [SerializeField] private UICanvasRoot _uiCanvasRootPrefab;
 
+        [Header("Game Flow")]
+        [Tooltip("Scene names for the hub ↔ location loop (see docs/GameFlowLoop.md).")]
+        [SerializeField] private GameFlowSettings _gameFlowSettings;
+
+        [Header("UI Sprites")]
+        [Tooltip("Addressable addresses of newspaper/rewards UI sprites, preloaded once at bootstrap.")]
+        [SerializeField] private Game.Newspaper.UI.UiSpriteCatalog _uiSpriteCatalog;
+
 #if UNITY_EDITOR
         [Header("Debug Start (Editor only)")]
         [Tooltip("Master switch. When off, the debug flags below are ignored.")]
@@ -31,10 +39,12 @@ namespace Game.Bootstrap
             builder.RegisterMessagePipeBus();
             builder.RegisterMessagePipeSmokeTest(); // TODO: remove after first real message broker is wired up
             builder.RegisterGameLoading();
+            builder.RegisterGameFlow(_gameFlowSettings);
             builder.RegisterAnalytics();
             builder.RegisterSave();
             builder.RegisterInfrastructure();
             builder.RegisterConfigs();
+            builder.RegisterDayCycleServices();
             builder.RegisterUiSystem(_uiCanvasRootPrefab);
             builder.RegisterWorldHud();
             builder.RegisterWorldHudSmokeTest(); // TODO: remove after World HUD Phase 0 verification
@@ -43,8 +53,17 @@ namespace Game.Bootstrap
             builder.RegisterResources();
             builder.RegisterRewards();
             builder.RegisterShop();
+            builder.RegisterNewspaper();
+            builder.RegisterUiSprites(_uiSpriteCatalog);
             builder.RegisterProgression();
+            builder.RegisterConditions();          // domain-agnostic condition engine (registry + parser)
+            builder.RegisterSalesStats();          // persistent per-genre sold counters + "soldGenre" condition factory
+            builder.RegisterLocationUnlock();      // location unlock states/purchase over the condition engine
+            builder.RegisterLocationEntry();       // per-visit entry fee calculator (location base + decor delta)
             builder.RegisterFtue();
+            builder.RegisterBookSellSharedState(); // ISalesShelfStateService — общий для хаба и локации
+            builder.RegisterPreparation();         // Preparation services (окно PreparationWindow инжектится глобально)
+
         }
 
         private void ApplyDebugFlags()

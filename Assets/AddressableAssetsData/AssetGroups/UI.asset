@@ -30,6 +30,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 23f6a58c8f2e0c440ac586e5d9536ca2
+    m_Address: ResultsWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2e39b1b001153f04dbbb5968adcb8ff5
     m_Address: SmokeMainPage
     m_ReadOnly: 0
@@ -50,13 +55,48 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 56f012281286dd543a8c2971736bc95b
+    m_Address: RecommendationMinigameWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 593f0fbb47416004dbb514dd32fdd74d
+    m_Address: WelcomeWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5e48b06b283d8de4482bb2f6f079e2af
+    m_Address: WorldHud/CustomerThoughtBubble
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7e21c93daa8c96a4e96f9bd474a4b356
     m_Address: SmokeAdditionalPopup
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 83d7f17632a85ff48be4f7456c053062
+    m_Address: PreparationWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8f6cd99a84b9bdf47a3ed0d64dfa479b
+    m_Address: LocationWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: aa9fdc7ac23d342798922793111065d0
     m_Address: Assets/Game/UI/Fonts/LilitaOne-Regular Outline 40 SDF Atlas.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b29d91e3cb2876e4aa30f5e4801de68c
+    m_Address: RewardsWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bc5c515f71dbfe2408eea4e5b93bd08d
+    m_Address: NewspaperWindow
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -77,11 +117,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d8232db4a1cf38641acf8ff4eda4ae3d
     m_Address: SettingsWindow
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: dc963227e6816614bb23ebb2bec4fb25
-    m_Address: RewardsWindow
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

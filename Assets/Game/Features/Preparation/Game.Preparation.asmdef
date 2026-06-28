@@ -9,9 +9,15 @@
         "Unity.TextMeshPro",
         "Book.Sell",
         "Book.Sell.API",
+        "Game.Bootstrap.Loading",
+        "Game.Core.UI",
+        "MessagePipe",
         "DayCycle",
         "Game.Inventory.API",
-        "Game.Decor.API"
+        "Game.Decor.API",
+        "Game.LocationEntry.API",
+        "Game.Resources.API",
+        "Infrastructure"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

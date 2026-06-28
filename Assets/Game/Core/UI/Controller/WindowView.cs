@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Game.UI
 {
@@ -7,7 +9,10 @@ namespace Game.UI
     [RequireComponent(typeof(Canvas))]
     public class WindowView : MonoBehaviour, IWindow
     {
+        public event Action CloseClick;
+
         [SerializeField] private WindowAnimation _animation;
+        [SerializeField] private Button[] _closeButtons;
 
         private RectTransform _rectTransform;
         private CanvasGroup _canvasGroup;
@@ -18,5 +23,29 @@ namespace Game.UI
         public CanvasGroup CanvasGroup => _canvasGroup != null ? _canvasGroup : _canvasGroup = GetComponent<CanvasGroup>();
         public Canvas Canvas => _canvas != null ? _canvas : _canvas = GetComponent<Canvas>();
         public WindowAnimation Animation => _animation;
+
+        protected virtual void Awake()
+        {
+            if (_closeButtons == null) return;
+
+            foreach (var button in _closeButtons)
+            {
+                if (button == null) continue;
+                button.onClick.AddListener(InvokeCloseEvent);
+            }
+        }
+
+        protected virtual void OnDestroy()
+        {
+            if (_closeButtons == null) return;
+
+            foreach (var button in _closeButtons)
+            {
+                if (button == null) continue;
+                button.onClick.RemoveListener(InvokeCloseEvent);
+            }
+        }
+
+        protected void InvokeCloseEvent() => CloseClick?.Invoke();
     }
 }

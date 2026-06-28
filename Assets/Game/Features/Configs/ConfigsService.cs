@@ -28,6 +28,7 @@ namespace Game.Configs
         private readonly ConfigCache<IConfig> _cache = new();
 
         private bool _warmedUp;
+        private bool _warming;
 
         public ConfigsService(IConfigSource source, IConfigOverrideSource overrides)
         {
@@ -35,13 +36,31 @@ namespace Game.Configs
             _overrides = overrides ?? new NullConfigOverrideSource();
         }
 
+        // Single-flight без шаринга UniTask: параллельные вызовы (DecorConfigValidator + ConfigsWarmupOperation
+        // и т.п.) не должны запускать _source.WarmupAsync дважды (LocalFolderConfigSource чистит _rawByName и
+        // асинхронно перечитывает файлы — второй Clear может стереть/обнулить загрузку первого). Только первый
+        // вызывающий реально греет источник; остальные ждут флаг. Каждый вызов — свой async-кадр (не делим один
+        // UniTask), поэтому нет "await twice".
         public async UniTask WarmupAsync(CancellationToken ct)
         {
             if (_warmedUp) return;
-            
-            Debug.LogWarning($"{LogPrefix} WarmupAsync");
-            await _source.WarmupAsync(ct);
-            _warmedUp = true;
+
+            if (_warming)
+            {
+                await UniTask.WaitUntil(() => _warmedUp, cancellationToken: ct);
+                return;
+            }
+
+            _warming = true;
+            try
+            {
+                await _source.WarmupAsync(ct);
+                _warmedUp = true;
+            }
+            finally
+            {
+                _warming = false;
+            }
         }
 
         public T Get<T>(string id) where T : class, IConfig
@@ -93,8 +112,15 @@ namespace Game.Configs
             if (_cache.HasType(typeof(T)))
                 return;
 
+            // ВАЖНО: до завершения WarmupAsync источник пуст (LocalFolderConfigSource чистит и асинхронно
+            // грузит файлы). Если закэшировать здесь — пустая карта типа «прилипнет» на всю сессию, даже
+            // после прогрева (Warmup не сбрасывает кэш). Это приводило к пустому каталогу книг → FTUE сеет 0.
+            // Поэтому до прогрева возвращаем пусто БЕЗ кэширования; реальные данные кэшируются после Warmup.
             if (!_warmedUp)
-                Debug.LogWarning($"{LogPrefix} Accessing {typeof(T).Name} before WarmupAsync — source may be empty.");
+            {
+                Debug.LogWarning($"{LogPrefix} Accessing {typeof(T).Name} before WarmupAsync — returning empty (not cached).");
+                return;
+            }
 
             _cache.SetType(typeof(T), DeserializeType<T>());
         }

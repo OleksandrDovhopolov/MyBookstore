@@ -6,11 +6,11 @@ using Book.Sell.Domain;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
-using Save;
 using UnityEngine;
 
 namespace Book.Sell.Services
 {
+    //TODO does it became god object ?
     /// <inheritdoc cref="ISalesDayController"/>
     public sealed class SalesDayController : ISalesDayController, ISalesDaySink
     {
@@ -19,12 +19,13 @@ namespace Book.Sell.Services
         private readonly IConfigsService _configs;
         private readonly ISalesSetupProvider _setupProvider;
         private readonly IRecommendationScoringService _scoring;
-        private readonly IPassiveSaleSelector _passiveSelector;
+        private readonly IPassivePurchaseResolver _passiveResolver;
         private readonly ISalesRandom _random;
         private readonly ICustomerSpawner _spawner;
         private readonly IInteractionLock _lock;
         private readonly SalesTuning _tuning;
-        private readonly ISaveService _save;
+        private readonly ISalesShelfBuilder _shelfBuilder;
+        private readonly ISalesDayCommitService _commitService;
 
         private SalesShelf _shelf = new();
         private SalesDayResult _result = new();
@@ -37,28 +38,31 @@ namespace Book.Sell.Services
 
         private float _spawnTimer;
         private int _nextToSpawn;
-        private bool _completed;
+        private SalesDayPhase _phase = SalesDayPhase.Running;
+        private bool _spawningStopped;
 
         public SalesDayController(
             IConfigsService configs,
             ISalesSetupProvider setupProvider,
             IRecommendationScoringService scoring,
-            IPassiveSaleSelector passiveSelector,
+            IPassivePurchaseResolver passiveResolver,
             ISalesRandom random,
             ICustomerSpawner spawner,
             IInteractionLock interactionLock,
             SalesTuning tuning,
-            ISaveService save = null)
+            ISalesShelfBuilder shelfBuilder = null,
+            ISalesDayCommitService commitService = null)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _setupProvider = setupProvider ?? throw new ArgumentNullException(nameof(setupProvider));
             _scoring = scoring ?? throw new ArgumentNullException(nameof(scoring));
-            _passiveSelector = passiveSelector ?? throw new ArgumentNullException(nameof(passiveSelector));
+            _passiveResolver = passiveResolver ?? throw new ArgumentNullException(nameof(passiveResolver));
             _random = random ?? throw new ArgumentNullException(nameof(random));
             _spawner = spawner ?? throw new ArgumentNullException(nameof(spawner));
             _lock = interactionLock ?? throw new ArgumentNullException(nameof(interactionLock));
             _tuning = tuning ?? throw new ArgumentNullException(nameof(tuning));
-            _save = save;   // optional in tests; in prod injected via DI
+            _shelfBuilder = shelfBuilder ?? new SalesShelfBuilder(_configs);
+            _commitService = commitService;   // optional in tests; in prod injected via DI
         }
 
         public int Day { get; private set; }
@@ -66,14 +70,23 @@ namespace Book.Sell.Services
         public SalesShelf Shelf => _shelf;
         public SalesDayResult AccumulatedResult => _result;
         public RequestConfig CurrentRequest => _activeRequest;
-        public bool IsDayCompleted => _completed;
+        public SalesDayPhase Phase => _phase;
+        public bool IsDayCompleted => _phase == SalesDayPhase.Completed;
 
         public event Action<RequestConfig> ActiveRequestStarted;
         public event Action<RecommendationResult> RecommendationResolved;
         public event Action<PassiveSaleEvent> PassiveSaleHappened;
+        public event Action<Customer, RecommendationResult> CustomerRecommendationResolved;
+        public event Action<Customer, PassiveSaleEvent> CustomerPassiveSaleHappened;
+        public event Action<Customer, string> CustomerPassivePurchaseFailed;
+        public event Action<Customer, int> CustomerPurchaseCompleted;
+        public event Action<Customer> CustomerThoughtBubbleHidden;
+        public event Action DayReadyToClose;
         public event Action<SalesDayResult> DayCompleted;
         public event Action<Customer> CustomerPhaseChanged;
         public event Action<Customer, string> BookReserved;
+        public event Action<Customer, string> BookReleased;
+        public event Action ShelfChanged;
 
         public UniTask StartDayAsync(int day, CancellationToken ct)
         {
@@ -87,31 +100,33 @@ namespace Book.Sell.Services
                 ? _configs.Get<LocationConfig>(setup.LocationId)
                 : null;
 
-            _shelf = new SalesShelf();
-            BuildShelf(setup.ShelfBookIds);
+            _shelf = _shelfBuilder.Build(setup.ShelfBookIds);
 
             _result = new SalesDayResult { Day = setup.Day };
-            _ctx = new CustomerContext(_shelf, _lock, _random, _passiveSelector, _location, setup.DecorIds, this, _tuning);
+            _ctx = new CustomerContext(_shelf, _lock, _random, _passiveResolver, _location, setup.DecorIds, this, _tuning);
 
             _customers = new List<Customer>(_spawner.BuildCustomers(setup, _tuning, _random));
             _nextToSpawn = 0;
             _spawnTimer = _tuning.SpawnInterval;   // spawn the first customer on the first tick
             _activeCustomer = null;
             _activeRequest = null;
-            _completed = false;
+            _phase = SalesDayPhase.Running;
+            _spawningStopped = false;
 
             if (_customers.Count == 0)
             {
-                Debug.LogWarning($"{LogPrefix} No customers for day {setup.Day} — completing immediately.");
-                CompleteDay();
+                // No customers: the first Tick's UpdateDayPhase moves the day straight to ReadyToClose
+                // (allSpawned & spawnedDone are vacuously true), so the player can still close the shop.
+                Debug.LogWarning($"{LogPrefix} No customers for day {setup.Day} — day is immediately closable.");
             }
 
+            ShelfChanged?.Invoke();
             return UniTask.CompletedTask;
         }
 
         public void Tick(float dt)
         {
-            if (_completed) return;
+            if (_phase != SalesDayPhase.Running) return;
             if (_lock.IsHeld) return;   // domain pause: an active minigame / dialogue is open
 
             SpawnDue(dt);
@@ -125,7 +140,7 @@ namespace Book.Sell.Services
                 if (_lock.IsHeld) break;
             }
 
-            CheckEndOfDay();
+            UpdateDayPhase();
         }
 
         public void RecommendBook(string bookId)
@@ -154,8 +169,13 @@ namespace Book.Sell.Services
             if (result.Tier == RecommendationTier.Normal || result.Tier == RecommendationTier.Excellent)
             {
                 _shelf.CommitSale(bookId);
+
+                //TODO active should be const in config class
+                // Provisional only: accumulate into _result; persisted atomically at day completion.
                 _result.SoldBookIds.Add(bookId);
                 _result.SalesCount++;
+                _activeCustomer.RegisterPurchasedBook();
+                ShelfChanged?.Invoke();
                 Debug.Log($"{LogPrefix} active sale: book={bookId}, tier={result.Tier}, " +
                           $"gold={result.GoldEarned}, request={request.Id}");
             }
@@ -165,17 +185,18 @@ namespace Book.Sell.Services
             CountTier(result.Tier);
             _result.Recommendations.Add(result);
 
+            CustomerRecommendationResolved?.Invoke(_activeCustomer, result);
             RecommendationResolved?.Invoke(result);
             ResolveActive();
         }
 
         public void ForceCompleteDay(bool zeroOut)
         {
-            if (_completed) return;
+            if (_phase == SalesDayPhase.Completed) return;
 
             // Drop in-progress minigame state so the published result is consistent.
             // The IInteractionLock may still be held by the active step — that's fine: the next
-            // Tick short-circuits on _completed before reaching the lock check, and the View
+            // Tick short-circuits on the phase before reaching the lock check, and the View
             // stops pumping Update once _dayRunning flips to false in OnDayCompleted.
             _activeCustomer = null;
             _activeRequest = null;
@@ -185,8 +206,15 @@ namespace Book.Sell.Services
                 _result = new SalesDayResult { Day = Day };
             }
 
-            // Reuse the organic completion path: same save + event ordering as CheckEndOfDay.
-            _completed = true;
+            // Reuse the organic completion path: same save + event ordering as ConcludeDay.
+            _phase = SalesDayPhase.Completed;
+            PublishCompletionAsync().Forget();
+        }
+
+        public void ConcludeDay()
+        {
+            if (_phase != SalesDayPhase.ReadyToClose) return;
+            _phase = SalesDayPhase.Completed;
             PublishCompletionAsync().Forget();
         }
 
@@ -205,6 +233,7 @@ namespace Book.Sell.Services
             CountTier(RecommendationTier.Skipped);
             _result.Recommendations.Add(result);
 
+            CustomerRecommendationResolved?.Invoke(_activeCustomer, result);
             RecommendationResolved?.Invoke(result);
             ResolveActive();
         }
@@ -242,16 +271,34 @@ namespace Book.Sell.Services
         }
 
         void ISalesDaySink.OnBookReleased(Customer customer, string bookId)
-            => Debug.Log($"{LogPrefix} reservation released (no sale): book={bookId}, customer={customer.Id}");
+        {
+            Debug.Log($"{LogPrefix} reservation released (no sale): book={bookId}, customer={customer.Id}");
+            BookReleased?.Invoke(customer, bookId);
+        }
+
+        void ISalesDaySink.OnPassivePurchaseFailed(Customer customer, string genre)
+        {
+            Debug.Log($"{LogPrefix} passive purchase failed: customer={customer.Id} genre={genre}");
+            CustomerPassivePurchaseFailed?.Invoke(customer, genre);
+        }
+
+        void ISalesDaySink.OnPurchaseCompleted(Customer customer, int purchasedBookCount)
+        {
+            Debug.Log($"{LogPrefix} purchase completed: customer={customer.Id}, books={purchasedBookCount}");
+            CustomerPurchaseCompleted?.Invoke(customer, purchasedBookCount);
+        }
 
         void ISalesDaySink.OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent)
         {
+            // Provisional only: accumulate into _result; persisted atomically at day completion.
             _result.GoldEarned += saleEvent.GoldEarned;
             _result.SalesCount++;
             _result.SoldBookIds.Add(saleEvent.BookId);
             _result.PassiveSales.Add(saleEvent);
+            ShelfChanged?.Invoke();
 
             // PassiveSaleHappened fires before the log so subscribers see the event first.
+            CustomerPassiveSaleHappened?.Invoke(customer, saleEvent);
             PassiveSaleHappened?.Invoke(saleEvent);
 
             Debug.Log($"{LogPrefix} passive sale: book={saleEvent.BookId}, gold={saleEvent.GoldEarned}, " +
@@ -265,31 +312,40 @@ namespace Book.Sell.Services
             ActiveRequestStarted?.Invoke(request);
         }
 
-        // ----- internals -----
+        void ISalesDaySink.OnHideThoughtBubble(Customer customer)
+            => CustomerThoughtBubbleHidden?.Invoke(customer);
 
-        private void BuildShelf(IReadOnlyList<string> ids)
-        {
-            for (var i = 0; i < ids.Count; i++)
-            {
-                var book = _configs.Get<BookConfig>(ids[i]);
-                if (book == null)
-                {
-                    Debug.LogWarning($"{LogPrefix} BookConfig '{ids[i]}' not found — skipping.");
-                    continue;
-                }
-                _shelf.Add(new ShelfBook(book));
-            }
-        }
+        // ----- internals -----
 
         private void SpawnDue(float dt)
         {
+            if (_spawningStopped) return;   // shelf sold out — no new customers (in-flight ones still finish)
             if (_nextToSpawn >= _customers.Count) return;
             _spawnTimer += dt;
-            while (_spawnTimer >= _tuning.SpawnInterval && _nextToSpawn < _customers.Count)
+            // Cap check inside the loop prevents bursts: one freed slot lets at most one new customer in.
+            while (_spawnTimer >= _tuning.SpawnInterval
+                   && _nextToSpawn < _customers.Count
+                   && !IsConcurrencyCapReached())
             {
                 _spawnTimer -= _tuning.SpawnInterval;
                 _nextToSpawn++;   // include the next customer in the tick loop
             }
+        }
+
+        private bool IsConcurrencyCapReached()
+        {
+            var cap = _tuning.MaxConcurrentCustomers;
+            if (cap <= 0) return false;   // no limit
+            return ActiveCustomerCount() >= cap;
+        }
+
+        // Customers present on the floor = spawned [0.._nextToSpawn) that are not yet Done.
+        private int ActiveCustomerCount()
+        {
+            var count = 0;
+            for (var i = 0; i < _nextToSpawn; i++)
+                if (!_customers[i].IsDone) count++;
+            return count;
         }
 
         private void ResolveActive()
@@ -301,7 +357,7 @@ namespace Book.Sell.Services
             // Exits the ActiveRequestStep (releasing the lock) and advances the customer's plan.
             customer.ForceCompleteCurrentStep(_ctx);
 
-            CheckEndOfDay();
+            UpdateDayPhase();
         }
 
         private void CountTier(RecommendationTier tier)
@@ -315,30 +371,28 @@ namespace Book.Sell.Services
             }
         }
 
-        private void CheckEndOfDay()
+        private void UpdateDayPhase()
         {
-            if (_completed) return;
+            if (_phase != SalesDayPhase.Running) return;
 
-            var allSpawned = _nextToSpawn >= _customers.Count;
-            var allDone = true;
-            for (var i = 0; i < _customers.Count; i++)
+            // Sold out: no new customers — but the ones already on the floor must finish their plans
+            // (CompletePurchase → Leave → Done) before the day is closable. This is the fix for the
+            // "buyer of the last book freezes mid-plan" bug: AllSoldOut no longer ends the day.
+            if (_shelf.AllSoldOut()) _spawningStopped = true;
+
+            var noMoreCustomers = _nextToSpawn >= _customers.Count || _spawningStopped;
+            var spawnedDone = true;
+            for (var i = 0; i < _nextToSpawn; i++)
             {
-                if (!_customers[i].IsDone) { allDone = false; break; }
+                if (!_customers[i].IsDone) { spawnedDone = false; break; }
             }
 
-            if ((allSpawned && allDone) || _shelf.AllSoldOut())
-                CompleteDay();
-        }
-
-        private void CompleteDay()
-        {
-            // Flag the day completed synchronously so further ticks early-return.
-            // Actual publish (save write + event) runs as an async chain so the save module is
-            // populated BEFORE downstream subscribers (Results) react. Without this ordering the
-            // Results view reads an empty module in the same frame and bails with "no result".
-            if (_completed) return;
-            _completed = true;
-            PublishCompletionAsync().Forget();
+            if (noMoreCustomers && spawnedDone)
+            {
+                // The day's work is done; wait for the player to close the shop (ConcludeDay).
+                _phase = SalesDayPhase.ReadyToClose;
+                DayReadyToClose?.Invoke();
+            }
         }
 
         private async UniTaskVoid PublishCompletionAsync()
@@ -346,23 +400,22 @@ namespace Book.Sell.Services
             // Snapshot the result reference so a late reset doesn't race the publish.
             var snapshot = _result;
 
-            // 1) Persist BEFORE emitting so anyone listening to DayCompleted can immediately read
-            //    book_sell.last_day_result. UpdateModuleAsync only returns after the in-memory
-            //    module table is updated (it awaits its own semaphore internally).
-            if (_save != null)
+            // Atomic transactional commit: gold, sold books, shelf, stats, last_day_result and day
+            // completion are applied here in one shot (and only here). Until this runs nothing day-scoped
+            // is persisted, so exiting mid-day rolls the whole day back. See docs/SAVE_DAY_FLOW.md.
+            if (_commitService != null)
             {
                 try
                 {
-                    await _save.UpdateModuleAsync(SalesSaveKeys.LastDayResult, snapshot,
-                        SalesSaveKeys.LastDayResultSchemaVersion, CancellationToken.None);
+                    await _commitService.CommitAsync(snapshot, CancellationToken.None);
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError($"{LogPrefix} failed to persist SalesDayResult: {ex.Message}");
+                    Debug.LogError($"{LogPrefix} failed to commit SalesDayResult: {ex.Message}");
                 }
             }
 
-            // 2) Now it is safe to notify the View; Results will see a populated save module.
+            // Now it is safe to notify the View; Results will see a populated, completed save state.
             DayCompleted?.Invoke(snapshot);
         }
     }

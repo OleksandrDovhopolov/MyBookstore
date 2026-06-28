@@ -144,6 +144,7 @@ public sealed class DecorConfig : IConfig {
     // Economy (Phase 0: используется для newspaper-покупки)
     public int BasePrice { get; set; }            // gold
     public DecorRarity Rarity { get; set; }       // common / uncommon / rare / epic
+    public int VisitCostDelta { get; set; }       // знаковый сдвиг entry fee локации (gold), пока активен декор
 
     // Gameplay effect (Phase 0: только это поле имеет рантайм-эффект)
     public DecorGenreModifier[] GenreMultipliers { get; set; }

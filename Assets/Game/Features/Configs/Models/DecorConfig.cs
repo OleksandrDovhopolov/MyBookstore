@@ -12,6 +12,7 @@ namespace Game.Configs.Models
     {
         public string Id { get; set; }
         public string DisplayName { get; set; }
+        //TODO now everywhere used decor id for sprite loading via addressabbles . should delete this ? 
         public string IconAddress { get; set; }
 
         // Placement constraints
@@ -21,6 +22,13 @@ namespace Game.Configs.Models
         // Economy
         public int BasePrice { get; set; }
         public DecorRarity Rarity { get; set; }
+
+        /// <summary>
+        /// Signed shift to a location's per-visit entry fee while this decor is active (gold).
+        /// Neutral = 0; negative discounts, positive raises. Distinct from <see cref="BasePrice"/>
+        /// (purchase price) and <see cref="DailyUpkeepCost"/>. See docs/SAVE_DAY_FLOW.md.
+        /// </summary>
+        public int VisitCostDelta { get; set; }
 
         // Gameplay effect (Phase 0: only field with runtime effect)
         public DecorGenreModifier[] GenreMultipliers { get; set; }

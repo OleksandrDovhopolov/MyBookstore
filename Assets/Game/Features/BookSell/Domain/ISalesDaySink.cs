@@ -18,9 +18,23 @@ namespace Book.Sell.Domain
         /// <summary>A reservation was released without a sale (customer aborted mid-purchase).</summary>
         void OnBookReleased(Customer customer, string bookId);
 
+        //TODO should rename to OnPassivePurchase ? 
         void OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent);
+
+        /// <summary>A passive purchase attempt ended without a sale. <paramref name="genre"/> is the genre
+        /// the attempt was made on (may be null for the legacy model, which can't attribute a miss).</summary>
+        void OnPassivePurchaseFailed(Customer customer, string genre);
+
+        /// <summary>The customer finished its visit having bought <paramref name="purchasedBookCount"/>
+        /// books (active recommendations + passive sales, >= 1). For the HUD completion animation.</summary>
+        void OnPurchaseCompleted(Customer customer, int purchasedBookCount);
 
         /// <summary>A customer acquired the interaction lock and the active minigame opens for them.</summary>
         void OnActiveRequestStarted(Customer customer, RequestConfig request);
+
+        /// <summary>The customer starts leaving — its thought bubble should be cleared so it walks away
+        /// without any HUD. Feedback (Failed / bought / completed) has already had its on-screen dwell
+        /// in the preceding steps.</summary>
+        void OnHideThoughtBubble(Customer customer);
     }
 }

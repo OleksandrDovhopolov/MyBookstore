@@ -14,12 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_GroupName: Remote_Sprites
   m_GUID: e9e0279176ec53649912978f0734c981
-  m_SerializeEntries:
-  - m_GUID: c8abbb22f5197ff4fb8dc954339c3951
-    m_Address: test_sprite
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
+  m_SerializeEntries: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 962dd82bfa6d0f047923cc0481612c96, type: 2}
   m_SchemaSet:

@@ -1,0 +1,25 @@
+{
+    "name": "Game.Location",
+    "rootNamespace": "Game.Location",
+    "references": [
+        "VContainer",
+        "UniTask",
+        "Configs",
+        "Game.LocationUnlock.API",
+        "Game.LocationEntry.API",
+        "Game.Conditions.API",
+        "Game.Resources.API",
+        "Game.Core.UI",
+        "Infrastructure",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

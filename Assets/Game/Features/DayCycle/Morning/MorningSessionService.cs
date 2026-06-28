@@ -3,6 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning.Model;
+using UnityEngine;
 
 namespace Game.DayCycle.Morning
 {
@@ -29,8 +30,16 @@ namespace Game.DayCycle.Morning
             // Утро — точка входа в день. Фиксируем фазу (важно при первом входе в день
             // после «Следующего дня» из Итогов). Контекст детерминирован от номера дня,
             // поэтому отдельного сохранения контекста не нужно.
-            if (state.CurrentPhase != DayPhase.Morning)
+            var currentDayCompleted = state.CompletedDays.Contains(state.CurrentDay);
+            if (currentDayCompleted)
+            {
+                if (state.CurrentPhase != DayPhase.Results)
+                    await _progress.SetPhaseAsync(DayPhase.Results, ct);
+            }
+            else if (state.CurrentPhase != DayPhase.Morning)
+            {
                 await _progress.SetPhaseAsync(DayPhase.Morning, ct);
+            }
 
             _current = _resolver.Resolve(state.CurrentDay);
             return _current;
@@ -38,6 +47,15 @@ namespace Game.DayCycle.Morning
 
         public async UniTask<MorningContinueResult> ContinueToPreparationAsync(CancellationToken ct)
         {
+            var state = await _progress.LoadAsync(ct);
+            if (state.CompletedDays.Contains(state.CurrentDay))
+            {
+                await _progress.SetPhaseAsync(DayPhase.Results, ct);
+
+                Debug.LogWarning($"[MorningSession] cannot continue completed day {state.CurrentDay}; waiting for Results Next Day.");
+                return null;
+            }
+
             if (_current == null)
                 await StartOrResumeAsync(ct);
 

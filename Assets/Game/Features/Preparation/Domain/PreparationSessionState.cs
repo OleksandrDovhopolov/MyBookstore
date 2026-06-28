@@ -12,9 +12,21 @@ namespace Game.Preparation.Domain
     {
         public int Day { get; set; } = 1;
 
-        /// <summary>В MVP захардкожено loc_downtown — выбор локации откроется в следующей итерации.</summary>
+        /// <summary>
+        /// Выбранная игроком локация (Location Window → Start). Дефолт — fallback-локация на случай
+        /// state, созданного до выбора; в норме перезаписывается выбором игрока.
+        /// </summary>
         public string LocationId { get; set; } = "loc_downtown";
 
+        /// <summary>
+        /// Намерение игрока: сколько книг каждого жанра выставить на полку (genre → count).
+        /// Источник правды для UI. Конкретные книги резолвятся из этих квот в SelectedBookIds.
+        /// </summary>
+        public Dictionary<string, int> GenreQuantities { get; set; } = new();
+
+        /// <summary>
+        /// Резолв квот в конкретные id книг (выход). Downstream (Sales/shelf/scoring) читает именно это.
+        /// </summary>
         public List<string> SelectedBookIds { get; set; } = new();
 
         /// <summary>В MVP всегда пусто — декор подключается в задаче baseSaleChance.</summary>

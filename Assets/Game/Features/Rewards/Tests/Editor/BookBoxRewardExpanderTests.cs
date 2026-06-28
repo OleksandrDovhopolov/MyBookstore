@@ -129,6 +129,26 @@ namespace Game.Rewards.Tests.Editor
         }
 
         [Test]
+        public void Expand_GenreHeartfelt_FiltersByDramaAndRomanticMood()
+        {
+            var pool = new List<BookConfig>
+            {
+                Book("drama_romantic", "Drama", 0.7f, "romantic", "warm"),
+                Book("drama_dark", "Drama", 0.8f, "dark"),
+                Book("classic_romantic", "Classic", 0.9f, "romantic"),
+                Book("fantasy_romantic", "Fantasy", 0.6f, "romantic"),
+            };
+
+            var (svc, _, _, _) = Build(pool);
+            var spec = new RewardSpec("book_box_genre_heartfelt_1", new RewardItem[0]);
+
+            var result = svc.ExpandAsync(spec, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, result.Items.Count);
+            Assert.AreEqual("drama_romantic", result.Items[0].Id);
+        }
+
+        [Test]
         public void Expand_UnknownBoxId_ReturnsEmptySpec()
         {
             var (svc, _, _, _) = Build(new BookConfig[0]);

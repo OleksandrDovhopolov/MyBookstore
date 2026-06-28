@@ -14,8 +14,11 @@ namespace Game.Bootstrap
             builder.Register<LoadingOrchestrator>(Lifetime.Singleton);
 
             // Generic-сервис переходов между сценами. Тонкая обёртка над SceneManager,
-            // используется SceneTransitionOperation и (в будущем) gameplay-кодом.
+            // используется SceneTransitionOperation и gameplay-кодом (GameFlowService).
             builder.Register<ISceneTransitionService, SceneTransitionService>(Lifetime.Singleton);
+
+            // Хук анимации перехода (cover/reveal). Сейчас no-op; реальный fade — отдельной задачей.
+            builder.Register<ITransitionAnimationService, NoOpTransitionAnimationService>(Lifetime.Singleton);
         }
     }
 }

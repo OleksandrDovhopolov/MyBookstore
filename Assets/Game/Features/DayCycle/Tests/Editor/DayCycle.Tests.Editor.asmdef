@@ -10,6 +10,7 @@
         "Save",
         "Game.Resources.API",
         "Game.Progression.API",
+        "Game.LocationUnlock.API",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

@@ -2,6 +2,8 @@
   {
     "id": "newspaper_decor_vintage_globe",
     "storefrontId": "newspaper.decor",
+    "displayName": "Vintage Globe",
+    "description": "A charming counter accent",
     "price": { "currency": "gold", "amount": 0 },
     "rewardId": "decor_vintage_globe",
     "rewardItems": [
@@ -12,6 +14,8 @@
   {
     "id": "newspaper_decor_coffee_pot",
     "storefrontId": "newspaper.decor",
+    "displayName": "Coffee Machine",
+    "description": "A cozy upgrade for long reading days",
     "price": { "currency": "gold", "amount": 50 },
     "rewardId": "decor_coffee_pot",
     "rewardItems": [
@@ -22,6 +26,8 @@
   {
     "id": "newspaper_book_common_15",
     "storefrontId": "newspaper.books",
+    "displayName": "Young Adult Favorites",
+    "description": "15 mixed books",
     "price": { "currency": "gold", "amount": 20 },
     "rewardId": "book_box_common_15",
     "rewardItems": [],
@@ -30,6 +36,8 @@
   {
     "id": "newspaper_book_rare_8",
     "storefrontId": "newspaper.books",
+    "displayName": "Fantasy Treasures",
+    "description": "8 rare books",
     "price": { "currency": "gold", "amount": 30 },
     "rewardId": "book_box_rare_8",
     "rewardItems": [],
@@ -38,8 +46,20 @@
   {
     "id": "newspaper_book_genre_dystopic_1",
     "storefrontId": "newspaper.books",
+    "displayName": "World Explorers",
+    "description": "1 dark fantasy pick",
     "price": { "currency": "gold", "amount": 40 },
     "rewardId": "book_box_genre_dystopic_1",
+    "rewardItems": [],
+    "limit": { "mode": "Unlimited" }
+  },
+  {
+    "id": "newspaper_book_genre_heartfelt_1",
+    "storefrontId": "newspaper.books",
+    "displayName": "Heartfelt Stories",
+    "description": "1 romantic drama pick",
+    "price": { "currency": "gold", "amount": 40 },
+    "rewardId": "book_box_genre_heartfelt_1",
     "rewardItems": [],
     "limit": { "mode": "Unlimited" }
   },

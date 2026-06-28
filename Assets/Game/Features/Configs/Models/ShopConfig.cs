@@ -16,6 +16,8 @@ namespace Game.Configs.Models
     {
         public string Id { get; set; }
         public string StorefrontId { get; set; }
+        public string DisplayName { get; set; }
+        public string Description { get; set; }
         public ShopPriceData Price { get; set; }
         public string RewardId { get; set; }
         public RewardItemData[] RewardItems { get; set; }

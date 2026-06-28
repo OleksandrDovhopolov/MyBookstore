@@ -7,9 +7,15 @@
         "CheatModule",
         "Game.Core.UI",
         "Configs",
+        "Save",
         "Game.Inventory.API",
         "Game.Resources.API",
-        "Book.Sell"
+        "Game.SalesStats.API",
+        "Book.Sell",
+        "Game.Inventory",
+        "Game.Decor",
+        "Game.Shop.UI",
+        "Game.Newspaper"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

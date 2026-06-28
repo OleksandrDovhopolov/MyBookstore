@@ -7,6 +7,7 @@ using Game.Configs.Models;
 
 namespace Book.Sell.Services
 {
+    //TODO check logic of all event. is this a good solution ? 
     /// <summary>
     /// Drives the real-time sales day: spawns customers over time, ticks their plans, arbitrates the
     /// single active-minigame lock, and resolves player input. Replaces the turn-based
@@ -22,11 +23,28 @@ namespace Book.Sell.Services
         /// <summary>Request of the customer currently in the active minigame (holding the lock), or null.</summary>
         RequestConfig CurrentRequest { get; }
 
+        /// <summary>Current lifecycle phase of the day (Running / ReadyToClose / Completed).</summary>
+        SalesDayPhase Phase { get; }
+
         bool IsDayCompleted { get; }
+
+        /// <summary>Fired once when the day becomes concludable (no more customers, all spawned ones Done).
+        /// The view shows the "close shop" CTA in response; the day does NOT auto-complete.</summary>
+        event Action DayReadyToClose;
 
         event Action<RequestConfig> ActiveRequestStarted;
         event Action<RecommendationResult> RecommendationResolved;
         event Action<PassiveSaleEvent> PassiveSaleHappened;
+        event Action<Customer, RecommendationResult> CustomerRecommendationResolved;
+        event Action<Customer, PassiveSaleEvent> CustomerPassiveSaleHappened;
+        event Action<Customer, string> CustomerPassivePurchaseFailed;
+
+        /// <summary>The customer finished its visit; the <c>int</c> is <c>purchasedBookCount</c>
+        /// (active recommendations + passive sales, >= 1). For the HUD completion bubble/animation.</summary>
+        event Action<Customer, int> CustomerPurchaseCompleted;
+
+        /// <summary>The customer started leaving — the View should clear its thought bubble.</summary>
+        event Action<Customer> CustomerThoughtBubbleHidden;
         event Action<SalesDayResult> DayCompleted;
 
         /// <summary>Fired whenever any customer changes phase (arrival / browsing / leaving / done). For the View.</summary>
@@ -34,6 +52,12 @@ namespace Book.Sell.Services
 
         /// <summary>Customer targeted a book and reserved it (soft-lock) before committing the sale. For the View's feedback log.</summary>
         event Action<Customer, string> BookReserved;
+
+        /// <summary>A reservation was released without a sale (customer aborted mid-purchase). For the View's feedback log.</summary>
+        event Action<Customer, string> BookReleased;
+
+        /// <summary>Fired when the shelf's sellable inventory changes or is rebuilt for a new day.</summary>
+        event Action ShelfChanged;
 
         UniTask StartDayAsync(int day, CancellationToken ct);
 
@@ -45,6 +69,11 @@ namespace Book.Sell.Services
 
         /// <summary>Player declined to recommend anything for the current active minigame.</summary>
         void SkipCurrentRequest();
+
+        /// <summary>Player closed the shop. Valid only while <see cref="Phase"/> is
+        /// <see cref="SalesDayPhase.ReadyToClose"/>; publishes the result and fires
+        /// <see cref="DayCompleted"/>. No-op in any other phase.</summary>
+        void ConcludeDay();
 
         /// <summary>
         /// Forcibly ends the current sales day. Debug/cheat use only.
