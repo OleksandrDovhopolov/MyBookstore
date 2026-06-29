@@ -15,6 +15,15 @@ namespace Game.Configs.Models
         public string RoleKey { get; set; }
         public string DescriptionKey { get; set; }
 
+        /// <summary>
+        /// Quests whose start (state != Pending) discovers this character — for intro/dialogue quests that
+        /// have no memory. Optional; discovery also fires from any memory-linked quest. See §10/§7.
+        /// </summary>
+        public string[] DiscoveryQuestIds { get; set; }
+
+        /// <summary>Quest chains whose start discovers this character. Optional. Same role as <see cref="DiscoveryQuestIds"/>.</summary>
+        public string[] DiscoveryQuestChainIds { get; set; }
+
         public CharacterMemoryConfig[] Memories { get; set; }
     }
 }

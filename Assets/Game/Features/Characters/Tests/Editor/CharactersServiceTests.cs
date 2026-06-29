@@ -209,5 +209,23 @@ namespace Game.Characters.Tests.Editor
             Assert.AreEqual(a.Discovered, b.Discovered);
             Assert.AreEqual(a.Memories.Single().LinkedQuestState, b.Memories.Single().LinkedQuestState);
         }
+
+        [Test]
+        public void GetJournalEntry_ChainMemory_LinkDescribesFinalQuest_NotCurrent()
+        {
+            // Final quest (c2) is Pending while the current quest (c1) is Active — the journal link must
+            // describe the award (final) quest consistently, not mix final id with current state.
+            var quests = new FakeQuestsService().AddChain("chain",
+                new FakeQuest("c1", QuestState.Active, "chain"),
+                new FakeQuest("c2", QuestState.Pending, "chain"));
+            var service = Build(quests, new FakeCharactersRepository(),
+                Character("harper", MemoryByChain("m1", "chain")));
+
+            var row = service.GetJournalEntry("harper").Memories.Single();
+
+            Assert.AreEqual("c2", row.LinkedQuestId);                  // FinalQuest.Id
+            Assert.AreEqual(QuestState.Pending, row.LinkedQuestState); // FinalQuest.State (not CurrentQuest's Active)
+            Assert.IsFalse(row.Unlocked);
+        }
     }
 }

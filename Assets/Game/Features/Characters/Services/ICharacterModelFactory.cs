@@ -12,5 +12,11 @@ namespace Game.Characters.Services
     {
         CharacterModel Create(CharacterConfig config, SavedCharacter saved);
         CharacterJournalEntry CreateJournalEntry(CharacterConfig config, SavedCharacter saved);
+
+        /// <summary>Pure quest-derived unlock (questId Awarded / chain FinalQuest Awarded). No ledger, no save.</summary>
+        bool IsUnlockedByQuest(CharacterMemoryConfig mc);
+
+        /// <summary>Pure quest-derived discovery: any discovery/memory quest or chain started (state != Pending).</summary>
+        bool IsDiscoveredByQuest(CharacterConfig config);
     }
 }

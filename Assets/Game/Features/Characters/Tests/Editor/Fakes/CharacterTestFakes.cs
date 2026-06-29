@@ -115,6 +115,10 @@ namespace Game.Characters.Tests.Editor.Fakes
         public IQuestChain GetChain(string chainId)
             => chainId != null && Chains.TryGetValue(chainId, out var c) ? c : null;
 
+        // ----- test drivers: fire lifecycle events -----
+        public void RaiseStarted(IQuest quest) => QuestStarted?.Invoke(quest);
+        public void RaiseAwarded(IQuest quest) => QuestAwarded?.Invoke(quest);
+
         // ----- Unused by the read-side factory: benign stubs -----
         public IQuest TryGetQuest(string questId) => null;
         public QuestConfig GetQuestConfig(string questId) => null;

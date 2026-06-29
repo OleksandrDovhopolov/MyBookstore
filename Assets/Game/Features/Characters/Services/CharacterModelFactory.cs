@@ -8,13 +8,15 @@ using Game.Quest.API;
 namespace Game.Characters.Services
 {
     /// <summary>
-    /// Derives runtime character state from quest state (docs/CHARACTER_SYSTEM.md §6/§11):
+    /// Assembles character read models from config + saved state + quest state
+    /// (docs/CHARACTER_SYSTEM.md §6/§11):
     /// <list type="bullet">
-    /// <item>memory by QuestId → unlocked when that quest is Awarded.</item>
-    /// <item>memory by QuestChainId → unlocked when the chain's final quest is Awarded.</item>
-    /// <item>discovered → saved flag OR any owning (memory-linked) quest progressed past Pending.</item>
+    /// <item>memory unlocked = quest-derived (questId Awarded / chain FinalQuest Awarded) OR saved ledger.</item>
+    /// <item>discovered = persisted <see cref="SavedCharacter.Discovered"/> flag (set by the service).</item>
+    /// <item>journal link (id + state) describes the award quest — for a chain, its FinalQuest.</item>
     /// </list>
-    /// Unknown quest/chain resolves to Pending → locked, never throws.
+    /// Quest-derive rules (<see cref="IsUnlockedByQuest"/>, <see cref="IsDiscoveredByQuest"/>) are also reused
+    /// by the service for reconcile/events. Unknown quest/chain resolves to Pending → locked, never throws.
     /// </summary>
     internal sealed class CharacterModelFactory : ICharacterModelFactory
     {
@@ -25,27 +27,34 @@ namespace Game.Characters.Services
 
         public CharacterModel Create(CharacterConfig config, SavedCharacter saved)
         {
-            var memories = BuildMemories(config, out var anyStarted);
-            var discovered = IsDiscovered(saved, anyStarted);
-            return new CharacterModel(config, discovered, memories);
+            var memoryConfigs = config.Memories ?? Array.Empty<CharacterMemoryConfig>();
+            var memories = new ICharacterMemory[memoryConfigs.Length];
+
+            for (var i = 0; i < memoryConfigs.Length; i++)
+            {
+                var mc = memoryConfigs[i];
+                var unlocked = IsUnlockedByQuest(mc) || LedgerContains(saved, mc.Id);
+                memories[i] = new CharacterMemory(mc.Id, config.Id, unlocked, mc.IsGolden,
+                    mc.QuestId, mc.QuestChainId);
+            }
+
+            return new CharacterModel(config, saved?.Discovered ?? false, memories);
         }
 
         public CharacterJournalEntry CreateJournalEntry(CharacterConfig config, SavedCharacter saved)
         {
             var memoryConfigs = config.Memories ?? Array.Empty<CharacterMemoryConfig>();
             var rows = new CharacterJournalMemory[memoryConfigs.Length];
-            var anyStarted = false;
 
             for (var i = 0; i < memoryConfigs.Length; i++)
             {
                 var mc = memoryConfigs[i];
-                var link = ResolveLink(mc);
-                if (link.State != QuestState.Pending) anyStarted = true;
+                var link = ResolveJournalLink(mc);
 
                 rows[i] = new CharacterJournalMemory
                 {
                     MemoryId = mc.Id,
-                    Unlocked = link.Unlocked,
+                    Unlocked = link.Unlocked || LedgerContains(saved, mc.Id),
                     IsGolden = mc.IsGolden,
                     TitleKey = mc.TitleKey,
                     DescriptionKey = mc.DescriptionKey,
@@ -58,40 +67,76 @@ namespace Game.Characters.Services
             return new CharacterJournalEntry
             {
                 CharacterId = config.Id,
-                Discovered = IsDiscovered(saved, anyStarted),
+                Discovered = saved?.Discovered ?? false,
                 DisplayNameKey = config.DisplayNameKey,
                 RoleKey = config.RoleKey,
                 Memories = rows,
             };
         }
 
-        private IReadOnlyList<ICharacterMemory> BuildMemories(CharacterConfig config, out bool anyStarted)
+        // ----- quest-derive rules (also used by CharactersService reconcile/events) -----
+
+        public bool IsUnlockedByQuest(CharacterMemoryConfig mc)
         {
-            var memoryConfigs = config.Memories ?? Array.Empty<CharacterMemoryConfig>();
-            var result = new ICharacterMemory[memoryConfigs.Length];
-            anyStarted = false;
+            if (!string.IsNullOrEmpty(mc.QuestId))
+                return _quests.GetQuestState(mc.QuestId) == QuestState.Awarded;
 
-            for (var i = 0; i < memoryConfigs.Length; i++)
-            {
-                var mc = memoryConfigs[i];
-                var link = ResolveLink(mc);
-                if (link.State != QuestState.Pending) anyStarted = true;
+            if (!string.IsNullOrEmpty(mc.QuestChainId))
+                return _quests.GetChain(mc.QuestChainId)?.FinalQuest?.State == QuestState.Awarded;
 
-                result[i] = new CharacterMemory(mc.Id, config.Id, link.Unlocked, mc.IsGolden,
-                    mc.QuestId, mc.QuestChainId);
-            }
-
-            return result;
+            return false;
         }
 
-        private static bool IsDiscovered(SavedCharacter saved, bool anyOwningQuestStarted)
-            => (saved != null && saved.Discovered) || anyOwningQuestStarted;
+        public bool IsDiscoveredByQuest(CharacterConfig config)
+        {
+            // Explicit discovery quests/chains + every memory-linked quest/chain. "Started" = state != Pending.
+            if (AnyQuestStarted(config.DiscoveryQuestIds)) return true;
+            if (AnyChainStarted(config.DiscoveryQuestChainIds)) return true;
 
-        /// <summary>
-        /// Resolves a memory's linked quest into (unlocked, linked-quest-id, current state). For a chain,
-        /// the award quest is the final one; discovery uses the chain's current quest.
-        /// </summary>
-        private QuestLink ResolveLink(CharacterMemoryConfig mc)
+            var memories = config.Memories;
+            if (memories != null)
+            {
+                for (var i = 0; i < memories.Length; i++)
+                {
+                    var mc = memories[i];
+                    if (!string.IsNullOrEmpty(mc.QuestId) &&
+                        _quests.GetQuestState(mc.QuestId) != QuestState.Pending) return true;
+                    if (!string.IsNullOrEmpty(mc.QuestChainId) && ChainStarted(mc.QuestChainId)) return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool AnyQuestStarted(string[] questIds)
+        {
+            if (questIds == null) return false;
+            for (var i = 0; i < questIds.Length; i++)
+                if (!string.IsNullOrEmpty(questIds[i]) &&
+                    _quests.GetQuestState(questIds[i]) != QuestState.Pending) return true;
+            return false;
+        }
+
+        private bool AnyChainStarted(string[] chainIds)
+        {
+            if (chainIds == null) return false;
+            for (var i = 0; i < chainIds.Length; i++)
+                if (ChainStarted(chainIds[i])) return true;
+            return false;
+        }
+
+        private bool ChainStarted(string chainId)
+        {
+            if (string.IsNullOrEmpty(chainId)) return false;
+            var state = _quests.GetChain(chainId)?.CurrentQuest?.State ?? QuestState.Pending;
+            return state != QuestState.Pending;
+        }
+
+        private static bool LedgerContains(SavedCharacter saved, string memoryId)
+            => saved?.UnlockedMemoryIds != null && saved.UnlockedMemoryIds.Contains(memoryId);
+
+        /// <summary>Journal link describes the award quest: for a chain, its FinalQuest (id + state agree).</summary>
+        private QuestLink ResolveJournalLink(CharacterMemoryConfig mc)
         {
             if (!string.IsNullOrEmpty(mc.QuestId))
             {
@@ -101,14 +146,9 @@ namespace Game.Characters.Services
 
             if (!string.IsNullOrEmpty(mc.QuestChainId))
             {
-                var chain = _quests.GetChain(mc.QuestChainId);
-                if (chain == null) return new QuestLink(false, null, QuestState.Pending);
-
-                var final = chain.FinalQuest;
-                var unlocked = final != null && final.State == QuestState.Awarded;
-                // Discovery signal: a chain is "started" once its current quest is past Pending.
-                var state = chain.CurrentQuest?.State ?? QuestState.Pending;
-                return new QuestLink(unlocked, final?.Id, state);
+                var final = _quests.GetChain(mc.QuestChainId)?.FinalQuest;
+                var state = final?.State ?? QuestState.Pending;
+                return new QuestLink(state == QuestState.Awarded, final?.Id, state);
             }
 
             return new QuestLink(false, null, QuestState.Pending);
