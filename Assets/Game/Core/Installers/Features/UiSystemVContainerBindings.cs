@@ -1,3 +1,4 @@
+using Game.Bootstrap.Loading;
 using Game.UI;
 using UnityEngine;
 using VContainer;
@@ -16,6 +17,20 @@ namespace Game.Bootstrap
             builder.RegisterComponentInNewPrefab(uiCanvasRootPrefab, Lifetime.Singleton)
                 .UnderTransform((Transform)null)
                 .As<IUICanvasRoot>();
+
+            // Real cover/reveal lives on the same UIManagerCanvas prefab (sibling of UICanvasRoot).
+            // Resolve it from the spawned prefab instead of registering the NoOp (RegisterGameLoading).
+            // Falls back to NoOp (with a warning) until the prefab gets the component, so boot never breaks.
+            builder.Register<ITransitionAnimationService>(r =>
+            {
+                var root = r.Resolve<IUICanvasRoot>() as Component;
+                var service = root != null ? root.GetComponent<TransitionAnimationService>() : null;
+                if (service != null) return service;
+
+                Debug.LogWarning("[Transition] SpriteTransitionAnimationService is missing on the " +
+                                 "UIManagerCanvas prefab — using a no-op cover. Add the component + cover layer.");
+                return new NoOpTransitionAnimationService();
+            }, Lifetime.Singleton);
 
             builder.Register<IWindowFactory, AddressablesWindowFactory>(Lifetime.Singleton);
             builder.Register<IUIStorage, UIStorage>(Lifetime.Singleton);

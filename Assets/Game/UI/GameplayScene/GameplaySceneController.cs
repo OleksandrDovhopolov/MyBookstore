@@ -18,7 +18,7 @@ using UnityEngine;
 using VContainer;
 
 [Window("GameplaySceneController", WindowType.HUD)]
-public class GameplaySceneController : WindowController<GameplaySceneView>
+public class GameplaySceneController : WindowController<GameplaySceneView>, IDataReadyWindow
 {
     private IResourcesService _resources;
     private IDayProgressService _dayProgress;
@@ -28,7 +28,8 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
     private IConfigsService _configs;
     private IUiSpriteProvider _uiSprites;
 
-    public bool SpritesLoaded { get; private set; }
+    // True once the window has loaded all the data it needs to display (currently the genre sprites).
+    public bool IsDataReady { get; private set; }
 
     private IDisposable _salesGoldSubscription;
     private IDisposable _genreBookCountsSubscription;
@@ -113,7 +114,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
             }
 
             View.SetGenreSprites(sprites);
-            SpritesLoaded = true;
+            IsDataReady = true;
         }
         catch (OperationCanceledException)
         {

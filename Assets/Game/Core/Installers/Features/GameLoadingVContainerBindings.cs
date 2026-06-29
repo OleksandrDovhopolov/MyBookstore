@@ -17,8 +17,9 @@ namespace Game.Bootstrap
             // используется SceneTransitionOperation и gameplay-кодом (GameFlowService).
             builder.Register<ISceneTransitionService, SceneTransitionService>(Lifetime.Singleton);
 
-            // Хук анимации перехода (cover/reveal). Сейчас no-op; реальный fade — отдельной задачей.
-            builder.Register<ITransitionAnimationService, NoOpTransitionAnimationService>(Lifetime.Singleton);
+            // ITransitionAnimationService (cover/reveal) регистрируется в RegisterUiSystem —
+            // реальная реализация SpriteTransitionAnimationService живёт на UIManagerCanvas prefab.
+            // NoOpTransitionAnimationService остаётся как fallback для тестов/без-UI контекстов.
         }
     }
 }

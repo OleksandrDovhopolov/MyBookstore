@@ -56,6 +56,7 @@ namespace Game.Bootstrap
         private IConfigsService _configs;
         private ISaveService _save;
         private ISceneTransitionService _sceneTransition;
+        private ITransitionAnimationService _transition;
         private IFtueBootstrapper _ftue;
         private IUiSpriteProvider _uiSprites;
 
@@ -84,6 +85,7 @@ namespace Game.Bootstrap
             IConfigsService configs,
             ISaveService save,
             ISceneTransitionService sceneTransition,
+            ITransitionAnimationService transition,
             IFtueBootstrapper ftue,
             IUiSpriteProvider uiSprites,
             IInventoryService inventory,
@@ -98,6 +100,7 @@ namespace Game.Bootstrap
             _configs = configs;
             _save = save;
             _sceneTransition = sceneTransition;
+            _transition = transition;
             _ftue = ftue;
             _uiSprites = uiSprites;
             _inventory = inventory;
@@ -242,7 +245,7 @@ namespace Game.Bootstrap
                 {
                     new WarmupOperation(),
                     new UiSpritePreloadOperation(_uiSprites),
-                    new SceneTransitionOperation(_sceneTransition, _mainSceneName)
+                    new SceneTransitionOperation(_sceneTransition, _transition, _mainSceneName)
                 })
             });
 
