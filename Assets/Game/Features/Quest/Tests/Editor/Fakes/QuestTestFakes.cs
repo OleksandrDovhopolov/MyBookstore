@@ -139,7 +139,20 @@ namespace Game.Quest.Tests.Editor.Fakes
                     var tasks = new Dictionary<int, QuestTaskState>();
                     if (kv.Value?.Tasks != null)
                         foreach (var t in kv.Value.Tasks) tasks[t.Key] = t.Value;
-                    dto.Active[kv.Key] = new SavedQuest { State = kv.Value?.State ?? QuestState.Active, Tasks = tasks };
+
+                    Dictionary<int, SalesStatsStateDto> baseline = null;
+                    if (kv.Value?.TaskBaseline != null)
+                    {
+                        baseline = new Dictionary<int, SalesStatsStateDto>();
+                        foreach (var b in kv.Value.TaskBaseline) baseline[b.Key] = b.Value;
+                    }
+
+                    dto.Active[kv.Key] = new SavedQuest
+                    {
+                        State = kv.Value?.State ?? QuestState.Active,
+                        Tasks = tasks,
+                        TaskBaseline = baseline
+                    };
                 }
             return dto;
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Conditions.API;
+using Game.Conditions.Services;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
@@ -11,6 +12,8 @@ using Game.Inventory.API;
 using Game.Quest.API;
 using Game.Quest.Services.Persistence;
 using Game.SalesStats.API;
+using Game.SalesStats.Conditions;
+using Newtonsoft.Json.Linq;
 using Save;
 using UnityEngine;
 
@@ -38,6 +41,11 @@ namespace Game.Quest.Services
         private readonly IInventoryService _inventory;
         private readonly IDayProgressService _dayProgress;
 
+        // Baseline (4b): scoped "since task activation" progress for sales conditions.
+        private readonly IReadOnlyList<IConditionFactory> _allFactories;
+        private readonly ISalesStatsBaselineSource _salesBaseline;
+        private readonly bool _baselineEnabled;
+
         private readonly Dictionary<string, Quest> _quests = new(StringComparer.Ordinal);
         private readonly HashSet<string> _successors = new(StringComparer.Ordinal);
 
@@ -55,7 +63,9 @@ namespace Game.Quest.Services
             ISalesStatsService sales = null,
             IDecorPlacementService decor = null,
             IInventoryService inventory = null,
-            IDayProgressService dayProgress = null)
+            IDayProgressService dayProgress = null,
+            IReadOnlyList<IConditionFactory> allFactories = null,
+            ISalesStatsBaselineSource salesBaseline = null)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _repository = repository;
@@ -65,6 +75,9 @@ namespace Game.Quest.Services
             _decor = decor;
             _inventory = inventory;
             _dayProgress = dayProgress;
+            _allFactories = allFactories;
+            _salesBaseline = salesBaseline;
+            _baselineEnabled = allFactories != null && salesBaseline != null;
 
             save.RegisterHook(this);
         }
@@ -253,7 +266,8 @@ namespace Game.Quest.Services
                 }
                 var activation = _parser.Parse(taskCfg.ActivationConditions);
                 var completion = _parser.Parse(taskCfg.CompletionConditions);
-                tasks.Add(new QuestTask(config.Id, taskCfg, activation, completion));
+                var needsBaseline = _baselineEnabled && ReferencesSalesCondition(taskCfg.CompletionConditions);
+                tasks.Add(new QuestTask(config.Id, taskCfg, activation, completion, needsBaseline));
             }
             return tasks.Count > 0;
         }
@@ -352,6 +366,7 @@ namespace Game.Quest.Services
                     if (task.State == QuestTaskState.Pending && task.IsActivationMet())
                     {
                         task.SetState(QuestTaskState.Active);
+                        MaybeCaptureBaseline(task);
                         MarkDirty();
                         changed = true;
                     }
@@ -394,7 +409,10 @@ namespace Game.Quest.Services
         {
             quest.SetState(QuestState.Active);
             foreach (var task in quest.TasksInternal)
+            {
                 task.SetState(task.IsActivationMet() ? QuestTaskState.Active : QuestTaskState.Pending);
+                if (task.State == QuestTaskState.Active) MaybeCaptureBaseline(task);
+            }
             MarkDirty();
             QuestStarted?.Invoke(quest);
         }
@@ -442,6 +460,54 @@ namespace Game.Quest.Services
         {
             _dirty = true;
             _save.MarkDirty();
+        }
+
+        // ----- baseline (4b) -----
+
+        /// <summary>Captures a sales baseline once when a sales task becomes Active and rebuilds its
+        /// completion to read "since activation". No-op if disabled, not a sales task, or already captured.</summary>
+        private void MaybeCaptureBaseline(QuestTask task)
+        {
+            if (!_baselineEnabled || !task.NeedsBaseline || task.Baseline != null) return;
+
+            var baseline = _salesBaseline.CaptureBaseline();
+            var parser = BuildScopedParser(_salesBaseline.CreateScopedReader(baseline));
+            task.SetScopedCompletion(parser.Parse(task.Config.CompletionConditions), baseline);
+            MarkDirty();
+        }
+
+        /// <summary>Parser whose sales factories read <paramref name="scopedReader"/>; all other leaf
+        /// factories are the global registered ones (so mixed trees keep normal non-sales conditions).</summary>
+        private IConditionParser BuildScopedParser(ISalesStatsReader scopedReader)
+        {
+            var factories = new List<IConditionFactory>(_allFactories.Count + 3);
+            foreach (var f in _allFactories)
+                if (f != null && !SalesConditionTypeIds.Contains(f.Type)) factories.Add(f);
+
+            factories.Add(new SoldGenreConditionFactory(scopedReader));
+            factories.Add(new SoldGenreAtLocationConditionFactory(scopedReader));
+            factories.Add(new SoldGenreInSingleDayConditionFactory(scopedReader));
+
+            return new ConditionParser(new ConditionFactoryRegistry(factories));
+        }
+
+        /// <summary>Recursively true if a completion condition tree references any sales condition type.</summary>
+        private static bool ReferencesSalesCondition(JObject node)
+        {
+            if (node == null || !node.HasValues) return false;
+
+            if (node["all"] is JArray all) return AnyReferencesSales(all);
+            if (node["any"] is JArray any) return AnyReferencesSales(any);
+            if (node["not"] is JObject not) return ReferencesSalesCondition(not);
+
+            return SalesConditionTypeIds.Contains(node.Value<string>("type"));
+        }
+
+        private static bool AnyReferencesSales(JArray array)
+        {
+            foreach (var token in array)
+                if (token is JObject obj && ReferencesSalesCondition(obj)) return true;
+            return false;
         }
 
         // ----- change subscriptions -----
@@ -509,24 +575,49 @@ namespace Game.Quest.Services
             foreach (var task in quest.TasksInternal) task.SetState(taskState);
         }
 
-        private static void RestoreActive(Quest quest, SavedQuest saved)
+        private void RestoreActive(Quest quest, SavedQuest saved)
         {
             if (saved == null) return;
             quest.SetState(saved.State);
             if (saved.Tasks == null) return;
             foreach (var task in quest.TasksInternal)
-                if (saved.Tasks.TryGetValue(task.Id, out var taskState))
+            {
+                if (!saved.Tasks.TryGetValue(task.Id, out var taskState)) continue;
+                task.SetState(taskState);
+                if (taskState != QuestTaskState.Active) continue;
+
+                if (_baselineEnabled && task.NeedsBaseline)
                 {
-                    task.SetState(taskState);
-                    if (taskState == QuestTaskState.Active) task.RefreshProgress();
+                    SalesStatsStateDto savedBaseline = null;
+                    if (saved.TaskBaseline != null) saved.TaskBaseline.TryGetValue(task.Id, out savedBaseline);
+
+                    if (savedBaseline != null)
+                    {
+                        var parser = BuildScopedParser(_salesBaseline.CreateScopedReader(savedBaseline));
+                        task.SetScopedCompletion(parser.Parse(task.Config.CompletionConditions), savedBaseline);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"{LogPrefix} missing baseline for active sales task '{quest.Id}.{task.Id}'; " +
+                                         "capturing current stats (v2 migration; progress restarts).");
+                        MaybeCaptureBaseline(task);
+                    }
                 }
+                else
+                {
+                    task.RefreshProgress();
+                }
+            }
         }
 
-        private static void ActivateSilent(Quest quest)
+        private void ActivateSilent(Quest quest)
         {
             quest.SetState(QuestState.Active);
             foreach (var task in quest.TasksInternal)
+            {
                 task.SetState(task.IsActivationMet() ? QuestTaskState.Active : QuestTaskState.Pending);
+                if (task.State == QuestTaskState.Active) MaybeCaptureBaseline(task);
+            }
         }
 
         private SavedQuests BuildDto()
@@ -551,8 +642,14 @@ namespace Game.Quest.Services
                     case QuestState.Active:
                     case QuestState.ReadyToAward:
                         var tasks = new Dictionary<int, QuestTaskState>();
-                        foreach (var task in quest.TasksInternal) tasks[task.Id] = task.State;
-                        dto.Active[quest.Id] = new SavedQuest { State = quest.State, Tasks = tasks };
+                        Dictionary<int, SalesStatsStateDto> baselines = null;
+                        foreach (var task in quest.TasksInternal)
+                        {
+                            tasks[task.Id] = task.State;
+                            if (task.Baseline != null)
+                                (baselines ??= new Dictionary<int, SalesStatsStateDto>())[task.Id] = task.Baseline;
+                        }
+                        dto.Active[quest.Id] = new SavedQuest { State = quest.State, Tasks = tasks, TaskBaseline = baselines };
                         break;
                     // Pending: not persisted.
                 }

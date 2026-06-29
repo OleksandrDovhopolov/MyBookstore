@@ -12,28 +12,41 @@
 - [ ] **GAME-1. Replace location demand genre whitelist with weighted demand.**
   Current `LocationDemandProfileProvider` treats `LocationConfig.DemandGenres` as the pool of genres customers can request/passively buy. This is too strict for a Tiny Bookshop-like model: every stocked genre should remain sellable, while location demand genres get a higher chance/weight. Rework passive demand calculation so `DemandGenres` means boosted/preferred genres, not allowed-only genres. Update tests around `LocationDemandProfileProvider` / `RequestedGenrePassiveResolver` to cover non-demand genres still being sellable with lower chance.
 
-- [ ] **GAME-2. Спроектировать и реализовать фичу `Game.Quest`.**
+- [~] **GAME-2. Спроектировать и реализовать фичу `Game.Quest`.**
   Создать новую сборку `Game.Quest` (`Game.Quest`/`Game.Quest.API`/`Game.Quest.Tests.Editor`, единый стиль с
   `Game.Inventory`/`Game.Decor`) по спеке [QUESTS.md](QUESTS.md): data-driven квесты, задачи, цепочки,
   save-состояния `Pending/Active/ReadyToAward/Awarded/Failed`, события прогресса и permanent effects. Условия
   переиспользуют существующий движок `Game.Conditions` (новые `IConditionFactory` по образцу `SoldGenreConditionFactory`),
   а не пишутся заново. Сезонов в MVP нет — без `seasonIs`. Первая версия работает без персонажей: `characterId` в
   цепочке опционален/null, чтобы позже подключить N персонажей с M цепочками без миграции базовой модели.
-  **Зависит от GAME-4.** Старый placeholder `Quest.asmdef` удалён.
+  **Ядро готово (Этапы 1–5 + 4b) — на паузе:** сборки, API/enum/конфиги, условия `decorEquipped`/`haveItem`/`weatherIs`,
+  `QuestsService` (lifecycle/цепочки/auto-award), save (Awarded/Failed не переигрываются), baseline «после старта задачи».
+  **Осталось (поздние итерации):** награды/эффекты (GAME-3), условия визита (GAME-5), реальная цепочка-слайс + UI журнала.
+  Решения зафиксированы в [adr/0007-quest-system.md](adr/0007-quest-system.md). Старый placeholder `Quest.asmdef` удалён.
 
-- [ ] **GAME-4. Продажи по локациям и по дням в `Game.SalesStats` (prerequisite для квестов).**
-  Текущий `ISalesStatsReader` отдаёт только глобальный кумулятив (`GetSold(BookGenre)`, `TotalSold`) — без разреза
-  по локации и без дневного счётчика. Квестовые условия `soldGenreAtLocation` / `soldGenreInSingleDay` / `soldByTags`
-  (продажи по `BookConfig.Tags`) на этом не построить. Расширить запись/чтение продаж измерениями `(локация)`,
-  `(день)` и тегами книги; обновить тесты `SalesStatsServiceTests`. Проектировать вместе с baseline-snapshot прогресса
-  квеста (scoped reader, см. [QUESTS.md](QUESTS.md) §11.2) — чтобы «продай 15 после старта задачи» считалось от момента
-  активации, а не от lifetime-итога. Должно быть сделано **до** GAME-2.
+- [x] **GAME-4. Продажи по локациям и по дням в `Game.SalesStats` (prerequisite для квестов).**
+  `SalesStatsStateDto` расширен `SoldByLocationGenre` + `SoldByDayGenre` (schema v2); `ISalesStatsReader` +=
+  `GetSold(genre, location)`, `GetSoldOnDay(day[, genre])`, `GetMaxSoldInSingleDay(genre)`; `SaleContext`
+  прокинут через `SalesDayResult`/`SalesDayCommitService`. Condition-factory `soldGenreAtLocation`,
+  `soldGenreInSingleDay` зарегистрированы. `soldByTags` отложен (нет учёта по тегам — добавить при необходимости).
 
-- [ ] **GAME-3. Permanent quest effects / world state.**
-  После завершения квестов сохранять уникальные состояния мира: достроенный замок на Far Beach дает постоянный
-  `+2` клиента в день и открывает Cave; включенный маяк открывает ночную торговлю на побережье и бонус к
-  `Mystery/Thriller`; цветущий навес фургона усиливает `Poetry/Romance`; найденные/показанные улики меняют
-  доступность детективных цепочек. Эффекты должны быть идемпотентными при повторной загрузке save.
+- [ ] **GAME-3. Permanent quest effects / world state (= Этап 6).**
+  После завершения квестов выдавать награды (`QuestRewardConfig` → `IRewardGrantService`) и применять постоянные
+  эффекты (`QuestWorldEffectConfig`-хендлеры): достроенный замок на Far Beach даёт `+2` клиента в день и открывает Cave;
+  включённый маяк — ночная торговля + бонус `Mystery/Thriller`; цветущий навес усиливает `Poetry/Romance`; улики
+  меняют доступность детективных цепочек. Эффекты **идемпотентны** при повторной загрузке (Awarded не переигрывается;
+  bump `QuestsSaveKeys.StateSchemaVersion`: Awarded += timestamp + appliedEffects).
+
+- [ ] **GAME-5. `LocationVisits` + условия `visitLocation` / `locationIs`.**
+  Новая persisted-подсистема счётчика визитов по локациям + entry-hook (инкремент при входе в локацию) +
+  current-location seam (по образцу GAME-4 для продаж). Condition-factory `visitLocation` («посетить N раз») и
+  `locationIs` («находиться на локации сейчас»). Разблокирует слайс «An Empire of Sand».
+
+- [x] **GAME-6. Quest baseline scoped-reader (Этап 4b).**
+  Прогресс «продай N **после старта задачи**»: `SalesStatsService` реализует `ISalesStatsBaselineSource`
+  (`CaptureBaseline`/`CreateScopedReader` → `current − baseline`, в т.ч. best-day по дням); `QuestsService` при
+  активации продажной задачи снимает snapshot, пересобирает completion через scoped-парсер и хранит baseline в
+  `SavedQuest.TaskBaseline` (save schema v2, миграция v1→v2). Авто для всех продажных условий.
 
 ---
 

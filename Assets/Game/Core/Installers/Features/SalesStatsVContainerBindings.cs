@@ -21,7 +21,8 @@ namespace Game.Bootstrap
             builder.Register<SalesStatsService>(Lifetime.Singleton)
                 .As<ISalesStatsService>()
                 .As<ISalesStatsReader>()
-                .As<ISalesStatsRecorder>();
+                .As<ISalesStatsRecorder>()
+                .As<ISalesStatsBaselineSource>();
 
             // SalesStats ships its own condition adapters; the condition engine discovers them via the
             // IConditionFactory collection — no engine change needed for new condition types.

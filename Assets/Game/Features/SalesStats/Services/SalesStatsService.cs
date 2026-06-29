@@ -20,7 +20,7 @@ namespace Game.SalesStats.Services
     /// the save dirty via <see cref="ISaveService.MarkDirty"/>. The actual persist happens once per
     /// save cycle in <see cref="BeforeSaveAsync"/> — no save-per-book I/O.
     /// </summary>
-    public sealed class SalesStatsService : ISalesStatsService, ISaveHook
+    public sealed class SalesStatsService : ISalesStatsService, ISalesStatsBaselineSource, ISaveHook
     {
         private const string LogPrefix = "[SalesStats]";
 
@@ -90,6 +90,13 @@ namespace Game.SalesStats.Services
                     max = count;
             return max;
         }
+
+        // ----- ISalesStatsBaselineSource -----
+
+        public SalesStatsStateDto CaptureBaseline() => BuildDto();
+
+        public ISalesStatsReader CreateScopedReader(SalesStatsStateDto baseline)
+            => new ScopedSalesStatsReader(this, baseline);
 
         // ----- ISaveHook -----
 
@@ -226,6 +233,87 @@ namespace Game.SalesStats.Services
                 SoldByLocationGenre = byLocation,
                 SoldByDayGenre = byDay
             };
+        }
+
+        /// <summary>
+        /// Reads the owning service's live counters minus a frozen baseline snapshot — i.e. "sold since the
+        /// baseline was captured". Nested so it can read the live per-day dict for scoped single-day max.
+        /// </summary>
+        private sealed class ScopedSalesStatsReader : ISalesStatsReader
+        {
+            private readonly SalesStatsService _live;
+            private readonly SalesStatsStateDto _baseline;
+
+            public ScopedSalesStatsReader(SalesStatsService live, SalesStatsStateDto baseline)
+            {
+                _live = live;
+                _baseline = baseline ?? new SalesStatsStateDto();
+            }
+
+            public int TotalSold
+            {
+                get
+                {
+                    var baseTotal = 0;
+                    if (_baseline.SoldByGenre != null)
+                        foreach (var v in _baseline.SoldByGenre.Values) baseTotal += v;
+                    return Math.Max(0, _live.TotalSold - baseTotal);
+                }
+            }
+
+            public int GetSold(BookGenre genre)
+                => Math.Max(0, _live.GetSold(genre) - BaseGenre(_baseline.SoldByGenre, genre));
+
+            public int GetSold(BookGenre genre, string locationId)
+            {
+                var baseVal = 0;
+                if (!string.IsNullOrEmpty(locationId) && _baseline.SoldByLocationGenre != null
+                    && _baseline.SoldByLocationGenre.TryGetValue(locationId, out var byGenre))
+                    baseVal = BaseGenre(byGenre, genre);
+                return Math.Max(0, _live.GetSold(genre, locationId) - baseVal);
+            }
+
+            public int GetSoldOnDay(int day)
+            {
+                if (!_live._soldByDayGenre.TryGetValue(day, out var liveByGenre)) return 0;
+
+                Dictionary<string, int> baseByGenre = null;
+                _baseline.SoldByDayGenre?.TryGetValue(day, out baseByGenre);
+
+                var sum = 0;
+                foreach (var kv in liveByGenre)
+                {
+                    var baseVal = baseByGenre != null && baseByGenre.TryGetValue(kv.Key, out var b) ? b : 0;
+                    var scoped = kv.Value - baseVal;
+                    if (scoped > 0) sum += scoped;
+                }
+                return sum;
+            }
+
+            public int GetSoldOnDay(int day, BookGenre genre)
+                => Math.Max(0, _live.GetSoldOnDay(day, genre) - BaseDayGenre(day, genre));
+
+            public int GetMaxSoldInSingleDay(BookGenre genre)
+            {
+                var key = genre.ToConfigValue();
+                var max = 0;
+                foreach (var pair in _live._soldByDayGenre)
+                {
+                    var liveVal = pair.Value.TryGetValue(key, out var c) ? c : 0;
+                    var scoped = liveVal - BaseDayGenre(pair.Key, genre);
+                    if (scoped > max) max = scoped;
+                }
+                return max;
+            }
+
+            private static int BaseGenre(Dictionary<string, int> dict, BookGenre genre)
+                => dict != null && dict.TryGetValue(genre.ToConfigValue(), out var v) ? v : 0;
+
+            private int BaseDayGenre(int day, BookGenre genre)
+                => _baseline.SoldByDayGenre != null
+                   && _baseline.SoldByDayGenre.TryGetValue(day, out var byGenre)
+                    ? BaseGenre(byGenre, genre)
+                    : 0;
         }
     }
 }

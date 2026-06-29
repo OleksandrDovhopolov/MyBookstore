@@ -2,6 +2,7 @@ using System;
 using Game.Conditions.API;
 using Game.Configs.Models;
 using Game.Quest.API;
+using Game.SalesStats.API;
 
 namespace Game.Quest.Services
 {
@@ -12,7 +13,7 @@ namespace Game.Quest.Services
     internal sealed class QuestTask : IQuestTask
     {
         private readonly ICondition _activation;   // null/empty config → always-met (parser contract)
-        private readonly ICondition _completion;   // null/empty config → always-met (task completes at once)
+        private ICondition _completion;            // null/empty config → always-met; swapped to scoped at activation (4b)
 
         public int Id { get; }
         public string QuestId { get; }
@@ -20,13 +21,21 @@ namespace Game.Quest.Services
         public QuestTaskState State { get; private set; } = QuestTaskState.Pending;
         public ConditionResult Progress { get; private set; }
 
-        public QuestTask(string questId, QuestTaskConfig config, ICondition activation, ICondition completion)
+        /// <summary>Completion references a sales condition → progress is scoped from activation (baseline, 4b).</summary>
+        public bool NeedsBaseline { get; }
+
+        /// <summary>Sales counters snapshot taken when the task became Active; null until then (or non-sales task).</summary>
+        public SalesStatsStateDto Baseline { get; private set; }
+
+        public QuestTask(string questId, QuestTaskConfig config, ICondition activation, ICondition completion,
+            bool needsBaseline)
         {
             QuestId = questId;
             Id = config.Id;
             Config = config;
             _activation = activation;
             _completion = completion;
+            NeedsBaseline = needsBaseline;
             Progress = _completion.Evaluate();
         }
 
@@ -50,5 +59,14 @@ namespace Game.Quest.Services
         internal bool IsCompletionMet => Progress.IsMet;
 
         internal void SetState(QuestTaskState state) => State = state;
+
+        /// <summary>Swaps completion to a baseline-scoped condition and refreshes progress immediately
+        /// (so the lifetime value isn't briefly shown). Stores the baseline for persistence.</summary>
+        internal void SetScopedCompletion(ICondition completion, SalesStatsStateDto baseline)
+        {
+            _completion = completion;
+            Baseline = baseline;
+            RefreshProgress();
+        }
     }
 }

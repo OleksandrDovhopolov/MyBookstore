@@ -7,7 +7,9 @@
         "Save",
         "Game.Quest.API",
         "Game.Conditions.API",
+        "Game.Conditions",
         "Game.SalesStats.API",
+        "Game.SalesStats",
         "Game.Decor.API",
         "Game.Inventory.API",
         "DayCycle"

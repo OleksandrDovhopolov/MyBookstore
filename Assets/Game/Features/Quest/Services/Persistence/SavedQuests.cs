@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Game.Quest.API;
+using Game.SalesStats.API;
 
 namespace Game.Quest.Services.Persistence
 {
@@ -25,6 +26,7 @@ namespace Game.Quest.Services.Persistence
         public QuestState State { get; set; }                       // Active | ReadyToAward
         public Dictionary<int, QuestTaskState> Tasks { get; set; }  // task id -> state
 
-        // public Dictionary<int, long> TaskBaseline { get; set; }  // reserved for Этап 4b
+        /// <summary>4b: per-task sales baseline snapshot (only for active sales tasks). Null when none.</summary>
+        public Dictionary<int, SalesStatsStateDto> TaskBaseline { get; set; }
     }
 }

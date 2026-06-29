@@ -10,6 +10,7 @@
         "Game.Conditions",
         "Save",
         "Game.SalesStats.API",
+        "Game.SalesStats",
         "Game.Decor.API",
         "Game.Inventory.API",
         "DayCycle",
