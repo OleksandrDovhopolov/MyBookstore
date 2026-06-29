@@ -43,6 +43,8 @@
         "Game.Shop.API",
         "Game.Quest",
         "Game.Quest.API",
+        "Game.Characters",
+        "Game.Characters.API",
         "Analytics"
     ],
     "includePlatforms": [],

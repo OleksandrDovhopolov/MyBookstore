@@ -1,0 +1,17 @@
+{
+    "name": "Game.Characters.API",
+    "rootNamespace": "Game.Characters.API",
+    "references": [
+        "Configs",
+        "Game.Quest.API"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

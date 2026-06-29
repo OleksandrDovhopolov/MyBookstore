@@ -12,6 +12,18 @@
 
 ---
 
+## 0. Scope этой итерации
+
+Чтобы не размывать MVP, фиксируем границы:
+
+- **В фокусе:** `character + memory` как data/read-side слой и его связь с `Game.Quest`.
+- **Stamps вне фокуса.** Stamps в Journal — это завершённые *location* challenges, и относятся они к локациям, а не к персонажам. В этой итерации stamps не реализуем; `Game.Characters` владеет только memories. См. §11.
+- **Shared memory отложена.** Случай «одна memory у двух персонажей» (A Family Matter — Maryam + Moira) в этой итерации игнорируем. Модель строим как «одна memory принадлежит одному персонажу». К shared-memory вернёмся отдельно (потребует memory → несколько characterId).
+- **Character modifiers отложены в конец задачи.** См. §13 — сначала чистый memory-слой, modifiers подключаем последним шагом.
+- **Только named characters.** Journal-entry и memories есть лишь у 8 named characters. Минорные NPC (Tomasz, Professor Wen, Cassie, Concerned Parent, Pipit Pioneers, hospital employees, paramedic и т.п.) дают только location-challenges и НЕ получают `CharacterConfig`/memories. См. §12.
+
+---
+
 ## 1. Что важно из Tiny Bookshop
 
 В Tiny Bookshop персонажи не являются просто NPC-аватарами. Они работают как слой над квестами, журналом и миром:
@@ -185,6 +197,7 @@ public sealed class CharacterMemoryConfig
     public string Id { get; set; }
     public string TitleKey { get; set; }
     public string DescriptionKey { get; set; }
+    public string PhotoKey { get; set; } // memory в Journal — это фотография
     public string QuestId { get; set; }
     public string QuestChainId { get; set; }
     public bool IsGolden { get; set; }
@@ -211,7 +224,134 @@ public sealed class SavedCharacter
 
 ---
 
-## 6. API
+## 6. Config / Save / Runtime Model
+
+Из `heroes-architecture.md` полезно взять строгое разделение статических данных, сохраненного состояния и runtime/read model. Для персонажей это важнее, чем кажется: Journal должен показывать не сырые config/save данные, а уже собранное состояние с учетом квестов.
+
+```text
+CharacterConfig          // static data from characters.json
+  -> SavedCharacter      // player-specific state from save
+  -> CharacterModel      // runtime read model for services/UI
+  -> CharacterJournalEntry
+```
+
+Что где живет:
+
+| Слой | Что хранит | Что не хранит |
+|---|---|---|
+| `CharacterConfig` | имя, роль, описания, memories, relations, schedule rules, modifier specs | discovered state, unlocked memories, текущий quest state |
+| `SavedCharacter` | `Discovered`, `UnlockedMemoryIds`, `LastKnownLocationId` | локализацию, список всех memories, quest config |
+| `CharacterModel` | собранное состояние персонажа: config + save + memory states | permanent source of truth |
+| `CharacterJournalEntry` | плоскую UI/read model для Journal | mutable domain state |
+
+Рекомендация: `CharacterModel` должен быть пересобираемым объектом. Источник истины остается в `characters.json`, save-модуле и `IQuestsService`.
+
+```csharp
+internal sealed class CharacterModel : ICharacter
+{
+    public string Id { get; }
+    public bool Discovered { get; }
+    public CharacterConfig Config { get; }
+    public IReadOnlyList<ICharacterMemory> Memories { get; }
+}
+```
+
+Это защищает от типичной ошибки: UI начинает сам склеивать `CharacterConfig`, `SavedCharacter` и `QuestState`, а потом логика открытия memories размазывается по нескольким местам.
+
+---
+
+## 7. CharacterModelFactory
+
+Из `HeroModelFactory` стоит взять не перегрузки под бой, а сам принцип: сервис не вручную собирает большой runtime-объект в каждом методе, а делегирует сборку фабрике.
+
+```csharp
+internal interface ICharacterModelFactory
+{
+    CharacterModel Create(CharacterConfig config, SavedCharacter saved);
+    CharacterJournalEntry CreateJournalEntry(CharacterConfig config, SavedCharacter saved);
+}
+```
+
+Зависимости фабрики:
+
+| Зависимость | Для чего нужна |
+|---|---|
+| `IQuestsService` | прочитать `QuestState` связанных memories |
+| `IConfigsService` | при необходимости получить связанные quest configs |
+| `ICharacterMemoryStateResolver` | изолировать правила `QuestId` / `QuestChainId` / golden memory |
+
+Поток сборки:
+
+```text
+CharactersService.GetJournalEntry(characterId)
+  -> CharacterConfig from IConfigsService
+  -> SavedCharacter from ICharactersRepository
+  -> CharacterModelFactory.CreateJournalEntry(...)
+    -> IQuestsService.GetQuestState(...)
+    -> IQuestsService.GetChain(...)
+    -> CharacterJournalEntry
+```
+
+Фабрика не должна:
+
+- менять save;
+- подписываться на события;
+- открывать memories;
+- активировать квесты;
+- знать о UI-компонентах.
+
+`CharactersService` остается владельцем lifecycle, а `CharacterModelFactory` - чистым сборщиком read models. Это упрощает тесты: можно отдельно проверить, что awarded quest становится unlocked memory в Journal, не поднимая весь сервис.
+
+---
+
+## 8. Dependency Map
+
+Карта зависимостей для первого MVP:
+
+```text
+BootstrapInstaller
+  -> RegisterQuest()
+  -> RegisterCharacters()
+
+CharactersService : ICharactersService
+  -> ICharactersRepository
+      -> ISaveService
+  -> IConfigsService
+      -> CharacterConfig[]
+  -> IQuestsService
+      -> QuestStarted
+      -> QuestAwarded
+      -> GetQuestState()
+      -> GetChain()
+  -> ICharacterModelFactory
+      -> IQuestsService
+  -> IConditionParser              // optional: только если включаем DiscoveryConditions
+```
+
+Future-зависимости, не обязательные для MVP:
+
+```text
+ICharacterPresenceService
+  -> IDayProgressService
+  -> ILocationEntry/Location state
+  -> CharacterScheduleRuleConfig[]
+
+ICharacterModifierProvider
+  -> ICharacterPresenceService
+  -> CharacterModifierConfig[]
+  -> Book.Sell API consumer later
+```
+
+Правила графа:
+
+- `Game.Characters` может знать о `Game.Quest.API`, но не о `Game.Quest`.
+- `Game.Quest` не должен ссылаться на `Game.Characters.API`; связь идет через `CharacterId` как data field и события `IQuestsService`.
+- `Book.Sell` позже читает modifiers через `Game.Characters.API`, а не через runtime-реализацию.
+- `Journal/UI` читает `ICharactersService`, а не `IQuestsService` напрямую для character memories.
+
+---
+
+## 9. API
 
 Публичный контракт:
 
@@ -257,7 +397,7 @@ UI не должен читать `QuestConfig` напрямую для Journal 
 
 ---
 
-## 7. Интеграция с Game.Quest
+## 10. Интеграция с Game.Quest
 
 Связь строится в три слоя:
 
@@ -294,9 +434,38 @@ UI не должен читать `QuestConfig` напрямую для Journal 
 
 Рекомендация: для MVP открыть персонажа при первом `QuestStarted` или `QuestAwarded` с `CharacterId`. Отдельные discovery conditions добавить позже, когда появятся явные NPC-spawn/диалоговые события.
 
+Примечание: discovery по «первому quest с `CharacterId`» — это конкретная реализация под наш референс, а не догма Tiny Bookshop. В референсе персонажа «представляет» другой персонаж (колонка *Unlocked By…*, чаще всего Tilde), часто с гейтом по сезону/году/дате. В текущем MVP discovery идёт по первому quest; в будущем — через tutorial / явные представления.
+
+### 10.1. Кросс-персонажные условия (эндгейм Tilde)
+
+Цепочка Tilde — это мета-слой над остальными персонажами:
+
+- «The People's Bookseller» = сделать 4 golden memory с друзьями (Walt's Treasured Shop, Harper's One for the History Books, Moira & Maryam's A Family Matter…).
+- «A Worthy Heir» = завершить набор под-челленджей → отдаёт ключи и завершает игру.
+
+Такие гейты ссылаются на состояние *чужих* memories. Решение — не вводить condition в словаре memories, а опираться на то, что **memory есть проекция awarded-квеста**, а `QuestState` уже доступен через `IQuestsService.GetQuestState(questId)`.
+
+Правило: кросс-персонажные гейты авторятся как условия над состоянием квестов, не над memory-словарём. Иначе появится цикл `Conditions → Characters → Quest.API`.
+
+Что сделать:
+
+1. Добавить `IConditionFactory` в фиче Quest (например `Game.Quest.Conditions`), зависящий только от `IQuestsService` — по образцу `SoldGenreConditionFactory`, который зависит от `ISalesStatsReader`. Движок условий и парсер не трогаются (extensibility seam из `IConditionFactory`).
+2. Два типа условий:
+
+```json
+{ "type": "questState", "quest": "walt_treasured_shop", "state": "Awarded" }
+{ "type": "questsAwardedCount", "quests": ["walt_treasured_shop", "harper_history_books", "family_matter", "..."], "min": 4 }
+```
+
+`questsAwardedCount` можно заменить на `allOf` из нескольких `questState` (composite уже есть в `Game.Conditions`).
+
+3. Эндгейм-цепочка Tilde целиком авторится в quest-конфигах этими условиями. `Game.Characters` НЕ получает спец-логики под эндгейм — он по-прежнему проецирует awarded-квесты в golden memories.
+
+Важно: сейчас в фиче Quest condition-фабрик нет вообще. Их добавление — единственная новая работа под этот пункт. `Game.Characters` остаётся read-side consumer.
+
 ---
 
-## 8. Journal Characters
+## 11. Journal Characters
 
 Tiny Bookshop использует Journal как основной mission log. Для MyBookstore лучше разделить данные и UI:
 
@@ -319,6 +488,7 @@ public sealed class CharacterJournalMemory
     public bool IsGolden { get; set; }
     public string TitleKey { get; set; }
     public string DescriptionKey { get; set; }
+    public string PhotoKey { get; set; }
     public string LinkedQuestId { get; set; }
     public QuestState LinkedQuestState { get; set; }
 }
@@ -329,30 +499,51 @@ UI-решение:
 - Journal Characters tab показывает только discovered characters.
 - Undiscovered можно скрывать или показывать как silhouettes позже.
 - Memory открыта, если связанный quest/chain awarded.
-- Golden memory - обычная memory с флагом `IsGolden`; отдельная логика наград не нужна.
+- Golden memory - обычная memory с флагом `IsGolden`. Это флаг значимости для UI, а не «memory без награды». Награды (включая предметы за golden memory: Anne → dissertation manuscript, Walt → Sailor's Friendship Knot) выдаёт стандартный quest reward flow в `Game.Quest`. `Game.Characters` наград не выдаёт.
 
 ---
 
-## 9. Персонажи и memories из референса
+## 12. Персонажи и memories из референса
 
 Полный копипаст challenge-таблиц не нужен и опасен для поддержки. Для архитектуры достаточно выделить типы требований:
 
-| Персонаж | Архетип цепочки | Нужные системы |
-|---|---|---|
-| Tilde | mentor/endgame heir chain, доставка вещей, hospital visit, несколько golden memories друзей | Quest, Inventory, Shop, Journal |
-| Anne | растения, погода, coastal/inner-city locations, graduation | Quest, Decor/Items, DayCycle weather, Locations |
-| Fern | manuscripts, printing press, newspaper, clubs | Quest, Newspaper, Inventory, Location events |
-| Walt | waterfront vendor, покупки предметов, продажи на Waterfront, tourist/world state | Quest, Shop, SalesStats, Location state |
-| Klaus | band, poster/fans, concert, van repair | Quest, Decor/Items, SalesStats, Events |
-| Maryam | cafe business course, support event, family memory with Moira | Quest, Location, Relationships |
-| Moira | spooky setup, winter/festival hooks, B.L.A.B.L.A. rule, shared Maryam memory | Quest, Decor tags, DayCycle/events, Relationships |
-| Harper | seashells, sandcastle, cave, crest fragments, golden history memory | Quest, Collection, Locations, Inventory |
+| Персонаж | Архетип цепочки | Golden memory | Нужные системы |
+|---|---|---|---|
+| Tilde | mentor/endgame heir chain, доставка вещей, hospital visit | (Almost) Flying Solo | Quest, Inventory, Shop, Journal |
+| Anne | растения, погода, coastal/inner-city locations, graduation | Anne's Graduation | Quest, Decor/Items, DayCycle weather, Locations |
+| Fern | manuscripts, printing press, newspaper, clubs | Telling Stories | Quest, Newspaper, Inventory, Location events |
+| Walt | waterfront vendor, покупки предметов, продажи на Waterfront, tourist/world state | Treasured Shop | Quest, Shop, SalesStats, Location state |
+| Klaus | band, poster/fans, concert, van repair | Goodbye Klaus | Quest, Decor/Items, SalesStats, Events |
+| Maryam | cafe business course, support event | A Family Matter (shared, отложено) | Quest, Location, Relationships |
+| Moira | spooky setup, winter/festival hooks, B.L.A.B.L.A. rule | A Family Matter (shared, отложено) | Quest, Decor tags, DayCycle/events, Relationships |
+| Harper | seashells, sandcastle, cave, crest fragments | One for the History Books | Quest, Collection, Locations, Inventory |
+
+У каждого named character ровно одна golden memory в конце цепочки. «A Family Matter» общая для Maryam и Moira — это и есть отложенный shared-memory кейс (см. §0).
 
 Из этого видно, что `Characters` - это не отдельная мини-игра. Это индекс над story progression, где сами действия остаются в quest tasks.
 
+### Named characters vs минорные NPC
+
+Journal-entry и memories есть **только у 8 named characters** из таблицы выше. Челленджи в игре выдают и второстепенные NPC, но они НЕ моделируются как `CharacterConfig` и memories у них нет:
+
+| Минорный NPC | Где | Роль |
+|---|---|---|
+| Tomasz | Lighthouse | location challenges (drama, theatre) |
+| Professor Wen | University | location challenges (academic) |
+| Cassie | Méga Marché | fan store после ухода Klaus |
+| Concerned Parent | Far Beach | location challenges (crime) |
+| Pipit Pioneers | Castle Ruins | location challenges (badges) |
+| Hospital employees / paramedic | Hospital | location challenges |
+
+Правило для наполнения `characters.json`: заводим только 8 named. Минорные NPC — это «диктор» location-челленджей и относятся к stamps/локациям (вне scope этой итерации, см. §0).
+
 ---
 
-## 10. Character presence и modifiers
+## 13. Character presence и modifiers
+
+> **Статус: отложено в конец задачи.** Этот слой не входит в текущий MVP. Сначала делаем чистый character + memory read-side, modifiers подключаем последним шагом, когда станет ясно, где в sales pipeline объединяются эффекты.
+>
+> Замечание по референсу: в Tiny Bookshop модификаторы продаж (`sale chance`, `money per sale`, `daily expenses`) приходят от **экипированных предметов** — это секция Journal «Equipped Items», которая агрегирует их эффект. Они НЕ приходят от «присутствия персонажа в локации». Поэтому `ICharacterPresenceService` / `ICharacterModifierProvider` ниже — это наше расширение поверх референса, а не воспроизведение его механики. Решить, нужно ли оно вообще, перед реализацией.
 
 На старте лучше не смешивать memories и shop modifiers. Но future API стоит заложить так, чтобы продажи могли читать активные эффекты персонажей.
 
@@ -379,7 +570,7 @@ public interface ICharacterModifierProvider
 
 ---
 
-## 11. Регистрация в DI
+## 14. Регистрация в DI
 
 Добавить файл:
 
@@ -418,7 +609,7 @@ namespace Game.Bootstrap
 
 ---
 
-## 12. Этапы реализации
+## 15. Этапы реализации
 
 ### Этап 0 - сейчас
 
@@ -432,6 +623,7 @@ namespace Game.Bootstrap
 - Создать `Game.Characters.API`, `Game.Characters`, `Game.Characters.Tests.Editor`.
 - Добавить `CharacterConfig`, `CharacterMemoryConfig`.
 - Добавить `characters.json` с 1-2 тестовыми персонажами.
+- Добавить `CharacterModel`, `CharacterModelFactory` и `CharacterJournalEntry` read model.
 - Реализовать `ICharactersService` read-side.
 - Реализовать save `characters.v1`.
 
@@ -441,6 +633,7 @@ namespace Game.Bootstrap
 - Подписаться на `QuestAwarded` для memories.
 - Поддержать memory by `QuestId` и by `QuestChainId`.
 - Покрыть тестами idempotency: повторный event не дублирует memory.
+- (Для эндгейма Tilde) добавить condition-фабрики `questState` / `questsAwardedCount` в фиче Quest — см. §10.1. Это работа в `Game.Quest`, не в `Game.Characters`.
 
 ### Этап 3 - Journal
 
@@ -456,7 +649,7 @@ namespace Game.Bootstrap
 
 ---
 
-## 13. Открытые вопросы и решения на сейчас
+## 16. Открытые вопросы и решения на сейчас
 
 1. Нужен ли `CharacterId` на уровне `QuestChain`, если он уже есть на каждом `QuestConfig`?
    - Решение на сейчас: нет. Используем `QuestConfig.CharacterId`; chain owner вычисляется как общий `CharacterId` у членов цепочки. Если цепочка shared, оставляем `CharacterId = null` на chain-level и используем memories у нескольких персонажей.
@@ -484,11 +677,12 @@ namespace Game.Bootstrap
 
 ---
 
-## 14. Definition of Done для следующего шага
+## 17. Definition of Done для следующего шага
 
 - Есть отдельные asmdef: `Game.Characters.API`, `Game.Characters`, `Game.Characters.Tests.Editor`.
 - `BootstrapInstaller` регистрирует `RegisterCharacters()` после `RegisterQuest()`.
 - `characters.json` грузится через `Game.Configs`.
+- `CharacterModelFactory` собирает runtime/read model из config + save + quest state.
 - `ICharactersService` возвращает discovered characters и journal entries.
 - Awarded quest открывает соответствующую memory.
 - Состояние discovered/memories переживает save/load.

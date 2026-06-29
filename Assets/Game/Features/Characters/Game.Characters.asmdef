@@ -1,0 +1,22 @@
+{
+    "name": "Game.Characters",
+    "rootNamespace": "Game.Characters",
+    "references": [
+        "UniTask",
+        "Configs",
+        "Save",
+        "Game.Characters.API",
+        "Game.Quest.API"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
