@@ -96,8 +96,8 @@
 | ⏳ [GameFlowLoop.md](GameFlowLoop.md) | _на будущее_ | [ADR-0005](adr/0005-customer-visuals-in-location-scene.md) |
 | ✅ [SAVE_DAY_FLOW.md](SAVE_DAY_FLOW.md) | Текущее поведение modular save + day flow, включая последствия выхода из `LocationScene` посреди дня. | [ADR-0001](adr/0001-save-data-modular-payload.md), [ADR-0003](adr/0003-customer-simulation.md), [GameFlowLoop.md](GameFlowLoop.md), [FTUE.md](FTUE.md) |
 | ⏳ [FTUE.md](FTUE.md) | _на будущее_ | [CORE_LOOP.md](CORE_LOOP.md) |
-| ✅ [QUESTS.md](QUESTS.md) | Спека будущей фичи `Game.Quest`: квесты как машина состояний поверх `Game.Conditions`, цепочки, задачи, save, permanent effects, prerequisites по `SalesStats`, примеры Tiny Bookshop-like цепочек. | [ASMDEF_RULES.md](ASMDEF_RULES.md), [SAVE_DAY_FLOW.md](SAVE_DAY_FLOW.md), [TODO.md](TODO.md), [CHARACTERS_AND_QUESTS.md](CHARACTERS_AND_QUESTS.md) |
-| ✅ [CHARACTERS_AND_QUESTS.md](CHARACTERS_AND_QUESTS.md) | Reference по персонажам Tiny Bookshop и их quest/memory seeds. Функционал `Characters` отложен на следующую итерацию; текущие квесты работают с nullable `characterId`. | [QUESTS.md](QUESTS.md), [CORE_LOOP.md](CORE_LOOP.md), [DECOR.md](DECOR.md), [REWARD_SYSTEM.md](REWARD_SYSTEM.md) |
+| ✅ [QUESTS.md](QUESTS.md) | Спека фичи `Game.Quest`: квесты как машина состояний поверх `Game.Conditions`, цепочки, задачи, save, permanent effects, prerequisites по `SalesStats`, обобщённые примеры цепочек (плейсхолдеры). | [ASMDEF_RULES.md](ASMDEF_RULES.md), [SAVE_DAY_FLOW.md](SAVE_DAY_FLOW.md), [TODO.md](TODO.md), [CHARACTERS_AND_QUESTS.md](CHARACTERS_AND_QUESTS.md) |
+| ✅ [CHARACTERS_AND_QUESTS.md](CHARACTERS_AND_QUESTS.md) | Точка связи персонажей (`Game.Characters`) и квестов: discovery/memory, авторинг character-цепочек. `Characters` реализован (Этап 1–3); связь через пассивный `CharacterId` + обратный индекс. | [QUESTS.md](QUESTS.md), [CHARACTER_SYSTEM.md](CHARACTER_SYSTEM.md), [CORE_LOOP.md](CORE_LOOP.md) |
 | ⏳ [SHOP.md](SHOP.md) | _на будущее_ | — |
 | ⏳ [INVENTORY.md](INVENTORY.md) | _на будущее_ | — |
 | ⏳ [DECOR.md](DECOR.md) | _на будущее_ | — |

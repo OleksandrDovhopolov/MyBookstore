@@ -214,7 +214,7 @@ Short emotional summary; no tables.
   book found its reader."*
 - **Reward** — gold and reputation; sometimes a new book "found you" (a
   classifieds drop, a gift, a discovery).
-- **Hook** — a hint about tomorrow ("Tilde mentioned a festival" / "Rain is
+- **Hook** — a hint about tomorrow ("a festival is coming up" / "Rain is
   expected later this week" / "A returning professor will visit the university").
 
 After tap → **Next Day** → state advances and Morning opens for day N+1.
