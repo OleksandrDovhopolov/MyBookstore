@@ -12,6 +12,10 @@ namespace Game.Characters.API
         public bool Discovered { get; set; }
         public string DisplayNameKey { get; set; }
         public string RoleKey { get; set; }
+
+        /// <summary>Addressables key for the character portrait; empty when the UI should show a placeholder.</summary>
+        public string PortraitKey { get; set; }
+
         public CharacterJournalMemory[] Memories { get; set; }
     }
 

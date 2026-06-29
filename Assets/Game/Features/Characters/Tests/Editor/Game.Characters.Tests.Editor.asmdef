@@ -5,6 +5,7 @@
         "UniTask",
         "Game.Characters",
         "Game.Characters.API",
+        "Game.Characters.UI",
         "Game.Quest.API",
         "Configs",
         "Save",

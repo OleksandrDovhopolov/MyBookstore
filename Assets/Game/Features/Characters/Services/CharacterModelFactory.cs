@@ -70,6 +70,7 @@ namespace Game.Characters.Services
                 Discovered = saved?.Discovered ?? false,
                 DisplayNameKey = config.DisplayNameKey,
                 RoleKey = config.RoleKey,
+                PortraitKey = config.PortraitKey,
                 Memories = rows,
             };
         }

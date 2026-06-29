@@ -15,6 +15,9 @@ namespace Game.Configs.Models
         public string RoleKey { get; set; }
         public string DescriptionKey { get; set; }
 
+        /// <summary>Addressables key for the character portrait. Empty/null → Journal shows a placeholder.</summary>
+        public string PortraitKey { get; set; }
+
         /// <summary>
         /// Quests whose start (state != Pending) discovers this character — for intro/dialogue quests that
         /// have no memory. Optional; discovery also fires from any memory-linked quest. See §10/§7.
