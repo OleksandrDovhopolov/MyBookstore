@@ -46,7 +46,7 @@ namespace Game.Quest.Tests.Editor
             var h = new Harness { Parser = new FakeConditionParser(), Sales = new FakeSalesStatsService() };
             var configs = new FakeConfigsService();
             foreach (var q in quests) configs.Add(q);
-            h.Service = new QuestsService(new FakeSaveService(), configs, h.Parser, h.Sales);
+            h.Service = new QuestsService(new FakeSaveService(), configs, h.Parser, sales: h.Sales);
             h.Service.QuestStarted += q => h.Events.Add($"started:{q.Id}");
             h.Service.QuestCompleted += q => h.Events.Add($"completed:{q.Id}");
             h.Service.QuestAwarded += q => h.Events.Add($"awarded:{q.Id}");

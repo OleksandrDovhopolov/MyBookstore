@@ -1,5 +1,6 @@
 using Game.Quest.API;
 using Game.Quest.Services;
+using Game.Quest.Services.Persistence;
 using VContainer;
 
 namespace Game.Bootstrap
@@ -12,8 +13,11 @@ namespace Game.Bootstrap
     {
         public static void RegisterQuest(this IContainerBuilder builder)
         {
+            // Local save-module-backed persistence (Awarded/Failed terminals + Active/RTA task progress).
+            builder.Register<IQuestsRepository, SaveBackedQuestsRepository>(Lifetime.Singleton);
+
             // QuestsService self-registers as ISaveHook in its constructor; AfterLoadAsync builds the
-            // catalog from quests.json (configs are warm by then) and activates chain heads.
+            // catalog from quests.json (configs are warm by then), restores saved state, activates heads.
             builder.Register<QuestsService>(Lifetime.Singleton)
                 .As<IQuestsService>();
         }

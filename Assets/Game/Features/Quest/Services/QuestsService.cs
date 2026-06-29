@@ -9,6 +9,7 @@ using Game.DayCycle.Day;
 using Game.Decor;
 using Game.Inventory.API;
 using Game.Quest.API;
+using Game.Quest.Services.Persistence;
 using Game.SalesStats.API;
 using Save;
 using UnityEngine;
@@ -26,6 +27,8 @@ namespace Game.Quest.Services
     {
         private const string LogPrefix = "[Quests]";
 
+        private readonly ISaveService _save;
+        private readonly IQuestsRepository _repository;   // null → in-memory only (lifecycle tests)
         private readonly IConfigsService _configs;
         private readonly IConditionParser _parser;
 
@@ -42,17 +45,20 @@ namespace Game.Quest.Services
         private bool _subscribed;
         private bool _reevaluating;
         private bool _reevalQueued;
+        private bool _dirty;
 
         public QuestsService(
             ISaveService save,
             IConfigsService configs,
             IConditionParser parser,
+            IQuestsRepository repository = null,
             ISalesStatsService sales = null,
             IDecorPlacementService decor = null,
             IInventoryService inventory = null,
             IDayProgressService dayProgress = null)
         {
-            if (save == null) throw new ArgumentNullException(nameof(save));
+            _save = save ?? throw new ArgumentNullException(nameof(save));
+            _repository = repository;
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _parser = parser ?? throw new ArgumentNullException(nameof(parser));
             _sales = sales;
@@ -72,17 +78,23 @@ namespace Game.Quest.Services
 
         // ----- ISaveHook -----
 
-        public UniTask AfterLoadAsync(CancellationToken ct)
+        public async UniTask AfterLoadAsync(CancellationToken ct)
         {
             BuildCatalog();
+            if (_repository != null)
+                ApplySaved(await _repository.LoadAsync(ct));
             Subscribe();
             _loaded = true;
-            Reevaluate(); // initial head activation
+            Reevaluate(); // initial head activation + offline progression
             Debug.Log($"{LogPrefix} loaded: {_quests.Count} quests.");
-            return UniTask.CompletedTask;
         }
 
-        public UniTask BeforeSaveAsync(CancellationToken ct) => UniTask.CompletedTask; // Этап 4: in-memory only
+        public UniTask BeforeSaveAsync(CancellationToken ct)
+        {
+            if (_repository == null || !_dirty) return UniTask.CompletedTask;
+            _dirty = false;
+            return _repository.SaveAsync(BuildDto(), ct);
+        }
 
         // ----- IQuestsService (read) -----
 
@@ -340,6 +352,7 @@ namespace Game.Quest.Services
                     if (task.State == QuestTaskState.Pending && task.IsActivationMet())
                     {
                         task.SetState(QuestTaskState.Active);
+                        MarkDirty();
                         changed = true;
                     }
 
@@ -349,6 +362,7 @@ namespace Game.Quest.Services
                         if (task.IsCompletionMet)
                         {
                             task.SetState(QuestTaskState.Completed);
+                            MarkDirty();
                             TaskCompleted?.Invoke(task);
                             changed = true;
                         }
@@ -381,18 +395,21 @@ namespace Game.Quest.Services
             quest.SetState(QuestState.Active);
             foreach (var task in quest.TasksInternal)
                 task.SetState(task.IsActivationMet() ? QuestTaskState.Active : QuestTaskState.Pending);
+            MarkDirty();
             QuestStarted?.Invoke(quest);
         }
 
         private void Complete(Quest quest)
         {
             quest.SetState(QuestState.ReadyToAward);
+            MarkDirty();
             QuestCompleted?.Invoke(quest);
         }
 
         private void Award(Quest quest)
         {
             quest.SetState(QuestState.Awarded);
+            MarkDirty();
             // Reward grant + permanent effects are Этап 6 — here we only signal.
             QuestAwarded?.Invoke(quest);
             ForceActivateFromChain(quest);
@@ -417,7 +434,14 @@ namespace Game.Quest.Services
             quest.SetState(QuestState.Failed);
             foreach (var task in quest.TasksInternal)
                 if (!task.State.IsClosed()) task.SetState(QuestTaskState.Failed);
+            MarkDirty();
             QuestFailed?.Invoke(quest);
+        }
+
+        private void MarkDirty()
+        {
+            _dirty = true;
+            _save.MarkDirty();
         }
 
         // ----- change subscriptions -----
@@ -448,6 +472,94 @@ namespace Game.Quest.Services
         private void OnPhaseChanged(DayProgressState _) => Reevaluate();
 
         public void Dispose() => Unsubscribe();
+
+        // ----- persistence (load/merge + build) -----
+
+        /// <summary>Restores saved state onto the freshly built catalog. Silent: no events fire (terminal
+        /// states must not re-grant; restored Active/RTA progression is replayed by the later Reevaluate).</summary>
+        private void ApplySaved(SavedQuests dto)
+        {
+            if (dto == null) return;
+
+            if (dto.Failed != null)
+                foreach (var id in dto.Failed)
+                    if (_quests.TryGetValue(id, out var q)) RestoreTerminal(q, QuestState.Failed, QuestTaskState.Failed);
+
+            if (dto.Awarded != null)
+                foreach (var id in dto.Awarded)
+                    if (_quests.TryGetValue(id, out var q)) RestoreTerminal(q, QuestState.Awarded, QuestTaskState.Completed);
+
+            if (dto.Active != null)
+                foreach (var pair in dto.Active)
+                    if (_quests.TryGetValue(pair.Key, out var q)) RestoreActive(q, pair.Value);
+
+            // Safety: a partial save could leave an awarded quest's successor Pending — relink silently.
+            foreach (var quest in _quests.Values)
+            {
+                if (quest.State != QuestState.Awarded) continue;
+                foreach (var nextId in quest.NextQuestIds)
+                    if (_quests.TryGetValue(nextId, out var succ) && succ.State == QuestState.Pending)
+                        ActivateSilent(succ);
+            }
+        }
+
+        private static void RestoreTerminal(Quest quest, QuestState state, QuestTaskState taskState)
+        {
+            quest.SetState(state);
+            foreach (var task in quest.TasksInternal) task.SetState(taskState);
+        }
+
+        private static void RestoreActive(Quest quest, SavedQuest saved)
+        {
+            if (saved == null) return;
+            quest.SetState(saved.State);
+            if (saved.Tasks == null) return;
+            foreach (var task in quest.TasksInternal)
+                if (saved.Tasks.TryGetValue(task.Id, out var taskState))
+                {
+                    task.SetState(taskState);
+                    if (taskState == QuestTaskState.Active) task.RefreshProgress();
+                }
+        }
+
+        private static void ActivateSilent(Quest quest)
+        {
+            quest.SetState(QuestState.Active);
+            foreach (var task in quest.TasksInternal)
+                task.SetState(task.IsActivationMet() ? QuestTaskState.Active : QuestTaskState.Pending);
+        }
+
+        private SavedQuests BuildDto()
+        {
+            var dto = new SavedQuests
+            {
+                Active = new Dictionary<string, SavedQuest>(StringComparer.Ordinal),
+                Awarded = new List<string>(),
+                Failed = new List<string>()
+            };
+
+            foreach (var quest in _quests.Values)
+            {
+                switch (quest.State)
+                {
+                    case QuestState.Awarded:
+                        dto.Awarded.Add(quest.Id);
+                        break;
+                    case QuestState.Failed:
+                        dto.Failed.Add(quest.Id);
+                        break;
+                    case QuestState.Active:
+                    case QuestState.ReadyToAward:
+                        var tasks = new Dictionary<int, QuestTaskState>();
+                        foreach (var task in quest.TasksInternal) tasks[task.Id] = task.State;
+                        dto.Active[quest.Id] = new SavedQuest { State = quest.State, Tasks = tasks };
+                        break;
+                    // Pending: not persisted.
+                }
+            }
+
+            return dto;
+        }
 
         // ----- helpers -----
 

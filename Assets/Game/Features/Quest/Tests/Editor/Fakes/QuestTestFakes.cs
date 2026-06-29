@@ -5,6 +5,8 @@ using Cysharp.Threading.Tasks;
 using Game.Conditions.API;
 using Game.Conditions.Services;
 using Game.Configs;
+using Game.Quest.API;
+using Game.Quest.Services.Persistence;
 using Game.SalesStats.API;
 using Game.Configs.Models;
 using Newtonsoft.Json;
@@ -103,6 +105,43 @@ namespace Game.Quest.Tests.Editor.Fakes
             var tag = node.Value<string>("tag");
             if (tag != null && ByTag.TryGetValue(tag, out var condition)) return condition;
             return new NeverMetCondition("unmapped");
+        }
+    }
+
+    /// <summary>In-memory quest repository; clones on load/save to mimic serialization (decoupled refs).</summary>
+    public sealed class FakeQuestsRepository : IQuestsRepository
+    {
+        public SavedQuests Stored = new();
+        public int SaveCallCount { get; private set; }
+
+        public UniTask<SavedQuests> LoadAsync(CancellationToken ct) => UniTask.FromResult(Clone(Stored));
+
+        public UniTask SaveAsync(SavedQuests state, CancellationToken ct)
+        {
+            Stored = Clone(state);
+            SaveCallCount++;
+            return UniTask.CompletedTask;
+        }
+
+        private static SavedQuests Clone(SavedQuests s)
+        {
+            var dto = new SavedQuests
+            {
+                Awarded = new List<string>(),
+                Failed = new List<string>(),
+                Active = new Dictionary<string, SavedQuest>(StringComparer.Ordinal)
+            };
+            if (s?.Awarded != null) dto.Awarded.AddRange(s.Awarded);
+            if (s?.Failed != null) dto.Failed.AddRange(s.Failed);
+            if (s?.Active != null)
+                foreach (var kv in s.Active)
+                {
+                    var tasks = new Dictionary<int, QuestTaskState>();
+                    if (kv.Value?.Tasks != null)
+                        foreach (var t in kv.Value.Tasks) tasks[t.Key] = t.Value;
+                    dto.Active[kv.Key] = new SavedQuest { State = kv.Value?.State ?? QuestState.Active, Tasks = tasks };
+                }
+            return dto;
         }
     }
 
