@@ -34,25 +34,31 @@ namespace Book.Sell.Services
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
         {
             var requests = _configs.GetAll<RequestConfig>();
+            // Pre-loop random draw — kept here verbatim (consumes the random stream) even though the active
+            // block below is currently disabled; removing it would shift every subsequent draw.
             var activeIndices = PickActiveIndices(CustomerCount, ActiveCustomerCount, random);
             var customers = new List<Customer>(CustomerCount);
             var activeOrder = 0;
 
             for (var i = 0; i < CustomerCount; i++)
             {
-                var steps = new List<ICustomerStep> { new ApproachStep(RandomApproachDuration(tuning, random)) };
+                var index = i;
+                customers.Add(CustomerPlanBuilder.Build(
+                    $"cust_{index + 1}", tuning, random,
+                    buildMiddle: () =>
+                    {
+                        var middle = new List<ICustomerStep>();
 
-                var passiveAttempts = random.Range(MinPassiveAttempts, MaxPassiveAttempts + 1);
-                for (var p = 0; p < passiveAttempts; p++)
-                    steps.Add(new PassivePurchaseStep());
+                        var passiveAttempts = random.Range(MinPassiveAttempts, MaxPassiveAttempts + 1);
+                        for (var p = 0; p < passiveAttempts; p++)
+                            middle.Add(new PassivePurchaseStep());
 
-                /*if (activeIndices.Contains(i) && requests.Count > 0)
-                    steps.Add(new ActiveRequestStep(requests[activeOrder++ % requests.Count]));*/
+                        /*if (activeIndices.Contains(index) && requests.Count > 0)
+                            middle.Add(new ActiveRequestStep(requests[activeOrder++ % requests.Count]));*/
 
-                steps.Add(new CompletePurchaseStep());
-                steps.Add(new LeaveStep(RandomLeaveDuration(tuning, random)));
-
-                customers.Add(new Customer($"cust_{i + 1}", steps, _profiles.Create(setup, random)));
+                        return middle;
+                    },
+                    buildProfile: () => _profiles.Create(setup, random)));
             }
 
             return customers;
@@ -75,30 +81,6 @@ namespace Book.Sell.Services
             var result = new HashSet<int>();
             for (var i = 0; i < picks; i++) result.Add(indices[i]);
             return result;
-        }
-
-        private static float RandomApproachDuration(SalesTuning tuning, ISalesRandom random)
-            => RandomInRange(tuning.MinApproachDuration, tuning.MaxApproachDuration, random);
-
-        private static float RandomLeaveDuration(SalesTuning tuning, ISalesRandom random)
-            => RandomInRange(tuning.MinLeaveDuration, tuning.MaxLeaveDuration, random);
-
-        private static float RandomInRange(float min, float max, ISalesRandom random)
-        {
-            if (max < min)
-            {
-                var tmp = min;
-                min = max;
-                max = tmp;
-            }
-
-            if (max <= min) return min;
-
-            var roll = random.NextDouble();
-            if (roll < 0d) roll = 0d;
-            if (roll > 1d) roll = 1d;
-
-            return min + (float)(roll * (max - min));
         }
     }
 }

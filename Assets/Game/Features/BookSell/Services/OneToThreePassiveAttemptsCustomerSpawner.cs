@@ -22,46 +22,19 @@ namespace Book.Sell.Services
 
             for (var i = 0; i < count; i++)
             {
-                var steps = new List<ICustomerStep>
-                {
-                    new ApproachStep(RandomApproachDuration(tuning, random))
-                };
-
-                var passiveAttempts = random.Range(MinPassiveAttempts, MaxPassiveAttempts + 1);
-                for (var p = 0; p < passiveAttempts; p++)
-                    steps.Add(new PassivePurchaseStep());
-
-                steps.Add(new CompletePurchaseStep());
-                steps.Add(new LeaveStep(RandomLeaveDuration(tuning, random)));
-
-                customers.Add(new Customer($"passive_only_{i + 1}", steps));
+                customers.Add(CustomerPlanBuilder.Build(
+                    $"passive_only_{i + 1}", tuning, random,
+                    buildMiddle: () =>
+                    {
+                        var middle = new List<ICustomerStep>();
+                        var passiveAttempts = random.Range(MinPassiveAttempts, MaxPassiveAttempts + 1);
+                        for (var p = 0; p < passiveAttempts; p++)
+                            middle.Add(new PassivePurchaseStep());
+                        return middle;
+                    }));
             }
 
             return customers;
-        }
-
-        private static float RandomApproachDuration(SalesTuning tuning, ISalesRandom random)
-            => RandomInRange(tuning.MinApproachDuration, tuning.MaxApproachDuration, random);
-
-        private static float RandomLeaveDuration(SalesTuning tuning, ISalesRandom random)
-            => RandomInRange(tuning.MinLeaveDuration, tuning.MaxLeaveDuration, random);
-
-        private static float RandomInRange(float min, float max, ISalesRandom random)
-        {
-            if (max < min)
-            {
-                var tmp = min;
-                min = max;
-                max = tmp;
-            }
-
-            if (max <= min) return min;
-
-            var roll = random.NextDouble();
-            if (roll < 0d) roll = 0d;
-            if (roll > 1d) roll = 1d;
-
-            return min + (float)(roll * (max - min));
         }
     }
 }

@@ -18,40 +18,12 @@ namespace Book.Sell.Services
             var customers = new List<Customer>(CustomerCount);
             for (var i = 0; i < CustomerCount; i++)
             {
-                customers.Add(new Customer($"single_passive_{i + 1}", new ICustomerStep[]
-                {
-                    new ApproachStep(RandomApproachDuration(tuning, random)),
-                    new PassivePurchaseStep(),
-                    new CompletePurchaseStep(),
-                    new LeaveStep(RandomLeaveDuration(tuning, random))
-                }));
+                customers.Add(CustomerPlanBuilder.Build(
+                    $"single_passive_{i + 1}", tuning, random,
+                    buildMiddle: () => new ICustomerStep[] { new PassivePurchaseStep() }));
             }
 
             return customers;
-        }
-
-        private static float RandomApproachDuration(SalesTuning tuning, ISalesRandom random)
-            => RandomInRange(tuning.MinApproachDuration, tuning.MaxApproachDuration, random);
-
-        private static float RandomLeaveDuration(SalesTuning tuning, ISalesRandom random)
-            => RandomInRange(tuning.MinLeaveDuration, tuning.MaxLeaveDuration, random);
-
-        private static float RandomInRange(float min, float max, ISalesRandom random)
-        {
-            if (max < min)
-            {
-                var tmp = min;
-                min = max;
-                max = tmp;
-            }
-
-            if (max <= min) return min;
-
-            var roll = random.NextDouble();
-            if (roll < 0d) roll = 0d;
-            if (roll > 1d) roll = 1d;
-
-            return min + (float)(roll * (max - min));
         }
     }
 }

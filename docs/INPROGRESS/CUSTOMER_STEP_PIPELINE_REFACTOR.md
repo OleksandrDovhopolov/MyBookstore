@@ -34,6 +34,12 @@ Current runtime scenario spawners are useful for testing:
 - `FifteenCustomersSinglePassiveAttemptSpawner` - 15 customers, exactly 1 passive attempt each, no active requests. Used for the empty-shelf / zero-selected-books scenario.
 - `OneToThreePassiveAttemptsCustomerSpawner` - `BaseCustomers` customers, 1..3 passive attempts each, no active requests. Used for passive-only runtime testing with selected books.
 
+Implementation audit note, 2026-06-30:
+
+- `OneToThreePassiveAttemptsCustomerSpawner` currently does not match its name/documented intent. The implementation hardcodes 10 customers and generates 1..5 passive attempts; `BaseCustomers` is commented out. Before baseline tests or archetype extraction, decide whether to preserve the current implementation or restore the intended 1..3 / `BaseCustomers` behavior.
+- `DefaultCustomerSpawner` currently has its active-request block commented out, so it behaves as passive-only with 1..2 passive attempts. Treat this as an explicit decision point, not as a stable design signal to freeze accidentally.
+- Phase 0 must distinguish "current code behavior" from "intended scenario behavior"; otherwise the migration can faithfully preserve a drifted smoke-test setup.
+
 The problem is not that static plans are wrong. Static plans are useful for FTUE, story customers, and runtime test scenarios. The problem is that all customer composition currently lives in spawners, so every new behavior increases duplication and makes day/customer-specific behavior harder to express.
 
 ## Planned Growth
@@ -99,8 +105,14 @@ That logic can be forced into existing steps, but then `PassivePurchaseStep` bec
 - Reduce duplication in spawners.
 - Make the mandatory skeleton centralized: approach, middle, closing tail.
 - Support runtime step insertion without making individual steps know about unrelated systems.
-- Keep updated passive-failure semantics: a passive failure ends further passive purchase attempts for that visit, but may still continue into later non-passive middle steps before completion and leave.
+- Introduce updated passive-failure semantics as an explicit behavior change: a passive failure should end further passive purchase attempts for that visit, but may still continue into later non-passive middle steps before completion and leave.
 - Keep active recommendations, passive sales, decor actions, comments, and quests as composable behaviors.
+
+Current passive-failure behavior, 2026-06-30:
+
+- `PassivePurchaseStep` returns `StepStatus.CompletedAndLeave` on passive failure.
+- `Customer.AbandonRemainingPurchasesAndClose` skips the rest of the middle and jumps to the first `IClosingStep`.
+- Therefore today's behavior is: passive failure skips both later passive steps and later non-passive middle steps. The updated "skip later passive only" behavior is a future change, not a baseline fact.
 
 ## Non-goals
 
@@ -299,8 +311,9 @@ Pros:
 
 Cons:
 
-- Needs careful event timing. If `OnPassiveSale` fires inside `PassivePurchaseStep.Tick`, insertion must happen before `Customer.Advance`.
+- Needs careful event timing. If `OnPassiveSale` fires inside `PassivePurchaseStep.Tick`, insertion must happen before the current step eventually completes and advances.
 - Needs access to the customer plan, not only the customer state.
+- Needs an explicit integration point because `ISalesDaySink` is currently a single consumer path owned by the controller/view bridge.
 - Can become a "god object" if rules are not split by feature.
 
 Verdict: recommended for runtime-injected behavior, but design it as a coordinator of small feature rules, not one giant class.
@@ -309,7 +322,12 @@ Timing decision:
 
 - `CustomerDirector` should receive domain facts synchronously through the same path as `ISalesDaySink`, before `Customer.Advance`.
 - It should not depend on `ISalesDayController` C# events as the primary mechanism. Controller events are useful for UI and logs, but they add an unnecessary hop for plan mutation.
-- Example: `PassivePurchaseStep` emits `OnPassiveSale` before returning `StepStatus.Completed`. A director handling that fact can call `InsertNext(new CommentStep(...))`, and the inserted step becomes the next step when `Customer` advances in the same tick.
+- Current timing caveat: `PassivePurchaseStep` emits `OnPassiveSale` during `Sub.Commit`, then enters `Sub.SaleFeedback` and returns `StepStatus.Running` before it later completes. A director can still call `InsertNext(new CommentStep(...))`, but the inserted step becomes next only when the passive step finishes its feedback phase, not necessarily in the same tick.
+- Integration point must be designed before Phase 4. Options:
+  - make the sink multicast/composite so both controller presentation and director receive facts synchronously;
+  - wrap/decorate the existing `ISalesDaySink` with a director-aware sink;
+  - introduce a dedicated domain fact dispatcher used by steps, with controller and director as subscribers.
+- The director must be able to reach the mutable customer plan. Passing only `Customer` through the current sink is enough only if `Customer` exposes a controlled `Plan` API by Phase 3.
 
 Boundary rule:
 
@@ -518,10 +536,14 @@ No architecture change.
 
 - Keep current spawners.
 - Keep runtime scenario spawners.
+- Audit and decide current spawner drift before writing baseline tests:
+  - `OneToThreePassiveAttemptsCustomerSpawner`: preserve current 1..5 / 10 behavior, or restore intended 1..3 / `BaseCustomers`;
+  - `DefaultCustomerSpawner`: keep passive-only runtime behavior, or re-enable active requests.
 - Add/maintain tests around:
-  - passive failure blocks later passive purchase steps but still allows non-passive continuation,
+  - current passive failure behavior: passive failure skips the rest of the middle and jumps to closing;
   - complete purchase runs after prior passive sales,
   - active requests still hold the lock.
+- Do not write "passive failure allows later non-passive continuation" as a Phase 0 baseline test. That is target behavior for a later behavior-change step.
 
 ### Phase 1 - Extract `CustomerPlanBuilder`
 
@@ -553,6 +575,8 @@ Expected result:
 
 ### Phase 3 - Introduce `CustomerPlan`
 
+Phase 3a should be behavior-preserving.
+
 - Hide raw list/index traversal behind a plan object.
 - Move `SkipToClosing` out of `Customer`.
 - Add safe insertion APIs:
@@ -562,11 +586,22 @@ Expected result:
   - `InsertNext` puts a runtime step immediately after the current step.
   - `InsertBeforeClosing` never inserts after the first `IClosingStep`.
   - `SkipToClosing` skips injected middle steps as well as initially authored middle steps when a real closing abort is requested.
-  - passive failure never advances into another passive purchase step; if the next planned or injected step is an allowed non-passive step, it may still run before `CompletePurchaseStep`/`LeaveStep`.
+  - current passive failure behavior is preserved until the explicit semantics-change step.
+  - aborting the current step calls `Exit` on that current step, but does not call `Exit` on skipped steps that were never entered.
+  - `ForceCompleteCurrentStep` still forces the active/current step to exit and advance exactly as today.
 
 Expected result:
 
 - Runtime insertion becomes possible without exposing raw list mutation.
+
+Phase 3b can introduce the updated passive-failure semantics as an explicit behavior change.
+
+- Add a separate plan/customer API that means "block later passive purchase steps" rather than "skip to closing".
+- Keep `SkipToClosing` for real closing aborts.
+- Add before/after tests proving the new semantics:
+  - passive failure skips or disables later passive purchase steps;
+  - passive failure may continue into an allowed non-passive step such as `ActiveRequestStep`, `CommentStep`, or `DialogueStep`;
+  - a real closing abort still jumps to `CompletePurchaseStep`/`LeaveStep`.
 
 ### Phase 4 - Add first runtime-injected step
 
@@ -576,7 +611,8 @@ Use a small feature as proof:
 - Add `CustomerDirector` or a narrower `PassiveSaleCommentRule`.
 - Keep rule code-first.
 - Unit-test the rule with fake `ISalesRandom`; do not use `UnityEngine.Random`.
-- Unit-test event timing: `OnPassiveSale` -> director inserts `CommentStep` -> `Customer.Advance` enters the comment next.
+- Unit-test event timing with the current passive sale feedback phase: `OnPassiveSale` -> director inserts `CommentStep` -> passive step remains in sale feedback while running -> when it completes, `Customer.Advance` enters the comment next.
+- Decide and test the director/sink integration point before implementation. The current `ISalesDaySink` path is effectively single-consumer and does not by itself define how both controller presentation and director mutation receive the same fact.
 - Unit-test HUD ordering with completion/failure bubbles before wiring presentation broadly.
 
 Expected result:
@@ -611,14 +647,19 @@ New abstractions should have focused unit tests:
 - `ICustomerArchetype`
   - procedural archetypes generate the expected middle ranges;
   - scripted archetypes preserve exact authored order;
-  - runtime scenario archetypes match the current smoke spawners.
+  - runtime scenario archetypes match the agreed smoke-spawner behavior, after resolving the 1..3 vs 1..5 and `BaseCustomers` vs 10 drift.
 - `CustomerPlan`
   - advances like the current raw list;
   - inserts runtime middle steps in deterministic order;
   - protects the closing tail;
-  - skips injected middle steps on passive-failure abort.
+  - preserves current skip-to-closing behavior before Phase 3b;
+  - skips injected middle steps on real closing abort;
+  - calls `Exit` on the aborted current step, but not on skipped steps that were never entered;
+  - preserves `ForceCompleteCurrentStep` behavior: force current step complete, call `Exit`, then advance.
 - `CustomerDirector`
-  - handles facts synchronously before `Advance`;
+  - handles facts synchronously at the domain fact emission point;
+  - accounts for `PassivePurchaseStep` sale feedback timing before `Advance`;
+  - receives facts through the chosen sink/dispatcher integration without starving controller presentation;
   - uses `ISalesRandom`;
   - respects opt-out flags for FTUE/story customers if those flags are added.
 - Lock-holding steps
@@ -642,15 +683,28 @@ New abstractions should have focused unit tests:
 
 6. Does `CommentStep` receive fully prepared HUD text/payload, or should `CustomerContext` expose a read-only config lookup? Preliminary recommendation: prepared payload.
 
+7. Should `OneToThreePassiveAttemptsCustomerSpawner` preserve the current implementation (10 customers, 1..5 attempts) or restore the documented name/intent (`BaseCustomers`, 1..3 attempts)?
+
+8. Should `DefaultCustomerSpawner` remain passive-only for now, or should the commented active-request block be restored before baseline tests?
+
+9. What is the director integration point?
+   - multicast/composite `ISalesDaySink`;
+   - director-aware sink decorator;
+   - separate domain fact dispatcher.
+
+10. When updated passive-failure semantics are introduced, what is the exact API distinction between "skip to closing" and "block later passive purchase steps but continue non-passive middle"?
+
 ## Preliminary Recommendation
 
 Do not jump straight to a mutable runtime brain.
 
 Recommended next concrete work:
 
-1. Extract `CustomerPlanBuilder`.
-2. Convert the three real spawners to use it.
-3. Introduce code-first archetypes.
-4. Only then add mutable plan insertion for the first real dynamic feature, most likely probability-based `CommentStep` after passive sale.
+1. Resolve the current spawner drift and write baseline tests for the behavior that actually exists or is explicitly restored.
+2. Extract `CustomerPlanBuilder`.
+3. Convert the three real spawners to use it.
+4. Introduce code-first archetypes.
+5. Introduce `CustomerPlan` in a behavior-preserving pass, including `ForceCompleteCurrentStep` and `Exit` semantics.
+6. Only then add mutable plan insertion and the first real dynamic feature, most likely probability-based `CommentStep` after passive sale.
 
 This keeps the system simple now, reduces duplication immediately, and leaves a clean path for comments, decor actions, quests, FTUE, and story customers.

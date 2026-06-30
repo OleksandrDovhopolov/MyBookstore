@@ -28,50 +28,24 @@ namespace Book.Sell.Services
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
         {
             var requests = _configs.GetAll<RequestConfig>();
-            var count = random.Range(MinCustomers, MaxCustomers + 1);   // 3..5 inclusive
+            var count = random.Range(MinCustomers, MaxCustomers + 1);   // 3..5 inclusive (pre-loop draw)
             var customers = new List<Customer>(count);
 
             for (var i = 0; i < count; i++)
             {
-                var steps = new List<ICustomerStep>
-                {
-                    new ApproachStep(RandomApproachDuration(tuning, random))
-                };
-
-                if (requests.Count > 0)
-                    steps.Add(new ActiveRequestStep(requests[i % requests.Count]));
-
-                steps.Add(new CompletePurchaseStep());
-                steps.Add(new LeaveStep(RandomLeaveDuration(tuning, random)));
-
-                customers.Add(new Customer($"active_only_{i + 1}", steps));
+                var index = i;
+                customers.Add(CustomerPlanBuilder.Build(
+                    $"active_only_{index + 1}", tuning, random,
+                    buildMiddle: () =>
+                    {
+                        var middle = new List<ICustomerStep>();
+                        if (requests.Count > 0)
+                            middle.Add(new ActiveRequestStep(requests[index % requests.Count]));
+                        return middle;
+                    }));
             }
 
             return customers;
-        }
-
-        private static float RandomApproachDuration(SalesTuning tuning, ISalesRandom random)
-            => RandomInRange(tuning.MinApproachDuration, tuning.MaxApproachDuration, random);
-
-        private static float RandomLeaveDuration(SalesTuning tuning, ISalesRandom random)
-            => RandomInRange(tuning.MinLeaveDuration, tuning.MaxLeaveDuration, random);
-
-        private static float RandomInRange(float min, float max, ISalesRandom random)
-        {
-            if (max < min)
-            {
-                var tmp = min;
-                min = max;
-                max = tmp;
-            }
-
-            if (max <= min) return min;
-
-            var roll = random.NextDouble();
-            if (roll < 0d) roll = 0d;
-            if (roll > 1d) roll = 1d;
-
-            return min + (float)(roll * (max - min));
         }
     }
 }

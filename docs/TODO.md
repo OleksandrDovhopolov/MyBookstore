@@ -31,6 +31,16 @@
   current-location seam (по образцу GAME-4 для продаж). Condition-factory `visitLocation` («посетить N раз») и
   `locationIs` («находиться на локации сейчас»). Разблокирует слайс «An Empire of Sand».
 
+- [ ] **GAME-6. Runtime `DialogStep` через `CustomerDirector`.**
+  Добавить `DialogStep` как middle-step покупателя, который можно вставлять во время визита через
+  `CustomerDirector.InsertNext(...)` по доменному событию: passive sale, active resolve, decor interaction,
+  quest trigger и т.п. Реализовывать **после** появления `CustomerPlan` и `CustomerDirector`, чтобы диалог
+  не зашивался в `PassivePurchaseStep`, spawner или случайные feature-step'ы. Для заранее известных
+  сюжетных/квестовых покупателей использовать `ScriptedSequenceArchetype` / `QuestCharacterArchetype`:
+  `ApproachStep -> DialogStep -> QuestStep -> CompletePurchaseStep -> LeaveStep`. Для runtime-диалога
+  использовать тот же `DialogStep`, но вставлять его через director. `DialogStep` должен держать interaction
+  lock по паттерну `ActiveRequestStep`, ждать завершения dialogue UI и освобождать lock на `Exit`.
+
 ---
 
 ## 🛠️ Инфраструктура
