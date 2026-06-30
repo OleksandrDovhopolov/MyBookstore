@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Book.Sell.API;
 using Book.Sell.Domain;
+using Book.Sell.Services.Director;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
@@ -26,6 +27,7 @@ namespace Book.Sell.Services
         private readonly SalesTuning _tuning;
         private readonly ISalesShelfBuilder _shelfBuilder;
         private readonly ISalesDayCommitService _commitService;
+        private readonly ICustomerDirector _director;
 
         private SalesShelf _shelf = new();
         private SalesDayResult _result = new();
@@ -51,7 +53,8 @@ namespace Book.Sell.Services
             IInteractionLock interactionLock,
             SalesTuning tuning,
             ISalesShelfBuilder shelfBuilder = null,
-            ISalesDayCommitService commitService = null)
+            ISalesDayCommitService commitService = null,
+            ICustomerDirector director = null)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _setupProvider = setupProvider ?? throw new ArgumentNullException(nameof(setupProvider));
@@ -63,6 +66,7 @@ namespace Book.Sell.Services
             _tuning = tuning ?? throw new ArgumentNullException(nameof(tuning));
             _shelfBuilder = shelfBuilder ?? new SalesShelfBuilder(_configs);
             _commitService = commitService;   // optional in tests; in prod injected via DI
+            _director = director;             // optional in existing tests
         }
 
         public int Day { get; private set; }
@@ -78,6 +82,7 @@ namespace Book.Sell.Services
         public event Action<PassiveSaleEvent> PassiveSaleHappened;
         public event Action<Customer, RecommendationResult> CustomerRecommendationResolved;
         public event Action<Customer, PassiveSaleEvent> CustomerPassiveSaleHappened;
+        public event Action<Customer, CustomerCommentPayload> CustomerCommented;
         public event Action<Customer, string> CustomerPassivePurchaseFailed;
         public event Action<Customer, int> CustomerPurchaseCompleted;
         public event Action<Customer> CustomerThoughtBubbleHidden;
@@ -303,7 +308,12 @@ namespace Book.Sell.Services
 
             Debug.Log($"{LogPrefix} passive sale: book={saleEvent.BookId}, gold={saleEvent.GoldEarned}, " +
                       $"location={LocationId}");
+
+            _director?.OnPassiveSale(customer, saleEvent, _ctx);
         }
+
+        void ISalesDaySink.OnCustomerComment(Customer customer, CustomerCommentPayload payload)
+            => CustomerCommented?.Invoke(customer, payload);
 
         void ISalesDaySink.OnActiveRequestStarted(Customer customer, RequestConfig request)
         {

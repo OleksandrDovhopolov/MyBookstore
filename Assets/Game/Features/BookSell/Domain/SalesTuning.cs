@@ -28,6 +28,13 @@ namespace Book.Sell.Domain
         /// before the next attempt's "Choosing" overwrites it.</summary>
         public float PassiveSaleFeedbackDuration { get; set; } = 1.0f;
 
+        /// <summary>Chance to insert an optional comment step after a successful passive sale. A value of
+        /// 0 keeps the old seeded random stream because no roll is consumed.</summary>
+        public float PassiveSaleCommentChance { get; set; } = 0.35f;
+
+        /// <summary>Seconds an inserted customer comment is held before the plan advances.</summary>
+        public float CommentDuration { get; set; } = 1.2f;
+
         /// <summary>Seconds the purchase-completion animation holds (CompletePurchaseStep) when the
         /// customer bought at least one book passively.</summary>
         public float CompletePurchaseDuration { get; set; } = 1.5f;

@@ -21,6 +21,9 @@ namespace Book.Sell.Domain
         //TODO should rename to OnPassivePurchase ? 
         void OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent);
 
+        /// <summary>A short optional customer comment inserted as its own middle step.</summary>
+        void OnCustomerComment(Customer customer, CustomerCommentPayload payload);
+
         /// <summary>A passive purchase attempt ended without a sale. <paramref name="genre"/> is the genre
         /// the attempt was made on (may be null for the legacy model, which can't attribute a miss).</summary>
         void OnPassivePurchaseFailed(Customer customer, string genre);

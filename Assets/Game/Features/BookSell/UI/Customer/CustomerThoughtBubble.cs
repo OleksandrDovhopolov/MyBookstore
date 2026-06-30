@@ -58,12 +58,12 @@ namespace Book.Sell.UI.Customer
             // One visual channel per state:
             //   Thinking      -> animated dots   (browse / _browseDuration)
             //   ThinkingNext  -> book icon       (locked / _passiveCommitDelay)
-            //   Comment       -> success icon
+            //   Comment       -> success icon when text is empty, otherwise comment text
             //   PassiveSaleFailed -> fail icon
             //   everything else   -> State text label
             var showDots = state == CustomerThoughtState.Thinking;
             var showBook = state == CustomerThoughtState.ThinkingNext;   // locked book OR fail's genre phase
-            var showSuccess = state == CustomerThoughtState.Comment;
+            var showSuccess = state == CustomerThoughtState.Comment && string.IsNullOrEmpty(payload.CommentText);
             var showFail = state == CustomerThoughtState.PassiveSaleFailed;
             var showText = !showDots && !showBook && !showSuccess && !showFail;
 

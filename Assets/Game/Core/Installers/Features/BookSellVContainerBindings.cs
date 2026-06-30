@@ -1,6 +1,7 @@
 using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
+using Book.Sell.Services.Director;
 using Book.Sell.UI;
 using Book.Sell.UI.Customer;
 using UnityEngine;
@@ -70,6 +71,10 @@ namespace Game.Bootstrap
 
             // Customer simulation.
             builder.Register<IInteractionLock, InteractionLock>(Lifetime.Singleton);
+            builder.Register<IPassiveSaleRule, PassiveSaleCommentRule>(Lifetime.Singleton);
+            builder.Register<ICustomerDirector>(
+                resolver => new CustomerDirector(new[] { resolver.Resolve<IPassiveSaleRule>() }),
+                Lifetime.Singleton);
             
             
             //builder.Register<ICustomerSpawner, DefaultCustomerSpawner>(Lifetime.Singleton);
