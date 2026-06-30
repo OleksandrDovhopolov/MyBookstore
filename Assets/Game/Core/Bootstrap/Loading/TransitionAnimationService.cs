@@ -13,6 +13,7 @@ namespace Game.Bootstrap.Loading
         private const string LogPrefix = "[Transition]";
 
         [SerializeField] private GameObject _cover;
+        [SerializeField] private GameObject _spinner;
 
         public UniTask PlayCoverAsync(CancellationToken ct)
         {
@@ -20,10 +21,11 @@ namespace Game.Bootstrap.Loading
             return UniTask.CompletedTask;
         }
 
-        public UniTask PlayRevealAsync(CancellationToken ct)
+        public async UniTask PlayRevealAsync(CancellationToken ct)
         {
+            await UniTask.WaitForSeconds(1f, cancellationToken: ct);
             SetCoverActive(false);
-            return UniTask.CompletedTask;
+            //return UniTask.CompletedTask;
         }
 
         private void SetCoverActive(bool active)
@@ -34,7 +36,14 @@ namespace Game.Bootstrap.Loading
                 return;
             }
 
+            if (_spinner == null)
+            {
+                Debug.LogWarning($"{LogPrefix} _spinner is not assigned on the UIManagerCanvas prefab — skipping.");
+                return;
+            }
+
             _cover.SetActive(active);
+            _spinner.SetActive(active);
         }
     }
 }

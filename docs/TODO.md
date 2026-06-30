@@ -86,6 +86,18 @@
   групп при входе в локацию (`WarmupGroupByLabelAsync`). Рычаг для масштабирования контента и
   контент-паков без апдейта билда.
 
+- [ ] **INF-8. `CharactersService` не форс-конструируется → save-hook не регистрируется.**
+  `CharactersService` — `ISaveHook` (регистрируется через `save.RegisterHook(this)` в конструкторе) и
+  ожидает, что его `AfterLoadAsync` отработает после загрузки сейва (как `QuestsService`). Но в
+  `CharactersVContainerBindings` он зарегистрирован только `.As<ICharactersService>()` и **нигде не
+  резолвится при старте**: в `Bootstrap.Construct` форс-конструируется `IQuestsService`, но не
+  `ICharactersService` ([Bootstrap.cs](Assets/Game/Core/Installers/Bootstrap/Bootstrap.cs)). Итог:
+  конструктор `CharactersService` не вызывается до `SaveDataLoadOperation`, hook не регистрируется,
+  `AfterLoadAsync` не выполняется → каталог персонажей/леджер не строятся, Journal пуст, discovery не
+  реконсайлится. Фикс: форс-конструировать `ICharactersService` на бутстрапе (добавить в список
+  `[Inject]`-полей `Bootstrap.Construct`, рядом с `IQuestsService`), как другие `ISaveHook`-сервисы.
+  Не связано с текущим DI-циклом `ConditionParser ↔ LocationUnlockService` — это отдельный баг загрузки.
+
 ---
 
 ## 🎨 Визуал
