@@ -12,7 +12,8 @@ namespace Infrastructure.Audio
         public static AudioRoot Create()
         {
             var rootObject = new GameObject("[AudioRoot]");
-            DontDestroyOnLoad(rootObject);
+            if (Application.isPlaying)
+                DontDestroyOnLoad(rootObject);
 
             var root = rootObject.AddComponent<AudioRoot>();
             root.MusicSource = CreateSource(rootObject.transform, "Music", loop: true);
