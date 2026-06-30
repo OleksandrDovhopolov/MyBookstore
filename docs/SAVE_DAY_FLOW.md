@@ -154,29 +154,28 @@ than a pure restart.
 
 ## FTUE Impact
 
-`ftue.welcome_completed` should only mean that the player finished the welcome
-letter window. It should not mean that the first location tutorial is complete.
+The FTUE save keys (`ftue.applied`, `ftue.welcome_completed`,
+`ftue.first_location_tutorial`) and what each means are documented in
+[FTUE.md](FTUE.md) ("Save state"). Only the day-flow consequence is noted here:
 
-The first location tutorial needs its own persisted state if it must not be
-skipped after a quit. A future module could track one current tutorial/day run,
-for example:
-
-```text
-ftue.first_location_tutorial
-  Status: NotStarted | InProgress | Completed
-  Day
-  LocationId
-  CurrentStepId
-  CompletedStepIds
-```
-
-If the tutorial includes authored customer/dialogue content, it should either
-restore from this state or intentionally restart the tutorial from a safe
-checkpoint. The current save/day flow does not provide that guarantee.
+`ftue.first_location_tutorial` exists so the scripted first-location tutorial is
+**not skipped after a quit**. If that tutorial includes authored
+customer/dialogue content, on relaunch it must either restore from this state or
+restart from a safe checkpoint. The current save/day flow does not yet provide
+that guarantee — the persisted-state seam is in place, the restore logic is
+backlog (see "Considered Alternative" and "Snapshot/restore variant" below for
+how a mid-day/tutorial resume could work).
 
 ---
 
 ## Chosen Direction
+
+> **Status: shipped.** This is no longer a proposal — the transactional sales day
+> is implemented by `SalesDayCommitService` (`ISalesDayCommitService`, registered in
+> `BookSellVContainerBindings`) and the entry-fee order is implemented in
+> `PreparationWindow.ConfirmAsync`. The sections below read as design rationale; the
+> behaviour they describe is the current behaviour. One decision was **reversed** in
+> implementation — see "Commit Ownership" on `CompletedDays`.
 
 Use a transactional sales day with defer-commit.
 
@@ -272,11 +271,11 @@ Why sunk and not refunded:
 New data + seam:
 
 - `LocationConfig.EntryCost` (gold; separate from `UnlockCost`).
-- `DecorConfig.EntryCostDelta` — **neutral, signed** contribution (allow negative
+- `DecorConfig.VisitCostDelta` — **neutral, signed** contribution (allow negative
   so decor can also discount; do not frame decor purely as a penalty). Do not
   conflate with a future `DailyUpkeepCost` mechanic.
 - `ILocationEntryCostCalculator` (mirror of `IDecorModifierProvider`):
-  `cost = EntryCost(location) + Σ EntryCostDelta(activeDecor)`, clamped ≥ 0.
+  `cost = EntryCost(location) + Σ VisitCostDelta(activeDecor)`, clamped ≥ 0.
   Active decor from `IDecorPlacementService.GetActiveDecorIds()`.
 - Preparation UI shows the cost breakdown (base + decor) and disables Confirm
   when the player cannot afford it.
@@ -312,13 +311,18 @@ clean reopen.
 - `Results` = output committed (sales effects applied).
 - `Exit mid-day` = discard the buffer; entry fee stays spent; replay the day.
 
-Keep `CompletedDays` ownership with **Results**, not the sales commit.
-`ResultsSummarySessionService.LoadAndApplyAsync` marks the day completed today
-([ResultsSummarySessionService.cs:64](Assets/Game/Features/DayCycle/Results/Services/ResultsSummarySessionService.cs)).
-The sales commit should atomically apply sales effects + `last_day_result`;
-Results then idempotently marks the day completed. Moving `CompletedDays` into
-the sales commit changes that contract (Sales would drive DayCycle phase) and
-must be a separate, explicit decision with updated Results tests.
+**Implemented decision (reversed from the original proposal):** `CompletedDays`
+is marked **inside the sales commit** by `SalesDayCommitService`, atomically with
+the gold/inventory/shelf/stats/`last_day_result` writes, under the same
+`BlockAutosave` lease. This guarantees a day can never be replayed for a second
+grant — the completion marker and the economic effects land in one save window.
+`ResultsSummarySessionService` then reads `last_day_result` and applies the
+Results-layer rewards (reputation/summary) idempotently on top.
+
+> The original proposal here was the opposite — "keep `CompletedDays` with
+> Results, not the sales commit." It was reversed because folding the completion
+> marker into the atomic sales commit is what makes the exactly-once guarantee
+> hold across a crash between the two services. Kept for the record.
 
 ### Dedicated Commit Service (do not bloat `SalesDayController`)
 
@@ -336,6 +340,11 @@ After defer-commit it means "apply the accumulated effects". Prefer
 `Collect...` + `ApplyAsync`, or fold both into one `SalesDayEffectsBuffer`.
 
 ### Idempotency
+
+> Scope: this is the **Sales-commit** guard (gold / inventory / shelf / stats /
+> `last_day_result`). The **Results-layer** guard (`results.applied_rewards`,
+> reputation/summary) is separate and lives in `docs/CORE_LOOP.md` §4.2. Different
+> effects, complementary guards — not two designs for the same thing.
 
 `CompletedDays` alone is not enough. If the commit fails after
 `resources.AddAsync` but before `last_day_result`, a retry could double-grant
@@ -389,43 +398,11 @@ choice effects.
 
 ## Development
 
-`CUSTOMER_STEP_PIPELINE_REFACTOR.md` describes the likely direction for future
-customer composition:
-
-```text
-Spawner -> Archetype -> CustomerPlanBuilder -> CustomerPlan -> CustomerDirector
-```
-
-Responsibilities:
-
-- `ICustomerSpawner` chooses which customers appear in the day.
-- `ICustomerArchetype` builds the initial middle steps for a customer.
-- `CustomerPlanBuilder` adds the mandatory skeleton:
-  `Approach -> middle -> CompletePurchase -> Leave`.
-- `CustomerPlan` owns traversal, insertion, and skip-to-closing behavior.
-- `CustomerDirector` observes in-visit facts and injects optional runtime steps.
-
-The director is the proposed place for behavior that is not known when the
-customer is spawned:
-
-- after a passive sale, insert `CommentStep`;
-- if decor is active, insert `DrinkCoffeeStep`;
-- if an in-visit quest condition is met, insert `QuestStep`;
-- if an active recommendation resolves in a special way, insert a follow-up
-  beat.
-
-Spawn-time and runtime composition should stay separate:
-
-- if a quest/story customer is known before the visit, use
-  `QuestCharacterArchetype` or `ScriptedSequenceArchetype`;
-- if the step depends on something that happened during the visit, inject it
-  through `CustomerDirector`.
-
-The director should receive domain facts synchronously before
-`Customer.Advance`, not through `SalesDayController` UI/log events. Example:
-`PassivePurchaseStep` emits `OnPassiveSale`, the director calls
-`customer.Plan.InsertNext(new CommentStep(...))`, and the inserted comment
-becomes the next step when the customer advances.
+The future customer-composition pipeline (`Spawner → Archetype →
+CustomerPlanBuilder → CustomerPlan → CustomerDirector`) is owned by
+[INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md](INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md)
+— not restated here. The only save-relevant angle is how a future mid-day resume
+would interact with that pipeline, below.
 
 ### Impact on Current Day Resume
 
