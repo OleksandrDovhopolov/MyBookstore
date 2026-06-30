@@ -120,8 +120,7 @@
 | ⏳ [NEWSPAPER_REWARDS_SPRITE_SERVICE.md](INPROGRESS/NEWSPAPER_REWARDS_SPRITE_SERVICE.md) | [ADDRESSABLES.md](SERVICES/ADDRESSABLES.md) |
 | ⏳ [DI_ARCHITECTURE_WINDOWFACTORY.md](INPROGRESS/DI_ARCHITECTURE_WINDOWFACTORY.md) | [UI_SYSTEM.md](SERVICES/UI_SYSTEM.md) |
 | ⏳ [TRANSITION_ANIMATION_SERVICE.md](INPROGRESS/TRANSITION_ANIMATION_SERVICE.md) | [UI_SYSTEM.md](SERVICES/UI_SYSTEM.md), [GameFlowLoop.md](GameFlowLoop.md) |
-| ⏳ [world-hud-bubbles-system.md](INPROGRESS/world-hud-bubbles-system.md) | — |
-| ⏳ [WorldHud-Phase-0-Editor-Setup.md](INPROGRESS/WorldHud-Phase-0-Editor-Setup.md) | — |
+| ⏳ [WORLD_HUD.md](INPROGRESS/WORLD_HUD.md) | World-space баблы над объектами сцены: Phase 0 editor-setup (MyBookstore) + reference-система Bubbles (heroes). [ADDRESSABLES.md](SERVICES/ADDRESSABLES.md) |
 | ⏳ [ART_BRIEF_PROMENADE_V1.md](INPROGRESS/ART_BRIEF_PROMENADE_V1.md) | — |
 
 ---
