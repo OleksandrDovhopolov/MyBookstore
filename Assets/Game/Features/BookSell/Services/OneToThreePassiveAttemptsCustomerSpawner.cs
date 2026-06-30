@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Book.Sell.Domain;
-using Book.Sell.Domain.Steps;
 
 namespace Book.Sell.Services
 {
@@ -18,20 +17,14 @@ namespace Book.Sell.Services
         {
             //var count = tuning.BaseCustomers;
             var count = 10;
+            var archetype = new PassiveAttemptsArchetype(MinPassiveAttempts, MaxPassiveAttempts);
             var customers = new List<Customer>(count);
 
             for (var i = 0; i < count; i++)
             {
                 customers.Add(CustomerPlanBuilder.Build(
                     $"passive_only_{i + 1}", tuning, random,
-                    buildMiddle: () =>
-                    {
-                        var middle = new List<ICustomerStep>();
-                        var passiveAttempts = random.Range(MinPassiveAttempts, MaxPassiveAttempts + 1);
-                        for (var p = 0; p < passiveAttempts; p++)
-                            middle.Add(new PassivePurchaseStep());
-                        return middle;
-                    }));
+                    buildMiddle: () => archetype.BuildMiddle(setup, tuning, random)));
             }
 
             return customers;

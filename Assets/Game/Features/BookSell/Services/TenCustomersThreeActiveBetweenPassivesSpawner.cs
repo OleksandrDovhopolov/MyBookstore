@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Book.Sell.Domain;
-using Book.Sell.Domain.Steps;
 using Game.Configs;
 using Game.Configs.Models;
 
@@ -39,25 +38,18 @@ namespace Book.Sell.Services
 
             for (var i = 0; i < CustomerCount; i++)
             {
-                var index = i;
+                // requests.Count > 0 guard preserves the original behavior: an active-index customer with no
+                // requests falls back to the passive archetype (never an ActiveRequestStep(null)).
+                ICustomerArchetype archetype;
+                if (activeIndices.Contains(i) && requests.Count > 0)
+                    archetype = new PassiveActivePassiveArchetype(
+                        requests[activeOrder++ % requests.Count], MinPassiveAttempts, MaxPassiveAttempts);
+                else
+                    archetype = new PassiveAttemptsArchetype(MinPassiveAttempts, MaxPassiveAttempts);
+
                 customers.Add(CustomerPlanBuilder.Build(
-                    $"cust_{index + 1}", tuning, random,
-                    buildMiddle: () =>
-                    {
-                        var middle = new List<ICustomerStep>();
-
-                        var passiveAttempts = random.Range(MinPassiveAttempts, MaxPassiveAttempts + 1);
-                        for (var p = 0; p < passiveAttempts; p++)
-                            middle.Add(new PassivePurchaseStep());
-
-                        if (activeIndices.Contains(index) && requests.Count > 0)
-                        {
-                            middle.Add(new ActiveRequestStep(requests[activeOrder++ % requests.Count]));
-                            middle.Add(new PassivePurchaseStep());   // one more passive after the active recommendation
-                        }
-
-                        return middle;
-                    }));
+                    $"cust_{i + 1}", tuning, random,
+                    buildMiddle: () => archetype.BuildMiddle(setup, tuning, random)));
             }
 
             return customers;

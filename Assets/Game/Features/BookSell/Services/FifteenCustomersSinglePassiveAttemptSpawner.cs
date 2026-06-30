@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Book.Sell.Domain;
-using Book.Sell.Domain.Steps;
 
 namespace Book.Sell.Services
 {
@@ -15,12 +14,14 @@ namespace Book.Sell.Services
 
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
         {
+            // (1,1) builds exactly one passive without consuming random — parity with the original inline plan.
+            var archetype = new PassiveAttemptsArchetype(1, 1);
             var customers = new List<Customer>(CustomerCount);
             for (var i = 0; i < CustomerCount; i++)
             {
                 customers.Add(CustomerPlanBuilder.Build(
                     $"single_passive_{i + 1}", tuning, random,
-                    buildMiddle: () => new ICustomerStep[] { new PassivePurchaseStep() }));
+                    buildMiddle: () => archetype.BuildMiddle(setup, tuning, random)));
             }
 
             return customers;

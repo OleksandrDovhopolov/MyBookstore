@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Book.Sell.Domain;
-using Book.Sell.Domain.Steps;
 using Game.Configs;
 using Game.Configs.Models;
 
@@ -33,16 +32,11 @@ namespace Book.Sell.Services
 
             for (var i = 0; i < count; i++)
             {
-                var index = i;
+                var request = requests.Count > 0 ? requests[i % requests.Count] : null;
+                var archetype = new ActiveRequestArchetype(request);
                 customers.Add(CustomerPlanBuilder.Build(
-                    $"active_only_{index + 1}", tuning, random,
-                    buildMiddle: () =>
-                    {
-                        var middle = new List<ICustomerStep>();
-                        if (requests.Count > 0)
-                            middle.Add(new ActiveRequestStep(requests[index % requests.Count]));
-                        return middle;
-                    }));
+                    $"active_only_{i + 1}", tuning, random,
+                    buildMiddle: () => archetype.BuildMiddle(setup, tuning, random)));
             }
 
             return customers;
