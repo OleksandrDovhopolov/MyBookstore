@@ -13,10 +13,16 @@ namespace Game.DayCycle.Conditions
     {
         public const string TypeId = "weatherIs";
 
-        private readonly ICurrentDayWeatherProvider _provider;
+        // Provider is acquired LAZILY (Func), not in the ctor. Building the IConditionFactory collection
+        // happens while IConditionParser is being constructed; eagerly pulling ICurrentDayWeatherProvider here
+        // would chain CurrentDayWeatherProvider → IMorningContextResolver → ILocationUnlockService →
+        // IConditionParser and form a DI cycle (VContainer Lazy self-reference). The provider is resolved on the
+        // first Create() — at runtime, after the graph is built — so the chain is safe (parser already exists).
+        private readonly Func<ICurrentDayWeatherProvider> _providerFactory;
+        private ICurrentDayWeatherProvider _provider;
 
-        public WeatherIsConditionFactory(ICurrentDayWeatherProvider provider)
-            => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+        public WeatherIsConditionFactory(Func<ICurrentDayWeatherProvider> providerFactory)
+            => _providerFactory = providerFactory ?? throw new ArgumentNullException(nameof(providerFactory));
 
         public string Type => TypeId;
 
@@ -26,6 +32,8 @@ namespace Game.DayCycle.Conditions
             if (string.IsNullOrEmpty(weatherId))
                 throw new ArgumentException("missing 'weatherId'");
 
+            _provider ??= _providerFactory() ?? throw new InvalidOperationException(
+                "ICurrentDayWeatherProvider resolved to null for the weatherIs factory.");
             return new WeatherIsCondition(_provider, weatherId);
         }
     }

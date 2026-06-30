@@ -14,7 +14,7 @@ namespace Game.DayCycle.Tests.Editor
         private static IConditionParser Parser(FakeCurrentDayWeatherProvider weather)
             => new ConditionParser(new ConditionFactoryRegistry(new IConditionFactory[]
             {
-                new WeatherIsConditionFactory(weather)
+                new WeatherIsConditionFactory(() => weather)
             }));
 
         private static JObject Node(string weatherId)

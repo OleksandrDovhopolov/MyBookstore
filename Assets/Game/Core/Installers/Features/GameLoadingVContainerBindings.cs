@@ -17,9 +17,8 @@ namespace Game.Bootstrap
             // используется SceneTransitionOperation и gameplay-кодом (GameFlowService).
             builder.Register<ISceneTransitionService, SceneTransitionService>(Lifetime.Singleton);
 
-            // ITransitionAnimationService (cover/reveal) регистрируется в RegisterUiSystem —
-            // реальная реализация SpriteTransitionAnimationService живёт на UIManagerCanvas prefab.
-            // NoOpTransitionAnimationService остаётся как fallback для тестов/без-UI контекстов.
+            // ITransitionAnimationService is registered by RegisterUiSystem: the UI canvas owns the
+            // transition MonoBehaviour, and DeferredTransitionAnimationService routes calls to it.
         }
     }
 }

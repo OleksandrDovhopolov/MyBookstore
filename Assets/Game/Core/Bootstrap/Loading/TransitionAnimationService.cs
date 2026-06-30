@@ -11,6 +11,7 @@ namespace Game.Bootstrap.Loading
     public sealed class TransitionAnimationService : MonoBehaviour, ITransitionAnimationService
     {
         private const string LogPrefix = "[Transition]";
+        private const float MinAnimationDuration = 2f;
 
         [SerializeField] private GameObject _cover;
         [SerializeField] private GameObject _spinner;
@@ -23,9 +24,8 @@ namespace Game.Bootstrap.Loading
 
         public async UniTask PlayRevealAsync(CancellationToken ct)
         {
-            await UniTask.WaitForSeconds(1f, cancellationToken: ct);
+            await UniTask.WaitForSeconds(MinAnimationDuration, cancellationToken: ct);
             SetCoverActive(false);
-            //return UniTask.CompletedTask;
         }
 
         private void SetCoverActive(bool active)

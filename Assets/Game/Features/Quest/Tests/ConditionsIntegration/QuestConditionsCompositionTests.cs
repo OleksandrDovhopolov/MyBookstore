@@ -41,7 +41,7 @@ namespace Game.Quest.Tests.ConditionsIntegration
             {
                 new HaveItemConditionFactory(inv),
                 new DecorEquippedConditionFactory(decor),
-                new WeatherIsConditionFactory(weather)
+                new WeatherIsConditionFactory(() => weather)
             });
             return new ConditionParser(registry).Parse(Tree);
         }
