@@ -8,6 +8,7 @@ namespace Infrastructure.Audio
         private const string MusicKey = "audio.music";
         private const string SfxKey = "audio.sfx";
         private const string UiKey = "audio.ui";
+        private const string AmbientKey = "audio.ambient";
 
         public AudioVolumeSettings Load()
         {
@@ -16,7 +17,8 @@ namespace Infrastructure.Audio
                 Master = PlayerPrefs.GetFloat(MasterKey, 1f),
                 Music = PlayerPrefs.GetFloat(MusicKey, 1f),
                 Sfx = PlayerPrefs.GetFloat(SfxKey, 1f),
-                Ui = PlayerPrefs.GetFloat(UiKey, 1f)
+                Ui = PlayerPrefs.GetFloat(UiKey, 1f),
+                Ambient = PlayerPrefs.GetFloat(AmbientKey, 1f)
             };
         }
 
@@ -27,6 +29,7 @@ namespace Infrastructure.Audio
             PlayerPrefs.SetFloat(MusicKey, Mathf.Clamp01(settings.Music));
             PlayerPrefs.SetFloat(SfxKey, Mathf.Clamp01(settings.Sfx));
             PlayerPrefs.SetFloat(UiKey, Mathf.Clamp01(settings.Ui));
+            PlayerPrefs.SetFloat(AmbientKey, Mathf.Clamp01(settings.Ambient));
             PlayerPrefs.Save();
         }
     }

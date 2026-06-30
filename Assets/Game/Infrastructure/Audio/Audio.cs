@@ -1,3 +1,5 @@
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Infrastructure.Audio
@@ -38,6 +40,12 @@ namespace Infrastructure.Audio
             _service?.PlayMusic(clip, loop, restartIfSame);
         }
 
+        public static UniTask PlayMusicAsync(
+            string address, CancellationToken ct, bool loop = true, bool restartIfSame = false)
+        {
+            return _service?.PlayMusicAsync(address, ct, loop, restartIfSame) ?? UniTask.CompletedTask;
+        }
+
         public static void StopMusic()
         {
             _service?.StopMusic();
@@ -46,6 +54,11 @@ namespace Infrastructure.Audio
         public static void PlaySfx(AudioClip clip, float volumeScale = 1f)
         {
             _service?.PlaySfx(clip, volumeScale);
+        }
+
+        public static UniTask PlaySfxAsync(string address, CancellationToken ct, float volumeScale = 1f)
+        {
+            return _service?.PlaySfxAsync(address, ct, volumeScale) ?? UniTask.CompletedTask;
         }
 
         public static void PlaySfxAt(AudioClip clip, Vector3 position, float volumeScale = 1f)
@@ -58,6 +71,27 @@ namespace Infrastructure.Audio
             _service?.PlayUi(clip, volumeScale);
         }
 
+        public static UniTask PlayUiAsync(string address, CancellationToken ct, float volumeScale = 1f)
+        {
+            return _service?.PlayUiAsync(address, ct, volumeScale) ?? UniTask.CompletedTask;
+        }
+
+        public static void PlayAmbient(AudioClip clip, bool loop = true, bool restartIfSame = false)
+        {
+            _service?.PlayAmbient(clip, loop, restartIfSame);
+        }
+
+        public static UniTask PlayAmbientAsync(
+            string address, CancellationToken ct, bool loop = true, bool restartIfSame = false)
+        {
+            return _service?.PlayAmbientAsync(address, ct, loop, restartIfSame) ?? UniTask.CompletedTask;
+        }
+
+        public static void StopAmbient()
+        {
+            _service?.StopAmbient();
+        }
+
         public static void StopSfx()
         {
             _service?.StopSfx();
@@ -66,6 +100,11 @@ namespace Infrastructure.Audio
         public static void StopAll()
         {
             _service?.StopAll();
+        }
+
+        public static void ReleaseCachedClips()
+        {
+            _service?.ReleaseCachedClips();
         }
 
         public static void SetMuted(bool muted)

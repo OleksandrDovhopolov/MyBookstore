@@ -39,6 +39,7 @@ namespace Game.Bootstrap
             // Audio: infrastructure-level Unity Audio wrapper. Gameplay features depend on IAudioService,
             // not on AudioSource/AudioRoot details.
             builder.Register<IAudioSettingsStore, PlayerPrefsAudioSettingsStore>(Lifetime.Singleton);
+            builder.Register<IAudioClipLoader, AddressablesAudioClipLoader>(Lifetime.Singleton);
             builder.Register<IAudioService, AudioService>(Lifetime.Singleton);
 
             // TODO: Auth token provider

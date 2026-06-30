@@ -7,6 +7,7 @@ namespace Infrastructure.Audio
         public AudioSource MusicSource { get; private set; }
         public AudioSource SfxSource { get; private set; }
         public AudioSource UiSource { get; private set; }
+        public AudioSource AmbientSource { get; private set; }
 
         public static AudioRoot Create()
         {
@@ -17,6 +18,7 @@ namespace Infrastructure.Audio
             root.MusicSource = CreateSource(rootObject.transform, "Music", loop: true);
             root.SfxSource = CreateSource(rootObject.transform, "Sfx", loop: false);
             root.UiSource = CreateSource(rootObject.transform, "Ui", loop: false);
+            root.AmbientSource = CreateSource(rootObject.transform, "Ambient", loop: true);
 
             return root;
         }

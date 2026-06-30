@@ -10,6 +10,7 @@ namespace Infrastructure.Audio
         [Range(0f, 1f)] public float Music = 1f;
         [Range(0f, 1f)] public float Sfx = 1f;
         [Range(0f, 1f)] public float Ui = 1f;
+        [Range(0f, 1f)] public float Ambient = 1f;
 
         public AudioVolumeSettings Clone()
         {
@@ -18,7 +19,8 @@ namespace Infrastructure.Audio
                 Master = Master,
                 Music = Music,
                 Sfx = Sfx,
-                Ui = Ui
+                Ui = Ui,
+                Ambient = Ambient
             };
         }
     }
