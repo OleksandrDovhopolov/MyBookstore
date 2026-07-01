@@ -14,14 +14,16 @@
         "Game.Conditions.API",
         "Infrastructure",
         "Unity.TextMeshPro",
-        "Game.Core.UI"
+        "Game.Core.UI",
+        "DOTween.Modules"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "Newtonsoft.Json.dll"
+        "Newtonsoft.Json.dll",
+        "DOTween.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],
