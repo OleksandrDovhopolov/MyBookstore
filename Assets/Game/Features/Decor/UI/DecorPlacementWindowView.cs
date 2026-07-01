@@ -1,5 +1,4 @@
 using Game.UI;
-using TMPro;
 using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
@@ -30,23 +29,11 @@ namespace Game.Decor.UI
         [SerializeField] private Button _replaceButton; // MVP: visible but disabled
         [SerializeField] private Button _removeButton;
 
-        [Header("Info popup")]
-        [SerializeField] private GameObject _infoPopupRoot;
-        [SerializeField] private Image _infoIcon;
-        [SerializeField] private TextMeshProUGUI _infoNameLabel;
-        [SerializeField] private TextMeshProUGUI _infoBonusesLabel;
-        [SerializeField] private TextMeshProUGUI _infoDescriptionLabel;
-        [SerializeField] private Button _infoCloseButton;
-
         [Header("Footer")]
         [SerializeField] private Button _closeButton;
 
         [Header("Audio")]
         [SerializeField] private AudioClip _placeClip;
-
-        [Header("Colors")]
-        [SerializeField] private Color _positiveColor = new(0.2f, 0.8f, 0.2f);
-        [SerializeField] private Color _negativeColor = new(0.9f, 0.25f, 0.25f);
 
         public RectTransform RoomImageRect => _roomImageRect;
         public DecorSlotAnchorView[] SlotAnchors => _slotAnchors;
@@ -58,18 +45,8 @@ namespace Game.Decor.UI
         public Button ReplaceButton => _replaceButton;
         public Button RemoveButton => _removeButton;
 
-        public GameObject InfoPopupRoot => _infoPopupRoot;
-        public Image InfoIcon => _infoIcon;
-        public TextMeshProUGUI InfoNameLabel => _infoNameLabel;
-        public TextMeshProUGUI InfoBonusesLabel => _infoBonusesLabel;
-        public TextMeshProUGUI InfoDescriptionLabel => _infoDescriptionLabel;
-        public Button InfoCloseButton => _infoCloseButton;
-
         public Button CloseButton => _closeButton;
 
         public AudioClip PlaceClip => _placeClip;
-
-        public Color PositiveColor => _positiveColor;
-        public Color NegativeColor => _negativeColor;
     }
 }
