@@ -6,6 +6,7 @@ using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
+using Game.Decor.UI;
 using Game.Location.UI;
 using Game.LocationUnlock.API;
 using Game.Newspaper.UI;
@@ -34,6 +35,8 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
     private IDisposable _salesGoldSubscription;
     private IDisposable _genreBookCountsSubscription;
     private IDisposable _buttonsInteractableSubscription;
+
+    private readonly HashSet<IWindowController> _panelHideOwners = new();
     
     private ISubscriber<GameplaySalesGoldChanged> _salesGoldSubscriber;
     private ISubscriber<GameplayGenreBookCountsChanged> _genreBookCountsSubscriber;
@@ -71,6 +74,9 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
     {
         if (View.StartDayButton != null)
             View.StartDayButton.onClick.AddListener(OnStartGameClicked);
+
+        if (View.DecorButton != null)
+            View.DecorButton.onClick.AddListener(OnDecorButtonClicked);
 
         _buttonsInteractableSubscription = _buttonsInteractableSubscriber.Subscribe(
             e => SetSceneButtonsInteractable(e.Interactable));
@@ -168,6 +174,13 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
 
         if (View != null && View.StartDayButton != null)
             View.StartDayButton.onClick.RemoveAllListeners();
+
+        if (View != null && View.DecorButton != null)
+            View.DecorButton.onClick.RemoveListener(OnDecorButtonClicked);
+
+        foreach (var owner in _panelHideOwners)
+            owner.Closed -= OnPanelHidingWindowClosed;
+        _panelHideOwners.Clear();
 
         if (_dayProgress != null)
             _dayProgress.PhaseChanged -= OnDayPhaseChanged;
@@ -282,6 +295,50 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         }
 
         return null;
+    }
+
+    private void OnDecorButtonClicked() => ShowWindowWithPanelsHiddenAsync<DecorPlacementWindow>().Forget();
+
+    private async UniTaskVoid ShowWindowWithPanelsHiddenAsync<TWindow>(WindowArgs args = null)
+        where TWindow : class, IWindowController, new()
+    {
+        try
+        {
+            await View.HideAnimatedPanelsAsync();
+
+            var window = await UIManager.ShowAsync<TWindow>(args, View.destroyCancellationToken);
+            if (window == null)
+            {
+                ShowPanelsIfNoOwnersLeft();
+                return;
+            }
+
+            _panelHideOwners.Add(window);
+            window.Closed += OnPanelHidingWindowClosed;
+        }
+        catch (OperationCanceledException)
+        {
+            ShowPanelsIfNoOwnersLeft();
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[GameplaySceneController] Failed to open {typeof(TWindow).Name}: {e}");
+            ShowPanelsIfNoOwnersLeft();
+        }
+    }
+
+    private void OnPanelHidingWindowClosed(IWindowController controller)
+    {
+        controller.Closed -= OnPanelHidingWindowClosed;
+        _panelHideOwners.Remove(controller);
+        ShowPanelsIfNoOwnersLeft();
+    }
+
+    private void ShowPanelsIfNoOwnersLeft()
+    {
+        // Re-show is not gating anything, so fire-and-forget the animation.
+        if (_panelHideOwners.Count == 0)
+            View.ShowAnimatedPanelsAsync().Forget();
     }
 
     private void OnPreparationWindowClosed(IWindowController controller)
