@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.Configs;
 using Game.Configs.Remote;
+using Game.Decor;
 using Game.Ftue.Services;
 using Game.Inventory.API;
 using Game.Inventory.Services;
@@ -62,12 +63,16 @@ namespace Game.Bootstrap
 
         // Injected to force construction (and therefore ISaveHook self-registration) before
         // SaveDataLoadOperation runs LoadAsync. We never invoke methods on these fields directly.
+        // NOTE: IDecorPlacementService is here for exactly this reason — it registers its save
+        // hook lazily in its constructor, so without eager construction AfterLoadAsync never fires
+        // and saved decor placement is lost on subsequent launches (was a documented P1 bug).
         // ReSharper disable NotAccessedField.Local
         private IInventoryService _inventory;
         private IResourcesService _resources;
         private IProgressionService _progression;
         private ILocationUnlockService _locationUnlock;
         private IQuestsService _quests;
+        private IDecorPlacementService _decorPlacement;
         // ReSharper restore NotAccessedField.Local
 
         // NOT GetCancellationTokenOnDestroy(): the boot GameObject is destroyed during
@@ -92,7 +97,8 @@ namespace Game.Bootstrap
             IResourcesService resources,
             IProgressionService progression,
             ILocationUnlockService locationUnlock,
-            IQuestsService quests)
+            IQuestsService quests,
+            IDecorPlacementService decorPlacement)
         {
             _orchestrator = orchestrator;
             _catalog = catalog;
@@ -108,6 +114,7 @@ namespace Game.Bootstrap
             _progression = progression;
             _locationUnlock = locationUnlock;
             _quests = quests;
+            _decorPlacement = decorPlacement;
         }
 
         private void Awake()
