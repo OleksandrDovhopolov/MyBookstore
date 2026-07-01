@@ -1,8 +1,56 @@
 # Customer Step Pipeline Refactor
 
-> Status: draft / design analysis.  
-> Date: 2026-06-20.  
-> Scope: documentation only. No runtime refactor is planned in this document.
+> Status: implemented through Phase 4 / current iteration closed.
+> Date: 2026-06-20.
+> Last updated: 2026-06-30.
+> Scope: migration record + future roadmap. Phases 1-4 are implemented in runtime code; later phases are separate iterations.
+
+## Current Implementation Snapshot
+
+Implemented in the current iteration:
+
+1. `CustomerPlanBuilder`
+   - Centralizes the mandatory skeleton: `ApproachStep -> middle -> CompletePurchaseStep -> LeaveStep`.
+   - Preserves the existing `ISalesRandom` order by using builder delegates: approach draw, middle draws, leave draw, then profile draw.
+   - Existing production spawners now provide only middle composition.
+
+2. Code-first archetypes
+   - Added `ICustomerArchetype`.
+   - Added reusable middle builders:
+     - `PassiveAttemptsArchetype`;
+     - `ActiveRequestArchetype`;
+     - `PassiveActivePassiveArchetype`.
+   - Spawners remain day-composition policies and keep their existing pre-loop random draws.
+   - Current spawner drift is intentionally preserved for behavior parity, including `OneToThreePassiveAttemptsCustomerSpawner` using 1..5 attempts / 10 customers and `TenCustomersThreeActiveAfterPassiveSpawner` preserving its legacy random draw even while active insertion is disabled.
+
+3. `CustomerPlan`
+   - `Customer` delegates plan traversal and mutation to `CustomerPlan`.
+   - `CustomerPlan` owns current index, `Advance`, `SkipToClosing`, `Finish`, `InsertNext`, and `InsertBeforeClosing`.
+   - Runtime insertion is safe during the current step tick.
+   - `InsertNext` is FIFO across repeated calls before the next advance.
+   - Insertion is rejected once the plan is done or the closing tail has started.
+   - Passive-failure behavior is unchanged: passive miss still aborts the rest of the middle and skips to closing.
+
+4. First runtime-injected step: passive-sale comment
+   - Added `CustomerCommentPayload`.
+   - Added `CommentStep` as a middle step that emits `OnCustomerComment` and holds for `SalesTuning.CommentDuration`.
+   - Added `ICustomerDirector`, `CustomerDirector`, `IPassiveSaleRule`, and `PassiveSaleCommentRule`.
+   - `SalesDayController` calls the director after the existing passive-sale result accumulation and presentation events.
+   - Added `SalesTuning.PassiveSaleCommentChance` and `SalesTuning.CommentDuration`.
+   - `PassiveSaleCommentChance <= 0` does not consume random and preserves the old seeded stream.
+   - `PassiveSaleCommentChance >= 1` inserts without an unnecessary random roll.
+   - HUD wiring is additive: the existing bought-book feedback remains, and the injected comment reuses the customer bubble as a later comment state.
+
+Verification added:
+
+- Builder, archetype, plan, director, comment-step, and integration EditMode tests.
+- Test coverage includes random-order preservation, insertion timing through passive sale feedback, closing-tail protection, `ForceCompleteCurrentStep`, abort `Exit` behavior, and `chance = 0` stream preservation.
+
+Current stopping point:
+
+- The runtime-injected `CommentStep` path is the completed proof of the architecture.
+- No more customer-pipeline behavior will be added in this iteration.
+- Decor actions, quest/dialogue steps, passive-failure semantic changes, config-driven scripts, and richer comment text authoring are deferred to separate future iterations.
 
 ## Context
 
@@ -545,7 +593,7 @@ No architecture change.
   - active requests still hold the lock.
 - Do not write "passive failure allows later non-passive continuation" as a Phase 0 baseline test. That is target behavior for a later behavior-change step.
 
-### Phase 1 - Extract `CustomerPlanBuilder`
+### Phase 1 - Extract `CustomerPlanBuilder` — implemented
 
 Behavior-preserving cleanup.
 
@@ -559,7 +607,7 @@ Expected result:
 - Safer future changes to mandatory skeleton.
 - Runtime scenario spawners remain easy to read.
 
-### Phase 2 - Introduce code-first archetypes
+### Phase 2 - Introduce code-first archetypes — implemented
 
 - Add `ICustomerArchetype`.
 - Convert:
@@ -573,7 +621,7 @@ Expected result:
 - Spawners choose who appears.
 - Archetypes describe what a customer initially does.
 
-### Phase 3 - Introduce `CustomerPlan`
+### Phase 3 - Introduce `CustomerPlan` — implemented
 
 Phase 3a should be behavior-preserving.
 
@@ -594,7 +642,7 @@ Expected result:
 
 - Runtime insertion becomes possible without exposing raw list mutation.
 
-Phase 3b can introduce the updated passive-failure semantics as an explicit behavior change.
+Phase 3b can introduce the updated passive-failure semantics as an explicit behavior change. This was not implemented in the current iteration.
 
 - Add a separate plan/customer API that means "block later passive purchase steps" rather than "skip to closing".
 - Keep `SkipToClosing` for real closing aborts.
@@ -603,7 +651,7 @@ Phase 3b can introduce the updated passive-failure semantics as an explicit beha
   - passive failure may continue into an allowed non-passive step such as `ActiveRequestStep`, `CommentStep`, or `DialogueStep`;
   - a real closing abort still jumps to `CompletePurchaseStep`/`LeaveStep`.
 
-### Phase 4 - Add first runtime-injected step
+### Phase 4 - Add first runtime-injected step — implemented
 
 Use a small feature as proof:
 
@@ -620,13 +668,13 @@ Expected result:
 - Proves event timing and insertion semantics.
 - Avoids designing an abstract system without a concrete use case.
 
-### Phase 5 - Decor and quest steps
+### Phase 5 - Decor and quest steps — future iteration
 
 - Add decor action step only when a decor item actually needs it.
 - Add quest/interaction step when a quest flow exists.
 - Extract shared lock-holding helper only after `ActiveRequestStep` has a real sibling.
 
-### Phase 6 - Data-driven authoring
+### Phase 6 - Data-driven authoring — future iteration
 
 Once step vocabulary stabilizes:
 
@@ -681,30 +729,190 @@ New abstractions should have focused unit tests:
 
 5. If mid-day save is added later, do we serialize the current plan including injected steps, or restart the sales day?
 
-6. Does `CommentStep` receive fully prepared HUD text/payload, or should `CustomerContext` expose a read-only config lookup? Preliminary recommendation: prepared payload.
+6. Does `CommentStep` receive fully prepared HUD text/payload, or should `CustomerContext` expose a read-only config lookup?
+   - Current iteration decision: `CommentStep` receives `CustomerCommentPayload` and does not resolve configs. Rich authored comment text remains future work.
 
 7. Should `OneToThreePassiveAttemptsCustomerSpawner` preserve the current implementation (10 customers, 1..5 attempts) or restore the documented name/intent (`BaseCustomers`, 1..3 attempts)?
 
 8. Should `DefaultCustomerSpawner` remain passive-only for now, or should the commented active-request block be restored before baseline tests?
 
 9. What is the director integration point?
-   - multicast/composite `ISalesDaySink`;
-   - director-aware sink decorator;
-   - separate domain fact dispatcher.
+   - Current iteration decision: `SalesDayController` remains the `ISalesDaySink` implementation and calls `ICustomerDirector` synchronously from `OnPassiveSale`, after the existing passive-sale result/presentation events.
+   - Multicast/composite sink or a dedicated domain fact dispatcher can still be revisited if more rule families make the controller path too busy.
 
 10. When updated passive-failure semantics are introduced, what is the exact API distinction between "skip to closing" and "block later passive purchase steps but continue non-passive middle"?
 
-## Preliminary Recommendation
+## Current Iteration Closeout
 
-Do not jump straight to a mutable runtime brain.
+The recommended path through `CustomerPlanBuilder`, code-first archetypes, `CustomerPlan`, `CustomerDirector`, and the first runtime-injected `CommentStep` has been completed.
 
-Recommended next concrete work:
+The current iteration intentionally stops here. The system now has a tested runtime insertion seam, but it does not yet expand into more feature rules.
 
-1. Resolve the current spawner drift and write baseline tests for the behavior that actually exists or is explicitly restored.
-2. Extract `CustomerPlanBuilder`.
-3. Convert the three real spawners to use it.
-4. Introduce code-first archetypes.
-5. Introduce `CustomerPlan` in a behavior-preserving pass, including `ForceCompleteCurrentStep` and `Exit` semantics.
-6. Only then add mutable plan insertion and the first real dynamic feature, most likely probability-based `CommentStep` after passive sale.
+Future iterations can choose one focused next slice.
 
-This keeps the system simple now, reduces duplication immediately, and leaves a clean path for comments, decor actions, quests, FTUE, and story customers.
+### Candidate A - `DialogStep` / quest interaction
+
+Goal:
+
+- Let a customer start a dialogue during the visit, either from a scripted archetype or from a runtime director rule.
+- Support the first quest/customer flow where a known customer arrives, talks immediately, and may then start or progress a quest.
+
+Recommended shape:
+
+```text
+Scripted / known before spawn:
+ApproachStep -> DialogStep -> QuestStep/QuestStartStep -> CompletePurchaseStep -> LeaveStep
+
+Runtime / discovered during visit:
+Passive sale / active resolve / decor interaction -> CustomerDirector.InsertNext(DialogStep)
+```
+
+Implementation notes:
+
+- `DialogStep` should be a middle step, not part of `ApproachStep`, `PassivePurchaseStep`, or the spawner.
+- It likely needs the same interaction-lock pattern as `ActiveRequestStep`: acquire lock, open dialogue UI, wait for external completion, release on `Exit`.
+- Do not introduce a shared `LockHoldingStep` until there are at least two real lock-holding steps (`ActiveRequestStep` plus `DialogStep`/`QuestStep`) and the common mechanics are clear.
+- Dialogue resolution should have its own channel, not reuse active recommendation APIs such as `RecommendBook` / `SkipCurrentRequest`.
+- For FTUE/story flows, add an opt-out flag or scripted archetype behavior so random director insertions do not interrupt authored sequences unless explicitly allowed.
+
+Minimum done:
+
+- A scripted customer can run `DialogStep` immediately after approach.
+- A director rule can insert `DialogStep` after a domain fact.
+- The day pauses while dialogue owns the lock.
+- `Exit` always releases the lock.
+- EditMode tests cover acquire/hold/release, external completion, and insertion order.
+
+### Candidate B - Decor action step
+
+Goal:
+
+- Let active decor create optional customer behavior, for example a coffee machine causing a customer to pause and show "Drinking coffee".
+
+Recommended shape:
+
+```text
+CustomerDirector rule:
+if decor is active and chance/eligibility passes:
+    customer.InsertBeforeClosing(new DrinkCoffeeStep(...))
+```
+
+Implementation notes:
+
+- Start with one concrete step such as `DrinkCoffeeStep`; avoid a generic decor action framework until there are multiple decor behaviors.
+- Decor action should be separate from decor modifying passive sale chance. Sale chance belongs in resolver/calculator paths; visible customer actions belong in director-injected steps.
+- Use `ctx.ActiveDecorIds` and `ctx.Random` only. Do not use `UnityEngine.Random`.
+- Decide whether decor action is inserted after a sale, before closing, or at a step boundary. `InsertBeforeClosing` is safest for a first version because it avoids interrupting current purchase feedback.
+- Add a small cooldown/budget only when a second decor/comment rule creates real stacking pressure.
+
+Minimum done:
+
+- A customer with eligible decor can run the decor step before closing.
+- No decor -> no inserted step.
+- Chance `0` preserves the old random stream.
+- HUD shows a clear decor-action state.
+- Tests cover insertion before closing and no insertion once closing has started.
+
+### Candidate C - Rich comment authoring
+
+Goal:
+
+- Replace the current simple `CustomerCommentPayload` fallback text with authored comment lines, text keys, and later localization.
+
+Recommended shape:
+
+```text
+PassiveSaleCommentRule
+  -> resolves a comment line/key from sale context
+  -> creates CustomerCommentPayload(bookId, genre, textKey)
+  -> CommentStep emits payload
+  -> view resolves text/key for display
+```
+
+Implementation notes:
+
+- Keep `CommentStep` simple. It should hold and emit a prepared payload, not query configs itself.
+- Add comment-line configs only when the content shape is known: genre-based lines, book-specific lines, location-specific lines, character/personality variants, etc.
+- If localization is not ready, store raw keys/ids and let the view display fallback text.
+- Avoid coupling comments to passive purchase internals. The rule/director should compose the payload from the emitted `PassiveSaleEvent`.
+- Consider repeat protection later: do not show the same line too often during one day.
+
+Minimum done:
+
+- Comment text can be authored outside `PassiveSaleCommentRule`.
+- Payload carries enough data for the view: `bookId`, `genre`, and `textKey` or resolved text.
+- Existing simple comments still work if no authored line is found.
+- Tests cover fallback behavior and deterministic selection with `ISalesRandom`.
+
+### Candidate D - Passive-failure semantic change
+
+Goal:
+
+- Change passive miss behavior from "abort all remaining middle and skip to closing" to "block later passive purchase attempts, but allow non-passive middle steps to continue".
+
+Current behavior:
+
+```text
+Passive miss -> CompletedAndLeave -> SkipToClosing
+```
+
+Target behavior:
+
+```text
+Passive miss -> no more passive purchase attempts this visit
+             -> allowed non-passive middle may still run
+             -> then CompletePurchaseStep / LeaveStep
+```
+
+Implementation notes:
+
+- This is a behavior change, not a refactor. Keep it separate from builder/archetype/plan/director cleanup.
+- Add a distinct API from `SkipToClosing`, for example "skip later passive steps" or "mark passive purchases closed".
+- Define what counts as passive: likely `PassivePurchaseStep` only at first, not `CommentStep`, `DialogStep`, `ActiveRequestStep`, or decor steps.
+- Preserve true abort-to-closing for real closing aborts and missing-reservation edge cases if needed.
+- Revisit HUD ordering: passive failure bubble, completion bubble, comment/dialogue/decor bubble, and leaving bubble can compete.
+
+Minimum done:
+
+- A passive miss skips later `PassivePurchaseStep`s.
+- A passive miss can continue into `ActiveRequestStep`, `CommentStep`, `DialogStep`, or decor step when already planned/inserted.
+- Real aborts still go to closing.
+- Tests explicitly compare old vs new semantics so the behavior change is visible.
+
+### Candidate E - Data-driven archetypes / scripted sequences
+
+Goal:
+
+- Move stable customer scripts and archetypes from C# construction to configs or ScriptableObjects once the step vocabulary has settled.
+
+Recommended shape:
+
+```text
+CustomerScriptConfig:
+  - Approach is implicit
+  - Step entries:
+      PassiveAttempt
+      Comment(textKey)
+      Dialog(dialogId)
+      Quest(questId)
+      DecorAction(actionId)
+  - Closing tail is implicit
+
+StepFactory:
+  config entry -> ICustomerStep
+```
+
+Implementation notes:
+
+- Do not start here until `DialogStep`, quest/dialogue resolution, and any first decor action are clear.
+- Keep `CustomerPlanBuilder` responsible for mandatory approach/closing skeleton.
+- Add validation: unknown step ids, missing dialogue/quest ids, invalid ordering, lock-holding step conflicts.
+- Preserve code-first archetypes for tests and quick smoke scenarios.
+- Decide whether scripted sequences can receive director insertions, and add an explicit opt-out for FTUE/story sequences.
+
+Minimum done:
+
+- A scripted customer can be authored without C# changes.
+- Invalid scripts fail validation early with actionable errors.
+- Existing code-first archetypes still work.
+- Tests cover exact authored order and factory validation.
