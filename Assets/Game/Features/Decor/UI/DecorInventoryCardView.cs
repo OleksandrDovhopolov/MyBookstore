@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
 using Game.Newspaper.UI;
 using TMPro;
+using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,7 +17,7 @@ namespace Game.Decor.UI
     /// disabled — the decor is already in a slot). Info button is always active.
     /// The icon is loaded by decor id via <see cref="IUiSpriteProvider"/> (not IconAddress).
     /// </summary>
-    public sealed class DecorInventoryCardView : MonoBehaviour
+    public sealed class DecorInventoryCardView : MonoBehaviour, ICleanup
     {
         [Header("Content")]
         [SerializeField] private Image _icon;
@@ -60,6 +61,18 @@ namespace Game.Decor.UI
         public void SetSelected(bool selected)
         {
             if (_selectedHighlight != null) _selectedHighlight.SetActive(selected);
+        }
+
+        // Called by UIListPool when the card is (re)acquired or disabled — reset transient state so
+        // a pooled instance never shows stale data, selection, or an in-flight icon load.
+        public void Cleanup()
+        {
+            CancelIconLoad();
+            _onSelect = null;
+            _onInfo = null;
+            DecorId = null;
+            SetSelected(false);
+            if (_icon != null) _icon.sprite = null;
         }
 
         private void LoadIcon(string decorId, IUiSpriteProvider sprites)

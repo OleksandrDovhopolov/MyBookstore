@@ -1,5 +1,6 @@
 using Game.UI;
 using TMPro;
+using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,8 +20,8 @@ namespace Game.Decor.UI
         [SerializeField] private DecorSlotAnchorView[] _slotAnchors;
 
         [Header("Bottom inventory panel")]
-        [SerializeField] private Transform _inventoryItemsRoot;
-        [SerializeField] private DecorInventoryCardView _cardTemplate;
+        [Tooltip("Card prefab + parent are assigned on the pool in the inspector.")]
+        [SerializeField] private UIListPool<DecorInventoryCardView> _cardsPool = new();
 
         [Header("Selected-slot HUD")]
         [SerializeField] private GameObject _selectedSlotHud;
@@ -48,8 +49,7 @@ namespace Game.Decor.UI
         public RectTransform RoomImageRect => _roomImageRect;
         public DecorSlotAnchorView[] SlotAnchors => _slotAnchors;
 
-        public Transform InventoryItemsRoot => _inventoryItemsRoot;
-        public DecorInventoryCardView CardTemplate => _cardTemplate;
+        public UIListPool<DecorInventoryCardView> CardsPool => _cardsPool;
 
         public GameObject SelectedSlotHud => _selectedSlotHud;
         public Button ReplaceButton => _replaceButton;

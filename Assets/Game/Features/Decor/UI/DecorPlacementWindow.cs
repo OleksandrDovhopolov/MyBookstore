@@ -39,7 +39,6 @@ namespace Game.Decor.UI
         private IUiSpriteProvider _sprites;
 
         private CancellationTokenSource _cts;
-        private readonly List<DecorInventoryCardView> _cardPool = new();
         private readonly HashSet<string> _placedSlots = new();
 
         private State _state = State.Default;
@@ -63,7 +62,6 @@ namespace Game.Decor.UI
         {
             _cts = new CancellationTokenSource();
 
-            if (View.CardTemplate != null) View.CardTemplate.gameObject.SetActive(false);
             if (View.SelectedSlotHud != null) View.SelectedSlotHud.SetActive(false);
             if (View.InfoPopupRoot != null) View.InfoPopupRoot.SetActive(false);
             if (View.ReplaceButton != null) View.ReplaceButton.interactable = false; // MVP: no replace flow
@@ -167,18 +165,20 @@ namespace Game.Decor.UI
 
         private void RenderInventory()
         {
-            ClearCards();
+            var pool = View.CardsPool;
+            if (pool == null) return;
+
+            pool.DisableAll();
             var items = _inventory.GetByCategory(InventoryCategories.Decor);
             foreach (var item in items)
             {
                 var config = _configs.Get<DecorConfig>(item.ItemId);
                 if (config == null) continue;
-                var card = SpawnCard();
-                if (card == null) continue;
                 var placed = !string.IsNullOrEmpty(FindPlacedSlot(item.ItemId));
+                var card = pool.GetNext();
                 card.Bind(config, placed, _sprites, OnCardSelect, OnCardInfo);
-                card.gameObject.SetActive(true);
             }
+            pool.DisableNonActive();
         }
 
         private void OnCardSelect(string decorId)
@@ -193,8 +193,9 @@ namespace Game.Decor.UI
             _selectedDecorId = decorId;
             _state = State.DecorSelected;
 
-            foreach (var card in _cardPool)
-                if (card != null) card.SetSelected(card.DecorId == decorId);
+            if (View.CardsPool != null)
+                foreach (var card in View.CardsPool.ActiveElements())
+                    if (card != null) card.SetSelected(card.DecorId == decorId);
 
             HighlightCompatibleEmptySlots(decorId);
         }
@@ -269,8 +270,9 @@ namespace Game.Decor.UI
             _selectedDecorId = null;
             _state = State.Default;
 
-            foreach (var card in _cardPool)
-                if (card != null) card.SetSelected(false);
+            if (View.CardsPool != null)
+                foreach (var card in View.CardsPool.ActiveElements())
+                    if (card != null) card.SetSelected(false);
 
             if (View.SlotAnchors != null)
                 foreach (var anchor in View.SlotAnchors)
@@ -293,21 +295,6 @@ namespace Game.Decor.UI
                 if (string.Equals(entry.DecorId, decorId, System.StringComparison.OrdinalIgnoreCase))
                     return entry.SlotId;
             return null;
-        }
-
-        private DecorInventoryCardView SpawnCard()
-        {
-            if (View.CardTemplate == null || View.InventoryItemsRoot == null) return null;
-            var card = Object.Instantiate(View.CardTemplate, View.InventoryItemsRoot);
-            _cardPool.Add(card);
-            return card;
-        }
-
-        private void ClearCards()
-        {
-            for (var i = 0; i < _cardPool.Count; i++)
-                if (_cardPool[i] != null) Object.Destroy(_cardPool[i].gameObject);
-            _cardPool.Clear();
         }
 
         private static bool HasNegativeEffect(DecorConfig config)
