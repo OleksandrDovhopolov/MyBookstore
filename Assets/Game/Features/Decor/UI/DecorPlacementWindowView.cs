@@ -25,6 +25,8 @@ namespace Game.Decor.UI
 
         [Header("Selected-slot HUD")]
         [SerializeField] private GameObject _selectedSlotHud;
+        [Tooltip("Optional full-screen transparent button behind the HUD; clicking it closes the HUD.")]
+        [SerializeField] private Button _hudBackdrop;
         [SerializeField] private Button _replaceButton; // MVP: visible but disabled
         [SerializeField] private Button _removeButton;
 
@@ -52,6 +54,7 @@ namespace Game.Decor.UI
         public UIListPool<DecorInventoryCardView> CardsPool => _cardsPool;
 
         public GameObject SelectedSlotHud => _selectedSlotHud;
+        public Button HudBackdrop => _hudBackdrop;
         public Button ReplaceButton => _replaceButton;
         public Button RemoveButton => _removeButton;
 

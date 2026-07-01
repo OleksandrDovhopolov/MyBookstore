@@ -1,6 +1,10 @@
 # Decor Placement MVP — план реализации
 
-> Статус выполнения: **Шаг 0 сделан.** Шаги 1–10 — запланированы, выполняются позже.
+> Статус выполнения: **[CODE]-шаги 0–8 сделаны** (save-hook fix, `DecorSlotAnchorView`,
+> `DecorInventoryCardView`, переработка view+контроллера на decor-first, remove+HUD, info popup,
+> DoTween-анимации на анкере, звук place). Остаётся **[EDITOR]-работа**: Шаг 9 (авторинг префаба)
+> и Шаг 10 (спрайты/addressables по decor id), плюс опциональная проверка слот↔якорь в валидаторе.
+> Карточки инвентаря создаются через `UIListPool<DecorInventoryCardView>` (пул на view).
 > Исходная спецификация: `docs/INPROGRESS/DECOR_PLACEMENT_MVP_PROCESS.md`.
 
 ## Context

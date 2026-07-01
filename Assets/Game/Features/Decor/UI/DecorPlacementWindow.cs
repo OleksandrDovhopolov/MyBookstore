@@ -39,10 +39,12 @@ namespace Game.Decor.UI
         private IUiSpriteProvider _sprites;
 
         private CancellationTokenSource _cts;
+        private CancellationTokenSource _infoIconCts;
         private readonly HashSet<string> _placedSlots = new();
 
         private State _state = State.Default;
         private string _selectedDecorId;
+        private string _selectedSlotId; // placed slot whose HUD is open
         private bool _firstRender;
 
         [Inject]
@@ -67,6 +69,9 @@ namespace Game.Decor.UI
             if (View.ReplaceButton != null) View.ReplaceButton.interactable = false; // MVP: no replace flow
 
             if (View.CloseButton != null) View.CloseButton.onClick.AddListener(OnCloseClicked);
+            if (View.RemoveButton != null) View.RemoveButton.onClick.AddListener(OnRemoveClicked);
+            if (View.HudBackdrop != null) View.HudBackdrop.onClick.AddListener(HideHud);
+            if (View.InfoCloseButton != null) View.InfoCloseButton.onClick.AddListener(HideInfo);
 
             // Anchors are authored in the prefab and live as long as the view — subscribe once.
             if (View.SlotAnchors != null)
@@ -76,6 +81,7 @@ namespace Game.Decor.UI
                     if (anchor == null) continue;
                     var captured = anchor;
                     captured.OnMarkerClicked += () => OnMarkerClicked(captured);
+                    captured.OnPlacedClicked += () => OnPlacedClicked(captured);
                 }
             }
         }
@@ -95,6 +101,9 @@ namespace Game.Decor.UI
         {
             if (_placement != null) _placement.PlacementChanged -= Render;
             if (_inventory != null) _inventory.Changed -= OnInventoryChanged;
+
+            HideHud();
+            HideInfo();
         }
 
         protected override void OnDispose()
@@ -103,8 +112,13 @@ namespace Game.Decor.UI
             _cts?.Dispose();
             _cts = null;
 
+            CancelInfoIconLoad();
+
             if (View == null) return;
             if (View.CloseButton != null) View.CloseButton.onClick.RemoveListener(OnCloseClicked);
+            if (View.RemoveButton != null) View.RemoveButton.onClick.RemoveListener(OnRemoveClicked);
+            if (View.HudBackdrop != null) View.HudBackdrop.onClick.RemoveListener(HideHud);
+            if (View.InfoCloseButton != null) View.InfoCloseButton.onClick.RemoveListener(HideInfo);
         }
 
         private void OnInventoryChanged(InventoryChangeEvent _) => Render();
@@ -114,6 +128,7 @@ namespace Game.Decor.UI
             if (_placement == null || View == null) return;
             RenderSlots();
             RenderInventory();
+            HideHud();        // committed state changed → drop transient HUD
             ClearSelection(); // renders reflect committed state → drop transient selection
             _firstRender = false;
         }
@@ -183,6 +198,8 @@ namespace Game.Decor.UI
 
         private void OnCardSelect(string decorId)
         {
+            HideHud(); // selecting a card dismisses the placed-slot HUD
+
             // Repeat click on the selected card cancels the selection.
             if (_state == State.DecorSelected && _selectedDecorId == decorId)
             {
@@ -200,10 +217,109 @@ namespace Game.Decor.UI
             HighlightCompatibleEmptySlots(decorId);
         }
 
-        // Info popup is wired in a later step; kept as an explicit hook so the card can bind it.
-        private void OnCardInfo(string decorId)
+        // ── Info popup (read-only overlay; does not change selection or placement) ────────────
+        private void OnCardInfo(string decorId) => ShowInfo(decorId);
+
+        private void ShowInfo(string decorId)
         {
-            // TODO (Step 6): open info popup for decorId.
+            var config = _configs.Get<DecorConfig>(decorId);
+            if (config == null || View.InfoPopupRoot == null) return;
+
+            if (View.InfoNameLabel != null) View.InfoNameLabel.text = config.DisplayName ?? config.Id;
+            if (View.InfoBonusesLabel != null)
+                View.InfoBonusesLabel.text = DecorSlotRowView.FormatEffects(config, View.PositiveColor, View.NegativeColor);
+            if (View.InfoDescriptionLabel != null) View.InfoDescriptionLabel.text = BuildDescription(config);
+
+            if (View.InfoIcon != null)
+            {
+                View.InfoIcon.sprite = null;
+                LoadInfoIconAsync(decorId).Forget();
+            }
+
+            // Pure overlay: does NOT touch _state, so the underlying decor selection survives.
+            View.InfoPopupRoot.SetActive(true);
+        }
+
+        private void HideInfo()
+        {
+            CancelInfoIconLoad();
+            if (View != null && View.InfoPopupRoot != null) View.InfoPopupRoot.SetActive(false);
+        }
+
+        private async UniTaskVoid LoadInfoIconAsync(string decorId)
+        {
+            if (_sprites == null || View == null || View.InfoIcon == null) return;
+
+            CancelInfoIconLoad();
+            _infoIconCts = new CancellationTokenSource();
+            var ct = _infoIconCts.Token;
+            try
+            {
+                var sprite = await _sprites.GetSpriteAsync(decorId, ct);
+                if (ct.IsCancellationRequested) return;
+                if (View != null && View.InfoIcon != null) View.InfoIcon.sprite = sprite;
+            }
+            catch (System.OperationCanceledException) { }
+        }
+
+        private void CancelInfoIconLoad()
+        {
+            if (_infoIconCts == null) return;
+            _infoIconCts.Cancel();
+            _infoIconCts.Dispose();
+            _infoIconCts = null;
+        }
+
+        private static string BuildDescription(DecorConfig config)
+        {
+            var sb = new StringBuilder();
+            sb.Append($"{config.PositionType} · {config.Size} · {config.Rarity}");
+            if (config.AtmosphereTags != null && config.AtmosphereTags.Length > 0)
+                sb.Append('\n').Append(string.Join(", ", config.AtmosphereTags));
+            return sb.ToString();
+        }
+
+        // ── Placed-slot HUD (Remove; Replace is disabled for MVP) ─────────────────────────────
+        private void OnPlacedClicked(DecorSlotAnchorView anchor)
+        {
+            if (anchor == null || string.IsNullOrEmpty(_placement.GetDecorInSlot(anchor.SlotId))) return;
+
+            ClearSelection(); // switching to a placed slot drops any decor-card selection
+            ShowHud(anchor);
+        }
+
+        private void ShowHud(DecorSlotAnchorView anchor)
+        {
+            if (View.SelectedSlotHud == null) return;
+
+            if (View.SelectedSlotHud.transform is RectTransform hudRect)
+                hudRect.position = anchor.transform.position; // park the HUD next to the slot
+
+            View.SelectedSlotHud.SetActive(true);
+            anchor.SetSelectedOutline(true);
+            _selectedSlotId = anchor.SlotId;
+            _state = State.PlacedSlotSelected;
+        }
+
+        private void HideHud()
+        {
+            if (View != null && View.SelectedSlotHud != null) View.SelectedSlotHud.SetActive(false);
+
+            if (!string.IsNullOrEmpty(_selectedSlotId) && View != null && View.SlotAnchors != null)
+                foreach (var anchor in View.SlotAnchors)
+                    if (anchor != null && anchor.SlotId == _selectedSlotId) anchor.SetSelectedOutline(false);
+
+            _selectedSlotId = null;
+            if (_state == State.PlacedSlotSelected) _state = State.Default;
+        }
+
+        private void OnRemoveClicked()
+        {
+            if (string.IsNullOrEmpty(_selectedSlotId)) return;
+            var slotId = _selectedSlotId;
+            HideHud();
+            // Visual (remove tween → SetEmpty) is handled by PlacementChanged → Render diff.
+            _placement.UnplaceAsync(slotId, _cts.Token).Forget();
         }
 
         private void HighlightCompatibleEmptySlots(string decorId)
