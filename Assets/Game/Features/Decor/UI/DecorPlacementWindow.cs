@@ -1,66 +1,95 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading;
-using Book.Sell.API;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Decor.Services;
 using Game.Inventory.API;
+using Game.Newspaper.UI;
 using Game.UI;
 using Game.UI.Common;
+using Infrastructure.Audio;
 using UnityEngine;
 using VContainer;
 
 namespace Game.Decor.UI
 {
     /// <summary>
-    /// UISystem window replacing the MonoBehaviour <c>DecorPlacementScreenView</c>. Layout follows
-    /// docs/INPROGRESS/Decor.md §7.1: summary panel + slot list + inventory list. Negative-effect
-    /// placements still gated by ConfirmDialog. Phase 0 stub geometry — real visual is Phase 2+.
+    /// Visual decor placement window (MVP). Decor-first flow: pick a card in the bottom panel,
+    /// compatible empty slots highlight, click a slot to place. Click a placed decor for the
+    /// Remove HUD; the info button opens a read-only popup. The window renders service state only
+    /// (subscribes to <see cref="IDecorPlacementService.PlacementChanged"/>) and never stores its
+    /// own placement state. See docs/INPROGRESS/DECOR_PLACEMENT_MVP_PLAN.md.
     /// </summary>
     [Window("DecorPlacementWindow", WindowType.Page)]
     public sealed class DecorPlacementWindow : WindowController<DecorPlacementWindowView>
     {
+        private enum State
+        {
+            Default,
+            DecorSelected,
+            PlacedSlotSelected,
+            InfoPopupOpen,
+        }
+
         private IDecorPlacementService _placement;
         private IConfigsService _configs;
         private IInventoryService _inventory;
-        private IDecorModifierProvider _decorModifier;
+        private IUiSpriteProvider _sprites;
 
         private CancellationTokenSource _cts;
-        private readonly List<DecorSlotRowView> _slotRowPool = new();
-        private readonly List<DecorInventoryRowView> _inventoryRowPool = new();
+        private readonly List<DecorInventoryCardView> _cardPool = new();
+        private readonly HashSet<string> _placedSlots = new();
+
+        private State _state = State.Default;
+        private string _selectedDecorId;
+        private bool _firstRender;
 
         [Inject]
         public void InjectServices(
             IDecorPlacementService placement,
             IConfigsService configs,
             IInventoryService inventory,
-            IDecorModifierProvider decorModifier)
+            IUiSpriteProvider sprites)
         {
             _placement = placement;
             _configs = configs;
             _inventory = inventory;
-            _decorModifier = decorModifier;
+            _sprites = sprites;
         }
 
         protected override void OnInit()
         {
             _cts = new CancellationTokenSource();
 
-            if (View.SlotRowTemplate != null) View.SlotRowTemplate.gameObject.SetActive(false);
-            if (View.InventoryRowTemplate != null) View.InventoryRowTemplate.gameObject.SetActive(false);
+            if (View.CardTemplate != null) View.CardTemplate.gameObject.SetActive(false);
+            if (View.SelectedSlotHud != null) View.SelectedSlotHud.SetActive(false);
+            if (View.InfoPopupRoot != null) View.InfoPopupRoot.SetActive(false);
+            if (View.ReplaceButton != null) View.ReplaceButton.interactable = false; // MVP: no replace flow
 
-            if (View.ClearAllButton != null) View.ClearAllButton.onClick.AddListener(OnClearAllClicked);
             if (View.CloseButton != null) View.CloseButton.onClick.AddListener(OnCloseClicked);
+
+            // Anchors are authored in the prefab and live as long as the view — subscribe once.
+            if (View.SlotAnchors != null)
+            {
+                foreach (var anchor in View.SlotAnchors)
+                {
+                    if (anchor == null) continue;
+                    var captured = anchor;
+                    captured.OnMarkerClicked += () => OnMarkerClicked(captured);
+                }
+            }
         }
 
         protected override void OnShowStart()
         {
-            Debug.Log($"[DecorPlacementWindow] OnShowStart: placement!=null={_placement!=null}, inventory!=null={_inventory!=null}, placements={_placement?.GetAllPlacements().Count ?? -1}");
             if (_placement != null) _placement.PlacementChanged += Render;
             if (_inventory != null) _inventory.Changed += OnInventoryChanged;
+
+            // Clean, non-animated re-sync on every open.
+            _placedSlots.Clear();
+            _firstRender = true;
             Render();
         }
 
@@ -77,7 +106,6 @@ namespace Game.Decor.UI
             _cts = null;
 
             if (View == null) return;
-            if (View.ClearAllButton != null) View.ClearAllButton.onClick.RemoveListener(OnClearAllClicked);
             if (View.CloseButton != null) View.CloseButton.onClick.RemoveListener(OnCloseClicked);
         }
 
@@ -85,175 +113,201 @@ namespace Game.Decor.UI
 
         private void Render()
         {
-            if (_placement == null) return;
-            RenderSummary();
+            if (_placement == null || View == null) return;
             RenderSlots();
             RenderInventory();
-        }
-
-        private void RenderSummary()
-        {
-            if (View.SummaryLabel == null) return;
-
-            var activeIds = _placement.GetActiveDecorIds();
-            var allGenres = CollectAllGenres();
-            var sb = new StringBuilder();
-            sb.AppendLine("<b>Active Decor Effects</b>");
-
-            var anyEffect = false;
-            var anyCap = false;
-            foreach (var genre in allGenres)
-            {
-                var multiplier = _decorModifier.GetGenreMultiplier(genre, activeIds);
-                if (Mathf.Approximately(multiplier, 1f)) continue;
-                anyEffect = true;
-                var color = multiplier < 1f ? View.NegativeColor : View.PositiveColor;
-                var hex = ColorUtility.ToHtmlStringRGB(color);
-                sb.AppendLine($"  {genre,-12} <color=#{hex}>×{multiplier:0.00}</color>");
-
-                if (multiplier >= ConfigBasedDecorModifierProvider.SoftCapMax - 0.0001f)
-                    anyCap = true;
-            }
-
-            if (!anyEffect) sb.AppendLine("  (no active decor effects)");
-            View.SummaryLabel.text = sb.ToString();
-
-            if (View.CapHintLabel != null)
-            {
-                if (anyCap)
-                {
-                    View.CapHintLabel.text = $"Soft cap reached on at least one genre (×{ConfigBasedDecorModifierProvider.SoftCapMax:0.0}).";
-                    View.CapHintLabel.color = View.CapHintColor;
-                    View.CapHintLabel.gameObject.SetActive(true);
-                }
-                else
-                {
-                    View.CapHintLabel.gameObject.SetActive(false);
-                }
-            }
+            ClearSelection(); // renders reflect committed state → drop transient selection
+            _firstRender = false;
         }
 
         private void RenderSlots()
         {
-            ClearRows(_slotRowPool);
-            var shop = _configs.Get<BookShopConfig>(DecorPlacementService.HardcodedBookShopId);
-            Debug.Log($"[DecorPlacementWindow] RenderSlots: shop={(shop!=null?shop.Id:"<null>")}, slots={shop?.DecorSlots?.Length ?? -1}, placements={_placement.GetAllPlacements().Count}");
-            if (shop?.DecorSlots == null) return;
+            if (View.SlotAnchors == null) return;
 
-            foreach (var slot in shop.DecorSlots)
+            foreach (var anchor in View.SlotAnchors)
             {
-                if (slot == null) continue;
-                var row = SpawnSlotRow();
-                if (row == null) continue;
-                var decorId = _placement.GetDecorInSlot(slot.Id);
-                var decorConfig = string.IsNullOrEmpty(decorId) ? null : _configs.Get<DecorConfig>(decorId);
-                row.Bind(slot, decorConfig, View.PositiveColor, View.NegativeColor);
-                row.OnPlaceRequested = () => OnPlaceClicked(slot);
-                row.OnUnplaceRequested = () => OnUnplaceClicked(slot);
-                row.gameObject.SetActive(true);
+                if (anchor == null) continue;
+                var slotId = anchor.SlotId;
+                var decorId = _placement.GetDecorInSlot(slotId);
+                var nowPlaced = !string.IsNullOrEmpty(decorId);
+                var wasPlaced = _placedSlots.Contains(slotId);
+
+                if (nowPlaced && !wasPlaced)
+                {
+                    _placedSlots.Add(slotId);
+                    LoadPlacedAsync(anchor, decorId, animate: !_firstRender, _cts.Token).Forget();
+                }
+                else if (!nowPlaced && wasPlaced)
+                {
+                    _placedSlots.Remove(slotId);
+                    if (_firstRender) anchor.SetEmpty();
+                    else anchor.PlayRemoveTween(() => { if (anchor != null) anchor.SetEmpty(); });
+                }
+                else if (!nowPlaced && !wasPlaced && _firstRender)
+                {
+                    anchor.SetEmpty();
+                }
+                // nowPlaced && wasPlaced → already shown, leave as is.
             }
+        }
+
+        private async UniTaskVoid LoadPlacedAsync(DecorSlotAnchorView anchor, string decorId, bool animate, CancellationToken ct)
+        {
+            Sprite sprite = null;
+            if (_sprites != null)
+            {
+                try { sprite = await _sprites.GetSpriteAsync(decorId, ct); }
+                catch (System.OperationCanceledException) { return; }
+            }
+            if (ct.IsCancellationRequested || anchor == null) return;
+
+            anchor.SetPlaced(sprite);
+            if (animate) anchor.PlayPlaceTween();
         }
 
         private void RenderInventory()
         {
-            ClearRows(_inventoryRowPool);
+            ClearCards();
             var items = _inventory.GetByCategory(InventoryCategories.Decor);
-            Debug.Log($"[DecorPlacementWindow] RenderInventory: inventory decor items={items.Count}, ids=[{string.Join(",", items.Select(i => i.ItemId))}], template={(View.InventoryRowTemplate!=null)}, listRoot={(View.InventoryListRoot!=null)}");
             foreach (var item in items)
             {
                 var config = _configs.Get<DecorConfig>(item.ItemId);
                 if (config == null) continue;
-                var placedSlotId = FindPlacedSlot(item.ItemId);
-                var row = SpawnInventoryRow();
-                if (row == null) continue;
-                row.Bind(config, placedSlotId, View.PositiveColor, View.NegativeColor);
-                row.gameObject.SetActive(true);
+                var card = SpawnCard();
+                if (card == null) continue;
+                var placed = !string.IsNullOrEmpty(FindPlacedSlot(item.ItemId));
+                card.Bind(config, placed, _sprites, OnCardSelect, OnCardInfo);
+                card.gameObject.SetActive(true);
             }
         }
 
-        private string FindPlacedSlot(string decorId)
+        private void OnCardSelect(string decorId)
         {
-            foreach (var entry in _placement.GetAllPlacements())
+            // Repeat click on the selected card cancels the selection.
+            if (_state == State.DecorSelected && _selectedDecorId == decorId)
             {
-                if (string.Equals(entry.DecorId, decorId, System.StringComparison.OrdinalIgnoreCase))
-                    return entry.SlotId;
-            }
-            return null;
-        }
-
-        private DecorSlotRowView SpawnSlotRow()
-        {
-            if (View.SlotRowTemplate == null || View.SlotListRoot == null) return null;
-            var row = Object.Instantiate(View.SlotRowTemplate, View.SlotListRoot);
-            _slotRowPool.Add(row);
-            return row;
-        }
-
-        private DecorInventoryRowView SpawnInventoryRow()
-        {
-            if (View.InventoryRowTemplate == null || View.InventoryListRoot == null) return null;
-            var row = Object.Instantiate(View.InventoryRowTemplate, View.InventoryListRoot);
-            _inventoryRowPool.Add(row);
-            return row;
-        }
-
-        private static void ClearRows<T>(List<T> pool) where T : MonoBehaviour
-        {
-            for (var i = 0; i < pool.Count; i++)
-                if (pool[i] != null) Object.Destroy(pool[i].gameObject);
-            pool.Clear();
-        }
-
-        private HashSet<string> CollectAllGenres()
-        {
-            var set = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
-            var books = _configs.GetAll<BookConfig>();
-            foreach (var b in books)
-                if (!string.IsNullOrEmpty(b.Genre)) set.Add(b.Genre);
-            return set;
-        }
-
-        private void OnPlaceClicked(DecorSlot slot) => PickAndPlaceAsync(slot).Forget();
-
-        private async UniTaskVoid PickAndPlaceAsync(DecorSlot slot)
-        {
-            var candidate = PickFirstCompatibleUnplaced(slot);
-            if (candidate == null)
-            {
-                Debug.Log("[DecorPlacementWindow] No compatible unplaced decor available for this slot.");
+                ClearSelection();
                 return;
             }
 
-            if (HasNegativeEffect(candidate))
+            _selectedDecorId = decorId;
+            _state = State.DecorSelected;
+
+            foreach (var card in _cardPool)
+                if (card != null) card.SetSelected(card.DecorId == decorId);
+
+            HighlightCompatibleEmptySlots(decorId);
+        }
+
+        // Info popup is wired in a later step; kept as an explicit hook so the card can bind it.
+        private void OnCardInfo(string decorId)
+        {
+            // TODO (Step 6): open info popup for decorId.
+        }
+
+        private void HighlightCompatibleEmptySlots(string decorId)
+        {
+            if (View.SlotAnchors == null) return;
+
+            var config = _configs.Get<DecorConfig>(decorId);
+            var slotById = BuildSlotMap();
+
+            foreach (var anchor in View.SlotAnchors)
+            {
+                if (anchor == null) continue;
+                var empty = string.IsNullOrEmpty(_placement.GetDecorInSlot(anchor.SlotId));
+                var compatible = empty
+                    && config != null
+                    && slotById.TryGetValue(anchor.SlotId, out var slot)
+                    && slot != null
+                    && config.PositionType == slot.PositionType
+                    && (int)config.Size <= (int)slot.MaxSize;
+                anchor.SetHighlighted(compatible);
+            }
+        }
+
+        private void OnMarkerClicked(DecorSlotAnchorView anchor)
+        {
+            if (_state != State.DecorSelected || string.IsNullOrEmpty(_selectedDecorId)) return;
+            PlaceSelectedAsync(anchor.SlotId).Forget();
+        }
+
+        private async UniTaskVoid PlaceSelectedAsync(string slotId)
+        {
+            var decorId = _selectedDecorId;
+            if (string.IsNullOrEmpty(decorId)) return;
+
+            var config = _configs.Get<DecorConfig>(decorId);
+            if (config != null && HasNegativeEffect(config))
             {
                 var args = new ConfirmDialogArgs(
-                    title: $"Place {candidate.DisplayName}?",
-                    body: BuildNegativeWarning(candidate),
+                    title: $"Place {config.DisplayName}?",
+                    body: BuildNegativeWarning(config),
                     confirmLabel: "Place anyway",
                     cancelLabel: "Cancel");
 
                 var dialog = await UIManager.ShowAsync<ConfirmDialog>(args, _cts.Token);
                 if (dialog == null) return;
-                var result = await dialog.WaitForResultAsync<ConfirmDialogResult>(_cts.Token);
-                if (result != ConfirmDialogResult.Confirmed) return;
+                var confirm = await dialog.WaitForResultAsync<ConfirmDialogResult>(_cts.Token);
+                if (confirm != ConfirmDialogResult.Confirmed) return;
             }
 
-            await _placement.PlaceAsync(candidate.Id, slot.Id, _cts.Token);
+            var result = await _placement.PlaceAsync(decorId, slotId, _cts.Token);
+            if (result == DecorPlacementResult.Success)
+            {
+                // Visual + selection reset are handled by PlacementChanged → Render (diff tween).
+                if (View != null && View.PlaceClip != null) Audio.PlayUi(View.PlaceClip);
+            }
+            else
+            {
+                Debug.Log($"[DecorPlacementWindow] Place '{decorId}' → '{slotId}' failed: {result}");
+            }
         }
 
-        private DecorConfig PickFirstCompatibleUnplaced(DecorSlot slot)
+        private void ClearSelection()
         {
-            var items = _inventory.GetByCategory(InventoryCategories.Decor);
-            foreach (var item in items)
-            {
-                if (!string.IsNullOrEmpty(FindPlacedSlot(item.ItemId))) continue;
-                var config = _configs.Get<DecorConfig>(item.ItemId);
-                if (config == null) continue;
-                if (config.PositionType != slot.PositionType) continue;
-                if ((int)config.Size > (int)slot.MaxSize) continue;
-                return config;
-            }
+            _selectedDecorId = null;
+            _state = State.Default;
+
+            foreach (var card in _cardPool)
+                if (card != null) card.SetSelected(false);
+
+            if (View.SlotAnchors != null)
+                foreach (var anchor in View.SlotAnchors)
+                    if (anchor != null) anchor.SetHighlighted(false);
+        }
+
+        private Dictionary<string, DecorSlot> BuildSlotMap()
+        {
+            var map = new Dictionary<string, DecorSlot>();
+            var shop = _configs.Get<BookShopConfig>(DecorPlacementService.HardcodedBookShopId);
+            if (shop?.DecorSlots == null) return map;
+            foreach (var slot in shop.DecorSlots)
+                if (slot != null && !string.IsNullOrEmpty(slot.Id)) map[slot.Id] = slot;
+            return map;
+        }
+
+        private string FindPlacedSlot(string decorId)
+        {
+            foreach (var entry in _placement.GetAllPlacements())
+                if (string.Equals(entry.DecorId, decorId, System.StringComparison.OrdinalIgnoreCase))
+                    return entry.SlotId;
             return null;
+        }
+
+        private DecorInventoryCardView SpawnCard()
+        {
+            if (View.CardTemplate == null || View.InventoryItemsRoot == null) return null;
+            var card = Object.Instantiate(View.CardTemplate, View.InventoryItemsRoot);
+            _cardPool.Add(card);
+            return card;
+        }
+
+        private void ClearCards()
+        {
+            for (var i = 0; i < _cardPool.Count; i++)
+                if (_cardPool[i] != null) Object.Destroy(_cardPool[i].gameObject);
+            _cardPool.Clear();
         }
 
         private static bool HasNegativeEffect(DecorConfig config)
@@ -280,28 +334,6 @@ namespace Game.Decor.UI
             return sb.ToString();
         }
 
-        private void OnUnplaceClicked(DecorSlot slot) => _placement.UnplaceAsync(slot.Id, _cts.Token).Forget();
-
-        private void OnClearAllClicked() => ClearAllConfirmedAsync().Forget();
-
-        private async UniTaskVoid ClearAllConfirmedAsync()
-        {
-            var args = new ConfirmDialogArgs(
-                title: "Clear all decor placements?",
-                body: "Every slot will be emptied. Items stay in inventory.",
-                confirmLabel: "Clear",
-                cancelLabel: "Cancel");
-            var dialog = await UIManager.ShowAsync<ConfirmDialog>(args, _cts.Token);
-            if (dialog == null) return;
-            var result = await dialog.WaitForResultAsync<ConfirmDialogResult>(_cts.Token);
-            if (result != ConfirmDialogResult.Confirmed) return;
-            await _placement.ClearAllAsync(_cts.Token);
-        }
-
-        private void OnCloseClicked()
-        {
-            //UIManager.HideAsync<DecorPlacementWindow>().Forget();
-            CloseAsync().Forget();
-        }
+        private void OnCloseClicked() => CloseAsync().Forget();
     }
 }
