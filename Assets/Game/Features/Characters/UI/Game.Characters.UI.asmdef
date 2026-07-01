@@ -1,0 +1,22 @@
+{
+    "name": "Game.Characters.UI",
+    "rootNamespace": "Game.Characters.UI",
+    "references": [
+        "Game.Characters.API",
+        "Game.Quest.API",
+        "Game.Core.UI",
+        "Infrastructure",
+        "VContainer",
+        "UniTask",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

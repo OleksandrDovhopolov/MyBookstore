@@ -8,6 +8,7 @@
         "Unity.ResourceManager",
         "Unity.TextMeshPro",
         "Infrastructure",
+        "Game.Bootstrap.Loading",
         "Game.Inventory",
         "Game.Core.UI",
         "Game.Resources.API",

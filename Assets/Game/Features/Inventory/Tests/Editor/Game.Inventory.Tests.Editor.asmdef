@@ -6,6 +6,8 @@
         "Save",
         "Game.Inventory.API",
         "Game.Inventory",
+        "Game.Conditions.API",
+        "Game.Conditions",
         "UnityEngine.TestRunner"
     ],
     "includePlatforms": [

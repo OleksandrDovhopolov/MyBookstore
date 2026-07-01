@@ -1,0 +1,28 @@
+{
+    "name": "Game.Quest",
+    "rootNamespace": "Game.Quest",
+    "references": [
+        "UniTask",
+        "Configs",
+        "Save",
+        "Game.Quest.API",
+        "Game.Conditions.API",
+        "Game.Conditions",
+        "Game.SalesStats.API",
+        "Game.SalesStats",
+        "Game.Decor.API",
+        "Game.Inventory.API",
+        "DayCycle"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

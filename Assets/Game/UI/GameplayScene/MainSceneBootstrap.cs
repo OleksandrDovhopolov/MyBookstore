@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Bootstrap.Loading;
 using Game.Ftue;
 using Game.Ftue.Domain;
 using Game.Ftue.Services;
@@ -13,14 +14,16 @@ public class MainSceneBootstrap : MonoBehaviour
 {
     private UIManager _uiManager;
     private ISaveService _save;
+    private ITransitionAnimationService _transition;
 
     private CancellationToken _destroyToken;
 
     [Inject]
-    public void Install(UIManager uiManager, ISaveService save)
+    public void Install(UIManager uiManager, ISaveService save, ITransitionAnimationService transition)
     {
         _uiManager = uiManager;
         _save = save;
+        _transition = transition;
     }
 
     private void Awake()
@@ -39,23 +42,27 @@ public class MainSceneBootstrap : MonoBehaviour
         {
             ct.ThrowIfCancellationRequested();
 
-            var firstEntry = await IsFirstEntryAsync(ct);
-
             var hud = await _uiManager.ShowAsync<GameplaySceneController>(ct: ct);
 
-            // Keep the hub mounted (so it preloads) but invisible behind the non-full-screen welcome
-            // letter; reveal it once the player presses Start.
-            if (firstEntry)
-            {
-                hud.SetHudVisible(false);
-                await ShowWelcomeAndWaitAsync(ct);
-            }
-
-            await UniTask.WaitUntil(() => hud.IsShown && hud.SpritesLoaded, cancellationToken: ct);
+            // Wait until the hub window has loaded everything it needs to display (genre sprites, day
+            // context, ...) before revealing the screen.
+            await UniTask.WaitUntil(() => hud.IsShown && hud.IsDataReady, cancellationToken: ct);
             ct.ThrowIfCancellationRequested();
 
+            var firstEntry = await IsFirstEntryAsync(ct);
+
+            // On first entry keep the hub invisible behind the non-full-screen welcome letter; the reveal
+            // then shows the scene background + letter without flashing the HUD.
             if (firstEntry)
+                hud.SetHudVisible(false);
+
+            await _transition.PlayRevealAsync(ct);   // remove the transition cover
+
+            if (firstEntry)
+            {
+                await ShowWelcomeAndWaitAsync(ct);
                 hud.SetHudVisible(true);
+            }
         }
         catch (OperationCanceledException)
         {

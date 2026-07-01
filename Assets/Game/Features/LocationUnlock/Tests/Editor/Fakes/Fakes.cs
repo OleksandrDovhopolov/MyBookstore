@@ -68,7 +68,12 @@ namespace Game.LocationUnlock.Tests.Editor.Fakes
     {
         public int GetSold(BookGenre genre) => 0;
         public int TotalSold => 0;
+        public int GetSold(BookGenre genre, string locationId) => 0;
+        public int GetSoldOnDay(int day) => 0;
+        public int GetSoldOnDay(int day, BookGenre genre) => 0;
+        public int GetMaxSoldInSingleDay(BookGenre genre) => 0;
         public void RecordSold(string bookId) { }
+        public void RecordSold(string bookId, in SaleContext ctx) { }
         public event Action<SalesStatsChange> Changed;
 
         public void RaiseChanged() => Changed?.Invoke(new SalesStatsChange(BookGenre.Crime, 0, 0, "test"));

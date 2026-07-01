@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
 using Game.UI;
 using TMPro;
@@ -16,6 +17,7 @@ public class GameplaySceneView : WindowView
     [Header("Shop entry")]
     [SerializeField] private Button _cheatButton;
     [SerializeField] private Button _startDayButton;
+    [SerializeField] private Button _decorButton;
 
     [Header("Genre book counts")]
     [SerializeField] private UIListPool<GameplayGenreBookCountItemView> _genreBookCountPool = new();
@@ -24,7 +26,44 @@ public class GameplaySceneView : WindowView
 
     private bool _legacyGenreBookCountItemsHidden;
 
+    private AnimatedShowHidePanel[] _animatedPanels;
+
     public Button StartDayButton => _startDayButton;
+    public Button DecorButton => _decorButton;
+
+    // Collected from the view hierarchy at runtime (including inactive) so any number of
+    // panels — top / side / bottom / any future ones — is driven together without wiring
+    // each one by hand in the inspector. Cached on first use since the HUD hierarchy is static.
+    private AnimatedShowHidePanel[] AnimatedPanels =>
+        _animatedPanels ??= GetComponentsInChildren<AnimatedShowHidePanel>(includeInactive: true);
+
+    // Completes only after every panel has finished its show/hide tween, so callers can await
+    // the animation before doing the next thing (e.g. opening a window on top). Bound to the
+    // view's destroy token so it never hangs if the HUD is torn down mid-animation.
+    public UniTask ShowAnimatedPanelsAsync(bool instant = false) => RunPanelsAsync(show: true, instant);
+
+    public UniTask HideAnimatedPanelsAsync(bool instant = false) => RunPanelsAsync(show: false, instant);
+
+    private UniTask RunPanelsAsync(bool show, bool instant)
+    {
+        var panels = AnimatedPanels;
+        var tasks = new List<UniTask>(panels.Length);
+
+        foreach (var panel in panels)
+        {
+            if (panel == null) continue;
+
+            var completion = new UniTaskCompletionSource();
+            if (show)
+                panel.Show(instant, () => completion.TrySetResult());
+            else
+                panel.Hide(instant, () => completion.TrySetResult());
+
+            tasks.Add(completion.Task);
+        }
+
+        return UniTask.WhenAll(tasks).AttachExternalCancellation(destroyCancellationToken);
+    }
 
     protected override void Awake()
     {
@@ -38,6 +77,12 @@ public class GameplaySceneView : WindowView
         {
             _cheatButton.interactable = interactable;
             _cheatButton.gameObject.SetActive(interactable);
+        }
+
+        if (_decorButton != null)
+        {
+            _decorButton.interactable = interactable;
+            _decorButton.gameObject.SetActive(interactable);
         }
 
         SetStartButtonActive(interactable);

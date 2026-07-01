@@ -15,6 +15,7 @@ namespace Book.Sell.Tests.Editor.Fakes
         public List<string> PassiveFailureGenres { get; } = new();
         public List<(Customer customer, int count)> PurchaseCompletions { get; } = new();
         public List<(Customer customer, PassiveSaleEvent evt)> PassiveSales { get; } = new();
+        public List<(Customer customer, CustomerCommentPayload payload)> Comments { get; } = new();
         public List<(Customer customer, RequestConfig request)> ActiveStarted { get; } = new();
 
         public void OnPhaseChanged(Customer customer, CustomerPhase phase)
@@ -37,6 +38,9 @@ namespace Book.Sell.Tests.Editor.Fakes
 
         public void OnPassiveSale(Customer customer, PassiveSaleEvent saleEvent)
             => PassiveSales.Add((customer, saleEvent));
+
+        public void OnCustomerComment(Customer customer, CustomerCommentPayload payload)
+            => Comments.Add((customer, payload));
 
         public void OnActiveRequestStarted(Customer customer, RequestConfig request)
             => ActiveStarted.Add((customer, request));

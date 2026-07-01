@@ -1,4 +1,6 @@
 using Book.Sell.API;
+using Game.Conditions.API;
+using Game.DayCycle.Conditions;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
 using Game.DayCycle.Results.Services;
@@ -17,6 +19,17 @@ namespace Game.Bootstrap
 
             builder.Register<IMorningContextResolver, MorningContextResolver>(Lifetime.Singleton);
             builder.Register<IMorningSessionService, MorningSessionService>(Lifetime.Singleton);
+
+            // Current-day weather read seam + "weatherIs" condition adapter (discovered via IConditionFactory).
+            builder.Register<ICurrentDayWeatherProvider, CurrentDayWeatherProvider>(Lifetime.Singleton);
+
+            // The factory takes a Func and resolves the provider lazily on first Create() — NOT while the
+            // IConditionFactory collection is built. Otherwise it would form a DI cycle:
+            // IConditionParser → registry → IReadOnlyList<IConditionFactory> → WeatherIsConditionFactory →
+            // ICurrentDayWeatherProvider → IMorningContextResolver → ILocationUnlockService → IConditionParser.
+            builder.Register<IConditionFactory>(
+                c => new WeatherIsConditionFactory(() => c.Resolve<ICurrentDayWeatherProvider>()),
+                Lifetime.Singleton);
 
             builder.Register<IResultsReviewTextProvider, DefaultResultsReviewTextProvider>(Lifetime.Singleton);
             builder.Register<IResultsSummaryBuilder, ResultsSummaryBuilder>(Lifetime.Singleton);

@@ -77,7 +77,7 @@ namespace Book.Sell.Services
                             Debug.LogError($"{LogPrefix} sold book '{bookId}' not present in inventory at commit (day {result.Day}).");
 
                         await _shelfState.MarkSoldAsync(bookId, ct);
-                        _salesStats.RecordSold(bookId);
+                        _salesStats.RecordSold(bookId, new SaleContext(result.LocationId, result.Day));
                     }
                 }
 

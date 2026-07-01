@@ -11,6 +11,8 @@
         "Game.Resources.API",
         "Game.Progression.API",
         "Game.LocationUnlock.API",
+        "Game.Conditions.API",
+        "Game.Conditions",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

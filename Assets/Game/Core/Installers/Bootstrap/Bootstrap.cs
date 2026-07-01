@@ -5,10 +5,12 @@ using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.Configs;
 using Game.Configs.Remote;
+using Game.Decor;
 using Game.Ftue.Services;
 using Game.Inventory.API;
 using Game.Inventory.Services;
 using Game.LocationUnlock.API;
+using Game.Quest.API;
 using Game.Newspaper.UI;
 using Game.Progression.API;
 using Game.Resources.API;
@@ -55,16 +57,22 @@ namespace Game.Bootstrap
         private IConfigsService _configs;
         private ISaveService _save;
         private ISceneTransitionService _sceneTransition;
+        private ITransitionAnimationService _transition;
         private IFtueBootstrapper _ftue;
         private IUiSpriteProvider _uiSprites;
 
         // Injected to force construction (and therefore ISaveHook self-registration) before
         // SaveDataLoadOperation runs LoadAsync. We never invoke methods on these fields directly.
+        // NOTE: IDecorPlacementService is here for exactly this reason — it registers its save
+        // hook lazily in its constructor, so without eager construction AfterLoadAsync never fires
+        // and saved decor placement is lost on subsequent launches (was a documented P1 bug).
         // ReSharper disable NotAccessedField.Local
         private IInventoryService _inventory;
         private IResourcesService _resources;
         private IProgressionService _progression;
         private ILocationUnlockService _locationUnlock;
+        private IQuestsService _quests;
+        private IDecorPlacementService _decorPlacement;
         // ReSharper restore NotAccessedField.Local
 
         // NOT GetCancellationTokenOnDestroy(): the boot GameObject is destroyed during
@@ -82,12 +90,15 @@ namespace Game.Bootstrap
             IConfigsService configs,
             ISaveService save,
             ISceneTransitionService sceneTransition,
+            ITransitionAnimationService transition,
             IFtueBootstrapper ftue,
             IUiSpriteProvider uiSprites,
             IInventoryService inventory,
             IResourcesService resources,
             IProgressionService progression,
-            ILocationUnlockService locationUnlock)
+            ILocationUnlockService locationUnlock,
+            IQuestsService quests,
+            IDecorPlacementService decorPlacement)
         {
             _orchestrator = orchestrator;
             _catalog = catalog;
@@ -95,12 +106,15 @@ namespace Game.Bootstrap
             _configs = configs;
             _save = save;
             _sceneTransition = sceneTransition;
+            _transition = transition;
             _ftue = ftue;
             _uiSprites = uiSprites;
             _inventory = inventory;
             _resources = resources;
             _progression = progression;
             _locationUnlock = locationUnlock;
+            _quests = quests;
+            _decorPlacement = decorPlacement;
         }
 
         private void Awake()
@@ -238,7 +252,7 @@ namespace Game.Bootstrap
                 {
                     new WarmupOperation(),
                     new UiSpritePreloadOperation(_uiSprites),
-                    new SceneTransitionOperation(_sceneTransition, _mainSceneName)
+                    new SceneTransitionOperation(_sceneTransition, _transition, _mainSceneName)
                 })
             });
 

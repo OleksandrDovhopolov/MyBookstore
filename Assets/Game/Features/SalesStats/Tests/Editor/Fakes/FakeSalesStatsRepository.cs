@@ -26,6 +26,25 @@ namespace Game.SalesStats.Tests.Editor.Fakes
             var dto = new SalesStatsStateDto();
             if (source?.SoldByGenre != null)
                 dto.SoldByGenre = new Dictionary<string, int>(source.SoldByGenre, StringComparer.OrdinalIgnoreCase);
+
+            if (source?.SoldByLocationGenre != null)
+            {
+                dto.SoldByLocationGenre = new Dictionary<string, Dictionary<string, int>>(StringComparer.Ordinal);
+                foreach (var location in source.SoldByLocationGenre)
+                    dto.SoldByLocationGenre[location.Key] = location.Value == null
+                        ? null
+                        : new Dictionary<string, int>(location.Value, StringComparer.OrdinalIgnoreCase);
+            }
+
+            if (source?.SoldByDayGenre != null)
+            {
+                dto.SoldByDayGenre = new Dictionary<int, Dictionary<string, int>>();
+                foreach (var day in source.SoldByDayGenre)
+                    dto.SoldByDayGenre[day.Key] = day.Value == null
+                        ? null
+                        : new Dictionary<string, int>(day.Value, StringComparer.OrdinalIgnoreCase);
+            }
+
             return dto;
         }
     }

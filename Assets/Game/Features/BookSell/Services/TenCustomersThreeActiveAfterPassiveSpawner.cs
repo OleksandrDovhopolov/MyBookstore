@@ -1,19 +1,14 @@
 using System;
 using System.Collections.Generic;
 using Book.Sell.Domain;
-using Book.Sell.Domain.Steps;
 using Game.Configs;
-using Game.Configs.Models;
 
 namespace Book.Sell.Services
 {
     /// <summary>
-    /// Runtime scenario spawner: 10 customers. Every customer makes 1..2 passive purchases first; the first
-    /// <see cref="ActiveCustomerCount"/> of them also make one active recommendation purchase after the
-    /// passive ones, then leave.
-    /// Plan (active customers):  Approach -> Passive x[1..2] -> ActiveRequest -> CompletePurchase -> Leave.
-    /// Plan (other customers):   Approach -> Passive x[1..2] -> CompletePurchase -> Leave.
-    /// Active requests are drawn in config order and cycled if there are fewer configs than active customers.
+    /// Runtime scenario spawner: 7 customers. Every customer makes 1..5 passive purchases.
+    /// Plan: Approach -> Passive x[1..5] -> CompletePurchase -> Leave.
+    /// (The "first N also make an active request after passive" mix is currently disabled — see below.)
     /// </summary>
     public sealed class TenCustomersThreeActiveAfterPassiveSpawner : ICustomerSpawner
     {
@@ -33,26 +28,25 @@ namespace Book.Sell.Services
 
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
         {
-            var requests = _configs.GetAll<RequestConfig>();
-            var activeIndices = PickActiveIndices(CustomerCount, ActiveCustomerCount, random);
-            var customers = new List<Customer>(CustomerCount);
-            var activeOrder = 0;
+            // Legacy behavior: the active-after-passive mix is currently disabled, but this draw is kept to
+            // preserve the seeded random stream. When re-enabled, compose like TenBetween:
+            //   var requests = _configs.GetAll<RequestConfig>();
+            //   var activeIndices = PickActiveIndices(CustomerCount, ActiveCustomerCount, random);
+            //   var activeOrder = 0;
+            //   for active index with requests.Count > 0 -> a "passive then active" archetype using
+            //     requests[activeOrder++ % requests.Count].
+            // activeIndices / activeOrder / requests belong to that disabled block and are intentionally
+            // absent from runtime code; only the draw below runs to keep the stream identical.
+            _ = PickActiveIndices(CustomerCount, ActiveCustomerCount, random);
 
+            var archetype = new PassiveAttemptsArchetype(MinPassiveAttempts, MaxPassiveAttempts);
+            var customers = new List<Customer>(CustomerCount);
             for (var i = 0; i < CustomerCount; i++)
             {
-                var steps = new List<ICustomerStep> { new ApproachStep(RandomApproachDuration(tuning, random)) };
-
-                var passiveAttempts = random.Range(MinPassiveAttempts, MaxPassiveAttempts + 1);
-                for (var p = 0; p < passiveAttempts; p++)
-                    steps.Add(new PassivePurchaseStep());
-
-                /*if (activeIndices.Contains(i) && requests.Count > 0)
-                    steps.Add(new ActiveRequestStep(requests[activeOrder++ % requests.Count]));*/
-
-                steps.Add(new CompletePurchaseStep());
-                steps.Add(new LeaveStep(RandomLeaveDuration(tuning, random)));
-
-                customers.Add(new Customer($"cust_{i + 1}", steps, _profiles.Create(setup, random)));
+                customers.Add(CustomerPlanBuilder.Build(
+                    $"cust_{i + 1}", tuning, random,
+                    buildMiddle: () => archetype.BuildMiddle(setup, tuning, random),
+                    buildProfile: () => _profiles.Create(setup, random)));
             }
 
             return customers;
@@ -75,30 +69,6 @@ namespace Book.Sell.Services
             var result = new HashSet<int>();
             for (var i = 0; i < picks; i++) result.Add(indices[i]);
             return result;
-        }
-
-        private static float RandomApproachDuration(SalesTuning tuning, ISalesRandom random)
-            => RandomInRange(tuning.MinApproachDuration, tuning.MaxApproachDuration, random);
-
-        private static float RandomLeaveDuration(SalesTuning tuning, ISalesRandom random)
-            => RandomInRange(tuning.MinLeaveDuration, tuning.MaxLeaveDuration, random);
-
-        private static float RandomInRange(float min, float max, ISalesRandom random)
-        {
-            if (max < min)
-            {
-                var tmp = min;
-                min = max;
-                max = tmp;
-            }
-
-            if (max <= min) return min;
-
-            var roll = random.NextDouble();
-            if (roll < 0d) roll = 0d;
-            if (roll > 1d) roll = 1d;
-
-            return min + (float)(roll * (max - min));
         }
     }
 }
