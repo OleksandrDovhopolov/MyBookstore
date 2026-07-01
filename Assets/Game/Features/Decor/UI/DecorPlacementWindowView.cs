@@ -29,9 +29,6 @@ namespace Game.Decor.UI
         [SerializeField] private Button _replaceButton; // MVP: visible but disabled
         [SerializeField] private Button _removeButton;
 
-        [Header("Footer")]
-        [SerializeField] private Button _closeButton;
-
         [Header("Audio")]
         [Tooltip("Optional. Played on a successful place; leave empty for silence until a clip exists.")]
         [SerializeField] private AudioClip _placeClip;
@@ -47,8 +44,6 @@ namespace Game.Decor.UI
         public Button HudBackdrop => _hudBackdrop;
         public Button ReplaceButton => _replaceButton;
         public Button RemoveButton => _removeButton;
-
-        public Button CloseButton => _closeButton;
 
         public AudioClip PlaceClip => _placeClip;
         public AudioClip RemoveClip => _removeClip;

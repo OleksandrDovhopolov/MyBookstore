@@ -65,7 +65,6 @@ namespace Game.Decor.UI
             if (View.SelectedSlotHud != null) View.SelectedSlotHud.SetActive(false);
             if (View.ReplaceButton != null) View.ReplaceButton.interactable = false; // MVP: no replace flow
 
-            if (View.CloseButton != null) View.CloseButton.onClick.AddListener(OnCloseClicked);
             if (View.RemoveButton != null) View.RemoveButton.onClick.AddListener(OnRemoveClicked);
             if (View.HudBackdrop != null) View.HudBackdrop.onClick.AddListener(HideHud);
 
@@ -108,7 +107,6 @@ namespace Game.Decor.UI
             _cts = null;
 
             if (View == null) return;
-            if (View.CloseButton != null) View.CloseButton.onClick.RemoveListener(OnCloseClicked);
             if (View.RemoveButton != null) View.RemoveButton.onClick.RemoveListener(OnRemoveClicked);
             if (View.HudBackdrop != null) View.HudBackdrop.onClick.RemoveListener(HideHud);
         }
@@ -388,7 +386,5 @@ namespace Game.Decor.UI
             sb.Append(". Continue?");
             return sb.ToString();
         }
-
-        private void OnCloseClicked() => CloseAsync().Forget();
     }
 }
