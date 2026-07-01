@@ -33,7 +33,10 @@ namespace Game.Decor.UI
         [SerializeField] private Button _closeButton;
 
         [Header("Audio")]
+        [Tooltip("Optional. Played on a successful place; leave empty for silence until a clip exists.")]
         [SerializeField] private AudioClip _placeClip;
+        [Tooltip("Optional. Played on a successful remove; leave empty for silence until a clip exists.")]
+        [SerializeField] private AudioClip _removeClip;
 
         public RectTransform RoomImageRect => _roomImageRect;
         public DecorSlotAnchorView[] SlotAnchors => _slotAnchors;
@@ -48,5 +51,6 @@ namespace Game.Decor.UI
         public Button CloseButton => _closeButton;
 
         public AudioClip PlaceClip => _placeClip;
+        public AudioClip RemoveClip => _removeClip;
     }
 }

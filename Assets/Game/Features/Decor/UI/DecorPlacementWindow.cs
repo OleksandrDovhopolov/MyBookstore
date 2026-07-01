@@ -253,8 +253,18 @@ namespace Game.Decor.UI
             if (string.IsNullOrEmpty(_selectedSlotId)) return;
             var slotId = _selectedSlotId;
             HideHud();
-            // Visual (remove tween → SetEmpty) is handled by PlacementChanged → Render diff.
-            _placement.UnplaceAsync(slotId, _cts.Token).Forget();
+            RemoveAsync(slotId).Forget();
+        }
+
+        private async UniTaskVoid RemoveAsync(string slotId)
+        {
+            try
+            {
+                // Visual (remove tween → SetEmpty) is handled by PlacementChanged → Render diff.
+                await _placement.UnplaceAsync(slotId, _cts.Token);
+                PlayUi(View != null ? View.RemoveClip : null);
+            }
+            catch (System.OperationCanceledException) { }
         }
 
         private void HighlightCompatibleEmptySlots(string decorId)
@@ -308,12 +318,19 @@ namespace Game.Decor.UI
             if (result == DecorPlacementResult.Success)
             {
                 // Visual + selection reset are handled by PlacementChanged → Render (diff tween).
-                if (View != null && View.PlaceClip != null) Audio.PlayUi(View.PlaceClip);
+                PlayUi(View != null ? View.PlaceClip : null);
             }
             else
             {
                 Debug.Log($"[DecorPlacementWindow] Place '{decorId}' → '{slotId}' failed: {result}");
             }
+        }
+
+        // Null-safe: no-op if the clip is unassigned or the audio service is not bound. Assigning a
+        // clip in the inspector is enough to make it play — no code change needed.
+        private static void PlayUi(AudioClip clip)
+        {
+            if (clip != null) Audio.PlayUi(clip);
         }
 
         private void ClearSelection()
