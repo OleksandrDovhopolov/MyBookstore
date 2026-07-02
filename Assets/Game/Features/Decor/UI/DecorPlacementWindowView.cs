@@ -1,4 +1,5 @@
 using Game.UI;
+using TMPro;
 using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,6 +23,12 @@ namespace Game.Decor.UI
         [Tooltip("Card prefab + parent are assigned on the pool in the inspector.")]
         [SerializeField] private UIListPool<DecorInventoryCardView> _cardsPool = new();
 
+        [Header("Selected decor info")]
+        [Tooltip("Name of the decor in the clicked placed slot.")]
+        [SerializeField] private TextMeshProUGUI _selectedDecorNameLabel;
+        [Tooltip("Sprite of the decor in the clicked placed slot.")]
+        [SerializeField] private Image _selectedDecorImage;
+
         [Header("Selected-slot HUD")]
         [SerializeField] private GameObject _selectedSlotHud;
         [Tooltip("Optional full-screen transparent button behind the HUD; clicking it closes the HUD.")]
@@ -39,6 +46,9 @@ namespace Game.Decor.UI
         public DecorSlotAnchorView[] SlotAnchors => _slotAnchors;
 
         public UIListPool<DecorInventoryCardView> CardsPool => _cardsPool;
+
+        public TextMeshProUGUI SelectedDecorNameLabel => _selectedDecorNameLabel;
+        public Image SelectedDecorImage => _selectedDecorImage;
 
         public GameObject SelectedSlotHud => _selectedSlotHud;
         public Button HudBackdrop => _hudBackdrop;

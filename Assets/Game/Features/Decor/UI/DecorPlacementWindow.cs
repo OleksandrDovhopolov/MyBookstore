@@ -226,17 +226,56 @@ namespace Game.Decor.UI
             if (View.SelectedSlotHud == null) return;
 
             if (View.SelectedSlotHud.transform is RectTransform hudRect)
-                hudRect.position = anchor.transform.position; // park the HUD next to the slot
+            {
+                //hudRect.position = anchor.transform.position; // park the HUD next to the slot
+            }
 
             View.SelectedSlotHud.SetActive(true);
             anchor.SetSelectedOutline(true);
+            BindSelectedDecorInfo(anchor.SlotId);
             _selectedSlotId = anchor.SlotId;
             _state = State.PlacedSlotSelected;
+        }
+
+        // Shows the clicked decor's name + sprite in the side panel. Sprite comes from the shared
+        // (cached) provider by decor id, so this is a cheap re-fetch of the already-loaded sprite.
+        private void BindSelectedDecorInfo(string slotId)
+        {
+            var decorId = _placement.GetDecorInSlot(slotId);
+            var config = string.IsNullOrEmpty(decorId) ? null : _configs.Get<DecorConfig>(decorId);
+
+            if (View.SelectedDecorNameLabel != null)
+                View.SelectedDecorNameLabel.text = config != null ? config.DisplayName ?? config.Id : string.Empty;
+
+            if (View.SelectedDecorImage != null)
+            {
+                View.SelectedDecorImage.sprite = null;
+                if (!string.IsNullOrEmpty(decorId))
+                    LoadSelectedDecorImageAsync(decorId, _cts.Token).Forget();
+            }
+        }
+
+        private async UniTaskVoid LoadSelectedDecorImageAsync(string decorId, CancellationToken ct)
+        {
+            if (_sprites == null || View == null || View.SelectedDecorImage == null) return;
+
+            Sprite sprite;
+            try { sprite = await _sprites.GetSpriteAsync(decorId, ct); }
+            catch (System.OperationCanceledException) { return; }
+
+            if (ct.IsCancellationRequested || View == null || View.SelectedDecorImage == null) return;
+            View.SelectedDecorImage.sprite = sprite;
         }
 
         private void HideHud()
         {
             if (View != null && View.SelectedSlotHud != null) View.SelectedSlotHud.SetActive(false);
+
+            if (View != null)
+            {
+                if (View.SelectedDecorNameLabel != null) View.SelectedDecorNameLabel.text = string.Empty;
+                if (View.SelectedDecorImage != null) View.SelectedDecorImage.sprite = null;
+            }
 
             if (!string.IsNullOrEmpty(_selectedSlotId) && View != null && View.SlotAnchors != null)
                 foreach (var anchor in View.SlotAnchors)
