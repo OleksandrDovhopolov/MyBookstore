@@ -477,7 +477,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: -8.5}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: -25.5}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &5557661255874555323
 CanvasRenderer:
@@ -1037,8 +1037,8 @@ MonoBehaviour:
   m_Padding:
     m_Left: 0
     m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
+    m_Top: 15
+    m_Bottom: 15
   m_ChildAlignment: 4
   m_Spacing: 10
   m_ChildForceExpandWidth: 0
@@ -1179,7 +1179,6 @@ MonoBehaviour:
   _bonusesPool:
     prefab: {fileID: 7607727356835449585, guid: 8442aab9ef48739489001be19089dc8f, type: 3}
     parent: {fileID: 376470825743705691}
-  _bonusIconPlaceholder: {fileID: -3603249980678108757, guid: 9a796c3d323f847c9bf9e8e167111f61, type: 3}
   _characteristicsPool:
     prefab: {fileID: 5468523478682015881, guid: 0ad39245618f92c499f6cdc41a077500, type: 3}
     parent: {fileID: 4437012886901948443}
@@ -1907,7 +1906,7 @@ RectTransform:
   m_GameObject: {fileID: 8964634229011181633}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 351796691533624350}

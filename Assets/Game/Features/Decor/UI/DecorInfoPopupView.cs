@@ -16,10 +16,8 @@ namespace Game.Decor.UI
         [SerializeField] private TextMeshProUGUI _descriptionLabel;
 
         [Header("Bonuses scroll (icon + description + percent)")]
-        [Tooltip("Row prefab + scroll content parent are assigned on the pool in the inspector.")]
+        [Tooltip("Row prefab + scroll content parent are assigned on the pool in the inspector. Each row loads the genre's book sprite by id.")]
         [SerializeField] private UIListPool<DecorBonusItemView> _bonusesPool = new();
-        [Tooltip("Placeholder icon used for every bonus row until per-bonus Addressable icons exist.")]
-        [SerializeField] private Sprite _bonusIconPlaceholder;
 
         [Header("Characteristics scroll (icon + label)")]
         [Tooltip("Chip prefab + scroll content parent are assigned on the pool in the inspector.")]
@@ -36,7 +34,6 @@ namespace Game.Decor.UI
         public TextMeshProUGUI DescriptionLabel => _descriptionLabel;
 
         public UIListPool<DecorBonusItemView> BonusesPool => _bonusesPool;
-        public Sprite BonusIconPlaceholder => _bonusIconPlaceholder;
 
         public UIListPool<DecorCharacteristicItemView> CharacteristicsPool => _characteristicsPool;
         public Sprite CharacteristicIconPlaceholder => _characteristicIconPlaceholder;

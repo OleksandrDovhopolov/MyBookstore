@@ -103,7 +103,7 @@ namespace Game.Decor.UI
                     var percent = Mathf.RoundToInt((mod.Multiplier - 1f) * 100f);
                     var sign = percent >= 0 ? "+" : "";
                     var color = mod.Multiplier < 1f ? View.NegativeColor : View.PositiveColor;
-                    pool.GetNext().Bind(View.BonusIconPlaceholder, mod.Genre, $"{sign}{percent}%", color);
+                    pool.GetNext().Bind(mod.Genre, $"{sign}{percent}%", color, _sprites);
                 }
             }
             pool.DisableNonActive();
