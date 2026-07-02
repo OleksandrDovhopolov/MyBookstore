@@ -9,11 +9,6 @@ using VContainer;
 
 namespace Game.Decor.UI
 {
-    /// <summary>
-    /// Read-only decor info popup (<see cref="WindowType.Popup"/>), shown additively over
-    /// <see cref="DecorPlacementWindow"/>. Opened with <see cref="DecorInfoPopupArgs"/>; does not
-    /// touch placement or the placement window's selection.
-    /// </summary>
     [Window("DecorInfoPopup", WindowType.Popup)]
     public sealed class DecorInfoPopup : WindowController<DecorInfoPopupView>
     {
@@ -30,7 +25,6 @@ namespace Game.Decor.UI
 
         protected override void OnInit()
         {
-            if (View.CloseButton != null) View.CloseButton.onClick.AddListener(OnCloseClicked);
         }
 
         protected override void OnShowStart() => Apply();
@@ -42,7 +36,6 @@ namespace Game.Decor.UI
         protected override void OnDispose()
         {
             CancelIcon();
-            if (View != null && View.CloseButton != null) View.CloseButton.onClick.RemoveListener(OnCloseClicked);
         }
 
         private void Apply()
@@ -95,7 +88,5 @@ namespace Game.Decor.UI
                 sb.Append('\n').Append(string.Join(", ", config.AtmosphereTags));
             return sb.ToString();
         }
-
-        private void OnCloseClicked() => CloseAsync().Forget();
     }
 }
