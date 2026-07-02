@@ -10,13 +10,6 @@ using UnityEngine.UI;
 
 namespace Game.Decor.UI
 {
-    /// <summary>
-    /// A single decor card in the bottom inventory panel of <see cref="DecorPlacementWindow"/>.
-    /// Visual replacement for the debug-only <see cref="DecorInventoryRowView"/>. States:
-    /// Available (clickable to select) / Selected (highlighted) / Placed (badge shown, select
-    /// disabled — the decor is already in a slot). Info button is always active.
-    /// The icon is loaded by decor id via <see cref="IUiSpriteProvider"/> (not IconAddress).
-    /// </summary>
     public sealed class DecorInventoryCardView : MonoBehaviour, ICleanup
     {
         [Header("Content")]
