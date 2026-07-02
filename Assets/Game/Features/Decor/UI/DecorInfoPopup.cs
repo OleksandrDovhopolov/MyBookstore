@@ -1,10 +1,11 @@
-using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Newspaper.UI;
 using Game.UI;
+using UIShared;
+using UnityEngine;
 using VContainer;
 
 namespace Game.Decor.UI
@@ -12,6 +13,11 @@ namespace Game.Decor.UI
     [Window("DecorInfoPopup", WindowType.Popup)]
     public sealed class DecorInfoPopup : WindowController<DecorInfoPopupView>
     {
+        // DecorConfig has no authored flavor description yet. Placeholder shown in _descriptionLabel
+        // until a Description field exists on DecorConfig (then feed config.Description here instead).
+        private const string DescriptionPlaceholder =
+            "TODO: item description. Add a Description field to DecorConfig and pass it here.";
+
         private IConfigsService _configs;
         private IUiSpriteProvider _sprites;
         private CancellationTokenSource _iconCts;
@@ -45,9 +51,10 @@ namespace Game.Decor.UI
             if (config == null) return;
 
             if (View.NameLabel != null) View.NameLabel.text = config.DisplayName ?? config.Id;
-            if (View.BonusesLabel != null)
-                View.BonusesLabel.text = DecorSlotRowView.FormatEffects(config, View.PositiveColor, View.NegativeColor);
-            if (View.DescriptionLabel != null) View.DescriptionLabel.text = BuildDescription(config);
+            if (View.DescriptionLabel != null) View.DescriptionLabel.text = DescriptionPlaceholder;
+
+            RenderBonuses(config);
+            RenderCharacteristics(config);
 
             if (View.Icon != null)
             {
@@ -80,13 +87,46 @@ namespace Game.Decor.UI
             _iconCts = null;
         }
 
-        private static string BuildDescription(DecorConfig config)
+        // Bonuses: one pooled row per genre multiplier (icon placeholder + genre + signed percent).
+        private void RenderBonuses(DecorConfig config)
         {
-            var sb = new StringBuilder();
-            sb.Append($"{config.PositionType} · {config.Size} · {config.Rarity}");
-            if (config.AtmosphereTags != null && config.AtmosphereTags.Length > 0)
-                sb.Append('\n').Append(string.Join(", ", config.AtmosphereTags));
-            return sb.ToString();
+            var pool = View.BonusesPool;
+            if (pool == null) return;
+
+            pool.DisableAll();
+            var mods = config.GenreMultipliers;
+            if (mods != null)
+            {
+                foreach (var mod in mods)
+                {
+                    if (mod == null) continue;
+                    var percent = Mathf.RoundToInt((mod.Multiplier - 1f) * 100f);
+                    var sign = percent >= 0 ? "+" : "";
+                    var color = mod.Multiplier < 1f ? View.NegativeColor : View.PositiveColor;
+                    pool.GetNext().Bind(View.BonusIconPlaceholder, mod.Genre, $"{sign}{percent}%", color);
+                }
+            }
+            pool.DisableNonActive();
         }
+
+        // Characteristics: one pooled chip per trait (position, size, atmosphere tags).
+        private void RenderCharacteristics(DecorConfig config)
+        {
+            var pool = View.CharacteristicsPool;
+            if (pool == null) return;
+
+            pool.DisableAll();
+            var icon = View.CharacteristicIconPlaceholder;
+            AddCharacteristic(pool, icon, config.PositionType.ToString());
+            AddCharacteristic(pool, icon, config.Size.ToString());
+            if (config.AtmosphereTags != null)
+                foreach (var tag in config.AtmosphereTags)
+                    if (!string.IsNullOrEmpty(tag))
+                        AddCharacteristic(pool, icon, tag);
+            pool.DisableNonActive();
+        }
+
+        private static void AddCharacteristic(UIListPool<DecorCharacteristicItemView> pool, Sprite icon, string text)
+            => pool.GetNext().Bind(icon, text);
     }
 }
