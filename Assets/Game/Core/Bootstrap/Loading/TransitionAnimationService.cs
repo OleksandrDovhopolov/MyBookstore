@@ -11,7 +11,7 @@ namespace Game.Bootstrap.Loading
     public sealed class TransitionAnimationService : MonoBehaviour, ITransitionAnimationService
     {
         private const string LogPrefix = "[Transition]";
-        private const float MinAnimationDuration = 2f;
+        private const float MinAnimationDuration = 0.5f;
 
         [SerializeField] private GameObject _cover;
         [SerializeField] private GameObject _spinner;
