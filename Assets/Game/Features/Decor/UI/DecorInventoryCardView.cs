@@ -34,7 +34,13 @@ namespace Game.Decor.UI
             if (_infoButton != null) _infoButton.onClick.AddListener(OnInfoClicked);
         }
 
-        public void Bind(DecorConfig config, bool isPlaced, IUiSpriteProvider sprites, Action<string> onSelect, Action<string> onInfo)
+        public void Bind(
+            DecorConfig config,
+            bool isPlaced,
+            bool selectable,
+            IUiSpriteProvider sprites,
+            Action<string> onSelect,
+            Action<string> onInfo)
         {
             DecorId = config.Id;
             _onSelect = onSelect;
@@ -45,7 +51,7 @@ namespace Game.Decor.UI
             // A placed decor cannot be placed again (domain returns AlreadyPlaced), so it is not
             // selectable — only its badge and info are shown.
             if (_placedBadge != null) _placedBadge.SetActive(isPlaced);
-            if (_selectButton != null) _selectButton.interactable = !isPlaced;
+            if (_selectButton != null) _selectButton.interactable = selectable && !isPlaced;
 
             SetSelected(false);
             LoadIcon(config.Id, sprites);

@@ -266,7 +266,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -317,6 +317,7 @@ GameObject:
   - component: {fileID: 5214740709094021736}
   - component: {fileID: 8153343696507330090}
   - component: {fileID: 3374340327989503814}
+  - component: {fileID: 2844860413338271251}
   m_Layer: 5
   m_Name: Marker
   m_TagString: Untagged
@@ -425,6 +426,20 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2844860413338271251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6262355843170722796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd05914f388699a498d6570824d492cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _duration: 0.18
+  _animationRoot: {fileID: 8439945345692887239}
 --- !u!1 &7363412106569643523
 GameObject:
   m_ObjectHideFlags: 0

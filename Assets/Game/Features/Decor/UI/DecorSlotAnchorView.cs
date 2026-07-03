@@ -85,6 +85,26 @@ namespace Game.Decor.UI
             if (_placedButton != null) _placedButton.interactable = true;
         }
 
+        /// <summary>Temporary UI-only preview for an empty slot. It looks placed, but cannot open the
+        /// occupied-slot HUD and is not committed until the controller applies it.</summary>
+        public void SetPreview(Sprite sprite)
+        {
+            KillActiveTween();
+
+            SetHighlighted(false);
+            if (_markerButton != null) _markerButton.gameObject.SetActive(false);
+
+            if (_placedDecorImage != null)
+            {
+                _placedDecorImage.sprite = sprite;
+                _placedDecorImage.gameObject.SetActive(true);
+                _placedDecorImage.transform.localScale = Vector3.one;
+            }
+            if (_placedGroup != null) _placedGroup.alpha = 1f;
+            if (_placedButton != null) _placedButton.interactable = false;
+            SetSelectedOutline(true);
+        }
+
         /// <summary>Toggle the "valid target" hint only (the green highlight). Availability is a separate
         /// concern — see <see cref="SetMarkerInteractable"/>.</summary>
         public void SetHighlighted(bool highlighted)
