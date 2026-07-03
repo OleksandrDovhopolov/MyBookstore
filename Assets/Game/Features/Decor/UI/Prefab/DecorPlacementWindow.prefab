@@ -1296,6 +1296,8 @@ MonoBehaviour:
   _placedButton: {fileID: 8597839953283581897}
   _placedGroup: {fileID: 8327035262298178093}
   _selectedOutline: {fileID: 0}
+  _availabilityGroup: {fileID: 0}
+  _unavailableAlpha: 0.35
   _placeDuration: 0.25
   _removeDuration: 0.2
 --- !u!225 &3629738489034921184
@@ -2123,6 +2125,8 @@ MonoBehaviour:
   _placedButton: {fileID: 6155687454198376036}
   _placedGroup: {fileID: 1733661779209061571}
   _selectedOutline: {fileID: 0}
+  _availabilityGroup: {fileID: 0}
+  _unavailableAlpha: 0.35
   _placeDuration: 0.25
   _removeDuration: 0.2
 --- !u!225 &7149079963345078532

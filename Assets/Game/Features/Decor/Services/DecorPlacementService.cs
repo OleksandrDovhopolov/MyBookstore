@@ -111,6 +111,61 @@ namespace Game.Decor.Services
             return DecorPlacementResult.Success;
         }
 
+        public async UniTask<DecorPlacementResult> ReplaceAsync(string decorId, string slotId, CancellationToken ct)
+        {
+            if (string.IsNullOrEmpty(decorId) || string.IsNullOrEmpty(slotId))
+                return DecorPlacementResult.SlotNotFound;
+
+            if (!_inventory.Has(decorId))
+                return DecorPlacementResult.DecorNotInInventory;
+
+            var decorConfig = _configs.Get<DecorConfig>(decorId);
+            if (decorConfig == null)
+                return DecorPlacementResult.DecorConfigMissing;
+
+            var slot = FindSlot(slotId);
+            if (slot == null)
+                return DecorPlacementResult.SlotNotFound;
+
+            if (decorConfig.PositionType != slot.PositionType)
+                return DecorPlacementResult.PositionTypeMismatch;
+
+            if ((int)decorConfig.Size > (int)slot.MaxSize)
+                return DecorPlacementResult.SizeMismatch;
+
+            DecorPlacementEntry target = null;
+            for (var i = 0; i < _state.Placements.Count; i++)
+            {
+                var placement = _state.Placements[i];
+                if (placement != null && string.Equals(placement.SlotId, slotId, StringComparison.OrdinalIgnoreCase))
+                {
+                    target = placement;
+                    break;
+                }
+            }
+
+            if (target == null)
+                return DecorPlacementResult.SlotEmpty;
+
+            if (string.Equals(target.DecorId, decorId, StringComparison.OrdinalIgnoreCase))
+                return DecorPlacementResult.Success;
+
+            for (var i = 0; i < _state.Placements.Count; i++)
+            {
+                var placement = _state.Placements[i];
+                if (placement == null || ReferenceEquals(placement, target)) continue;
+                if (string.Equals(placement.DecorId, decorId, StringComparison.OrdinalIgnoreCase))
+                    return DecorPlacementResult.AlreadyPlaced;
+            }
+
+            target.DecorId = decorId;
+            Debug.Log($"{LogTag} ReplaceAsync ENTER save: slot={slotId}, decor={decorId}, totalPlacements={_state.Placements.Count}");
+            await _storage.SaveAsync(_state, ct);
+            Debug.Log($"{LogTag} ReplaceAsync EXIT save: slot={slotId}, decor={decorId} — persisted.");
+            PlacementChanged?.Invoke();
+            return DecorPlacementResult.Success;
+        }
+
         public async UniTask UnplaceAsync(string slotId, CancellationToken ct)
         {
             if (string.IsNullOrEmpty(slotId)) return;

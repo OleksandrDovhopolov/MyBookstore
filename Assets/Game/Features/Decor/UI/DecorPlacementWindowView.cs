@@ -33,7 +33,7 @@ namespace Game.Decor.UI
         [SerializeField] private GameObject _selectedSlotHud;
         [Tooltip("Optional full-screen transparent button behind the HUD; clicking it closes the HUD.")]
         [SerializeField] private Button _hudBackdrop;
-        [SerializeField] private Button _replaceButton; // MVP: visible but disabled
+        [SerializeField] private Button _replaceButton; // Hidden in the current UX; replacement starts from filtered inventory.
         [SerializeField] private Button _removeButton;
 
         [Header("Preview actions")]

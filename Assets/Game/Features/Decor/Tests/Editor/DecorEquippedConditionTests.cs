@@ -67,6 +67,7 @@ namespace Game.Decor.Tests.Editor
             public IReadOnlyList<DecorPlacementEntry> GetAllPlacements() => Array.Empty<DecorPlacementEntry>();
             public string GetDecorInSlot(string slotId) => null;
             public UniTask<DecorPlacementResult> PlaceAsync(string decorId, string slotId, CancellationToken ct) => default;
+            public UniTask<DecorPlacementResult> ReplaceAsync(string decorId, string slotId, CancellationToken ct) => default;
             public UniTask UnplaceAsync(string slotId, CancellationToken ct) => UniTask.CompletedTask;
             public UniTask ClearAllAsync(CancellationToken ct) => UniTask.CompletedTask;
 

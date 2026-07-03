@@ -21,13 +21,13 @@ Core rule:
 
 - The domain service remains the source of truth for committed placement.
 - Preview state lives only in `DecorPlacementWindow` / `DecorSlotAnchorView`.
-- `PlaceAsync` is called only from `Apply`.
+- `PlaceAsync` / `ReplaceAsync` are called only from `Apply`.
 - Occupied point tools are opened only by clicking already placed decor.
 
-## Stage 1 Scope: Empty Placement + Occupied Availability Prep
+## Stage 1 Scope: Empty Placement + Replacement Preview
 
-This stage covers first placement into an empty point plus the visual/filter groundwork
-needed for a future replace flow.
+This stage covers first placement into an empty point and replacement of already placed
+decor through the same preview confirmation model.
 
 Included:
 
@@ -38,12 +38,13 @@ Included:
 - Click item first, then choose a compatible point for preview.
 - Dim unavailable points, including occupied points.
 - Click occupied point to open tools and filter inventory by that point type.
+- Click a replacement item for the occupied point.
+- Preview the replacement in the same point.
 - `Cancel` resets the flow.
-- `Apply` commits the preview.
+- `Apply` commits the preview through `PlaceAsync` or `ReplaceAsync`.
 
 Not included:
 
-- Full replace flow for an occupied point.
 - Drag and drop.
 - Purchase flow.
 - World-space placement.
@@ -70,8 +71,9 @@ Current UI filter:
 - already placed items may still be shown with their existing placed badge/disabled
   selection behavior.
 
-Domain validation remains stricter than the UI and still rejects `SizeMismatch`,
-`SlotOccupied`, and `AlreadyPlaced` on `Apply`.
+Domain validation remains stricter than the UI. Empty placement can still reject
+`SizeMismatch`, `SlotOccupied`, and `AlreadyPlaced` on `Apply`; replacement can still reject
+`SlotEmpty`, `SizeMismatch`, and `AlreadyPlaced`.
 
 ## Case 1: Window Open
 
@@ -256,31 +258,50 @@ Expected behavior:
   - keep the UI in a recoverable state;
   - recommended MVP behavior: keep preview active so the player can cancel or choose another item.
 
-## Case 9: Click Occupied Point
+## Case 9: Click Occupied Point / Replace Preview
 
 Action:
 
 - Player clicks a point that already has committed decor.
 
-Expected behavior for current stage:
+Expected behavior after clicking the occupied point:
 
 - Empty-point preview flow is not started.
 - Any active preview/filter/card selection is reset first.
-- Existing occupied-point HUD behavior remains.
-- Remove remains available.
-- Replace remains visible but disabled.
+- Occupied-point HUD opens.
+- Remove is available.
+- Replace button is hidden; replacement starts by choosing another item from inventory.
 - Inventory is filtered by the clicked point's `PositionType`.
 - Clicked occupied point stays normal and outlined.
 - All other points are dimmed.
 - Occupied points remain clickable for tools.
 
-Future:
+Action:
 
-- Full replace flow can reuse the same preview model as
-  `PlacedSlotSelected -> choose item -> replacement preview -> Apply`.
-- `Cancel` should restore the original committed visual.
-- `Apply` should commit the replacement through a domain-supported operation or explicit
-  unplace/place sequence after the replacement rules are defined.
+- Player clicks a different available item in the filtered inventory.
+
+Expected replacement preview behavior:
+
+- Occupied-point HUD stays open.
+- Remove is hidden/disabled while replacement preview is pending.
+- The selected item sprite is shown as preview in the same occupied point.
+- Preview `Cancel` and `Apply` are shown.
+- Clicking another available item replaces the preview with the latest item.
+- No committed placement is changed before `Apply`.
+
+Cancel:
+
+- The original committed sprite is restored synchronously.
+- Inventory filter is cleared.
+- HUD and preview actions are hidden.
+- Availability visual resets for all points.
+
+Apply:
+
+- Calls `ReplaceAsync(previewDecorId, selectedPointId)`.
+- Does not do UI-side `UnplaceAsync + PlaceAsync`.
+- On success, committed render reloads the new decor for the same point.
+- On failure, preview remains recoverable so the player can cancel or choose another item.
 
 ## Case 10: Backdrop / Outside Click
 
@@ -288,6 +309,7 @@ Current behavior:
 
 - `HudBackdrop` acts like transient reset.
 - Preview is cleared.
+- Replacement preview restores the original committed sprite.
 - Inventory filter is cleared.
 - Availability visual is reset for all points.
 - Placed-slot HUD is closed.
@@ -302,6 +324,7 @@ Action:
 Expected behavior:
 
 - Any preview is cleared.
+- Replacement preview restores the original committed sprite before clearing state.
 - Selected point and selected item are cleared.
 - Inventory filter is cleared.
 - `Cancel` and `Apply` are hidden.
@@ -321,6 +344,7 @@ Suggested transient fields:
 
 - selected point id;
 - selected/preview decor id;
+- replace original decor id and sprite snapshot;
 - slot type/slot id filter;
 - apply in progress flag;
 - preview icon cancellation token.
@@ -333,6 +357,10 @@ Suggested transient fields:
 4. Click empty point: selected point normal/outlined, all others dim, inventory filtered.
 5. Click item after point: preview appears, `Apply` enables.
 6. Click item first, then compatible point: preview appears and no instant placement occurs.
-7. Click occupied point: tools open, inventory filters by point type, Replace disabled.
-8. Click backdrop/cancel/close: preview/filter/dimming/tools all reset.
-9. Apply preview: placement commits only through `Apply` and survives re-render.
+7. Click occupied point: tools open, inventory filters by point type, Replace is hidden.
+8. Click replacement item: tools stay open, Remove hides, preview actions appear.
+9. Switch replacement item: preview changes to the latest item.
+10. Cancel replacement: original sprite returns immediately and filters/dimming reset.
+11. Apply replacement: replacement commits only through `ReplaceAsync` and survives re-render.
+12. Click backdrop/cancel/close: preview/filter/dimming/tools all reset.
+13. Apply empty preview: placement commits only through `Apply` and survives re-render.

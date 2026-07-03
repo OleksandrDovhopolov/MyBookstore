@@ -96,6 +96,8 @@ namespace Game.LocationEntry.Tests.Editor
             public string GetDecorInSlot(string slotId) => null;
             public UniTask<DecorPlacementResult> PlaceAsync(string decorId, string slotId, CancellationToken ct)
                 => UniTask.FromResult(DecorPlacementResult.Success);
+            public UniTask<DecorPlacementResult> ReplaceAsync(string decorId, string slotId, CancellationToken ct)
+                => UniTask.FromResult(DecorPlacementResult.Success);
             public UniTask UnplaceAsync(string slotId, CancellationToken ct) => UniTask.CompletedTask;
             public UniTask ClearAllAsync(CancellationToken ct) => UniTask.CompletedTask;
             public event Action PlacementChanged { add { } remove { } }

@@ -42,6 +42,8 @@ namespace Game.Decor.UI
 
         public string SlotId => _slotId;
 
+        public Sprite CurrentPlacedSprite => _placedDecorImage != null ? _placedDecorImage.sprite : null;
+
         /// <summary>Raised when the empty-slot marker is clicked (decor-first placement target).</summary>
         public event Action OnMarkerClicked;
 
