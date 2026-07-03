@@ -1295,7 +1295,8 @@ MonoBehaviour:
   _placedDecorImage: {fileID: 6563944037573753357}
   _placedButton: {fileID: 8597839953283581897}
   _placedGroup: {fileID: 8327035262298178093}
-  _selectedOutline: {fileID: 0}
+  _plainMaterial: {fileID: 0}
+  _outlineMaterial: {fileID: 2100000, guid: 96708cbe5c9935f4692e8558f4f16858, type: 2}
   _availabilityGroup: {fileID: 0}
   _unavailableAlpha: 0.35
   _placeDuration: 0.25
@@ -1616,7 +1617,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &4008242648231572184
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1664,9 +1665,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 0824ad42d18b34a02a71938e31f68d11, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -2124,7 +2125,8 @@ MonoBehaviour:
   _placedDecorImage: {fileID: 761894517645707198}
   _placedButton: {fileID: 6155687454198376036}
   _placedGroup: {fileID: 1733661779209061571}
-  _selectedOutline: {fileID: 0}
+  _plainMaterial: {fileID: 0}
+  _outlineMaterial: {fileID: 2100000, guid: 96708cbe5c9935f4692e8558f4f16858, type: 2}
   _availabilityGroup: {fileID: 0}
   _unavailableAlpha: 0.35
   _placeDuration: 0.25

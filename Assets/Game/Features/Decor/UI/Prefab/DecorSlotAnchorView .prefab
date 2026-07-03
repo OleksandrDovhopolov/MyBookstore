@@ -58,7 +58,8 @@ MonoBehaviour:
   _placedDecorImage: {fileID: 3245559328073447379}
   _placedButton: {fileID: 401042893633979038}
   _placedGroup: {fileID: 7411170491288338410}
-  _selectedOutline: {fileID: 0}
+  _plainMaterial: {fileID: 0}
+  _outlineMaterial: {fileID: 2100000, guid: 96708cbe5c9935f4692e8558f4f16858, type: 2}
   _availabilityGroup: {fileID: 6704829645720131621}
   _unavailableAlpha: 0.35
   _placeDuration: 0.25

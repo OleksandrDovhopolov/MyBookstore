@@ -27,7 +27,8 @@ namespace Game.Decor.UI
         [SerializeField] private Image _placedDecorImage; // decor visual when the slot is occupied
         [SerializeField] private Button _placedButton;    // click on placed decor → opens the slot HUD
         [SerializeField] private CanvasGroup _placedGroup; // drives the place/remove alpha tween
-        [SerializeField] private GameObject _selectedOutline; // optional outline when this slot is selected
+        [SerializeField] private Material _plainMaterial; // null means default UGUI material
+        [SerializeField] private Material _outlineMaterial; // shader outline when this slot is selected
 
         [Header("Availability")]
         [SerializeField] private CanvasGroup _availabilityGroup; // dims the whole anchor, separate from place/remove tween alpha
@@ -64,6 +65,7 @@ namespace Game.Decor.UI
         {
             KillActiveTween();
             SetAvailabilityVisual(true);
+            SetSelectedOutline(false);
 
             if (_placedDecorImage != null)
             {
@@ -75,7 +77,6 @@ namespace Game.Decor.UI
             if (_markerButton != null) _markerButton.gameObject.SetActive(true);
             SetMarkerInteractable(true);
             SetHighlighted(false);
-            if (_selectedOutline != null) _selectedOutline.SetActive(false);
         }
 
         /// <summary>Occupied slot: show the decor sprite (fully visible), hide the marker.</summary>
@@ -83,6 +84,7 @@ namespace Game.Decor.UI
         {
             KillActiveTween();
             SetAvailabilityVisual(true);
+            SetSelectedOutline(false);
 
             SetHighlighted(false);
             if (_markerButton != null) _markerButton.gameObject.SetActive(false);
@@ -141,7 +143,11 @@ namespace Game.Decor.UI
 
         public void SetSelectedOutline(bool selected)
         {
-            if (_selectedOutline != null) _selectedOutline.SetActive(selected);
+            if (_placedDecorImage == null) return;
+
+            _placedDecorImage.material = selected && _outlineMaterial != null
+                ? _outlineMaterial
+                : _plainMaterial;
         }
 
         /// <summary>Place animation: scale 0.85 → 1.08 → 1.0, alpha 0 → 1. Visual only.</summary>
