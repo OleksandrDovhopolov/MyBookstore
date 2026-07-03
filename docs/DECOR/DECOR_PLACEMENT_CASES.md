@@ -3,10 +3,9 @@
 ## Purpose
 
 This document describes user-facing decor placement cases for `DecorPlacementWindow`.
-It complements:
+It is the case-by-case reference; the overview/plan/status live in:
 
-- `docs/INPROGRESS/DECOR_PLACEMENT_MVP_PLAN.md`
-- `docs/INPROGRESS/DECOR_PLACEMENT_MVP_PROCESS.md`
+- `docs/INPROGRESS/DECOR_PLACEMENT_MVP.md` (merged plan + process)
 
 Terms:
 
