@@ -45,6 +45,10 @@ namespace Game.Decor.UI
         private string _selectedSlotId; // placed slot whose HUD is open
         private bool _firstRender;
 
+        // Slot-first inventory filter: when set, RenderInventory shows only decor of this PositionType.
+        // Set by clicking a slot, cleared by the HUD backdrop (or window open). Independent of selection.
+        private DecorPositionType? _slotTypeFilter;
+
         [Inject]
         public void InjectServices(
             IDecorPlacementService placement,
@@ -66,7 +70,7 @@ namespace Game.Decor.UI
             if (View.ReplaceButton != null) View.ReplaceButton.interactable = false; // MVP: no replace flow
 
             if (View.RemoveButton != null) View.RemoveButton.onClick.AddListener(OnRemoveClicked);
-            if (View.HudBackdrop != null) View.HudBackdrop.onClick.AddListener(HideHud);
+            if (View.HudBackdrop != null) View.HudBackdrop.onClick.AddListener(OnBackdropClicked);
 
             // Anchors are authored in the prefab and live as long as the view — subscribe once.
             if (View.SlotAnchors != null)
@@ -88,6 +92,7 @@ namespace Game.Decor.UI
 
             // Clean, non-animated re-sync on every open.
             _placedSlots.Clear();
+            _slotTypeFilter = null; // fresh open shows the full inventory
             _firstRender = true;
             Render();
         }
@@ -108,7 +113,7 @@ namespace Game.Decor.UI
 
             if (View == null) return;
             if (View.RemoveButton != null) View.RemoveButton.onClick.RemoveListener(OnRemoveClicked);
-            if (View.HudBackdrop != null) View.HudBackdrop.onClick.RemoveListener(HideHud);
+            if (View.HudBackdrop != null) View.HudBackdrop.onClick.RemoveListener(OnBackdropClicked);
         }
 
         private void OnInventoryChanged(InventoryChangeEvent _) => Render();
@@ -179,6 +184,9 @@ namespace Game.Decor.UI
             {
                 var config = _configs.Get<DecorConfig>(item.ItemId);
                 if (config == null) continue;
+                // Slot-first filter: hide decor that doesn't match the clicked slot's type. Checked
+                // before GetNext() so a hidden card never consumes a pooled view.
+                if (_slotTypeFilter.HasValue && config.PositionType != _slotTypeFilter.Value) continue;
                 var placed = !string.IsNullOrEmpty(FindPlacedSlot(item.ItemId));
                 var card = pool.GetNext();
                 card.Bind(config, placed, _sprites, OnCardSelect, OnCardInfo);
@@ -219,6 +227,7 @@ namespace Game.Decor.UI
 
             ClearSelection(); // switching to a placed slot drops any decor-card selection
             ShowHud(anchor);
+            TrySetSlotFilter(anchor.SlotId); // filter inventory to this slot's type
         }
 
         private void ShowHud(DecorSlotAnchorView anchor)
@@ -285,6 +294,24 @@ namespace Game.Decor.UI
             if (_state == State.PlacedSlotSelected) _state = State.Default;
         }
 
+        // The full-screen backdrop is the reset point: clear the slot-first inventory filter, restore
+        // the full list, and close the tools panel (its prior sole responsibility).
+        private void OnBackdropClicked()
+        {
+            _slotTypeFilter = null;
+            RenderInventory();
+            HideHud();
+        }
+
+        // Slot-first filter: show only inventory decor of the clicked slot's PositionType. Null-safe
+        // against a prefab/config mismatch; re-renders the inventory to apply immediately.
+        private void TrySetSlotFilter(string slotId)
+        {
+            if (!BuildSlotMap().TryGetValue(slotId, out var slot) || slot == null) return;
+            _slotTypeFilter = slot.PositionType;
+            RenderInventory();
+        }
+
         private void OnRemoveClicked()
         {
             if (string.IsNullOrEmpty(_selectedSlotId)) return;
@@ -347,8 +374,19 @@ namespace Game.Decor.UI
 
         private void OnMarkerClicked(DecorSlotAnchorView anchor)
         {
-            if (_state != State.DecorSelected || string.IsNullOrEmpty(_selectedDecorId)) return;
-            PlaceSelectedAsync(anchor.SlotId).Forget();
+            if (anchor == null) return;
+
+            // With a card selected this is a placement click (decor-first). Otherwise it's a
+            // slot-first click: filter the inventory to this slot's type.
+            if (_state == State.DecorSelected && !string.IsNullOrEmpty(_selectedDecorId))
+            {
+                PlaceSelectedAsync(anchor.SlotId).Forget();
+                return;
+            }
+
+            // Clicking an empty slot dismisses the placed-slot tools (and sets the inventory filter).
+            HideHud();
+            TrySetSlotFilter(anchor.SlotId);
         }
 
         private async UniTaskVoid PlaceSelectedAsync(string slotId)

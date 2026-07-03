@@ -182,6 +182,7 @@ GameObject:
   - component: {fileID: 2005887035286365578}
   - component: {fileID: 3245559328073447379}
   - component: {fileID: 401042893633979038}
+  - component: {fileID: 1470982015359863566}
   m_Layer: 5
   m_Name: DecorImage
   m_TagString: Untagged
@@ -290,6 +291,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1470982015359863566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5169977825382109397}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd05914f388699a498d6570824d492cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _duration: 0.18
+  _animationRoot: {fileID: 7776140920729054166}
 --- !u!1 &6262355843170722796
 GameObject:
   m_ObjectHideFlags: 0
