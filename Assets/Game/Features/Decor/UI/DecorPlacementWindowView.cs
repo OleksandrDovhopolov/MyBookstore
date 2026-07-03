@@ -38,6 +38,11 @@ namespace Game.Decor.UI
         [SerializeField] private Button _cancelButton;
         [SerializeField] private Button _applyButton;
 
+        [Header("Preview actions")]
+        [SerializeField] private GameObject _previewActionsRoot;
+        [SerializeField] private Button _cancelPreviewButton;
+        [SerializeField] private Button _applyPreviewButton;
+
         [Header("Audio")]
         [Tooltip("Optional. Played on a successful place; leave empty for silence until a clip exists.")]
         [SerializeField] private AudioClip _placeClip;
@@ -58,6 +63,10 @@ namespace Game.Decor.UI
         public Button RemoveButton => _removeButton;
         public Button CancelButton => _cancelButton;
         public Button ApplyButton => _applyButton;
+
+        public GameObject PreviewActionsRoot => _previewActionsRoot;
+        public Button CancelPreviewButton => _cancelPreviewButton;
+        public Button ApplyPreviewButton => _applyPreviewButton;
 
         public AudioClip PlaceClip => _placeClip;
         public AudioClip RemoveClip => _removeClip;

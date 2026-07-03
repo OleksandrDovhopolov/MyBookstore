@@ -18,8 +18,8 @@ using VContainer;
 namespace Game.Decor.UI
 {
     /// <summary>
-    /// Visual decor placement window (MVP). Stage 1 preview flow: click an empty point, pick a
-    /// decor card to preview it in that point, then Apply to commit through the placement service.
+    /// Visual decor placement window (MVP). Stage 1 preview flow supports both point-first and
+    /// inventory-first selection, then Apply commits the preview through the placement service.
     /// The window renders committed service state and keeps preview state local/transient.
     /// </summary>
     [Window("DecorPlacementWindow", WindowType.Page)]
@@ -28,7 +28,9 @@ namespace Game.Decor.UI
         private enum State
         {
             Default,
-            EmptySlotPreview,
+            PointSelected,
+            DecorSelected,
+            Preview,
             PlacedSlotSelected,
         }
 
@@ -70,11 +72,12 @@ namespace Game.Decor.UI
             _cts = new CancellationTokenSource();
 
             if (View.SelectedSlotHud != null) View.SelectedSlotHud.SetActive(false);
+            if (View.PreviewActionsRoot != null) View.PreviewActionsRoot.SetActive(false);
             if (View.ReplaceButton != null) View.ReplaceButton.interactable = false; // MVP: no replace flow
 
             if (View.RemoveButton != null) View.RemoveButton.onClick.AddListener(OnRemoveClicked);
-            if (View.CancelButton != null) View.CancelButton.onClick.AddListener(OnCancelClicked);
-            if (View.ApplyButton != null) View.ApplyButton.onClick.AddListener(OnApplyClicked);
+            if (View.CancelPreviewButton != null) View.CancelPreviewButton.onClick.AddListener(OnCancelClicked);
+            if (View.ApplyPreviewButton != null) View.ApplyPreviewButton.onClick.AddListener(OnApplyClicked);
             if (View.HudBackdrop != null) View.HudBackdrop.onClick.AddListener(OnBackdropClicked);
 
             // Anchors are authored in the prefab and live as long as the view — subscribe once.
@@ -126,8 +129,8 @@ namespace Game.Decor.UI
 
             if (View == null) return;
             if (View.RemoveButton != null) View.RemoveButton.onClick.RemoveListener(OnRemoveClicked);
-            if (View.CancelButton != null) View.CancelButton.onClick.RemoveListener(OnCancelClicked);
-            if (View.ApplyButton != null) View.ApplyButton.onClick.RemoveListener(OnApplyClicked);
+            if (View.CancelPreviewButton != null) View.CancelPreviewButton.onClick.RemoveListener(OnCancelClicked);
+            if (View.ApplyPreviewButton != null) View.ApplyPreviewButton.onClick.RemoveListener(OnApplyClicked);
             if (View.HudBackdrop != null) View.HudBackdrop.onClick.RemoveListener(OnBackdropClicked);
         }
 
@@ -139,8 +142,6 @@ namespace Game.Decor.UI
             RenderSlots();
             ResetTransientToCommitted();
             RenderInventory();
-            HideHud();        // committed state changed → drop transient HUD
-            ClearSelection(); // renders reflect committed state → drop transient selection
             _firstRender = false;
         }
 
@@ -195,7 +196,7 @@ namespace Game.Decor.UI
             if (pool == null) return;
 
             pool.DisableAll();
-            var selectable = !string.IsNullOrEmpty(_previewPointId);
+            var selectable = true;
             var items = _inventory.GetByCategory(InventoryCategories.Decor);
             foreach (var item in items)
             {
@@ -213,7 +214,7 @@ namespace Game.Decor.UI
 
         private void OnCardSelect(string decorId)
         {
-            if (_state != State.EmptySlotPreview || string.IsNullOrEmpty(_previewPointId)) return;
+            HideHud();
 
             _previewDecorId = decorId;
             _applyInProgress = false;
@@ -223,8 +224,30 @@ namespace Game.Decor.UI
                 foreach (var card in View.CardsPool.ActiveElements())
                     if (card != null) card.SetSelected(card.DecorId == decorId);
 
-            SetApplyInteractable(true);
-            LoadPreviewSpriteAsync(decorId, _previewPointId).Forget();
+            if (!string.IsNullOrEmpty(_previewPointId))
+            {
+                if (!IsAnchorCompatibleWithDecor(_previewPointId, decorId))
+                {
+                    ClearPreviewVisualIfStillEmpty();
+                    _previewPointId = null;
+                    DisableEmptySlotsExceptCompatibleDecor(decorId);
+                    _state = State.DecorSelected;
+                    HidePreviewActions();
+                    return;
+                }
+
+                DisableEmptySlotsExcept(_previewPointId);
+                _state = State.Preview;
+                ShowPreviewActions();
+                SetApplyInteractable(true);
+                LoadPreviewSpriteAsync(decorId, _previewPointId).Forget();
+            }
+            else
+            {
+                DisableEmptySlotsExceptCompatibleDecor(decorId);
+                _state = State.DecorSelected;
+                HidePreviewActions();
+            }
         }
 
         // Info is a separate WindowType.Popup shown additively over this window; it does not touch
@@ -239,19 +262,6 @@ namespace Game.Decor.UI
 
             CancelPreview();
             ShowOccupiedHud(anchor);
-            TrySetSlotFilter(anchor.SlotId); // filter inventory to this slot's type
-        }
-
-        private void ShowPreviewHud()
-        {
-            if (View.SelectedSlotHud == null) return;
-
-            View.SelectedSlotHud.SetActive(true);
-            SetSelectedDecorInfoVisible(false);
-            SetButtonVisible(View.ReplaceButton, false, false);
-            SetButtonVisible(View.RemoveButton, false, false);
-            SetButtonVisible(View.CancelButton, true, true);
-            SetButtonVisible(View.ApplyButton, true, !string.IsNullOrEmpty(_previewDecorId) && !_applyInProgress);
         }
 
         private void ShowOccupiedHud(DecorSlotAnchorView anchor)
@@ -264,6 +274,7 @@ namespace Game.Decor.UI
             }
 
             View.SelectedSlotHud.SetActive(true);
+            HidePreviewActions();
             SetSelectedDecorInfoVisible(true);
             SetButtonVisible(View.ReplaceButton, true, false);
             SetButtonVisible(View.RemoveButton, true, true);
@@ -339,7 +350,21 @@ namespace Game.Decor.UI
 
         private void SetApplyInteractable(bool interactable)
         {
-            if (View?.ApplyButton != null) View.ApplyButton.interactable = interactable;
+            if (View?.ApplyPreviewButton != null) View.ApplyPreviewButton.interactable = interactable;
+        }
+
+        private void ShowPreviewActions()
+        {
+            if (View?.PreviewActionsRoot != null) View.PreviewActionsRoot.SetActive(true);
+            SetButtonVisible(View?.CancelPreviewButton, true, true);
+            SetButtonVisible(View?.ApplyPreviewButton, true, !string.IsNullOrEmpty(_previewDecorId) && !_applyInProgress);
+        }
+
+        private void HidePreviewActions()
+        {
+            if (View?.PreviewActionsRoot != null) View.PreviewActionsRoot.SetActive(false);
+            SetButtonVisible(View?.CancelPreviewButton, false, false);
+            SetButtonVisible(View?.ApplyPreviewButton, false, false);
         }
 
         private void SetSelectedDecorInfoVisible(bool visible)
@@ -381,31 +406,6 @@ namespace Game.Decor.UI
             catch (System.OperationCanceledException) { }
         }
 
-        // Focus filter: empty slots whose PositionType matches the focused decor stay interactable
-        // (and show the target hint); non-matching empty slots grey out. Occupied slots are untouched.
-        // Match is by PositionType only — a size-too-big slot stays clickable and PlaceAsync rejects it.
-        private void ApplyDecorFocusFilter(string decorId)
-        {
-            if (View.SlotAnchors == null) return;
-
-            var config = _configs.Get<DecorConfig>(decorId);
-            var slotById = BuildSlotMap();
-
-            foreach (var anchor in View.SlotAnchors)
-            {
-                if (anchor == null) continue;
-                if (!string.IsNullOrEmpty(_placement.GetDecorInSlot(anchor.SlotId))) continue; // occupied
-
-                var matching = config != null
-                    && slotById.TryGetValue(anchor.SlotId, out var slot)
-                    && slot != null
-                    && slot.PositionType == config.PositionType;
-
-                anchor.SetMarkerInteractable(matching);
-                anchor.SetHighlighted(matching);
-            }
-        }
-
         // "All available" state for empty slots: interactable, no hint. Occupied slots are skipped
         // entirely (marker hidden; placed button manages itself).
         private void ResetEmptySlotsAvailable()
@@ -419,13 +419,80 @@ namespace Game.Decor.UI
 
                 anchor.SetMarkerInteractable(true);
                 anchor.SetHighlighted(false);
+                anchor.SetSelectedOutline(false);
             }
+        }
+
+        private void DisableEmptySlotsExcept(string selectedSlotId)
+        {
+            if (View.SlotAnchors == null) return;
+
+            foreach (var anchor in View.SlotAnchors)
+            {
+                if (anchor == null) continue;
+                if (!string.IsNullOrEmpty(_placement.GetDecorInSlot(anchor.SlotId))) continue;
+
+                var selected = string.Equals(anchor.SlotId, selectedSlotId, StringComparison.OrdinalIgnoreCase);
+                anchor.SetMarkerInteractable(selected);
+                anchor.SetHighlighted(false);
+                anchor.SetSelectedOutline(selected);
+            }
+        }
+
+        private void DisableEmptySlotsExceptCompatibleDecor(string decorId)
+        {
+            if (View.SlotAnchors == null) return;
+
+            foreach (var anchor in View.SlotAnchors)
+            {
+                if (anchor == null) continue;
+                if (!string.IsNullOrEmpty(_placement.GetDecorInSlot(anchor.SlotId))) continue;
+
+                var compatible = IsAnchorCompatibleWithDecor(anchor.SlotId, decorId);
+                anchor.SetMarkerInteractable(compatible);
+                anchor.SetHighlighted(compatible);
+                anchor.SetSelectedOutline(false);
+            }
+        }
+
+        private bool IsAnchorCompatibleWithDecor(string slotId, string decorId)
+        {
+            var config = string.IsNullOrEmpty(decorId) ? null : _configs.Get<DecorConfig>(decorId);
+            if (config == null) return false;
+            return BuildSlotMap().TryGetValue(slotId, out var slot)
+                && slot != null
+                && slot.PositionType == config.PositionType;
         }
 
         private void OnMarkerClicked(DecorSlotAnchorView anchor)
         {
             if (anchor == null) return;
+
+            if (!string.IsNullOrEmpty(_previewDecorId))
+            {
+                EnterPreviewAtPoint(anchor);
+                return;
+            }
+
             EnterEmptyPreview(anchor);
+        }
+
+        private void EnterPreviewAtPoint(DecorSlotAnchorView anchor)
+        {
+            if (!IsAnchorCompatibleWithDecor(anchor.SlotId, _previewDecorId)) return;
+
+            ClearPreviewVisualIfStillEmpty();
+            HideHud();
+
+            _previewPointId = anchor.SlotId;
+            _applyInProgress = false;
+            _state = State.Preview;
+
+            DisableEmptySlotsExcept(anchor.SlotId);
+            anchor.SetSelectedOutline(true);
+            ShowPreviewActions();
+            SetApplyInteractable(true);
+            LoadPreviewSpriteAsync(_previewDecorId, anchor.SlotId).Forget();
         }
 
         private void EnterEmptyPreview(DecorSlotAnchorView anchor)
@@ -436,11 +503,12 @@ namespace Game.Decor.UI
             _previewPointId = anchor.SlotId;
             _previewDecorId = null;
             _applyInProgress = false;
-            _state = State.EmptySlotPreview;
+            _state = State.PointSelected;
 
             anchor.SetSelectedOutline(true);
+            DisableEmptySlotsExcept(anchor.SlotId);
             TrySetSlotFilter(anchor.SlotId);
-            ShowPreviewHud();
+            HidePreviewActions();
         }
 
         private void OnCancelClicked() => CancelPreview();
@@ -456,7 +524,9 @@ namespace Game.Decor.UI
             _applyInProgress = false;
 
             DeselectCards();
+            ResetEmptySlotsAvailable();
             HideHud();
+            HidePreviewActions();
             _state = State.Default;
             if (View != null) RenderInventory();
         }
@@ -472,7 +542,9 @@ namespace Game.Decor.UI
             _applyInProgress = false;
 
             DeselectCards();
+            ResetEmptySlotsAvailable();
             HideHud();
+            HidePreviewActions();
             _state = State.Default;
         }
 
@@ -501,7 +573,7 @@ namespace Game.Decor.UI
             }
 
             if (token.IsCancellationRequested || !ReferenceEquals(_previewIconCts, linked)) return;
-            if (_state != State.EmptySlotPreview || _previewPointId != pointId || _previewDecorId != decorId) return;
+            if (_state != State.Preview || _previewPointId != pointId || _previewDecorId != decorId) return;
             if (!string.IsNullOrEmpty(_placement.GetDecorInSlot(pointId))) return;
 
             var anchor = FindAnchor(pointId);
@@ -525,7 +597,7 @@ namespace Game.Decor.UI
 
         private async UniTaskVoid ApplyAsync()
         {
-            if (_state != State.EmptySlotPreview) return;
+            if (_state != State.Preview) return;
             if (string.IsNullOrEmpty(_previewDecorId) || string.IsNullOrEmpty(_previewPointId)) return;
 
             var decorId = _previewDecorId;
@@ -574,7 +646,7 @@ namespace Game.Decor.UI
         }
 
         private bool PreviewMatches(string decorId, string pointId) =>
-            _state == State.EmptySlotPreview
+            _state == State.Preview
             && _previewDecorId == decorId
             && _previewPointId == pointId;
 
@@ -582,39 +654,7 @@ namespace Game.Decor.UI
         {
             _applyInProgress = false;
             if (!PreviewMatches(decorId, pointId)) return;
-            ShowPreviewHud();
-        }
-
-        private async UniTaskVoid PlaceSelectedAsync(string slotId)
-        {
-            var decorId = _previewDecorId;
-            if (string.IsNullOrEmpty(decorId)) return;
-
-            var config = _configs.Get<DecorConfig>(decorId);
-            if (config != null && HasNegativeEffect(config))
-            {
-                var args = new ConfirmDialogArgs(
-                    title: $"Place {config.DisplayName}?",
-                    body: BuildNegativeWarning(config),
-                    confirmLabel: "Place anyway",
-                    cancelLabel: "Cancel");
-
-                var dialog = await UIManager.ShowAsync<ConfirmDialog>(args, _cts.Token);
-                if (dialog == null) return;
-                var confirm = await dialog.WaitForResultAsync<ConfirmDialogResult>(_cts.Token);
-                if (confirm != ConfirmDialogResult.Confirmed) return;
-            }
-
-            var result = await _placement.PlaceAsync(decorId, slotId, _cts.Token);
-            if (result == DecorPlacementResult.Success)
-            {
-                // Visual + selection reset are handled by PlacementChanged → Render (diff tween).
-                PlayUi(View != null ? View.PlaceClip : null);
-            }
-            else
-            {
-                Debug.Log($"[DecorPlacementWindow] Place '{decorId}' → '{slotId}' failed: {result}");
-            }
+            ShowPreviewActions();
         }
 
         // Null-safe: no-op if the clip is unassigned or the audio service is not bound. Assigning a
@@ -622,16 +662,6 @@ namespace Game.Decor.UI
         private static void PlayUi(AudioClip clip)
         {
             if (clip != null) Audio.PlayUi(clip);
-        }
-
-        private void ClearSelection()
-        {
-            _previewDecorId = null;
-            _state = State.Default;
-
-            DeselectCards();
-
-            ResetEmptySlotsAvailable();
         }
 
         private void DeselectCards()
