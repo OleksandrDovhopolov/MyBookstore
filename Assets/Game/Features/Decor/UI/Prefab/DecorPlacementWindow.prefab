@@ -1247,6 +1247,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8914637440499572250}
   - component: {fileID: 9112053668616039123}
+  - component: {fileID: 3629738489034921184}
   m_Layer: 5
   m_Name: DecorSlotAnchorView  (2)
   m_TagString: Untagged
@@ -1297,6 +1298,18 @@ MonoBehaviour:
   _selectedOutline: {fileID: 0}
   _placeDuration: 0.25
   _removeDuration: 0.2
+--- !u!225 &3629738489034921184
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3214602453194561637}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &3275081530740315685
 GameObject:
   m_ObjectHideFlags: 0
@@ -2061,6 +2074,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7824237797510979499}
   - component: {fileID: 7649777771383120791}
+  - component: {fileID: 7149079963345078532}
   m_Layer: 5
   m_Name: DecorSlotAnchorView  (1)
   m_TagString: Untagged
@@ -2111,6 +2125,18 @@ MonoBehaviour:
   _selectedOutline: {fileID: 0}
   _placeDuration: 0.25
   _removeDuration: 0.2
+--- !u!225 &7149079963345078532
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5412181807519845604}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &5439199591199135785
 GameObject:
   m_ObjectHideFlags: 0
@@ -2414,8 +2440,6 @@ MonoBehaviour:
   _hudBackdrop: {fileID: 4393729387890341383}
   _replaceButton: {fileID: 8738304177222563554}
   _removeButton: {fileID: 5475998669107904542}
-  _cancelButton: {fileID: 0}
-  _applyButton: {fileID: 0}
   _previewActionsRoot: {fileID: 5439199591199135785}
   _cancelPreviewButton: {fileID: 2755689809785780451}
   _applyPreviewButton: {fileID: 6110067065190296260}

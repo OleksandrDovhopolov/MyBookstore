@@ -12,6 +12,7 @@ namespace Game.Decor.UI
     /// The view is "dumb": it renders empty/placed/highlighted states and plays place/remove tweens,
     /// while all placement logic and service calls stay in the controller.
     /// </summary>
+    [RequireComponent(typeof(CanvasGroup))]
     public sealed class DecorSlotAnchorView : MonoBehaviour
     {
         [Header("Identity")]
@@ -28,11 +29,16 @@ namespace Game.Decor.UI
         [SerializeField] private CanvasGroup _placedGroup; // drives the place/remove alpha tween
         [SerializeField] private GameObject _selectedOutline; // optional outline when this slot is selected
 
+        [Header("Availability")]
+        [SerializeField] private CanvasGroup _availabilityGroup; // dims the whole anchor, separate from place/remove tween alpha
+        [SerializeField, Range(0f, 1f)] private float _unavailableAlpha = 0.35f;
+
         [Header("Animation")]
         [SerializeField, Min(0f)] private float _placeDuration = 0.25f;
         [SerializeField, Min(0f)] private float _removeDuration = 0.2f;
 
         private Sequence _activeTween;
+        private const float DefaultUnavailableAlpha = 0.35f;
 
         public string SlotId => _slotId;
 
@@ -44,6 +50,8 @@ namespace Game.Decor.UI
 
         private void Awake()
         {
+            if (_availabilityGroup == null) TryGetComponent(out _availabilityGroup);
+
             if (_markerButton != null) _markerButton.onClick.AddListener(RaiseMarkerClicked);
             if (_placedButton != null) _placedButton.onClick.AddListener(RaisePlacedClicked);
         }
@@ -53,6 +61,7 @@ namespace Game.Decor.UI
         public void SetEmpty()
         {
             KillActiveTween();
+            SetAvailabilityVisual(true);
 
             if (_placedDecorImage != null)
             {
@@ -71,6 +80,7 @@ namespace Game.Decor.UI
         public void SetPlaced(Sprite sprite)
         {
             KillActiveTween();
+            SetAvailabilityVisual(true);
 
             SetHighlighted(false);
             if (_markerButton != null) _markerButton.gameObject.SetActive(false);
@@ -90,6 +100,7 @@ namespace Game.Decor.UI
         public void SetPreview(Sprite sprite)
         {
             KillActiveTween();
+            SetAvailabilityVisual(true);
 
             SetHighlighted(false);
             if (_markerButton != null) _markerButton.gameObject.SetActive(false);
@@ -117,6 +128,13 @@ namespace Game.Decor.UI
         public void SetMarkerInteractable(bool interactable)
         {
             if (_markerButton != null) _markerButton.interactable = interactable;
+        }
+
+        public void SetAvailabilityVisual(bool available)
+        {
+            if (_availabilityGroup == null) return;
+            var unavailableAlpha = _unavailableAlpha > 0f ? _unavailableAlpha : DefaultUnavailableAlpha;
+            _availabilityGroup.alpha = available ? 1f : unavailableAlpha;
         }
 
         public void SetSelectedOutline(bool selected)

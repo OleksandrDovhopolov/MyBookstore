@@ -14,16 +14,20 @@ Terms:
 - **Item** = `DecorInventoryCardView`, a decor card in the bottom inventory.
 - **Preview** = temporary UI-only visual in a point. It is not saved and does not call
   `IDecorPlacementService.PlaceAsync` until the player presses `Apply`.
+- **Availability visual** = whole-point dimming for unavailable targets. It applies to
+  empty, preview, and occupied points and is separate from button interactability.
 
 Core rule:
 
 - The domain service remains the source of truth for committed placement.
 - Preview state lives only in `DecorPlacementWindow` / `DecorSlotAnchorView`.
 - `PlaceAsync` is called only from `Apply`.
+- Occupied point tools are opened only by clicking already placed decor.
 
-## Stage 1 Scope: Empty Point Selection
+## Stage 1 Scope: Empty Placement + Occupied Availability Prep
 
-This stage covers only the first placement into an empty point.
+This stage covers first placement into an empty point plus the visual/filter groundwork
+needed for a future replace flow.
 
 Included:
 
@@ -31,6 +35,9 @@ Included:
 - Filter inventory to items available for that point.
 - Click item to preview it in the selected point.
 - Click another item to replace the current preview.
+- Click item first, then choose a compatible point for preview.
+- Dim unavailable points, including occupied points.
+- Click occupied point to open tools and filter inventory by that point type.
 - `Cancel` resets the flow.
 - `Apply` commits the preview.
 
@@ -43,18 +50,28 @@ Not included:
 
 ## Availability Rules
 
-When a point is selected, the inventory should show only items that can be placed into
-that exact point.
+When an item is selected, all points are evaluated by `PositionType`.
 
-Recommended filter:
+Expected point visual:
+
+- compatible empty points stay available and may show target highlight;
+- incompatible empty points become non-interactable and dimmed;
+- compatible occupied points stay visually available;
+- incompatible occupied points are dimmed but remain clickable for tools.
+
+When a point is selected, inventory is filtered by that point's `PositionType`. All other
+points are dimmed; empty non-selected points are not interactable during point-first
+selection.
+
+Current UI filter:
 
 - item exists in the player's decor inventory;
-- item is not already placed in another point;
 - `DecorConfig.PositionType == DecorSlot.PositionType`;
-- `DecorConfig.Size <= DecorSlot.MaxSize`.
+- already placed items may still be shown with their existing placed badge/disabled
+  selection behavior.
 
-Reason: this flow says "available items for this point", so the list should avoid items
-that would fail on `Apply` with `SizeMismatch`, `PositionTypeMismatch`, or `AlreadyPlaced`.
+Domain validation remains stricter than the UI and still rejects `SizeMismatch`,
+`SlotOccupied`, and `AlreadyPlaced` on `Apply`.
 
 ## Case 1: Window Open
 
@@ -65,6 +82,7 @@ Initial state:
 - No preview is visible.
 - All empty point markers are interactable.
 - Occupied points show their committed decor.
+- All points use normal availability visual.
 - Inventory shows all unfiltered decor items.
 - `Cancel` and `Apply` are hidden.
 
@@ -87,8 +105,10 @@ Expected behavior:
 - Inventory is filtered to items available for that point.
 - Any placed-slot HUD is closed.
 - Any card-first selection is cleared.
-- `Cancel` and `Apply` are shown.
-- `Apply` is disabled until an item is selected for preview.
+- The clicked point stays normal and outlined.
+- All other points, including occupied points, are dimmed.
+- Other empty point markers become non-interactable.
+- Preview `Cancel` and `Apply` stay hidden until an item is selected for preview.
 - No committed placement is changed.
 
 Visual notes:
@@ -111,6 +131,7 @@ Expected behavior:
 
 - The clicked item becomes selected.
 - The item sprite is shown as preview in the selected point.
+- Preview `Cancel` and `Apply` are shown.
 - `Apply` becomes enabled.
 - `Cancel` remains visible.
 - No committed placement is changed.
@@ -121,7 +142,43 @@ Important:
 - Preview click should not open the remove/replace HUD.
 - Preview is UI-only and must disappear on cancel, close, or failed reset.
 
-## Case 4: Click Another Item During Preview
+## Case 4: Click Item First
+
+Action:
+
+- Player clicks an inventory item with no point selected.
+
+Expected behavior:
+
+- The clicked item becomes selected.
+- Compatible points stay visually available.
+- Incompatible points are dimmed.
+- Incompatible empty point markers become non-interactable.
+- Occupied points remain clickable for tools.
+- Preview actions stay hidden until a compatible empty point is selected.
+- No committed placement is changed.
+
+## Case 5: Click Compatible Empty Point After Item
+
+Precondition:
+
+- An item is selected.
+- At least one compatible empty point is available.
+
+Action:
+
+- Player clicks a compatible empty point.
+
+Expected behavior:
+
+- The selected item appears as preview in that point.
+- That point becomes selected and outlined.
+- All other points are dimmed.
+- Preview `Cancel` and `Apply` are shown.
+- `Apply` is enabled.
+- No committed placement is changed.
+
+## Case 6: Click Another Item During Preview
 
 Precondition:
 
@@ -138,9 +195,11 @@ Expected behavior:
 - Previous card loses selected state.
 - New card gets selected state.
 - `Apply` stays enabled.
+- If the new item is not compatible with the selected point, the selected point is cleared
+  and points are filtered by the newly selected item.
 - No committed placement is changed.
 
-## Case 5: Cancel Preview
+## Case 7: Cancel Preview
 
 Precondition:
 
@@ -158,6 +217,7 @@ Expected behavior:
 - Selected point is cleared.
 - Inventory filter is cleared.
 - `Cancel` and `Apply` are hidden.
+- Availability visual is reset for all points.
 - Empty point markers return to their default available state.
 - Window returns to the same practical state as immediately after opening.
 - No committed placement is changed.
@@ -169,7 +229,7 @@ Expected state:
 - selected point id is `null`.
 - preview decor id is `null`.
 
-## Case 6: Apply Preview
+## Case 8: Apply Preview
 
 Precondition:
 
@@ -196,7 +256,7 @@ Expected behavior:
   - keep the UI in a recoverable state;
   - recommended MVP behavior: keep preview active so the player can cancel or choose another item.
 
-## Case 7: Click Occupied Point
+## Case 9: Click Occupied Point
 
 Action:
 
@@ -204,36 +264,36 @@ Action:
 
 Expected behavior for current stage:
 
+- Empty-point preview flow is not started.
+- Any active preview/filter/card selection is reset first.
 - Existing occupied-point HUD behavior remains.
 - Remove remains available.
-- Replace remains disabled or out of scope.
-- Empty-point preview flow is not started.
+- Replace remains visible but disabled.
+- Inventory is filtered by the clicked point's `PositionType`.
+- Clicked occupied point stays normal and outlined.
+- All other points are dimmed.
+- Occupied points remain clickable for tools.
 
 Future:
 
-- Full replace flow can reuse the same preview model, but with an original committed decor id.
+- Full replace flow can reuse the same preview model as
+  `PlacedSlotSelected -> choose item -> replacement preview -> Apply`.
 - `Cancel` should restore the original committed visual.
 - `Apply` should commit the replacement through a domain-supported operation or explicit
   unplace/place sequence after the replacement rules are defined.
 
-## Case 8: Backdrop / Outside Click
+## Case 10: Backdrop / Outside Click
 
 Current behavior:
 
-- `HudBackdrop` closes the placed-slot HUD and clears the slot-first inventory filter.
+- `HudBackdrop` acts like transient reset.
+- Preview is cleared.
+- Inventory filter is cleared.
+- Availability visual is reset for all points.
+- Placed-slot HUD is closed.
+- No committed placement is changed.
 
-Recommended behavior with preview:
-
-- If preview flow is active, backdrop should act like `Cancel` only if this feels intentional
-  in testing.
-- Safer MVP behavior: backdrop resets inventory filter and closes HUD, but `Cancel` is the
-  explicit way to discard preview.
-
-Decision needed before implementation:
-
-- Should tapping outside cancel an active preview, or should only the `Cancel` button do that?
-
-## Case 9: Window Close / Hide
+## Case 11: Window Close / Hide
 
 Action:
 
@@ -252,28 +312,27 @@ Expected behavior:
 Current states:
 
 - `Default`
+- `PointSelected`
 - `DecorSelected`
+- `Preview`
 - `PlacedSlotSelected`
-
-Suggested addition for stage 1:
-
-- `EmptySlotPreview`
 
 Suggested transient fields:
 
-- selected empty slot id;
-- preview decor id;
+- selected point id;
+- selected/preview decor id;
 - slot type/slot id filter;
-- possibly a cached selected anchor reference, if useful.
+- apply in progress flag;
+- preview icon cancellation token.
 
 ## Verification Checklist
 
-1. Open window: all empty points available, full inventory, no `Cancel` / `Apply`.
-2. Click empty Standing point: inventory shows only decor valid for that point.
-3. Click item: preview appears in the clicked point, `Apply` enables.
-4. Click another item: preview updates, only the new card is selected.
-5. Click `Cancel`: preview disappears, full inventory returns, buttons hide.
-6. Repeat point -> item -> `Apply`: decor is committed and survives window re-render.
-7. Close window during preview and reopen: no preview remains.
-8. Click occupied point: existing Remove HUD still works; preview flow does not start.
-9. Try negative-effect decor later: confirm dialog appears before `PlaceAsync`.
+1. Open window: all empty points available, full inventory, no preview actions.
+2. Select a Wall item while non-Wall occupied points exist: non-Wall occupied points dim.
+3. Select a Standing/Table item: incompatible Wall points dim, compatible points stay normal.
+4. Click empty point: selected point normal/outlined, all others dim, inventory filtered.
+5. Click item after point: preview appears, `Apply` enables.
+6. Click item first, then compatible point: preview appears and no instant placement occurs.
+7. Click occupied point: tools open, inventory filters by point type, Replace disabled.
+8. Click backdrop/cancel/close: preview/filter/dimming/tools all reset.
+9. Apply preview: placement commits only through `Apply` and survives re-render.

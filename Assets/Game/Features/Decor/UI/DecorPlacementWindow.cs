@@ -230,13 +230,13 @@ namespace Game.Decor.UI
                 {
                     ClearPreviewVisualIfStillEmpty();
                     _previewPointId = null;
-                    DisableEmptySlotsExceptCompatibleDecor(decorId);
+                    ApplyDecorAvailabilityFilter(decorId);
                     _state = State.DecorSelected;
                     HidePreviewActions();
                     return;
                 }
 
-                DisableEmptySlotsExcept(_previewPointId);
+                ApplySelectedPointAvailability(_previewPointId);
                 _state = State.Preview;
                 ShowPreviewActions();
                 SetApplyInteractable(true);
@@ -244,7 +244,7 @@ namespace Game.Decor.UI
             }
             else
             {
-                DisableEmptySlotsExceptCompatibleDecor(decorId);
+                ApplyDecorAvailabilityFilter(decorId);
                 _state = State.DecorSelected;
                 HidePreviewActions();
             }
@@ -262,6 +262,8 @@ namespace Game.Decor.UI
 
             CancelPreview();
             ShowOccupiedHud(anchor);
+            TrySetSlotFilter(anchor.SlotId);
+            ApplySelectedPointAvailability(anchor.SlotId);
         }
 
         private void ShowOccupiedHud(DecorSlotAnchorView anchor)
@@ -278,8 +280,6 @@ namespace Game.Decor.UI
             SetSelectedDecorInfoVisible(true);
             SetButtonVisible(View.ReplaceButton, true, false);
             SetButtonVisible(View.RemoveButton, true, true);
-            SetButtonVisible(View.CancelButton, false, false);
-            SetButtonVisible(View.ApplyButton, false, false);
 
             anchor.SetSelectedOutline(true);
             BindSelectedDecorInfo(anchor.SlotId);
@@ -325,8 +325,6 @@ namespace Game.Decor.UI
             {
                 SetButtonVisible(View.ReplaceButton, false, false);
                 SetButtonVisible(View.RemoveButton, false, false);
-                SetButtonVisible(View.CancelButton, false, false);
-                SetButtonVisible(View.ApplyButton, false, false);
                 SetSelectedDecorInfoVisible(false);
 
                 if (View.SelectedDecorNameLabel != null) View.SelectedDecorNameLabel.text = string.Empty;
@@ -374,8 +372,7 @@ namespace Game.Decor.UI
             if (View.SelectedDecorImage != null) View.SelectedDecorImage.gameObject.SetActive(visible);
         }
 
-        // The full-screen backdrop is the reset point: clear the slot-first inventory filter, restore
-        // the full list, and close the tools panel (its prior sole responsibility).
+        // The full-screen backdrop is the reset point for preview, filters, dimming, and tools.
         private void OnBackdropClicked() => CancelPreview();
 
         // Slot-first filter: show only inventory decor of the clicked slot's PositionType. Null-safe
@@ -406,51 +403,54 @@ namespace Game.Decor.UI
             catch (System.OperationCanceledException) { }
         }
 
-        // "All available" state for empty slots: interactable, no hint. Occupied slots are skipped
-        // entirely (marker hidden; placed button manages itself).
-        private void ResetEmptySlotsAvailable()
+        // "All available" state: empty markers are interactable; occupied slots keep their placed
+        // button behavior but lose any temporary dim/selection state.
+        private void ResetSlotsAvailability()
         {
             if (View.SlotAnchors == null) return;
 
             foreach (var anchor in View.SlotAnchors)
             {
                 if (anchor == null) continue;
-                if (!string.IsNullOrEmpty(_placement.GetDecorInSlot(anchor.SlotId))) continue; // occupied
 
-                anchor.SetMarkerInteractable(true);
+                var occupied = !string.IsNullOrEmpty(_placement.GetDecorInSlot(anchor.SlotId));
+                anchor.SetAvailabilityVisual(true);
+                if (!occupied) anchor.SetMarkerInteractable(true);
                 anchor.SetHighlighted(false);
                 anchor.SetSelectedOutline(false);
             }
         }
 
-        private void DisableEmptySlotsExcept(string selectedSlotId)
+        private void ApplySelectedPointAvailability(string selectedSlotId)
         {
             if (View.SlotAnchors == null) return;
 
             foreach (var anchor in View.SlotAnchors)
             {
                 if (anchor == null) continue;
-                if (!string.IsNullOrEmpty(_placement.GetDecorInSlot(anchor.SlotId))) continue;
 
                 var selected = string.Equals(anchor.SlotId, selectedSlotId, StringComparison.OrdinalIgnoreCase);
-                anchor.SetMarkerInteractable(selected);
+                var occupied = !string.IsNullOrEmpty(_placement.GetDecorInSlot(anchor.SlotId));
+                anchor.SetAvailabilityVisual(selected);
+                if (!occupied) anchor.SetMarkerInteractable(selected);
                 anchor.SetHighlighted(false);
                 anchor.SetSelectedOutline(selected);
             }
         }
 
-        private void DisableEmptySlotsExceptCompatibleDecor(string decorId)
+        private void ApplyDecorAvailabilityFilter(string decorId)
         {
             if (View.SlotAnchors == null) return;
 
             foreach (var anchor in View.SlotAnchors)
             {
                 if (anchor == null) continue;
-                if (!string.IsNullOrEmpty(_placement.GetDecorInSlot(anchor.SlotId))) continue;
 
+                var occupied = !string.IsNullOrEmpty(_placement.GetDecorInSlot(anchor.SlotId));
                 var compatible = IsAnchorCompatibleWithDecor(anchor.SlotId, decorId);
-                anchor.SetMarkerInteractable(compatible);
-                anchor.SetHighlighted(compatible);
+                anchor.SetAvailabilityVisual(compatible);
+                if (!occupied) anchor.SetMarkerInteractable(compatible);
+                anchor.SetHighlighted(!occupied && compatible);
                 anchor.SetSelectedOutline(false);
             }
         }
@@ -488,7 +488,7 @@ namespace Game.Decor.UI
             _applyInProgress = false;
             _state = State.Preview;
 
-            DisableEmptySlotsExcept(anchor.SlotId);
+            ApplySelectedPointAvailability(anchor.SlotId);
             anchor.SetSelectedOutline(true);
             ShowPreviewActions();
             SetApplyInteractable(true);
@@ -506,7 +506,7 @@ namespace Game.Decor.UI
             _state = State.PointSelected;
 
             anchor.SetSelectedOutline(true);
-            DisableEmptySlotsExcept(anchor.SlotId);
+            ApplySelectedPointAvailability(anchor.SlotId);
             TrySetSlotFilter(anchor.SlotId);
             HidePreviewActions();
         }
@@ -524,7 +524,7 @@ namespace Game.Decor.UI
             _applyInProgress = false;
 
             DeselectCards();
-            ResetEmptySlotsAvailable();
+            ResetSlotsAvailability();
             HideHud();
             HidePreviewActions();
             _state = State.Default;
@@ -542,7 +542,7 @@ namespace Game.Decor.UI
             _applyInProgress = false;
 
             DeselectCards();
-            ResetEmptySlotsAvailable();
+            ResetSlotsAvailability();
             HideHud();
             HidePreviewActions();
             _state = State.Default;

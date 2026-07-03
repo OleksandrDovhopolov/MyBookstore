@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5336069645974632353}
   - component: {fileID: 1099501931234050803}
+  - component: {fileID: 6704829645720131621}
   m_Layer: 5
   m_Name: 'DecorSlotAnchorView '
   m_TagString: Untagged
@@ -58,8 +59,22 @@ MonoBehaviour:
   _placedButton: {fileID: 401042893633979038}
   _placedGroup: {fileID: 7411170491288338410}
   _selectedOutline: {fileID: 0}
+  _availabilityGroup: {fileID: 6704829645720131621}
+  _unavailableAlpha: 0.35
   _placeDuration: 0.25
   _removeDuration: 0.2
+--- !u!225 &6704829645720131621
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1543023990664937848}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &2902264746155217842
 GameObject:
   m_ObjectHideFlags: 0

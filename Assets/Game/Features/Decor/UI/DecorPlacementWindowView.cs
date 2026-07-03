@@ -35,8 +35,6 @@ namespace Game.Decor.UI
         [SerializeField] private Button _hudBackdrop;
         [SerializeField] private Button _replaceButton; // MVP: visible but disabled
         [SerializeField] private Button _removeButton;
-        [SerializeField] private Button _cancelButton;
-        [SerializeField] private Button _applyButton;
 
         [Header("Preview actions")]
         [SerializeField] private GameObject _previewActionsRoot;
@@ -61,8 +59,6 @@ namespace Game.Decor.UI
         public Button HudBackdrop => _hudBackdrop;
         public Button ReplaceButton => _replaceButton;
         public Button RemoveButton => _removeButton;
-        public Button CancelButton => _cancelButton;
-        public Button ApplyButton => _applyButton;
 
         public GameObject PreviewActionsRoot => _previewActionsRoot;
         public Button CancelPreviewButton => _cancelPreviewButton;
