@@ -48,7 +48,8 @@ namespace Game.Decor.UI
             if (_placedButton != null) _placedButton.onClick.AddListener(RaisePlacedClicked);
         }
 
-        /// <summary>Empty slot: show the marker, hide the decor. Marker is non-interactable until highlighted.</summary>
+        /// <summary>Empty slot: show the marker, hide the decor. The marker is interactable by default
+        /// (available); the focus filter in the controller greys out slots that don't match the focused decor.</summary>
         public void SetEmpty()
         {
             KillActiveTween();
@@ -61,6 +62,7 @@ namespace Game.Decor.UI
             if (_placedButton != null) _placedButton.interactable = false;
 
             if (_markerButton != null) _markerButton.gameObject.SetActive(true);
+            SetMarkerInteractable(true);
             SetHighlighted(false);
             if (_selectedOutline != null) _selectedOutline.SetActive(false);
         }
@@ -83,11 +85,18 @@ namespace Game.Decor.UI
             if (_placedButton != null) _placedButton.interactable = true;
         }
 
-        /// <summary>Toggle the compatible-target highlight and marker interactivity (empty slots only).</summary>
+        /// <summary>Toggle the "valid target" hint only (the green highlight). Availability is a separate
+        /// concern — see <see cref="SetMarkerInteractable"/>.</summary>
         public void SetHighlighted(bool highlighted)
         {
             if (_highlight != null) _highlight.SetActive(highlighted);
-            if (_markerButton != null) _markerButton.interactable = highlighted;
+        }
+
+        /// <summary>Enable/disable the empty-slot marker button (availability). Independent of the
+        /// <see cref="SetHighlighted"/> hint. Driven by the controller's focus filter.</summary>
+        public void SetMarkerInteractable(bool interactable)
+        {
+            if (_markerButton != null) _markerButton.interactable = interactable;
         }
 
         public void SetSelectedOutline(bool selected)

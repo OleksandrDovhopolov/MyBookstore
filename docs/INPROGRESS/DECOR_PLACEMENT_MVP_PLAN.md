@@ -85,9 +85,11 @@ Serialized-поля:
 Публичное API (view «тупой», логика — в контроллере):
 - `string SlotId`;
 - события/коллбэки `OnMarkerClicked`, `OnPlacedClicked` (Action);
-- `SetEmpty()` — показать marker, скрыть decor image;
+- `SetEmpty()` — показать marker (по умолчанию **interactable**), скрыть decor image;
 - `SetPlaced(Sprite sprite)` — показать decor image, скрыть/приглушить marker;
-- `SetHighlighted(bool)` — вкл/выкл `_highlight` и интерактивность marker;
+- `SetHighlighted(bool)` — вкл/выкл **только** `_highlight` (зелёный hint «валидная цель»);
+- `SetMarkerInteractable(bool)` — доступность marker-кнопки (отдельно от hint), управляется
+  фокус-фильтром контроллера;
 - `PlayPlaceTween()` / `PlayRemoveTween(Action onComplete)` — см. шаг 7.
 
 Паттерн selected/highlight — как в `BookCardView` (`SetSelected` через `SetActive`
@@ -143,11 +145,14 @@ serialized-ссылки под новую иерархию (см. шаг 9):
 1. `Render()` из сервиса: для каждого anchor — `GetDecorInSlot(slotId)`; пусто →
    `SetEmpty()`, занято → грузим спрайт по decorId и `SetPlaced(sprite)`. Нижняя панель
    — карточки из `inventory.GetByCategory(Decor)` с пометкой isPlaced.
-2. Клик карточки → `DecorSelected`: `SetSelected` на карточке; подсветить **только
-   совместимые пустые** слоты новым хелпером `GetCompatibleEmptySlots(decorId)`
-   (для decorId вернуть anchors, где слот пуст, `PositionType` совпадает,
-   `Size <= MaxSize`); остальные — `SetHighlighted(false)`/disabled. Повторный клик по
-   выбранной карточке → отмена (`Default`).
+2. Клик карточки (фокус) → `DecorSelected`: `SetSelected` на карточке; `ApplyDecorFocusFilter(decorId)`
+   проходит по пустым слотам — где `PositionType` совпадает с декором, слот остаётся
+   **interactable** + hint (`SetMarkerInteractable(true)` + `SetHighlighted(true)`), остальные
+   пустые слоты серые (`SetMarkerInteractable(false)`). Match **только по `PositionType`**
+   (размер не проверяется — слот того же типа, но малый, останется кликабельным, а `PlaceAsync`
+   отклонит по `SizeMismatch`). Занятые слоты не трогаем. По умолчанию (окно открыто, нет фокуса)
+   все пустые слоты доступны — `ResetEmptySlotsAvailable()` из `ClearSelection()`. Повторный клик
+   по выбранной карточке → отмена (`Default`), все пустые снова доступны.
 3. Клик подсвеченного слота → `PlaceAsync(decorId, slotId, ct)`. Перед вызовом
    сохранить гейт `ConfirmDialog` при `HasNegativeEffect(config)` (перенести
    существующие `HasNegativeEffect`/`BuildNegativeWarning` из текущего файла). При

@@ -204,7 +204,7 @@ namespace Game.Decor.UI
                 foreach (var card in View.CardsPool.ActiveElements())
                     if (card != null) card.SetSelected(card.DecorId == decorId);
 
-            HighlightCompatibleEmptySlots(decorId);
+            ApplyDecorFocusFilter(decorId);
         }
 
         // Info is a separate WindowType.Popup shown additively over this window; it does not touch
@@ -304,7 +304,10 @@ namespace Game.Decor.UI
             catch (System.OperationCanceledException) { }
         }
 
-        private void HighlightCompatibleEmptySlots(string decorId)
+        // Focus filter: empty slots whose PositionType matches the focused decor stay interactable
+        // (and show the target hint); non-matching empty slots grey out. Occupied slots are untouched.
+        // Match is by PositionType only — a size-too-big slot stays clickable and PlaceAsync rejects it.
+        private void ApplyDecorFocusFilter(string decorId)
         {
             if (View.SlotAnchors == null) return;
 
@@ -314,14 +317,31 @@ namespace Game.Decor.UI
             foreach (var anchor in View.SlotAnchors)
             {
                 if (anchor == null) continue;
-                var empty = string.IsNullOrEmpty(_placement.GetDecorInSlot(anchor.SlotId));
-                var compatible = empty
-                    && config != null
+                if (!string.IsNullOrEmpty(_placement.GetDecorInSlot(anchor.SlotId))) continue; // occupied
+
+                var matching = config != null
                     && slotById.TryGetValue(anchor.SlotId, out var slot)
                     && slot != null
-                    && config.PositionType == slot.PositionType
-                    && (int)config.Size <= (int)slot.MaxSize;
-                anchor.SetHighlighted(compatible);
+                    && slot.PositionType == config.PositionType;
+
+                anchor.SetMarkerInteractable(matching);
+                anchor.SetHighlighted(matching);
+            }
+        }
+
+        // "All available" state for empty slots: interactable, no hint. Occupied slots are skipped
+        // entirely (marker hidden; placed button manages itself).
+        private void ResetEmptySlotsAvailable()
+        {
+            if (View.SlotAnchors == null) return;
+
+            foreach (var anchor in View.SlotAnchors)
+            {
+                if (anchor == null) continue;
+                if (!string.IsNullOrEmpty(_placement.GetDecorInSlot(anchor.SlotId))) continue; // occupied
+
+                anchor.SetMarkerInteractable(true);
+                anchor.SetHighlighted(false);
             }
         }
 
@@ -379,9 +399,7 @@ namespace Game.Decor.UI
                 foreach (var card in View.CardsPool.ActiveElements())
                     if (card != null) card.SetSelected(false);
 
-            if (View.SlotAnchors != null)
-                foreach (var anchor in View.SlotAnchors)
-                    if (anchor != null) anchor.SetHighlighted(false);
+            ResetEmptySlotsAvailable();
         }
 
         private Dictionary<string, DecorSlot> BuildSlotMap()
