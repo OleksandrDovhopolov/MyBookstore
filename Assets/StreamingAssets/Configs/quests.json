@@ -1,0 +1,54 @@
+[
+  {
+    "id": "far_beach_intro",
+    "type": "story",
+    "chainId": "far_beach_sand_empire",
+    "characterId": null,
+    "titleKey": "quest.far_beach_intro.title",
+    "descriptionKey": "quest.far_beach_intro.desc",
+    "nextQuestIds": ["sand_inspiration"],
+    "activationConditions": null,
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "descriptionKey": "task.visit_far_beach",
+        "completionConditions": {
+          "all": [
+            { "type": "visitLocation", "locationId": "far_beach", "min": 3 }
+          ]
+        }
+      }
+    ],
+    "rewards": [],
+    "worldEffects": []
+  },
+  {
+    "id": "sand_inspiration",
+    "type": "side",
+    "chainId": "far_beach_sand_empire",
+    "characterId": null,
+    "titleKey": "quest.sand_inspiration.title",
+    "descriptionKey": "quest.sand_inspiration.desc",
+    "nextQuestIds": [],
+    "activationConditions": null,
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "descriptionKey": "task.sell_fantasy_far_beach",
+        "completionConditions": {
+          "all": [
+            { "type": "soldGenreAtLocation", "genre": "Fantasy", "locationId": "far_beach", "min": 15 }
+          ]
+        }
+      }
+    ],
+    "rewards": [
+      { "kind": "InventoryItem", "id": "harper_castle_donation_box", "category": "decor", "amount": 1 }
+    ],
+    "worldEffects": [
+      { "type": "locationCustomerBonus", "params": { "locationId": "far_beach", "amount": 2 } }
+    ]
+  }
+]

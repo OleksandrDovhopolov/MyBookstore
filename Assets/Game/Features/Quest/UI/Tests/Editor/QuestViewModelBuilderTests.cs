@@ -1,0 +1,112 @@
+using System.Collections.Generic;
+using Game.Conditions.API;
+using Game.Configs.Models;
+using Game.Quest.API;
+using NUnit.Framework;
+
+namespace Game.Quest.UI.Tests.Editor
+{
+    public sealed class QuestViewModelBuilderTests
+    {
+        private sealed class FakeTask : IQuestTask
+        {
+            public int Id { get; set; }
+            public string QuestId { get; set; }
+            public QuestTaskState State { get; set; }
+            public QuestTaskConfig Config { get; set; }
+            public ConditionResult Progress => default;
+
+            public int Cur;
+            public int Goal = 1;
+            public int GetProgress() => Cur;
+            public int GetGoal() => Goal;
+        }
+
+        private sealed class FakeQuest : IQuest
+        {
+            public string Id { get; set; }
+            public QuestType Type { get; set; }
+            public QuestState State { get; set; }
+            public string ChainId { get; set; }
+            public string CharacterId { get; set; }
+            public QuestConfig Config { get; set; }
+            public IReadOnlyList<IQuestTask> Tasks { get; set; }
+            public IQuestTask GetTask(int id) => null;
+        }
+
+        [Test]
+        public void Build_MapsTitleDescStateAndPrimaryTaskProgress()
+        {
+            var quest = new FakeQuest
+            {
+                Type = QuestType.Story,
+                State = QuestState.Active,
+                Config = new QuestConfig { TitleKey = "quest.t", DescriptionKey = "quest.d" },
+                Tasks = new IQuestTask[]
+                {
+                    new FakeTask
+                    {
+                        State = QuestTaskState.Active,
+                        Config = new QuestTaskConfig { DescriptionKey = "task.visit_far_beach" },
+                        Cur = 2, Goal = 3
+                    }
+                }
+            };
+
+            var models = new QuestViewModelBuilder().Build(new[] { quest });
+
+            Assert.AreEqual(1, models.Count);
+            var m = models[0];
+            Assert.AreEqual("quest.t", m.TitleKey);
+            Assert.AreEqual("quest.d", m.DescriptionKey);
+            Assert.AreEqual("task.visit_far_beach", m.PrimaryTaskKey);
+            Assert.AreEqual(2, m.ProgressCurrent);
+            Assert.AreEqual(3, m.ProgressGoal);
+            Assert.AreEqual(QuestState.Active, m.State);
+            Assert.IsFalse(m.IsComplete);
+        }
+
+        [Test]
+        public void Build_PrimaryTask_IsFirstUncompleted()
+        {
+            var quest = new FakeQuest
+            {
+                State = QuestState.Active,
+                Config = new QuestConfig { TitleKey = "t" },
+                Tasks = new IQuestTask[]
+                {
+                    new FakeTask { State = QuestTaskState.Completed, Config = new QuestTaskConfig { DescriptionKey = "done" }, Cur = 5, Goal = 5 },
+                    new FakeTask { State = QuestTaskState.Active, Config = new QuestTaskConfig { DescriptionKey = "active" }, Cur = 1, Goal = 4 }
+                }
+            };
+
+            var m = new QuestViewModelBuilder().Build(new[] { quest })[0];
+            Assert.AreEqual("active", m.PrimaryTaskKey);
+            Assert.AreEqual(1, m.ProgressCurrent);
+            Assert.AreEqual(4, m.ProgressGoal);
+        }
+
+        [Test]
+        public void Build_IsComplete_WhenReadyToAward_NoTasksGoalDefaultsOne()
+        {
+            var quest = new FakeQuest
+            {
+                State = QuestState.ReadyToAward,
+                Config = new QuestConfig { TitleKey = "t" },
+                Tasks = new IQuestTask[0]
+            };
+
+            var m = new QuestViewModelBuilder().Build(new[] { quest })[0];
+            Assert.IsTrue(m.IsComplete);
+            Assert.AreEqual(0, m.ProgressCurrent);
+            Assert.AreEqual(1, m.ProgressGoal);
+            Assert.IsNull(m.PrimaryTaskKey);
+        }
+
+        [Test]
+        public void Build_NullInput_IsEmpty()
+        {
+            Assert.AreEqual(0, new QuestViewModelBuilder().Build(null).Count);
+        }
+    }
+}
