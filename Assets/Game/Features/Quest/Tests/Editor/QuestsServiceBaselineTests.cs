@@ -150,6 +150,39 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual(QuestState.Awarded, State(q2, "q1"));
         }
 
+        [Test]
+        public void Suspend_DefersReeval_BaselineIncludesSalesDuringSuspend()
+        {
+            // Chain: head (flag) → q_sales (soldGenre). The successor activates only when the head completes.
+            var flag = new MutableCondition(false);
+            var head = QuestCfg("head", new JObject { ["all"] = new JArray { new JObject { ["type"] = "flag" } } });
+            head.NextQuestIds = new[] { "q_sales" };
+            var qSales = QuestCfg("q_sales", Sales(SalesConditionTypeIds.SoldGenre, 3));
+
+            var h = Build(new FlagFactory(flag), head, qSales);
+            var quests = h.NewQuests();
+            quests.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            Assert.AreEqual(QuestState.Active, State(quests, "head"));
+            Assert.AreEqual(QuestState.Pending, State(quests, "q_sales")); // successor waits for its predecessor
+
+            // Mimics a day commit: complete the head AND record the day's sales while re-eval is suspended.
+            using (quests.SuspendReevaluation())
+            {
+                flag.Met = true;   // would complete head → activate q_sales
+                h.Sell(1, 3);      // RecordSold fires Changed, but reeval is suspended → nothing reacts yet
+                Assert.AreEqual(QuestState.Active, State(quests, "head"), "no reeval while suspended");
+                Assert.AreEqual(QuestState.Pending, State(quests, "q_sales"));
+            }
+
+            // One reeval on dispose: head completes → q_sales activates → its baseline is captured NOW, so it
+            // includes the 3 sales recorded during the suspension → those sales do NOT count toward q_sales.
+            Assert.AreEqual(QuestState.Awarded, State(quests, "head"));
+            Assert.AreEqual(QuestState.Active, State(quests, "q_sales"));
+
+            h.Sell(2, 3); // only sales AFTER activation count → now it awards
+            Assert.AreEqual(QuestState.Awarded, State(quests, "q_sales"));
+        }
+
         private sealed class FlagFactory : IConditionFactory
         {
             private readonly ICondition _condition;

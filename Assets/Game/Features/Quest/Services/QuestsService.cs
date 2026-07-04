@@ -26,7 +26,7 @@ namespace Game.Quest.Services
     /// changes. Этап 4: no persistence (<see cref="BeforeSaveAsync"/> is a strict no-op); quest state is
     /// rebuilt from config each launch. Auto-award: completing all tasks goes ReadyToAward → Awarded at once.
     /// </summary>
-    public sealed class QuestsService : IQuestsService, ISaveHook, IDisposable
+    public sealed class QuestsService : IQuestsService, IQuestReevaluationGate, ISaveHook, IDisposable
     {
         private const string LogPrefix = "[Quests]";
 
@@ -53,6 +53,7 @@ namespace Game.Quest.Services
         private bool _subscribed;
         private bool _reevaluating;
         private bool _reevalQueued;
+        private int _reevalSuspend;
         private bool _dirty;
 
         public QuestsService(
@@ -313,9 +314,38 @@ namespace Game.Quest.Services
 
         // ----- re-evaluation -----
 
+        // ----- IQuestReevaluationGate -----
+
+        public IDisposable SuspendReevaluation()
+        {
+            _reevalSuspend++;
+            return new ReevalSuspension(this);
+        }
+
+        private void ResumeReevaluation()
+        {
+            if (_reevalSuspend == 0) return;
+            _reevalSuspend--;
+            if (_reevalSuspend == 0 && _reevalQueued) Reevaluate();
+        }
+
+        private sealed class ReevalSuspension : IDisposable
+        {
+            private QuestsService _owner;
+            public ReevalSuspension(QuestsService owner) => _owner = owner;
+
+            public void Dispose()
+            {
+                var owner = _owner;
+                _owner = null; // idempotent
+                owner?.ResumeReevaluation();
+            }
+        }
+
         private void Reevaluate()
         {
             if (!_loaded) return;
+            if (_reevalSuspend > 0) { _reevalQueued = true; return; }
             if (_reevaluating) { _reevalQueued = true; return; }
 
             _reevaluating = true;
@@ -373,11 +403,16 @@ namespace Game.Quest.Services
 
                     if (task.State == QuestTaskState.Active)
                     {
-                        if (task.RefreshProgress()) TaskProgressChanged?.Invoke(task);
+                        if (task.RefreshProgress())
+                        {
+                            Debug.LogWarning($"{LogPrefix} task progress '{task.QuestId}.{task.Id}': {task.GetProgress()}/{task.GetGoal()}.");
+                            TaskProgressChanged?.Invoke(task);
+                        }
                         if (task.IsCompletionMet)
                         {
                             task.SetState(QuestTaskState.Completed);
                             MarkDirty();
+                            Debug.LogWarning($"{LogPrefix} task completed '{task.QuestId}.{task.Id}'.");
                             TaskCompleted?.Invoke(task);
                             changed = true;
                         }
@@ -421,6 +456,7 @@ namespace Game.Quest.Services
         {
             quest.SetState(QuestState.ReadyToAward);
             MarkDirty();
+            Debug.LogWarning($"{LogPrefix} quest completed '{quest.Id}'.");
             QuestCompleted?.Invoke(quest);
         }
 

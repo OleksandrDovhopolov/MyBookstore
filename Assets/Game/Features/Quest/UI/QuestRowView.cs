@@ -13,6 +13,7 @@ namespace Game.Quest.UI
         [SerializeField] private TextMeshProUGUI _idLabel;        // this quest's id (chain visibility)
         [SerializeField] private TextMeshProUGUI _titleLabel;
         [SerializeField] private TextMeshProUGUI _descriptionLabel;
+        [SerializeField] private TextMeshProUGUI _taskLabel;      // requirement: what to do (primary task)
         [SerializeField] private TextMeshProUGUI _progressLabel;
         [SerializeField] private TextMeshProUGUI _stateLabel;
         [SerializeField] private TextMeshProUGUI _nextQuestLabel; // next quest id in the chain ("→ id")
@@ -23,6 +24,7 @@ namespace Game.Quest.UI
             if (_idLabel != null) _idLabel.text = model.Id ?? string.Empty;
             if (_titleLabel != null) _titleLabel.text = model.TitleKey ?? string.Empty;
             if (_descriptionLabel != null) _descriptionLabel.text = model.DescriptionKey ?? string.Empty;
+            if (_taskLabel != null) _taskLabel.text = model.PrimaryTaskKey ?? string.Empty;
             if (_progressLabel != null) _progressLabel.text = $"{model.ProgressCurrent}/{model.ProgressGoal}";
             if (_stateLabel != null) _stateLabel.text = model.State.ToString();
             if (_nextQuestLabel != null)
@@ -37,6 +39,7 @@ namespace Game.Quest.UI
             if (_idLabel != null) _idLabel.text = string.Empty;
             if (_titleLabel != null) _titleLabel.text = string.Empty;
             if (_descriptionLabel != null) _descriptionLabel.text = string.Empty;
+            if (_taskLabel != null) _taskLabel.text = string.Empty;
             if (_progressLabel != null) _progressLabel.text = string.Empty;
             if (_stateLabel != null) _stateLabel.text = string.Empty;
             if (_nextQuestLabel != null) _nextQuestLabel.text = string.Empty;

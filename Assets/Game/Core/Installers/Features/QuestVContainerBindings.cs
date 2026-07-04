@@ -19,7 +19,8 @@ namespace Game.Bootstrap
             // QuestsService self-registers as ISaveHook in its constructor; AfterLoadAsync builds the
             // catalog from quests.json (configs are warm by then), restores saved state, activates heads.
             builder.Register<QuestsService>(Lifetime.Singleton)
-                .As<IQuestsService>();
+                .As<IQuestsService>()
+                .As<IQuestReevaluationGate>();
         }
     }
 }

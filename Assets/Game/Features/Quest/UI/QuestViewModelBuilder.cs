@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Game.Conditions.API;
 using Game.Quest.API;
 
 namespace Game.Quest.UI
@@ -24,6 +26,7 @@ namespace Game.Quest.UI
         {
             var cfg = quest.Config;
             var task = PrimaryTask(quest);
+            var (current, goal) = LeafProgress(task);
 
             return new QuestItemModel
             {
@@ -34,10 +37,24 @@ namespace Game.Quest.UI
                 Type = quest.Type,
                 NextQuestId = cfg?.NextQuestIds != null && cfg.NextQuestIds.Length > 0 ? cfg.NextQuestIds[0] : null,
                 PrimaryTaskKey = task?.Config?.DescriptionKey,
-                ProgressCurrent = task?.GetProgress() ?? 0,
-                ProgressGoal = task != null ? task.GetGoal() : 1,
+                ProgressCurrent = current,
+                ProgressGoal = goal,
                 IsComplete = quest.State == QuestState.ReadyToAward || quest.State == QuestState.Awarded
             };
+        }
+
+        // The task's Progress is the completion-condition result, usually wrapped in an "all"/"any" composite
+        // (e.g. {"all":[{visitLocation, min:3}]}). A composite reports met/total children (0/1), so unwrap
+        // single-child composites down to the leaf to show the real "current/required" (e.g. visits 1/3).
+        private static (int current, int goal) LeafProgress(IQuestTask task)
+        {
+            if (task == null) return (0, 1);
+
+            var r = task.Progress;
+            while (r.Children != null && r.Children.Count == 1)
+                r = r.Children[0];
+
+            return ((int)Math.Max(0, r.Current), (int)Math.Max(1, r.Target));
         }
 
         // First not-yet-completed task (what the player is working on), else the last task.

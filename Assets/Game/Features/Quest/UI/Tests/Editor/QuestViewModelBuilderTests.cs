@@ -14,12 +14,9 @@ namespace Game.Quest.UI.Tests.Editor
             public string QuestId { get; set; }
             public QuestTaskState State { get; set; }
             public QuestTaskConfig Config { get; set; }
-            public ConditionResult Progress => default;
-
-            public int Cur;
-            public int Goal = 1;
-            public int GetProgress() => Cur;
-            public int GetGoal() => Goal;
+            public ConditionResult Progress { get; set; }
+            public int GetProgress() => (int)Progress.Current;
+            public int GetGoal() => (int)System.Math.Max(1, Progress.Target);
         }
 
         private sealed class FakeQuest : IQuest
@@ -54,7 +51,8 @@ namespace Game.Quest.UI.Tests.Editor
                     {
                         State = QuestTaskState.Active,
                         Config = new QuestTaskConfig { DescriptionKey = "task.visit_far_beach" },
-                        Cur = 2, Goal = 3
+                        // Real completion is wrapped in {"all":[leaf]}; the builder must unwrap to the leaf (2/3).
+                        Progress = new ConditionResult(false, 0, 1, "all", new[] { ConditionResult.Leaf(2, 3, "visit") })
                     }
                 }
             };
@@ -83,8 +81,8 @@ namespace Game.Quest.UI.Tests.Editor
                 Config = new QuestConfig { TitleKey = "t" },
                 Tasks = new IQuestTask[]
                 {
-                    new FakeTask { State = QuestTaskState.Completed, Config = new QuestTaskConfig { DescriptionKey = "done" }, Cur = 5, Goal = 5 },
-                    new FakeTask { State = QuestTaskState.Active, Config = new QuestTaskConfig { DescriptionKey = "active" }, Cur = 1, Goal = 4 }
+                    new FakeTask { State = QuestTaskState.Completed, Config = new QuestTaskConfig { DescriptionKey = "done" }, Progress = ConditionResult.Leaf(5, 5, "x") },
+                    new FakeTask { State = QuestTaskState.Active, Config = new QuestTaskConfig { DescriptionKey = "active" }, Progress = ConditionResult.Leaf(1, 4, "x") }
                 }
             };
 

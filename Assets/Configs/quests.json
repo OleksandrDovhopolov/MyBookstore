@@ -15,7 +15,7 @@
         "descriptionKey": "task.visit_far_beach",
         "completionConditions": {
           "all": [
-            { "type": "visitLocation", "locationId": "far_beach", "min": 3 }
+            { "type": "visitLocation", "locationId": "loc_downtown", "min": 3 }
           ]
         }
       }
@@ -39,7 +39,7 @@
         "descriptionKey": "task.sell_fantasy_far_beach",
         "completionConditions": {
           "all": [
-            { "type": "soldGenreAtLocation", "genre": "Fantasy", "locationId": "far_beach", "min": 15 }
+            { "type": "soldGenreAtLocation", "genre": "Fantasy", "locationId": "loc_downtown", "min": 15 }
           ]
         }
       }
@@ -48,7 +48,7 @@
       { "kind": "InventoryItem", "id": "harper_castle_donation_box", "category": "decor", "amount": 1 }
     ],
     "worldEffects": [
-      { "type": "locationCustomerBonus", "params": { "locationId": "far_beach", "amount": 2 } }
+      { "type": "locationCustomerBonus", "params": { "locationId": "loc_downtown", "amount": 2 } }
     ]
   }
 ]
