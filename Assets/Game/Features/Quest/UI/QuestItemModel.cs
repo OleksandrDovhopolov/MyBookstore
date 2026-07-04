@@ -8,10 +8,14 @@ namespace Game.Quest.UI
     /// </summary>
     public sealed class QuestItemModel
     {
+        public string Id;
         public string TitleKey;
         public string DescriptionKey;
         public QuestState State;
         public QuestType Type;
+
+        /// <summary>Next quest id in the chain (first of QuestConfig.NextQuestIds), or null if this is the last.</summary>
+        public string NextQuestId;
 
         /// <summary>Description key of the primary (currently-worked) task.</summary>
         public string PrimaryTaskKey;

@@ -10,18 +10,23 @@ namespace Game.Quest.UI
     /// </summary>
     public sealed class QuestRowView : MonoBehaviour, ICleanup
     {
+        [SerializeField] private TextMeshProUGUI _idLabel;        // this quest's id (chain visibility)
         [SerializeField] private TextMeshProUGUI _titleLabel;
         [SerializeField] private TextMeshProUGUI _descriptionLabel;
         [SerializeField] private TextMeshProUGUI _progressLabel;
         [SerializeField] private TextMeshProUGUI _stateLabel;
+        [SerializeField] private TextMeshProUGUI _nextQuestLabel; // next quest id in the chain ("→ id")
         [SerializeField] private GameObject _completeBadge; // optional checkmark for completed quests
 
         public void Bind(QuestItemModel model)
         {
+            if (_idLabel != null) _idLabel.text = model.Id ?? string.Empty;
             if (_titleLabel != null) _titleLabel.text = model.TitleKey ?? string.Empty;
             if (_descriptionLabel != null) _descriptionLabel.text = model.DescriptionKey ?? string.Empty;
             if (_progressLabel != null) _progressLabel.text = $"{model.ProgressCurrent}/{model.ProgressGoal}";
             if (_stateLabel != null) _stateLabel.text = model.State.ToString();
+            if (_nextQuestLabel != null)
+                _nextQuestLabel.text = string.IsNullOrEmpty(model.NextQuestId) ? "—" : $"→ {model.NextQuestId}";
             if (_completeBadge != null) _completeBadge.SetActive(model.IsComplete);
         }
 
@@ -29,10 +34,12 @@ namespace Game.Quest.UI
         // stale data.
         public void Cleanup()
         {
+            if (_idLabel != null) _idLabel.text = string.Empty;
             if (_titleLabel != null) _titleLabel.text = string.Empty;
             if (_descriptionLabel != null) _descriptionLabel.text = string.Empty;
             if (_progressLabel != null) _progressLabel.text = string.Empty;
             if (_stateLabel != null) _stateLabel.text = string.Empty;
+            if (_nextQuestLabel != null) _nextQuestLabel.text = string.Empty;
             if (_completeBadge != null) _completeBadge.SetActive(false);
         }
     }

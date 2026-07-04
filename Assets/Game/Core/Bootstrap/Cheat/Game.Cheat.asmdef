@@ -15,7 +15,8 @@
         "Game.Inventory",
         "Game.Decor",
         "Game.Shop.UI",
-        "Game.Newspaper"
+        "Game.Newspaper",
+        "Game.Quest.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -27,10 +27,12 @@ namespace Game.Quest.UI
 
             return new QuestItemModel
             {
+                Id = quest.Id,
                 TitleKey = cfg?.TitleKey,
                 DescriptionKey = cfg?.DescriptionKey,
                 State = quest.State,
                 Type = quest.Type,
+                NextQuestId = cfg?.NextQuestIds != null && cfg.NextQuestIds.Length > 0 ? cfg.NextQuestIds[0] : null,
                 PrimaryTaskKey = task?.Config?.DescriptionKey,
                 ProgressCurrent = task?.GetProgress() ?? 0,
                 ProgressGoal = task != null ? task.GetGoal() : 1,

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Game.Quest.API;
 using Game.UI;
 using VContainer;
@@ -68,7 +70,37 @@ namespace Game.Quest.UI
                 return;
             }
 
-            View.Render(_builder.Build(_quests.GetActiveQuests()));
+            View.Render(_builder.Build(CollectChainQuests()));
+        }
+
+        // Expand each active quest into its FULL chain (all quests, all states, ordered) so the window
+        // shows the whole chain — not just in-progress quests. Deduped by chain + quest id; chain-less
+        // quests are shown standalone. A chain with no active member can't be reached (no get-all API) —
+        // documented MVP limitation.
+        private IReadOnlyList<IQuest> CollectChainQuests()
+        {
+            var result = new List<IQuest>();
+            var seenQuests = new HashSet<string>(StringComparer.Ordinal);
+            var seenChains = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var active in _quests.GetActiveQuests())
+            {
+                if (active == null) continue;
+
+                var chain = string.IsNullOrEmpty(active.ChainId) ? null : _quests.GetChainByQuestId(active.Id);
+                if (chain != null)
+                {
+                    if (!seenChains.Add(chain.Id)) continue; // chain already expanded
+                    foreach (var q in chain.Quests)
+                        if (q != null && seenQuests.Add(q.Id)) result.Add(q);
+                }
+                else if (seenQuests.Add(active.Id))
+                {
+                    result.Add(active);
+                }
+            }
+
+            return result;
         }
     }
 }

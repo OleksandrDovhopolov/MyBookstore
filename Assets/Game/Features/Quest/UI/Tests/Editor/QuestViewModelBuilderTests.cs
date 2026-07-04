@@ -39,9 +39,15 @@ namespace Game.Quest.UI.Tests.Editor
         {
             var quest = new FakeQuest
             {
+                Id = "far_beach_intro",
                 Type = QuestType.Story,
                 State = QuestState.Active,
-                Config = new QuestConfig { TitleKey = "quest.t", DescriptionKey = "quest.d" },
+                Config = new QuestConfig
+                {
+                    TitleKey = "quest.t",
+                    DescriptionKey = "quest.d",
+                    NextQuestIds = new[] { "sand_inspiration" }
+                },
                 Tasks = new IQuestTask[]
                 {
                     new FakeTask
@@ -57,8 +63,10 @@ namespace Game.Quest.UI.Tests.Editor
 
             Assert.AreEqual(1, models.Count);
             var m = models[0];
+            Assert.AreEqual("far_beach_intro", m.Id);
             Assert.AreEqual("quest.t", m.TitleKey);
             Assert.AreEqual("quest.d", m.DescriptionKey);
+            Assert.AreEqual("sand_inspiration", m.NextQuestId);
             Assert.AreEqual("task.visit_far_beach", m.PrimaryTaskKey);
             Assert.AreEqual(2, m.ProgressCurrent);
             Assert.AreEqual(3, m.ProgressGoal);
