@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
+using Game.LocationVisits.API;
 using UnityEngine;
 using VContainer.Unity;
 
@@ -21,6 +22,7 @@ namespace Game.Bootstrap
         private readonly ISceneTransitionService _sceneTransition;
         private readonly ITransitionAnimationService _animation;
         private readonly GameFlowSettings _settings;
+        private readonly ILocationVisitService _locationVisits;
 
         private GameObject _hubRoot;
         private LifetimeScope _globalScope;
@@ -30,11 +32,13 @@ namespace Game.Bootstrap
         public GameFlowService(
             ISceneTransitionService sceneTransition,
             ITransitionAnimationService animation,
-            GameFlowSettings settings)
+            GameFlowSettings settings,
+            ILocationVisitService locationVisits)
         {
             _sceneTransition = sceneTransition ?? throw new ArgumentNullException(nameof(sceneTransition));
             _animation = animation ?? throw new ArgumentNullException(nameof(animation));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _locationVisits = locationVisits; // optional-safe: cleared best-effort on hub return
         }
 
         public bool IsTransitioning => _isTransitioning;
@@ -108,6 +112,7 @@ namespace Game.Bootstrap
                 _sceneTransition.SetActiveScene(_settings.GameplaySceneName);
                 SetHubRootActive(true);
                 _locationLoaded = false;
+                _locationVisits?.ClearCurrentLocation(); // back at the hub → locationIs false
 
                 await _animation.PlayRevealAsync(ct);
             }

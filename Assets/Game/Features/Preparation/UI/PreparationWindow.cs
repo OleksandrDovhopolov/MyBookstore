@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.Configs.Models;
 using Game.LocationEntry.API;
+using Game.LocationVisits.API;
 using Game.Newspaper.UI;
 using Game.Preparation.Domain;
 using Game.Preparation.Services;
@@ -24,6 +25,7 @@ namespace Game.Preparation.UI
         private IUiSpriteProvider _uiSprites;
         private ILocationEntryCostCalculator _entryCost;
         private IResourcesService _resources;
+        private ILocationVisitService _visits;
         private IPublisher<GameplayGenreBookCountsChanged> _genreCountsPublisher;
 
         private CancellationTokenSource _cts;
@@ -42,6 +44,7 @@ namespace Game.Preparation.UI
             IUiSpriteProvider uiSprites,
             ILocationEntryCostCalculator entryCost = null,
             IResourcesService resources = null,
+            ILocationVisitService visits = null,
             IPublisher<GameplayGenreBookCountsChanged> genreCountsPublisher = null)
         {
             _session = session;
@@ -49,6 +52,7 @@ namespace Game.Preparation.UI
             _uiSprites = uiSprites;
             _entryCost = entryCost;
             _resources = resources;
+            _visits = visits;
             _genreCountsPublisher = genreCountsPublisher;
         }
 
@@ -359,6 +363,9 @@ namespace Game.Preparation.UI
                 try
                 {
                     await gameFlow.EnterLocationAsync(CancellationToken.None);
+                    // Entry succeeded → record the visit (persisted count + current location). On the
+                    // failure path below this is skipped, so a failed entry never counts as a visit.
+                    _visits?.RecordVisit(locationId);
                 }
                 catch (System.Exception e)
                 {

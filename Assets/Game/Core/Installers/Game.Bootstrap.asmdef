@@ -45,7 +45,9 @@
         "Game.Quest.API",
         "Game.Characters",
         "Game.Characters.API",
-        "Analytics"
+        "Analytics",
+        "Game.LocationVisits",
+        "Game.LocationVisits.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
