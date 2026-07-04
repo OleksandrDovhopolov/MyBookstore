@@ -22,6 +22,8 @@ namespace Book.Sell.Services
         [SerializeField] private float _passiveFailureFeedbackDuration = 1.0f;
         [SerializeField] private float _passiveSaleFeedbackDuration = 1.0f;
         [SerializeField, Range(0f, 1f)] private float _passiveSaleCommentChance = 0.35f;
+        [Tooltip("Вес жанров из LocationConfig.DemandGenres при выборе пассивного запроса. Остальные жанры имеют вес 1.0.")]
+        [SerializeField] private double _passiveDemandGenreWeight = 1.10d;
         [SerializeField] private float _commentDuration = 1.2f;
         [SerializeField] private float _completePurchaseDuration = 1.5f;
 
@@ -47,6 +49,7 @@ namespace Book.Sell.Services
             PassiveFailureFeedbackDuration = _passiveFailureFeedbackDuration,
             PassiveSaleFeedbackDuration = _passiveSaleFeedbackDuration,
             PassiveSaleCommentChance = _passiveSaleCommentChance,
+            PassiveDemandGenreWeight = _passiveDemandGenreWeight,
             CommentDuration = _commentDuration,
             CompletePurchaseDuration = _completePurchaseDuration,
             LeaveDuration = _leaveDuration,

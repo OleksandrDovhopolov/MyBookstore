@@ -62,6 +62,7 @@ namespace Game.Bootstrap
             // Passive sale chance gate (ADR-0004). IDecorModifierProvider is registered by RegisterDecor.
             builder.Register<IBaseSaleChanceCalculator, EconomyBasedSaleChanceCalculator>(Lifetime.Singleton);
             // Per-customer desire profile — used by the spawner in both passive models.
+            builder.Register<IDemandGenreWeightProvider, SalesTuningDemandGenreWeightProvider>(Lifetime.Singleton);
             builder.Register<ICustomerProfileProvider, LocationDemandProfileProvider>(Lifetime.Singleton);
             // Passive model behind the IPassivePurchaseResolver seam. Default = requested-genre (v2).
             // To roll back to the old shelf-roll model, call RegisterLegacyPassiveSales(builder) instead.

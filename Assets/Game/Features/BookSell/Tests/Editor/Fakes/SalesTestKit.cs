@@ -60,7 +60,8 @@ namespace Book.Sell.Tests.Editor.Fakes
                 SpawnInterval = 0f,
                 BaseCustomers = 0,
                 MaxConcurrentCustomers = 0,  // no concurrency cap by default — all customers spawn at once
-                PassiveRequestGenreCount = 2
+                PassiveRequestGenreCount = 2,
+                PassiveDemandGenreWeight = 1.10d
             };
 
         /// <summary>Selector that passes the stage-1 gate every time. Useful for flow-focused tests.</summary>

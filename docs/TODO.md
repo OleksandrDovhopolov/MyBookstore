@@ -9,43 +9,40 @@
 
 ## 🎮 Геймплей
 
-- [ ] **GAME-1. Replace location demand genre whitelist with weighted demand.**
-  Current `LocationDemandProfileProvider` treats `LocationConfig.DemandGenres` as the pool of genres customers can request/passively buy. This is too strict for a Tiny Bookshop-like model: every stocked genre should remain sellable, while location demand genres get a higher chance/weight. Rework passive demand calculation so `DemandGenres` means boosted/preferred genres, not allowed-only genres. Update tests around `LocationDemandProfileProvider` / `RequestedGenrePassiveResolver` to cover non-demand genres still being sellable with lower chance.
-
 - [~] **GAME-2. Фича `Game.Quest` — доделать слайс.**
-  Ядро готово (Этапы 1–5 + 4b): сборки `Game.Quest`/`.API`/`.Tests.Editor`, API/enum/конфиги, условия
-  `decorEquipped`/`haveItem`/`weatherIs`, `QuestsService` (lifecycle/цепочки/auto-award), save
-  (Awarded/Failed не переигрываются), baseline «после старта задачи». Решения — [adr/0007-quest-system.md](adr/0007-quest-system.md).
-  **Осталось:** реальная цепочка-слайс (контент квестов на боевом конфиге, не заглушка) + UI журнала
-  (`JournalWindow`). Награды/эффекты и условия визита вынесены в отдельные задачи — GAME-3 и GAME-5.
+  Что сделать:
+  - Собрать реальную цепочку квестов на боевом конфиге вместо заглушки.
+  - Доделать UI журнала (`JournalWindow`).
+  - Сверить поведение с решениями из [adr/0007-quest-system.md](adr/0007-quest-system.md).
+  - Награды/эффекты и условия визита оставить в отдельных задачах GAME-3 и GAME-5.
 
 - [ ] **GAME-3. Permanent quest effects / world state (= Этап 6).**
-  После завершения квестов выдавать награды (`QuestRewardConfig` → `IRewardGrantService`) и применять постоянные
-  эффекты (`QuestWorldEffectConfig`-хендлеры): достроенный замок на Far Beach даёт `+2` клиента в день и открывает Cave;
-  включённый маяк — ночная торговля + бонус `Mystery/Thriller`; цветущий навес усиливает `Poetry/Romance`; улики
-  меняют доступность детективных цепочек. Эффекты **идемпотентны** при повторной загрузке (Awarded не переигрывается;
-  bump `QuestsSaveKeys.StateSchemaVersion`: Awarded += timestamp + appliedEffects).
+  Что сделать:
+  - Выдавать награды через `QuestRewardConfig` → `IRewardGrantService`.
+  - Применять постоянные эффекты через `QuestWorldEffectConfig`-хендлеры.
+  - Сохранить `timestamp` и `appliedEffects` для завершённых квестов.
+  - Сделать применение эффектов идемпотентным при повторной загрузке.
+  - Поднять `QuestsSaveKeys.StateSchemaVersion`.
 
 - [ ] **GAME-5. `LocationVisits` + условия `visitLocation` / `locationIs`.**
-  Новая persisted-подсистема счётчика визитов по локациям + entry-hook (инкремент при входе в локацию) +
-  current-location seam (по образцу GAME-4 для продаж). Condition-factory `visitLocation` («посетить N раз») и
-  `locationIs` («находиться на локации сейчас»). Разблокирует слайс «An Empire of Sand».
+  Что сделать:
+  - Добавить persisted-счётчик визитов по локациям.
+  - Инкрементировать счётчик при входе в локацию.
+  - Хранить текущую локацию для runtime-условий.
+  - Добавить condition-factory `visitLocation` и `locationIs`.
+  - Разблокировать слайс «An Empire of Sand».
 
 - [ ] **GAME-6. Runtime `DialogStep` через `CustomerDirector`.**
-  Добавить `DialogStep` как middle-step покупателя, который можно вставлять во время визита через
-  `CustomerDirector.InsertNext(...)` по доменному событию: passive sale, active resolve, decor interaction,
-  quest trigger и т.п. Реализовывать **после** появления `CustomerPlan` и `CustomerDirector`, чтобы диалог
-  не зашивался в `PassivePurchaseStep`, spawner или случайные feature-step'ы. Для заранее известных
-  сюжетных/квестовых покупателей использовать `ScriptedSequenceArchetype` / `QuestCharacterArchetype`:
-  `ApproachStep -> DialogStep -> QuestStep -> CompletePurchaseStep -> LeaveStep`. Для runtime-диалога
-  использовать тот же `DialogStep`, но вставлять его через director. `DialogStep` должен держать interaction
-  lock по паттерну `ActiveRequestStep`, ждать завершения dialogue UI и освобождать lock на `Exit`.
+  Что сделать:
+  - Добавить `DialogStep` как middle-step покупателя.
+  - Вставлять runtime-диалоги через `CustomerDirector.InsertNext(...)`.
+  - Для заранее известных сюжетных/квестовых покупателей использовать `ScriptedSequenceArchetype` / `QuestCharacterArchetype`.
+  - Держать interaction lock до завершения dialogue UI.
+  - Освобождать interaction lock на `Exit`.
 
 ---
 
 ## 🛠️ Инфраструктура
-
-- [ ] **INF-2. Подключить DoTween** (импорт пакета + asmdef-ссылки + базовая обёртка/хелперы под анимации).
 
 - [ ] **INF-4. Localization.** Слой локализации (ключи вместо строк, таблицы переводов, рантайм-смена
   языка). Закладывать заранее — под Steam-релиз на нескольких языках.
@@ -90,6 +87,4 @@
 ## 🎨 Визуал
 
 - [ ] **VIS-1. Анимация «полёта» золота из HUD к кнопке** (в newspaper-окне):
-  золото вылетает из HUD-счётчика и летит к кнопке покупки. Зависит от **INF-2 (DoTween)**.
-
-- [ ] **VIS-3. Свёрстать окно декора** (decor window).
+  золото вылетает из HUD-счётчика и летит к кнопке покупки. Зависит от подключённого DoTween.

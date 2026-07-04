@@ -62,5 +62,9 @@ namespace Book.Sell.Domain
         /// <summary>How many genres a customer's passive desire profile holds (requested-genre model).
         /// Clamped to the available genres by the profile provider.</summary>
         public int PassiveRequestGenreCount { get; set; } = 2;
+
+        /// <summary>Relative weight for shelf genres listed in LocationConfig.DemandGenres when building
+        /// a customer's passive desire profile. Non-demand genres use weight 1.0.</summary>
+        public double PassiveDemandGenreWeight { get; set; } = 1.10d;
     }
 }
