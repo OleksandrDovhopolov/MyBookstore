@@ -145,9 +145,12 @@ namespace Game.Preparation.UI
                 {
                     if (row == null) continue;
 
-                    var sprite = await _uiSprites.GetSpriteAsync(row.Genre, ct);
+                    var genre = row.Genre;
+                    if (string.IsNullOrEmpty(genre)) continue;
+
+                    var sprite = await _uiSprites.GetSpriteAsync(genre, ct);
                     if (ct.IsCancellationRequested) return;
-                    if (row != null) row.SetIcon(sprite);
+                    if (row != null && row.Genre == genre) row.SetIcon(sprite);
                 }
             }
             catch (System.OperationCanceledException)
@@ -159,24 +162,25 @@ namespace Game.Preparation.UI
         {
             ClearRows();
             _items = items;
+            if (items == null) return;
 
-            var container = View.GenreListContainer;
-            var prefab = View.GenreRowPrefab;
-            if (prefab == null || container == null) return;
+            var pool = View.GenreRowPool;
+            if (pool == null || pool.Prefab == null || pool.Parent == null) return;
 
             for (var i = 0; i < items.Count; i++)
             {
                 var item = items[i];
-                var row = Object.Instantiate(prefab, container);
+                var row = pool.GetNext();
                 row.Bind(item, OnSetGenreQuantity);
                 _rows[item.Genre] = row;
             }
+
+            pool.DisableNonActive();
         }
 
         private void ClearRows()
         {
-            foreach (var row in _rows.Values)
-                if (row != null) Object.Destroy(row.gameObject);
+            View?.GenreRowPool?.DisableAll();
             _rows.Clear();
         }
 

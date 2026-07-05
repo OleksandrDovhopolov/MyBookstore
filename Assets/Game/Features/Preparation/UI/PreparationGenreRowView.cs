@@ -1,28 +1,20 @@
 using System;
-using Game.Configs.Models;
 using Game.Preparation.Domain;
 using TMPro;
+using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Game.Preparation.UI
 {
-    /// <summary>
-    /// Одна строка выбора по жанру: название, счётчик «quantity/available» и кнопки −/+.
-    /// PreparationWindow инстансит префаб на каждый GenreSelectionItem.
-    /// </summary>
-    public sealed class PreparationGenreRowView : MonoBehaviour
+    public sealed class PreparationGenreRowView : MonoBehaviour, ICleanup
     {
-        [SerializeField] private TMP_Text _genreLabel;
-        [Tooltip("Сколько книг этого жанра осталось в инвентаре (Available − на полке).")]
         [SerializeField] private TMP_Text _inventoryCountLabel;
-        [Tooltip("Сколько книг этого жанра выставлено на полку.")]
-        [SerializeField] private TMP_Text _shelfCountLabel;
+        [SerializeField] private Image _inventoryIconImage;
         [SerializeField] private Button _minusButton;
         [SerializeField] private Button _plusButton;
-        [Tooltip("Источник фоновых спрайтов кнопок −/+ по жанру.")]
-        [SerializeField] private GenrePalette _palette;
-        [SerializeField] private Image _iconImage;
+        [SerializeField] private TMP_Text _shelfCountLabel;
+        [SerializeField] private Image _shelfIconImage;
 
         private string _genre;
         private int _available;
@@ -45,28 +37,14 @@ namespace Game.Preparation.UI
             _quantity = item.Quantity;
             _onSetQuantity = onSetQuantity;
 
-            if (_genreLabel != null) _genreLabel.text = item.Genre;
-            ApplyButtonBackground();
             Refresh();
-        }
-
-        // Уникальный фон кнопок −/+ под жанр (из палитры). Общая для жанра подложка на обе кнопки.
-        private void ApplyButtonBackground()
-        {
-            if (_palette == null || !BookGenreExtensions.TryParseGenre(_genre, out var genre))
-                return;
-
-            var background = _palette.GetButtonBackground(genre);
-            if (background == null) return;
-
-            if (_minusButton != null && _minusButton.image != null) _minusButton.image.sprite = background;
-            if (_plusButton != null && _plusButton.image != null) _plusButton.image.sprite = background;
         }
 
         /// <summary>Иконка жанра. Спрайт грузит контроллер по id жанра (Addressables) и передаёт сюда.</summary>
         public void SetIcon(Sprite sprite)
         {
-            if (_iconImage != null) _iconImage.sprite = sprite;
+            if (_inventoryIconImage != null) _inventoryIconImage.sprite = sprite;
+            if (_shelfIconImage != null) _shelfIconImage.sprite = sprite;
         }
 
         /// <param name="canAddMore">false, когда общий лимит полки уже достигнут.</param>
@@ -79,17 +57,30 @@ namespace Game.Preparation.UI
 
         private void Refresh()
         {
-            // В инвентаре остаётся всё непроданное минус то, что уже на полке.
-            var inInventory = Mathf.Max(0, _available - _quantity);
-
-            if (_inventoryCountLabel != null) _inventoryCountLabel.text = "in storage : " + inInventory;
-            if (_shelfCountLabel != null) _shelfCountLabel.text = "" + _quantity;
+            if (_inventoryCountLabel != null) _inventoryCountLabel.text = _available.ToString();
+            if (_shelfCountLabel != null) _shelfCountLabel.text = _quantity.ToString();
             if (_minusButton != null) _minusButton.interactable = _quantity > 0;
             if (_plusButton != null) _plusButton.interactable = _quantity < _available && _canAddMore;
         }
 
         private void OnMinus() => _onSetQuantity?.Invoke(_genre, _quantity - 1);
         private void OnPlus() => _onSetQuantity?.Invoke(_genre, _quantity + 1);
+
+        public void Cleanup()
+        {
+            _genre = null;
+            _available = 0;
+            _quantity = 0;
+            _canAddMore = true;
+            _onSetQuantity = null;
+
+            if (_inventoryCountLabel != null) _inventoryCountLabel.text = string.Empty;
+            if (_shelfCountLabel != null) _shelfCountLabel.text = string.Empty;
+            if (_inventoryIconImage != null) _inventoryIconImage.sprite = null;
+            if (_shelfIconImage != null) _shelfIconImage.sprite = null;
+            if (_minusButton != null) _minusButton.interactable = false;
+            if (_plusButton != null) _plusButton.interactable = false;
+        }
 
         private void OnDestroy()
         {

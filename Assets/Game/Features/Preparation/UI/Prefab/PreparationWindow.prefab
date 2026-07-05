@@ -33,8 +33,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 26.704712}
-  m_SizeDelta: {x: 0, y: -53.4094}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0.000011444092}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &4810738670090311106
 MonoBehaviour:
@@ -53,7 +53,7 @@ MonoBehaviour:
     m_Right: 0
     m_Top: 0
     m_Bottom: 0
-  m_ChildAlignment: 6
+  m_ChildAlignment: 4
   m_Spacing: 25
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 0
@@ -211,8 +211,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -156.43898}
-  m_SizeDelta: {x: 0, y: -625.8878}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: -0.000015258789}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &5883908850249204972
 GameObject:
@@ -352,8 +352,9 @@ MonoBehaviour:
   - {fileID: 5140689929492055235}
   _locationLabel: {fileID: 0}
   _slotCountLabel: {fileID: 1780073458149358897}
-  _genreListContainer: {fileID: 3714963630888714867}
-  _genreRowPrefab: {fileID: 3470758979900716438, guid: bf7c8b04daa76ea44b0b187ff0249b8c, type: 3}
+  _genreRowPool:
+    prefab: {fileID: 3047382323255791250, guid: bf7c8b04daa76ea44b0b187ff0249b8c, type: 3}
+    parent: {fileID: 3714963630888714867}
   _openShopButton: {fileID: 2367256160558908641}
   _randomBooksButton: {fileID: 4269460409312026590}
 --- !u!1 &8964634229011181633
