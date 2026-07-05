@@ -200,37 +200,9 @@ namespace Game.Preparation.UI
                 pair.Value.SetState(qty, canAddMore);
             }
 
-            UpdateShelfPreview(state);
             UpdateCounter();
             UpdateValidation();
             PublishGenreCounts(state);
-        }
-
-        private void UpdateShelfPreview(PreparationSessionState state)
-        {
-            if (_items == null) return;
-
-            // Keep the ordered items in sync with the authoritative quotas, then render the bar from them.
-            for (var i = 0; i < _items.Count; i++)
-            {
-                var item = _items[i];
-                if (item == null) continue;
-                state.GenreQuantities.TryGetValue(item.Genre, out var qty);
-                item.Quantity = qty;
-            }
-
-            View.RenderShelfPreview(_items, OnShelfSegmentClicked);
-        }
-
-        private void OnShelfSegmentClicked(string genre)
-        {
-            var state = _session?.CurrentState;
-            if (state == null) return;
-
-            state.GenreQuantities.TryGetValue(genre, out var qty);
-            if (qty <= 0) return;
-
-            OnSetGenreQuantity(genre, qty - 1);
         }
 
         // Прокидываем выбранные кол-ва по жанрам в HUD через тот же сигнал, что использует Sales.
