@@ -23,6 +23,10 @@ namespace Game.Bootstrap
             builder.Register<ITutorialTargetRegistry, TutorialTargetRegistry>(Lifetime.Singleton);
             builder.Register<TutorialOverlayController>(Lifetime.Singleton);
 
+            // Bind the registry to the static facade so scene/prefab TutorialTargetTag components (which get no
+            // DI injection) can self-register. DI consumers still depend on ITutorialTargetRegistry. Mirrors Audio.
+            builder.RegisterBuildCallback(resolver => TutorialTargets.Bind(resolver.Resolve<ITutorialTargetRegistry>()));
+
             // Step handlers. Collected as IReadOnlyList<ITutorialStepHandler> by the registry.
             builder.Register<ITutorialStepHandler, ShowTextStepHandler>(Lifetime.Singleton);
             builder.Register<ITutorialStepHandler, HighlightClickStepHandler>(Lifetime.Singleton);

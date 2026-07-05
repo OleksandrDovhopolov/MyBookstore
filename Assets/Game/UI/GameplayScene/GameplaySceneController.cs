@@ -16,7 +16,6 @@ using Game.Preparation.UI;
 using Game.Resources.API;
 using Game.UI;
 using Infrastructure.ResourceAnimations;
-using Infrastructure.TutorialUI;
 using MessagePipe;
 using UIShared;
 using UnityEngine;
@@ -34,7 +33,6 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
     private IUiSpriteProvider _uiSprites;
     private IGameFlowService _gameFlow;
     private IResourceAnimationTargetRegistry _resourceAnimationTargets;
-    private ITutorialTargetRegistry _tutorialTargets;
 
     // True once the window has loaded all the data it needs to display (currently the genre sprites).
     public bool IsDataReady { get; private set; }
@@ -62,7 +60,6 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         IConfigsService configs = null,
         IGameFlowService gameFlow = null,
         IResourceAnimationTargetRegistry resourceAnimationTargets = null,
-        ITutorialTargetRegistry tutorialTargets = null,
         ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
         ISubscriber<GameplaySalesGoldChanged> salesGoldSubscriber = null,
         IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null)
@@ -76,7 +73,6 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         _configs = configs;
         _gameFlow = gameFlow;
         _resourceAnimationTargets = resourceAnimationTargets;
-        _tutorialTargets = tutorialTargets;
         _salesGoldSubscriber = salesGoldSubscriber;
         _genreBookCountsSubscriber = genreBookCountsSubscriber;
         _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
@@ -116,7 +112,6 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
 
         _resources.Changed += OnResourceChanged;
         RegisterGoldAnimationTarget();
-        RegisterTutorialTargets();
 
         View.SetGoldAmount(_resources.GetAmount(ResourceIds.Gold));
         View.SetSalesGoldVisible(false);
@@ -185,7 +180,6 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         base.OnHideStart(isClosed);
         if (_resources != null) _resources.Changed -= OnResourceChanged;
         UnregisterGoldAnimationTarget();
-        UnregisterTutorialTargets();
     }
 
     protected override void OnDispose()
@@ -216,7 +210,6 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
             _gameFlow.LocationLoadedChanged -= OnLocationLoadedChanged;
 
         UnregisterGoldAnimationTarget();
-        UnregisterTutorialTargets();
     }
 
     private void RegisterGoldAnimationTarget()
@@ -231,16 +224,6 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         _resourceAnimationTargets?.Unregister(
             ResourceAnimationTargetIds.Resource(ResourceIds.Gold),
             View?.GoldTargetRect);
-    }
-
-    private void RegisterTutorialTargets()
-    {
-        _tutorialTargets?.Register(TutorialTargetIds.HubStartDayButton, View?.StartDayTargetRect);
-    }
-
-    private void UnregisterTutorialTargets()
-    {
-        _tutorialTargets?.Unregister(TutorialTargetIds.HubStartDayButton, View?.StartDayTargetRect);
     }
 
     private void SetSceneButtonsInteractable(bool interactable)

@@ -168,16 +168,18 @@ Configs (как все конфиг-модели)
 
 ### 4.5 Таргет-реестр (подсветка кнопок)
 
-Реализовано как **DI-сервис `ITutorialTargetRegistry`** (Infrastructure, зеркало
-`IResourceAnimationTargetRegistry`: `Register/Unregister/TryGetTarget`, `StringComparer.Ordinal`, purge
-null при lookup). Изначально в спеке предполагался статический реестр + самоинжектящийся `TutorialTargetTag`,
-но в проекте таких тегов нет — устоявшийся паттерн: **DI-контроллер регистрирует известный ему rect**
-(как `GameplaySceneController` регистрирует gold в `IResourceAnimationTargetRegistry`). Идём этим путём.
+**DI-сервис `ITutorialTargetRegistry`** (Infrastructure, зеркало `IResourceAnimationTargetRegistry`:
+`Register/Unregister/TryGetTarget`, `StringComparer.Ordinal`, purge null при lookup) + **статический фасад
+`TutorialTargets`** (зеркало `Infrastructure.Audio.Audio`), к которому реестр биндится один раз на
+bootstrap (`RegisterBuildCallback → TutorialTargets.Bind(...)`). Идентификация цели вешается на объект
+компонентом **`TutorialTargetTag`** (MonoBehaviour), а не регистрируется контроллером.
 
-- Идентификация — string id (`TutorialTargetIds`: `hub.start_day_button`, задел на decor/prep/hud).
-- Регистрация из контроллера: `OnShowStart → Register`, `OnHideStart`/`OnDispose → Unregister`
-  (StartDayButton регистрирует `GameplaySceneController`). additive hub↔location обрабатывается тем, что
-  контроллеры своих сцен регистрируют/снимают свои rect'ы.
+- `TutorialTargetTag`: `[SerializeField] string _targetId;` `OnEnable → TutorialTargets.Register(id, rect)`,
+  `OnDisable → Unregister`. Так решается «в MonoBehaviour нет constructor injection», и additive
+  hub↔location обрабатывается автоматически. Стоимость нового таргета — один компонент + строка id.
+- Идентификаторы — `TutorialTargetIds` (`hub.start_day_button`, задел на decor/prep/hud); тот же словарь
+  сверяет валидатор (§7).
+- DI-потребители (step-handler'ы) инжектят `ITutorialTargetRegistry` напрямую (фасад — только для тегов).
 - Если id не найден — handler `highlightClick` пишет warning и **auto-advance** (не soft-lock).
 - Rect таргета пересчитывается **каждый кадр** (`ScreenRectUtility`): таргеты едут на твинах
   `AnimatedShowHidePanel` и смещаются SafeArea.
