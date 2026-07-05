@@ -322,6 +322,8 @@ namespace Game.Quest.Services
             return new ReevalSuspension(this);
         }
 
+        public void RequestReevaluation() => Reevaluate();
+
         private void ResumeReevaluation()
         {
             if (_reevalSuspend == 0) return;

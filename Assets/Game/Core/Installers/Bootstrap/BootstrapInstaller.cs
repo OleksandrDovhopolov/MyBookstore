@@ -68,6 +68,7 @@ namespace Game.Bootstrap
             builder.RegisterLocationUnlock();      // location unlock states/purchase over the condition engine
             builder.RegisterLocationEntry();       // per-visit entry fee calculator (location base + decor delta)
             builder.RegisterQuest();               // in-memory quest lifecycle over the condition engine (ISaveHook init)
+            builder.RegisterTutorial();            // forced-step tutorial engine + "tutorialCompleted" factory (ISaveHook init)
             builder.RegisterCharacters();          // read-side character/memory projection over quests (ISaveHook init)
             builder.RegisterFtue();
             builder.RegisterBookSellSharedState(); // ISalesShelfStateService — общий для хаба и локации

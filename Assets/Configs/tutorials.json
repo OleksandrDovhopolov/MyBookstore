@@ -1,0 +1,33 @@
+[
+  {
+    "id": "day1_hub_intro",
+    "priority": 10,
+    "context": "hub",
+    "trigger": "hubReady",
+    "triggerParam": null,
+    "resumePolicy": "restart",
+    "activationConditions": null,
+    "steps": [
+      {
+        "id": "welcome",
+        "type": "showText",
+        "text": "Добро пожаловать в вашу книжную лавку!",
+        "placement": "bottom"
+      },
+      {
+        "id": "point_start",
+        "type": "highlightClick",
+        "target": "hub.start_day_button",
+        "pointer": true,
+        "text": "Нажмите, чтобы начать день.",
+        "placement": "aboveTarget",
+        "padding": 16
+      },
+      {
+        "id": "wait_sales",
+        "type": "awaitPhase",
+        "phase": "Sales"
+      }
+    ]
+  }
+]

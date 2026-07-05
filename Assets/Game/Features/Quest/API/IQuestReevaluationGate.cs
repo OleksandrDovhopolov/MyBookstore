@@ -14,5 +14,12 @@ namespace Game.Quest.API
         /// re-evaluation runs if anything requested one while suspended. Nesting-safe.
         /// </summary>
         IDisposable SuspendReevaluation();
+
+        /// <summary>
+        /// Forces a re-evaluation now (respecting any active suspension). For change sources the quest
+        /// system does not observe directly — e.g. a tutorial sequence completing, which can unlock a
+        /// quest gated on the "tutorialCompleted" condition.
+        /// </summary>
+        void RequestReevaluation();
     }
 }

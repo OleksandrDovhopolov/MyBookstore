@@ -6,6 +6,7 @@ using Game.Ftue;
 using Game.Ftue.Domain;
 using Game.Ftue.Services;
 using Game.UI;
+using MessagePipe;
 using Save;
 using UnityEngine;
 using VContainer;
@@ -15,15 +16,21 @@ public class MainSceneBootstrap : MonoBehaviour
     private UIManager _uiManager;
     private ISaveService _save;
     private ITransitionAnimationService _transition;
+    private IPublisher<GameplayHubReady> _hubReadyPublisher;
 
     private CancellationToken _destroyToken;
 
     [Inject]
-    public void Install(UIManager uiManager, ISaveService save, ITransitionAnimationService transition)
+    public void Install(
+        UIManager uiManager,
+        ISaveService save,
+        ITransitionAnimationService transition,
+        IPublisher<GameplayHubReady> hubReadyPublisher)
     {
         _uiManager = uiManager;
         _save = save;
         _transition = transition;
+        _hubReadyPublisher = hubReadyPublisher;
     }
 
     private void Awake()
@@ -63,6 +70,11 @@ public class MainSceneBootstrap : MonoBehaviour
                 await ShowWelcomeAndWaitAsync(ct);
                 hud.SetHudVisible(true);
             }
+
+            // Hub is now actually visible and actionable — fire the tutorial's "hubReady" trigger.
+            // Published here (not right after IsDataReady) so a forced sequence never plays behind the
+            // transition cover or the first-entry welcome letter.
+            _hubReadyPublisher?.Publish(new GameplayHubReady(0));
         }
         catch (OperationCanceledException)
         {

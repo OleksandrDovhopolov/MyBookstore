@@ -1,0 +1,28 @@
+{
+    "name": "Game.Tutorial",
+    "rootNamespace": "Game.Tutorial",
+    "references": [
+        "UniTask",
+        "VContainer",
+        "MessagePipe",
+        "Save",
+        "Configs",
+        "Game.Conditions.API",
+        "Game.Quest.API",
+        "Game.Core.UI",
+        "DayCycle",
+        "Game.Bootstrap.Loading",
+        "Game.Tutorial.API"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

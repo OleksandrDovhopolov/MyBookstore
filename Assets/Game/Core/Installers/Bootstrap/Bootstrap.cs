@@ -12,6 +12,7 @@ using Game.Inventory.Services;
 using Game.LocationUnlock.API;
 using Game.LocationVisits.API;
 using Game.Quest.API;
+using Game.Tutorial.API;
 using Game.Newspaper.UI;
 using Game.Progression.API;
 using Game.Resources.API;
@@ -73,6 +74,7 @@ namespace Game.Bootstrap
         private IProgressionService _progression;
         private ILocationUnlockService _locationUnlock;
         private IQuestsService _quests;
+        private ITutorialService _tutorial;
         private IDecorPlacementService _decorPlacement;
         private ILocationVisitService _locationVisits;
         // ReSharper restore NotAccessedField.Local
@@ -100,6 +102,7 @@ namespace Game.Bootstrap
             IProgressionService progression,
             ILocationUnlockService locationUnlock,
             IQuestsService quests,
+            ITutorialService tutorial,
             IDecorPlacementService decorPlacement,
             ILocationVisitService locationVisits)
         {
@@ -117,6 +120,7 @@ namespace Game.Bootstrap
             _progression = progression;
             _locationUnlock = locationUnlock;
             _quests = quests;
+            _tutorial = tutorial;
             _decorPlacement = decorPlacement;
             _locationVisits = locationVisits;
         }
