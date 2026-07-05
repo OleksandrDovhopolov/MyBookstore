@@ -121,6 +121,7 @@
 | ⏳ [DI_ARCHITECTURE_WINDOWFACTORY.md](INPROGRESS/DI_ARCHITECTURE_WINDOWFACTORY.md) | [UI_SYSTEM.md](SERVICES/UI_SYSTEM.md) |
 | ⏳ [TRANSITION_ANIMATION_SERVICE.md](INPROGRESS/TRANSITION_ANIMATION_SERVICE.md) | [UI_SYSTEM.md](SERVICES/UI_SYSTEM.md), [GameFlowLoop.md](GameFlowLoop.md) |
 | ⏳ [WORLD_HUD.md](INPROGRESS/WORLD_HUD.md) | World-space баблы над объектами сцены: Phase 0 editor-setup (MyBookstore) + reference-система Bubbles (heroes). [ADDRESSABLES.md](SERVICES/ADDRESSABLES.md) |
+| ✅ [AnimationBuilder.md](INPROGRESS/AnimationBuilder.md) | Resource Animation System v1: UI-полёты ресурсов `World -> Screen`, `Screen -> World`, `Screen -> Screen`; API/settings в `Infrastructure.ResourceAnimations`, runtime под `Game.Core.UI`, DOTween, particle pool, target registry. [UI_SYSTEM.md](SERVICES/UI_SYSTEM.md) |
 | ⏳ [ART_BRIEF_PROMENADE_V1.md](INPROGRESS/ART_BRIEF_PROMENADE_V1.md) | — |
 
 ---

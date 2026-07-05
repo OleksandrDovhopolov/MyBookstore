@@ -1,4 +1,5 @@
 using Game.UI;
+using Infrastructure.ResourceAnimations;
 using UnityEngine;
 using VContainer;
 
@@ -22,6 +23,10 @@ namespace Game.Bootstrap
         [Header("UI Sprites")]
         [Tooltip("Addressable addresses of newspaper/rewards UI sprites, preloaded once at bootstrap.")]
         [SerializeField] private Game.Newspaper.UI.UiSpriteCatalog _uiSpriteCatalog;
+
+        [Header("Resource Animations")]
+        [Tooltip("Shared settings for flying resource UI animations.")]
+        [SerializeField] private ResourceAnimationSettings _resourceAnimationSettings;
 
 #if UNITY_EDITOR
         [Header("Debug Start (Editor only)")]
@@ -55,6 +60,7 @@ namespace Game.Bootstrap
             builder.RegisterShop();
             builder.RegisterNewspaper();
             builder.RegisterUiSprites(_uiSpriteCatalog);
+            builder.RegisterResourceAnimations(_resourceAnimationSettings);
             builder.RegisterProgression();
             builder.RegisterConditions();          // domain-agnostic condition engine (registry + parser)
             builder.RegisterSalesStats();          // persistent per-genre sold counters + "soldGenre" condition factory
