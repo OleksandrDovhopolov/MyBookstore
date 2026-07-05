@@ -22,11 +22,25 @@ namespace UIShared
             Right
         }
 
+        // Identifies a panel so callers can drive a single one by id (e.g. GenreBookCounts is shown
+        // only inside the location, independently of the "all panels" flow). None = not addressed.
+        public enum PanelId
+        {
+            None,
+            Top,
+            Side,
+            Bottom,
+            GenreBookCounts
+        }
+
+        [SerializeField] private PanelId _panelId = PanelId.None;
         [SerializeField, Min(0f)] private float _duration = 0.25f;
         [SerializeField] private SlideDirection _slideDirection = SlideDirection.Up;
         [SerializeField, Min(0f)] private float _slideDistance = 60f;
         [SerializeField] private Ease _ease = Ease.OutQuad;
         [SerializeField] private bool _startShown = true;
+
+        public PanelId Id => _panelId;
 
         private RectTransform _rectTransform;
         private CanvasGroup _canvasGroup;

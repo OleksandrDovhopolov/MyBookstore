@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Bootstrap.Loading;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
@@ -15,6 +16,7 @@ using Game.Preparation.UI;
 using Game.Resources.API;
 using Game.UI;
 using MessagePipe;
+using UIShared;
 using UnityEngine;
 using VContainer;
 
@@ -28,6 +30,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
     private ILocationUnlockService _locationUnlock;
     private IConfigsService _configs;
     private IUiSpriteProvider _uiSprites;
+    private IGameFlowService _gameFlow;
 
     // True once the window has loaded all the data it needs to display (currently the genre sprites).
     public bool IsDataReady { get; private set; }
@@ -53,6 +56,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         IPreparationSessionService preparationSession = null,
         ILocationUnlockService locationUnlock = null,
         IConfigsService configs = null,
+        IGameFlowService gameFlow = null,
         ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
         ISubscriber<GameplaySalesGoldChanged> salesGoldSubscriber = null,
         IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null)
@@ -64,6 +68,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         _preparationSession = preparationSession;
         _locationUnlock = locationUnlock;
         _configs = configs;
+        _gameFlow = gameFlow;
         _salesGoldSubscriber = salesGoldSubscriber;
         _genreBookCountsSubscriber = genreBookCountsSubscriber;
         _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
@@ -88,6 +93,9 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
 
         if (_dayProgress != null)
             _dayProgress.PhaseChanged += OnDayPhaseChanged;
+
+        if (_gameFlow != null)
+            _gameFlow.LocationLoadedChanged += OnLocationLoadedChanged;
     }
 
     protected override void OnShowStart()
@@ -102,6 +110,13 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
 
         View.SetGoldAmount(_resources.GetAmount(ResourceIds.Gold));
         View.SetSalesGoldVisible(false);
+
+        // The genre panel is shown only inside the location; sync it instantly to the current state so a
+        // hub boot starts hidden and a resume in-location starts shown (no animation flash).
+        View.SetPanelShown(
+            AnimatedShowHidePanel.PanelId.GenreBookCounts,
+            _gameFlow?.IsLocationLoaded == true,
+            instant: true);
 
         LoadGenreSpritesAsync(View.destroyCancellationToken).Forget();
         RefreshDayAndGenreCountsAsync().Forget();
@@ -184,6 +199,9 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
 
         if (_dayProgress != null)
             _dayProgress.PhaseChanged -= OnDayPhaseChanged;
+
+        if (_gameFlow != null)
+            _gameFlow.LocationLoadedChanged -= OnLocationLoadedChanged;
     }
 
     private void SetSceneButtonsInteractable(bool interactable)
@@ -203,6 +221,12 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
     {
         if (state?.CurrentPhase == DayPhase.Morning)
             RefreshDayAndGenreCountsAsync().Forget();
+    }
+
+    // The genre panel tracks the location boundary (fired before each reveal), so it never flashes in the hub.
+    private void OnLocationLoadedChanged(bool loaded)
+    {
+        View?.SetPanelShown(AnimatedShowHidePanel.PanelId.GenreBookCounts, loaded);
     }
 
     private void OnStartGameClicked() => StartGameAsync().Forget();

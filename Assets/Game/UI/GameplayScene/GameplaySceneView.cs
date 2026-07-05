@@ -44,6 +44,23 @@ public class GameplaySceneView : WindowView
 
     public UniTask HideAnimatedPanelsAsync(bool instant = false) => RunPanelsAsync(show: false, instant);
 
+    // Shows/hides a single panel identified by its PanelId, leaving the others untouched. Used to drive
+    // the genre panel from the location state without affecting the top/side/bottom chrome panels.
+    public void SetPanelShown(AnimatedShowHidePanel.PanelId id, bool shown, bool instant = false)
+    {
+        if (id == AnimatedShowHidePanel.PanelId.None) return;
+
+        foreach (var panel in AnimatedPanels)
+        {
+            if (panel == null || panel.Id != id) continue;
+
+            if (shown)
+                panel.Show(instant);
+            else
+                panel.Hide(instant);
+        }
+    }
+
     private UniTask RunPanelsAsync(bool show, bool instant)
     {
         var panels = AnimatedPanels;
@@ -52,6 +69,10 @@ public class GameplaySceneView : WindowView
         foreach (var panel in panels)
         {
             if (panel == null) continue;
+
+            // The genre panel's visibility is owned by the location state, not the generic show/hide-all
+            // flow (used by the Decor window), so the generic flow must never touch it.
+            if (panel.Id == AnimatedShowHidePanel.PanelId.GenreBookCounts) continue;
 
             var completion = new UniTaskCompletionSource();
             if (show)

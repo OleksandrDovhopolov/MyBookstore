@@ -24,13 +24,13 @@
   - Сделать применение эффектов идемпотентным при повторной загрузке.
   - Поднять `QuestsSaveKeys.StateSchemaVersion`.
 
-- [ ] **GAME-5. `LocationVisits` + условия `visitLocation` / `locationIs`.**
+- [x] **GAME-5. `LocationVisits` + условия `visitLocation` / `locationIs`.**
   Что сделать:
-  - Добавить persisted-счётчик визитов по локациям.
-  - Инкрементировать счётчик при входе в локацию.
-  - Хранить текущую локацию для runtime-условий.
-  - Добавить condition-factory `visitLocation` и `locationIs`.
-  - Разблокировать слайс «An Empire of Sand».
+  - Добавлен persisted-счётчик визитов по локациям (`location_visits`, schema v1).
+  - Визит записывается только после успешного входа в локацию.
+  - Текущая локация хранится runtime-only и очищается при возврате в hub.
+  - Добавлены condition-factory `visitLocation` и `locationIs`.
+  - Добавлены DI-регистрация, force-construction save-hook'а и EditMode-тесты.
 
 - [ ] **GAME-6. Runtime `DialogStep` через `CustomerDirector`.**
   Что сделать:

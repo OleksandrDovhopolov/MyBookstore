@@ -44,6 +44,8 @@ namespace Game.Bootstrap
         public bool IsTransitioning => _isTransitioning;
         public bool IsLocationLoaded => _locationLoaded;
 
+        public event Action<bool> LocationLoadedChanged;
+
         public void RegisterHubRoot(GameObject hubRoot)
         {
             _hubRoot = hubRoot;
@@ -74,6 +76,7 @@ namespace Game.Bootstrap
 
                 SetHubRootActive(false);
                 _locationLoaded = true;
+                RaiseLocationLoadedChanged();
 
                 await _animation.PlayRevealAsync(ct);
             }
@@ -86,6 +89,8 @@ namespace Game.Bootstrap
                 Debug.LogError($"{LogPrefix} EnterLocationAsync failed: {e}");
                 // Best-effort recovery: не оставлять игрока на погашенном хабе.
                 SetHubRootActive(true);
+                _locationLoaded = false;
+                RaiseLocationLoadedChanged();
                 throw;
             }
             finally
@@ -112,6 +117,7 @@ namespace Game.Bootstrap
                 _sceneTransition.SetActiveScene(_settings.GameplaySceneName);
                 SetHubRootActive(true);
                 _locationLoaded = false;
+                RaiseLocationLoadedChanged();
                 _locationVisits?.ClearCurrentLocation(); // back at the hub → locationIs false
 
                 await _animation.PlayRevealAsync(ct);
@@ -158,6 +164,8 @@ namespace Game.Bootstrap
 
             return _globalScope;
         }
+
+        private void RaiseLocationLoadedChanged() => LocationLoadedChanged?.Invoke(_locationLoaded);
 
         private void SetHubRootActive(bool active)
         {

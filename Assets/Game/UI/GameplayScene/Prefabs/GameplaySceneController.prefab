@@ -64,6 +64,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbc6cd7f63e74814ab00fbc69b14f12b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _panelId: 0
   _duration: 0.25
   _slideDirection: 0
   _slideDistance: 100
@@ -1037,6 +1038,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbc6cd7f63e74814ab00fbc69b14f12b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _panelId: 0
   _duration: 0.25
   _slideDirection: 1
   _slideDistance: 200
@@ -1130,6 +1132,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbc6cd7f63e74814ab00fbc69b14f12b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _panelId: 4
   _duration: 0.25
   _slideDirection: 3
   _slideDistance: 200
