@@ -55,6 +55,7 @@ namespace Game.Tutorial.Services
         private bool _loaded;
         private bool _running;
         private string _activeSequenceId;
+        private CancellationTokenSource _runCts;
 
         public TutorialService(
             ISaveService save,
@@ -130,9 +131,9 @@ namespace Game.Tutorial.Services
         public UniTask SkipActiveAsync(CancellationToken ct)
         {
             // Abort the active run WITHOUT marking complete; the activation scan can re-trigger it later.
-            if (!_running) return UniTask.CompletedTask;
-            _running = false;
-            _activeSequenceId = null;
+            // Cancelling the run token unblocks a long-running step (showText/highlightClick) and lets its
+            // finally-cleanup hide the overlay; the runner's finally clears _running/_activeSequenceId.
+            _runCts?.Cancel();
             return UniTask.CompletedTask;
         }
 
@@ -244,7 +245,8 @@ namespace Game.Tutorial.Services
         {
             _running = true;
             _activeSequenceId = seq.Id;
-            RunSequenceAsync(seq, startIndex, _cts.Token).Forget();
+            _runCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+            RunSequenceAsync(seq, startIndex, _runCts.Token).Forget();
         }
 
         private async UniTaskVoid RunSequenceAsync(TutorialSequenceConfig seq, int startIndex, CancellationToken ct)
@@ -258,6 +260,12 @@ namespace Game.Tutorial.Services
                 for (var i = startIndex; i < steps.Length; i++)
                 {
                     var step = steps[i];
+
+                    // Persist BEFORE running the step: quitting mid-step resumes THIS (not-yet-finished) step.
+                    _state.ActiveSequenceId = seq.Id;
+                    _state.NextStepIndex = i;
+                    await PersistAsync(ct);
+
                     _stepPub?.Publish(new TutorialStepChanged(seq.Id, step?.Id, i));
 
                     if (_handlers.TryGet(step?.Type, out var handler))
@@ -265,10 +273,6 @@ namespace Game.Tutorial.Services
                     else
                         Debug.LogError($"{LogPrefix} no handler for step type '{step?.Type}' " +
                                        $"in '{seq.Id}' (step {i}); skipping.");
-
-                    _state.ActiveSequenceId = seq.Id;
-                    _state.NextStepIndex = i + 1;
-                    await PersistAsync(ct);
                 }
 
                 await CompleteAsync(seq, ct);
@@ -285,6 +289,8 @@ namespace Game.Tutorial.Services
             {
                 _running = false;
                 _activeSequenceId = null;
+                _runCts?.Dispose();
+                _runCts = null;
             }
         }
 

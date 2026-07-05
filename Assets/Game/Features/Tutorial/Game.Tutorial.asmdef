@@ -12,7 +12,9 @@
         "Game.Core.UI",
         "DayCycle",
         "Game.Bootstrap.Loading",
-        "Game.Tutorial.API"
+        "Game.Tutorial.API",
+        "Infrastructure",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

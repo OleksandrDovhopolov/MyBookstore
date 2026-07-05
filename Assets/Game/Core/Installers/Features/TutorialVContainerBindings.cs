@@ -2,21 +2,28 @@ using System;
 using Game.Conditions.API;
 using Game.Tutorial.API;
 using Game.Tutorial.Conditions;
+using Game.Tutorial.Presentation;
 using Game.Tutorial.Services;
 using Game.Tutorial.Steps;
+using Infrastructure.TutorialUI;
 using VContainer;
 
 namespace Game.Bootstrap
 {
-    // Registered in: BootstrapInstaller (GlobalLifetimeScope) — must be global so its ISaveHook is
-    // registered before SaveDataLoadOperation (Bootstrap.Construct force-constructs ITutorialService).
+    // Registered in: BootstrapInstaller (GlobalLifetimeScope) — must be global so TutorialService's ISaveHook
+    // is registered before SaveDataLoadOperation (Bootstrap.Construct force-constructs ITutorialService).
     // Resolves from the same scope: ISaveService, IConfigsService, IConditionParser, MessagePipe pub/sub,
-    // and (optional) IDayProgressService, IGameFlowService, IQuestsService, IQuestReevaluationGate.
+    // IUICanvasRoot, IUIManager, and (optional) IDayProgressService, IGameFlowService, IQuestsService,
+    // IQuestReevaluationGate.
     public static class TutorialVContainerBindings
     {
-        public static void RegisterTutorial(this IContainerBuilder builder)
+        public static void RegisterTutorial(this IContainerBuilder builder, TutorialOverlaySettings overlaySettings)
         {
-            // Step handlers (Pass 1 stubs). Collected as IReadOnlyList<ITutorialStepHandler> by the registry.
+            builder.RegisterInstance(overlaySettings != null ? overlaySettings : TutorialOverlaySettings.CreateDefault());
+            builder.Register<ITutorialTargetRegistry, TutorialTargetRegistry>(Lifetime.Singleton);
+            builder.Register<TutorialOverlayController>(Lifetime.Singleton);
+
+            // Step handlers. Collected as IReadOnlyList<ITutorialStepHandler> by the registry.
             builder.Register<ITutorialStepHandler, ShowTextStepHandler>(Lifetime.Singleton);
             builder.Register<ITutorialStepHandler, HighlightClickStepHandler>(Lifetime.Singleton);
             builder.Register<ITutorialStepHandler, AwaitWindowStepHandler>(Lifetime.Singleton);

@@ -11,7 +11,7 @@
       {
         "id": "welcome",
         "type": "showText",
-        "text": "Добро пожаловать в вашу книжную лавку!",
+        "text": "Welcome to your bookshop!",
         "placement": "bottom"
       },
       {
@@ -19,7 +19,7 @@
         "type": "highlightClick",
         "target": "hub.start_day_button",
         "pointer": true,
-        "text": "Нажмите, чтобы начать день.",
+        "text": "Tap Start Day to begin.",
         "placement": "aboveTarget",
         "padding": 16
       },

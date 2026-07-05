@@ -168,18 +168,22 @@ Configs (как все конфиг-модели)
 
 ### 4.5 Таргет-реестр (подсветка кнопок)
 
-- Идентификация — string id через `TutorialTargetTag` на GameObject'ах префабов
-  (`hub.start_day_button`, `hub.decor_button`, `prep.confirm_button`, `hud.genre_panel`, …).
-  Стоимость подключения нового таргета: один компонент + одна строка.
-- `OnEnable → Register` / `OnDisable → Unregister` — additive-загрузка/выгрузка LocationScene
-  обрабатывается автоматически.
-- Если id ещё не зарегистрирован — шаг показывает только затемнение и ждёт `TargetRegistered`.
+Реализовано как **DI-сервис `ITutorialTargetRegistry`** (Infrastructure, зеркало
+`IResourceAnimationTargetRegistry`: `Register/Unregister/TryGetTarget`, `StringComparer.Ordinal`, purge
+null при lookup). Изначально в спеке предполагался статический реестр + самоинжектящийся `TutorialTargetTag`,
+но в проекте таких тегов нет — устоявшийся паттерн: **DI-контроллер регистрирует известный ему rect**
+(как `GameplaySceneController` регистрирует gold в `IResourceAnimationTargetRegistry`). Идём этим путём.
+
+- Идентификация — string id (`TutorialTargetIds`: `hub.start_day_button`, задел на decor/prep/hud).
+- Регистрация из контроллера: `OnShowStart → Register`, `OnHideStart`/`OnDispose → Unregister`
+  (StartDayButton регистрирует `GameplaySceneController`). additive hub↔location обрабатывается тем, что
+  контроллеры своих сцен регистрируют/снимают свои rect'ы.
+- Если id не найден — handler `highlightClick` пишет warning и **auto-advance** (не soft-lock).
 - Rect таргета пересчитывается **каждый кадр** (`ScreenRectUtility`): таргеты едут на твинах
   `AnimatedShowHidePanel` и смещаются SafeArea.
-- **Правила cleanup для статического реестра (обязательны)**: unregister в OnDisable; purge null-ссылок
-  при TryGet; повторный Register с тем же id заменяет ссылку; подписки на `TargetRegistered`
-  снимаются handler'ом при завершении шага. Словарь допустимых id — `TutorialTargetIds`
-  (const strings), сверяется валидатором.
+- Overlay (blackout/pointer/text) создаётся в **рантайме** `TutorialOverlayController.EnsureRoot()`
+  (canvas @3600 под `IUICanvasRoot.WindowsRoot`, зеркало `ResourceAnimationService.EnsureRoot`) —
+  **overlay-префаб не нужен**; из префабов только мини-панель текста.
 
 ## 5. Runtime
 

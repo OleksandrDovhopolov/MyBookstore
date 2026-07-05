@@ -1,3 +1,4 @@
+using Game.Tutorial.Presentation;
 using Game.UI;
 using Infrastructure.ResourceAnimations;
 using UnityEngine;
@@ -27,6 +28,10 @@ namespace Game.Bootstrap
         [Header("Resource Animations")]
         [Tooltip("Shared settings for flying resource UI animations.")]
         [SerializeField] private ResourceAnimationSettings _resourceAnimationSettings;
+
+        [Header("Tutorial")]
+        [Tooltip("Overlay settings for the tutorial engine (blackout/pointer/text panel).")]
+        [SerializeField] private TutorialOverlaySettings _tutorialOverlaySettings;
 
 #if UNITY_EDITOR
         [Header("Debug Start (Editor only)")]
@@ -68,7 +73,7 @@ namespace Game.Bootstrap
             builder.RegisterLocationUnlock();      // location unlock states/purchase over the condition engine
             builder.RegisterLocationEntry();       // per-visit entry fee calculator (location base + decor delta)
             builder.RegisterQuest();               // in-memory quest lifecycle over the condition engine (ISaveHook init)
-            builder.RegisterTutorial();            // forced-step tutorial engine + "tutorialCompleted" factory (ISaveHook init)
+            builder.RegisterTutorial(_tutorialOverlaySettings); // forced-step tutorial engine + overlay + "tutorialCompleted" (ISaveHook init)
             builder.RegisterCharacters();          // read-side character/memory projection over quests (ISaveHook init)
             builder.RegisterFtue();
             builder.RegisterBookSellSharedState(); // ISalesShelfStateService — общий для хаба и локации

@@ -40,6 +40,28 @@
   - Держать interaction lock до завершения dialogue UI.
   - Освобождать interaction lock на `Exit`.
 
+- [ ] **GAME-7. Разобрать дублирование `SelectedBookIds` и `ShelfBookIds`.**
+  Что сделать:
+  - Зафиксировать источник правды для фаз: `preparation.session.SelectedBookIds` как черновик/подтверждённый выбор подготовки, `book_sell.shelf_state.ShelfBookIds` как живое состояние полки продаж.
+  - Проверить, можно ли убрать лишнее зеркало без потери resume-сценариев: релонч в Preparation, релонч в Sales, возврат после failed location entry, продолжение дня после продаж.
+  - Если оба модуля остаются, явно описать контракт синхронизации: когда `ConfirmAsync` копирует выбранные книги в shelf state, когда продажи удаляют книги только из shelf state, когда новый Preparation seed берёт survivors с прошлой полки.
+  - Добавить/обновить тесты на рассинхрон `Confirmed=false`, продажу книги, новый день и повторный вход в Preparation.
+
+- [ ] **GAME-8. Clamp progress у завершённых квестов в UI.**
+  Что сделать:
+  - В `QuestViewModelBuilder` для задач/квестов в `Completed`, `ReadyToAward` и `Awarded` показывать `min(current, target) / target`.
+  - Не показывать overflow вроде `6/3` для уже завершённого квеста; ожидаемый вид — `3/3`.
+  - Добавить EditMode-тест на completed/awarded quest, где live condition progress больше цели.
+
+- [ ] **GAME-9. Compact baseline для sales-задач квестов.**
+  Что сделать:
+  - Заменить полный `SalesStatsStateDto` в `SavedQuest.TaskBaseline` на compact DTO по решению [ADR-0008](adr/0008-quest-sales-progress-persistence.md).
+  - Для `soldGenre` хранить baseline только нужного жанра.
+  - Для `soldGenreAtLocation` хранить baseline только пары `(locationId, genre)`.
+  - Для `soldGenreInSingleDay` хранить только данные, нужные для отсечения продаж до активации задачи: день активации и count нужного жанра на момент активации.
+  - Сохранить текущую pull-based модель conditions/scoped reader; event-driven progress оставить будущим направлением.
+  - Добавить миграцию/совместимость со старым save, где baseline ещё полный `SalesStatsStateDto`, и EditMode-тесты на reload.
+
 ---
 
 ## 🛠️ Инфраструктура
