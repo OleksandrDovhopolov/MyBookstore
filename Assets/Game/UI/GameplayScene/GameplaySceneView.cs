@@ -9,7 +9,6 @@ using UnityEngine.UI;
 
 public class GameplaySceneView : WindowView
 {
-    [SerializeField] private TextMeshProUGUI _goldAmountText;
     [SerializeField] private GameObject _salesGoldRoot;
     [SerializeField] private TMP_Text _salesGoldLabel;
     [SerializeField] private TMP_Text _dayLabel;
@@ -116,11 +115,6 @@ public class GameplaySceneView : WindowView
             _startDayButton.interactable = active;
             _startDayButton.gameObject.SetActive(active);
         }
-    }
-
-    public void SetGoldAmount(int goldAmount)
-    {
-        _goldAmountText.text = goldAmount.ToString();
     }
 
     public void SetSalesGoldAmount(int amount)

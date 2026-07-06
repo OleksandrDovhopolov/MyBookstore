@@ -883,7 +883,7 @@ GameObject:
   - component: {fileID: 3821145476796459810}
   - component: {fileID: 2717142027819514597}
   - component: {fileID: 2192785536767140517}
-  - component: {fileID: 7323648741992655678}
+  - component: {fileID: 913898702683181738}
   m_Layer: 5
   m_Name: GoldCurrencyRoot
   m_TagString: Untagged
@@ -976,7 +976,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &7323648741992655678
+--- !u!114 &913898702683181738
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -985,10 +985,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 5736111014446181797}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fa3904d836845b99823dd733e281a18, type: 3}
+  m_Script: {fileID: 11500000, guid: 7c4f8b18ef58426eaaa9652375926aa6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _targetId: resource:Gold
+  _resourceId: Gold
+  _amountLabel: {fileID: 1271568049338797338}
+  _pulseRoot: {fileID: 801361299451188376}
+  _pulseScale: 1.08
+  _pulseDuration: 0.18
 --- !u!1 &6047822620430007302
 GameObject:
   m_ObjectHideFlags: 0
@@ -1558,7 +1562,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _animation: {fileID: 0}
   _closeButtons: []
-  _goldAmountText: {fileID: 1271568049338797338}
   _salesGoldRoot: {fileID: 4620794607640656198}
   _salesGoldLabel: {fileID: 5825048393668981014}
   _dayLabel: {fileID: 5625417834210162507}

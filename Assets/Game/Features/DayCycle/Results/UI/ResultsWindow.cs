@@ -13,6 +13,7 @@ using Game.Rewards.API;
 using Game.UI;
 using Infrastructure.ResourceAnimations;
 using MessagePipe;
+using UIShared;
 using UnityEngine;
 using VContainer;
 
@@ -24,7 +25,7 @@ namespace Game.DayCycle.Results.UI
         private IResultsSessionService _service;
         private IUiSpriteProvider _uiSprites;
         private IResourceAnimationService _resourceAnimations;
-        private IPublisher<GameplayGoldCountUpRequested> _goldCountUpPublisher;
+        private IPublisher<ResourceCounterCountUpRequested> _countUpPublisher;
         private CancellationTokenSource _cts;
         private bool _subscribed;
         private ResultsSummary _summary;
@@ -34,12 +35,12 @@ namespace Game.DayCycle.Results.UI
             IResultsSessionService service,
             IUiSpriteProvider uiSprites = null,
             IResourceAnimationService resourceAnimations = null,
-            IPublisher<GameplayGoldCountUpRequested> goldCountUpPublisher = null)
+            IPublisher<ResourceCounterCountUpRequested> countUpPublisher = null)
         {
             _service = service;
             _uiSprites = uiSprites;
             _resourceAnimations = resourceAnimations;
-            _goldCountUpPublisher = goldCountUpPublisher;
+            _countUpPublisher = countUpPublisher;
         }
 
         protected override void OnInit()
@@ -144,7 +145,8 @@ namespace Game.DayCycle.Results.UI
             try
             {
                 if (shouldAnimateGold)
-                    _goldCountUpPublisher?.Publish(new GameplayGoldCountUpRequested(View.GoldCountUpDuration));
+                    _countUpPublisher?.Publish(
+                        new ResourceCounterCountUpRequested(ResourceIds.Gold, View.GoldCountUpDuration));
 
                 await _service.AdvanceToNextDayAsync(_cts.Token);
                 shouldPlayFlight = hasSource;

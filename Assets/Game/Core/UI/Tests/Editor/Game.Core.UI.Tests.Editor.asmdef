@@ -4,6 +4,9 @@
     "references": [
         "Game.Core.UI",
         "Infrastructure",
+        "Game.Resources.API",
+        "MessagePipe",
+        "UniTask",
         "UnityEngine.TestRunner"
     ],
     "includePlatforms": [

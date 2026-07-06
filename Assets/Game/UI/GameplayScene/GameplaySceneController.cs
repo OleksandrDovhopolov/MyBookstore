@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -13,7 +13,6 @@ using Game.LocationUnlock.API;
 using Game.Newspaper.UI;
 using Game.Preparation.Services;
 using Game.Preparation.UI;
-using Game.Resources.API;
 using Game.UI;
 using MessagePipe;
 using UIShared;
@@ -23,7 +22,6 @@ using VContainer;
 [Window("GameplaySceneController", WindowType.HUD)]
 public class GameplaySceneController : WindowController<GameplaySceneView>, IDataReadyWindow
 {
-    private IResourcesService _resources;
     private IDayProgressService _dayProgress;
     private IMorningSessionService _session;
     private IPreparationSessionService _preparationSession;
@@ -38,7 +36,6 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
     private IDisposable _salesGoldSubscription;
     private IDisposable _genreBookCountsSubscription;
     private IDisposable _buttonsInteractableSubscription;
-    private IDisposable _goldCountUpSubscription;
 
     private readonly HashSet<IWindowController> _panelHideOwners = new();
     
@@ -46,13 +43,9 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
     private ISubscriber<GameplayGenreBookCountsChanged> _genreBookCountsSubscriber;
     private IPublisher<GameplayGenreBookCountsRequested> _genreBookCountsRequestPublisher;
     private ISubscriber<GameplaySceneButtonsInteractableChanged> _buttonsInteractableSubscriber;
-    private ISubscriber<GameplayGoldCountUpRequested> _goldCountUpSubscriber;
-    private CancellationTokenSource _goldCountUpCts;
-    private int _displayedGoldAmount;
 
     [Inject]
     public void Construct(
-        IResourcesService resources,
         IUiSpriteProvider uiSprites,
         IDayProgressService dayProgress,
         IMorningSessionService morningSessionService,
@@ -63,10 +56,8 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         IGameFlowService gameFlow = null,
         ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
         ISubscriber<GameplaySalesGoldChanged> salesGoldSubscriber = null,
-        ISubscriber<GameplayGoldCountUpRequested> goldCountUpSubscriber = null,
         IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null)
     {
-        _resources = resources;
         _uiSprites = uiSprites;
         _dayProgress = dayProgress;
         _session = morningSessionService;
@@ -75,7 +66,6 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         _configs = configs;
         _gameFlow = gameFlow;
         _salesGoldSubscriber = salesGoldSubscriber;
-        _goldCountUpSubscriber = goldCountUpSubscriber;
         _genreBookCountsSubscriber = genreBookCountsSubscriber;
         _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
         _genreBookCountsRequestPublisher = genreBookCountsRequestPublisher;
@@ -96,7 +86,6 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
             e => View.SetGenreBookCounts(e.Counts, e.PurchasedCounts, e.ShowPurchasedCounts));
 
         _salesGoldSubscription = _salesGoldSubscriber?.Subscribe(OnSalesGoldChanged);
-        _goldCountUpSubscription = _goldCountUpSubscriber?.Subscribe(OnGoldCountUpRequested);
 
         if (_dayProgress != null)
             _dayProgress.PhaseChanged += OnDayPhaseChanged;
@@ -107,15 +96,6 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
 
     protected override void OnShowStart()
     {
-        if (_resources == null)
-        {
-            Debug.LogWarning("[GameplaySceneController] dependencies missing — not registered in DI?");
-            return;
-        }
-
-        _resources.Changed += OnResourceChanged;
-
-        SetDisplayedGold(_resources.GetAmount(ResourceIds.Gold));
         View.SetSalesGoldVisible(false);
 
         // The genre panel is shown only inside the location; sync it instantly to the current state so a
@@ -170,24 +150,9 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         }
     }
 
-    private void OnResourceChanged(ResourceChangeEvent change)
-    {
-        if (change == null || change.ResourceId != ResourceIds.Gold) return;
-
-        if (IsSalesDayGoldChange(change))
-        {
-            CancelGoldCountUp();
-            return;
-        }
-
-        CancelGoldCountUp();
-        SetDisplayedGold(change.NewAmount);
-    }
-
     protected override void OnHideStart(bool isClosed)
     {
         base.OnHideStart(isClosed);
-        if (_resources != null) _resources.Changed -= OnResourceChanged;
     }
 
     protected override void OnDispose()
@@ -200,10 +165,6 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
 
         _salesGoldSubscription?.Dispose();
         _salesGoldSubscription = null;
-
-        _goldCountUpSubscription?.Dispose();
-        _goldCountUpSubscription = null;
-        CancelGoldCountUp();
 
         if (View != null && View.StartDayButton != null)
             View.StartDayButton.onClick.RemoveAllListeners();
@@ -234,78 +195,6 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         View.SetSalesGoldAmount(e.GoldEarned);
         View.SetSalesGoldVisible(e.Visible);
     }
-
-    private void OnGoldCountUpRequested(GameplayGoldCountUpRequested e)
-    {
-        AnimateGoldCountUpAsync(e.DurationSeconds).Forget();
-    }
-
-    private async UniTaskVoid AnimateGoldCountUpAsync(float durationSeconds)
-    {
-        if (View == null || _resources == null) return;
-
-        CancelGoldCountUp();
-        var cts = CancellationTokenSource.CreateLinkedTokenSource(View.destroyCancellationToken);
-        _goldCountUpCts = cts;
-        var ct = cts.Token;
-
-        var from = _displayedGoldAmount;
-        var to = _resources.GetAmount(ResourceIds.Gold);
-        var duration = Mathf.Max(0f, durationSeconds);
-
-        try
-        {
-            if (duration <= 0f || from == to)
-            {
-                SetDisplayedGold(to);
-                return;
-            }
-
-            var elapsed = 0f;
-            while (elapsed < duration)
-            {
-                ct.ThrowIfCancellationRequested();
-                elapsed += Time.unscaledDeltaTime;
-                var t = Mathf.Clamp01(elapsed / duration);
-                SetDisplayedGold(Mathf.RoundToInt(Mathf.Lerp(from, to, t)));
-                await UniTask.NextFrame(ct);
-            }
-
-            SetDisplayedGold(to);
-        }
-        catch (OperationCanceledException)
-        {
-        }
-        finally
-        {
-            if (ReferenceEquals(_goldCountUpCts, cts))
-            {
-                _goldCountUpCts.Dispose();
-                _goldCountUpCts = null;
-            }
-        }
-    }
-
-    private void SetDisplayedGold(int amount)
-    {
-        _displayedGoldAmount = Mathf.Max(0, amount);
-        View?.SetGoldAmount(_displayedGoldAmount);
-    }
-
-    private void CancelGoldCountUp()
-    {
-        if (_goldCountUpCts == null) return;
-
-        _goldCountUpCts.Cancel();
-        _goldCountUpCts.Dispose();
-        _goldCountUpCts = null;
-    }
-
-    private static bool IsSalesDayGoldChange(ResourceChangeEvent change)
-        => change.Delta > 0
-           && string.Equals(change.ResourceId, ResourceIds.Gold, StringComparison.Ordinal)
-           && !string.IsNullOrEmpty(change.Reason)
-           && change.Reason.StartsWith("sales_day_", StringComparison.Ordinal);
 
     private void OnDayPhaseChanged(DayProgressState state)
     {
