@@ -86,24 +86,5 @@ namespace Game.SalesStats.Tests.Editor
 
             Assert.AreEqual(3, baseline.SoldByGenre[BookGenre.Fantasy.ToConfigValue()]); // snapshot frozen
         }
-
-        [Test]
-        public void LegacySingleDayBaseline_UsesPerDaySubtraction()
-        {
-            var svc = Build();
-            Sell(svc, FarBeach, 1, 5);
-
-            var scoped = ((ISalesStatsBaselineSource)svc).CreateScopedReader(new SalesStatsBaselineDto
-            {
-                SoldByDayGenre = new System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<string, int>>
-                {
-                    [1] = new() { [BookGenre.Fantasy.ToConfigValue()] = 5 }
-                }
-            });
-
-            Sell(svc, FarBeach, 2, 4);
-
-            Assert.AreEqual(4, scoped.GetMaxSoldInSingleDay(BookGenre.Fantasy));
-        }
     }
 }

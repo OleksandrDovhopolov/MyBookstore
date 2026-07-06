@@ -5,7 +5,7 @@ namespace Game.SalesStats.API
 {
     /// <summary>
     /// Quest-local sales baseline captured when a sales task becomes active. New captures are compact and
-    /// keep only counters referenced by that task. <see cref="SoldByDayGenre"/> is legacy v2 compatibility.
+    /// keep only counters referenced by that task.
     /// </summary>
     public sealed class SalesStatsBaselineDto
     {
@@ -17,9 +17,6 @@ namespace Game.SalesStats.API
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, SalesStatsSingleDayBaselineDto> SoldInSingleDayGenre { get; set; }
-
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public Dictionary<int, Dictionary<string, int>> SoldByDayGenre { get; set; }
     }
 
     public sealed class SalesStatsSingleDayBaselineDto

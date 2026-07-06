@@ -508,8 +508,14 @@ namespace Game.Quest.Services
         {
             if (!_baselineEnabled || !task.NeedsBaseline || task.Baseline != null) return;
 
-            if (task.BaselinePlan.RequiresCurrentDay && _dayProgress != null)
+            if (task.BaselinePlan.RequiresCurrentDay)
+            {
+                if (_dayProgress == null)
+                    throw new InvalidOperationException(
+                        $"Quest sales task '{task.QuestId}.{task.Id}' requires IDayProgressService for compact single-day baseline.");
+
                 task.BaselinePlan.ActivationDay = _dayProgress.Current.CurrentDay;
+            }
 
             var baseline = _salesBaseline.CaptureBaseline(task.BaselinePlan);
             var parser = BuildScopedParser(_salesBaseline.CreateScopedReader(baseline));
