@@ -105,6 +105,7 @@
 | ⏳ [INVENTORY.md](INVENTORY.md) | _на будущее_ (фича `Game.Inventory` — категории, two-bucket storage, use-handlers) | — |
 | ⏳ [DECOR.md](DECOR.md) | _на будущее_ | — |
 | ⏳ [REWARD_SYSTEM.md](REWARD_SYSTEM.md) | _на будущее_ | — |
+| ✅ [CONTENT_STRATEGY_MVP.md](CONTENT_STRATEGY_MVP.md) | Контент-план MVP: day 1 / day 1–7 / day 8–30, 5 персонажей × 5 локаций (плейсхолдеры), маппинг контента на существующие системы, фича «5 фрагментов фото» + альтернативный вариант (независимые Memories на персонажа). | [CHARACTERS_AND_QUESTS.md](CHARACTERS_AND_QUESTS.md), [LOCATION_UNLOCK_SYSTEM.md](LOCATION_UNLOCK_SYSTEM.md), [CORE_LOOP.md](CORE_LOOP.md), [INVENTORY.md](INVENTORY.md), [REWARD_SYSTEM.md](REWARD_SYSTEM.md), [DECOR.md](DECOR.md) |
 
 ---
 

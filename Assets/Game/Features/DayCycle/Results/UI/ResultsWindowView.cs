@@ -1,5 +1,8 @@
+using System.Collections.Generic;
+using Game.Newspaper.UI;
 using Game.UI;
 using TMPro;
+using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,47 +10,84 @@ namespace Game.DayCycle.Results.UI
 {
     public sealed class ResultsWindowView : WindowView
     {
-        [Header("Header")]
-        [SerializeField] private TMP_Text _dayLabel;
-        [SerializeField] private TMP_Text _salesLabel;
-        [SerializeField] private TMP_Text _goldLabel;
+        [Header("Results")]
+        [SerializeField] private TMP_Text _earnedGoldLabel;
+        [SerializeField] private RectTransform _coinFlightSource;
+        [SerializeField] private float _goldCountUpDuration = 1f;
 
-        [Header("Tier counts")]
-        [SerializeField] private TMP_Text _excLabel;
-        [SerializeField] private TMP_Text _normLabel;
-        [SerializeField] private TMP_Text _failLabel;
-        [SerializeField] private TMP_Text _skipLabel;
-
-        [Header("Review")]
-        [SerializeField] private TMP_Text _reviewLabel;
-
-        [Header("Reward line")]
-        [SerializeField] private TMP_Text _goldDeltaLabel;
-        [SerializeField] private TMP_Text _repDeltaLabel;
-        [SerializeField] private TMP_Text _alreadyAppliedHint;
+        [Header("Sold genres")]
+        [SerializeField] private UIListPool<RewardItemView> _soldGenrePool = new();
 
         [Header("Actions")]
         [SerializeField] private Button _nextDayButton;
-        [SerializeField] private Button _openNewspaperButton;
 
         [Header("Error")]
         [SerializeField] private GameObject _errorPanel;
 
-        public TMP_Text DayLabel => _dayLabel;
-        public TMP_Text SalesLabel => _salesLabel;
-        public TMP_Text GoldLabel => _goldLabel;
-        public TMP_Text ExcellentLabel => _excLabel;
-        public TMP_Text NormalLabel => _normLabel;
-        public TMP_Text FailedLabel => _failLabel;
-        public TMP_Text SkippedLabel => _skipLabel;
+        private readonly Dictionary<RewardSpecResource, RewardItemView> _soldGenreViews = new();
 
-        public TMP_Text ReviewLabel => _reviewLabel;
-        public TMP_Text GoldDeltaLabel => _goldDeltaLabel;
-        public TMP_Text ReputationDeltaLabel => _repDeltaLabel;
-        public TMP_Text AlreadyAppliedHint => _alreadyAppliedHint;
-
+        public float GoldCountUpDuration => Mathf.Max(0f, _goldCountUpDuration);
         public Button NextDayButton => _nextDayButton;
-        public Button OpenNewspaperButton => _openNewspaperButton;
         public GameObject ErrorPanel => _errorPanel;
+
+        public void SetEarnedGold(int amount)
+        {
+            if (_earnedGoldLabel != null)
+                _earnedGoldLabel.text = Mathf.Max(0, amount).ToString();
+        }
+
+        public void SetSoldGenres(IReadOnlyList<RewardSpecResource> soldGenres)
+        {
+            ResetSoldGenres();
+            if (soldGenres == null || _soldGenrePool == null) return;
+
+            for (var i = 0; i < soldGenres.Count; i++)
+            {
+                var resource = soldGenres[i];
+                if (resource == null) continue;
+
+                var view = _soldGenrePool.GetNext();
+                view.SetResourceData(resource);
+                _soldGenreViews[resource] = view;
+            }
+
+            _soldGenrePool.DisableNonActive();
+        }
+
+        public IReadOnlyDictionary<RewardSpecResource, RewardItemView> GetSoldGenreViews()
+            => _soldGenreViews;
+
+        public void ResetView()
+        {
+            SetEarnedGold(0);
+            ResetSoldGenres();
+        }
+
+        public bool TryGetCoinFlightSourceScreenPoint(out Vector2 screenPoint)
+        {
+            var source = _coinFlightSource != null
+                ? _coinFlightSource
+                : _earnedGoldLabel != null
+                    ? _earnedGoldLabel.rectTransform
+                    : transform as RectTransform;
+
+            if (source == null)
+            {
+                screenPoint = default;
+                return false;
+            }
+
+            screenPoint = RectTransformUtility.WorldToScreenPoint(null, source.position);
+            return true;
+        }
+
+        private void ResetSoldGenres()
+        {
+            foreach (var view in _soldGenreViews.Values)
+                if (view != null) view.ResetView();
+
+            _soldGenreViews.Clear();
+            _soldGenrePool?.DisableAll();
+        }
     }
 }
