@@ -12,6 +12,8 @@ namespace Game.Bootstrap
         {
             builder.RegisterInstance(settings != null ? settings : ResourceAnimationSettings.CreateDefault());
             builder.Register<IResourceAnimationTargetRegistry, ResourceAnimationTargetRegistry>(Lifetime.Singleton);
+            builder.RegisterBuildCallback(
+                resolver => ResourceAnimationTargets.Bind(resolver.Resolve<IResourceAnimationTargetRegistry>()));
             builder.Register<IResourceAnimationService, ResourceAnimationService>(Lifetime.Singleton);
         }
     }

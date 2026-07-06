@@ -47,6 +47,8 @@ builder.RegisterResourceAnimations(_resourceAnimationSettings);
 
 - `ResourceAnimationSettings` instance или runtime default, если asset не назначен.
 - `IResourceAnimationTargetRegistry -> ResourceAnimationTargetRegistry`.
+- Build callback привязывает registry к static facade `ResourceAnimationTargets`, чтобы prefab/scene
+  `ResourceAnimationTargetTag` компоненты могли регистрироваться без DI.
 - `IResourceAnimationService -> ResourceAnimationService`.
 
 В `BootstrapInstaller` должен быть назначен `ResourceAnimationSettings` asset. Если asset не назначен, сервис не падает, но без `ParticlePrefab` анимация будет no-op с warning.
@@ -164,8 +166,9 @@ ResourceAnimationTargetIds.Resource(ResourceIds.Gold) // "resource:Gold"
 
 Первый wired target - HUD gold:
 
-- `GameplaySceneView.GoldTargetRect`
-- `GameplaySceneController` регистрирует `resource:Gold` на show и unregister на hide/dispose.
+- `ResourceAnimationTargetTag` вешается на нужный `RectTransform` в HUD prefab.
+- В поле target id указывается `resource:Gold`.
+- Компонент регистрирует target через `ResourceAnimationTargets` на `OnEnable` и снимает на `OnDisable`.
 
 Остальные UI-точки могут передавать `RectTransform` напрямую в request или регистрировать свои target id позже.
 
@@ -206,7 +209,8 @@ Assets -> Create -> Game -> UI -> Resource Animation Settings
 - `AnimationBuilder` как generic strategy registry.
 - `BaseUIAnimate`, `AnimateCurrency`, `AnimateResources`, `AnimateExperience`, `AnimateReceipt`.
 - actor/experience/receipt/transport доменные сценарии.
-- static `AnimationTargets`.
+- широкий static `AnimationTargets` из референса. В проекте есть только узкий `ResourceAnimationTargets`
+  facade над текущим `IResourceAnimationTargetRegistry`, чтобы prefab components могли self-register targets.
 - `CanvasAnimationBuilder` prefab как отдельная обязательная сущность.
 - старые `ResourceType`, `ActorStaticType`, `IconsLibrary`, `ActorsStorage`.
 - slide panels, bars flare/bounce, VFXPool.

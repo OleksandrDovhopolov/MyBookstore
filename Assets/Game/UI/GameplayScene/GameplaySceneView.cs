@@ -30,7 +30,6 @@ public class GameplaySceneView : WindowView
 
     public Button StartDayButton => _startDayButton;
     public Button DecorButton => _decorButton;
-    public RectTransform GoldTargetRect => _goldAmountText != null ? _goldAmountText.rectTransform : null;
 
     // Collected from the view hierarchy at runtime (including inactive) so any number of
     // panels — top / side / bottom / any future ones — is driven together without wiring
