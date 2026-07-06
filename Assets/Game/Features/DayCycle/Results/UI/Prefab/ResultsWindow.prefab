@@ -1646,7 +1646,7 @@ MonoBehaviour:
   _animation: {fileID: 5653145718807376124}
   _closeButtons: []
   _earnedGoldLabel: {fileID: 1086168340986045897}
-  _coinFlightSource: {fileID: 3800443079459450914}
+  _coinFlightSource: {fileID: 219670613536524943}
   _soldGenrePool:
     prefab: {fileID: 7159866281013524648, guid: 9cdb9bb1b72bc1749b8238c9797bf2d8, type: 3}
     parent: {fileID: 4200486762523885730}

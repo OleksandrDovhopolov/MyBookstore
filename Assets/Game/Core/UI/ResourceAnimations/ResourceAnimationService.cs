@@ -76,8 +76,13 @@ namespace Game.UI.ResourceAnimations
                     particle.RectTransform.anchoredPosition = from;
                     particle.RectTransform.localScale = Vector3.one * _settings.StartScale;
 
+                    // Hidden until its staggered turn to fly, so later particles don't sit visible
+                    // at the source point while they wait. Revealed by the callback inserted below.
+                    particle.CanvasGroup.alpha = 0f;
+
                     var delay = i * _settings.Stagger;
                     var control = BuildControlPoint(from, to);
+                    sequence.InsertCallback(delay, () => particle.CanvasGroup.alpha = 1f);
                     var move = DOTween.To(
                             () => 0f,
                             t => particle.RectTransform.anchoredPosition = EvaluateQuadraticBezier(from, control, to, t),

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _particlePrefab: {fileID: 4634343996028356408, guid: 479a2d4c7caa3bf44b583c3058d2e5f7, type: 3}
   _maxParticles: 6
-  _duration: 0.65
+  _duration: 0.85
   _stagger: 0.1
   _bezierSpread: 120
   _startScale: 0.8

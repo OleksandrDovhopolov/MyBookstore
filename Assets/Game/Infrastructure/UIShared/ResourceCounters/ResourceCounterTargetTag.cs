@@ -29,7 +29,8 @@ namespace UIShared
         private Vector3 _pulseStartScale = Vector3.one;
 
         public string ResourceId => _resourceId;
-        public RectTransform RectTransform => _rt != null ? _rt : _rt = (RectTransform)transform;
+        //public RectTransform RectTransform => _rt != null ? _rt : _rt = (RectTransform)transform;
+        public RectTransform RectTransform => (RectTransform)_pulseRoot;
         public int DisplayedAmount { get; private set; }
 
         private Transform PulseRoot => _pulseRoot != null ? _pulseRoot : transform;
