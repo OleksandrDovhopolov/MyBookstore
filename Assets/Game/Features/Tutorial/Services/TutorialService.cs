@@ -33,6 +33,9 @@ namespace Game.Tutorial.Services
         private readonly IConditionParser _parser;
         private readonly TutorialStepHandlerRegistry _handlers;
 
+        // When false, sequences never auto-start from triggers or resume on load; explicit TryStartAsync still runs.
+        private readonly bool _autoStart;
+
         private readonly ISubscriber<GameplayHubReady> _hubReadySub;
         private readonly IPublisher<TutorialSequenceStarted> _startedPub;
         private readonly IPublisher<TutorialStepChanged> _stepPub;
@@ -69,12 +72,14 @@ namespace Game.Tutorial.Services
             IDayProgressService dayProgress = null,
             IGameFlowService gameFlow = null,
             IQuestsService quests = null,
-            IQuestReevaluationGate questReevaluation = null)
+            IQuestReevaluationGate questReevaluation = null,
+            bool autoStart = true)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _parser = parser ?? throw new ArgumentNullException(nameof(parser));
             _handlers = handlers ?? throw new ArgumentNullException(nameof(handlers));
+            _autoStart = autoStart;
             _hubReadySub = hubReadySub;
             _startedPub = startedPub;
             _stepPub = stepPub;
@@ -107,7 +112,7 @@ namespace Game.Tutorial.Services
             _loaded = true;
 
             Debug.Log($"{LogPrefix} loaded: {_sequences.Count} sequences, " +
-                      $"{_state.CompletedSequenceIds.Count} completed.");
+                      $"{_state.CompletedSequenceIds.Count} completed. autoStart={_autoStart}.");
 
             ResumeActiveSequence();
         }
@@ -205,7 +210,7 @@ namespace Game.Tutorial.Services
 
         private void OnTrigger(string trigger, string param)
         {
-            if (!_loaded || _running) return;
+            if (!_loaded || _running || !_autoStart) return;
 
             // Don't start a sequence mid-transition (overlay would appear under the transition cover).
             // Exception: locationLoaded fires DURING the transition (before reveal) — guarding it would
@@ -248,6 +253,7 @@ namespace Game.Tutorial.Services
 
         private void ResumeActiveSequence()
         {
+            if (!_autoStart) return; // auto-start disabled: don't revive a mid-run sequence from a prior save
             if (_running) return; // a trigger may have already started a run during load
             var id = _state.ActiveSequenceId;
             if (string.IsNullOrEmpty(id)) return;

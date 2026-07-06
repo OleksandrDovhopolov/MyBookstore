@@ -671,16 +671,23 @@ namespace Game.Quest.Services
             if (saved == null) return;
             quest.SetState(saved.State);
             if (saved.Tasks == null) return;
+            var savedTasks = new Dictionary<int, SavedQuestTask>();
+            foreach (var savedTask in saved.Tasks)
+            {
+                if (savedTask == null) continue;
+                savedTasks[savedTask.Id] = savedTask;
+            }
+
             foreach (var task in quest.TasksInternal)
             {
-                if (!saved.Tasks.TryGetValue(task.Id, out var taskState)) continue;
+                if (!savedTasks.TryGetValue(task.Id, out var savedTask)) continue;
+                var taskState = savedTask.State;
                 task.SetState(taskState);
                 if (taskState != QuestTaskState.Active) continue;
 
                 if (_baselineEnabled && task.NeedsBaseline)
                 {
-                    SalesStatsBaselineDto savedBaseline = null;
-                    if (saved.TaskBaseline != null) saved.TaskBaseline.TryGetValue(task.Id, out savedBaseline);
+                    var savedBaseline = savedTask.SalesBaseline;
 
                     if (savedBaseline != null)
                     {
@@ -690,7 +697,7 @@ namespace Game.Quest.Services
                     else
                     {
                         Debug.LogWarning($"{LogPrefix} missing baseline for active sales task '{quest.Id}.{task.Id}'; " +
-                                         "capturing current stats (v2 migration; progress restarts).");
+                                         "capturing current stats (save reset/development fallback; progress restarts).");
                         MaybeCaptureBaseline(task);
                     }
                 }
@@ -732,15 +739,17 @@ namespace Game.Quest.Services
                         break;
                     case QuestState.Active:
                     case QuestState.ReadyToAward:
-                        var tasks = new Dictionary<int, QuestTaskState>();
-                        Dictionary<int, SalesStatsBaselineDto> baselines = null;
+                        var tasks = new List<SavedQuestTask>();
                         foreach (var task in quest.TasksInternal)
                         {
-                            tasks[task.Id] = task.State;
-                            if (task.Baseline != null)
-                                (baselines ??= new Dictionary<int, SalesStatsBaselineDto>())[task.Id] = task.Baseline;
+                            tasks.Add(new SavedQuestTask
+                            {
+                                Id = task.Id,
+                                State = task.State,
+                                SalesBaseline = task.Baseline
+                            });
                         }
-                        dto.Active[quest.Id] = new SavedQuest { State = quest.State, Tasks = tasks, TaskBaseline = baselines };
+                        dto.Active[quest.Id] = new SavedQuest { State = quest.State, Tasks = tasks };
                         break;
                     // Pending: not persisted.
                 }

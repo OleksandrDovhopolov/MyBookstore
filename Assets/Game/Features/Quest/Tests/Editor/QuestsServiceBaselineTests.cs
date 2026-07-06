@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Conditions.API;
@@ -95,6 +96,9 @@ namespace Game.Quest.Tests.Editor
 
         private static QuestState State(QuestsService q, string id) => q.GetQuestState(id);
 
+        private static SalesStatsBaselineDto Baseline(Harness h, string questId, int taskId)
+            => h.Repo.Stored.Active[questId].Tasks.First(t => t.Id == taskId).SalesBaseline;
+
         [Test]
         public void SalesBeforeActivation_DoNotCount()
         {
@@ -176,7 +180,7 @@ namespace Game.Quest.Tests.Editor
             quests.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
             quests.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
 
-            var baseline = h.Repo.Stored.Active["q1"].TaskBaseline[1];
+            var baseline = Baseline(h, "q1", 1);
             Assert.IsNull(baseline.SoldByGenre);
             Assert.IsNull(baseline.SoldInSingleDayGenre);
             Assert.IsTrue(baseline.SoldByLocationGenre.ContainsKey(FarBeach));
@@ -202,7 +206,7 @@ namespace Game.Quest.Tests.Editor
             quests.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
             quests.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
 
-            var baseline = h.Repo.Stored.Active["q1"].TaskBaseline[1];
+            var baseline = Baseline(h, "q1", 1);
             Assert.AreEqual(3, baseline.SoldByGenre[BookGenre.Fantasy.ToConfigValue()]);
             Assert.AreEqual(3, baseline.SoldByLocationGenre[FarBeach][BookGenre.Fantasy.ToConfigValue()]);
         }
@@ -218,7 +222,7 @@ namespace Game.Quest.Tests.Editor
             q1.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
             q1.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
 
-            var baseline = h.Repo.Stored.Active["q1"].TaskBaseline[1];
+            var baseline = Baseline(h, "q1", 1);
             Assert.AreEqual(2, baseline.SoldInSingleDayGenre[BookGenre.Fantasy.ToConfigValue()].ActivationDay);
             Assert.AreEqual(0, baseline.SoldInSingleDayGenre[BookGenre.Fantasy.ToConfigValue()].ActivationDayCount);
 

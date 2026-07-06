@@ -4,7 +4,9 @@ using System.Threading;
 using Game.Configs.Models;
 using Game.Quest.API;
 using Game.Quest.Services;
+using Game.Quest.Services.Persistence;
 using Game.Quest.Tests.Editor.Fakes;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
@@ -187,6 +189,24 @@ namespace Game.Quest.Tests.Editor
 
             s.Save();
             Assert.AreEqual(0, repo.SaveCallCount);
+        }
+
+        [Test]
+        public void SavedQuest_SerializesStatesAsReadableStrings()
+        {
+            var dto = new SavedQuest
+            {
+                State = QuestState.Active,
+                Tasks = new List<SavedQuestTask>
+                {
+                    new() { Id = 1, State = QuestTaskState.Active }
+                }
+            };
+
+            var json = JsonConvert.SerializeObject(dto, Formatting.None);
+
+            StringAssert.Contains("\"State\":\"Active\"", json);
+            StringAssert.Contains("\"Tasks\":[{\"Id\":1,\"State\":\"Active\"}]", json);
         }
     }
 }

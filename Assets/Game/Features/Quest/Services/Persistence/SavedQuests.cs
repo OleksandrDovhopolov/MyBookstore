@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using Game.Quest.API;
 using Game.SalesStats.API;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Game.Quest.Services.Persistence
 {
@@ -23,10 +25,21 @@ namespace Game.Quest.Services.Persistence
 
     public sealed class SavedQuest
     {
+        [JsonConverter(typeof(StringEnumConverter))]
         public QuestState State { get; set; }                       // Active | ReadyToAward
-        public Dictionary<int, QuestTaskState> Tasks { get; set; }  // task id -> state
 
-        /// <summary>Per-task compact sales baseline (only for active sales tasks). Null when none.</summary>
-        public Dictionary<int, SalesStatsBaselineDto> TaskBaseline { get; set; }
+        public List<SavedQuestTask> Tasks { get; set; }
+    }
+
+    public sealed class SavedQuestTask
+    {
+        public int Id { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public QuestTaskState State { get; set; }
+
+        /// <summary>Compact sales baseline for this task. Null when the task has no sales-scoped progress.</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public SalesStatsBaselineDto SalesBaseline { get; set; }
     }
 }

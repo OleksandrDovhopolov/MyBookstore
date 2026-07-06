@@ -5,7 +5,7 @@ namespace Game.Quest.Services.Persistence
     {
         public const string State = "quests";
 
-        // v3 replaces full per-task SalesStatsStateDto baselines with compact SalesStatsBaselineDto.
-        public const int StateSchemaVersion = 3;
+        // v4 stores readable task DTOs with string enum states and inline compact sales baselines.
+        public const int StateSchemaVersion = 4;
     }
 }

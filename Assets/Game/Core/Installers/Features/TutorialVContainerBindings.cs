@@ -17,7 +17,8 @@ namespace Game.Bootstrap
     // IQuestReevaluationGate.
     public static class TutorialVContainerBindings
     {
-        public static void RegisterTutorial(this IContainerBuilder builder, TutorialOverlaySettings overlaySettings)
+        public static void RegisterTutorial(
+            this IContainerBuilder builder, TutorialOverlaySettings overlaySettings, bool autoStart = true)
         {
             builder.RegisterInstance(overlaySettings != null ? overlaySettings : TutorialOverlaySettings.CreateDefault());
             builder.Register<ITutorialTargetRegistry, TutorialTargetRegistry>(Lifetime.Singleton);
@@ -42,7 +43,8 @@ namespace Game.Bootstrap
             // TutorialService self-registers as ISaveHook in its constructor; AfterLoadAsync builds the
             // catalog from tutorials.json (configs are warm by then), restores state, subscribes triggers.
             builder.Register<TutorialService>(Lifetime.Singleton)
-                .As<ITutorialService>();
+                .As<ITutorialService>()
+                .WithParameter("autoStart", autoStart);
 
             // "tutorialCompleted" leaf. The factory holds a lazy Func<ITutorialService> so building the
             // IConditionFactory collection never forces the tutorial service → no DI cycle. The Func is
