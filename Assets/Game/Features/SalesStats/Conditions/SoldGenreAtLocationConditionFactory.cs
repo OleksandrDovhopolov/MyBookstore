@@ -11,7 +11,7 @@ namespace Game.SalesStats.Conditions
     /// <c>{ "type": "soldGenreAtLocation", "genre": "Fantasy", "locationId": "far_beach", "min": 15 }</c>.
     /// Registered in DI by the SalesStats binding, so the engine discovers it without any engine change.
     /// </summary>
-    public sealed class SoldGenreAtLocationConditionFactory : IConditionFactory
+    public sealed class SoldGenreAtLocationConditionFactory : IConditionFactory, ISalesStatsBaselinePlanContributor
     {
         public const string TypeId = "soldGenreAtLocation";
 
@@ -24,16 +24,29 @@ namespace Game.SalesStats.Conditions
 
         public ICondition Create(JObject node)
         {
+            var genre = ReadGenre(node);
+            var locationId = ReadLocationId(node);
+            var min = node.Value<int?>("min") ?? 0;
+            return new SoldGenreAtLocationCondition(_reader, genre, locationId, min);
+        }
+
+        public void Contribute(JObject node, SalesStatsBaselineCapturePlan plan)
+            => plan?.AddLocationGenre(ReadLocationId(node), ReadGenre(node));
+
+        private static BookGenre ReadGenre(JObject node)
+        {
             var genreValue = node.Value<string>("genre");
             if (!BookGenreExtensions.TryParseGenre(genreValue, out var genre))
                 throw new ArgumentException($"unknown genre '{genreValue}'");
+            return genre;
+        }
 
+        private static string ReadLocationId(JObject node)
+        {
             var locationId = node.Value<string>("locationId");
             if (string.IsNullOrEmpty(locationId))
                 throw new ArgumentException("missing 'locationId'");
-
-            var min = node.Value<int?>("min") ?? 0;
-            return new SoldGenreAtLocationCondition(_reader, genre, locationId, min);
+            return locationId;
         }
     }
 }

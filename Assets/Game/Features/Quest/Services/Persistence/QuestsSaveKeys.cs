@@ -5,7 +5,7 @@ namespace Game.Quest.Services.Persistence
     {
         public const string State = "quests";
 
-        // v2 adds per-task sales baseline (SavedQuest.TaskBaseline) for "since activation" progress.
-        public const int StateSchemaVersion = 2;
+        // v3 replaces full per-task SalesStatsStateDto baselines with compact SalesStatsBaselineDto.
+        public const int StateSchemaVersion = 3;
     }
 }

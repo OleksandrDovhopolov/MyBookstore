@@ -25,17 +25,20 @@ namespace Game.Quest.Services
         public bool NeedsBaseline { get; }
 
         /// <summary>Sales counters snapshot taken when the task became Active; null until then (or non-sales task).</summary>
-        public SalesStatsStateDto Baseline { get; private set; }
+        public SalesStatsBaselineDto Baseline { get; private set; }
+
+        public SalesStatsBaselineCapturePlan BaselinePlan { get; }
 
         public QuestTask(string questId, QuestTaskConfig config, ICondition activation, ICondition completion,
-            bool needsBaseline)
+            SalesStatsBaselineCapturePlan baselinePlan)
         {
             QuestId = questId;
             Id = config.Id;
             Config = config;
             _activation = activation;
             _completion = completion;
-            NeedsBaseline = needsBaseline;
+            BaselinePlan = baselinePlan;
+            NeedsBaseline = baselinePlan is { IsEmpty: false };
             Progress = _completion.Evaluate();
         }
 
@@ -62,7 +65,7 @@ namespace Game.Quest.Services
 
         /// <summary>Swaps completion to a baseline-scoped condition and refreshes progress immediately
         /// (so the lifetime value isn't briefly shown). Stores the baseline for persistence.</summary>
-        internal void SetScopedCompletion(ICondition completion, SalesStatsStateDto baseline)
+        internal void SetScopedCompletion(ICondition completion, SalesStatsBaselineDto baseline)
         {
             _completion = completion;
             Baseline = baseline;

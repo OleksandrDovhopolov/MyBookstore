@@ -1,8 +1,17 @@
 using System;
 using System.Collections.Generic;
+using Game.SalesStats.API;
+using Newtonsoft.Json.Linq;
 
 namespace Game.SalesStats.Conditions
 {
+    public interface ISalesStatsBaselinePlanContributor
+    {
+        string Type { get; }
+
+        void Contribute(JObject node, SalesStatsBaselineCapturePlan plan);
+    }
+
     /// <summary>
     /// Single source of truth for the sales condition <c>type</c> ids — used by quests to detect which
     /// task conditions need a baseline (scoped reader). Avoids scattering literal strings.

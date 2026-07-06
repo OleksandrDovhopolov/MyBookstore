@@ -267,8 +267,8 @@ namespace Game.Quest.Services
                 }
                 var activation = _parser.Parse(taskCfg.ActivationConditions);
                 var completion = _parser.Parse(taskCfg.CompletionConditions);
-                var needsBaseline = _baselineEnabled && ReferencesSalesCondition(taskCfg.CompletionConditions);
-                tasks.Add(new QuestTask(config.Id, taskCfg, activation, completion, needsBaseline));
+                var baselinePlan = _baselineEnabled ? BuildBaselineCapturePlan(taskCfg.CompletionConditions) : null;
+                tasks.Add(new QuestTask(config.Id, taskCfg, activation, completion, baselinePlan));
             }
             return tasks.Count > 0;
         }
@@ -508,7 +508,10 @@ namespace Game.Quest.Services
         {
             if (!_baselineEnabled || !task.NeedsBaseline || task.Baseline != null) return;
 
-            var baseline = _salesBaseline.CaptureBaseline();
+            if (task.BaselinePlan.RequiresCurrentDay && _dayProgress != null)
+                task.BaselinePlan.ActivationDay = _dayProgress.Current.CurrentDay;
+
+            var baseline = _salesBaseline.CaptureBaseline(task.BaselinePlan);
             var parser = BuildScopedParser(_salesBaseline.CreateScopedReader(baseline));
             task.SetScopedCompletion(parser.Parse(task.Config.CompletionConditions), baseline);
             MarkDirty();
@@ -529,22 +532,66 @@ namespace Game.Quest.Services
             return new ConditionParser(new ConditionFactoryRegistry(factories));
         }
 
-        /// <summary>Recursively true if a completion condition tree references any sales condition type.</summary>
-        private static bool ReferencesSalesCondition(JObject node)
+        private SalesStatsBaselineCapturePlan BuildBaselineCapturePlan(JObject node)
         {
-            if (node == null || !node.HasValues) return false;
-
-            if (node["all"] is JArray all) return AnyReferencesSales(all);
-            if (node["any"] is JArray any) return AnyReferencesSales(any);
-            if (node["not"] is JObject not) return ReferencesSalesCondition(not);
-
-            return SalesConditionTypeIds.Contains(node.Value<string>("type"));
+            var plan = new SalesStatsBaselineCapturePlan();
+            ContributeBaselinePlan(node, plan);
+            return plan.IsEmpty ? null : plan;
         }
 
-        private static bool AnyReferencesSales(JArray array)
+        private void ContributeBaselinePlan(JObject node, SalesStatsBaselineCapturePlan plan)
+        {
+            if (node == null || !node.HasValues || plan == null) return;
+
+            if (node["all"] is JArray all)
+            {
+                ContributeBaselinePlan(all, plan);
+                return;
+            }
+
+            if (node["any"] is JArray any)
+            {
+                ContributeBaselinePlan(any, plan);
+                return;
+            }
+
+            if (node["not"] is JObject not)
+            {
+                ContributeBaselinePlan(not, plan);
+                return;
+            }
+
+            var type = node.Value<string>("type");
+            if (!SalesConditionTypeIds.Contains(type)) return;
+
+            if (TryGetSalesBaselineContributor(type, out var contributor))
+                contributor.Contribute(node, plan);
+            else
+                Debug.LogError($"{LogPrefix} sales condition '{type}' has no baseline contributor.");
+        }
+
+        private void ContributeBaselinePlan(JArray array, SalesStatsBaselineCapturePlan plan)
         {
             foreach (var token in array)
-                if (token is JObject obj && ReferencesSalesCondition(obj)) return true;
+                if (token is JObject obj) ContributeBaselinePlan(obj, plan);
+        }
+
+        private bool TryGetSalesBaselineContributor(
+            string type,
+            out ISalesStatsBaselinePlanContributor contributor)
+        {
+            contributor = null;
+            if (string.IsNullOrEmpty(type) || _allFactories == null) return false;
+
+            foreach (var factory in _allFactories)
+            {
+                if (factory is not ISalesStatsBaselinePlanContributor candidate) continue;
+                if (!string.Equals(candidate.Type, type, StringComparison.OrdinalIgnoreCase)) continue;
+
+                contributor = candidate;
+                return true;
+            }
+
             return false;
         }
 
@@ -626,7 +673,7 @@ namespace Game.Quest.Services
 
                 if (_baselineEnabled && task.NeedsBaseline)
                 {
-                    SalesStatsStateDto savedBaseline = null;
+                    SalesStatsBaselineDto savedBaseline = null;
                     if (saved.TaskBaseline != null) saved.TaskBaseline.TryGetValue(task.Id, out savedBaseline);
 
                     if (savedBaseline != null)
@@ -680,12 +727,12 @@ namespace Game.Quest.Services
                     case QuestState.Active:
                     case QuestState.ReadyToAward:
                         var tasks = new Dictionary<int, QuestTaskState>();
-                        Dictionary<int, SalesStatsStateDto> baselines = null;
+                        Dictionary<int, SalesStatsBaselineDto> baselines = null;
                         foreach (var task in quest.TasksInternal)
                         {
                             tasks[task.Id] = task.State;
                             if (task.Baseline != null)
-                                (baselines ??= new Dictionary<int, SalesStatsStateDto>())[task.Id] = task.Baseline;
+                                (baselines ??= new Dictionary<int, SalesStatsBaselineDto>())[task.Id] = task.Baseline;
                         }
                         dto.Active[quest.Id] = new SavedQuest { State = quest.State, Tasks = tasks, TaskBaseline = baselines };
                         break;

@@ -7,10 +7,10 @@ namespace Game.SalesStats.API
     /// </summary>
     public interface ISalesStatsBaselineSource
     {
-        /// <summary>Deep copy of the current counters; pass it back to <see cref="CreateScopedReader"/>.</summary>
-        SalesStatsStateDto CaptureBaseline();
+        /// <summary>Captures only counters requested by <paramref name="plan"/>.</summary>
+        SalesStatsBaselineDto CaptureBaseline(SalesStatsBaselineCapturePlan plan);
 
         /// <summary>Reader returning <c>Max(0, live − baseline)</c> for every query.</summary>
-        ISalesStatsReader CreateScopedReader(SalesStatsStateDto baseline);
+        ISalesStatsReader CreateScopedReader(SalesStatsBaselineDto baseline);
     }
 }

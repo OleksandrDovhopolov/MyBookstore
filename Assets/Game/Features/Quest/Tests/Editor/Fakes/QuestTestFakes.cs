@@ -140,11 +140,11 @@ namespace Game.Quest.Tests.Editor.Fakes
                     if (kv.Value?.Tasks != null)
                         foreach (var t in kv.Value.Tasks) tasks[t.Key] = t.Value;
 
-                    Dictionary<int, SalesStatsStateDto> baseline = null;
+                    Dictionary<int, SalesStatsBaselineDto> baseline = null;
                     if (kv.Value?.TaskBaseline != null)
                     {
-                        baseline = new Dictionary<int, SalesStatsStateDto>();
-                        foreach (var b in kv.Value.TaskBaseline) baseline[b.Key] = b.Value;
+                        baseline = new Dictionary<int, SalesStatsBaselineDto>();
+                        foreach (var b in kv.Value.TaskBaseline) baseline[b.Key] = CloneBaseline(b.Value);
                     }
 
                     dto.Active[kv.Key] = new SavedQuest
@@ -155,6 +155,13 @@ namespace Game.Quest.Tests.Editor.Fakes
                     };
                 }
             return dto;
+        }
+
+        private static SalesStatsBaselineDto CloneBaseline(SalesStatsBaselineDto source)
+        {
+            if (source == null) return null;
+            return JsonConvert.DeserializeObject<SalesStatsBaselineDto>(
+                JsonConvert.SerializeObject(source, Formatting.None));
         }
     }
 

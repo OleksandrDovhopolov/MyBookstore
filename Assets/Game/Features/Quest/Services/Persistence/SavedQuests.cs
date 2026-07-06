@@ -26,7 +26,7 @@ namespace Game.Quest.Services.Persistence
         public QuestState State { get; set; }                       // Active | ReadyToAward
         public Dictionary<int, QuestTaskState> Tasks { get; set; }  // task id -> state
 
-        /// <summary>4b: per-task sales baseline snapshot (only for active sales tasks). Null when none.</summary>
-        public Dictionary<int, SalesStatsStateDto> TaskBaseline { get; set; }
+        /// <summary>Per-task compact sales baseline (only for active sales tasks). Null when none.</summary>
+        public Dictionary<int, SalesStatsBaselineDto> TaskBaseline { get; set; }
     }
 }

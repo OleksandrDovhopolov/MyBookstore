@@ -11,7 +11,7 @@ namespace Game.SalesStats.Conditions
     /// <c>{ "type": "soldGenreInSingleDay", "genre": "Fantasy", "min": 15 }</c>.
     /// Registered in DI by the SalesStats binding, so the engine discovers it without any engine change.
     /// </summary>
-    public sealed class SoldGenreInSingleDayConditionFactory : IConditionFactory
+    public sealed class SoldGenreInSingleDayConditionFactory : IConditionFactory, ISalesStatsBaselinePlanContributor
     {
         public const string TypeId = "soldGenreInSingleDay";
 
@@ -24,12 +24,20 @@ namespace Game.SalesStats.Conditions
 
         public ICondition Create(JObject node)
         {
+            var genre = ReadGenre(node);
+            var min = node.Value<int?>("min") ?? 0;
+            return new SoldGenreInSingleDayCondition(_reader, genre, min);
+        }
+
+        public void Contribute(JObject node, SalesStatsBaselineCapturePlan plan)
+            => plan?.AddSingleDayGenre(ReadGenre(node));
+
+        private static BookGenre ReadGenre(JObject node)
+        {
             var genreValue = node.Value<string>("genre");
             if (!BookGenreExtensions.TryParseGenre(genreValue, out var genre))
                 throw new ArgumentException($"unknown genre '{genreValue}'");
-
-            var min = node.Value<int?>("min") ?? 0;
-            return new SoldGenreInSingleDayCondition(_reader, genre, min);
+            return genre;
         }
     }
 }

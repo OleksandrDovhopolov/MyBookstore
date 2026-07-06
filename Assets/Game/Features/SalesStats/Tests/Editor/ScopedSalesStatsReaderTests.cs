@@ -30,13 +30,23 @@ namespace Game.SalesStats.Tests.Editor
             for (var i = 0; i < times; i++) svc.RecordSold(FantasyBook, new SaleContext(location, day));
         }
 
+        private static SalesStatsBaselineCapturePlan Plan(bool genre = false, bool location = false, bool singleDay = false, int activationDay = 0)
+        {
+            var plan = new SalesStatsBaselineCapturePlan { ActivationDay = activationDay };
+            if (genre) plan.AddGenre(BookGenre.Fantasy);
+            if (location) plan.AddLocationGenre(FarBeach, BookGenre.Fantasy);
+            if (singleDay) plan.AddSingleDayGenre(BookGenre.Fantasy);
+            return plan;
+        }
+
         [Test]
         public void ScopedReader_SubtractsBaseline_GenreAndLocation()
         {
             var svc = Build();
             Sell(svc, FarBeach, 1, 3);                 // pre-baseline
 
-            var baseline = ((ISalesStatsBaselineSource)svc).CaptureBaseline();
+            var baseline = ((ISalesStatsBaselineSource)svc).CaptureBaseline(
+                Plan(genre: true, location: true));
             Sell(svc, FarBeach, 1, 2);                 // post-baseline (+2)
 
             var scoped = ((ISalesStatsBaselineSource)svc).CreateScopedReader(baseline);
@@ -53,7 +63,8 @@ namespace Game.SalesStats.Tests.Editor
             var svc = Build();
             Sell(svc, FarBeach, 1, 3);                 // day 1 pre-baseline = 3
 
-            var baseline = ((ISalesStatsBaselineSource)svc).CaptureBaseline();
+            var baseline = ((ISalesStatsBaselineSource)svc).CaptureBaseline(
+                Plan(singleDay: true, activationDay: 1));
             Sell(svc, FarBeach, 1, 1);                 // day 1 → +1 (scoped day1 = 1)
             Sell(svc, FarBeach, 2, 4);                 // day 2 → +4 (scoped day2 = 4)
 
@@ -70,10 +81,29 @@ namespace Game.SalesStats.Tests.Editor
             var svc = Build();
             Sell(svc, FarBeach, 1, 3);
 
-            var baseline = ((ISalesStatsBaselineSource)svc).CaptureBaseline();
+            var baseline = ((ISalesStatsBaselineSource)svc).CaptureBaseline(Plan(genre: true));
             Sell(svc, FarBeach, 1, 5);                 // mutate after capture
 
             Assert.AreEqual(3, baseline.SoldByGenre[BookGenre.Fantasy.ToConfigValue()]); // snapshot frozen
+        }
+
+        [Test]
+        public void LegacySingleDayBaseline_UsesPerDaySubtraction()
+        {
+            var svc = Build();
+            Sell(svc, FarBeach, 1, 5);
+
+            var scoped = ((ISalesStatsBaselineSource)svc).CreateScopedReader(new SalesStatsBaselineDto
+            {
+                SoldByDayGenre = new System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<string, int>>
+                {
+                    [1] = new() { [BookGenre.Fantasy.ToConfigValue()] = 5 }
+                }
+            });
+
+            Sell(svc, FarBeach, 2, 4);
+
+            Assert.AreEqual(4, scoped.GetMaxSoldInSingleDay(BookGenre.Fantasy));
         }
     }
 }

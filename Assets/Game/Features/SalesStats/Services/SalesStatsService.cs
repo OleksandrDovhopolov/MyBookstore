@@ -93,9 +93,68 @@ namespace Game.SalesStats.Services
 
         // ----- ISalesStatsBaselineSource -----
 
-        public SalesStatsStateDto CaptureBaseline() => BuildDto();
+        public SalesStatsBaselineDto CaptureBaseline(SalesStatsBaselineCapturePlan plan)
+        {
+            var baseline = new SalesStatsBaselineDto();
+            if (plan == null || plan.IsEmpty) return baseline;
 
-        public ISalesStatsReader CreateScopedReader(SalesStatsStateDto baseline)
+            if (plan.Genres.Count > 0)
+            {
+                baseline.SoldByGenre = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                foreach (var genre in plan.Genres)
+                    baseline.SoldByGenre[genre] = _soldByGenre.TryGetValue(genre, out var count) ? count : 0;
+            }
+
+            if (plan.LocationGenres.Count > 0)
+            {
+                baseline.SoldByLocationGenre =
+                    new Dictionary<string, Dictionary<string, int>>(StringComparer.Ordinal);
+                foreach (var location in plan.LocationGenres)
+                {
+                    var byGenre = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var genre in location.Value)
+                    {
+                        var count = _soldByLocationGenre.TryGetValue(location.Key, out var liveByGenre)
+                                    && liveByGenre.TryGetValue(genre, out var value)
+                            ? value
+                            : 0;
+                        byGenre[genre] = count;
+                    }
+
+                    baseline.SoldByLocationGenre[location.Key] = byGenre;
+                }
+            }
+
+            if (plan.SingleDayGenres.Count > 0)
+            {
+                if (plan.ActivationDay > 0)
+                {
+                    baseline.SoldInSingleDayGenre =
+                        new Dictionary<string, SalesStatsSingleDayBaselineDto>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var genre in plan.SingleDayGenres)
+                    {
+                        var activationDayCount =
+                            _soldByDayGenre.TryGetValue(plan.ActivationDay, out var byGenre)
+                            && byGenre.TryGetValue(genre, out var count)
+                                ? count
+                                : 0;
+                        baseline.SoldInSingleDayGenre[genre] = new SalesStatsSingleDayBaselineDto
+                        {
+                            ActivationDay = plan.ActivationDay,
+                            ActivationDayCount = activationDayCount
+                        };
+                    }
+                }
+                else
+                {
+                    baseline.SoldByDayGenre = CopyDayGenre(_soldByDayGenre);
+                }
+            }
+
+            return baseline;
+        }
+
+        public ISalesStatsReader CreateScopedReader(SalesStatsBaselineDto baseline)
             => new ScopedSalesStatsReader(this, baseline);
 
         // ----- ISaveHook -----
@@ -217,22 +276,32 @@ namespace Game.SalesStats.Services
 
         private SalesStatsStateDto BuildDto()
         {
-            var byLocation = new Dictionary<string, Dictionary<string, int>>(StringComparer.Ordinal);
-            foreach (var location in _soldByLocationGenre)
-                byLocation[location.Key] =
-                    new Dictionary<string, int>(location.Value, StringComparer.OrdinalIgnoreCase);
-
-            var byDay = new Dictionary<int, Dictionary<string, int>>();
-            foreach (var day in _soldByDayGenre)
-                byDay[day.Key] =
-                    new Dictionary<string, int>(day.Value, StringComparer.OrdinalIgnoreCase);
-
             return new SalesStatsStateDto
             {
                 SoldByGenre = new Dictionary<string, int>(_soldByGenre, StringComparer.OrdinalIgnoreCase),
-                SoldByLocationGenre = byLocation,
-                SoldByDayGenre = byDay
+                SoldByLocationGenre = CopyLocationGenre(_soldByLocationGenre),
+                SoldByDayGenre = CopyDayGenre(_soldByDayGenre)
             };
+        }
+
+        private static Dictionary<string, Dictionary<string, int>> CopyLocationGenre(
+            Dictionary<string, Dictionary<string, int>> source)
+        {
+            var copy = new Dictionary<string, Dictionary<string, int>>(StringComparer.Ordinal);
+            foreach (var location in source)
+                copy[location.Key] =
+                    new Dictionary<string, int>(location.Value, StringComparer.OrdinalIgnoreCase);
+            return copy;
+        }
+
+        private static Dictionary<int, Dictionary<string, int>> CopyDayGenre(
+            Dictionary<int, Dictionary<string, int>> source)
+        {
+            var copy = new Dictionary<int, Dictionary<string, int>>();
+            foreach (var day in source)
+                copy[day.Key] =
+                    new Dictionary<string, int>(day.Value, StringComparer.OrdinalIgnoreCase);
+            return copy;
         }
 
         /// <summary>
@@ -242,12 +311,12 @@ namespace Game.SalesStats.Services
         private sealed class ScopedSalesStatsReader : ISalesStatsReader
         {
             private readonly SalesStatsService _live;
-            private readonly SalesStatsStateDto _baseline;
+            private readonly SalesStatsBaselineDto _baseline;
 
-            public ScopedSalesStatsReader(SalesStatsService live, SalesStatsStateDto baseline)
+            public ScopedSalesStatsReader(SalesStatsService live, SalesStatsBaselineDto baseline)
             {
                 _live = live;
-                _baseline = baseline ?? new SalesStatsStateDto();
+                _baseline = baseline ?? new SalesStatsBaselineDto();
             }
 
             public int TotalSold
@@ -275,6 +344,9 @@ namespace Game.SalesStats.Services
 
             public int GetSoldOnDay(int day)
             {
+                if (_baseline.SoldByDayGenre == null)
+                    throw new InvalidOperationException("Compact scoped sales baseline cannot answer all-genre day queries.");
+
                 if (!_live._soldByDayGenre.TryGetValue(day, out var liveByGenre)) return 0;
 
                 Dictionary<string, int> baseByGenre = null;
@@ -291,16 +363,32 @@ namespace Game.SalesStats.Services
             }
 
             public int GetSoldOnDay(int day, BookGenre genre)
-                => Math.Max(0, _live.GetSoldOnDay(day, genre) - BaseDayGenre(day, genre));
+            {
+                if (_baseline.SoldByDayGenre != null)
+                    return Math.Max(0, _live.GetSoldOnDay(day, genre) - BaseLegacyDayGenre(day, genre));
+
+                if (!TryGetCompactSingleDay(genre, out var singleDay))
+                    throw new InvalidOperationException(
+                        $"Compact scoped sales baseline has no single-day entry for '{genre}'.");
+
+                return ScopedSingleDayCount(day, genre, singleDay);
+            }
 
             public int GetMaxSoldInSingleDay(BookGenre genre)
             {
                 var key = genre.ToConfigValue();
+                SalesStatsSingleDayBaselineDto compactSingleDay = null;
+                if (_baseline.SoldByDayGenre == null && !TryGetCompactSingleDay(genre, out compactSingleDay))
+                    throw new InvalidOperationException(
+                        $"Compact scoped sales baseline has no single-day entry for '{genre}'.");
+
                 var max = 0;
                 foreach (var pair in _live._soldByDayGenre)
                 {
                     var liveVal = pair.Value.TryGetValue(key, out var c) ? c : 0;
-                    var scoped = liveVal - BaseDayGenre(pair.Key, genre);
+                    var scoped = _baseline.SoldByDayGenre != null
+                        ? liveVal - BaseLegacyDayGenre(pair.Key, genre)
+                        : ScopedSingleDayCount(pair.Key, liveVal, compactSingleDay);
                     if (scoped > max) max = scoped;
                 }
                 return max;
@@ -309,11 +397,33 @@ namespace Game.SalesStats.Services
             private static int BaseGenre(Dictionary<string, int> dict, BookGenre genre)
                 => dict != null && dict.TryGetValue(genre.ToConfigValue(), out var v) ? v : 0;
 
-            private int BaseDayGenre(int day, BookGenre genre)
+            private int BaseLegacyDayGenre(int day, BookGenre genre)
                 => _baseline.SoldByDayGenre != null
                    && _baseline.SoldByDayGenre.TryGetValue(day, out var byGenre)
                     ? BaseGenre(byGenre, genre)
                     : 0;
+
+            private int ScopedSingleDayCount(int day, BookGenre genre, SalesStatsSingleDayBaselineDto singleDay)
+                => ScopedSingleDayCount(day, _live.GetSoldOnDay(day, genre), singleDay);
+
+            private static int ScopedSingleDayCount(
+                int day,
+                int liveVal,
+                SalesStatsSingleDayBaselineDto singleDay)
+            {
+                if (singleDay == null || singleDay.ActivationDay <= 0) return liveVal;
+                if (day < singleDay.ActivationDay) return 0;
+                if (day == singleDay.ActivationDay)
+                    return Math.Max(0, liveVal - Math.Max(0, singleDay.ActivationDayCount));
+                return Math.Max(0, liveVal);
+            }
+
+            private bool TryGetCompactSingleDay(BookGenre genre, out SalesStatsSingleDayBaselineDto singleDay)
+            {
+                singleDay = null;
+                return _baseline.SoldInSingleDayGenre != null
+                       && _baseline.SoldInSingleDayGenre.TryGetValue(genre.ToConfigValue(), out singleDay);
+            }
         }
     }
 }
