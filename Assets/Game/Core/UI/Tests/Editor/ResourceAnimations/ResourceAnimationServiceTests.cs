@@ -1,3 +1,4 @@
+using System;
 using Infrastructure.ResourceAnimations;
 using NUnit.Framework;
 
@@ -46,6 +47,32 @@ namespace Game.Core.UI.Tests.Editor.ResourceAnimations
                 spriteId: "CoinIcon");
 
             Assert.AreEqual("CoinIcon", ResourceAnimationRequestRules.ResolveSpriteId(request));
+        }
+
+        [Test]
+        public void OnParticleArrived_DefaultsToNull()
+        {
+            var request = new ResourceAnimationRequest(
+                "Gold",
+                5,
+                ResourceAnimationEndpoint.ScreenPoint(default),
+                ResourceAnimationEndpoint.ScreenPoint(default));
+
+            Assert.IsNull(request.OnParticleArrived);
+        }
+
+        [Test]
+        public void OnParticleArrived_IsStoredOnRequest()
+        {
+            Action callback = () => { };
+            var request = new ResourceAnimationRequest(
+                "Gold",
+                5,
+                ResourceAnimationEndpoint.ScreenPoint(default),
+                ResourceAnimationEndpoint.ScreenPoint(default),
+                onParticleArrived: callback);
+
+            Assert.AreSame(callback, request.OnParticleArrived);
         }
     }
 }

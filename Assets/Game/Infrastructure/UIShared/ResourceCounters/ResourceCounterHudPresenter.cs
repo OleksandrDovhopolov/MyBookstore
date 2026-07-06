@@ -15,6 +15,7 @@ namespace UIShared
         private readonly IResourceCounterTargetRegistry _targets;
         private readonly ISubscriber<ResourceCounterCountUpRequested> _countUpSubscriber;
         private readonly Dictionary<string, int> _displayedAmounts = new(StringComparer.Ordinal);
+        private readonly HashSet<string> _countUpInProgress = new(StringComparer.Ordinal);
 
         private IDisposable _countUpSubscription;
         private bool _started;
@@ -97,11 +98,18 @@ namespace UIShared
         {
             if (string.IsNullOrWhiteSpace(resourceId)) return;
 
+            // Count-up is triggered per landing coin, so the same request arrives several times
+            // for one pack. Only the first drives the ramp; the rest are ignored until it finishes,
+            // otherwise the SetAmountImmediate below would yank the counter back to the old value on
+            // every coin. The guard clears in finally, so the next day's pack runs again.
+            if (!_countUpInProgress.Add(resourceId)) return;
+
             var finalAmount = Math.Max(0, _resources?.GetAmount(resourceId) ?? 0);
 
             if (_targets == null || !_targets.TryGetTarget(resourceId, out var target) || target == null)
             {
                 _displayedAmounts[resourceId] = finalAmount;
+                _countUpInProgress.Remove(resourceId);
                 return;
             }
 
@@ -119,6 +127,7 @@ namespace UIShared
             finally
             {
                 _displayedAmounts[resourceId] = finalAmount;
+                _countUpInProgress.Remove(resourceId);
             }
         }
 
@@ -149,9 +158,7 @@ namespace UIShared
 
             public void Handle(ResourceCounterCountUpRequested message)
             {
-                _presenter.AnimateCountUpInternalAsync(
-                    message.ResourceId,
-                    CancellationToken.None).Forget();
+                _presenter.AnimateCountUpInternalAsync(message.ResourceId, CancellationToken.None).Forget();
             }
         }
     }

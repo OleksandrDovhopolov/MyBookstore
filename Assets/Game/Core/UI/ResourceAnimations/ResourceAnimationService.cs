@@ -83,7 +83,8 @@ namespace Game.UI.ResourceAnimations
                             t => particle.RectTransform.anchoredPosition = EvaluateQuadraticBezier(from, control, to, t),
                             1f,
                             _settings.Duration)
-                        .SetEase(_settings.PositionEase);
+                        .SetEase(_settings.PositionEase)
+                        .OnComplete(() => request.OnParticleArrived?.Invoke());
 
                     var scale = DOTween.To(
                             () => _settings.StartScale,
@@ -145,12 +146,13 @@ namespace Game.UI.ResourceAnimations
 
         private async UniTask<Sprite> ResolveSpriteAsync(ResourceAnimationRequest request, CancellationToken ct)
         {
-            var spriteId = ResourceAnimationRequestRules.ResolveSpriteId(request);
+            //TODO commented because useless now
+            /*var spriteId = ResourceAnimationRequestRules.ResolveSpriteId(request);
             if (_sprites != null && !string.IsNullOrWhiteSpace(spriteId))
             {
                 var sprite = await _sprites.GetSpriteAsync(spriteId, ct);
                 if (sprite != null) return sprite;
-            }
+            }*/
 
             return _settings.FallbackSprite;
         }

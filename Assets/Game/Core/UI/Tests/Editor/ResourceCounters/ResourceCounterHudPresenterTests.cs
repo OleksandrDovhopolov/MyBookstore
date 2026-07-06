@@ -92,6 +92,38 @@ namespace Game.Core.UI.Tests.Editor.ResourceCounters
             Assert.AreEqual(100, target.DisplayedAmount);
         }
 
+        [Test]
+        public void RepeatedCountUpRequests_WhileInProgress_DriveRampOnce()
+        {
+            var resources = new FakeResourcesService();
+            resources.Set("Gold", 100);
+            var registry = new ResourceCounterTargetRegistry();
+            var subscriber = new FakeCountUpSubscriber();
+            using var presenter = StartPresenter(resources, registry, subscriber);
+            var target = CreateTarget("Gold");
+            registry.Register(target);
+
+            resources.Add("Gold", 50, "sales_day_3_active_book");
+            target.HoldNextAnimation();
+
+            // Three landing coins publish the same request while the ramp is still in flight.
+            subscriber.Publish(new ResourceCounterCountUpRequested("Gold"));
+            subscriber.Publish(new ResourceCounterCountUpRequested("Gold"));
+            subscriber.Publish(new ResourceCounterCountUpRequested("Gold"));
+
+            Assert.AreEqual(1, target.AnimateCallCount, "Only the first request should drive the ramp.");
+
+            // Finishing the ramp clears the guard, so the next pack runs again.
+            target.CompleteAnimation();
+            Assert.AreEqual(1, target.ArriveFeedbackCount);
+
+            resources.Add("Gold", 10, "sales_day_4_active_book");
+            subscriber.Publish(new ResourceCounterCountUpRequested("Gold"));
+
+            Assert.AreEqual(2, target.AnimateCallCount, "A new pack after completion should run again.");
+            Assert.AreEqual(160, target.DisplayedAmount);
+        }
+
         private ResourceCounterHudPresenter StartPresenter(
             FakeResourcesService resources,
             IResourceCounterTargetRegistry registry,
@@ -118,10 +150,24 @@ namespace Game.Core.UI.Tests.Editor.ResourceCounters
             RectTransform = rectTransform;
         }
 
+        private UniTaskCompletionSource _pending;
+
         public string ResourceId { get; }
         public RectTransform RectTransform { get; }
         public int DisplayedAmount { get; private set; }
         public int ArriveFeedbackCount { get; private set; }
+        public int AnimateCallCount { get; private set; }
+
+        // Keeps the next AnimateAmountToAsync pending so a test can fire more requests while a
+        // count-up is "in flight", then release it with CompleteAnimation.
+        public void HoldNextAnimation() => _pending = new UniTaskCompletionSource();
+
+        public void CompleteAnimation()
+        {
+            var pending = _pending;
+            _pending = null;
+            pending?.TrySetResult();
+        }
 
         public void SetAmountImmediate(int amount)
         {
@@ -130,8 +176,9 @@ namespace Game.Core.UI.Tests.Editor.ResourceCounters
 
         public UniTask AnimateAmountToAsync(int amount, CancellationToken ct = default)
         {
+            AnimateCallCount++;
             DisplayedAmount = Math.Max(0, amount);
-            return UniTask.CompletedTask;
+            return _pending != null ? _pending.Task : UniTask.CompletedTask;
         }
 
         public void PlayArriveFeedback()

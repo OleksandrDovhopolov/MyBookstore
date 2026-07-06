@@ -6,6 +6,7 @@
         "UniTask",
         "CheatModule",
         "Game.Core.UI",
+        "Infrastructure",
         "Configs",
         "Save",
         "Game.Inventory.API",

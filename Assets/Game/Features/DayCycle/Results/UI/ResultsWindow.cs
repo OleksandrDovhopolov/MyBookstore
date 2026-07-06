@@ -143,10 +143,6 @@ namespace Game.DayCycle.Results.UI
 
             try
             {
-                if (shouldAnimateGold)
-                    _countUpPublisher?.Publish(
-                        new ResourceCounterCountUpRequested(ResourceIds.Gold));
-
                 await _service.AdvanceToNextDayAsync(_cts.Token);
                 shouldPlayFlight = hasSource;
 
@@ -228,12 +224,20 @@ namespace Game.DayCycle.Results.UI
                         goldEarned,
                         ResourceAnimationEndpoint.ScreenPoint(sourceScreenPoint),
                         ResourceAnimationEndpoint.RegisteredTarget(
-                            ResourceAnimationTargetIds.Resource(ResourceIds.Gold))),
+                            ResourceAnimationTargetIds.Resource(ResourceIds.Gold)),
+                        onParticleArrived: OnGoldParticleArrived),
                     CancellationToken.None);
             }
             catch (OperationCanceledException)
             {
             }
+        }
+
+        // Fired as each coin lands on the HUD counter. Publishes the count-up request; the
+        // presenter dedupes repeated requests for the same pack, so it is safe to fire per coin.
+        private void OnGoldParticleArrived()
+        {
+            _countUpPublisher?.Publish(new ResourceCounterCountUpRequested(ResourceIds.Gold));
         }
 
         private static void SetActive(GameObject target, bool active)
