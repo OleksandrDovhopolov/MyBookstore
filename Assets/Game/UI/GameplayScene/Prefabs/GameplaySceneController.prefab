@@ -2044,6 +2044,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3533120393231593898, guid: 0bce34c0c0833934788de58432e06750, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2394337630828576687}
+    - targetCorrespondingSourceObject: {fileID: 3533120393231593898, guid: 0bce34c0c0833934788de58432e06750, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7057538616850030870}
   m_SourcePrefab: {fileID: 100100000, guid: 0bce34c0c0833934788de58432e06750, type: 3}
 --- !u!1 &3386706372339271053 stripped
 GameObject:
@@ -2064,6 +2067,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _duration: 0.18
   _animationRoot: {fileID: 8661688885581114276}
+--- !u!114 &7057538616850030870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3386706372339271053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dddf468c31cac9f4380a7292a5cdb548, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _targetId: hub.start_day_button
 --- !u!114 &7019156521376605561 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 9123967857981428062, guid: 0bce34c0c0833934788de58432e06750, type: 3}
