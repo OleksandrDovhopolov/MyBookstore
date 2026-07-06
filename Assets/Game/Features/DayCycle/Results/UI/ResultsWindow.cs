@@ -52,8 +52,6 @@ namespace Game.DayCycle.Results.UI
                 View.NextDayButton.onClick.AddListener(OnNextDayClicked);
                 View.NextDayButton.interactable = false;
             }
-
-            SetActive(View.ErrorPanel, false);
         }
 
         protected override void OnShowStart()
@@ -66,7 +64,6 @@ namespace Game.DayCycle.Results.UI
 
             Subscribe();
             View.ResetView();
-            SetActive(View.ErrorPanel, false);
             if (View.NextDayButton != null) View.NextDayButton.interactable = false;
             _service.LoadAndApplyAsync(_cts.Token).Forget();
         }
@@ -120,8 +117,10 @@ namespace Game.DayCycle.Results.UI
 
         private void OnNoResultAvailable()
         {
-            SetActive(View.ErrorPanel, true);
-            if (View.NextDayButton != null) View.NextDayButton.interactable = false;
+            if (View.NextDayButton != null)
+            {
+                View.NextDayButton.interactable = false;
+            }
             Debug.LogError("[ResultsWindow] no SalesDayResult - Results cannot proceed.");
         }
 
@@ -146,7 +145,7 @@ namespace Game.DayCycle.Results.UI
             {
                 if (shouldAnimateGold)
                     _countUpPublisher?.Publish(
-                        new ResourceCounterCountUpRequested(ResourceIds.Gold, View.GoldCountUpDuration));
+                        new ResourceCounterCountUpRequested(ResourceIds.Gold));
 
                 await _service.AdvanceToNextDayAsync(_cts.Token);
                 shouldPlayFlight = hasSource;

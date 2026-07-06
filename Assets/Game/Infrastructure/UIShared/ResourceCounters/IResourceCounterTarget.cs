@@ -11,7 +11,7 @@ namespace UIShared
         int DisplayedAmount { get; }
 
         void SetAmountImmediate(int amount);
-        UniTask AnimateAmountToAsync(int amount, float durationSeconds, CancellationToken ct = default);
+        UniTask AnimateAmountToAsync(int amount, CancellationToken ct = default);
         void PlayArriveFeedback();
     }
 }

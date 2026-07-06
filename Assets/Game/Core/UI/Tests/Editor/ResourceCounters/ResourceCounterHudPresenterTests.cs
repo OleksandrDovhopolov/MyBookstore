@@ -71,7 +71,7 @@ namespace Game.Core.UI.Tests.Editor.ResourceCounters
             resources.Add("Gold", 50, "sales_day_3_active_book");
             Assert.AreEqual(100, target.DisplayedAmount);
 
-            subscriber.Publish(new ResourceCounterCountUpRequested("Gold", 0f));
+            subscriber.Publish(new ResourceCounterCountUpRequested("Gold"));
 
             Assert.AreEqual(150, target.DisplayedAmount);
             Assert.AreEqual(1, target.ArriveFeedbackCount);
@@ -128,7 +128,7 @@ namespace Game.Core.UI.Tests.Editor.ResourceCounters
             DisplayedAmount = Math.Max(0, amount);
         }
 
-        public UniTask AnimateAmountToAsync(int amount, float durationSeconds, CancellationToken ct = default)
+        public UniTask AnimateAmountToAsync(int amount, CancellationToken ct = default)
         {
             DisplayedAmount = Math.Max(0, amount);
             return UniTask.CompletedTask;

@@ -15,6 +15,9 @@ namespace UIShared
         [SerializeField] private string _resourceId = "Gold";
         [SerializeField] private TMP_Text _amountLabel;
 
+        [Header("Count Up")]
+        [SerializeField] private float _countUpDuration = 1f;
+
         [Header("Feedback")]
         [SerializeField] private Transform _pulseRoot;
         [SerializeField] private float _pulseScale = 1.08f;
@@ -69,7 +72,7 @@ namespace UIShared
             SetDisplayedAmount(amount);
         }
 
-        public async UniTask AnimateAmountToAsync(int amount, float durationSeconds, CancellationToken ct = default)
+        public async UniTask AnimateAmountToAsync(int amount, CancellationToken ct = default)
         {
             CancelCountUp();
 
@@ -79,7 +82,7 @@ namespace UIShared
 
             var from = DisplayedAmount;
             var to = Mathf.Max(0, amount);
-            var duration = Mathf.Max(0f, durationSeconds);
+            var duration = Mathf.Max(0f, _countUpDuration);
 
             try
             {

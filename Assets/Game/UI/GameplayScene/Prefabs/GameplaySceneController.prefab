@@ -988,8 +988,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c4f8b18ef58426eaaa9652375926aa6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _resourceId: Gold
+  _resourceId: gold
   _amountLabel: {fileID: 1271568049338797338}
+  _countUpDuration: 1
   _pulseRoot: {fileID: 801361299451188376}
   _pulseScale: 1.08
   _pulseDuration: 0.18

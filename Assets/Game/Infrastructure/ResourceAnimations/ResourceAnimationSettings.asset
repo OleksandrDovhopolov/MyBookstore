@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d58e2b893c8fed40b2699d69422bbaa, type: 3}
   m_Name: ResourceAnimationSettings
   m_EditorClassIdentifier: 
-  _particlePrefab: {fileID: 0}
+  _particlePrefab: {fileID: 4634343996028356408, guid: 479a2d4c7caa3bf44b583c3058d2e5f7, type: 3}
   _maxParticles: 6
   _duration: 0.65
   _stagger: 0.04
@@ -67,5 +67,5 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  _fallbackSprite: {fileID: 0}
+  _fallbackSprite: {fileID: -4474103659835750028, guid: a2cb23a4d30833641ad5f7dfa250521d, type: 3}
   _sortingOrder: 3500

@@ -61,10 +61,9 @@ namespace UIShared
 
         public UniTask AnimateCountUpAsync(
             string resourceId,
-            float durationSeconds,
             CancellationToken ct = default)
         {
-            return AnimateCountUpInternalAsync(resourceId, durationSeconds, ct);
+            return AnimateCountUpInternalAsync(resourceId, ct);
         }
 
         private void OnResourceChanged(ResourceChangeEvent change)
@@ -94,7 +93,6 @@ namespace UIShared
 
         private async UniTask AnimateCountUpInternalAsync(
             string resourceId,
-            float durationSeconds,
             CancellationToken ct)
         {
             if (string.IsNullOrWhiteSpace(resourceId)) return;
@@ -112,7 +110,7 @@ namespace UIShared
 
             try
             {
-                await target.AnimateAmountToAsync(finalAmount, durationSeconds, ct);
+                await target.AnimateAmountToAsync(finalAmount, ct);
                 target.PlayArriveFeedback();
             }
             catch (OperationCanceledException)
@@ -153,7 +151,6 @@ namespace UIShared
             {
                 _presenter.AnimateCountUpInternalAsync(
                     message.ResourceId,
-                    message.DurationSeconds,
                     CancellationToken.None).Forget();
             }
         }

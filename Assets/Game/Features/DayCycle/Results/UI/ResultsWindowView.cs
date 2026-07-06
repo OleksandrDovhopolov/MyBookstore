@@ -13,7 +13,6 @@ namespace Game.DayCycle.Results.UI
         [Header("Results")]
         [SerializeField] private TMP_Text _earnedGoldLabel;
         [SerializeField] private RectTransform _coinFlightSource;
-        [SerializeField] private float _goldCountUpDuration = 1f;
 
         [Header("Sold genres")]
         [SerializeField] private UIListPool<RewardItemView> _soldGenrePool = new();
@@ -21,14 +20,9 @@ namespace Game.DayCycle.Results.UI
         [Header("Actions")]
         [SerializeField] private Button _nextDayButton;
 
-        [Header("Error")]
-        [SerializeField] private GameObject _errorPanel;
-
         private readonly Dictionary<RewardSpecResource, RewardItemView> _soldGenreViews = new();
 
-        public float GoldCountUpDuration => Mathf.Max(0f, _goldCountUpDuration);
         public Button NextDayButton => _nextDayButton;
-        public GameObject ErrorPanel => _errorPanel;
 
         public void SetEarnedGold(int amount)
         {
