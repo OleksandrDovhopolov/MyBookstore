@@ -133,32 +133,39 @@ Configs (как все конфиг-модели)
 миграции. Условия `dayIs`/`phaseIs` — если не зарегистрированы квест-фичей, factory кладём в
 `Game.Tutorial/Conditions` (DayCycle в references есть).
 
-### 4.2 Типы шагов — 6 штук (минимум для Day 1)
+### 4.2 Типы шагов — 6 штук (все реальные)
 
 Каждый тип — string-дискриминатор → отдельный небольшой handler-класс с собственной подпиской
 (push-модель, без re-evaluation-цикла). Generic-движок `ICondition` используется только для
-`activationConditions` (pull при триггере).
+`activationConditions` (pull при триггере). Все 6 хендлеров реализованы (Проход 2 — showText/
+highlightClick/awaitPhase; Проход 3 — awaitWindow/awaitQuest/awaitLocation); стаб-база удалена.
+У всех «await»-хендлеров — **initial-check текущего состояния до подписки** (иначе на resume, если
+событие уже прошло, шаг зависнет).
 
 | type | Гейтинг | Advance |
 |---|---|---|
 | `showText` | Полное затемнение + `IUIManager.SetManualLock` | Любой тап |
-| `highlightClick` | Blackout-слайсы (дырка над `target`); **`SetManualLock` НЕ использовать** — глобальный blocker `LockMonitor` перехватил бы клик в дырку. Слайсы сами блокируют всё вне дырки, target получает реальный клик | Клик по target через дырку |
-| `awaitWindow` | нет | Реестр `TutorialWindowIds` → поллинг `IsWindowShown<T>()` ~4 Гц |
-| `awaitQuest` | нет | События `IQuestsService` (Started/TaskCompleted/Completed/Awarded) по `questId` |
-| `awaitPhase` | нет | `IDayProgressService.PhaseChanged` |
-| `awaitLocation` | нет | `IGameFlowService.LocationLoadedChanged` |
+| `highlightClick` | Blackout-слайсы (дырка над `target`); **`SetManualLock` НЕ использовать** — глобальный blocker `LockMonitor` перехватил бы клик в дырку. Слайсы сами блокируют всё вне дырки, target получает реальный клик. Потеря таргета (destroy/`SetActive(false)`/`!interactable`) → warning + auto-advance | Клик по target через дырку |
+| `awaitWindow` | нет | `ITutorialWindowChecker.TryGetShown(id)` поллинг ~4 Гц; неизвестный id → auto-advance |
+| `awaitQuest` | нет | initial-check + события `IQuestsService` (Started/TaskCompleted/Completed/Awarded) по `questId` (+опц. `TaskId`) |
+| `awaitPhase` | нет | initial-check + `IDayProgressService.PhaseChanged` |
+| `awaitLocation` | нет | initial-check + `IGameFlowService.LocationLoadedChanged` |
 
-### 4.3 Window-id registry
+### 4.3 Window-id checker
 
-`IUIManager` предоставляет только generic `IsWindowShown<T>()` — произвольные class-name-строки
-в JSON недопустимы. В `Game.Tutorial` — явный реестр:
+`IUIManager` даёт только generic `IsWindowShown<T>()` — произвольные class-name-строки в JSON
+недопустимы. Чтобы движок не зависел от UI-фич, введён интерфейс **`ITutorialWindowChecker`
+(`bool TryGetShown(id, out shown)`)** в `Game.Tutorial`, а его реализация `TutorialWindowChecker`
+живёт в **bootstrap-слое** (`Game.Bootstrap`, где ссылки на окна уже есть):
 
 ```csharp
-// TutorialWindowIds: string id → Func<IUIManager, bool>
-{ "preparation", ui => ui.IsWindowShown<PreparationWindow>() },
-{ "location",    ui => ui.IsWindowShown<LocationWindow>() },
-// расширяется по мере надобности; неизвестный id — ошибка валидатора (§7, Этап 7)
+// TutorialWindowChecker (Game.Bootstrap): id → IsWindowShown<T>()
+{ "preparation", ui.IsWindowShown<PreparationWindow> },
+{ "location",    ui.IsWindowShown<LocationWindow> },
+// неизвестный id → TryGetShown возвращает false → handler делает auto-advance (+ валидатор §7)
 ```
+
+Так `Game.Tutorial.asmdef` НЕ ссылается на `Game.Preparation`/`Game.Location`.
 
 ### 4.4 Связь с квестами: condition `tutorialCompleted`
 
@@ -194,17 +201,23 @@ bootstrap (`RegisterBuildCallback → TutorialTargets.Bind(...)`). Иденти�
 1. **Init** (глобальный скоуп): загрузить модуль `tutorial.state` (`ISaveService`, schema v1),
    зарегистрировать save-hook, подписаться на триггеры (`PhaseChanged`, `LocationLoadedChanged`,
    события квестов), оценить resume.
-2. **Активация-скан** на каждом триггер-событии: eligible = совпал trigger + id не в
-   `CompletedSequenceIds` + `activationConditions` выполнены. **Один эксклюзивный runner**
-   (parallel-пул сознательно отложен — для Day 1 не нужен; heroes-паттерн подтверждает разделение).
-3. **Step loop**: handler конфигурирует overlay → ждёт advance → publish `TutorialStepChanged`,
-   персист `{ActiveSequenceId, StepIndex}`. Последний шаг: id → `CompletedSequenceIds`,
-   publish `TutorialSequenceCompleted`. **One-way completion** — автоматического снятия нет.
-4. **Context-loss / пауза**: `IGameFlowService.IsTransitioning` или смена context (hub↔location) →
-   скрыть overlay, прервать run **без** пометки complete; скан перезапустит секвенцию позже
-   (при `resumePolicy: restart` тривиально корректно).
-5. **Resume после релонча**: сохранённая активная секвенция снова попадает в eligible;
-   `restart` (default) — с нулевого шага; `fromStep` зарезервирован для длинных секвенций.
+2. **Активация-скан** на каждом триггер-событии: eligible = совпал trigger + `ContextAllows` +
+   id не в `CompletedSequenceIds` + `activationConditions` выполнены. **Context — gate активации,
+   а НЕ mid-run abort** (`day1_hub_intro` стартует в hub и потом ждёт Sales в локации — mid-run
+   abort его бы сломал): `hub → !IsLocationLoaded`, `location → IsLocationLoaded`, `any/null → true`.
+   Плюс **transition-guard**: старт пропускается, если `IsTransitioning`, кроме триггера
+   `locationLoaded` (он и происходит во время перехода). **Один эксклюзивный runner**.
+3. **Step loop**: перед каждым шагом персист `{ActiveSequenceId, NextStepIndex=i}` (i = текущий, ещё
+   не завершённый шаг) → publish `TutorialStepChanged` → handler конфигурирует overlay/ждёт advance.
+   Последний шаг: id → `CompletedSequenceIds`, publish `TutorialSequenceCompleted`,
+   `IQuestReevaluationGate.RequestReevaluation()`. **One-way completion**.
+4. **Skip / teardown**: `SkipActiveAsync` отменяет per-run `CancellationTokenSource` → long-running
+   шаг размотается `OperationCanceledException`, handler в `finally` прячет overlay; run завершается
+   без пометки complete. Потеря highlight-таргета обрабатывается внутри шага (auto-advance), не
+   рвёт весь run.
+5. **Resume после релонча**: `ResumeActiveSequence` (с guard `if (_running) return;`, context НЕ
+   проверяется) поднимает сохранённую активную секвенцию; `fromStep` (day1) — с `NextStepIndex`
+   (незавершённый шаг), `restart` — с нуля.
 
 ### 5.2 ITutorialService (API)
 
@@ -265,6 +278,27 @@ Overlay — **НЕ окно UIManager**: persistent-префаб `TutorialOverla
 | 5 | **Квест-слой (Layer 1)** | 2–3 tutorial-квеста в `quests.json` (challenges-style, от персонажей); condition `tutorialCompleted`; опц.: мягкий pointer на журнал по `QuestStarted` | Квесты видны в журнале с Day 1, прогресс тикает от реальных продаж, награда выдаётся, **прогресс переживает релонч** (персистентность квестов уже есть) |
 | 6 | **Контент Day 1** | Полный упрощённый Day 1 в tutorials.json + quests.json по [FTUE.md](../FTUE.md), без диалогов: hub intro → stocking hint (highlight confirm) → location arrival text → первая продажа через `awaitQuest` → wrap-up. Финализировать `TutorialTargetIds`, теги в Preparation/Location views | Сквозной прогон fresh-save Day 1; Day 2 — без туториала |
 | 7 | **Debug/replay + polish** | Cheat-модуль в `Game.Cheat` (list/force-run/force-complete/reset одной или всех + сброс `ftue.*` = полный replay Day 1); editor-валидатор (target id: json ↔ `TutorialTargetIds` ↔ скан префабов на `TutorialTargetTag`; questIds ↔ quests.json; window id ↔ реестр; парс типов шагов); аналитика (`tutorial_seq_start`/`step_start` автоматом, `seq_complete` явно — heroes-конвенция) | Cheat-панель реиграет Day 1 на прогресснутом сейве; валидатор ловит намеренно сломанный id; события видны в debug-провайдере |
+
+### 6.1 Day 1 v1 — что реализовано (упрощённо)
+
+Секвенция `day1_hub_intro` (tutorials.json, `resumePolicy:"restart"`): welcome → highlight `StartDay` →
+`awaitWindow("location")` → текст «pick location» → `awaitWindow("preparation")` → текст «stock + Open Shop»
+→ `awaitWindow("results")` → wrap-up. `awaitWindow("results")` требует `"results"` в `TutorialWindowChecker`.
+
+**Форма продиктована модальным overlay** (single-hole): подсвечиваем только одиночную кнопку `StartDay`;
+на экранах свободного взаимодействия (Location/Preparation) — поясняющий `showText` (тап → свобода), день
+ведём пассивным `awaitWindow`. **`awaitQuest(конкретная продажа)` как блокирующий шаг НЕ используем**
+(вероятностная продажа → риск зависания). Layer-1 квесты (`tut_first_day`/`tut_first_sale`) — отдельно,
+журнальные.
+
+**Известные ограничения v1:** нет строгого day-gate (one-way completion, играет один раз при первом hub);
+resume посреди Day 1 — best-effort (`restart` само-исцеляется только в hub); cancel-path (закрыл окно, не
+подтвердив) — секвенция ждёт действия, без принудительной блокировки закрытия окон.
+
+**Следующее для визуальной подсветки контролов** (Open Shop / список жанров / динамический «+»):
+немодальный callout-режим (pointer+текст **без** dim; тип шага `pointAt`/`callout`) + динамическая
+регистрация таргетов из `PreparationGenreRowView` через фасад `TutorialTargets`; строгий `currentDayIs`
+condition-factory для day-gate.
 
 ## 7. Риски / открытые вопросы
 

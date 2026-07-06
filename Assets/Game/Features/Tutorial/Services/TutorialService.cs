@@ -121,7 +121,7 @@ namespace Game.Tutorial.Services
             if (_running || sequenceId == null || !_sequences.TryGetValue(sequenceId, out var seq))
                 return UniTask.FromResult(false);
 
-            if (!force && !IsEligible(seq))
+            if (!force && (!ContextAllows(seq) || !IsEligible(seq)))
                 return UniTask.FromResult(false);
 
             BeginRun(seq, startIndex: 0);
@@ -207,11 +207,19 @@ namespace Game.Tutorial.Services
         {
             if (!_loaded || _running) return;
 
+            // Don't start a sequence mid-transition (overlay would appear under the transition cover).
+            // Exception: locationLoaded fires DURING the transition (before reveal) — guarding it would
+            // drop location sequences entirely.
+            if (!string.Equals(trigger, TutorialTriggers.LocationLoaded, StringComparison.OrdinalIgnoreCase)
+                && _gameFlow?.IsTransitioning == true)
+                return;
+
             foreach (var seq in _byPriority)
             {
                 if (!string.Equals(seq.Trigger, trigger, StringComparison.OrdinalIgnoreCase)) continue;
                 if (!string.IsNullOrEmpty(seq.TriggerParam) &&
                     !string.Equals(seq.TriggerParam, param, StringComparison.Ordinal)) continue;
+                if (!ContextAllows(seq)) continue;
                 if (!IsEligible(seq)) continue;
 
                 BeginRun(seq, startIndex: 0);
@@ -225,8 +233,22 @@ namespace Game.Tutorial.Services
             return _parser.Parse(seq.ActivationConditions).Evaluate().IsMet;
         }
 
+        // Activation gate only (NOT mid-run abort — cross-context sequences like day1_hub_intro start in the
+        // hub and then wait for Sales in the location).
+        private bool ContextAllows(TutorialSequenceConfig seq)
+        {
+            var inLocation = _gameFlow?.IsLocationLoaded ?? false;
+            switch (seq.Context?.ToLowerInvariant())
+            {
+                case "hub": return !inLocation;
+                case "location": return inLocation;
+                default: return true; // "any" / null
+            }
+        }
+
         private void ResumeActiveSequence()
         {
+            if (_running) return; // a trigger may have already started a run during load
             var id = _state.ActiveSequenceId;
             if (string.IsNullOrEmpty(id)) return;
             if (!_sequences.TryGetValue(id, out var seq)) return;

@@ -38,6 +38,9 @@ namespace Game.Configs.Models
         /// <summary>Quest event for awaitQuest ("started" | "taskCompleted" | "completed" | "awarded").</summary>
         public string Event { get; set; }
 
+        /// <summary>Task id for awaitQuest "taskCompleted" (0 = any task; real task ids start at 1).</summary>
+        public int TaskId { get; set; }
+
         /// <summary>Day phase for awaitPhase ("Morning" | "Preparation" | "Sales" | "Results").</summary>
         public string Phase { get; set; }
     }

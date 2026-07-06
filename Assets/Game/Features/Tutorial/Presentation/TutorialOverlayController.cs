@@ -81,13 +81,23 @@ namespace Game.Tutorial.Presentation
             button.onClick.AddListener(OnClick);
             try
             {
-                await tcs.Task.AttachExternalCancellation(ct);
+                // Race the click against the target being lost (destroyed / deactivated / made
+                // non-interactable, e.g. its panel hides) so a vanished button never soft-locks the tutorial.
+                var lost = UniTask.WaitUntil(() => IsTargetLost(target, button), cancellationToken: ct);
+                var winIndex = await UniTask.WhenAny(tcs.Task, lost);
+                if (winIndex == 1)
+                    Debug.LogWarning($"{LogPrefix} highlight target lost before click; auto-advancing.");
             }
             finally
             {
                 button.onClick.RemoveListener(OnClick);
             }
         }
+
+        private static bool IsTargetLost(RectTransform target, Button button)
+            => target == null
+               || !target.gameObject.activeInHierarchy
+               || (button != null && !button.interactable);
 
         public void HideHighlight()
         {

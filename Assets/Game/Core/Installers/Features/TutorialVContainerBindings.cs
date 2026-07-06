@@ -36,6 +36,9 @@ namespace Game.Bootstrap
             builder.Register<ITutorialStepHandler, AwaitLocationStepHandler>(Lifetime.Singleton);
             builder.Register<TutorialStepHandlerRegistry>(Lifetime.Singleton);
 
+            // Concrete window-id → IsShown map for awaitWindow (keeps Game.Tutorial off feature-UI assemblies).
+            builder.Register<ITutorialWindowChecker, TutorialWindowChecker>(Lifetime.Singleton);
+
             // TutorialService self-registers as ISaveHook in its constructor; AfterLoadAsync builds the
             // catalog from tutorials.json (configs are warm by then), restores state, subscribes triggers.
             builder.Register<TutorialService>(Lifetime.Singleton)
