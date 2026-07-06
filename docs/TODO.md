@@ -62,6 +62,27 @@
   - Сохранить текущую pull-based модель conditions/scoped reader; event-driven progress оставить будущим направлением.
   - Добавить миграцию/совместимость со старым save, где baseline ещё полный `SalesStatsStateDto`, и EditMode-тесты на reload.
 
+- [~] **GAME-10. Туториал — завершить оставшееся.** Движок (Layer 2) и Day 1 v1 реализованы; спека и
+  статус — [INPROGRESS/TUTORIAL_SYSTEM.md](INPROGRESS/TUTORIAL_SYSTEM.md) (§6 роадмап, §6.1 Day 1 v1).
+  Осталось:
+  - **§7 — debug/качество**: cheat-модуль в `Game.Cheat` (list/force-run/force-complete/reset + сброс
+    `ftue.*` = replay Day 1); editor-валидатор id-шников (target ↔ `TutorialTargetIds` ↔ скан префабов на
+    `TutorialTargetTag`; questId ↔ `quests.json`; window id ↔ `TutorialWindowChecker`; парс типов шагов);
+    аналитика (`seq_start`/`step_start` автоматом, `seq_complete` явно).
+  - **Немодальный callout-режим** (pointer+текст **без** dim; тип шага `pointAt`/`callout`) — чтобы
+    подсвечивать контролы на экранах свободного взаимодействия (Open Shop, список жанров, динамический
+    «+» жанра) + динамическая регистрация таргетов из `PreparationGenreRowView` через фасад `TutorialTargets`.
+  - **Строгий day-gate**: condition-factory `currentDayIs` (сейчас Day 1 играет один раз при первом hub,
+    не строго «день == 1»).
+  - **Устойчивость Day 1** (известные ограничения v1 в §6.1): корректный resume посреди дня и cancel-path
+    (закрыл Location/Preparation, не подтвердив) — recovery/блокировка закрытия окон.
+  - **Локализация** текста туториала (сейчас ASCII/English) — через INF-4; поле `textKey` зарезервировано.
+  - **Полировка**: feather-дырка шейдером за тем же API `TutorialBlackoutView`; player-facing Skip;
+    вариант `awaitWindow("closed")`; опц. мягкий pointer на кнопку журнала по `QuestStarted`.
+  - **Ремайндер по editor-обвязке** (если ещё не сделано): prefab текст-панели, asset
+    `TutorialOverlaySettings` + назначение в `BootstrapInstaller`, `TutorialTargetTag` на кнопке Start Day
+    (`hub.start_day_button`), `Tools/Configs/Sync Bundled Defaults` для билда.
+
 ---
 
 ## 🛠️ Инфраструктура

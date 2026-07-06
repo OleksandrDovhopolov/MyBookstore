@@ -1,9 +1,11 @@
-# TUTORIAL_SYSTEM — архитектура туториала и этапы создания
+# TUTORIAL_SYSTEM — архитектура туториала и статус
 
-Статус: 🚧 спека, в работу. Дата: 2026-07-05.
+Статус: 🚧 в работе. **Движок (Layer 2) и Day 1 v1 реализованы** (роадмап §6, этапы 1–6); Layer 1
+(tutorial-квесты) заведён. **Осталось**: §7 (cheat/валидатор/аналитика) и полировка (немодальный callout,
+строгий day-gate, локализация). Дата: 2026-07-06.
 
-Документ описывает архитектуру системы обучения (туториала) и поэтапный план её создания.
-Самодостаточен: реализацию можно начинать с Этапа 1 без дополнительного контекста.
+Документ описывает архитектуру системы обучения и её текущее состояние. Разделы §1–§5 — как устроено
+(реализовано); §6 — роадмап со статусами; §6.1 — что вошло в Day 1 v1; §7–§8 — риски и платные опции.
 
 > Связанные документы: [FTUE.md](../FTUE.md) (требования к движку и vision scripted Day 1),
 > [QUESTS.md](../QUESTS.md) + [ADR-0007](../adr/0007-quest-system.md) (квест-система),
@@ -45,37 +47,42 @@ one-way completion, editor-валидатор, cheat-панель. NodeCanvas о
 фичи ссылаются друг на друга только через `.API`.
 
 ```
-Infrastructure (без новых references!)
+Infrastructure (референс DOTween/UI уже есть; новых asmdef-ссылок не добавляли)
 └── Assets/Game/Infrastructure/TutorialUI/
-    ├── TutorialBlackoutView.cs   — затемнение из 4 слайсов вокруг «дырки»; дырка без Graphic,
-    │                                лучи проходят насквозь; слайсы блокируют всё остальное. Без шейдеров.
-    ├── TutorialPointerView.cs    — рука/стрелка, синус-баунс в Update (без tween-библиотек)
-    ├── TutorialTargets.cs        — статический реестр: Register/Unregister(string id, RectTransform),
-    │                                TryGet(id), event TargetRegistered(string id)
-    ├── TutorialTargetTag.cs      — MonoBehaviour: [SerializeField] string _id; OnEnable→Register,
-    │                                OnDisable→Unregister
+    ├── ITutorialTargetRegistry.cs / TutorialTargetRegistry.cs — DI-реестр id→RectTransform
+    │                                (зеркало IResourceAnimationTargetRegistry; purge null)
+    ├── TutorialTargets.cs        — статический ФАСАД над реестром (зеркало Infrastructure.Audio.Audio):
+    │                                Bind/Clear/Register/Unregister/TryGetTarget — для MonoBehaviour-тегов
+    ├── TutorialTargetTag.cs      — MonoBehaviour: [SerializeField] string _targetId; OnEnable→Register,
+    │                                OnDisable→Unregister (через фасад)
+    ├── TutorialTargetIds.cs      — const id таргетов (hub.start_day_button, …)
+    ├── TutorialBlackoutView.cs   — затемнение из 4 слайсов вокруг «дырки»; дырка без Graphic; без шейдеров
+    ├── TutorialPointerView.cs    — рука/стрелка, синус-баунс в Update
     └── ScreenRectUtility.cs      — RectTransform → rect в координатах overlay-канваса; per-frame пересчёт
 
 Game.Tutorial.API   (autoReferenced: false; refs: UniTask)
     ├── ITutorialService.cs
-    └── TutorialSignals.cs        — readonly structs: TutorialSequenceStarted{SequenceId},
-                                     TutorialStepChanged{SequenceId, StepId, StepIndex},
-                                     TutorialSequenceCompleted{SequenceId}
+    └── TutorialSignals.cs        — readonly structs: TutorialSequenceStarted / TutorialStepChanged /
+                                     TutorialSequenceCompleted
 
 Game.Tutorial       (refs: UniTask, VContainer, MessagePipe, Save, Configs, Game.Conditions.API,
-    │                Game.Quest.API, Game.Core.UI, Infrastructure, Game.Bootstrap.Loading, DayCycle,
-    │                Game.Tutorial.API, Unity.TextMeshPro)
-    ├── Services/TutorialService.cs, TutorialSaveState.cs, TutorialSaveKeys.cs
-    ├── Steps/ITutorialStepHandler.cs + 6 handler-классов (§4.2)
-    ├── Steps/TutorialStepHandlerRegistry.cs  — string-дискриминатор → handler
-    ├── Conditions/TutorialConditionFactories.cs — leaf «tutorialCompleted»
-    ├── Presentation/TutorialOverlayController.cs, TutorialOverlayRoot.cs
-    ├── TutorialTargetIds.cs      — словарь id таргетов (const strings)
-    └── TutorialWindowIds.cs      — реестр окно-id → проверка (§4.3)
+    │                Game.Quest.API, Game.Core.UI, DayCycle, Game.Bootstrap.Loading, Game.Tutorial.API,
+    │                Infrastructure, Unity.TextMeshPro)  — НЕ ссылается на Game.Preparation/Location
+    ├── Services/         TutorialService.cs, TutorialSaveState.cs, TutorialSaveKeys.cs, TutorialTriggers.cs
+    ├── Steps/            ITutorialStepHandler.cs, TutorialStepHandlerRegistry.cs, TutorialStepTypes.cs,
+    │                     ITutorialWindowChecker.cs + 6 handler-классов (§4.2)
+    ├── Conditions/       TutorialCompletedCondition.cs, TutorialCompletedConditionFactory.cs
+    └── Presentation/     TutorialOverlayController.cs (canvas @3600 в рантайме), TutorialOverlaySettings.cs
+                          (ScriptableObject), TutorialTextPanelView.cs (TMP)
 
-Configs (как все конфиг-модели)
-    └── Assets/Game/Features/Configs/Models/TutorialSequenceConfig.cs  — [ConfigFile("tutorials")]
-        + Assets/Configs/tutorials.json
+Game.Bootstrap (Assets/Game/Core/Installers/Features/)
+    ├── TutorialVContainerBindings.cs  — регистрация сервиса/хендлеров/реестра/overlay/условия
+    └── TutorialWindowChecker.cs       — реализация ITutorialWindowChecker (знает окна: preparation/
+                                          location/results) — concrete-ссылки на окна живут ЗДЕСЬ
+
+Configs
+    └── Assets/Game/Features/Configs/Models/TutorialSequenceConfig.cs + TutorialStepConfig.cs
+        ([ConfigFile("tutorials")]) + Assets/Configs/tutorials.json
 ```
 
 Ключевые решения по размещению:
@@ -100,21 +107,18 @@ Configs (как все конфиг-модели)
 
 ### 4.1 tutorials.json — схема секвенции
 
+Схема (иллюстративно; реальная секвенция Day 1 — в §6.1):
+
 ```jsonc
 [
   {
     "id": "day1_hub_intro",
     "priority": 10,                  // меньше = раньше при нескольких eligible
-    "context": "hub",                // hub | location | any — где живёт секвенция
+    "context": "hub",                // hub | location | any — gate активации (§5.1)
     "trigger": "hubReady",           // hubReady | locationLoaded | phaseChanged | questStarted | questCompleted
-    "triggerParam": null,            // напр. questId для questStarted
-    "resumePolicy": "restart",       // restart (default) | fromStep
-    "activationConditions": {        // JObject-дерево, тот же движок что у квестов; null = всегда
-      "all": [
-        { "type": "dayIs", "day": 1 },
-        { "type": "phaseIs", "phase": "Preparation" }
-      ]
-    },
+    "triggerParam": null,            // напр. questId для questStarted / phase для phaseChanged
+    "resumePolicy": "restart",       // restart | fromStep
+    "activationConditions": null,    // JObject-дерево (движок Game.Conditions); null = всегда
     "steps": [
       { "id": "welcome",     "type": "showText",
         "text": "…", "textKey": null, "placement": "bottom" },
@@ -123,15 +127,16 @@ Configs (как все конфиг-модели)
         "text": "…", "placement": "aboveTarget", "padding": 16 },
       { "id": "wait_prep",   "type": "awaitWindow", "window": "preparation" },
       { "id": "wait_sale",   "type": "awaitQuest",
-        "questId": "tut_first_sale", "event": "taskCompleted" }
+        "questId": "tut_first_sale", "event": "taskCompleted", "taskId": 0 }
     ]
   }
 ]
 ```
 
-Текст — сырой русский (локализации в проекте нет), поле `textKey` зарезервировано для будущей
-миграции. Условия `dayIs`/`phaseIs` — если не зарегистрированы квест-фичей, factory кладём в
-`Game.Tutorial/Conditions` (DayCycle в references есть).
+Текст — сырой ASCII/English (локализации в проекте нет), поле `textKey` зарезервировано для будущей
+миграции. **Условия `dayIs`/`currentDayIs` пока НЕ реализованы** (нет строгого day-gate — см. §6.1
+«известные ограничения»); `activationConditions` использует уже существующие leaf-условия
+(`Game.Conditions`) либо `tutorialCompleted` (§4.4).
 
 ### 4.2 Типы шагов — 6 штук (все реальные)
 
@@ -162,6 +167,7 @@ highlightClick/awaitPhase; Проход 3 — awaitWindow/awaitQuest/awaitLocati
 // TutorialWindowChecker (Game.Bootstrap): id → IsWindowShown<T>()
 { "preparation", ui.IsWindowShown<PreparationWindow> },
 { "location",    ui.IsWindowShown<LocationWindow> },
+{ "results",     ui.IsWindowShown<ResultsWindow> },
 // неизвестный id → TryGetShown возвращает false → handler делает auto-advance (+ валидатор §7)
 ```
 
@@ -216,8 +222,9 @@ bootstrap (`RegisterBuildCallback → TutorialTargets.Bind(...)`). Иденти�
    без пометки complete. Потеря highlight-таргета обрабатывается внутри шага (auto-advance), не
    рвёт весь run.
 5. **Resume после релонча**: `ResumeActiveSequence` (с guard `if (_running) return;`, context НЕ
-   проверяется) поднимает сохранённую активную секвенцию; `fromStep` (day1) — с `NextStepIndex`
-   (незавершённый шаг), `restart` — с нуля.
+   проверяется) поднимает сохранённую активную секвенцию; `restart` — с нуля (у `day1_hub_intro`, т.к.
+   есть window-зависимые шаги, а окна при релонче не восстанавливаются); `fromStep` — с `NextStepIndex`
+   (для hub-only секвенций).
 
 ### 5.2 ITutorialService (API)
 
@@ -233,8 +240,9 @@ UniTask ResetAsync(string sequenceId, CancellationToken ct);  // debug replay
 
 ### 5.3 Гейтинг и слои
 
-Overlay — **НЕ окно UIManager**: persistent-префаб `TutorialOverlayRoot`, инстанцируется фичей,
-канвас со своим sortingOrder. Причины: `HideTopAsync`/Android-back и focus-chain его не видят
+Overlay — **НЕ окно UIManager**: канвас создаётся **в рантайме** `TutorialOverlayController.EnsureRoot()`
+под `IUICanvasRoot.WindowsRoot` со своим `sortingOrder` (зеркало `ResourceAnimationService.EnsureRoot`) —
+overlay-префаб не нужен. Причины «не окно»: `HideTopAsync`/Android-back и focus-chain его не видят
 (back не закроет туториал и не будет им съеден); окна продолжают открываться/закрываться под ним
 (шаг подсвечивает кнопку, клик по которой открывает PreparationWindow — стековый blocker с этим
 конфликтовал бы).
@@ -267,7 +275,9 @@ Overlay — **НЕ окно UIManager**: persistent-префаб `TutorialOverla
 
 ## 6. Roadmap — 7 этапов
 
-Каждый этап проверяем в редакторе; на экране что-то видно уже с Этапа 1.
+**Статус:** этапы **1–4 и 6 — ✅ реализованы**; **5 — ✅** (tutorial-квесты заведены в `quests.json` +
+condition `tutorialCompleted`; опц. мягкий pointer на журнал — не сделан); **7 — ⏳ не начат**
+(cheat/валидатор/аналитика). Таблица ниже — исходный план с критериями проверки (историческая).
 
 | # | Этап | Содержание | Критерий проверки |
 |---|---|---|---|
@@ -308,8 +318,9 @@ condition-factory для day-gate.
 | Поллинг `IsWindowShown` (0.25 с) | Для прототипа ок; сигнал `WindowShown` из UIManager — поздняя оптимизация, не зависимость |
 | Прямоугольная жёсткая дырка | Шейдер с feather — позже, drop-in за тем же API `TutorialBlackoutView` |
 | Нет локализации | Сырой RU-текст + зарезервированный `textKey`; миграция механическая |
-| Дрейф string-id (таргеты/окна/квесты) | Валидатор Этапа 7, включая скан префабов |
-| Static-реестр таргетов | Правила cleanup в §4.5 обязательны; v2 — DI-сервис, если появится нужда |
+| Дрейф string-id (таргеты/окна/квесты) | Валидатор §7 (⏳ не сделан), включая скан префабов на `TutorialTargetTag` |
+| Резолв таргета сделан DI-реестром `ITutorialTargetRegistry` + фасадом `TutorialTargets` (для тегов) | Реализовано (§4.5); purge null при lookup |
+| Resume/cancel-path Day 1 (§6.1) | Осознанные ограничения v1; строгий day-gate и recovery — позже |
 
 ## 8. Платные решения (если появится бюджет)
 
@@ -333,7 +344,7 @@ NodeCanvas), так что интеграция не изобретается, �
 - Все примитивы `Infrastructure/TutorialUI` (blackout, pointer, `TutorialTargets`, `ScreenRectUtility`) —
   чистый View-слой; NodeCanvas-нода дёргает их так же, как step-handler. В heroes ноды
   `ShowTutorialPointer/Blackout` управляли ровно такими независимыми view-контроллерами.
-- `TutorialOverlayController` / `TutorialOverlayRoot`, `TutorialTargetIds`, `TutorialWindowIds`.
+- `TutorialOverlayController` (runtime canvas), `TutorialTargetIds`, `ITutorialWindowChecker`.
 - Save-модель (`CompletedSequenceIds`, one-way completion) — концептуально та же.
 - Layer 1 целиком (квесты, `quests.json`, `tutorialCompleted`).
 
