@@ -259,7 +259,9 @@ MonoBehaviour:
   _backdrop: {fileID: 0}
   _closeButton: {fileID: 661212151933234847}
   _verticalOffset: 100
-  _edgePadding: 0
+  _horizontalOffset: 12
+  _edgePadding: 16
+  _verticalZoneRatio: 0.2
 --- !u!1 &5785641560898066280
 GameObject:
   m_ObjectHideFlags: 0

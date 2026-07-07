@@ -52,7 +52,7 @@ namespace Game.Decor.UI
         private string _selectedSlotId; // placed slot whose HUD is open
         private bool _applyInProgress;
         private bool _firstRender;
-        private bool _useContentWidgetForInfo = true;
+        private bool _useContentWidgetForInfo = false;
 
         // Slot-first inventory filter: when set, RenderInventory shows only decor of this PositionType.
         // Stage 1 keeps the filter type-only by design.

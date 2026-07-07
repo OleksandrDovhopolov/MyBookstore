@@ -18,7 +18,9 @@ namespace Game.UI.ContentWidget
         [SerializeField] private Button _backdrop;
         [SerializeField] private Button _closeButton;
         [SerializeField] private float _verticalOffset = 12f;
+        [SerializeField] private float _horizontalOffset = 12f;
         [SerializeField] private float _edgePadding = 16f;
+        [SerializeField, Range(0f, 0.5f)] private float _verticalZoneRatio = 0.33f;
 
         private readonly Dictionary<Type, MonoBehaviour> _cachedViews = new();
 
@@ -142,14 +144,17 @@ namespace Game.UI.ContentWidget
                 widgetSize = _container.rect.size;
             }
 
-            _container.anchoredPosition = ContentWidgetPlacement.Resolve(
+            var placement = ContentWidgetPlacement.Resolve(
                 anchorRect,
                 widgetSize,
                 parent.rect,
                 _verticalOffset,
+                _horizontalOffset,
                 _edgePadding,
-                _container.pivot,
-                out _);
+                _verticalZoneRatio,
+                _container.pivot);
+
+            _container.anchoredPosition = placement.Position;
         }
 
         private void NormalizeContainerAnchors(RectTransform parent)
