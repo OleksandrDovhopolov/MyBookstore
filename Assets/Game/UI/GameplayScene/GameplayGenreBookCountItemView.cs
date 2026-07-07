@@ -1,3 +1,4 @@
+using System;
 using Game.Configs.Models;
 using TMPro;
 using UnityEngine;
@@ -9,12 +10,29 @@ public sealed class GameplayGenreBookCountItemView : MonoBehaviour
     [SerializeField] private TMP_Text _countText;
     [SerializeField] private RectTransform _purchasedAmountGameObject;
     [SerializeField] private TMP_Text _purchasedAmountText;
+    [SerializeField] private Button _button;
+
+    private Action<GameplayGenreBookCountItemView> _onClick;
 
     public BookGenre Genre { get; private set; }
+    public RectTransform RectTransform => transform as RectTransform;
 
-    public void Bind(BookGenre genre, Sprite genreSprite, int count, int purchasedAmount = 0, bool showPurchased = false)
+    private void Awake()
+    {
+        if (_button != null)
+            _button.onClick.AddListener(OnClicked);
+    }
+
+    public void Bind(
+        BookGenre genre,
+        Sprite genreSprite,
+        int count,
+        int purchasedAmount = 0,
+        bool showPurchased = false,
+        Action<GameplayGenreBookCountItemView> onClick = null)
     {
         Genre = genre;
+        _onClick = onClick;
         SetSprite(genreSprite);
         SetCount(count);
         SetPurchasedAmount(purchasedAmount, showPurchased);
@@ -48,5 +66,13 @@ public sealed class GameplayGenreBookCountItemView : MonoBehaviour
             if (shouldShow)
                 _purchasedAmountText.text = $"-{amount}";
         }
+    }
+
+    private void OnClicked() => _onClick?.Invoke(this);
+
+    private void OnDestroy()
+    {
+        if (_button != null)
+            _button.onClick.RemoveListener(OnClicked);
     }
 }

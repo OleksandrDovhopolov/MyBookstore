@@ -27,14 +27,25 @@ namespace Game.Decor.UI
 
         public void Bind(string genre, string percent, Color percentColor, IUiSpriteProvider sprites)
         {
+            Apply(genre, percent, percentColor);
+            LoadIcon(genre, sprites);
+        }
+
+        public void Bind(Sprite icon, string genre, string percent, Color percentColor)
+        {
+            CancelIconLoad();
+            if (_icon != null) _icon.sprite = icon;
+            Apply(genre, percent, percentColor);
+        }
+
+        private void Apply(string genre, string percent, Color percentColor)
+        {
             if (_descriptionLabel != null) _descriptionLabel.text = $"{percent} {genre} {DescriptionSuffix}";
             if (_percentLabel != null)
             {
                 _percentLabel.text = percent;
                 _percentLabel.color = percentColor;
             }
-
-            LoadIcon(genre, sprites);
         }
 
         private void LoadIcon(string genre, IUiSpriteProvider sprites)

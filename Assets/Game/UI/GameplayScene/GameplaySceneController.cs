@@ -14,6 +14,7 @@ using Game.Newspaper.UI;
 using Game.Preparation.Services;
 using Game.Preparation.UI;
 using Game.UI;
+using Game.UI.ContentWidget;
 using MessagePipe;
 using UIShared;
 using UnityEngine;
@@ -22,6 +23,8 @@ using VContainer;
 [Window("GameplaySceneController", WindowType.HUD)]
 public class GameplaySceneController : WindowController<GameplaySceneView>, IDataReadyWindow
 {
+    private const int SaleChancePlaceholderPercent = 50;
+
     private IDayProgressService _dayProgress;
     private IMorningSessionService _session;
     private IPreparationSessionService _preparationSession;
@@ -78,6 +81,8 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
 
         if (View.DecorButton != null)
             View.DecorButton.onClick.AddListener(OnDecorButtonClicked);
+
+        View.GenreItemClicked += OnGenreItemClicked;
 
         _buttonsInteractableSubscription = _buttonsInteractableSubscriber.Subscribe(
             e => SetSceneButtonsInteractable(e.Interactable));
@@ -172,6 +177,9 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         if (View != null && View.DecorButton != null)
             View.DecorButton.onClick.RemoveListener(OnDecorButtonClicked);
 
+        if (View != null)
+            View.GenreItemClicked -= OnGenreItemClicked;
+
         foreach (var owner in _panelHideOwners)
             owner.Closed -= OnPanelHidingWindowClosed;
         _panelHideOwners.Clear();
@@ -209,6 +217,16 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
     }
 
     private void OnStartGameClicked() => StartGameAsync().Forget();
+
+    private void OnGenreItemClicked(BookGenre genre, Sprite sprite, RectTransform anchor)
+    {
+        if (anchor == null) return;
+
+        var data = new SaleChanceWidgetData(genre, SaleChancePlaceholderPercent, sprite);
+        UIManager.ShowAsync<ContentWidgetController>(
+            new ContentWidgetArgs(data, anchor, this),
+            View.destroyCancellationToken).Forget();
+    }
     
     private async UniTaskVoid StartGameAsync()
     {

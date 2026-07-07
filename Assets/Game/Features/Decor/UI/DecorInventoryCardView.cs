@@ -23,7 +23,7 @@ namespace Game.Decor.UI
         [SerializeField] private GameObject _placedBadge;       // "already placed" marker
 
         private Action<string> _onSelect;
-        private Action<string> _onInfo;
+        private Action<string, RectTransform> _onInfo;
         private CancellationTokenSource _iconCts;
 
         public string DecorId { get; private set; }
@@ -40,7 +40,7 @@ namespace Game.Decor.UI
             bool selectable,
             IUiSpriteProvider sprites,
             Action<string> onSelect,
-            Action<string> onInfo)
+            Action<string, RectTransform> onInfo)
         {
             DecorId = config.Id;
             _onSelect = onSelect;
@@ -98,7 +98,7 @@ namespace Game.Decor.UI
 
         private void OnSelectClicked() => _onSelect?.Invoke(DecorId);
 
-        private void OnInfoClicked() => _onInfo?.Invoke(DecorId);
+        private void OnInfoClicked() => _onInfo?.Invoke(DecorId, _infoButton != null ? _infoButton.transform as RectTransform : null);
 
         private void CancelIconLoad()
         {

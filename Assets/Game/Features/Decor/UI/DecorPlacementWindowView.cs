@@ -1,4 +1,5 @@
 using Game.UI;
+using Game.UI.ContentWidget;
 using TMPro;
 using UIShared;
 using UnityEngine;
@@ -22,6 +23,7 @@ namespace Game.Decor.UI
         [Header("Bottom inventory panel")]
         [Tooltip("Card prefab + parent are assigned on the pool in the inspector.")]
         [SerializeField] private UIListPool<DecorInventoryCardView> _cardsPool = new();
+        [SerializeField] private DecorInfoWidgetView _decorInfoWidgetPrefab;
 
         [Header("Selected decor info")]
         [Tooltip("Name of the decor in the clicked placed slot.")]
@@ -66,5 +68,13 @@ namespace Game.Decor.UI
 
         public AudioClip PlaceClip => _placeClip;
         public AudioClip RemoveClip => _removeClip;
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            if (_decorInfoWidgetPrefab != null)
+                WidgetRegistry.Register<DecorInfoWidgetData>(_decorInfoWidgetPrefab);
+        }
     }
 }

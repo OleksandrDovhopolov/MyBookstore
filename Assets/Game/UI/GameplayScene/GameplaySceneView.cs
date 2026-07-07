@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
 using Game.UI;
+using Game.UI.ContentWidget;
 using TMPro;
 using UIShared;
 using UnityEngine;
@@ -20,6 +22,7 @@ public class GameplaySceneView : WindowView
 
     [Header("Genre book counts")]
     [SerializeField] private UIListPool<GameplayGenreBookCountItemView> _genreBookCountPool = new();
+    [SerializeField] private SaleChanceWidgetView _saleChanceWidgetPrefab;
 
     private readonly Dictionary<BookGenre, Sprite> _genreSprites = new();
 
@@ -29,6 +32,7 @@ public class GameplaySceneView : WindowView
 
     public Button StartDayButton => _startDayButton;
     public Button DecorButton => _decorButton;
+    public event Action<BookGenre, Sprite, RectTransform> GenreItemClicked;
 
     // Collected from the view hierarchy at runtime (including inactive) so any number of
     // panels — top / side / bottom / any future ones — is driven together without wiring
@@ -87,6 +91,10 @@ public class GameplaySceneView : WindowView
 
     protected override void Awake()
     {
+        base.Awake();
+        if (_saleChanceWidgetPrefab != null)
+            WidgetRegistry.Register<SaleChanceWidgetData>(_saleChanceWidgetPrefab);
+
         HideLegacyGenreBookCountItemsIfNeeded();
         SetSalesGoldVisible(false);
     }
@@ -157,7 +165,13 @@ public class GameplaySceneView : WindowView
 
             var item = _genreBookCountPool.GetNext();
             normalizedPurchasedCounts.TryGetValue(pair.Key, out var purchasedAmount);
-            item.Bind(genre, ResolveGenreSprite(genre), pair.Value, purchasedAmount, showPurchasedCounts);
+            item.Bind(
+                genre,
+                ResolveGenreSprite(genre),
+                pair.Value,
+                purchasedAmount,
+                showPurchasedCounts,
+                OnGenreItemClicked);
         }
 
         _genreBookCountPool.DisableNonActive();
@@ -192,5 +206,11 @@ public class GameplaySceneView : WindowView
 
     private Sprite ResolveGenreSprite(BookGenre genre)
         => _genreSprites.TryGetValue(genre, out var sprite) ? sprite : null;
+
+    private void OnGenreItemClicked(GameplayGenreBookCountItemView item)
+    {
+        if (item == null) return;
+        GenreItemClicked?.Invoke(item.Genre, ResolveGenreSprite(item.Genre), item.RectTransform);
+    }
 
 }

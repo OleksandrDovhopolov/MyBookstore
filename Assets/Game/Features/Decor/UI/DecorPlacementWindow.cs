@@ -10,6 +10,7 @@ using Game.Inventory.API;
 using Game.Newspaper.UI;
 using Game.UI;
 using Game.UI.Common;
+using Game.UI.ContentWidget;
 using Infrastructure.Audio;
 using UnityEngine;
 using UnityEngine.UI;
@@ -51,6 +52,7 @@ namespace Game.Decor.UI
         private string _selectedSlotId; // placed slot whose HUD is open
         private bool _applyInProgress;
         private bool _firstRender;
+        private bool _useContentWidgetForInfo = true;
 
         // Slot-first inventory filter: when set, RenderInventory shows only decor of this PositionType.
         // Stage 1 keeps the filter type-only by design.
@@ -262,10 +264,87 @@ namespace Game.Decor.UI
             }
         }
 
-        // Info is a separate WindowType.Popup shown additively over this window; it does not touch
-        // this window's preview or committed placement.
-        private void OnCardInfo(string decorId)
-            => UIManager.ShowAsync<DecorInfoPopup>(new DecorInfoPopupArgs(decorId), _cts.Token).Forget();
+        // Info is shown as an anchored widget by default. The popup branch stays available so the
+        // caller can switch presentation without deleting DecorInfoPopup.
+        private void OnCardInfo(string decorId, RectTransform anchor)
+        {
+            if (_useContentWidgetForInfo)
+            {
+                ShowDecorInfoWidgetAsync(decorId, anchor).Forget();
+                return;
+            }
+
+            UIManager.ShowAsync<DecorInfoPopup>(new DecorInfoPopupArgs(decorId), _cts.Token).Forget();
+        }
+
+        private async UniTaskVoid ShowDecorInfoWidgetAsync(string decorId, RectTransform anchor)
+        {
+            if (anchor == null || string.IsNullOrEmpty(decorId)) return;
+
+            try
+            {
+                var data = await BuildDecorInfoWidgetDataAsync(decorId, _cts.Token);
+                if (data == null) return;
+
+                await UIManager.ShowAsync<ContentWidgetController>(
+                    new ContentWidgetArgs(data, anchor, this),
+                    _cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        private async UniTask<DecorInfoWidgetData> BuildDecorInfoWidgetDataAsync(string decorId, CancellationToken ct)
+        {
+            var config = _configs.Get<DecorConfig>(decorId);
+            if (config == null) return null;
+
+            var icon = _sprites != null ? await _sprites.GetSpriteAsync(decorId, ct) : null;
+            var bonuses = new List<DecorInfoWidgetData.BonusRow>();
+            if (config.GenreMultipliers != null)
+            {
+                foreach (var mod in config.GenreMultipliers)
+                {
+                    if (mod == null) continue;
+
+                    var percent = Mathf.RoundToInt((mod.Multiplier - 1f) * 100f);
+                    var sign = percent >= 0 ? "+" : "";
+                    var color = mod.Multiplier < 1f
+                        ? new Color(0.9f, 0.25f, 0.25f)
+                        : new Color(0.2f, 0.8f, 0.2f);
+                    var genreSprite = _sprites != null ? await _sprites.GetSpriteAsync(mod.Genre, ct) : null;
+                    bonuses.Add(new DecorInfoWidgetData.BonusRow(
+                        mod.Genre,
+                        $"{sign}{percent}%",
+                        color,
+                        genreSprite));
+                }
+            }
+
+            return new DecorInfoWidgetData(
+                config.DisplayName ?? config.Id,
+                "TODO: item description. Add a Description field to DecorConfig and pass it here.",
+                icon,
+                bonuses,
+                BuildDecorCharacteristics(config));
+        }
+
+        private static IReadOnlyList<string> BuildDecorCharacteristics(DecorConfig config)
+        {
+            var result = new List<string>
+            {
+                config.PositionType.ToString(),
+                config.Size.ToString()
+            };
+
+            if (config.AtmosphereTags != null)
+                foreach (var tag in config.AtmosphereTags)
+                    if (!string.IsNullOrEmpty(tag))
+                        result.Add(tag);
+
+            return result;
+        }
 
         private bool IsReplaceContextActive() =>
             !string.IsNullOrEmpty(_replaceOriginalDecorId)

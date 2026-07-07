@@ -1,6 +1,67 @@
 # IContentWidgetView — Система контент-виджетов
 
-## Обзор
+> **Статус: принято к порту в MyBookstore (2026-07-07).** Ниже два пласта: **§0 — зафиксированные
+> решения и маппинг на наш UI-фреймворк** (то, что делаем), и **§1+ — reference-чертёж из чужой
+> кодовой базы** (пути `Assets/Game/UI/UIShared/Scripts/ContentWidget/`, `CardCollection/…` — их в
+> MyBookstore **нет**, это прототип, а не существующий код). Порт делаем адаптированным под наши
+> конвенции, не дословно. Тип документа — 🛠 improvement.
+
+## 0. Решения для MyBookstore (source of truth)
+
+### 0.1. Зачем
+
+Нужен переиспользуемый **заякоренный инфо-виджет**: клик по UI-элементу → всплывающая вью рядом с
+ним, показывающая контекстную информацию. Форма reference-паттерна (типизированные данные + реестр
+`тип данных → prefab` + host, сам позиционирующий вью) подходит и принята. Основная ценность —
+открытая расширяемость под будущие источники (§0.2, пункт 3).
+
+### 0.2. Источники использования (принятый scope)
+
+| # | Источник | Данные виджета | Статус |
+|---|---|---|---|
+| 1 | Клик по элементу пула жанров в [GameplaySceneView](../../Assets/Game/UI/GameplayScene/GameplaySceneView.cs) (`_genreBookCountPool` → `GameplayGenreBookCountItemView`) | вероятность продажи, % | Новое. Требует **добавить кнопку** на item + прокинуть click; число берётся из sales-модели (`baseSaleChance × locationMod × decorMod`, [ADR-0004](../adr/0004-stock-model-hybrid-sale-chance.md)/[0006](../adr/0006-passive-sales-requested-genre.md)) в момент клика. |
+| 2 | Инфо-кнопка декора: `_infoButton` в [DecorInventoryCardView](../../Assets/Game/Features/Decor/UI/DecorInventoryCardView.cs) | инфо по декору (имя, бонусы, характеристики) | Виджет становится **альтернативой** попапу. |
+| 3 | Прочие будущие источники | по типу данных | Открыто. Добавление = новый data-класс + view/prefab + одна регистрация в реестре. |
+
+### 0.3. Решение по DecorInfoPopup (пункт 2 — важное)
+
+- Новый виджет используется **вместо** окна [DecorInfoPopup](../../Assets/Game/Features/Decor/UI/DecorInfoPopup.cs) как способ показать инфо по декору у кнопки.
+- **`DecorInfoPopup` НЕ удаляем** — окно остаётся в проекте.
+- **Что именно показывать (виджет vs. `DecorInfoPopup`) решает вызывающий код** — оба способа
+  сосуществуют; выбор — на стороне источника клика, не зашит в систему виджетов.
+- Следствие: систему виджетов проектируем так, чтобы она **не зависела** от `DecorInfoPopup` и не
+  требовала его миграции. Контент декор-виджета — отдельный `IContentWidgetView` (данные мапятся из
+  `DecorConfig`, как в `DecorInfoPopup.Apply`), без общего кода с окном.
+
+### 0.4. Обязательные адаптации под наш UI-фреймворк (не дословный порт)
+
+| Тема | Reference (§1+) | Решение в MyBookstore |
+|---|---|---|
+| Точка показа | `UIManager.Show<ContentWidgetController>(args)` | `IUIManager.ShowAsync<TController>(WindowArgs)` ([IUIManager.cs](../../Assets/Game/Core/UI/Core/IUIManager.cs)); контроллер — `WindowController<TView>` c `[Window("…", WindowType.Widget)]`. |
+| Args | `ContentWidgetArgs : WindowArgs` (data + RectTransform) | Подкласс нашего [WindowArgs](../../Assets/Game/Core/UI/Args/WindowArgs.cs): несёт `ContentWidgetDataBase` + `RectTransform` якоря. |
+| **Слой показа** | `WindowType.Widget` (по умолчанию) | `WindowType.Widget → WindowLayer.Main` ([UIManager.cs:197](../../Assets/Game/Core/UI/Core/UIManager.cs#L197)). Порядок слоёв `Hud < Main < Additional < System`. Чтобы виджет надёжно был **поверх** источника (в т.ч. Popup-источников из п.3), показывать с `LayerOverride` — `WindowArgs.AsAdditional()`/`AsSystem()`. Для п.1 (панель жанров на HUD) `Main` и так выше HUD, но единый вызов через override держим ради предсказуемости. |
+| **Позиционирование** | `RepositionAboveClickedTransform` + `ClampToParentBounds` (только «над» + кламп) | **Дописываем flip+кламп**: над якорем, если есть место, иначе под/сбоку; горизонтальный кламп к safe-краям; не накрывать сам якорь. Кламп-only из reference недостаточен для «виджет в разных частях экрана» — это фактически новый код, а не копия. |
+| Асинхронность | корутины (`IEnumerator OnViewCreated`, `StartCoroutine`, авто-hide 10с) | UniTask, как везде в проекте. Авто-hide допустим, но на UniTask + `destroyCancellationToken`. |
+| Реестр | статический глобальный `WidgetRegistry` | Допустим статический фасад, привязанный к DI (прецеденты: `ResourceCounterTargets`, `TutorialTargets.Bind`, `ResourceAnimationTargets`); предпочтительно DI-consistent. Регистрация — в `Awake` соответствующего window-view через сериализованные ссылки на prefab. |
+
+### 0.5. Минимальное ядро к реализации
+
+Небольшой переиспользуемый набор:
+- host-окно, принимающее `(ContentWidgetDataBase data, RectTransform anchor)`;
+- резолв view по типу данных через реестр;
+- **flip+кламп** позиционирование (§0.4);
+- авто-hide + один активный виджет за раз (тултип-семантика);
+- кэш инстансов по типу (⇒ `Setup()` обязан переподписывать слушатели на каждый вызов).
+
+Структура reference (§1+: `IContentWidgetView` / `ContentWidgetDataBase` / `WidgetRegistry` /
+host / controller / args) — рабочий чертёж этого ядра; приводим к конвенциям выше.
+
+---
+
+## 1. Обзор reference-чертежа (из исходной кодовой базы)
+
+> Ниже — описание системы из **другого** проекта, как прототип. Файловые пути к MyBookstore не
+> относятся. Разделы 0.x выше имеют приоритет при расхождениях.
 
 `IContentWidgetView` — интерфейс, определяющий контракт для всех всплывающих виджетов, которые отображаются над кликнутым UI-элементом. Система состоит из четырёх слоёв:
 
