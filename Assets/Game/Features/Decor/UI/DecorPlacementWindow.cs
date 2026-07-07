@@ -300,8 +300,11 @@ namespace Game.Decor.UI
             var config = _configs.Get<DecorConfig>(decorId);
             if (config == null) return null;
 
-            var icon = _sprites != null ? await _sprites.GetSpriteAsync(decorId, ct) : null;
-            var bonuses = new List<DecorInfoWidgetData.BonusRow>();
+            var iconTask = _sprites != null
+                ? _sprites.GetSpriteAsync(decorId, ct)
+                : UniTask.FromResult<Sprite>(null);
+            var bonusDrafts = new List<(string Genre, string PercentText, Color Color)>();
+            var bonusSpriteTasks = new List<UniTask<Sprite>>();
             if (config.GenreMultipliers != null)
             {
                 foreach (var mod in config.GenreMultipliers)
@@ -313,13 +316,27 @@ namespace Game.Decor.UI
                     var color = mod.Multiplier < 1f
                         ? new Color(0.9f, 0.25f, 0.25f)
                         : new Color(0.2f, 0.8f, 0.2f);
-                    var genreSprite = _sprites != null ? await _sprites.GetSpriteAsync(mod.Genre, ct) : null;
-                    bonuses.Add(new DecorInfoWidgetData.BonusRow(
+                    bonusDrafts.Add((
                         mod.Genre,
                         $"{sign}{percent}%",
-                        color,
-                        genreSprite));
+                        color));
+                    bonusSpriteTasks.Add(_sprites != null
+                        ? _sprites.GetSpriteAsync(mod.Genre, ct)
+                        : UniTask.FromResult<Sprite>(null));
                 }
+            }
+
+            var icon = await iconTask;
+            var bonusSprites = await UniTask.WhenAll(bonusSpriteTasks);
+            var bonuses = new List<DecorInfoWidgetData.BonusRow>(bonusDrafts.Count);
+            for (var i = 0; i < bonusDrafts.Count; i++)
+            {
+                var draft = bonusDrafts[i];
+                bonuses.Add(new DecorInfoWidgetData.BonusRow(
+                    draft.Genre,
+                    draft.PercentText,
+                    draft.Color,
+                    i < bonusSprites.Length ? bonusSprites[i] : null));
             }
 
             return new DecorInfoWidgetData(

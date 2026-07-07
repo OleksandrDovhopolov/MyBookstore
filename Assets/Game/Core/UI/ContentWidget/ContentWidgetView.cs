@@ -129,6 +129,8 @@ namespace Game.UI.ContentWidget
             var parent = _container.parent as RectTransform;
             if (parent == null) return;
 
+            NormalizeContainerAnchors(parent);
+
             if (!TryResolveAnchorRect(anchor, parent, out var anchorRect))
                 return;
 
@@ -148,6 +150,16 @@ namespace Game.UI.ContentWidget
                 _edgePadding,
                 _container.pivot,
                 out _);
+        }
+
+        private void NormalizeContainerAnchors(RectTransform parent)
+        {
+            var size = _container.rect.size;
+            var pointAnchor = parent.pivot;
+
+            _container.anchorMin = pointAnchor;
+            _container.anchorMax = pointAnchor;
+            _container.sizeDelta = size;
         }
 
         private static bool TryResolveAnchorRect(
