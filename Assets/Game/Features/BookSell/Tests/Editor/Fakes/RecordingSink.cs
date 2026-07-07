@@ -17,6 +17,7 @@ namespace Book.Sell.Tests.Editor.Fakes
         public List<(Customer customer, PassiveSaleEvent evt)> PassiveSales { get; } = new();
         public List<(Customer customer, CustomerCommentPayload payload)> Comments { get; } = new();
         public List<(Customer customer, RequestConfig request)> ActiveStarted { get; } = new();
+        public List<(Customer customer, DialoguePayload payload)> DialoguesStarted { get; } = new();
 
         public void OnPhaseChanged(Customer customer, CustomerPhase phase)
             => Phases.Add((customer, phase));
@@ -44,6 +45,9 @@ namespace Book.Sell.Tests.Editor.Fakes
 
         public void OnActiveRequestStarted(Customer customer, RequestConfig request)
             => ActiveStarted.Add((customer, request));
+
+        public void OnDialogueStarted(Customer customer, DialoguePayload payload)
+            => DialoguesStarted.Add((customer, payload));
 
         public List<Customer> BubbleHidden { get; } = new();
 

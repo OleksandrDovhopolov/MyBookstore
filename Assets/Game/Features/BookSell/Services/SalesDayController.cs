@@ -322,6 +322,13 @@ namespace Book.Sell.Services
             ActiveRequestStarted?.Invoke(request);
         }
 
+        // TODO GAME-6 Этап 2: store _dialogueCustomer + raise the public DialogueStarted event; add the
+        // CompleteDialogue() entry point that force-completes the step. Stage 1 keeps this a no-op so the
+        // interface compiles — DialogStep is not wired into any production plan yet.
+        void ISalesDaySink.OnDialogueStarted(Customer customer, DialoguePayload payload)
+        {
+        }
+
         void ISalesDaySink.OnHideThoughtBubble(Customer customer)
             => CustomerThoughtBubbleHidden?.Invoke(customer);
 

@@ -35,6 +35,11 @@ namespace Book.Sell.Domain
         /// <summary>A customer acquired the interaction lock and the active minigame opens for them.</summary>
         void OnActiveRequestStarted(Customer customer, RequestConfig request);
 
+        /// <summary>A customer acquired the interaction lock and a scripted dialogue opens for them. The
+        /// controller re-emits this as a public fact; presentation (window or world-HUD) subscribes and
+        /// drives completion back through the controller. Symmetric with <see cref="OnActiveRequestStarted"/>.</summary>
+        void OnDialogueStarted(Customer customer, DialoguePayload payload);
+
         /// <summary>The customer starts leaving — its thought bubble should be cleared so it walks away
         /// without any HUD. Feedback (Failed / bought / completed) has already had its on-screen dwell
         /// in the preceding steps.</summary>

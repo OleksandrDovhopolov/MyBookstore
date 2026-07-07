@@ -11,6 +11,7 @@ namespace Book.Sell.Domain
         AwaitingHelp = 3,   // wants the active minigame but the lock is held by someone else
         InMinigame = 4,     // holds the lock; the player is choosing a book for this customer
         Leaving = 5,
-        Done = 6
+        Done = 6,
+        InDialogue = 7      // holds the lock; a scripted dialogue is running for this customer
     }
 }

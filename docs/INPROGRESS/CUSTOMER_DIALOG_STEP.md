@@ -35,8 +35,9 @@
 - **Квест-флоу собирается архетипом** ([`ICustomerArchetype.BuildMiddle`](../../Assets/Game/Features/BookSell/Services/Archetypes/ICustomerArchetype.cs)),
   а не runtime-вставкой: `QuestCharacterArchetype.BuildMiddle` = `[DialogStep(payload), PassivePurchaseStep, …]`.
   Известно на спавне — значит запекаем в план (парал­лель [`PassiveActivePassiveArchetype`](../../Assets/Game/Features/BookSell/Services/Archetypes/PassiveActivePassiveArchetype.cs)).
-- **Payload — чистый DTO** (упорядоченные реплики), как [`CustomerCommentPayload`](../../Assets/Game/Features/BookSell/Domain/Steps/CommentStep.cs).
-  Квест-осведомлённость входит на уровне архетипа/спавнера, не в шаге.
+- **Payload — чистый DTO с одним ключом** `DialogueId` (реплики резолвит презентация из `dialogues.json`),
+  как `CustomerCommentPayload` оставляет текст view. Квест-осведомлённость входит на уровне
+  архетипа/спавнера, не в шаге.
 - **Контент диалогов — JSON-конфиг** `dialogues.json` (MVP: пара диалогов).
 
 ### Анти-паттерны (не делать)
@@ -52,8 +53,10 @@
 ## 3. Этапы реализации
 
 ### Этап 1 — Домен: `DialogStep` + payload + фаза
-- `DialoguePayload` (DTO, domain-сборка `Book.Sell.Domain`): `DialogueId` + `IReadOnlyList<string> Lines`
-  (или `Line` для MVP-одностроч­ника). Без Unity-типов.
+- `DialoguePayload` (DTO, неймспейс `Book.Sell.API`, рядом с `CustomerCommentPayload`): **только**
+  `DialogueId` (ключ контента). Реплики домен не несёт — их резолвит контент/презентация из
+  `dialogues.json` по id (единый источник правды, дружит с локализацией). Fail-fast: пустой id →
+  `ArgumentException`. Без Unity-типов.
 - `CustomerPhase.InDialogue` — новое значение, чтобы View поставил персонажа в позу разговора
   (пробрасывается штатно через `OnPhaseChanged`).
 - `DialogStep : ICustomerStep` по образцу `ActiveRequestStep`:
