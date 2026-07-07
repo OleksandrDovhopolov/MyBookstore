@@ -286,9 +286,7 @@ namespace Game.Decor.UI
                 var data = await BuildDecorInfoWidgetDataAsync(decorId, _cts.Token);
                 if (data == null) return;
 
-                await UIManager.ShowAsync<ContentWidgetController>(
-                    new ContentWidgetArgs(data, anchor, this),
-                    _cts.Token);
+                await UIManager.ShowAsync<ContentWidgetController>(new ContentWidgetArgs(data, anchor, this), _cts.Token);
             }
             catch (OperationCanceledException)
             {

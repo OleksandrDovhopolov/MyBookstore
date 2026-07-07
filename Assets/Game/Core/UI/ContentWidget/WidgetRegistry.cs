@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace Game.UI.ContentWidget
 {
+    /*
+     * both classes which use this one can use DI. WidgetRegistry could be made registered via binder
+     */
     public static class WidgetRegistry
     {
         private static readonly Dictionary<Type, MonoBehaviour> Prefabs = new();

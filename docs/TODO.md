@@ -140,6 +140,13 @@
   захода следующей save-aware фичи. Альтернативы (A — каждый сервис `IStartable`; C — `SaveService` принимает
   `IEnumerable<ISaveHook>` в конструкторе) рассмотрены и отклонены в пользу B. Закрывает корневую причину INF-8.
 
+- [ ] **INF-10. Аудит `Assets/Game/Core/UI` на feature-specific классы.**
+  Что сделать:
+  - Просмотреть все классы в `Assets/Game/Core/UI` и отделить общее UI-ядро от конкретных окон, экранов и фич.
+  - Вынести из `Game.Core.UI` конкретные окна вроде настроек, confirm/smoke/debug-экранов и любые feature-specific UI в соответствующие feature/shared UI сборки.
+  - Вынести конкретные анимации/эффекты из core UI, оставив в ядре только базовые интерфейсы, абстракции, common helpers и generic window infrastructure.
+  - Проверить asmdef-зависимости после выноса: `Game.Core.UI` не должен зависеть от конкретных gameplay/feature namespaces и не должен быть местом для продуктовых окон.
+
 ---
 
 ## 🎨 Визуал
