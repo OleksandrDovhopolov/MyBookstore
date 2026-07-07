@@ -223,9 +223,8 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         if (anchor == null) return;
 
         var data = new SaleChanceWidgetData(genre, SaleChancePlaceholderPercent, sprite);
-        UIManager.ShowAsync<ContentWidgetController>(
-            new ContentWidgetArgs(data, anchor, this),
-            View.destroyCancellationToken).Forget();
+        var args = new ContentWidgetArgs(data, anchor, this);
+        UIManager.ShowAsync<ContentWidgetController>(args, View.destroyCancellationToken).Forget();
     }
     
     private async UniTaskVoid StartGameAsync()

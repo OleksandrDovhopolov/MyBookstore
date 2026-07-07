@@ -1429,7 +1429,7 @@ RectTransform:
   m_GameObject: {fileID: 4278119198544669322}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.3791131, y: 1.3791131, z: 1}
+  m_LocalScale: {x: 1.2250867, y: 1.2250867, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 233030161043381667}
@@ -1519,6 +1519,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbc6cd7f63e74814ab00fbc69b14f12b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _panelId: 0
   _duration: 0.25
   _slideDirection: 1
   _slideDistance: 250
@@ -1942,6 +1943,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbc6cd7f63e74814ab00fbc69b14f12b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _panelId: 0
   _duration: 0.25
   _slideDirection: 0
   _slideDistance: 150
@@ -2440,6 +2442,7 @@ MonoBehaviour:
   _cardsPool:
     prefab: {fileID: 7779507061397483736, guid: 1990ba3a70e2dd64985facc6395a9939, type: 3}
     parent: {fileID: 8054685796089972976}
+  _decorInfoWidgetPrefab: {fileID: 852948284527612959, guid: db5fb3dddd439bc40bea3cfdc0e7bf06, type: 3}
   _selectedDecorNameLabel: {fileID: 392358321885616242}
   _selectedDecorImage: {fileID: 113301128809637206}
   _selectedSlotHud: {fileID: 7440268178949888088}

@@ -31,8 +31,8 @@ namespace Game.Decor.UI
             if (_descriptionLabel != null)
                 _descriptionLabel.text = decorInfo.Description ?? string.Empty;
 
-            RenderBonuses(decorInfo);
-            RenderCharacteristics(decorInfo);
+            //RenderBonuses(decorInfo);
+            //RenderCharacteristics(decorInfo);
             return true;
         }
 
