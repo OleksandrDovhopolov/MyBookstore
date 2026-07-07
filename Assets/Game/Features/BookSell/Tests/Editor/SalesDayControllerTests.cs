@@ -174,53 +174,6 @@ namespace Book.Sell.Tests.Editor
             }
         }
 
-        private sealed class OrderedShelfStateService : ISalesShelfStateService
-        {
-            private readonly List<string> _operationLog;
-
-            public OrderedShelfStateService(List<string> operationLog)
-            {
-                _operationLog = operationLog;
-            }
-
-            public List<string> Sold { get; } = new();
-            public IReadOnlyList<string> ShelfBookIds => Array.Empty<string>();
-            public SalesShelfState CurrentState { get; } = new();
-            public bool IsSold(string bookId) => Sold.Contains(bookId);
-            public UniTask SetShelfAsync(IReadOnlyList<string> bookIds, CancellationToken ct) => UniTask.CompletedTask;
-
-            public UniTask MarkSoldAsync(string bookId, CancellationToken ct)
-            {
-                _operationLog.Add($"shelf:{bookId}");
-                if (!string.IsNullOrEmpty(bookId) && !Sold.Contains(bookId))
-                    Sold.Add(bookId);
-                return UniTask.CompletedTask;
-            }
-        }
-
-        private sealed class RecordingSoldBookCommitter : ISoldBookCommitter
-        {
-            public bool ResetCalled { get; private set; }
-            public bool CommitCalled { get; private set; }
-            public bool FlushCalled { get; private set; }
-
-            public void Reset()
-            {
-                ResetCalled = true;
-            }
-
-            public void CommitSoldBook(string bookId, string source)
-            {
-                CommitCalled = true;
-            }
-
-            public UniTask FlushAsync(CancellationToken ct)
-            {
-                FlushCalled = true;
-                return UniTask.CompletedTask;
-            }
-        }
-
         private sealed class RecordingSalesGoldCollector : ISalesGoldCollector
         {
             public bool ResetCalled { get; private set; }
@@ -364,72 +317,6 @@ namespace Book.Sell.Tests.Editor
 
             Assert.AreEqual(0, builder.Build(Array.Empty<string>()).Books.Count);
             Assert.AreEqual(0, builder.Build(null).Books.Count);
-        }
-
-        [Test]
-        public void SoldBookCommitter_EmptyBookId_DoesNothing()
-        {
-            var shelfState = new RecordingShelfStateService();
-            var inventory = new RecordingInventoryService().Seed("b1", InventoryCategories.Book);
-            var committer = new SoldBookCommitter(inventory, shelfState);
-
-            committer.CommitSoldBook(null, "test");
-            committer.CommitSoldBook(string.Empty, "test");
-            committer.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
-
-            CollectionAssert.IsEmpty(shelfState.Sold);
-            CollectionAssert.IsEmpty(inventory.RemoveCalls);
-        }
-
-        [Test]
-        public void SoldBookCommitter_MarksShelfBeforeRemovingInventory()
-        {
-            var operationLog = new List<string>();
-            var shelfState = new OrderedShelfStateService(operationLog);
-            var inventory = new RecordingInventoryService(operationLog).Seed("b1", InventoryCategories.Book);
-            var committer = new SoldBookCommitter(inventory, shelfState);
-
-            committer.CommitSoldBook("b1", "test");
-            committer.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
-
-            CollectionAssert.AreEqual(new[] { "shelf:b1", "inventory:b1" }, operationLog);
-        }
-
-        [Test]
-        public void SoldBookCommitter_MissingInventoryService_LogsError()
-        {
-            var committer = new SoldBookCommitter(null, new RecordingShelfStateService());
-
-            LogAssert.Expect(LogType.Error,
-                "[Sales.Day] cannot remove sold book 'b1' from inventory (test): IInventoryService is not available.");
-
-            committer.CommitSoldBook("b1", "test");
-            committer.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
-        }
-
-        [Test]
-        public void SoldBookCommitter_RemoveReturnsFalse_LogsError()
-        {
-            var inventory = new RecordingInventoryService();
-            var committer = new SoldBookCommitter(inventory, new RecordingShelfStateService());
-
-            LogAssert.Expect(LogType.Error, "[Sales.Day] sold book 'b1' was not present in inventory during test sale.");
-
-            committer.CommitSoldBook("b1", "test");
-            committer.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
-        }
-
-        [Test]
-        public void SoldBookCommitter_Flush_CanBeCalledRepeatedly()
-        {
-            var inventory = new RecordingInventoryService().Seed("b1", InventoryCategories.Book);
-            var committer = new SoldBookCommitter(inventory, new RecordingShelfStateService());
-
-            committer.CommitSoldBook("b1", "test");
-            committer.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
-            committer.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
-
-            Assert.AreEqual(1, inventory.RemoveCalls.Count);
         }
 
         [Test]

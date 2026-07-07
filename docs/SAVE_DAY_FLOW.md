@@ -102,18 +102,15 @@ controller builds a runtime-only sales day from the setup provider:
 The current runtime sales simulation is not serialized. Customers, active
 steps, locks, request progress, timers, and dialogs exist only in memory.
 
-However, sale consequences are persisted during the day:
+Sale consequences are provisional during the day. Active and passive sales
+update the runtime `SalesDayResult` and UI state, but persistent modules are not
+mutated per sold book.
 
-- active and passive sales add gold through `IResourcesService`, writing the
-  `resources` module;
-- sold books are removed from `inventory`;
-- sold books are removed from `book_sell.shelf_state.ShelfBookIds` and added to
-  `SoldBookIds`;
-- sales stats are recorded in memory and flushed through the save hook on the
-  next save cycle.
-
-At actual day completion, `SalesDayController` writes
-`book_sell.last_day_result` before emitting `DayCompleted`.
+At actual day completion, `SalesDayController` calls
+`ISalesDayCommitService.CommitAsync`. `SalesDayCommitService` applies gold,
+inventory removal, shelf state, sales stats, `book_sell.last_day_result`, and
+the completed-day marker under one autosave block, then forces a save before
+`DayCompleted` is emitted.
 
 ### Results / Next Day
 
@@ -136,19 +133,19 @@ If the player exits while the sales day is still running:
 
 1. The runtime day is lost. Customers, current request/dialogue, lock state,
    and timers are not restored.
-2. Any sale side effects that already reached save services may persist:
-   `resources`, `inventory`, `book_sell.shelf_state`, and possibly
-   `sales_stats`.
-3. `book_sell.last_day_result` is not written unless the day completed.
+2. Provisional sale effects are discarded: no sales gold, sold-book inventory
+   removals, sold shelf state, sales stats, or `book_sell.last_day_result` are
+   committed unless the day completed.
+3. The location entry fee is not refunded on a normal exit/quit; it is a sunk
+   visit-attempt cost.
 4. `day_progress` may still say `Sales`, but the next hub startup calls
    `MorningSessionService.StartOrResumeAsync`, which moves an incomplete
    current day back to `Morning`.
 5. The player therefore returns to the hub, not to the middle of the location.
 
-This is close to the ADR-0003 MVP decision that "the day is recreated on
-restart", but the current implementation already persists some economic
-side effects during the day. That creates a partial-progress behavior rather
-than a pure restart.
+This matches the ADR-0003 MVP decision that "the day is recreated on restart":
+the player replays the day from a stable setup instead of resuming runtime
+customer state.
 
 ---
 
@@ -227,19 +224,18 @@ prepared setup.
 - UI can still show live provisional income through the existing sales-gold HUD
   without touching the persistent wallet.
 
-### Implementation Targets
+### Implemented Shape
 
-- `SalesGoldCollector`: collect earned gold in memory; apply to
-  `IResourcesService` only during final commit.
-- `SoldBookCommitter`: collect sold book ids in memory; remove from
-  `IInventoryService` only during final commit.
-- `SalesShelfStateService`: avoid writing sold shelf state during the running
-  day, or separate runtime shelf state from persisted shelf state.
-- `SalesStatsService`: avoid flushing day sales through autosave before final
-  commit. `RecordSold` currently sets `_dirty` and calls `_save.MarkDirty()`,
-  so it must NOT be called per sale during a transactional day — accumulate the
-  sold ids / delta in the day buffer and update stats only at final commit.
-- Final commit: make the full day application idempotent (see Idempotency below).
+- `SalesDayController` accumulates provisional gold and sold book ids in
+  `SalesDayResult`.
+- `SalesDayCommitService` is the only runtime path that applies sales effects
+  to `IResourcesService`, `IInventoryService`, `ISalesShelfStateService`,
+  `ISalesStatsRecorder`, `book_sell.last_day_result`, and `CompletedDays`.
+- `ISalesStatsRecorder.RecordSold` is called only from the final commit path
+  with `SaleContext { LocationId, Day }`, so location/day quest counters do not
+  move during an unfinished day.
+- The full commit is guarded by `CompletedDays` and runs under
+  `ISaveService.BlockAutosave()` followed by one forced save.
 
 ### Entry Fee (Sunk Visit Cost)
 
@@ -332,12 +328,9 @@ only assembles the result and calls commit; the service does the work: take a
 `BlockAutosave` lease, apply resources / inventory / shelf / stats /
 `last_day_result`, then one forced save.
 
-Also rename the buffering seams so intent is clear after defer-commit: today
-`FlushAsync` means "await launched write-through tasks"
-([SalesGoldCollector.cs:36](Assets/Game/Features/BookSell/Services/SalesGoldCollector.cs),
-[SoldBookCommitter.cs:42](Assets/Game/Features/BookSell/Services/SoldBookCommitter.cs)).
-After defer-commit it means "apply the accumulated effects". Prefer
-`Collect...` + `ApplyAsync`, or fold both into one `SalesDayEffectsBuffer`.
+Legacy per-sale write-through helpers were removed after defer-commit shipped.
+The controller now hands the accumulated `SalesDayResult` directly to
+`ISalesDayCommitService`.
 
 ### Idempotency
 

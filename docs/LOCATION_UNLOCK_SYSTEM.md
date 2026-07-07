@@ -213,9 +213,9 @@ public interface ISalesStatsService : ISalesStatsReader  // полный кон�
 
 ### Точка врезки и политика записи
 
-Единственная точка фиксации продажи — `SoldBookCommitter.CommitSoldBook(bookId, source)`
-([SoldBookCommitter.cs:31](../../Assets/Game/Features/BookSell/Services/SoldBookCommitter.cs)). Жанр
-резолвится из `BookConfig` по `bookId`; нормализация ключей через готовый
+Единственная runtime-точка фиксации продажи — `SalesDayCommitService.CommitAsync(...)`
+([SalesDayCommitService.cs](../../Assets/Game/Features/BookSell/Services/SalesDayCommitService.cs)).
+Жанр резолвится из `BookConfig` по `bookId`; нормализация ключей через готовый
 [BookGenreCounts.Normalize](../../Assets/Game/Features/Configs/Models/BookGenreCounts.cs).
 
 **Политика записи — буфер в памяти + batched flush, не save на каждую книгу.** Продаж за день много;

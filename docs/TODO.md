@@ -32,14 +32,6 @@
   - Добавлены reader-getters для условий `soldGenreAtLocation` и `soldGenreInSingleDay`.
   - Покрыто EditMode-тестами и зафиксировано в [adr/0007-quest-system.md](adr/0007-quest-system.md).
 
-- [x] **GAME-5. `LocationVisits` + условия `visitLocation` / `locationIs`.**
-  Что сделано:
-  - Добавлен persisted-счётчик визитов по локациям (`location_visits`, schema v1).
-  - Визит записывается только после успешного входа в локацию.
-  - Текущая локация хранится runtime-only и очищается при возврате в hub.
-  - Добавлены condition-factory `visitLocation` и `locationIs`.
-  - Добавлены DI-регистрация, force-construction save-hook'а и EditMode-тесты.
-
 - [ ] **GAME-6. Runtime `DialogStep` через `CustomerDirector`.**
   Что сделать:
   - Добавить `DialogStep` как middle-step покупателя.
@@ -95,12 +87,6 @@
 ---
 
 ## 🛠️ Инфраструктура
-
-- [x] **INF-3. Audio system.**
-  Что сделано:
-  - Добавлен лёгкий инфраструктурный аудио-сервис на Unity `AudioSource` без FMOD.
-  - Описаны шины music/sfx/ambient, настройки громкости, Addressables-загрузка клипов и DI-интеграция.
-  - Текущая архитектура и future notes зафиксированы в [SERVICES/AUDIO_SYSTEM.md](SERVICES/AUDIO_SYSTEM.md).
 
 - [ ] **INF-4. Localization.** Слой локализации (ключи вместо строк, таблицы переводов, рантайм-смена
   языка). Закладывать заранее — под Steam-релиз на нескольких языках.
