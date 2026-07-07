@@ -15,26 +15,17 @@ namespace Game.UI.ContentWidget
 
         [SerializeField] private RectTransform _container;
         [SerializeField] private RectTransform _contentContainer;
-        [SerializeField] private Button _backdrop;
-        [SerializeField] private Button _closeButton;
         [SerializeField] private float _verticalOffset = 12f;
         [SerializeField] private float _horizontalOffset = 12f;
         [SerializeField] private float _edgePadding = 16f;
         [SerializeField, Range(0f, 0.5f)] private float _verticalZoneRatio = 0.33f;
+        [SerializeField] private float _autoCloseDelaySeconds = 5f;
 
         private readonly Dictionary<Type, MonoBehaviour> _cachedViews = new();
 
         private MonoBehaviour _activeView;
         private CancellationTokenSource _showCts;
         private int _showVersion;
-
-        protected override void Awake()
-        {
-            base.Awake();
-
-            if (_backdrop != null) _backdrop.onClick.AddListener(InvokeCloseEvent);
-            if (_closeButton != null) _closeButton.onClick.AddListener(InvokeCloseEvent);
-        }
 
         public void ShowContentView(ContentWidgetDataBase data, RectTransform anchor)
         {
@@ -43,11 +34,16 @@ namespace Game.UI.ContentWidget
             ShowContentViewAsync(data, anchor, _showCts.Token, ++_showVersion).Forget();
         }
 
+        public void RequestClose()
+        {
+            CancelPendingShow();
+            InvokeCloseEvent();
+        }
+
         public void HideContent()
         {
             CancelPendingShow();
             DeactivateActiveView();
-            SetBackdropVisible(false);
         }
 
         private async UniTaskVoid ShowContentViewAsync(
@@ -58,12 +54,11 @@ namespace Game.UI.ContentWidget
         {
             try
             {
-                SetBackdropVisible(false);
                 DeactivateActiveView();
 
                 if (data == null || anchor == null)
                 {
-                    InvokeCloseEvent();
+                    RequestClose();
                     return;
                 }
 
@@ -71,7 +66,7 @@ namespace Game.UI.ContentWidget
                 if (prefab == null)
                 {
                     Debug.LogWarning($"{Tag} No widget prefab registered for {data.GetType().Name}.");
-                    InvokeCloseEvent();
+                    RequestClose();
                     return;
                 }
 
@@ -79,7 +74,7 @@ namespace Game.UI.ContentWidget
                 if (instance == null || instance is not IContentWidgetView view)
                 {
                     Debug.LogWarning($"{Tag} Widget prefab '{prefab.name}' has no {nameof(IContentWidgetView)}.");
-                    InvokeCloseEvent();
+                    RequestClose();
                     return;
                 }
 
@@ -88,7 +83,7 @@ namespace Game.UI.ContentWidget
 
                 if (!view.Setup(data))
                 {
-                    InvokeCloseEvent();
+                    RequestClose();
                     return;
                 }
 
@@ -98,7 +93,7 @@ namespace Game.UI.ContentWidget
                 if (ct.IsCancellationRequested || version != _showVersion) return;
 
                 Reposition(anchor);
-                SetBackdropVisible(true);
+                StartAutoCloseTimer(ct, version);
             }
             catch (OperationCanceledException)
             {
@@ -106,7 +101,28 @@ namespace Game.UI.ContentWidget
             catch (Exception e)
             {
                 Debug.LogError($"{Tag} Failed to show widget: {e}");
-                InvokeCloseEvent();
+                RequestClose();
+            }
+        }
+
+        private void StartAutoCloseTimer(CancellationToken ct, int version)
+        {
+            if (_autoCloseDelaySeconds <= 0f) return;
+
+            AutoCloseAsync(ct, version).Forget();
+        }
+
+        private async UniTaskVoid AutoCloseAsync(CancellationToken ct, int version)
+        {
+            try
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(_autoCloseDelaySeconds), cancellationToken: ct);
+                if (ct.IsCancellationRequested || version != _showVersion) return;
+
+                RequestClose();
+            }
+            catch (OperationCanceledException)
+            {
             }
         }
 
@@ -229,12 +245,6 @@ namespace Game.UI.ContentWidget
             _activeView = null;
         }
 
-        private void SetBackdropVisible(bool visible)
-        {
-            if (_backdrop != null)
-                _backdrop.gameObject.SetActive(visible);
-        }
-
         private void CancelPendingShow()
         {
             _showVersion++;
@@ -249,15 +259,24 @@ namespace Game.UI.ContentWidget
         {
             CancelPendingShow();
 
-            if (_backdrop != null) _backdrop.onClick.RemoveListener(InvokeCloseEvent);
-            if (_closeButton != null) _closeButton.onClick.RemoveListener(InvokeCloseEvent);
-
             foreach (var view in _cachedViews.Values)
                 if (view != null)
-                    Object.Destroy(view.gameObject);
+                    DestroyCachedView(view);
 
             _cachedViews.Clear();
             base.OnDestroy();
+        }
+
+        private static void DestroyCachedView(MonoBehaviour view)
+        {
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                Object.DestroyImmediate(view.gameObject);
+                return;
+            }
+#endif
+            Object.Destroy(view.gameObject);
         }
     }
 }

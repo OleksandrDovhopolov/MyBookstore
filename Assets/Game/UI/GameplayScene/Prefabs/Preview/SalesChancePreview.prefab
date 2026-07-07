@@ -150,6 +150,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _percentLabel: {fileID: 8159762024717180510}
+  _closeButton: {fileID: 103958958401060224}
 --- !u!1 &8403515571328065561
 GameObject:
   m_ObjectHideFlags: 0
