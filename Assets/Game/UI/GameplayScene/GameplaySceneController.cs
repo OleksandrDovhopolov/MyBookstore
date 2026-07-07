@@ -23,11 +23,10 @@ using VContainer;
 [Window("GameplaySceneController", WindowType.HUD)]
 public class GameplaySceneController : WindowController<GameplaySceneView>, IDataReadyWindow
 {
-    private const int SaleChancePlaceholderPercent = 50;
-
     private IDayProgressService _dayProgress;
     private IMorningSessionService _session;
     private IPreparationSessionService _preparationSession;
+    private ISaleChancePreviewService _saleChancePreview;
     private ILocationUnlockService _locationUnlock;
     private IConfigsService _configs;
     private IUiSpriteProvider _uiSprites;
@@ -54,6 +53,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         IMorningSessionService morningSessionService,
         ISubscriber<GameplaySceneButtonsInteractableChanged> buttonsInteractableSubscriber,
         IPreparationSessionService preparationSession = null,
+        ISaleChancePreviewService saleChancePreview = null,
         ILocationUnlockService locationUnlock = null,
         IConfigsService configs = null,
         IGameFlowService gameFlow = null,
@@ -65,6 +65,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         _dayProgress = dayProgress;
         _session = morningSessionService;
         _preparationSession = preparationSession;
+        _saleChancePreview = saleChancePreview;
         _locationUnlock = locationUnlock;
         _configs = configs;
         _gameFlow = gameFlow;
@@ -208,6 +209,9 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
     {
         if (state?.CurrentPhase == DayPhase.Morning)
             RefreshDayAndGenreCountsAsync().Forget();
+
+        if (state?.CurrentPhase == DayPhase.Results)
+            HideContentWidgetOnDayEnd();
     }
 
     // The genre panel tracks the location boundary (fired before each reveal), so it never flashes in the hub.
@@ -222,9 +226,42 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
     {
         if (anchor == null) return;
 
-        var data = new SaleChanceWidgetData(genre, SaleChancePlaceholderPercent, sprite);
-        var args = new ContentWidgetArgs(data, anchor, this);
-        UIManager.ShowAsync<ContentWidgetController>(args, View.destroyCancellationToken).Forget();
+        ShowSaleChanceWidgetAsync(genre, sprite, anchor).Forget();
+    }
+
+    private async UniTaskVoid ShowSaleChanceWidgetAsync(BookGenre genre, Sprite sprite, RectTransform anchor)
+    {
+        try
+        {
+            if (anchor == null || View == null) return;
+            if (_saleChancePreview == null)
+            {
+                Debug.LogWarning("[GameplaySceneController] ISaleChancePreviewService is not injected.");
+                return;
+            }
+
+            var ct = View.destroyCancellationToken;
+            var percent = await _saleChancePreview.GetPercentAsync(genre, ct);
+            if (View == null || anchor == null || ct.IsCancellationRequested) return;
+
+            var data = new SaleChanceWidgetData(genre, percent, sprite);
+            var args = new ContentWidgetArgs(data, anchor, this);
+            await UIManager.ShowAsync<ContentWidgetController>(args, ct);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[GameplaySceneController] Failed to show sale chance widget: {e}");
+        }
+    }
+
+    private void HideContentWidgetOnDayEnd()
+    {
+        if (UIManager == null || !UIManager.IsWindowShown<ContentWidgetController>()) return;
+
+        UIManager.HideAsync<ContentWidgetController>(forceClose: true, ct: CancellationToken.None).Forget();
     }
     
     private async UniTaskVoid StartGameAsync()

@@ -11,6 +11,7 @@
         "Save",
         "Game.Inventory.API",
         "Game.Preparation",
+        "Game.Decor.API",
         "DayCycle",
         "Game.Resources.API",
         "Game.SalesStats.API"

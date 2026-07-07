@@ -24,6 +24,7 @@ namespace Game.Bootstrap
         public static void RegisterBookSellSharedState(this IContainerBuilder builder)
         {
             builder.Register<ISalesShelfStateService, SalesShelfStateService>(Lifetime.Singleton);
+            builder.Register<IBaseSaleChanceCalculator, EconomyBasedSaleChanceCalculator>(Lifetime.Singleton);
         }
 
         // Passive sales v2 (requested-genre): each customer rolls one genre from its profile.
@@ -59,8 +60,8 @@ namespace Game.Bootstrap
             // catalog if no session exists yet.
             builder.Register<IRecommendationScoringService, RecommendationScoringService>(Lifetime.Singleton);
 
-            // Passive sale chance gate (ADR-0004). IDecorModifierProvider is registered by RegisterDecor.
-            builder.Register<IBaseSaleChanceCalculator, EconomyBasedSaleChanceCalculator>(Lifetime.Singleton);
+            // Passive sale chance gate (ADR-0004) resolves from the global scope so HUD previews and
+            // sales use the same calculator instance.
             // Per-customer desire profile — used by the spawner in both passive models.
             builder.Register<IDemandGenreWeightProvider, SalesTuningDemandGenreWeightProvider>(Lifetime.Singleton);
             builder.Register<ICustomerProfileProvider, LocationDemandProfileProvider>(Lifetime.Singleton);
