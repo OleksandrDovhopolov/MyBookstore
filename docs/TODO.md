@@ -14,7 +14,7 @@
   - Собрать реальную цепочку квестов на боевом конфиге вместо заглушки.
   - Доделать UI журнала (`JournalWindow`).
   - Сверить поведение с решениями из [adr/0007-quest-system.md](adr/0007-quest-system.md).
-  - Награды/эффекты и условия визита оставить в отдельных задачах GAME-3 и GAME-5.
+  - Награды/эффекты оставить в отдельной задаче GAME-3; условия визита закрыты в GAME-5.
 
 - [ ] **GAME-3. Permanent quest effects / world state (= Этап 6).**
   Что сделать:
@@ -24,8 +24,16 @@
   - Сделать применение эффектов идемпотентным при повторной загрузке.
   - Поднять `QuestsSaveKeys.StateSchemaVersion`.
 
+- [x] **GAME-4. Учёт продаж по локации и дню для квестов.**
+  Что сделано:
+  - `Game.SalesStats` расширен счётчиками `SoldByLocationGenre` и `SoldByDayGenre`.
+  - Продажа получает контекст `SaleContext { LocationId, Day }`.
+  - `SalesDayCommitService` записывает продажи в едином commit-чокпоинте.
+  - Добавлены reader-getters для условий `soldGenreAtLocation` и `soldGenreInSingleDay`.
+  - Покрыто EditMode-тестами и зафиксировано в [adr/0007-quest-system.md](adr/0007-quest-system.md).
+
 - [x] **GAME-5. `LocationVisits` + условия `visitLocation` / `locationIs`.**
-  Что сделать:
+  Что сделано:
   - Добавлен persisted-счётчик визитов по локациям (`location_visits`, schema v1).
   - Визит записывается только после успешного входа в локацию.
   - Текущая локация хранится runtime-only и очищается при возврате в hub.
@@ -53,14 +61,15 @@
   - Не показывать overflow вроде `6/3` для уже завершённого квеста; ожидаемый вид — `3/3`.
   - Добавить EditMode-тест на completed/awarded quest, где live condition progress больше цели.
 
-- [ ] **GAME-9. Compact baseline для sales-задач квестов.**
-  Что сделать:
-  - Заменить полный `SalesStatsStateDto` в `SavedQuest.TaskBaseline` на compact DTO по решению [ADR-0008](adr/0008-quest-sales-progress-persistence.md).
-  - Для `soldGenre` хранить baseline только нужного жанра.
-  - Для `soldGenreAtLocation` хранить baseline только пары `(locationId, genre)`.
-  - Для `soldGenreInSingleDay` хранить только данные, нужные для отсечения продаж до активации задачи: день активации и count нужного жанра на момент активации.
-  - Сохранить текущую pull-based модель conditions/scoped reader; event-driven progress оставить будущим направлением.
-  - Добавить миграцию/совместимость со старым save, где baseline ещё полный `SalesStatsStateDto`, и EditMode-тесты на reload.
+- [x] **GAME-9. Compact baseline для sales-задач квестов.**
+  Что сделано:
+  - Полный per-task `SalesStatsStateDto` заменён на compact `SalesStatsBaselineDto` по решению [ADR-0008](adr/0008-quest-sales-progress-persistence.md).
+  - Для `soldGenre` хранится baseline только нужного жанра.
+  - Для `soldGenreAtLocation` хранится baseline только пары `(locationId, genre)`.
+  - Для `soldGenreInSingleDay` хранится день активации и count нужного жанра на момент активации.
+  - Сохранена pull-based модель conditions/scoped reader; event-driven progress оставлен будущим направлением.
+  - Quest-save поднят до v4: `Tasks` сохраняются читаемым списком `{ Id, State, SalesBaseline }`, enum-ы пишутся строками.
+  - Legacy full-baseline compatibility удалена: проект в активной разработке, старые сейвы сбрасываются.
 
 - [~] **GAME-10. Туториал — завершить оставшееся.** Движок (Layer 2) и Day 1 v1 реализованы; спека и
   статус — [INPROGRESS/TUTORIAL_SYSTEM.md](INPROGRESS/TUTORIAL_SYSTEM.md) (§6 роадмап, §6.1 Day 1 v1).
@@ -86,6 +95,12 @@
 ---
 
 ## 🛠️ Инфраструктура
+
+- [x] **INF-3. Audio system.**
+  Что сделано:
+  - Добавлен лёгкий инфраструктурный аудио-сервис на Unity `AudioSource` без FMOD.
+  - Описаны шины music/sfx/ambient, настройки громкости, Addressables-загрузка клипов и DI-интеграция.
+  - Текущая архитектура и future notes зафиксированы в [SERVICES/AUDIO_SYSTEM.md](SERVICES/AUDIO_SYSTEM.md).
 
 - [ ] **INF-4. Localization.** Слой локализации (ключи вместо строк, таблицы переводов, рантайм-смена
   языка). Закладывать заранее — под Steam-релиз на нескольких языках.

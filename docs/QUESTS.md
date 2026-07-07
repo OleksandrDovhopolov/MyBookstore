@@ -1,24 +1,23 @@
 # Quests
 
-Спека будущей фичи квестов для MyBookstore. Основана на разборе продовой quest-системы из `heroes`: цепочки персонажей, продажи книг нужных жанров/тегов, декор как условие, исследование локаций и постоянные последствия в мире.
+Спека фичи квестов для MyBookstore. Основана на разборе продовой quest-системы из `heroes`: цепочки персонажей, продажи книг нужных жанров/тегов, декор как условие, исследование локаций и постоянные последствия в мире.
 
 Целевое имя новой runtime-сборки: `Game.Quest` (в едином стиле с `Game.Inventory`, `Game.Decor`, `Game.SalesStats`). Старый placeholder `Assets/Game/Features/Quest/Quest.asmdef` (`name: "Quest"`, пустой) **удалён**.
 
-> **Статус (2026-06-29): MVP-ядро реализовано и поставлено на паузу.**
-> Готово: GAME-4 (продажи по локации/дню), сборки `Game.Quest`/`.API`/тесты, API+enum+конфиги, условия
+> **Статус (2026-07-07): MVP-ядро реализовано и поставлено на паузу.**
+> Готово: GAME-4 (продажи по локации/дню), GAME-5 (`visitLocation`/`locationIs`), GAME-9 (compact baseline + readable quest save v4), сборки `Game.Quest`/`.API`/тесты, API+enum+конфиги, условия
 > `decorEquipped`/`haveItem`/`weatherIs` (+продажные `soldGenre*`), `QuestsService` (lifecycle/цепочки/auto-award),
 > save (Этап 5, Awarded/Failed не переигрываются), baseline «после старта задачи» (Этап 4b).
-> В **следующих итерациях**: награды + permanent effects (GAME-3/Этап 6), визиты `visitLocation`/`locationIs`
-> (GAME-5), реальная цепочка-слайс `quests.json` (Этап 7), UI журнала/HUD, персонажи.
+> В **следующих итерациях**: награды + permanent effects (GAME-3/Этап 6), реальная цепочка-слайс `quests.json` (Этап 7), UI журнала/HUD, персонажи.
 > Принятые решения зафиксированы в [ADR-0007](adr/0007-quest-system.md); уточнение по сохранению sales-прогресса — в [ADR-0008](adr/0008-quest-sales-progress-persistence.md).
 
 ---
 
-## 0. Prerequisites (блокеры до старта реализации)
+## 0. Prerequisites (исторический статус)
 
-Перед `GAME-2` нужно закрыть зависимости, которых в коде сейчас нет:
+Перед стартом `GAME-2` были проверены зависимости:
 
-1. **Продажи по локациям и по дням (БЛОКЕР).** Текущий `Game.SalesStats` (`ISalesStatsReader`) хранит только глобальный кумулятив: `GetSold(BookGenre)` и `TotalSold` — без разреза по локации и без дневного счётчика. Условия вида «продать 15 `Fantasy` **на `FarBeach`**» и «продать 15 за **один день**» невозможны, пока `SalesStats` не научится считать продажи по `(локация)` и `(день)`. Это нужно сделать **до** реализации квестов. См. TODO `GAME-4`.
+1. **Продажи по локациям и по дням — готово (GAME-4).** `Game.SalesStats` считает продажи по `(locationId, genre)` и `(day, genre)`, поэтому условия «продать 15 `Fantasy` **на `FarBeach`**» и «продать 15 за **один день**» доступны.
 2. **Сезоны — вне MVP.** Сезонной системы (`Season`/`Spring`/`Summer`/`Autumn`/`Winter`) в проекте нет, и в ближайший MVP она **не входит**. Поэтому квесты MVP **не имеют зависимости на сезон**: условие `SeasonIs` пока не реализуется, а «сезонные пики» заменяются доступными триггерами (день/погода/прогресс продаж). Когда сезоны появятся, `SeasonIs` добавляется как ещё один condition-factory без изменения модели квестов.
 3. **Погода — уже есть.** Погода доступна per-day как `MorningDayContext.WeatherId` / `ActiveModifierIds` (`"weather_clear"` и т.п.), так что `WeatherIs` реализуем сразу.
 
@@ -152,8 +151,8 @@ QuestWorldEffectConfig { string Type; JObject Params; }                         
 | `decorEquipped` | установить `decor_donation_box` / `decor_fireplace` | **готово** (Этап 3) — `Game.Decor` (`IDecorPlacementService`) |
 | `haveItem` | найден квест-предмет | **готово** (Этап 3) — `Game.Inventory` (`Has/GetCount`) |
 | `weatherIs` | дождь, шторм, снег, солнце | **готово** (Этап 3) — `Game.DayCycle` (`ICurrentDayWeatherProvider` поверх `IMorningContextResolver`) |
-| `visitLocation` | посетить `location_01` 3 раза | **GAME-5** — нужна persisted-подсистема визитов |
-| `locationIs` | находиться на `location_01` | **GAME-5** — нужен current-location seam |
+| `visitLocation` | посетить `location_01` 3 раза | **готово** (GAME-5) — `Game.LocationVisits` |
+| `locationIs` | находиться на `location_01` | **готово** (GAME-5) — runtime current-location seam |
 | `decorEquippedForDays` | держать `decor_fireplace` 3 игровых дня | позже (нужен дневной таймер декора) |
 | `collectResourceBySales` | собрать 100 монет через копилку | позже (механика копилки) |
 | `clickWorldObject` | интерактивный объект мира | позже |
@@ -275,11 +274,11 @@ Pending -> Active -> Completed
 2. ✅ `QuestState`, `QuestTaskState`, `QuestType` (+ extensions).
 3. ✅ `QuestsService` с конфигами, задачами и цепочками; условия — через `IConditionParser`.
 4. ✅ Save DTO + hook (`SavedQuests`, `SaveBackedQuestsRepository`): Active/RTA + терминалы; auto-award; idempotent restore.
-5. ✅ Condition-factory: `soldGenre` / `soldGenreAtLocation` / `soldGenreInSingleDay` / `weatherIs` / `decorEquipped` / `haveItem`. ⏳ `visitLocation` → **GAME-5**.
-6. ✅ baseline scoped-reader (прогресс «после старта задачи») — **Этап 4b** (`ISalesStatsBaselineSource` + scoped re-parse задачи + persist baseline).
+5. ✅ Condition-factory: `soldGenre` / `soldGenreAtLocation` / `soldGenreInSingleDay` / `weatherIs` / `decorEquipped` / `haveItem` / `visitLocation` / `locationIs`.
+6. ✅ baseline scoped-reader (прогресс «после старта задачи») — **Этап 4b** (`ISalesStatsBaselineSource` + scoped re-parse задачи + compact persisted baseline).
 7. ⏳ Награды и permanent effects (грант + `WorldEffectConfig`-хендлеры, идемпотентность) — **Этап 6 / GAME-3**.
-8. ⏳ Реальная цепочка `An Empire of Sand` (`quests.json`) + end-to-end тесты — **Этап 7** (ждёт `visitLocation` из GAME-5).
-9. ⏳ Условия визита `visitLocation`/`locationIs` — **GAME-5** (persisted-подсистема визитов).
+8. ⏳ Реальная цепочка `An Empire of Sand` (`quests.json`) + end-to-end тесты — **Этап 7**.
+9. ✅ Условия визита `visitLocation`/`locationIs` — **GAME-5** (persisted-подсистема визитов).
 
 ---
 
@@ -343,7 +342,7 @@ Pending -> Active -> Completed
 - **A. Scoped reader.** Квест при активации фиксирует baseline и передаёт лист-условию `ISalesStatsReader`-обёртку, которая вычитает baseline. Один и тот же `soldGenre` работает и для unlock-условий (lifetime), и для квестов (scoped) — отличается лишь внедрённый reader.
 - **B. Отдельный тип условия** `soldGenreSinceTaskStarted`, который явно берёт baseline из состояния задачи.
 
-Предпочтителен **A** (не плодит почти-дубликаты условий). Baseline кладётся в save задачи (рядом с `QuestTaskState`) и восстанавливается при загрузке — иначе прогресс «поедет» после перезапуска. Целевое уточнение: baseline должен быть **compact DTO**, а не полным снимком `SalesStatsStateDto`; детали и критерии будущего перехода к event/observer-driven модели зафиксированы в [ADR-0008](adr/0008-quest-sales-progress-persistence.md).
+Предпочтителен **A** (не плодит почти-дубликаты условий). Baseline кладётся в save конкретной задачи (`SavedQuestTask.SalesBaseline`) и восстанавливается при загрузке — иначе прогресс «поедет» после перезапуска. Текущий формат: **compact DTO**, а не полный снимок `SalesStatsStateDto`; детали и критерии будущего перехода к event/observer-driven модели зафиксированы в [ADR-0008](adr/0008-quest-sales-progress-persistence.md).
 
 ### 11.3 Разделение ответственности (итоговая граница)
 

@@ -68,11 +68,11 @@ fail-closed (битый JSON → never-met), стабильные `reasonKey`. `
 
 ### 8. Baseline «после старта задачи» (Этап 4b)
 Продажные условия в `CompletionConditions` считают прогресс **от активации задачи**, а не lifetime. Механика:
-`SalesStatsService` реализует `ISalesStatsBaselineSource` (`CaptureBaseline()` → `SalesStatsStateDto`;
+`SalesStatsService` реализует `ISalesStatsBaselineSource` (`CaptureBaseline(plan)` → compact `SalesStatsBaselineDto`;
 `CreateScopedReader(baseline)` → `current − baseline`, в т.ч. best-day по дням). При активации продажной задачи
 `QuestsService` снимает baseline **один раз**, пересобирает её completion через scoped-парсер (глобальные factory +
-продажные с baselined reader) и хранит snapshot в `SavedQuest.TaskBaseline` (save schema v2, миграция v1→v2 с
-warning). **Авто** для всех продажных условий (вкл. single-day); без флагов. Activation/Fail остаются lifetime.
+продажные с baselined reader) и хранит compact snapshot в `SavedQuestTask.SalesBaseline` (save schema v4).
+**Авто** для всех продажных условий (вкл. single-day); без флагов. Activation/Fail остаются lifetime.
 
 ### 9. Редкость книг → теги
 RPG-редкости нет. «Особенная» книга = редкая комбинация `Genre`+`Tags`(+`Mood`) в `BookConfig`; `RarityWeight` —
@@ -90,8 +90,8 @@ RPG-редкости нет. «Особенная» книга = редкая к
 ### Negative / costs
 - `Game.Quest` (runtime-оркестратор) ссылается на runtime `Game.SalesStats` и `Game.Conditions` (а не только `.API`) —
   ради сборки scoped-парсера и продажных factory. Осознанное исключение из «фичи зависят только на `.API`».
-- baseline хранит **полный** `SalesStatsStateDto` на каждую активную продажную задачу (MVP-cost; later — компактный baseline).
-- single-day scoped — только глобально по жанру (нет day×location в DTO).
+- compact baseline требует capture plan по sales-условиям задачи.
+- single-day scoped — только глобально по жанру (нет day×location в compact DTO).
 - `QuestsService` — крупный класс (lifecycle + re-eval + chains + save + baseline).
 
 ### Что НЕ выбрано
@@ -106,13 +106,12 @@ RPG-редкости нет. «Особенная» книга = редкая к
 
 ## Status / scope
 
-**Реализовано и поставлено на паузу (MVP-ядро):** GAME-4, сборки, API+конфиги, условия `decorEquipped`/`haveItem`/
-`weatherIs`, `QuestsService` (lifecycle/цепочки/auto-award), save (Этап 5), baseline (Этап 4b). Покрыто EditMode-тестами.
+**Реализовано и поставлено на паузу (MVP-ядро):** GAME-4, GAME-5, GAME-9, сборки, API+конфиги, условия `decorEquipped`/`haveItem`/
+`weatherIs`/`visitLocation`/`locationIs`, `QuestsService` (lifecycle/цепочки/auto-award), save (Этап 5 + readable v4), compact baseline (Этап 4b). Покрыто EditMode-тестами.
 
 **Следующие итерации (вне этого ADR):**
 - **GAME-3 / Этап 6** — грант наград (`IRewardGrantService`) + permanent effects (`QuestWorldEffectConfig`-хендлеры),
   идемпотентность (Awarded += timestamp + appliedEffects, schema bump).
-- **GAME-5** — persisted-подсистема визитов → условия `visitLocation` / `locationIs`.
 - **Этап 7** — реальная цепочка-слайс `quests.json` («An Empire of Sand») + end-to-end тесты.
 - UI журнала/HUD (Journal: Stamps/Characters/Equipped/Calendar), фича персонажей, Investigation Board.
 
