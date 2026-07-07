@@ -21,6 +21,8 @@ namespace Game.UI
 
         private readonly SemaphoreSlim _gate = new(1, 1);
 
+        public event Action<IWindowController> WindowShown;
+
         public UIManager(
             IUICanvasRoot canvasRoot,
             IWindowFactory factory,
@@ -90,6 +92,11 @@ namespace Game.UI
                 {
                     await controller.ShowAsync(ct);
                 }
+
+                // Fired while the gate is still held: subscribers that call back into Hide/Show
+                // must be fire-and-forget (see IUIManager.WindowShown), otherwise they deadlock
+                // on _gate.WaitAsync.
+                WindowShown?.Invoke(controller);
 
                 return controller;
             }
