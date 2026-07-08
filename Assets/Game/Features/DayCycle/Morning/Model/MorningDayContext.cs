@@ -16,18 +16,11 @@ namespace Game.DayCycle.Morning.Model
         public string Title { get; set; }
         public string WeatherId { get; set; }
         public string EventId { get; set; }
-        public string HintText { get; set; }
 
         public IReadOnlyList<string> DemandGenres { get; set; } = Array.Empty<string>();
         public IReadOnlyList<string> DemandTags { get; set; } = Array.Empty<string>();
         public IReadOnlyList<string> TargetLocationIds { get; set; } = Array.Empty<string>();
-
-        /// <summary>
-        /// Активные модификаторы спроса дня (например, "weather_clear", "event_exam_week").
-        /// Производятся резолвером из погоды/события и читаются Подготовкой/Продажей.
-        /// </summary>
-        public IReadOnlyList<string> ActiveModifierIds { get; set; } = Array.Empty<string>();
-
+        
         /// <summary>true, если контекст собран из fallback (нет подходящего DayConfig).</summary>
         public bool IsFallback { get; set; }
     }

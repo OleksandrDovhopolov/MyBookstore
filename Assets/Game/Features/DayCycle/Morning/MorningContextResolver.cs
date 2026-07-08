@@ -77,7 +77,6 @@ namespace Game.DayCycle.Morning
                 DemandGenres = config.DemandGenres ?? Array.Empty<string>(),
                 DemandTags = config.DemandTags ?? Array.Empty<string>(),
                 TargetLocationIds = config.TargetLocationIds ?? Array.Empty<string>(),
-                ActiveModifierIds = BuildModifierIds(config.WeatherId, config.EventId),
                 IsFallback = false
             };
         }
@@ -94,23 +93,8 @@ namespace Game.DayCycle.Morning
                 DemandGenres = Array.Empty<string>(),
                 DemandTags = Array.Empty<string>(),
                 TargetLocationIds = Array.Empty<string>(),
-                ActiveModifierIds = Array.Empty<string>(),
                 IsFallback = true
             };
-        }
-
-        /// <summary>
-        /// Активные модификаторы дня = погода + событие (непустые), в формате,
-        /// который ждут Подготовка/Продажа: "weather_&lt;id&gt;", "event_&lt;id&gt;".
-        /// </summary>
-        private static IReadOnlyList<string> BuildModifierIds(string weatherId, string eventId)
-        {
-            var modifiers = new List<string>(2);
-            if (!string.IsNullOrWhiteSpace(weatherId))
-                modifiers.Add($"weather_{weatherId}");
-            if (!string.IsNullOrWhiteSpace(eventId))
-                modifiers.Add($"event_{eventId}");
-            return modifiers;
         }
     }
 }

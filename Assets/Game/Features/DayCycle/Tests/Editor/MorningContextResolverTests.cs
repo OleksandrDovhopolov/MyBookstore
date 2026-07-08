@@ -44,22 +44,6 @@ namespace Game.DayCycle.Tests.Editor
         }
 
         [Test]
-        public void Resolve_MatchingDay_BuildsWeatherAndEventModifiers()
-        {
-            var ctx = ResolverWith(Day1()).Resolve(1);
-            CollectionAssert.AreEqual(new[] { "weather_clear", "event_exam_week" }, ctx.ActiveModifierIds);
-        }
-
-        [Test]
-        public void Resolve_EmptyEvent_OmitsEventModifier()
-        {
-            var day = Day1();
-            day.EventId = "";
-            var ctx = ResolverWith(day).Resolve(1);
-            CollectionAssert.AreEqual(new[] { "weather_clear" }, ctx.ActiveModifierIds);
-        }
-
-        [Test]
         public void Resolve_NoConfigsAtAll_UsesDeterministicFallback()
         {
             var ctx = ResolverWith().Resolve(1);
@@ -67,7 +51,6 @@ namespace Game.DayCycle.Tests.Editor
             Assert.IsTrue(ctx.IsFallback);
             Assert.AreEqual(1, ctx.Day);
             Assert.AreEqual(MorningFallback.Title, ctx.Title);
-            Assert.IsEmpty(ctx.ActiveModifierIds);
             Assert.IsEmpty(ctx.DemandGenres);
         }
 
@@ -95,7 +78,6 @@ namespace Game.DayCycle.Tests.Editor
 
             Assert.AreEqual(first.DayId, second.DayId);
             Assert.AreEqual(first.Title, second.Title);
-            CollectionAssert.AreEqual(first.ActiveModifierIds.ToArray(), second.ActiveModifierIds.ToArray());
         }
     }
 }

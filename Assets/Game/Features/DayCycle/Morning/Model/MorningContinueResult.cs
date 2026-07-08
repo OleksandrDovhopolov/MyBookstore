@@ -13,8 +13,6 @@ namespace Game.DayCycle.Morning.Model
         public string DayId { get; set; }
         public string EventId { get; set; }
         public string WeatherId { get; set; }
-
-        public IReadOnlyList<string> ActiveModifierIds { get; set; } = Array.Empty<string>();
         public IReadOnlyList<string> DemandGenres { get; set; } = Array.Empty<string>();
         public IReadOnlyList<string> DemandTags { get; set; } = Array.Empty<string>();
         public IReadOnlyList<string> TargetLocationIds { get; set; } = Array.Empty<string>();

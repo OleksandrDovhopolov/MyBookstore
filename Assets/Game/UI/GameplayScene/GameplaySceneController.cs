@@ -420,7 +420,6 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
             return false;
 
         Debug.Log($"[GameplaySceneController] -> Preparation. Day {result.Day}, " +
-                  $"modifiers=[{string.Join(",", result.ActiveModifierIds)}], " +
                   $"locations=[{string.Join(",", result.TargetLocationIds)}].");
 
         return true;
