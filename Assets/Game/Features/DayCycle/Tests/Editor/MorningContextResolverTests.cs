@@ -28,7 +28,6 @@ namespace Game.DayCycle.Tests.Editor
         {
             var ctx = ResolverWith(Day1()).Resolve(1);
 
-            Assert.IsFalse(ctx.IsFallback);
             Assert.AreEqual(1, ctx.Day);
             Assert.AreEqual("day_001", ctx.DayId);
             Assert.AreEqual("Первый день у парка", ctx.Title);
@@ -41,7 +40,6 @@ namespace Game.DayCycle.Tests.Editor
         {
             var ctx = ResolverWith().Resolve(1);
 
-            Assert.IsTrue(ctx.IsFallback);
             Assert.AreEqual(1, ctx.Day);
             Assert.AreEqual(MorningFallback.Title, ctx.Title);
         }
@@ -56,7 +54,6 @@ namespace Game.DayCycle.Tests.Editor
 
             var ctx = ResolverWith(Day1(), day2).Resolve(99);
 
-            Assert.IsFalse(ctx.IsFallback);
             Assert.AreEqual("day_002", ctx.DayId);
             Assert.AreEqual(99, ctx.Day, "Day отражает запрошенный номер, контент берётся от последнего настроенного дня.");
         }
