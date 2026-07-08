@@ -26,11 +26,15 @@ namespace Book.Sell.Services
 
         public SalesSessionSetup BuildForDay(int day)
         {
+            // Scheduled quest dialogues for the day (GAME-6 §Этап 5) — same for every branch below.
+            var scheduledDialogueIds = DayConfigLookup.ByIndex(_configs, day)?.ScheduledDialogueIds;
+
             var locations = _configs.GetAll<LocationConfig>();
             if (locations.Count == 0)
             {
                 Debug.LogWarning($"{LogPrefix} LocationConfig is empty. Returning an empty setup.");
-                return new SalesSessionSetup(day, locationId: null, shelfBookIds: Array.Empty<string>());
+                return new SalesSessionSetup(day, locationId: null, shelfBookIds: Array.Empty<string>(),
+                    scheduledDialogueIds: scheduledDialogueIds);
             }
 
             var location = locations[0];
@@ -39,12 +43,13 @@ namespace Book.Sell.Services
             if (books.Count == 0)
             {
                 Debug.LogWarning($"{LogPrefix} BookConfig is empty. Shelf will be empty.");
-                return new SalesSessionSetup(day, location.Id, Array.Empty<string>());
+                return new SalesSessionSetup(day, location.Id, Array.Empty<string>(),
+                    scheduledDialogueIds: scheduledDialogueIds);
             }
 
             var shelfIds = books.Take(MaxShelfBooks).Select(b => b.Id).ToList();
             Debug.Log($"{LogPrefix} Day {day}: location={location.Id}, shelf size={shelfIds.Count}.");
-            return new SalesSessionSetup(day, location.Id, shelfIds);
+            return new SalesSessionSetup(day, location.Id, shelfIds, scheduledDialogueIds: scheduledDialogueIds);
         }
     }
 }

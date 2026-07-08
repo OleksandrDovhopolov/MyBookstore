@@ -48,24 +48,28 @@ namespace Game.Preparation.Services
 
             var decor = _decorPlacement.GetActiveDecorIds()?.ToArray() ?? Array.Empty<string>();
 
+            // Scheduled quest dialogues for the day (GAME-6 §Этап 5) — flow into every branch below.
+            var scheduledDialogueIds = DayConfigLookup.ByIndex(_configs, day)?.ScheduledDialogueIds;
+
             if (state == null || state.Day != day || state.SelectedBookIds == null || !state.Confirmed)
             {
                 Debug.LogWarning($"{LogPrefix} нет подтверждённой preparation.session для day={day} — fallback на каталог.");
-                return BuildFallback(day, decor);
+                return BuildFallback(day, decor, scheduledDialogueIds);
             }
 
             var shelf = state.SelectedBookIds.ToArray();
             Debug.Log($"{LogPrefix} day={day} location={state.LocationId} shelf={shelf.Length} decor={decor.Length} (preparation).");
-            return new SalesSessionSetup(day, state.LocationId, shelf, decor);
+            return new SalesSessionSetup(day, state.LocationId, shelf, decor, scheduledDialogueIds);
         }
 
-        private SalesSessionSetup BuildFallback(int day, string[] decor)
+        private SalesSessionSetup BuildFallback(int day, string[] decor, IReadOnlyList<string> scheduledDialogueIds)
         {
             var locations = _configs.GetAll<LocationConfig>();
             if (locations.Count == 0)
             {
                 Debug.LogWarning($"{LogPrefix} LocationConfig is empty — empty setup.");
-                return new SalesSessionSetup(day, locationId: null, shelfBookIds: Array.Empty<string>(), decorIds: decor);
+                return new SalesSessionSetup(day, locationId: null, shelfBookIds: Array.Empty<string>(),
+                    decorIds: decor, scheduledDialogueIds: scheduledDialogueIds);
             }
 
             var location = locations[0];
@@ -73,7 +77,7 @@ namespace Game.Preparation.Services
             if (books.Count == 0)
             {
                 Debug.LogWarning($"{LogPrefix} BookConfig is empty — empty shelf.");
-                return new SalesSessionSetup(day, location.Id, Array.Empty<string>(), decor);
+                return new SalesSessionSetup(day, location.Id, Array.Empty<string>(), decor, scheduledDialogueIds);
             }
 
             var shelf = new List<string>(FallbackMaxShelfBooks);
@@ -81,7 +85,7 @@ namespace Game.Preparation.Services
                 shelf.Add(books[i].Id);
 
             Debug.Log($"{LogPrefix} day={day} location={location.Id} shelf={shelf.Count} decor={decor.Length} (fallback).");
-            return new SalesSessionSetup(day, location.Id, shelf, decor);
+            return new SalesSessionSetup(day, location.Id, shelf, decor, scheduledDialogueIds);
         }
     }
 }

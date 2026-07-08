@@ -13,6 +13,7 @@
         "Game.Resources.API",
         "Game.SalesStats.API",
         "Book.Sell",
+        "Book.Sell.API",
         "Game.Inventory",
         "Game.Decor",
         "Game.Shop.UI",

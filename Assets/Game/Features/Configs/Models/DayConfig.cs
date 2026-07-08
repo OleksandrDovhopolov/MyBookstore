@@ -27,5 +27,10 @@ namespace Game.Configs.Models
 
         /// <summary>Локации, на которые сегодня «намекает» утро (выгоднее по спросу).</summary>
         public string[] TargetLocationIds { get; set; }
+
+        /// <summary>Диалоги квест-персонажей, запланированные на этот день (GAME-6 §Этап 5). Спавнер-декоратор
+        /// (<c>QuestSchedulingCustomerSpawner</c>) добавляет по квест-персонажу на каждый id — он приходит
+        /// первым и заводит беседу.</summary>
+        public string[] ScheduledDialogueIds { get; set; }
     }
 }

@@ -4,6 +4,7 @@ using Book.Sell.Services;
 using Book.Sell.Services.Director;
 using Book.Sell.UI;
 using Book.Sell.UI.Customer;
+using Game.Configs;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -85,8 +86,16 @@ namespace Game.Bootstrap
             //builder.Register<ICustomerSpawner, FifteenCustomersSinglePassiveAttemptSpawner>(Lifetime.Singleton); //TEST was created to test zero books selected
             //builder.Register<ICustomerSpawner, ActiveRequestsOnlyCustomerSpawner>(Lifetime.Singleton); //TEST 3-5 active-request-only customers (1 request each)
             //builder.Register<ICustomerSpawner, OneToThreePassiveAttemptsCustomerSpawner>(Lifetime.Singleton); //TEST 1-N passive purchases
-            builder.Register<ICustomerSpawner, TenCustomersThreeActiveAfterPassiveSpawner>(Lifetime.Singleton); //TEST 10 customers, 1-2 passive each; first 3 also active after passive
             //builder.Register<ICustomerSpawner, TenCustomersThreeActiveBetweenPassivesSpawner>(Lifetime.Singleton); //TEST 10 customers, 1-2 passive each; first 3: passive -> active -> 1 passive
+
+            // Base composition (concrete type) + the quest-scheduling decorator as ICustomerSpawner (GAME-6
+            // §Этап 5, B4). The decorator prepends a quest character per DayConfig.ScheduledDialogueIds entry.
+            // NOTE: register the inner concretely — resolving ICustomerSpawner inside the ICustomerSpawner
+            // factory would be a self-reference. Swap the inner type here to change base composition.
+            builder.Register<TenCustomersThreeActiveAfterPassiveSpawner>(Lifetime.Singleton); //TEST 10 customers, 1-2 passive each; first 3 also active after passive
+            builder.Register<ICustomerSpawner>(r => new QuestSchedulingCustomerSpawner(
+                r.Resolve<TenCustomersThreeActiveAfterPassiveSpawner>(), r.Resolve<IConfigsService>()),
+                Lifetime.Singleton);
             
             
             // Tuning comes from a designer-editable SO when assigned; otherwise code defaults.
@@ -118,6 +127,11 @@ namespace Game.Bootstrap
             builder.RegisterEntryPoint<RecommendationMinigamePresenter>(Lifetime.Singleton)
                 .AsSelf()
                 .As<IRecommendationMinigamePresenter>();
+
+            // Opens DialogWindow when a scripted dialogue starts (GAME-6 §Этап 5). Same wiring as the
+            // minigame presenter: IUIManager from the parent scope, controller via WindowArgs. The window
+            // owns completion (CompleteDialogue on end); the presenter is the safety-net if opening fails.
+            builder.RegisterEntryPoint<DialoguePresenter>(Lifetime.Singleton);
 
             // Debug screen. Registered only if present in the scene, so the project runs before the UI
             // is wired. Same pattern as MorningScreenView.

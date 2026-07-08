@@ -9,7 +9,8 @@
     "hintText": "Студенты чаще ищут научпоп и короткие книги.",
     "demandGenres": ["Fact", "Classic"],
     "demandTags": ["short", "study"],
-    "targetLocationIds": ["loc_downtown"]
+    "targetLocationIds": ["loc_downtown"],
+    "scheduledDialogueIds": ["dlg_intro_tilde"]
   },
   {
     "id": "day_002",
