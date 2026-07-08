@@ -23,9 +23,6 @@ namespace Game.Configs.Models
         /// <summary>Теги повышенного спроса дня.</summary>
         public string[] DemandTags { get; set; }
 
-        /// <summary>Локации, на которые сегодня «намекает» утро (выгоднее по спросу).</summary>
-        public string[] TargetLocationIds { get; set; }
-
         /// <summary>Диалоги квест-персонажей, запланированные на этот день (GAME-6 §Этап 5). Спавнер-декоратор
         /// (<c>QuestSchedulingCustomerSpawner</c>) добавляет по квест-персонажу на каждый id — он приходит
         /// первым и заводит беседу.</summary>

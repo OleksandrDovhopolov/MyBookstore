@@ -19,7 +19,6 @@ namespace Game.DayCycle.Tests.Editor
                 {
                     Id = "day_001", DayIndex = 1, Title = "День 1",
                     WeatherId = "clear", EventId = "exam_week",
-                    DemandGenres = new[] { "science" }, TargetLocationIds = new[] { "loc_downtown" }
                 },
                 new DayConfig
                 {

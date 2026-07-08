@@ -17,7 +17,6 @@ namespace Game.DayCycle.Tests.Editor
             EventId = "exam_week",
             DemandGenres = new[] { "science", "classic" },
             DemandTags = new[] { "short" },
-            TargetLocationIds = new[] { "loc_downtown" }
         };
 
         private static MorningContextResolver ResolverWith(params DayConfig[] days)

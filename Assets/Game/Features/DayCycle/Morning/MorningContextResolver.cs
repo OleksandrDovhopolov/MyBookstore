@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Morning.Model;
-using Game.LocationUnlock.API;
 
 namespace Game.DayCycle.Morning
 {
@@ -11,36 +9,17 @@ namespace Game.DayCycle.Morning
     public sealed class MorningContextResolver : IMorningContextResolver
     {
         private readonly IConfigsService _configs;
-        private readonly ILocationUnlockService _locationUnlock;
 
-        public MorningContextResolver(IConfigsService configs, ILocationUnlockService locationUnlock = null)
+        public MorningContextResolver(IConfigsService configs)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
-            _locationUnlock = locationUnlock;   // optional: when absent, no unlock filtering is applied
         }
 
         public MorningDayContext Resolve(int dayIndex)
         {
             var config = FindByDayIndex(dayIndex);
             var context = config != null ? FromConfig(dayIndex, config) : Fallback(dayIndex);
-            context.TargetLocationIds = FilterUnlocked(context.TargetLocationIds);
             return context;
-        }
-
-        // Morning must not advertise a location the player has not unlocked yet. With no unlock
-        // service wired (e.g. tests) the list passes through unchanged.
-        private IReadOnlyList<string> FilterUnlocked(IReadOnlyList<string> targetLocationIds)
-        {
-            if (_locationUnlock == null || targetLocationIds == null || targetLocationIds.Count == 0)
-                return targetLocationIds;
-
-            var unlocked = new List<string>(targetLocationIds.Count);
-            for (var i = 0; i < targetLocationIds.Count; i++)
-            {
-                if (_locationUnlock.IsUnlocked(targetLocationIds[i]))
-                    unlocked.Add(targetLocationIds[i]);
-            }
-            return unlocked;
         }
 
         private DayConfig FindByDayIndex(int dayIndex)
@@ -60,8 +39,6 @@ namespace Game.DayCycle.Morning
                     lastByIndex = day;
             }
 
-            // Нет точного совпадения — переиспользуем последний настроенный день,
-            // чтобы дни за пределами контента не валились в пустой fallback.
             return match ?? lastByIndex;
         }
 
@@ -76,7 +53,6 @@ namespace Game.DayCycle.Morning
                 EventId = config.EventId,
                 DemandGenres = config.DemandGenres ?? Array.Empty<string>(),
                 DemandTags = config.DemandTags ?? Array.Empty<string>(),
-                TargetLocationIds = config.TargetLocationIds ?? Array.Empty<string>(),
                 IsFallback = false
             };
         }
@@ -92,7 +68,6 @@ namespace Game.DayCycle.Morning
                 EventId = MorningFallback.EventId,
                 DemandGenres = Array.Empty<string>(),
                 DemandTags = Array.Empty<string>(),
-                TargetLocationIds = Array.Empty<string>(),
                 IsFallback = true
             };
         }
