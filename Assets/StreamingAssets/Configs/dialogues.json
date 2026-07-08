@@ -1,0 +1,30 @@
+[
+  {
+    "id": "dlg_intro_tilde",
+    "nodes": [
+      {
+        "nodeId": "root",
+        "lines": ["Слышал, у вас открылась лавка…"],
+        "options": [
+          { "text": "Заходите!", "next": "warm" },
+          { "text": "Мы ещё готовимся.", "next": "cool" }
+        ]
+      },
+      { "nodeId": "warm", "lines": ["Тогда до встречи."], "options": [] },
+      { "nodeId": "cool", "lines": ["Понимаю, загляну позже."], "options": [] }
+    ]
+  },
+  {
+    "id": "dlg_quest_01",
+    "nodes": [
+      {
+        "nodeId": "root",
+        "lines": ["Мне нужна одна книга. Поможете?"],
+        "options": [
+          { "text": "Конечно", "next": "end" },
+          { "text": "Позже", "next": "end" }
+        ]
+      }
+    ]
+  }
+]
