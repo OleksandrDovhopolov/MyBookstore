@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace Game.DayCycle.Morning.Model
 {
     /// <summary>
@@ -17,10 +14,6 @@ namespace Game.DayCycle.Morning.Model
         public string WeatherId { get; set; }
         public string EventId { get; set; }
 
-        public IReadOnlyList<string> DemandGenres { get; set; } = Array.Empty<string>();
-        public IReadOnlyList<string> DemandTags { get; set; } = Array.Empty<string>();
-        public IReadOnlyList<string> TargetLocationIds { get; set; } = Array.Empty<string>();
-        
         /// <summary>true, если контекст собран из fallback (нет подходящего DayConfig).</summary>
         public bool IsFallback { get; set; }
     }

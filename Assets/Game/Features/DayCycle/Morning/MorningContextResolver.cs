@@ -51,8 +51,6 @@ namespace Game.DayCycle.Morning
                 Title = config.Title,
                 WeatherId = config.WeatherId,
                 EventId = config.EventId,
-                DemandGenres = config.DemandGenres ?? Array.Empty<string>(),
-                DemandTags = config.DemandTags ?? Array.Empty<string>(),
                 IsFallback = false
             };
         }
@@ -66,8 +64,6 @@ namespace Game.DayCycle.Morning
                 Title = MorningFallback.Title,
                 WeatherId = MorningFallback.WeatherId,
                 EventId = MorningFallback.EventId,
-                DemandGenres = Array.Empty<string>(),
-                DemandTags = Array.Empty<string>(),
                 IsFallback = true
             };
         }

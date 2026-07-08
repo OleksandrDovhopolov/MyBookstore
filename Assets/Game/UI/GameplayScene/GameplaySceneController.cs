@@ -419,8 +419,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>, IDat
         if (result == null)
             return false;
 
-        Debug.Log($"[GameplaySceneController] -> Preparation. Day {result.Day}, " +
-                  $"locations=[{string.Join(",", result.TargetLocationIds)}].");
+        Debug.Log($"[GameplaySceneController] -> Preparation. Day {result.Day}.");
 
         return true;
     }

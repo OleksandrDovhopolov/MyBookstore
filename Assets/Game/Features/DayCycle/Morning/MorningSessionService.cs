@@ -66,10 +66,7 @@ namespace Game.DayCycle.Morning
                 Day = _current.Day,
                 DayId = _current.DayId,
                 EventId = _current.EventId,
-                WeatherId = _current.WeatherId,
-                DemandGenres = _current.DemandGenres,
-                DemandTags = _current.DemandTags,
-                TargetLocationIds = _current.TargetLocationIds
+                WeatherId = _current.WeatherId
             };
         }
     }

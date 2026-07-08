@@ -17,12 +17,6 @@ namespace Game.Configs.Models
         public string WeatherId { get; set; }
         public string EventId { get; set; }
 
-        /// <summary>Жанры повышенного спроса дня — читают Подготовка/Продажа.</summary>
-        public string[] DemandGenres { get; set; }
-
-        /// <summary>Теги повышенного спроса дня.</summary>
-        public string[] DemandTags { get; set; }
-
         /// <summary>Диалоги квест-персонажей, запланированные на этот день (GAME-6 §Этап 5). Спавнер-декоратор
         /// (<c>QuestSchedulingCustomerSpawner</c>) добавляет по квест-персонажу на каждый id — он приходит
         /// первым и заводит беседу.</summary>

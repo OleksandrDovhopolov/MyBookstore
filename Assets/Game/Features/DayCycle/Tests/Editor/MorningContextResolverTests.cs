@@ -1,4 +1,3 @@
-using System.Linq;
 using Game.Configs.Models;
 using Game.DayCycle.Morning;
 using Game.DayCycle.Tests.Editor.Fakes;
@@ -15,8 +14,6 @@ namespace Game.DayCycle.Tests.Editor
             Title = "Первый день у парка",
             WeatherId = "clear",
             EventId = "exam_week",
-            DemandGenres = new[] { "science", "classic" },
-            DemandTags = new[] { "short" },
         };
 
         private static MorningContextResolver ResolverWith(params DayConfig[] days)
@@ -37,9 +34,6 @@ namespace Game.DayCycle.Tests.Editor
             Assert.AreEqual("Первый день у парка", ctx.Title);
             Assert.AreEqual("clear", ctx.WeatherId);
             Assert.AreEqual("exam_week", ctx.EventId);
-            CollectionAssert.AreEqual(new[] { "science", "classic" }, ctx.DemandGenres);
-            CollectionAssert.AreEqual(new[] { "short" }, ctx.DemandTags);
-            CollectionAssert.AreEqual(new[] { "loc_downtown" }, ctx.TargetLocationIds);
         }
 
         [Test]
@@ -50,7 +44,6 @@ namespace Game.DayCycle.Tests.Editor
             Assert.IsTrue(ctx.IsFallback);
             Assert.AreEqual(1, ctx.Day);
             Assert.AreEqual(MorningFallback.Title, ctx.Title);
-            Assert.IsEmpty(ctx.DemandGenres);
         }
 
         [Test]

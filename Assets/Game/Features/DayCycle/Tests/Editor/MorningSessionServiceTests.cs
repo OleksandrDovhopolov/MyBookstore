@@ -94,7 +94,6 @@ namespace Game.DayCycle.Tests.Editor
             var result = Run(service.ContinueToPreparationAsync(CancellationToken.None));
 
             Assert.AreEqual(1, result.Day);
-            CollectionAssert.AreEqual(new[] { "loc_downtown" }, result.TargetLocationIds);
 
             // «Перезапуск»: новый сервис над тем же хранилищем видит фазу Preparation.
             var afterRestart = new DayProgressService(new FakeSaveService(save.Store));
