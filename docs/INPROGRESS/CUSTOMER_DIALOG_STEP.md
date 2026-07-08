@@ -132,13 +132,17 @@
 - **Тест:** десериализация `dialogues.json` в `DialogueConfig` + обход графа (узел → опция → next/end)
   (референс — `QuestConfigDeserializationTests`).
 
-### Этап 4 — Архетип квест-персонажа
-- `QuestCharacterArchetype : ICustomerArchetype`, `BuildMiddle` → `[new DialogStep(payload), new PassivePurchaseStep(), …]`.
-  Payload резолвится из `DialogueConfig` по id (id даёт спавнер/`SalesSessionSetup`).
-- Проводка: спавнер, который знает, что запланирован квест-персонаж X с диалогом Y, строит этим
-  архетипом (точка входа квест-осведомлённости). `ScriptedSequenceArchetype` — при необходимости
-  позже, отдельным шагом.
-- **Тесты:** `BuildMiddle` даёт `[DialogStep, Passive…]` в правильном порядке (референс — `CustomerArchetypeTests`).
+### Этап 4 — Архетип квест-персонажа (только архетип + тесты, БЕЗ прод-спавна)
+- `QuestCharacterArchetype : ICustomerArchetype`, `BuildMiddle` → `[new DialogStep(payload), new PassivePurchaseStep() ×N]`.
+  Детерминирован (фиксированный `passiveCount`, random не потребляет); payload передаётся в ctor.
+- **⚠️ Никакого прод-спавна на этом этапе.** Реальное расписание/спавн `DialogStep`-покупателя перенесено
+  в §Этап 5 — потому что единственный, кто зовёт `CompleteDialogue()`, это презентация (§Этап 5). Спавн
+  диалога до неё навсегда удержит interaction lock и повесит день (`SalesDayController.Tick` встаёт на
+  held lock). `QuestCharacterArchetype` в DI/спавнеры **не регистрируется**, используется только тестами.
+- **Тесты:** структурный (`BuildMiddle` → `[DialogStep, Passive…]`, порядок, тот же payload; edge
+  `passiveCount:0` / null payload) — `CustomerArchetypeTests`; интеграционный через
+  `CustomerPlanBuilder` + контроллер (`Approach→Dialog→Passive→CompletePurchase→Leave`, завершение
+  тестовым `CompleteDialogue()`, ассерты пассивной продажи + purchase-completed) — `SalesDayControllerTests`.
 
 ### Этап 5 — Презентация: движок диалога + вью (2.1 окно) — точка свапа на 2.2
 Теперь это **не «просто открыть окно»**, а два компонента (как и просил дизайн: «движок + вью»):
@@ -154,6 +158,12 @@
 - **Свап на 2.2 = замена только вью** (движок и координатор не трогаются): `ShowAsync<DialogWindow>` →
   драйв world-HUD-бабла ([WORLD_HUD.md](WORLD_HUD.md)), тот же `CompleteDialogue()` на `end`.
 - Префаб окна/вью (реплики + до 3 кнопок опций) создаёт и назначает пользователь.
+- **Реальное расписание/спавн (перенесено из §Этап 4 — включается ТОЛЬКО вместе с презентацией, иначе
+  hang):** источник квест-персонажей дня (напр. поле `DayConfig.scheduledDialogueIds`) → `SalesSessionSetup`
+  → setup-provider (`PreparationSalesSetupProvider`) → decorator-спавнер, который строит
+  `QuestCharacterArchetype`-покупателя из `DialogueId`, и регистрация этого спавнера в DI. Это и есть
+  «точка входа квест-осведомлённости»; делать её нужно в одном куске с движком/вью, чтобы у первого
+  прод-спавна сразу был `CompleteDialogue()`-завершатель.
 
 ## 4. Что НЕ входит в MVP (заложено, но не делаем сейчас)
 - Реактивные диалоги через `Customer.InsertNext` (по образцу `PassiveSaleCommentRule` → `CommentStep`) —

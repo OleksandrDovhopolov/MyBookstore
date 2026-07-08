@@ -101,6 +101,50 @@ namespace Book.Sell.Tests.Editor.Services
         }
 
         [Test]
+        public void DebugMinimumCalculator_FloorsValidChanceAtFiftyPercent()
+        {
+            var configs = new FakeConfigsService();
+            configs.SetAll(new[]
+            {
+                new EconomyConfig
+                {
+                    Id = EconomyConfig.SingletonId,
+                    BaseSaleChance = 0.05,
+                    PerCopyChance = 0.05,
+                    CapChance = 0.5,
+                    LocationDemandMultiplier = 1.0
+                }
+            });
+            var calc = new DebugMinimumSaleChanceCalculator(configs, new NeutralDecorProvider());
+
+            var chance = calc.Compute("Fantasy", 1, SalesTestKit.Location(demandGenres: new[] { "sci-fi" }), null);
+
+            Assert.AreEqual(0.5d, chance, Epsilon);
+        }
+
+        [Test]
+        public void DebugMinimumCalculator_StillAppliesDecorAboveFloor()
+        {
+            var configs = new FakeConfigsService();
+            configs.SetAll(new[]
+            {
+                new EconomyConfig
+                {
+                    Id = EconomyConfig.SingletonId,
+                    BaseSaleChance = 0.2,
+                    PerCopyChance = 0.1,
+                    CapChance = 0.5,
+                    LocationDemandMultiplier = 1.0
+                }
+            });
+            var calc = new DebugMinimumSaleChanceCalculator(configs, new ConstantDecorProvider(2f));
+
+            var chance = calc.Compute("Fantasy", 1, SalesTestKit.Location(demandGenres: new[] { "sci-fi" }), null);
+
+            Assert.AreEqual(0.6d, chance, Epsilon);
+        }
+
+        [Test]
         public void MissingEconomyConfig_ReturnsZero()
         {
             // No SetAll<EconomyConfig> — Get returns null. The calculator logs an error once and

@@ -378,6 +378,51 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void QuestCharacterArchetype_PlanRunsEndToEnd_DialogThenPassiveThenLeave()
+        {
+            var tuning = SalesTestKit.FastTuning();
+            var random = new FakeSalesRandom();
+            var payload = new DialoguePayload("dlg");
+            var arch = new QuestCharacterArchetype(payload, passiveCount: 1);
+
+            // Build the plan THROUGH the archetype + CustomerPlanBuilder → production shape
+            // Approach → DialogStep → PassivePurchase → CompletePurchase → Leave.
+            var customer = CustomerPlanBuilder.Build(
+                "c1", tuning, random,
+                () => arch.BuildMiddle(new SalesSessionSetup(1, "loc", new[] { "b1" }), tuning, random));
+
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") },
+                Array.Empty<RequestConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { customer },
+                tuning);
+
+            DialoguePayload started = null;
+            var dialogueCount = 0;
+            var passiveSales = 0;
+            var purchaseCompletedCount = -1;
+            c.DialogueStarted += (_, p) => { started = p; dialogueCount++; };
+            c.PassiveSaleHappened += _ => passiveSales++;
+            c.CustomerPurchaseCompleted += (_, count) => purchaseCompletedCount = count;
+
+            StartDay(c);
+            DriveUntilDialogue(c, () => dialogueCount);
+
+            Assert.AreEqual(1, dialogueCount, "The archetype's DialogStep opened the dialogue.");
+            Assert.AreEqual("dlg", started.DialogueId);
+
+            c.CompleteDialogue();
+            Run(c);
+
+            // Proves Dialog → Passive → CompletePurchase → Leave, not just that the day closed.
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
+            Assert.AreEqual(1, c.AccumulatedResult.SalesCount, "Passive sale ran after the dialogue.");
+            Assert.AreEqual(1, passiveSales);
+            Assert.AreEqual(1, purchaseCompletedCount, "Visit completed with 1 purchased book.");
+        }
+
+        [Test]
         public void CompleteDialogue_AfterForceCompleteDay_IsNoOp()
         {
             var c = Build(

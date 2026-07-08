@@ -24,7 +24,9 @@ namespace Game.Bootstrap
         public static void RegisterBookSellSharedState(this IContainerBuilder builder)
         {
             builder.Register<ISalesShelfStateService, SalesShelfStateService>(Lifetime.Singleton);
-            builder.Register<IBaseSaleChanceCalculator, EconomyBasedSaleChanceCalculator>(Lifetime.Singleton);
+            // TEMP DEBUG: keep economy/location/decor modifiers, but floor passive sale chance at 50%.
+            // Restore EconomyBasedSaleChanceCalculator when sales-flow testing is done.
+            builder.Register<IBaseSaleChanceCalculator, DebugMinimumSaleChanceCalculator>(Lifetime.Singleton);
         }
 
         // Passive sales v2 (requested-genre): each customer rolls one genre from its profile.

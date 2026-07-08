@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Domain.Steps;
 using Book.Sell.Services;
@@ -78,6 +79,36 @@ namespace Book.Sell.Tests.Editor
 
             Assert.AreEqual(1, middle.Count, "Exactly one passive step.");
             Assert.AreEqual(4, random.Range(0, 10), "Range index 4 was NOT consumed by the (1,1) archetype.");
+        }
+
+        // --- QuestCharacterArchetype (dialogue + passives) ----------------------------------
+
+        [Test]
+        public void QuestCharacter_BuildsDialogThenPassives()
+        {
+            var payload = new DialoguePayload("dlg");
+            var middle = Middle(new QuestCharacterArchetype(payload, passiveCount: 2), new FakeSalesRandom());
+
+            Assert.AreEqual(3, middle.Count);
+            Assert.IsInstanceOf<DialogStep>(middle[0]);
+            Assert.AreSame(payload, ((DialogStep)middle[0]).Payload);
+            Assert.IsInstanceOf<PassivePurchaseStep>(middle[1]);
+            Assert.IsInstanceOf<PassivePurchaseStep>(middle[2]);
+        }
+
+        [Test]
+        public void QuestCharacter_ZeroPassives_DialogOnly()
+        {
+            var middle = Middle(new QuestCharacterArchetype(new DialoguePayload("dlg"), passiveCount: 0), new FakeSalesRandom());
+
+            Assert.AreEqual(1, middle.Count);
+            Assert.IsInstanceOf<DialogStep>(middle[0]);
+        }
+
+        [Test]
+        public void QuestCharacter_NullPayload_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() => new QuestCharacterArchetype(null));
         }
 
         // --- Active archetypes (structural smoke) -------------------------------------------
