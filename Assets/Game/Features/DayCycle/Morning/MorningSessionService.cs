@@ -66,7 +66,6 @@ namespace Game.DayCycle.Morning
                 Day = _current.Day,
                 DayId = _current.DayId,
                 EventId = _current.EventId,
-                WeatherId = _current.WeatherId
             };
         }
     }

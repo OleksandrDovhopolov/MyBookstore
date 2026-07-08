@@ -65,7 +65,6 @@ namespace Game.DayCycle.Tests.Editor
 
             Assert.AreEqual(2, ctx.Day);
             Assert.AreEqual("day_002", ctx.DayId);
-            Assert.AreEqual("rain", ctx.WeatherId);
         }
 
         [Test]

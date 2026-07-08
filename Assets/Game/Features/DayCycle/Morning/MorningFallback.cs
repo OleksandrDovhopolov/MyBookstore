@@ -7,7 +7,6 @@ namespace Game.DayCycle.Morning
     public static class MorningFallback
     {
         public const string Title = "Тихое утро";
-        public const string WeatherId = "clear";
         public const string EventId = "";
     }
 }

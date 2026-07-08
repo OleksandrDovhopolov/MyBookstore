@@ -31,7 +31,6 @@ namespace Game.DayCycle.Tests.Editor
             Assert.AreEqual(1, ctx.Day);
             Assert.AreEqual("day_001", ctx.DayId);
             Assert.AreEqual("Первый день у парка", ctx.Title);
-            Assert.AreEqual("clear", ctx.WeatherId);
             Assert.AreEqual("exam_week", ctx.EventId);
         }
 

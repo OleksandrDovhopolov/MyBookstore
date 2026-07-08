@@ -49,7 +49,6 @@ namespace Game.DayCycle.Morning
                 Day = dayIndex,
                 DayId = config.Id,
                 Title = config.Title,
-                WeatherId = config.WeatherId,
                 EventId = config.EventId
             };
         }
@@ -61,7 +60,6 @@ namespace Game.DayCycle.Morning
                 Day = dayIndex,
                 DayId = $"fallback_day_{dayIndex}",
                 Title = MorningFallback.Title,
-                WeatherId = MorningFallback.WeatherId,
                 EventId = MorningFallback.EventId
             };
         }

@@ -21,7 +21,7 @@ namespace Game.Bootstrap
             builder.Register<IMorningSessionService, MorningSessionService>(Lifetime.Singleton);
 
             // Current-day weather read seam + "weatherIs" condition adapter (discovered via IConditionFactory).
-            builder.Register<ICurrentDayWeatherProvider, CurrentDayWeatherProvider>(Lifetime.Singleton);
+            builder.Register<ICurrentDayWeatherProvider, NoOpWeatherProvider>(Lifetime.Singleton);
 
             // The factory takes a Func and resolves the provider lazily on first Create() — NOT while the
             // IConditionFactory collection is built. Otherwise it would form a DI cycle:
