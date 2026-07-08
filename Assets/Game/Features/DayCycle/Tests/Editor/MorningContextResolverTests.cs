@@ -12,8 +12,6 @@ namespace Game.DayCycle.Tests.Editor
             Id = "day_001",
             DayIndex = 1,
             Title = "Первый день у парка",
-            WeatherId = "clear",
-            EventId = "exam_week",
         };
 
         private static MorningContextResolver ResolverWith(params DayConfig[] days)
@@ -31,7 +29,6 @@ namespace Game.DayCycle.Tests.Editor
             Assert.AreEqual(1, ctx.Day);
             Assert.AreEqual("day_001", ctx.DayId);
             Assert.AreEqual("Первый день у парка", ctx.Title);
-            Assert.AreEqual("exam_week", ctx.EventId);
         }
 
         [Test]

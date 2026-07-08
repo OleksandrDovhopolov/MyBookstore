@@ -17,13 +17,11 @@ namespace Game.DayCycle.Tests.Editor
             {
                 new DayConfig
                 {
-                    Id = "day_001", DayIndex = 1, Title = "День 1",
-                    WeatherId = "clear", EventId = "exam_week",
+                    Id = "day_001", DayIndex = 1, Title = "День 1"
                 },
                 new DayConfig
                 {
-                    Id = "day_002", DayIndex = 2, Title = "День 2",
-                    WeatherId = "rain", EventId = ""
+                    Id = "day_002", DayIndex = 2, Title = "День 2"
                 }
             });
             return configs;
