@@ -16,7 +16,6 @@ namespace Game.DayCycle.Morning.Model
         public string Title { get; set; }
         public string WeatherId { get; set; }
         public string EventId { get; set; }
-        public string SummaryText { get; set; }
         public string HintText { get; set; }
 
         public IReadOnlyList<string> DemandGenres { get; set; } = Array.Empty<string>();

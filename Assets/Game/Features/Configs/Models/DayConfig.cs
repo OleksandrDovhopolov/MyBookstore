@@ -16,8 +16,6 @@ namespace Game.Configs.Models
         public string Title { get; set; }
         public string WeatherId { get; set; }
         public string EventId { get; set; }
-        public string SummaryText { get; set; }
-        public string HintText { get; set; }
 
         /// <summary>Жанры повышенного спроса дня — читают Подготовка/Продажа.</summary>
         public string[] DemandGenres { get; set; }

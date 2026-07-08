@@ -15,8 +15,6 @@ namespace Game.DayCycle.Tests.Editor
             Title = "Первый день у парка",
             WeatherId = "clear",
             EventId = "exam_week",
-            SummaryText = "summary",
-            HintText = "hint",
             DemandGenres = new[] { "science", "classic" },
             DemandTags = new[] { "short" },
             TargetLocationIds = new[] { "loc_downtown" }
