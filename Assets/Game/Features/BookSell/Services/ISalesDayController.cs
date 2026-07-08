@@ -33,6 +33,13 @@ namespace Book.Sell.Services
         event Action DayReadyToClose;
 
         event Action<RequestConfig> ActiveRequestStarted;
+
+        /// <summary>A customer acquired the interaction lock and a scripted dialogue opened for them. The
+        /// customer is carried so world-HUD presentation knows whom to anchor the dialogue to; presentation
+        /// subscribes and drives completion via <see cref="CompleteDialogue"/>. Subscribe BEFORE the first
+        /// <see cref="Tick"/> (same contract as the other events) — the event is not replayed for late
+        /// subscribers.</summary>
+        event Action<Customer, DialoguePayload> DialogueStarted;
         event Action<RecommendationResult> RecommendationResolved;
         event Action<PassiveSaleEvent> PassiveSaleHappened;
         event Action<Customer, RecommendationResult> CustomerRecommendationResolved;
@@ -71,6 +78,11 @@ namespace Book.Sell.Services
         /// <summary>Player declined to recommend anything for the current active minigame.</summary>
         void SkipCurrentRequest();
 
+        /// <summary>Presentation closed the scripted dialogue UI: completes the current <c>DialogStep</c>
+        /// (releasing the interaction lock) and advances the customer's plan. No-op if no dialogue is open.
+        /// Mirror of <see cref="SkipCurrentRequest"/> for the dialogue path.</summary>
+        void CompleteDialogue();
+
         /// <summary>Player closed the shop. Valid only while <see cref="Phase"/> is
         /// <see cref="SalesDayPhase.ReadyToClose"/>; publishes the result and fires
         /// <see cref="DayCompleted"/>. No-op in any other phase.</summary>
@@ -81,9 +93,9 @@ namespace Book.Sell.Services
         /// When <paramref name="zeroOut"/> is true the published result has no sales, no gold and
         /// no served customers (only <see cref="Day"/> is preserved). Otherwise the already
         /// accumulated result is published as-is.
-        /// Safe to call mid-minigame: active request state is dropped, the lock is left held but
-        /// no longer reachable (Tick short-circuits on the completed flag). No-op if the day has
-        /// already completed.
+        /// Safe to call mid-minigame or mid-dialogue: active request / dialogue state is dropped, the lock
+        /// is left held but no longer reachable (Tick short-circuits on the completed flag). No-op if the
+        /// day has already completed.
         /// </summary>
         void ForceCompleteDay(bool zeroOut);
     }

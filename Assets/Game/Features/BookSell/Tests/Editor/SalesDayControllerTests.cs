@@ -42,6 +42,18 @@ namespace Book.Sell.Tests.Editor
                 new ApproachStep(), new ActiveRequestStep(req), new CompletePurchaseStep(), new LeaveStep()
             });
 
+        // Approach + scripted dialogue + Leave. The dialogue holds the interaction lock until the
+        // controller resolves it via CompleteDialogue(); no purchase steps.
+        private static Customer Dialog(string id, string dialogueId = "dlg")
+            => new(id, new ICustomerStep[] { new ApproachStep(), new DialogStep(new DialoguePayload(dialogueId)), new LeaveStep() });
+
+        // Ticks until a dialogue opens (DialogueStarted fired) or we give up. No CurrentDialogue getter
+        // exists, so detection is via the event — same shape as DriveUntilActive/CurrentRequest.
+        private static void DriveUntilDialogue(SalesDayController c, System.Func<int> firedCount, int maxTicks = 50)
+        {
+            for (var i = 0; i < maxTicks && firedCount() == 0 && c.Phase == SalesDayPhase.Running; i++) c.Tick(0.1f);
+        }
+
         private static SalesDayController Build(
             BookConfig[] books, RequestConfig[] requests, LocationConfig location, IReadOnlyList<Customer> customers,
             SalesTuning tuning = null,
@@ -274,6 +286,118 @@ namespace Book.Sell.Tests.Editor
         }
 
         // ----- tests -----
+
+        [Test]
+        public void Dialog_AcquiresLock_FiresDialogueStarted_PausesDay()
+        {
+            var expected = Dialog("c1");
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") },
+                Array.Empty<RequestConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { expected });
+
+            Customer startedCustomer = null;
+            DialoguePayload startedPayload = null;
+            var count = 0;
+            c.DialogueStarted += (cust, payload) => { startedCustomer = cust; startedPayload = payload; count++; };
+
+            StartDay(c);
+            DriveUntilDialogue(c, () => count);
+
+            Assert.AreEqual(1, count, "Dialogue opened exactly once.");
+            Assert.AreSame(expected, startedCustomer, "Event carries the dialogue's customer.");
+            Assert.AreEqual("dlg", startedPayload.DialogueId);
+            Assert.AreEqual(SalesDayPhase.Running, c.Phase);
+            Assert.AreEqual(CustomerPhase.InDialogue, expected.Phase);
+
+            // Lock is held → the day is paused: extra ticks neither re-fire nor advance the day.
+            for (var i = 0; i < 10; i++) c.Tick(0.1f);
+            Assert.AreEqual(1, count, "No duplicate DialogueStarted while paused.");
+            Assert.AreEqual(SalesDayPhase.Running, c.Phase);
+        }
+
+        [Test]
+        public void CompleteDialogue_ResumesDay_CustomerFinishes()
+        {
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") },
+                Array.Empty<RequestConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { Dialog("c1") });
+
+            var count = 0;
+            c.DialogueStarted += (_, _) => count++;
+
+            StartDay(c);
+            DriveUntilDialogue(c, () => count);
+            Assert.AreEqual(1, count);
+
+            c.CompleteDialogue();
+            Run(c);
+
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase, "Lock released → customer finishes and the day is closable.");
+        }
+
+        [Test]
+        public void CompleteDialogue_NoOpenDialogue_IsIgnored()
+        {
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") },
+                Array.Empty<RequestConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { Passive("c1") });
+
+            StartDay(c);
+
+            LogAssert.Expect(LogType.Warning, "[Sales.Day] CompleteDialogue with no open dialogue — ignored.");
+            Assert.DoesNotThrow(() => c.CompleteDialogue());
+            Assert.AreEqual(SalesDayPhase.Running, c.Phase);
+        }
+
+        [Test]
+        public void ForceCompleteDay_DuringDialogue_DropsState()
+        {
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") },
+                Array.Empty<RequestConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { Dialog("c1") });
+
+            var count = 0;
+            c.DialogueStarted += (_, _) => count++;
+
+            StartDay(c);
+            DriveUntilDialogue(c, () => count);
+            Assert.AreEqual(1, count);
+
+            c.ForceCompleteDay(zeroOut: false);
+
+            Assert.AreEqual(SalesDayPhase.Completed, c.Phase);
+            Assert.DoesNotThrow(() => c.Tick(0.1f), "Tick short-circuits on the completed phase; no hang.");
+        }
+
+        [Test]
+        public void CompleteDialogue_AfterForceCompleteDay_IsNoOp()
+        {
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") },
+                Array.Empty<RequestConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { Dialog("c1") });
+
+            var count = 0;
+            c.DialogueStarted += (_, _) => count++;
+
+            StartDay(c);
+            DriveUntilDialogue(c, () => count);
+            c.ForceCompleteDay(zeroOut: false);
+
+            // Async UI closes late, after the day was force-completed: dialogue state is already dropped.
+            LogAssert.Expect(LogType.Warning, "[Sales.Day] CompleteDialogue with no open dialogue — ignored.");
+            Assert.DoesNotThrow(() => c.CompleteDialogue());
+            Assert.AreEqual(SalesDayPhase.Completed, c.Phase);
+        }
 
         [Test]
         public void SalesShelfBuilder_BuildsShelfFromBookIds()

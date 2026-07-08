@@ -37,6 +37,7 @@ namespace Book.Sell.Services
 
         private Customer _activeCustomer;
         private RequestConfig _activeRequest;
+        private Customer _dialogueCustomer;
 
         private float _spawnTimer;
         private int _nextToSpawn;
@@ -78,6 +79,7 @@ namespace Book.Sell.Services
         public bool IsDayCompleted => _phase == SalesDayPhase.Completed;
 
         public event Action<RequestConfig> ActiveRequestStarted;
+        public event Action<Customer, DialoguePayload> DialogueStarted;
         public event Action<RecommendationResult> RecommendationResolved;
         public event Action<PassiveSaleEvent> PassiveSaleHappened;
         public event Action<Customer, RecommendationResult> CustomerRecommendationResolved;
@@ -115,6 +117,7 @@ namespace Book.Sell.Services
             _spawnTimer = _tuning.SpawnInterval;   // spawn the first customer on the first tick
             _activeCustomer = null;
             _activeRequest = null;
+            _dialogueCustomer = null;
             _phase = SalesDayPhase.Running;
             _spawningStopped = false;
 
@@ -205,6 +208,7 @@ namespace Book.Sell.Services
             // stops pumping Update once _dayRunning flips to false in OnDayCompleted.
             _activeCustomer = null;
             _activeRequest = null;
+            _dialogueCustomer = null;
 
             if (zeroOut)
             {
@@ -241,6 +245,22 @@ namespace Book.Sell.Services
             CustomerRecommendationResolved?.Invoke(_activeCustomer, result);
             RecommendationResolved?.Invoke(result);
             ResolveActive();
+        }
+
+        public void CompleteDialogue()
+        {
+            if (_dialogueCustomer == null)
+            {
+                Debug.LogWarning($"{LogPrefix} CompleteDialogue with no open dialogue — ignored.");
+                return;
+            }
+
+            var customer = _dialogueCustomer;
+            _dialogueCustomer = null;
+
+            // Exits the DialogStep (releasing the lock) and advances the customer's plan — mirrors ResolveActive.
+            customer.ForceCompleteCurrentStep(_ctx);
+            UpdateDayPhase();
         }
 
         // ----- ISalesDaySink (facts reported by steps) -----
@@ -322,11 +342,10 @@ namespace Book.Sell.Services
             ActiveRequestStarted?.Invoke(request);
         }
 
-        // TODO GAME-6 Этап 2: store _dialogueCustomer + raise the public DialogueStarted event; add the
-        // CompleteDialogue() entry point that force-completes the step. Stage 1 keeps this a no-op so the
-        // interface compiles — DialogStep is not wired into any production plan yet.
         void ISalesDaySink.OnDialogueStarted(Customer customer, DialoguePayload payload)
         {
+            _dialogueCustomer = customer;
+            DialogueStarted?.Invoke(customer, payload);
         }
 
         void ISalesDaySink.OnHideThoughtBubble(Customer customer)
