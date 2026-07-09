@@ -14,7 +14,16 @@ namespace Book.Sell.Tests.Editor
             => new() { Text = text, Next = next };
 
         private static DialogueNodeConfig Node(string id, string[] lines, params DialogueOptionConfig[] options)
-            => new() { NodeId = id, Lines = lines, Options = options };
+            => new() { NodeId = id, Lines = ToLines(lines), Options = options };
+
+        private static DialogueLineConfig[] ToLines(string[] texts)
+        {
+            if (texts == null) return System.Array.Empty<DialogueLineConfig>();
+            var result = new DialogueLineConfig[texts.Length];
+            for (var i = 0; i < texts.Length; i++)
+                result[i] = new DialogueLineConfig { Speaker = "x", Text = texts[i] };
+            return result;
+        }
 
         private static DialogueConfig Config(string id, params DialogueNodeConfig[] nodes)
             => new() { Id = id, Nodes = nodes };

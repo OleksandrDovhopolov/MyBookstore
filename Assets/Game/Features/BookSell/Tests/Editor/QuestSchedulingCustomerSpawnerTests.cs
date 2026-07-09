@@ -36,7 +36,7 @@ namespace Book.Sell.Tests.Editor
                 new DialogueNodeConfig
                 {
                     NodeId = "root",
-                    Lines = new[] { "line" },
+                    Lines = new[] { new DialogueLineConfig { Speaker = "x", Text = "line" } },
                     Options = new[] { new DialogueOptionConfig { Text = "ok", Next = "end" } }
                 }
             }

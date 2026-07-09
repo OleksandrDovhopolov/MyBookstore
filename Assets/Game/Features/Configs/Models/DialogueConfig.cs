@@ -22,11 +22,21 @@ namespace Game.Configs.Models
     {
         public string NodeId { get; set; }
 
-        /// <summary>Raw lines shown for this node (MVP: raw text; localization keys later, INF-4).</summary>
-        public string[] Lines { get; set; }
+        /// <summary>Ordered replies shown for this node — each with its speaker (GAME-6). The window reveals
+        /// them one at a time (typewriter) top-to-bottom.</summary>
+        public DialogueLineConfig[] Lines { get; set; }
 
         /// <summary>Answer options. Empty = terminal node (the conversation ends here).</summary>
         public DialogueOptionConfig[] Options { get; set; }
+    }
+
+    public sealed class DialogueLineConfig
+    {
+        /// <summary>Speaker display name (MVP: raw text; a character id + localization later).</summary>
+        public string Speaker { get; set; }
+
+        /// <summary>Raw reply text (MVP: raw; localization key later).</summary>
+        public string Text { get; set; }
     }
 
     public sealed class DialogueOptionConfig

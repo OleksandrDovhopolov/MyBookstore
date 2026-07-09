@@ -104,7 +104,7 @@
     "type": "story",
     "chainId": null,
     "characterId": "tilde",
-    "dialogueId": "dlg_intro_tilde",
+    "dialogueId": "dlg_tilde_meet",
     "titleKey": "quest.q_intro_tilde.title",
     "descriptionKey": "quest.q_intro_tilde.desc",
     "nextQuestIds": [],

@@ -1,83 +1,77 @@
 using System;
-using System.Collections.Generic;
 using Game.UI;
-using TMPro;
+using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Book.Sell.UI
 {
     /// <summary>
-    /// Dumb render surface for <see cref="DialogWindow"/>: node lines + up to 3 answer-option buttons.
-    /// All flow logic lives in the window controller; this only exposes serialized refs and wires clicks
-    /// back through the <c>onPick</c> callback. On a terminal node the window passes a single "Continue"
-    /// label (button #0), so one of the option buttons is reused as the close button.
+    /// Dumb render surface for <see cref="DialogWindow"/> (GAME-6): a top-to-bottom feed of reply views plus
+    /// a full-screen click catcher and a Skip button. Replies are pooled (<see cref="UIShared.UIListPool{T}"/>)
+    /// and appended downward; the feed auto-scrolls to the newest. All flow logic (which reply is next,
+    /// blocking clicks while typing) lives in the window controller — this only appends, scrolls, and forwards
+    /// the click/skip events.
     ///
-    /// Prefab is authored by the user: a lines label + up to 3 buttons, each with a TMP_Text child.
-    /// <see cref="_optionButtons"/> and <see cref="_optionLabels"/> must be index-aligned.
+    /// Prefab (authored by the user): a ScrollRect whose content hosts the pool, a <see cref="DialogLineView"/>
+    /// prefab, a full-screen <see cref="_clickCatcher"/> button, and a <see cref="_skipButton"/> above it.
+    /// Pool's prefab + parent (the scroll content) are assigned on <see cref="_linePool"/> in the inspector.
     /// </summary>
     public sealed class DialogWindowView : WindowView
     {
-        [Header("Dialogue lines")]
-        [SerializeField] private TMP_Text _linesText;
+        [Header("Reply feed")]
+        [Tooltip("Line prefab + content parent are assigned on the pool in the inspector.")]
+        [SerializeField] private UIListPool<DialogLineView> _linePool = new();
+        [SerializeField] private ScrollRect _scrollRect;
 
-        [Header("Answer options (index-aligned; up to 3)")]
-        [SerializeField] private Button[] _optionButtons;
-        [SerializeField] private TMP_Text[] _optionLabels;
+        [Header("Input")]
+        [SerializeField] private Button _clickCatcher;   // full-screen: advance to the next reply
+        [SerializeField] private Button _skipButton;
 
-        private Action<int> _onPick;
+        /// <summary>Player clicked the screen (request the next reply / close at the end).</summary>
+        public event Action ScreenClicked;
+
+        /// <summary>Player pressed Skip (no-op this iteration).</summary>
+        public event Action SkipClicked;
+
+        public Button SkipButton => _skipButton;
 
         protected override void Awake()
         {
             base.Awake();
-
-            // Bind each button once to a stable closure carrying its index; the active callback is swapped
-            // per node via SetOptions, so we never add/remove listeners on every render.
-            if (_optionButtons == null) return;
-            for (var i = 0; i < _optionButtons.Length; i++)
-            {
-                if (_optionButtons[i] == null) continue;
-                var index = i;
-                _optionButtons[i].onClick.AddListener(() => _onPick?.Invoke(index));
-            }
+            if (_clickCatcher != null) _clickCatcher.onClick.AddListener(RaiseScreenClicked);
+            if (_skipButton != null) _skipButton.onClick.AddListener(RaiseSkipClicked);
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
-
-            if (_optionButtons == null) return;
-            foreach (var button in _optionButtons)
-                if (button != null) button.onClick.RemoveAllListeners();
+            if (_clickCatcher != null) _clickCatcher.onClick.RemoveListener(RaiseScreenClicked);
+            if (_skipButton != null) _skipButton.onClick.RemoveListener(RaiseSkipClicked);
         }
 
-        /// <summary>Renders the node's lines (joined by newlines).</summary>
-        public void SetLines(IReadOnlyList<string> lines)
+        /// <summary>Appends a reply at the bottom of the feed and scrolls to it. Returns the view so the
+        /// controller can run its typewriter reveal.</summary>
+        public DialogLineView AppendLine(string speaker, string text)
         {
-            if (_linesText != null)
-                _linesText.text = lines == null ? string.Empty : string.Join("\n", lines);
+            var line = _linePool.GetNext();
+            line.Bind(speaker, text);
+            ScrollToBottom();
+            return line;
         }
 
-        /// <summary>
-        /// Shows one button per label (up to the available button count), hides the rest, and routes clicks
-        /// to <paramref name="onPick"/> with the button index. On a terminal node the window passes a single
-        /// "Continue" label, so button #0 becomes the close button.
-        /// </summary>
-        public void SetOptions(IReadOnlyList<string> labels, Action<int> onPick)
+        /// <summary>Clears the feed (returns all pooled replies).</summary>
+        public void ClearLines() => _linePool.DisableAll();
+
+        private void ScrollToBottom()
         {
-            _onPick = onPick;
-
-            if (_optionButtons == null) return;
-            var count = labels?.Count ?? 0;
-
-            for (var i = 0; i < _optionButtons.Length; i++)
-            {
-                var visible = i < count;
-                if (_optionButtons[i] != null)
-                    _optionButtons[i].gameObject.SetActive(visible);
-                if (visible && _optionLabels != null && i < _optionLabels.Length && _optionLabels[i] != null)
-                    _optionLabels[i].text = labels[i] ?? string.Empty;
-            }
+            if (_scrollRect == null) return;
+            // Rebuild layout so the new reply's size is accounted for before snapping to the bottom.
+            Canvas.ForceUpdateCanvases();
+            _scrollRect.verticalNormalizedPosition = 0f;
         }
+
+        private void RaiseScreenClicked() => ScreenClicked?.Invoke();
+        private void RaiseSkipClicked() => SkipClicked?.Invoke();
     }
 }

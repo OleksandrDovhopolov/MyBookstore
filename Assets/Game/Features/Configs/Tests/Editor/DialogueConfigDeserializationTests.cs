@@ -18,19 +18,19 @@ namespace Game.Configs.Tests.Editor
   {
     ""id"": ""dlg_intro_tilde"",
     ""nodes"": [
-      { ""nodeId"": ""root"", ""lines"": [""Слышал, у вас открылась лавка…""],
+      { ""nodeId"": ""root"", ""lines"": [ { ""speaker"": ""Тильда"", ""text"": ""Слышал, у вас открылась лавка…"" } ],
         ""options"": [
           { ""text"": ""Заходите!"",        ""next"": ""warm"" },
           { ""text"": ""Мы ещё готовимся."", ""next"": ""cool"" }
         ] },
-      { ""nodeId"": ""warm"", ""lines"": [""Тогда до встречи.""], ""options"": [] },
-      { ""nodeId"": ""cool"", ""lines"": [""Понимаю, загляну позже.""], ""options"": [] }
+      { ""nodeId"": ""warm"", ""lines"": [ { ""speaker"": ""Тильда"", ""text"": ""Тогда до встречи."" } ], ""options"": [] },
+      { ""nodeId"": ""cool"", ""lines"": [ { ""speaker"": ""Тильда"", ""text"": ""Понимаю, загляну позже."" } ], ""options"": [] }
     ]
   },
   {
     ""id"": ""dlg_quest_01"",
     ""nodes"": [
-      { ""nodeId"": ""root"", ""lines"": [""Мне нужна одна книга. Поможете?""],
+      { ""nodeId"": ""root"", ""lines"": [ { ""speaker"": ""Гость"", ""text"": ""Мне нужна одна книга. Поможете?"" } ],
         ""options"": [ { ""text"": ""Конечно"", ""next"": ""end"" }, { ""text"": ""Позже"", ""next"": ""end"" } ] }
     ]
   }
@@ -48,10 +48,12 @@ namespace Game.Configs.Tests.Editor
             Assert.AreEqual("dlg_intro_tilde", intro.Id);
             Assert.AreEqual(3, intro.Nodes.Length);
 
-            // Entry node = Nodes[0].
+            // Entry node = Nodes[0]. Lines are speaker-tagged objects (GAME-6).
             var root = intro.Nodes[0];
             Assert.AreEqual("root", root.NodeId);
-            Assert.AreEqual(new[] { "Слышал, у вас открылась лавка…" }, root.Lines);
+            Assert.AreEqual(1, root.Lines.Length);
+            Assert.AreEqual("Тильда", root.Lines[0].Speaker);
+            Assert.AreEqual("Слышал, у вас открылась лавка…", root.Lines[0].Text);
 
             // Branch node: 2 options pointing to sibling nodes.
             Assert.AreEqual(2, root.Options.Length);
