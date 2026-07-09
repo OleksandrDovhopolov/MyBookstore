@@ -80,6 +80,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9a2d0218ff3cbfa498d272e8c7a32109
+    m_Address: DialogWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9bd6c371f7237a841b253fc2e712f242
     m_Address: DecorInfoPopup
     m_ReadOnly: 0
