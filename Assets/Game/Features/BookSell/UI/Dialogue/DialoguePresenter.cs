@@ -30,12 +30,17 @@ namespace Book.Sell.UI
 
         private readonly ISalesDayController _controller;
         private readonly IUIManager _uiManager;
+        private readonly IDeliveredDialoguesService _delivered;
         private readonly CancellationTokenSource _cts = new();
 
-        public DialoguePresenter(ISalesDayController controller, IUIManager uiManager = null)
+        public DialoguePresenter(
+            ISalesDayController controller,
+            IUIManager uiManager = null,
+            IDeliveredDialoguesService delivered = null)
         {
             _controller = controller;
             _uiManager = uiManager;
+            _delivered = delivered;
         }
 
         public void Start()
@@ -71,7 +76,17 @@ namespace Book.Sell.UI
                     new DialogWindowArgs(_controller, payload, customer), _cts.Token);
 
                 if (window == null)
+                {
                     _controller?.CompleteDialogue();
+                    return;
+                }
+
+                // Fire-once: any window close (including external X / teardown, which the window's OnHideStart
+                // still turns into Complete()) counts the dialogue as delivered so the quest character does not
+                // return while its quest stays Active. CancellationToken.None on purpose — this progress write
+                // must NOT be tied to the presenter/scene lifetime (_cts), since Closed often fires at teardown.
+                window.Closed += _ =>
+                    _delivered?.MarkDeliveredAsync(payload.DialogueId, CancellationToken.None).Forget();
             }
             catch (OperationCanceledException)
             {

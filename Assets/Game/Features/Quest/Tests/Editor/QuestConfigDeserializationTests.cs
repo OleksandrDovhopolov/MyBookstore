@@ -70,6 +70,26 @@ namespace Game.Quest.Tests.Editor
         }
 
         [Test]
+        public void Deserialize_PopulatesDialogueId()
+        {
+            const string json = @"
+[ { ""id"": ""q_intro_tilde"", ""type"": ""story"", ""characterId"": ""tilde"",
+    ""dialogueId"": ""dlg_intro_tilde"", ""tasks"": [], ""rewards"": [], ""worldEffects"": [] } ]";
+
+            var quests = JsonConvert.DeserializeObject<QuestConfig[]>(json);
+
+            Assert.AreEqual("dlg_intro_tilde", quests[0].DialogueId, "GAME-6: quest carries its dialogue id.");
+            Assert.AreEqual("tilde", quests[0].CharacterId);
+        }
+
+        [Test]
+        public void Deserialize_MissingDialogueId_IsNull()
+        {
+            var quests = JsonConvert.DeserializeObject<QuestConfig[]>(Json);
+            Assert.IsNull(quests[0].DialogueId, "A quest without a dialogueId schedules no dialogue.");
+        }
+
+        [Test]
         public void Deserialize_PreservesConditionJObjectStructurally()
         {
             var quests = JsonConvert.DeserializeObject<QuestConfig[]>(Json);

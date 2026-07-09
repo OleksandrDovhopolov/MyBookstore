@@ -4,8 +4,7 @@
     "dayIndex": 1,
     "title": "Первый день у парка",
     "weatherId": "clear",
-    "eventId": "exam_week",
-    "scheduledDialogueIds": ["dlg_intro_tilde"]
+    "eventId": "exam_week"
   },
   {
     "id": "day_002",

@@ -21,6 +21,14 @@ namespace Game.Configs.Models
         /// <summary>Owning character; null until the characters feature exists.</summary>
         public string CharacterId { get; set; }
 
+        /// <summary>
+        /// Optional. When set and the quest is Active, a quest character arrives in Sales carrying this
+        /// dialogue — once (GAME-6). The <c>QuestSchedulingCustomerSpawner</c> reads it via <c>IQuest.Config</c>;
+        /// the dialogue engine resolves the graph from dialogues.json by this id. Fire-once is tracked
+        /// separately (delivered-dialogues store), not by quest state.
+        /// </summary>
+        public string DialogueId { get; set; }
+
         public string TitleKey { get; set; }
         public string DescriptionKey { get; set; }
 

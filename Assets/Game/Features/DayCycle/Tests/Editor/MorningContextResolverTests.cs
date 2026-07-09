@@ -10,8 +10,7 @@ namespace Game.DayCycle.Tests.Editor
         private static DayConfig Day1() => new()
         {
             Id = "day_001",
-            DayIndex = 1,
-            Title = "Первый день у парка",
+            DayIndex = 1
         };
 
         private static MorningContextResolver ResolverWith(params DayConfig[] days)
@@ -37,7 +36,6 @@ namespace Game.DayCycle.Tests.Editor
             var ctx = ResolverWith().Resolve(1);
 
             Assert.AreEqual(1, ctx.Day);
-            Assert.AreEqual(MorningFallback.Title, ctx.Title);
         }
 
         [Test]
@@ -46,7 +44,6 @@ namespace Game.DayCycle.Tests.Editor
             var day2 = Day1();
             day2.Id = "day_002";
             day2.DayIndex = 2;
-            day2.Title = "Второй день";
 
             var ctx = ResolverWith(Day1(), day2).Resolve(99);
 

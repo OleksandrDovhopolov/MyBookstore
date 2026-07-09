@@ -9,6 +9,7 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Save",
+        "Game.Quest.API",
         "Game.Inventory.API",
         "Game.Preparation",
         "Game.Decor.API",

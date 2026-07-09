@@ -5,6 +5,7 @@ using Book.Sell.Services.Director;
 using Book.Sell.UI;
 using Book.Sell.UI.Customer;
 using Game.Configs;
+using Game.Quest.API;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -88,13 +89,21 @@ namespace Game.Bootstrap
             //builder.Register<ICustomerSpawner, OneToThreePassiveAttemptsCustomerSpawner>(Lifetime.Singleton); //TEST 1-N passive purchases
             //builder.Register<ICustomerSpawner, TenCustomersThreeActiveBetweenPassivesSpawner>(Lifetime.Singleton); //TEST 10 customers, 1-2 passive each; first 3: passive -> active -> 1 passive
 
-            // Base composition (concrete type) + the quest-scheduling decorator as ICustomerSpawner (GAME-6
-            // §Этап 5, B4). The decorator prepends a quest character per DayConfig.ScheduledDialogueIds entry.
-            // NOTE: register the inner concretely — resolving ICustomerSpawner inside the ICustomerSpawner
-            // factory would be a self-reference. Swap the inner type here to change base composition.
+            // Fire-once memory for scripted dialogues (GAME-6). Save-backed; ISaveService resolves from the
+            // parent (global) scope. Used by the quest-scheduling spawner (filter) and DialoguePresenter (mark).
+            builder.Register<IDeliveredDialoguesService, SaveBackedDeliveredDialoguesService>(Lifetime.Singleton);
+
+            // Base composition (concrete type) + the quest-scheduling decorator as ICustomerSpawner (GAME-6).
+            // The decorator prepends a quest character per ACTIVE quest that carries a (not-yet-delivered)
+            // dialogue — the day no longer knows about dialogues. NOTE: register the inner concretely —
+            // resolving ICustomerSpawner inside the ICustomerSpawner factory would be a self-reference. Swap
+            // the inner type here to change base composition. IQuestsService resolves from the global scope.
             builder.Register<TenCustomersThreeActiveAfterPassiveSpawner>(Lifetime.Singleton); //TEST 10 customers, 1-2 passive each; first 3 also active after passive
             builder.Register<ICustomerSpawner>(r => new QuestSchedulingCustomerSpawner(
-                r.Resolve<TenCustomersThreeActiveAfterPassiveSpawner>(), r.Resolve<IConfigsService>()),
+                    r.Resolve<TenCustomersThreeActiveAfterPassiveSpawner>(),
+                    r.Resolve<IConfigsService>(),
+                    r.Resolve<IQuestsService>(),
+                    r.Resolve<IDeliveredDialoguesService>()),
                 Lifetime.Singleton);
             
             

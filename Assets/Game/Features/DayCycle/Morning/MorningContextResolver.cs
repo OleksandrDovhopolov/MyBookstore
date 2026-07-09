@@ -47,8 +47,7 @@ namespace Game.DayCycle.Morning
             return new MorningDayContext
             {
                 Day = dayIndex,
-                DayId = config.Id,
-                Title = config.Title,
+                DayId = config.Id
             };
         }
 
@@ -57,8 +56,7 @@ namespace Game.DayCycle.Morning
             return new MorningDayContext
             {
                 Day = dayIndex,
-                DayId = $"fallback_day_{dayIndex}",
-                Title = MorningFallback.Title,
+                DayId = $"fallback_day_{dayIndex}"
             };
         }
     }
