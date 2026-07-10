@@ -55,6 +55,8 @@ namespace Book.Sell.UI
         /// width so short replies stay compact and long ones wrap at <see cref="_maxBubbleWidth"/>.</summary>
         public void Bind(string speaker, string text)
         {
+            ResetAppearStartVisual();
+
             if (_nameLabel != null) _nameLabel.text = speaker ?? string.Empty;
 
             if (_textLabel != null)
@@ -122,9 +124,7 @@ namespace Book.Sell.UI
             if (_bubbleCanvasGroup == null || _bubble == null)
                 return;   // no bubble refs — degrade to plain (no appear anim)
 
-            KillTween();
-            _bubbleCanvasGroup.alpha = 0f;
-            _bubble.localScale = Vector3.one * _appearScaleFrom;
+            ResetAppearStartVisual();
 
             _appearTween = DOTween.Sequence()
                 .SetUpdate(true)   // unscaled time, like the rest of the UI
@@ -133,6 +133,16 @@ namespace Book.Sell.UI
                     .SetEase(Ease.OutBack));
 
             await AwaitSequenceAsync(_appearTween, ct);
+        }
+
+        private void ResetAppearStartVisual()
+        {
+            if (_bubbleCanvasGroup == null || _bubble == null)
+                return;
+
+            KillTween();
+            _bubbleCanvasGroup.alpha = 0f;
+            _bubble.localScale = Vector3.one * _appearScaleFrom;
         }
 
         // Awaits a DOTween sequence via UniTaskCompletionSource + ct.Register (mirrors ResourceAnimationService)

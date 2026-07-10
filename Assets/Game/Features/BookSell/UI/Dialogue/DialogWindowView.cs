@@ -41,6 +41,7 @@ namespace Book.Sell.UI
         [SerializeField] private TMP_Text[] _optionLabels;
 
         private Action<int> _onOptionPick;
+        private DialogClickCatcherGestureBridge _clickCatcherGestureBridge;
 
         /// <summary>Player clicked the screen (request the next reply / close at the end).</summary>
         public event Action ScreenClicked;
@@ -53,7 +54,15 @@ namespace Book.Sell.UI
         protected override void Awake()
         {
             base.Awake();
-            if (_clickCatcher != null) _clickCatcher.onClick.AddListener(RaiseScreenClicked);
+            if (_clickCatcher != null)
+            {
+                _clickCatcherGestureBridge = _clickCatcher.GetComponent<DialogClickCatcherGestureBridge>();
+                if (_clickCatcherGestureBridge == null)
+                    _clickCatcherGestureBridge = _clickCatcher.gameObject.AddComponent<DialogClickCatcherGestureBridge>();
+
+                _clickCatcherGestureBridge.Configure(_scrollRect, RaiseScreenClicked);
+            }
+
             if (_skipButton != null) _skipButton.onClick.AddListener(RaiseSkipClicked);
 
             // Bind option buttons once to a stable index closure; the active callback is swapped per node via
@@ -75,6 +84,7 @@ namespace Book.Sell.UI
         {
             base.OnDestroy();
             if (_clickCatcher != null) _clickCatcher.onClick.RemoveListener(RaiseScreenClicked);
+            if (_clickCatcherGestureBridge != null) _clickCatcherGestureBridge.Clear();
             if (_skipButton != null) _skipButton.onClick.RemoveListener(RaiseSkipClicked);
 
             if (_optionButtons != null)
