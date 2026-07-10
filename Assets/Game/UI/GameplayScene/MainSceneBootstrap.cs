@@ -17,6 +17,7 @@ public class MainSceneBootstrap : MonoBehaviour
     private ISaveService _save;
     private ITransitionAnimationService _transition;
     private IPublisher<GameplayHubReady> _hubReadyPublisher;
+    private WelcomeWindowStartupSettings _welcomeWindowStartupSettings;
 
     private CancellationToken _destroyToken;
 
@@ -25,12 +26,14 @@ public class MainSceneBootstrap : MonoBehaviour
         UIManager uiManager,
         ISaveService save,
         ITransitionAnimationService transition,
-        IPublisher<GameplayHubReady> hubReadyPublisher)
+        IPublisher<GameplayHubReady> hubReadyPublisher,
+        WelcomeWindowStartupSettings welcomeWindowStartupSettings)
     {
         _uiManager = uiManager;
         _save = save;
         _transition = transition;
         _hubReadyPublisher = hubReadyPublisher;
+        _welcomeWindowStartupSettings = welcomeWindowStartupSettings;
     }
 
     private void Awake()
@@ -57,15 +60,16 @@ public class MainSceneBootstrap : MonoBehaviour
             ct.ThrowIfCancellationRequested();
 
             var firstEntry = await IsFirstEntryAsync(ct);
+            var showWelcomeWindow = firstEntry && (_welcomeWindowStartupSettings?.StartWelcomeWindow ?? true);
 
             // On first entry keep the hub invisible behind the non-full-screen welcome letter; the reveal
             // then shows the scene background + letter without flashing the HUD.
-            if (firstEntry)
+            if (showWelcomeWindow)
                 hud.SetHudVisible(false);
 
             await _transition.PlayRevealAsync(ct);   // remove the transition cover
 
-            if (firstEntry)
+            if (showWelcomeWindow)
             {
                 await ShowWelcomeAndWaitAsync(ct);
                 hud.SetHudVisible(true);

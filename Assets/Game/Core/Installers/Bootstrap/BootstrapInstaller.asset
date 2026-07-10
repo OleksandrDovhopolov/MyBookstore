@@ -18,5 +18,6 @@ MonoBehaviour:
   _resourceAnimationSettings: {fileID: 11400000, guid: 959256b9332690b4aa86371672da5694, type: 2}
   _tutorialOverlaySettings: {fileID: 11400000, guid: 4c49e495dbedfee479dd51430ae5cb26, type: 2}
   _tutorialAutoStart: 0
+  _startWelcomeWindow: 0
   _useDebugFeatures: 0
   _skipFullLoading: 0

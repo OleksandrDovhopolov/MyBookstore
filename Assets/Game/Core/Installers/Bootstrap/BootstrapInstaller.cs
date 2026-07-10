@@ -37,6 +37,10 @@ namespace Game.Bootstrap
                  "but sequences never auto-start from triggers or resume on load. Explicit TryStartAsync still works.")]
         [SerializeField] private bool _tutorialAutoStart = true;
 
+        [Header("FTUE")]
+        [Tooltip("When off, the first-entry WelcomeWindow is not shown. The welcome_completed save flag is left unchanged.")]
+        [SerializeField] private bool _startWelcomeWindow = true;
+
 #if UNITY_EDITOR
         [Header("Debug Start (Editor only)")]
         [Tooltip("Master switch. When off, the debug flags below are ignored.")]
@@ -78,7 +82,7 @@ namespace Game.Bootstrap
             builder.RegisterQuest();               // in-memory quest lifecycle over the condition engine (ISaveHook init)
             builder.RegisterTutorial(_tutorialOverlaySettings, _tutorialAutoStart); // forced-step tutorial engine + overlay + "tutorialCompleted" (ISaveHook init)
             builder.RegisterCharacters();          // read-side character/memory projection over quests (ISaveHook init)
-            builder.RegisterFtue();
+            builder.RegisterFtue(_startWelcomeWindow);
             builder.RegisterBookSellSharedState(); // ISalesShelfStateService — общий для хаба и локации
             builder.RegisterPreparation();         // Preparation services (окно PreparationWindow инжектится глобально)
 

@@ -8,8 +8,9 @@ namespace Game.Bootstrap
     // Resolves from the same scope: ISaveService, IConfigsService.
     public static class FtueVContainerBindings
     {
-        public static void RegisterFtue(this IContainerBuilder builder)
+        public static void RegisterFtue(this IContainerBuilder builder, bool startWelcomeWindow = true)
         {
+            builder.RegisterInstance(new WelcomeWindowStartupSettings(startWelcomeWindow));
             builder.Register<IFtueBootstrapper, FtueBootstrapper>(Lifetime.Singleton);
         }
     }
