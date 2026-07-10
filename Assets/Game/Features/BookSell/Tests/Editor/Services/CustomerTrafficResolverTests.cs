@@ -1,10 +1,13 @@
 using System;
+using System.Text.RegularExpressions;
 using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Book.Sell.Tests.Editor.Fakes;
 using Game.Configs.Models;
 using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Book.Sell.Tests.Editor.Services
 {
@@ -42,6 +45,7 @@ namespace Book.Sell.Tests.Editor.Services
                 configs,
                 new ICustomerTrafficContributor[] { new PercentContributor(0.5f) });
 
+            LogAssert.Expect(LogType.Log, new Regex(@"\[Sales\.Traffic\] resolved day=1 .*hardOverride=true .*final=3 .*contributors=0"));
             var result = resolver.Resolve(Setup(1), new SalesTuning());
 
             Assert.IsTrue(result.IsHardOverride);
@@ -57,6 +61,9 @@ namespace Book.Sell.Tests.Editor.Services
                 configs,
                 new ICustomerTrafficContributor[] { new PercentContributor(0.20f), new PercentContributor(-0.05f) });
 
+            LogAssert.Expect(LogType.Log, new Regex(@"\[Sales\.Traffic\] contribution day=2 .*percentDelta=0\.2 .*reason=test"));
+            LogAssert.Expect(LogType.Log, new Regex(@"\[Sales\.Traffic\] contribution day=2 .*percentDelta=-0\.05 .*reason=test"));
+            LogAssert.Expect(LogType.Log, new Regex(@"\[Sales\.Traffic\] resolved day=2 .*percentDelta=0\.15 .*raw=11\.5 .*rounded=12 .*final=12 .*contributors=2"));
             var result = resolver.Resolve(Setup(2), new SalesTuning());
 
             Assert.IsFalse(result.IsHardOverride);

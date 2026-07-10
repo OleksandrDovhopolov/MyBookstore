@@ -318,6 +318,148 @@ Recommended default:
 - regular traffic count excludes special/story/quest customers;
 - scripted FTUE days can use a separate composition spec when exact total headcount matters.
 
+## Logging And Log Analysis Contract
+
+The traffic system must be easy to reconstruct from a log file. A developer should be able to answer:
+
+```text
+Why did sales day N get X regular customers?
+```
+
+Use one stable log tag for all customer-traffic calculation messages:
+
+```text
+[Sales.Traffic]
+```
+
+Until the project has a production logging wrapper for gameplay services, `Debug.Log` / `Debug.LogWarning` is acceptable. When `docs/SERVICES/LOGGING_SYSTEM.md` is implemented for this project, the same events should move to a typed/channel logger without changing the event names or payload fields.
+
+### Required Events
+
+Log exactly one summary line per traffic resolution:
+
+```text
+[Sales.Traffic] resolved day=1 location=park baselineSource=dayOverride baseline=3 applyModifiers=false hardOverride=true raw=3 rounded=3 min=0 max=50 final=3 contributors=0
+```
+
+For modifier-enabled days, include contribution summary:
+
+```text
+[Sales.Traffic] resolved day=5 location=promenade baselineSource=default baseline=10 applyModifiers=true hardOverride=false percentDelta=0.15 multiplier=1.00 flatDelta=0 raw=11.50 rounded=12 min=1 max=50 final=12 contributors=2
+```
+
+Log one optional breakdown line per non-neutral contributor, only when it actually contributes:
+
+```text
+[Sales.Traffic] contribution day=5 source=location id=promenade percentDelta=0.20 multiplier=1.00 flatDelta=0 reason=location.promenade
+[Sales.Traffic] contribution day=5 source=decor id=rain_sign percentDelta=-0.05 multiplier=1.00 flatDelta=0 reason=decor.rain_sign
+```
+
+Log warning lines for invalid or surprising config:
+
+```text
+[Sales.Traffic] warning day=1 hard override customerCount=-1 is invalid
+[Sales.Traffic] warning day=1 hard override regularCount=3 conflicts with requestFloor=5
+[Sales.Traffic] warning duplicate day override day=2 first=5 second=7 using=second
+```
+
+If the production spawner applies a request-count floor after the resolver, log that separately because it is not part of the resolver result:
+
+```text
+[Sales.Traffic] spawnerFloor day=4 resolvedRegular=3 requestCount=5 finalRegular=5 applied=true
+```
+
+If hard overrides are defined as "exactly N regular customers", the recommended rule is that the request-count floor does **not** mutate the value. In that case, log only a warning when the configured hard override conflicts with available active requests.
+
+### Required Fields
+
+The summary event must contain:
+
+- `day`: sales day number from `SalesSessionSetup.Day`.
+- `location`: `SalesSessionSetup.LocationId`, or empty/null marker.
+- `baselineSource`: `dayOverride`, `default`, or future source id.
+- `baseline`: baseline count before modifiers.
+- `applyModifiers`: whether contributors were allowed to run.
+- `hardOverride`: true when the baseline is final and bypasses modifiers/clamp.
+- `percentDelta`: summed additive percentage delta.
+- `multiplier`: product of explicit multipliers.
+- `flatDelta`: summed flat count delta.
+- `raw`: raw calculated value before rounding.
+- `rounded`: value after rounding before clamp.
+- `min` / `max`: active clamp values.
+- `final`: final regular customer count returned by the resolver.
+- `contributors`: number of non-neutral contributions included in the calculation.
+
+Each contribution event must contain:
+
+- `day`;
+- `source`: stable contributor type id, for example `location`, `decor`, `weather`, `event`;
+- `id`: source object id, for example location id or decor id;
+- `percentDelta`;
+- `multiplier`;
+- `flatDelta`;
+- `reason`: stable reason key suitable for tests and future forecast UI.
+
+### Contributor Logging Rules
+
+Contributors should not independently log normal "no effect" cases. They should return neutral/no contribution and let the resolver produce the one summary event.
+
+Contributors may log warnings for bad local data, for example:
+
+- decor id from setup has no `DecorConfig`;
+- location id has no `LocationConfig`;
+- percent value is NaN or outside a validated range.
+
+Normal contribution breakdown should be emitted by the resolver from `CustomerTrafficResult.Breakdown`, not scattered across each contributor. This keeps the log order stable and makes log parsing easier.
+
+### Log Levels
+
+- `Information`: one resolve summary per sales day start.
+- `Debug`: per-contributor breakdown, if logs become too noisy.
+- `Warning`: invalid config, duplicate day rows, missing referenced config, hard override conflicts.
+- `Error`: only for states where the resolver cannot produce a valid count and must fall back.
+
+### Parser-Friendly Format
+
+Prefer stable key-value fields over prose:
+
+```text
+key=value key=value key=value
+```
+
+Avoid localized text in machine-parsed parts of the message. Human-readable text can be appended after the key-value section if needed.
+
+Recommended event names:
+
+- `resolved`
+- `contribution`
+- `spawnerFloor`
+- `warning`
+
+This makes simple log filtering possible:
+
+```text
+[Sales.Traffic] resolved
+[Sales.Traffic] contribution
+[Sales.Traffic] spawnerFloor
+```
+
+### Example Full Trace
+
+```text
+[Sales.Traffic] contribution day=2 source=location id=park percentDelta=0.10 multiplier=1.00 flatDelta=0 reason=location.park
+[Sales.Traffic] contribution day=2 source=decor id=poster_a percentDelta=0.05 multiplier=1.00 flatDelta=0 reason=decor.poster_a
+[Sales.Traffic] resolved day=2 location=park baselineSource=dayOverride baseline=5 applyModifiers=true hardOverride=false percentDelta=0.15 multiplier=1.00 flatDelta=0 raw=5.75 rounded=6 min=1 max=50 final=6 contributors=2
+```
+
+Hard override example:
+
+```text
+[Sales.Traffic] resolved day=1 location=park baselineSource=dayOverride baseline=3 applyModifiers=false hardOverride=true raw=3 rounded=3 min=1 max=50 final=3 contributors=0
+```
+
+The hard override log intentionally shows clamp settings but does not apply them.
+
 ## Edge Cases
 
 ### Zero customers
@@ -376,6 +518,8 @@ If a future contributor needs an absolute override, make that a named contributi
    - day 1 hard override returns exactly 3;
    - day 1 ignores a fake modifier when `applyModifiers = false`;
    - hard override bypasses the min/max clamp;
+   - resolver emits a summary log containing baseline, modifier totals, raw, rounded, clamp, final, and contributor count;
+   - resolver emits stable breakdown entries for non-neutral contributors;
    - unknown day uses default count;
    - day override with `applyModifiers = true` applies modifiers;
    - final value clamps to min/max (non-hard days);

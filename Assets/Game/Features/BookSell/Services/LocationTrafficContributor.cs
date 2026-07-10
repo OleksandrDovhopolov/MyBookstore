@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using Book.Sell.API;
 using Game.Configs;
 using Game.Configs.Models;
@@ -29,7 +28,7 @@ namespace Book.Sell.Services
             var delta = location.CustomerTrafficPercentDelta;
             if (delta == 0f) return;
 
-            accumulator.Add(delta, $"location {context.LocationId} {delta.ToString("+0.##;-0.##", CultureInfo.InvariantCulture)}");
+            accumulator.Add(delta, "location", context.LocationId, $"location.{context.LocationId}");
         }
     }
 }

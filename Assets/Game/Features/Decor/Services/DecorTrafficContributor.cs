@@ -37,7 +37,7 @@ namespace Game.Decor.Services
             }
 
             if (total == 0f) return;
-            accumulator.Add(total, $"decor x{decorIds.Count}");
+            accumulator.Add(total, "decor", "placed", $"decor.placed.{decorIds.Count}");
         }
     }
 }

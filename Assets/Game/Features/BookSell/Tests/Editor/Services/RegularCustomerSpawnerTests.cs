@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Book.Sell.Tests.Editor.Fakes;
 using Game.Configs.Models;
 using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Book.Sell.Tests.Editor.Services
 {
@@ -42,6 +45,7 @@ namespace Book.Sell.Tests.Editor.Services
         [Test]
         public void NonHardDay_RequestFloor_RaisesCount()
         {
+            LogAssert.Expect(LogType.Log, new Regex(@"\[Sales\.Traffic\] spawnerFloor day=1 resolvedRegular=2 requestCount=5 finalRegular=5 applied=true"));
             var count = BuildCount(ConfigsWithRequests(5),
                 new CustomerTrafficResult(2, 2, isHardOverride: false, breakdown: null));
             Assert.AreEqual(5, count); // floor(2, 5) = 5
@@ -58,6 +62,7 @@ namespace Book.Sell.Tests.Editor.Services
         [Test]
         public void HardOverrideDay_SkipsFloor_StaysExact()
         {
+            LogAssert.Expect(LogType.Warning, new Regex(@"\[Sales\.Traffic\] warning day=1 hardOverride=true regularCount=3 requestFloor=5 applied=false"));
             var count = BuildCount(ConfigsWithRequests(5),
                 new CustomerTrafficResult(3, 3, isHardOverride: true, breakdown: null));
             Assert.AreEqual(3, count); // floor skipped despite 5 requests

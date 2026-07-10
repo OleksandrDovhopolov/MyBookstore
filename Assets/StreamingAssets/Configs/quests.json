@@ -52,6 +52,54 @@
     ]
   },
   {
+    "id": "tut_first_day",
+    "type": "tutorial",
+    "chainId": null,
+    "characterId": null,
+    "titleKey": "quest.tut_first_day.title",
+    "descriptionKey": "quest.tut_first_day.desc",
+    "nextQuestIds": [],
+    "activationConditions": null,
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "descriptionKey": "task.tut_visit_location",
+        "completionConditions": {
+          "all": [
+            { "type": "visitLocation", "locationId": "loc_downtown", "min": 1 }
+          ]
+        }
+      }
+    ],
+    "rewards": [],
+    "worldEffects": []
+  },
+  {
+    "id": "tut_first_sale",
+    "type": "tutorial",
+    "chainId": null,
+    "characterId": null,
+    "titleKey": "quest.tut_first_sale.title",
+    "descriptionKey": "quest.tut_first_sale.desc",
+    "nextQuestIds": [],
+    "activationConditions": null,
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "descriptionKey": "task.tut_sell_fantasy",
+        "completionConditions": {
+          "all": [
+            { "type": "soldGenreAtLocation", "genre": "Fantasy", "locationId": "loc_downtown", "min": 1 }
+          ]
+        }
+      }
+    ],
+    "rewards": [],
+    "worldEffects": []
+  },
+  {
     "id": "q_intro_tilde",
     "type": "story",
     "chainId": null,

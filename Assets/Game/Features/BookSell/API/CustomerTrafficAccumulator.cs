@@ -19,7 +19,10 @@ namespace Book.Sell.API
         public void Add(float percentDelta, string reason)
             => _contributions.Add(new CustomerTrafficContribution(percentDelta, reason));
 
-        /// <summary>Sum of all collected percent deltas (the term applied as <c>1 + Σ PercentDelta</c>).</summary>
+        public void Add(float percentDelta, string source, string id, string reason)
+            => _contributions.Add(new CustomerTrafficContribution(percentDelta, source, id, reason));
+
+        /// <summary>Sum of all collected percent deltas.</summary>
         public float TotalPercentDelta()
         {
             var sum = 0f;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Book.Sell.Domain;
 using Game.Configs;
 using Game.Configs.Models;
+using UnityEngine;
 
 namespace Book.Sell.Services
 {
@@ -14,6 +15,7 @@ namespace Book.Sell.Services
     /// </summary>
     public sealed class RegularCustomerSpawner : ICustomerSpawner
     {
+        private const string TrafficLogTag = "[Sales.Traffic]";
         private const int MaxExtraPassivePerSide = 2;   // k in 1..2
 
         private readonly IConfigsService _configs;
@@ -28,12 +30,30 @@ namespace Book.Sell.Services
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
         {
             var result = _trafficResolver.Resolve(setup, tuning);
+            var requestCount = _configs.GetAll<RequestConfig>().Count;
 
-            // Request-count floor: every active RequestConfig must get a customer — but NOT on a hard-override
-            // day, whose count is exact by design (config validation warns if that count is under-supplied).
+            // Request-count floor: every active RequestConfig must get a customer, but not on hard-override
+            // days, whose count is exact by design. The warning keeps that conflict visible in logs.
             var count = result.FinalCount;
             if (!result.IsHardOverride)
-                count = Math.Max(count, _configs.GetAll<RequestConfig>().Count);
+            {
+                var floored = Math.Max(count, requestCount);
+                if (floored != count)
+                {
+                    Debug.Log($"{TrafficLogTag} spawnerFloor day={setup.Day} " +
+                              $"resolvedRegular={count} requestCount={requestCount} " +
+                              $"finalRegular={floored} applied=true");
+                }
+
+                count = floored;
+            }
+            else if (requestCount > count)
+            {
+                Debug.LogWarning($"{TrafficLogTag} warning day={setup.Day} " +
+                                 $"hardOverride=true regularCount={count} " +
+                                 $"requestFloor={requestCount} applied=false");
+            }
+
             if (count < 0) count = 0;
 
             var archetype = new PassiveAttemptsArchetype(1, MaxExtraPassivePerSide);
