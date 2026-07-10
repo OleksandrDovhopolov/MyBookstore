@@ -171,10 +171,15 @@ namespace Book.Sell.UI
             _revealing = true;
             var line = _lines[_lineIndex];
             _lineIndex++;
+            var revealToken = _revealCts?.Token ?? CancellationToken.None;
 
             var view = View.AppendLine(line?.Speaker, line?.Text, SideFor(line?.Speaker));
+            await View.ScrollToBottomAfterLayoutAsync(revealToken);
+
             if (view != null && _revealCts != null)
-                await view.RevealAsync(_revealCts.Token);
+                await view.RevealAsync(revealToken);
+
+            await View.ScrollToBottomAfterLayoutAsync(revealToken);
 
             _revealing = false;
 

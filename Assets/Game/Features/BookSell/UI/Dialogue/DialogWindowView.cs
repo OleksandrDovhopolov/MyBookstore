@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Game.UI;
 using TMPro;
 using UIShared;
@@ -91,6 +93,23 @@ namespace Book.Sell.UI
             return line;
         }
 
+        /// <summary>Snaps to the bottom after Unity has had a chance to resolve nested layout/content fitters.</summary>
+        public async UniTask ScrollToBottomAfterLayoutAsync(CancellationToken ct)
+        {
+            try
+            {
+                ScrollToBottom();
+                await UniTask.NextFrame(ct);
+                ScrollToBottom();
+                await UniTask.NextFrame(ct);
+                ScrollToBottom();
+            }
+            catch (OperationCanceledException)
+            {
+                // Window is closing while the layout pass is pending.
+            }
+        }
+
         /// <summary>Clears the feed (returns all pooled replies).</summary>
         public void ClearLines() => _linePool.DisableAll();
 
@@ -130,6 +149,10 @@ namespace Book.Sell.UI
             if (_scrollRect == null) return;
             // Rebuild layout so the new reply's size is accounted for before snapping to the bottom.
             Canvas.ForceUpdateCanvases();
+            if (_scrollRect.content != null)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(_scrollRect.content);
+            Canvas.ForceUpdateCanvases();
+            _scrollRect.velocity = Vector2.zero;
             _scrollRect.verticalNormalizedPosition = 0f;
         }
 
