@@ -174,6 +174,17 @@
   - **Портреты/аватары, цветовая тема бабла** по говорящему.
   - **UI-автотесты** окна/анимации (сейчас только ручной прогон через чит).
 
+- [ ] **GAME-13. Архетипный микс покупателей + composition policy.**
+  Сейчас `RegularCustomerSpawner` строит всех покупателей одним архетипом (`PassiveAttemptsArchetype`
+  с общим диапазоном попыток из `SalesTuning`) — поведение однородное. Ввести микс архетипов
+  (browser / buyer / active-request и т.п.) со своими профилями попыток и `ICustomerCompositionPolicy`,
+  которая решает «какой архетип у каждого покупателя» — прямой аналог `ICustomerTrafficResolver`
+  («сколько»). Диапазон пассивных попыток переезжает в per-archetype конфиг; число попыток лучше
+  связать с профилем желаний покупателя, а не с глобальной константой. Задел уже есть: выключенный
+  active-mix и `PickActiveIndices` в `Ten*`-спавнерах, `PassiveActivePassiveArchetype` /
+  `ActiveRequestArchetype`, TODO про «несколько режимов» в `DefaultCustomerSpawner`. Брать под возврат
+  active-mix.
+
 ---
 
 ## 🎨 Визуал

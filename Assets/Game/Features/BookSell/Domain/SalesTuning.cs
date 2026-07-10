@@ -56,6 +56,14 @@ namespace Book.Sell.Domain
         /// Spawning is gated until a slot frees. <c>&lt;= 0</c> means no limit.</summary>
         public int MaxConcurrentCustomers { get; set; } = 3;
 
+        /// <summary>Minimum passive purchase attempts a regular customer makes per visit.</summary>
+        public int MinPassiveAttempts { get; set; } = 1;
+
+        /// <summary>Maximum passive purchase attempts a regular customer makes per visit. Independent of
+        /// shelf size — the count is drawn in <c>[MinPassiveAttempts, MaxPassiveAttempts]</c> regardless of
+        /// how many books are on the shelf.</summary>
+        public int MaxPassiveAttempts { get; set; } = 6;
+
         /// <summary>How many genres a customer's passive desire profile holds (requested-genre model).
         /// Clamped to the available genres by the profile provider.</summary>
         public int PassiveRequestGenreCount { get; set; } = 2;

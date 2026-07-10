@@ -16,7 +16,6 @@ namespace Book.Sell.Services
     public sealed class RegularCustomerSpawner : ICustomerSpawner
     {
         private const string TrafficLogTag = "[Sales.Traffic]";
-        private const int MaxExtraPassivePerSide = 2;   // k in 1..2
 
         private readonly IConfigsService _configs;
         private readonly ICustomerTrafficResolver _trafficResolver;
@@ -56,7 +55,7 @@ namespace Book.Sell.Services
 
             if (count < 0) count = 0;
 
-            var archetype = new PassiveAttemptsArchetype(1, MaxExtraPassivePerSide);
+            var archetype = new PassiveAttemptsArchetype(tuning.MinPassiveAttempts, tuning.MaxPassiveAttempts);
             var customers = new List<Customer>(count);
             for (var i = 0; i < count; i++)
             {
