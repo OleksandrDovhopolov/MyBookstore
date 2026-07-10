@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using Game.Decor.UI;
 using Game.Inventory.UI;
 using Game.Newspaper.UI;
+using Game.Quest.UI;
 using Game.Shop.UI;
 using Game.UI;
 
@@ -41,6 +42,12 @@ namespace Game.Cheat
                 item.OnClick("Open Newspaper", () =>
                 {
                     _uiManager.ShowAsync<NewspaperWindow>().Forget();
+                }));
+
+            cheatsContainer.AddItem<CheatButtonItem>(item =>
+                item.OnClick("Open Quests", () =>
+                {
+                    _uiManager.ShowAsync<QuestWindow>().Forget();
                 }));
         }
     }

@@ -17,14 +17,11 @@ namespace Game.DayCycle.Tests.Editor
             {
                 new DayConfig
                 {
-                    Id = "day_001", DayIndex = 1, Title = "День 1",
-                    WeatherId = "clear", EventId = "exam_week",
-                    DemandGenres = new[] { "science" }, TargetLocationIds = new[] { "loc_downtown" }
+                    Id = "day_001", DayIndex = 1
                 },
                 new DayConfig
                 {
-                    Id = "day_002", DayIndex = 2, Title = "День 2",
-                    WeatherId = "rain", EventId = ""
+                    Id = "day_002", DayIndex = 2
                 }
             });
             return configs;
@@ -66,7 +63,6 @@ namespace Game.DayCycle.Tests.Editor
 
             Assert.AreEqual(2, ctx.Day);
             Assert.AreEqual("day_002", ctx.DayId);
-            Assert.AreEqual("rain", ctx.WeatherId);
         }
 
         [Test]
@@ -95,8 +91,6 @@ namespace Game.DayCycle.Tests.Editor
             var result = Run(service.ContinueToPreparationAsync(CancellationToken.None));
 
             Assert.AreEqual(1, result.Day);
-            CollectionAssert.AreEqual(new[] { "weather_clear", "event_exam_week" }, result.ActiveModifierIds);
-            CollectionAssert.AreEqual(new[] { "loc_downtown" }, result.TargetLocationIds);
 
             // «Перезапуск»: новый сервис над тем же хранилищем видит фазу Preparation.
             var afterRestart = new DayProgressService(new FakeSaveService(save.Store));

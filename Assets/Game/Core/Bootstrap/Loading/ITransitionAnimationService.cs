@@ -6,10 +6,9 @@ namespace Game.Bootstrap.Loading
     // Хук анимации перехода между сценами (cover «закрыть экран» / reveal «открыть экран»).
     // Вызывается GameFlowService вокруг load/unload сцен.
     //
-    // Текущая реализация — NoOpTransitionAnimationService (без анимации). Реальный fade/cover
-    // делается своим UI-кодом (НЕ DOTween — проект отказался от DOTween) в отдельной задаче;
-    // такой impl живёт в Game.UI и реализует этот интерфейс. Research-референс cover/reveal —
-    // docs/INPROGRESS/TRANSITION_ANIMATION_SERVICE.md.
+    // Runtime registration uses DeferredTransitionAnimationService as a router to the MonoBehaviour
+    // assigned on UIManagerCanvas. NoOpTransitionAnimationService remains only as a defensive fallback
+    // inside the router when the prefab reference is missing.
     public interface ITransitionAnimationService
     {
         // Закрывает экран перед сменой сцен.

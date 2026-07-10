@@ -11,15 +11,20 @@
         "Book.Sell.API",
         "Game.Decor.API",
         "Game.Shop.API",
+        "Game.Conditions.API",
         "Infrastructure",
         "Unity.TextMeshPro",
-        "Game.Core.UI"
+        "Game.Core.UI",
+        "DOTween.Modules"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll",
+        "DOTween.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],

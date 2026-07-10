@@ -17,7 +17,8 @@
         "Game.Decor.API",
         "Game.LocationEntry.API",
         "Game.Resources.API",
-        "Infrastructure"
+        "Infrastructure",
+        "Game.LocationVisits.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

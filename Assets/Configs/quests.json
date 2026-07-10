@@ -1,0 +1,127 @@
+[
+  {
+    "id": "far_beach_intro",
+    "type": "story",
+    "chainId": "far_beach_sand_empire",
+    "characterId": null,
+    "titleKey": "quest.far_beach_intro.title",
+    "descriptionKey": "quest.far_beach_intro.desc",
+    "nextQuestIds": ["sand_inspiration"],
+    "activationConditions": null,
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "descriptionKey": "task.visit_far_beach",
+        "completionConditions": {
+          "all": [
+            { "type": "visitLocation", "locationId": "loc_downtown", "min": 3 }
+          ]
+        }
+      }
+    ],
+    "rewards": [],
+    "worldEffects": []
+  },
+  {
+    "id": "sand_inspiration",
+    "type": "side",
+    "chainId": "far_beach_sand_empire",
+    "characterId": null,
+    "titleKey": "quest.sand_inspiration.title",
+    "descriptionKey": "quest.sand_inspiration.desc",
+    "nextQuestIds": [],
+    "activationConditions": null,
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "descriptionKey": "task.sell_fantasy_far_beach",
+        "completionConditions": {
+          "all": [
+            { "type": "soldGenreAtLocation", "genre": "Fantasy", "locationId": "loc_downtown", "min": 15 }
+          ]
+        }
+      }
+    ],
+    "rewards": [
+      { "kind": "InventoryItem", "id": "harper_castle_donation_box", "category": "decor", "amount": 1 }
+    ],
+    "worldEffects": [
+      { "type": "locationCustomerBonus", "params": { "locationId": "loc_downtown", "amount": 2 } }
+    ]
+  },
+  {
+    "id": "tut_first_day",
+    "type": "tutorial",
+    "chainId": null,
+    "characterId": null,
+    "titleKey": "quest.tut_first_day.title",
+    "descriptionKey": "quest.tut_first_day.desc",
+    "nextQuestIds": [],
+    "activationConditions": null,
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "descriptionKey": "task.tut_visit_location",
+        "completionConditions": {
+          "all": [
+            { "type": "visitLocation", "locationId": "loc_downtown", "min": 1 }
+          ]
+        }
+      }
+    ],
+    "rewards": [],
+    "worldEffects": []
+  },
+  {
+    "id": "tut_first_sale",
+    "type": "tutorial",
+    "chainId": null,
+    "characterId": null,
+    "titleKey": "quest.tut_first_sale.title",
+    "descriptionKey": "quest.tut_first_sale.desc",
+    "nextQuestIds": [],
+    "activationConditions": null,
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "descriptionKey": "task.tut_sell_fantasy",
+        "completionConditions": {
+          "all": [
+            { "type": "soldGenreAtLocation", "genre": "Fantasy", "locationId": "loc_downtown", "min": 1 }
+          ]
+        }
+      }
+    ],
+    "rewards": [],
+    "worldEffects": []
+  },
+  {
+    "id": "q_intro_tilde",
+    "type": "story",
+    "chainId": null,
+    "characterId": "tilde",
+    "dialogueId": "dlg_tilde_meet",
+    "titleKey": "quest.q_intro_tilde.title",
+    "descriptionKey": "quest.q_intro_tilde.desc",
+    "nextQuestIds": [],
+    "activationConditions": null,
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "descriptionKey": "task.q_intro_tilde_meet",
+        "completionConditions": {
+          "all": [
+            { "type": "visitLocation", "locationId": "loc_downtown", "min": 3 }
+          ]
+        }
+      }
+    ],
+    "rewards": [],
+    "worldEffects": []
+  }
+]

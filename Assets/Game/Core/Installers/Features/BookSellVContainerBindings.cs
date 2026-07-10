@@ -1,8 +1,11 @@
 using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
+using Book.Sell.Services.Director;
 using Book.Sell.UI;
 using Book.Sell.UI.Customer;
+using Game.Configs;
+using Game.Quest.API;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -23,6 +26,9 @@ namespace Game.Bootstrap
         public static void RegisterBookSellSharedState(this IContainerBuilder builder)
         {
             builder.Register<ISalesShelfStateService, SalesShelfStateService>(Lifetime.Singleton);
+            // TEMP DEBUG: keep economy/location/decor modifiers, but floor passive sale chance at 50%.
+            // Restore EconomyBasedSaleChanceCalculator when sales-flow testing is done.
+            builder.Register<IBaseSaleChanceCalculator, DebugMinimumSaleChanceCalculator>(Lifetime.Singleton);
         }
 
         // Passive sales v2 (requested-genre): each customer rolls one genre from its profile.
@@ -58,9 +64,10 @@ namespace Game.Bootstrap
             // catalog if no session exists yet.
             builder.Register<IRecommendationScoringService, RecommendationScoringService>(Lifetime.Singleton);
 
-            // Passive sale chance gate (ADR-0004). IDecorModifierProvider is registered by RegisterDecor.
-            builder.Register<IBaseSaleChanceCalculator, EconomyBasedSaleChanceCalculator>(Lifetime.Singleton);
+            // Passive sale chance gate (ADR-0004) resolves from the global scope so HUD previews and
+            // sales use the same calculator instance.
             // Per-customer desire profile — used by the spawner in both passive models.
+            builder.Register<IDemandGenreWeightProvider, SalesTuningDemandGenreWeightProvider>(Lifetime.Singleton);
             builder.Register<ICustomerProfileProvider, LocationDemandProfileProvider>(Lifetime.Singleton);
             // Passive model behind the IPassivePurchaseResolver seam. Default = requested-genre (v2).
             // To roll back to the old shelf-roll model, call RegisterLegacyPassiveSales(builder) instead.
@@ -70,14 +77,34 @@ namespace Game.Bootstrap
 
             // Customer simulation.
             builder.Register<IInteractionLock, InteractionLock>(Lifetime.Singleton);
+            builder.Register<IPassiveSaleRule, PassiveSaleCommentRule>(Lifetime.Singleton);
+            builder.Register<ICustomerDirector>(
+                resolver => new CustomerDirector(new[] { resolver.Resolve<IPassiveSaleRule>() }),
+                Lifetime.Singleton);
             
             
             //builder.Register<ICustomerSpawner, DefaultCustomerSpawner>(Lifetime.Singleton);
             //builder.Register<ICustomerSpawner, FifteenCustomersSinglePassiveAttemptSpawner>(Lifetime.Singleton); //TEST was created to test zero books selected
             //builder.Register<ICustomerSpawner, ActiveRequestsOnlyCustomerSpawner>(Lifetime.Singleton); //TEST 3-5 active-request-only customers (1 request each)
             //builder.Register<ICustomerSpawner, OneToThreePassiveAttemptsCustomerSpawner>(Lifetime.Singleton); //TEST 1-N passive purchases
-            builder.Register<ICustomerSpawner, TenCustomersThreeActiveAfterPassiveSpawner>(Lifetime.Singleton); //TEST 10 customers, 1-2 passive each; first 3 also active after passive
             //builder.Register<ICustomerSpawner, TenCustomersThreeActiveBetweenPassivesSpawner>(Lifetime.Singleton); //TEST 10 customers, 1-2 passive each; first 3: passive -> active -> 1 passive
+
+            // Fire-once memory for scripted dialogues (GAME-6). Save-backed; ISaveService resolves from the
+            // parent (global) scope. Used by the quest-scheduling spawner (filter) and DialoguePresenter (mark).
+            builder.Register<IDeliveredDialoguesService, SaveBackedDeliveredDialoguesService>(Lifetime.Singleton);
+
+            // Base composition (concrete type) + the quest-scheduling decorator as ICustomerSpawner (GAME-6).
+            // The decorator prepends a quest character per ACTIVE quest that carries a (not-yet-delivered)
+            // dialogue — the day no longer knows about dialogues. NOTE: register the inner concretely —
+            // resolving ICustomerSpawner inside the ICustomerSpawner factory would be a self-reference. Swap
+            // the inner type here to change base composition. IQuestsService resolves from the global scope.
+            builder.Register<TenCustomersThreeActiveAfterPassiveSpawner>(Lifetime.Singleton); //TEST 10 customers, 1-2 passive each; first 3 also active after passive
+            builder.Register<ICustomerSpawner>(r => new QuestSchedulingCustomerSpawner(
+                    r.Resolve<TenCustomersThreeActiveAfterPassiveSpawner>(),
+                    r.Resolve<IConfigsService>(),
+                    r.Resolve<IQuestsService>(),
+                    r.Resolve<IDeliveredDialoguesService>()),
+                Lifetime.Singleton);
             
             
             // Tuning comes from a designer-editable SO when assigned; otherwise code defaults.
@@ -109,6 +136,11 @@ namespace Game.Bootstrap
             builder.RegisterEntryPoint<RecommendationMinigamePresenter>(Lifetime.Singleton)
                 .AsSelf()
                 .As<IRecommendationMinigamePresenter>();
+
+            // Opens DialogWindow when a scripted dialogue starts (GAME-6 §Этап 5). Same wiring as the
+            // minigame presenter: IUIManager from the parent scope, controller via WindowArgs. The window
+            // owns completion (CompleteDialogue on end); the presenter is the safety-net if opening fails.
+            builder.RegisterEntryPoint<DialoguePresenter>(Lifetime.Singleton);
 
             // Debug screen. Registered only if present in the scene, so the project runs before the UI
             // is wired. Same pattern as MorningScreenView.

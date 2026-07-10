@@ -1,4 +1,5 @@
 using Book.Sell.API;
+using System.Collections.Generic;
 
 namespace Game.DayCycle.Results.Domain
 {
@@ -17,6 +18,7 @@ namespace Game.DayCycle.Results.Domain
         public int NormalCount { get; set; }
         public int FailedCount { get; set; }
         public int SkippedCount { get; set; }
+        public Dictionary<string, int> SoldByGenre { get; set; } = new();
 
         // Cozy one-line review of the day.
         public string ReviewText { get; set; }

@@ -9,32 +9,102 @@
 
 ## 🎮 Геймплей
 
-- [ ] **GAME-1. Replace location demand genre whitelist with weighted demand.**
-  Current `LocationDemandProfileProvider` treats `LocationConfig.DemandGenres` as the pool of genres customers can request/passively buy. This is too strict for a Tiny Bookshop-like model: every stocked genre should remain sellable, while location demand genres get a higher chance/weight. Rework passive demand calculation so `DemandGenres` means boosted/preferred genres, not allowed-only genres. Update tests around `LocationDemandProfileProvider` / `RequestedGenrePassiveResolver` to cover non-demand genres still being sellable with lower chance.
+- [~] **GAME-2. Фича `Game.Quest` — доделать слайс.**
+  Что сделать:
+  - Собрать реальную цепочку квестов на боевом конфиге вместо заглушки.
+  - Доделать UI журнала (`JournalWindow`).
+  - Сверить поведение с решениями из [adr/0007-quest-system.md](adr/0007-quest-system.md).
+  - Награды/эффекты оставить в отдельной задаче GAME-3; условия визита закрыты в GAME-5.
+
+- [ ] **GAME-3. Permanent quest effects / world state (= Этап 6).**
+  Что сделать:
+  - Выдавать награды через `QuestRewardConfig` → `IRewardGrantService`.
+  - Применять постоянные эффекты через `QuestWorldEffectConfig`-хендлеры.
+  - Сохранить `timestamp` и `appliedEffects` для завершённых квестов.
+  - Сделать применение эффектов идемпотентным при повторной загрузке.
+  - Поднять `QuestsSaveKeys.StateSchemaVersion`.
+
+- [x] **GAME-4. Учёт продаж по локации и дню для квестов.**
+  Что сделано:
+  - `Game.SalesStats` расширен счётчиками `SoldByLocationGenre` и `SoldByDayGenre`.
+  - Продажа получает контекст `SaleContext { LocationId, Day }`.
+  - `SalesDayCommitService` записывает продажи в едином commit-чокпоинте.
+  - Добавлены reader-getters для условий `soldGenreAtLocation` и `soldGenreInSingleDay`.
+  - Покрыто EditMode-тестами и зафиксировано в [adr/0007-quest-system.md](adr/0007-quest-system.md).
+
+- [x] **GAME-6. Диалоги покупателей (базовый слайс).**
+  Что сделано:
+  - `DialogStep` (middle-step, держит interaction lock до завершения UI, релиз на `Exit`); sink +
+    контроллер (`DialogueStarted` / `CompleteDialogue`).
+  - Квест-driven спавн: `QuestConfig.DialogueId` + `QuestSchedulingCustomerSpawner` (читает
+    `IQuestsService.GetActiveQuests()`) + fire-once `IDeliveredDialoguesService` (день о диалогах не знает).
+  - Движок графа `DialogueEngine` (view-agnostic) + окно-лента `DialogWindow` / `DialogWindowView` /
+    `DialogLineView`: реплики со сторонами (L/R по говорящему), typewriter, DOTween-появление, скролл; чит-модуль.
+  - Контент `dialogues.json` (граф `{ nodeId, lines:[{ speaker, text }], options }`), англ. тексты.
+  - Спека, факт и расхождения — [INPROGRESS/CUSTOMER_DIALOG_STEP.md](INPROGRESS/CUSTOMER_DIALOG_STEP.md).
+  - Остаток (значимый выбор, world-HUD 2.2, реактивные диалоги, локализация, портреты, …) — см. **Backlog** ниже.
+
+- [ ] **GAME-7. Разобрать дублирование `SelectedBookIds` и `ShelfBookIds`.**
+  Что сделать:
+  - Зафиксировать источник правды для фаз: `preparation.session.SelectedBookIds` как черновик/подтверждённый выбор подготовки, `book_sell.shelf_state.ShelfBookIds` как живое состояние полки продаж.
+  - Проверить, можно ли убрать лишнее зеркало без потери resume-сценариев: релонч в Preparation, релонч в Sales, возврат после failed location entry, продолжение дня после продаж.
+  - Если оба модуля остаются, явно описать контракт синхронизации: когда `ConfirmAsync` копирует выбранные книги в shelf state, когда продажи удаляют книги только из shelf state, когда новый Preparation seed берёт survivors с прошлой полки.
+  - Добавить/обновить тесты на рассинхрон `Confirmed=false`, продажу книги, новый день и повторный вход в Preparation.
+
+- [ ] **GAME-8. Clamp progress у завершённых квестов в UI.**
+  Что сделать:
+  - В `QuestViewModelBuilder` для задач/квестов в `Completed`, `ReadyToAward` и `Awarded` показывать `min(current, target) / target`.
+  - Не показывать overflow вроде `6/3` для уже завершённого квеста; ожидаемый вид — `3/3`.
+  - Добавить EditMode-тест на completed/awarded quest, где live condition progress больше цели.
+
+- [x] **GAME-9. Compact baseline для sales-задач квестов.**
+  Что сделано:
+  - Полный per-task `SalesStatsStateDto` заменён на compact `SalesStatsBaselineDto` по решению [ADR-0008](adr/0008-quest-sales-progress-persistence.md).
+  - Для `soldGenre` хранится baseline только нужного жанра.
+  - Для `soldGenreAtLocation` хранится baseline только пары `(locationId, genre)`.
+  - Для `soldGenreInSingleDay` хранится день активации и count нужного жанра на момент активации.
+  - Сохранена pull-based модель conditions/scoped reader; event-driven progress оставлен будущим направлением.
+  - Quest-save поднят до v4: `Tasks` сохраняются читаемым списком `{ Id, State, SalesBaseline }`, enum-ы пишутся строками.
+  - Legacy full-baseline compatibility удалена: проект в активной разработке, старые сейвы сбрасываются.
+
+- [~] **GAME-10. Туториал — завершить оставшееся.** Движок (Layer 2) и Day 1 v1 реализованы; спека и
+  статус — [INPROGRESS/TUTORIAL_SYSTEM.md](INPROGRESS/TUTORIAL_SYSTEM.md) (§6 роадмап, §6.1 Day 1 v1).
+  Осталось:
+  - **§7 — debug/качество**: cheat-модуль в `Game.Cheat` (list/force-run/force-complete/reset + сброс
+    `ftue.*` = replay Day 1); editor-валидатор id-шников (target ↔ `TutorialTargetIds` ↔ скан префабов на
+    `TutorialTargetTag`; questId ↔ `quests.json`; window id ↔ `TutorialWindowChecker`; парс типов шагов);
+    аналитика (`seq_start`/`step_start` автоматом, `seq_complete` явно).
+  - **Немодальный callout-режим** (pointer+текст **без** dim; тип шага `pointAt`/`callout`) — чтобы
+    подсвечивать контролы на экранах свободного взаимодействия (Open Shop, список жанров, динамический
+    «+» жанра) + динамическая регистрация таргетов из `PreparationGenreRowView` через фасад `TutorialTargets`.
+  - **Строгий day-gate**: condition-factory `currentDayIs` (сейчас Day 1 играет один раз при первом hub,
+    не строго «день == 1»).
+  - **Устойчивость Day 1** (известные ограничения v1 в §6.1): корректный resume посреди дня и cancel-path
+    (закрыл Location/Preparation, не подтвердив) — recovery/блокировка закрытия окон.
+  - **Локализация** текста туториала (сейчас ASCII/English) — через INF-4; поле `textKey` зарезервировано.
+  - **Полировка**: feather-дырка шейдером за тем же API `TutorialBlackoutView`; player-facing Skip;
+    вариант `awaitWindow("closed")`; опц. мягкий pointer на кнопку журнала по `QuestStarted`.
+  - **Ремайндер по editor-обвязке** (если ещё не сделано): prefab текст-панели, asset
+    `TutorialOverlaySettings` + назначение в `BootstrapInstaller`, `TutorialTargetTag` на кнопке Start Day
+    (`hub.start_day_button`), `Tools/Configs/Sync Bundled Defaults` для билда.
+
+- [ ] **GAME-11. Определять размер книги по `pages` из конфига.**
+  Что сделать:
+  - Читать `pages` из `books.json` / `BookConfig` и выводить производный размер книги без ручного поля в контенте.
+  - Правила классификации: `XS <= 200`, `S > 200 && <= 400`, `M > 400 && <= 700`, `L > 700`.
+  - Найти все места, где нужен размер книги (визуал/полки/продажи/фильтры), и заменить хардкод/ручную классификацию на единый resolver.
+  - Покрыть boundary-тестами значения `200`, `201`, `400`, `401`, `700`, `701`.
+
+- [ ] **GAME-12. Определять возрастную категорию книги по `published` из конфига.**
+  Что сделать:
+  - Читать `published` из `books.json` / `BookConfig` и выводить производную категорию книги без ручного поля в контенте.
+  - Правила классификации: `Fresh` — 21 century, `New` — 20 century, `Classic` — below 20 century.
+  - Уточнить формат `published` в конфиге (год или дата) и централизовать парсинг/валидацию.
+  - Покрыть boundary-тестами границы веков.
 
 ---
 
 ## 🛠️ Инфраструктура
-
-- [~] **INF-1. Загрузка спрайтов жанровых книг из Addressables + gating бутстрапа.**
-  Сейчас `GameplaySceneView` ([GameplaySceneView.cs](../Assets/Game/UI/GameplayScene/GameplaySceneView.cs))
-  держит спрайты жанров (`_classicGenreSprite` … `_fantasyGenreSprite`) как serialized-поля и резолвит
-  их в `GetGenreSprite(BookGenre)`. Нужно грузить их из Addressables (через `IUiSpriteProvider` /
-  `ProdAddressablesWrapper`) для `_genreBookCountPool`, по аналогии с newspaper/rewards.
-  `MainSceneBootstrap` ([MainSceneBootstrap.cs](../Assets/Game/UI/GameplayScene/MainSceneBootstrap.cs))
-  должен дождаться загрузки этих спрайтов перед показом контента:
-  `await UniTask.WaitUntil(() => IsWindowShown && spritesLoaded)` — проверять **оба** условия
-  (окно показано И спрайты загружены).
-  Код готов: serialized-поля и `GetGenreSprite` убраны из view; маппинг `BookGenre → address`
-  через `UiSpriteCatalog.TryGetAddress`; загрузку владеет `GameplaySceneController`
-  (`LoadGenreSpritesAsync` + флаг `SpritesLoaded`); bootstrap ждёт оба условия.
-  **Осталось (Unity Editor, вручную):** пометить 7 жанровых спрайтов как Addressable и заполнить
-  `UiSpriteCatalog.asset` записями (Key = имя жанра, Address).
-
-- [ ] **INF-2. Подключить DoTween** (импорт пакета + asmdef-ссылки + базовая обёртка/хелперы под анимации).
-
-- [ ] **INF-3. Audio-сервис.** `IAudioService` с шинами music/sfx/ambient, громкостями в настройках
-  и загрузкой клипов через Addressables. Базовый «уютный» звук — половина впечатления от cozy-sim.
 
 - [ ] **INF-4. Localization.** Слой локализации (ключи вместо строк, таблицы переводов, рантайм-смена
   языка). Закладывать заранее — под Steam-релиз на нескольких языках.
@@ -50,14 +120,60 @@
   групп при входе в локацию (`WarmupGroupByLabelAsync`). Рычаг для масштабирования контента и
   контент-паков без апдейта билда.
 
+- [ ] **INF-8. `CharactersService` не форс-конструируется → save-hook не регистрируется.**
+  `CharactersService` — `ISaveHook` (регистрируется через `save.RegisterHook(this)` в конструкторе) и
+  ожидает, что его `AfterLoadAsync` отработает после загрузки сейва (как `QuestsService`). Но в
+  `CharactersVContainerBindings` он зарегистрирован только `.As<ICharactersService>()` и **нигде не
+  резолвится при старте**: в `Bootstrap.Construct` форс-конструируется `IQuestsService`, но не
+  `ICharactersService` ([Bootstrap.cs](Assets/Game/Core/Installers/Bootstrap/Bootstrap.cs)). Итог:
+  конструктор `CharactersService` не вызывается до `SaveDataLoadOperation`, hook не регистрируется,
+  `AfterLoadAsync` не выполняется → каталог персонажей/леджер не строятся, Journal пуст, discovery не
+  реконсайлится. Фикс: форс-конструировать `ICharactersService` на бутстрапе (добавить в список
+  `[Inject]`-полей `Bootstrap.Construct`, рядом с `IQuestsService`), как другие `ISaveHook`-сервисы.
+  Не связано с текущим DI-циклом `ConditionParser ↔ LocationUnlockService` — это отдельный баг загрузки.
+
+- [ ] **INF-9. Убрать форс-конструирование save-hook'ов из `Bootstrap.cs` (чистый рефакторинг).**
+  Сейчас `Bootstrap.cs` инжектит сервисы (`IInventoryService`, `IResourcesService`, `IProgressionService`,
+  `IQuestsService`, …), которые никогда не вызывает — только чтобы VContainer их сконструировал, т.к. они
+  сами регистрируются как `ISaveHook` в конструкторе (`save.RegisterHook(this)`). Без этого хук не успевает
+  встать до `SaveService.LoadAsync`. Минусы: «мёртвые» поля, связанность Bootstrap с API-сборками фич, список
+  save-aware сервисов размазан по Bootstrap (каждая новая фича = правка `Bootstrap.cs`, ср. баг INF-8).
+  **Решение (рекомендуемый вариант B):** ввести единый `SaveHookBootstrapper : IStartable`, который резолвит
+  `IEnumerable<ISaveHook>` из DI и в `Start()` вызывает `RegisterHook` для каждого; сервисы регистрировать
+  `.As<ISaveHook>()` и убрать `RegisterHook(this)` из конструкторов. Поведение не меняется. Сделать **до**
+  захода следующей save-aware фичи. Альтернативы (A — каждый сервис `IStartable`; C — `SaveService` принимает
+  `IEnumerable<ISaveHook>` в конструкторе) рассмотрены и отклонены в пользу B. Закрывает корневую причину INF-8.
+
+- [ ] **INF-10. Аудит `Assets/Game/Core/UI` на feature-specific классы.**
+  Что сделать:
+  - Просмотреть все классы в `Assets/Game/Core/UI` и отделить общее UI-ядро от конкретных окон, экранов и фич.
+  - Вынести из `Game.Core.UI` конкретные окна вроде настроек, confirm/smoke/debug-экранов и любые feature-specific UI в соответствующие feature/shared UI сборки.
+  - Вынести конкретные анимации/эффекты из core UI, оставив в ядре только базовые интерфейсы, абстракции, common helpers и generic window infrastructure.
+  - Проверить asmdef-зависимости после выноса: `Game.Core.UI` не должен зависеть от конкретных gameplay/feature namespaces и не должен быть местом для продуктовых окон.
+
+---
+
+## 📋 Backlog
+
+Отложенное, не входящее в текущие MVP-слайсы. Берётся по мере необходимости.
+
+- [ ] **GAME-6-D. Диалоги — доработки.** Базовый слайс закрыт (см. GAME-6 в «Геймплей» и
+  [INPROGRESS/CUSTOMER_DIALOG_STEP.md](INPROGRESS/CUSTOMER_DIALOG_STEP.md)). Осталось:
+  - **Геймплейно-значимый выбор**: `CompleteDialogue(choiceId)` / ветвление плана/квеста (сейчас варианты
+    косметические и в текущем контенте не используются).
+  - **Атрибуция выбора**: у `DialogueOptionConfig` нет `speaker`; выбранный вариант не отображается в ленте
+    как реплика игрока.
+  - **Skip** — сейчас disabled-заглушка; реальное поведение (домотать / закрыть).
+  - **Свап на world-HUD (2.2)** — движок view-agnostic, меняется только вью ([WORLD_HUD.md](WORLD_HUD.md)).
+  - **Реактивные диалоги** через `Customer.InsertNext` (по образцу `PassiveSaleCommentRule` → `CommentStep`).
+  - **Мульти-узловой линейный диалог**: в графе нет «линейного продолжения» между узлами (единственное
+    ребро — выбор), сейчас один узел на беседу.
+  - **Персонаж `tilde` в `characters.json`** — квест `q_intro_tilde` ссылается на `characterId: "tilde"`,
+    которого в конфиге нет (нужен для журнала/HUD/портретов).
+  - **Локализация** реплик/имён/опций (raw-строки) — через INF-4.
+  - **Портреты/аватары, цветовая тема бабла** по говорящему.
+  - **UI-автотесты** окна/анимации (сейчас только ручной прогон через чит).
+
 ---
 
 ## 🎨 Визуал
-
-- [ ] **VIS-1. Анимация «полёта» золота из HUD к кнопке** (в newspaper-окне):
-  золото вылетает из HUD-счётчика и летит к кнопке покупки. Зависит от **INF-2 (DoTween)**.
-
-- [ ] **VIS-2. Свёрстать окно Preparation.** Добавить в окно полку с инвентарём в разрезе жанров.
-  Окно: `PreparationWindow` (`Assets/Game/Features/Preparation/UI/`).
-
-- [ ] **VIS-3. Свёрстать окно декора** (decor window).

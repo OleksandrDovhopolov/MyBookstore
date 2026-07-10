@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
+using Game.LocationVisits.API;
 using UnityEngine;
 using VContainer.Unity;
 
@@ -21,6 +22,7 @@ namespace Game.Bootstrap
         private readonly ISceneTransitionService _sceneTransition;
         private readonly ITransitionAnimationService _animation;
         private readonly GameFlowSettings _settings;
+        private readonly ILocationVisitService _locationVisits;
 
         private GameObject _hubRoot;
         private LifetimeScope _globalScope;
@@ -30,15 +32,19 @@ namespace Game.Bootstrap
         public GameFlowService(
             ISceneTransitionService sceneTransition,
             ITransitionAnimationService animation,
-            GameFlowSettings settings)
+            GameFlowSettings settings,
+            ILocationVisitService locationVisits)
         {
             _sceneTransition = sceneTransition ?? throw new ArgumentNullException(nameof(sceneTransition));
             _animation = animation ?? throw new ArgumentNullException(nameof(animation));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _locationVisits = locationVisits; // optional-safe: cleared best-effort on hub return
         }
 
         public bool IsTransitioning => _isTransitioning;
         public bool IsLocationLoaded => _locationLoaded;
+
+        public event Action<bool> LocationLoadedChanged;
 
         public void RegisterHubRoot(GameObject hubRoot)
         {
@@ -70,6 +76,7 @@ namespace Game.Bootstrap
 
                 SetHubRootActive(false);
                 _locationLoaded = true;
+                RaiseLocationLoadedChanged();
 
                 await _animation.PlayRevealAsync(ct);
             }
@@ -82,6 +89,8 @@ namespace Game.Bootstrap
                 Debug.LogError($"{LogPrefix} EnterLocationAsync failed: {e}");
                 // Best-effort recovery: не оставлять игрока на погашенном хабе.
                 SetHubRootActive(true);
+                _locationLoaded = false;
+                RaiseLocationLoadedChanged();
                 throw;
             }
             finally
@@ -108,6 +117,8 @@ namespace Game.Bootstrap
                 _sceneTransition.SetActiveScene(_settings.GameplaySceneName);
                 SetHubRootActive(true);
                 _locationLoaded = false;
+                RaiseLocationLoadedChanged();
+                _locationVisits?.ClearCurrentLocation(); // back at the hub → locationIs false
 
                 await _animation.PlayRevealAsync(ct);
             }
@@ -153,6 +164,8 @@ namespace Game.Bootstrap
 
             return _globalScope;
         }
+
+        private void RaiseLocationLoadedChanged() => LocationLoadedChanged?.Invoke(_locationLoaded);
 
         private void SetHubRootActive(bool active)
         {

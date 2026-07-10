@@ -4,9 +4,7 @@ Compact design reference for the player's first launch and first scripted day.
 Covers both what ships in the current build and the larger first-day vision
 that is still in backlog.
 
-> Related: `docs/CORE_LOOP.md` (the day cycle this funnels into),
-> `docs/archive/REFERENCE_COZY_BOOKSHOP_DAY.md` (generic genre notes that
-> inspired the scripted-day vision).
+> Related: `docs/CORE_LOOP.md` (the day cycle this funnels into).
 
 ---
 
@@ -73,6 +71,18 @@ for organic discovery later.
 `FtueBootstrapper` for the MVP. Migration to a dedicated `ftue.json` (or into
 `economy.json`) is tracked in `docs/CORE_LOOP.md` "known limitations" and in
 Notion — same shape as the `DailyBookSlots` migration.
+
+### Save state (FTUE-owned modules)
+
+FTUE owns three save keys (`FtueSaveKeys`). This is the source of truth for what
+each means; `docs/SAVE_DAY_FLOW.md` only lists them in its modules table and
+defers here.
+
+| Key | Meaning |
+|---|---|
+| `ftue.applied` | Starter gold/books were seeded. Set once, never re-runs (see idempotency above). |
+| `ftue.welcome_completed` | The player finished the **welcome letter** window only. It does **not** mean the first-location tutorial is done. |
+| `ftue.first_location_tutorial` | Persisted state of the scripted first-location tutorial (`Status: NotStarted \| InProgress \| Completed`, plus `Day`/`LocationId`/`CurrentStepId`/`CompletedStepIds`). Backs resume/replay of the authored day so it is not skipped after a quit. Scripting itself is still backlog — see below. |
 
 ---
 
@@ -147,7 +157,9 @@ out with text-HUD arrows on the relevant UI rectangles.
 After the newspaper, the player sees a **city map**. On day 1 only one
 location is unlocked (the same as day 1's). It shows a **visit cost in gold**
 (e.g., 6g). Future locations are visible but locked. Spending gold to travel
-is the first opportunity-cost decision the player makes.
+is the first opportunity-cost decision the player makes. (The entry-fee
+mechanics — fields, charge order, sunk-vs-refund — are owned by
+`docs/SAVE_DAY_FLOW.md`; this section only describes the day-1 framing.)
 
 ### Stocking screen
 
@@ -203,7 +215,7 @@ Minimum surface area:
 | Tutorial / onboarding engine                  | ❌ none                                            | New subsystem (see requirements above).              |
 | Variable customer walk speed                  | ⚠️ uniform `ApproachDuration`                      | Per-customer `ApproachDuration` (easy change).       |
 | Shelf capacity (`In Shop X/40`)               | ⚠️ `DailyBookSlots = 12` constant                  | Migrate to player state + economy config (tracked).  |
-| Location travel cost                          | ❌ free                                            | Add cost field to `LocationConfig` + spend on entry. |
+| Location travel cost                          | ✅ shipped (`LocationConfig.EntryCost` + `LocationEntryCostCalculator`, charged in `PreparationWindow.ConfirmAsync`) | Tuning + map UI surfacing. See `docs/SAVE_DAY_FLOW.md`. |
 | Map UI with locked locations                  | ⚠️ data model supports list; UI is single-pick    | Map screen with locked entries + unlock conditions.  |
 | Shop customisation screen                     | ❌ none                                            | Placeholder; out of scope for first FTUE pass.       |
 

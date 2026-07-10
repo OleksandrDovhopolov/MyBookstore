@@ -1,4 +1,6 @@
+using Game.Tutorial.Presentation;
 using Game.UI;
+using Infrastructure.ResourceAnimations;
 using UnityEngine;
 using VContainer;
 
@@ -22,6 +24,22 @@ namespace Game.Bootstrap
         [Header("UI Sprites")]
         [Tooltip("Addressable addresses of newspaper/rewards UI sprites, preloaded once at bootstrap.")]
         [SerializeField] private Game.Newspaper.UI.UiSpriteCatalog _uiSpriteCatalog;
+
+        [Header("Resource Animations")]
+        [Tooltip("Shared settings for flying resource UI animations.")]
+        [SerializeField] private ResourceAnimationSettings _resourceAnimationSettings;
+
+        [Header("Tutorial")]
+        [Tooltip("Overlay settings for the tutorial engine (blackout/pointer/text panel).")]
+        [SerializeField] private TutorialOverlaySettings _tutorialOverlaySettings;
+
+        [Tooltip("When off, the tutorial engine still registers (overlay + 'tutorialCompleted' condition), " +
+                 "but sequences never auto-start from triggers or resume on load. Explicit TryStartAsync still works.")]
+        [SerializeField] private bool _tutorialAutoStart = true;
+
+        [Header("FTUE")]
+        [Tooltip("When off, the first-entry WelcomeWindow is not shown. The welcome_completed save flag is left unchanged.")]
+        [SerializeField] private bool _startWelcomeWindow = true;
 
 #if UNITY_EDITOR
         [Header("Debug Start (Editor only)")]
@@ -47,7 +65,6 @@ namespace Game.Bootstrap
             builder.RegisterDayCycleServices();
             builder.RegisterUiSystem(_uiCanvasRootPrefab);
             builder.RegisterWorldHud();
-            builder.RegisterWorldHudSmokeTest(); // TODO: remove after World HUD Phase 0 verification
             builder.RegisterInventory();
             builder.RegisterDecor();
             builder.RegisterResources();
@@ -55,12 +72,17 @@ namespace Game.Bootstrap
             builder.RegisterShop();
             builder.RegisterNewspaper();
             builder.RegisterUiSprites(_uiSpriteCatalog);
+            builder.RegisterResourceAnimations(_resourceAnimationSettings);
             builder.RegisterProgression();
             builder.RegisterConditions();          // domain-agnostic condition engine (registry + parser)
             builder.RegisterSalesStats();          // persistent per-genre sold counters + "soldGenre" condition factory
+            builder.RegisterLocationVisits();      // persistent per-location visit counts + "visitLocation"/"locationIs" factories
             builder.RegisterLocationUnlock();      // location unlock states/purchase over the condition engine
             builder.RegisterLocationEntry();       // per-visit entry fee calculator (location base + decor delta)
-            builder.RegisterFtue();
+            builder.RegisterQuest();               // in-memory quest lifecycle over the condition engine (ISaveHook init)
+            builder.RegisterTutorial(_tutorialOverlaySettings, _tutorialAutoStart); // forced-step tutorial engine + overlay + "tutorialCompleted" (ISaveHook init)
+            builder.RegisterCharacters();          // read-side character/memory projection over quests (ISaveHook init)
+            builder.RegisterFtue(_startWelcomeWindow);
             builder.RegisterBookSellSharedState(); // ISalesShelfStateService — общий для хаба и локации
             builder.RegisterPreparation();         // Preparation services (окно PreparationWindow инжектится глобально)
 

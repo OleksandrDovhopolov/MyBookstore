@@ -44,7 +44,7 @@ Assets/Secrets/
 └── RuntimeSecrets.asset  ← НЕ в git
 ```
 
-Этот паттерн уже применён к `google-services.json` (Firebase setup, см. PROGRESS.md → «Firebase service setup»).
+Этот паттерн уже применён к `google-services.json` (Firebase setup — см. [FIREBASE_INTEGRATION.md](FIREBASE_INTEGRATION.md)).
 
 ### 2. `EditorPrefs` для Editor-only credentials
 
@@ -142,5 +142,5 @@ public class SecretsCodegen : IPreprocessBuildWithReport
 ## Связанные документы
 
 - `CONFIG_EDITOR_WINDOW_MVP_SPEC.md` — пример Editor-only credentials (Basic-auth для admin-API).
-- `firebase-integration.md` — где живут Firebase credentials.
-- `PROGRESS.md` → «Firebase service setup», «Connect PostgreSQL and Redis on Railway» — фактические решения по уже подключённым сервисам.
+- `FIREBASE_INTEGRATION.md` — где живут Firebase credentials.
+- Notion → 🔧 Настройки сервисов — фактические решения по уже подключённым сервисам (Firebase, PostgreSQL/Redis на Railway).

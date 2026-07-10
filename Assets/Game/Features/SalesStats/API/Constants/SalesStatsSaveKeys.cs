@@ -6,6 +6,8 @@ namespace Game.SalesStats.API
     public static class SalesStatsSaveKeys
     {
         public const string State = "sales_stats";
-        public const int StateSchemaVersion = 1;
+
+        // v2 adds SoldByLocationGenre + SoldByDayGenre. v1 saves load cleanly (missing maps => empty).
+        public const int StateSchemaVersion = 2;
     }
 }

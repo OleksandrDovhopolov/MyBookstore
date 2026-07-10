@@ -17,6 +17,7 @@ namespace Game.Bootstrap
         {
             builder.Register<IPreparationInventoryProvider, DayProgressInventoryProvider>(Lifetime.Singleton);
             builder.Register<IPreparationSessionService, PreparationSessionService>(Lifetime.Singleton);
+            builder.Register<ISaleChancePreviewService, SaleChancePreviewService>(Lifetime.Singleton);
         }
     }
 }

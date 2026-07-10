@@ -1,0 +1,42 @@
+[
+  {
+    "id": "harper",
+    "displayNameKey": "character.harper.name",
+    "roleKey": "character.harper.role",
+    "descriptionKey": "character.harper.desc",
+    "memories": [
+      {
+        "id": "restore_the_crest",
+        "titleKey": "memory.harper.restore_the_crest.title",
+        "descriptionKey": "memory.harper.restore_the_crest.desc",
+        "photoKey": "memory_harper_restore_the_crest",
+        "questChainId": "harper_restore_crest",
+        "isGolden": false
+      },
+      {
+        "id": "one_for_the_history_books",
+        "titleKey": "memory.harper.one_for_the_history_books.title",
+        "descriptionKey": "memory.harper.one_for_the_history_books.desc",
+        "photoKey": "memory_harper_one_for_the_history_books",
+        "questId": "harper_one_for_history_books",
+        "isGolden": true
+      }
+    ]
+  },
+  {
+    "id": "walt",
+    "displayNameKey": "character.walt.name",
+    "roleKey": "character.walt.role",
+    "descriptionKey": "character.walt.desc",
+    "memories": [
+      {
+        "id": "treasured_shop",
+        "titleKey": "memory.walt.treasured_shop.title",
+        "descriptionKey": "memory.walt.treasured_shop.desc",
+        "photoKey": "memory_walt_treasured_shop",
+        "questId": "walt_treasured_shop",
+        "isGolden": true
+      }
+    ]
+  }
+]

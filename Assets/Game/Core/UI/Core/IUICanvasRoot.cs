@@ -7,5 +7,6 @@ namespace Game.UI
         Transform HudRoot { get; }
         Transform WindowsRoot { get; }
         GameObject Blocker { get; }
+        MonoBehaviour TransitionAnimation { get; }
     }
 }

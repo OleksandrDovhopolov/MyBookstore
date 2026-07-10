@@ -36,14 +36,14 @@ namespace Game.WorldHud
             if (hud == null) return null;
 
             var cam = Camera.main; // Phase 0 — main camera is enough; revisit if multi-camera setup arrives.
-            hud.AttachInternal(target, args, cam);
             hud.transform.SetParent(target, worldPositionStays: false);
-            hud.gameObject.SetActive(true);
+            hud.AttachInternal(target, args, cam);
 
             // A HUD created while suppression is active must start hidden, otherwise it flashes in.
             if (_suppressionCount > 0) hud.SetGloballySuppressed(true);
 
             _attached[target] = hud;
+            hud.gameObject.SetActive(true);
             return hud;
         }
 

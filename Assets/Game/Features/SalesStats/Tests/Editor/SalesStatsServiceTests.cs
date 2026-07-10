@@ -12,6 +12,9 @@ namespace Game.SalesStats.Tests.Editor
         private const string CrimeBook = "book_crime";
         private const string KidsBook = "book_kids";
 
+        private const string FarBeach = "far_beach";
+        private const string CafeLiberte = "cafe_liberte";
+
         private static (SalesStatsService svc, FakeSalesStatsRepository repo, FakeSaveService save) Build()
         {
             var save = new FakeSaveService();
@@ -144,6 +147,116 @@ namespace Game.SalesStats.Tests.Editor
             Assert.AreEqual(2, svc2.GetSold(BookGenre.Crime));
             Assert.AreEqual(1, svc2.GetSold(BookGenre.Kids));
             Assert.AreEqual(3, svc2.TotalSold);
+        }
+
+        // ----- per-location -----
+
+        [Test]
+        public void RecordSold_WithLocation_TracksPerLocationGenre()
+        {
+            var (svc, _, _) = Build();
+
+            svc.RecordSold(CrimeBook, new SaleContext(FarBeach, 1));
+            svc.RecordSold(CrimeBook, new SaleContext(FarBeach, 1));
+            svc.RecordSold(CrimeBook, new SaleContext(CafeLiberte, 1));
+
+            Assert.AreEqual(2, svc.GetSold(BookGenre.Crime, FarBeach));
+            Assert.AreEqual(1, svc.GetSold(BookGenre.Crime, CafeLiberte));
+            Assert.AreEqual(0, svc.GetSold(BookGenre.Crime, "unknown_location"));
+            // Lifetime total is unaffected by the location split.
+            Assert.AreEqual(3, svc.GetSold(BookGenre.Crime));
+        }
+
+        [Test]
+        public void RecordSold_WithoutContext_LeavesLocationAndDayEmpty()
+        {
+            var (svc, _, _) = Build();
+
+            svc.RecordSold(CrimeBook); // single-arg overload => no location/day attribution
+
+            Assert.AreEqual(1, svc.GetSold(BookGenre.Crime));
+            Assert.AreEqual(0, svc.GetSold(BookGenre.Crime, FarBeach));
+            Assert.AreEqual(0, svc.GetMaxSoldInSingleDay(BookGenre.Crime));
+        }
+
+        // ----- per-day -----
+
+        [Test]
+        public void RecordSold_WithDay_TracksPerDayGenre_AndCalendarSum()
+        {
+            var (svc, _, _) = Build();
+
+            svc.RecordSold(CrimeBook, new SaleContext(FarBeach, 5));
+            svc.RecordSold(KidsBook, new SaleContext(FarBeach, 5));
+            svc.RecordSold(CrimeBook, new SaleContext(FarBeach, 6));
+
+            Assert.AreEqual(1, svc.GetSoldOnDay(5, BookGenre.Crime));
+            Assert.AreEqual(1, svc.GetSoldOnDay(5, BookGenre.Kids));
+            Assert.AreEqual(2, svc.GetSoldOnDay(5)); // calendar: sum across genres
+            Assert.AreEqual(1, svc.GetSoldOnDay(6));
+            Assert.AreEqual(0, svc.GetSoldOnDay(99));
+        }
+
+        [Test]
+        public void GetMaxSoldInSingleDay_ReturnsLargestDay()
+        {
+            var (svc, _, _) = Build();
+
+            // Day 1: 2 crime; Day 2: 3 crime; Day 3: 1 crime => max is 3.
+            svc.RecordSold(CrimeBook, new SaleContext(FarBeach, 1));
+            svc.RecordSold(CrimeBook, new SaleContext(FarBeach, 1));
+            svc.RecordSold(CrimeBook, new SaleContext(FarBeach, 2));
+            svc.RecordSold(CrimeBook, new SaleContext(FarBeach, 2));
+            svc.RecordSold(CrimeBook, new SaleContext(FarBeach, 2));
+            svc.RecordSold(CrimeBook, new SaleContext(FarBeach, 3));
+
+            Assert.AreEqual(3, svc.GetMaxSoldInSingleDay(BookGenre.Crime));
+            Assert.AreEqual(0, svc.GetMaxSoldInSingleDay(BookGenre.Kids));
+        }
+
+        // ----- persistence / migration -----
+
+        [Test]
+        public void Roundtrip_PreservesLocationAndDayCounts()
+        {
+            var (svc, repo, _) = Build();
+            svc.RecordSold(CrimeBook, new SaleContext(FarBeach, 5));
+            svc.RecordSold(KidsBook, new SaleContext(FarBeach, 5));
+            svc.RecordSold(CrimeBook, new SaleContext(CafeLiberte, 6));
+            svc.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            var svc2 = new SalesStatsService(new FakeSaveService(), repo, new FakeConfigsService());
+            svc2.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, svc2.GetSold(BookGenre.Crime, FarBeach));
+            Assert.AreEqual(1, svc2.GetSold(BookGenre.Kids, FarBeach));
+            Assert.AreEqual(1, svc2.GetSold(BookGenre.Crime, CafeLiberte));
+            Assert.AreEqual(2, svc2.GetSoldOnDay(5));
+            Assert.AreEqual(1, svc2.GetSoldOnDay(6, BookGenre.Crime));
+        }
+
+        [Test]
+        public void AfterLoad_V1Save_WithoutNewMaps_LoadsCleanly()
+        {
+            // Simulate a v1 save: only SoldByGenre present, new maps null.
+            var repo = new FakeSalesStatsRepository
+            {
+                Stored = new SalesStatsStateDto
+                {
+                    SoldByGenre = new System.Collections.Generic.Dictionary<string, int>
+                    {
+                        [BookGenre.Crime.ToConfigValue()] = 4
+                    }
+                }
+            };
+
+            var svc = new SalesStatsService(new FakeSaveService(), repo, new FakeConfigsService());
+            svc.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(4, svc.GetSold(BookGenre.Crime));
+            Assert.AreEqual(0, svc.GetSold(BookGenre.Crime, FarBeach));
+            Assert.AreEqual(0, svc.GetSoldOnDay(1));
+            Assert.AreEqual(0, svc.GetMaxSoldInSingleDay(BookGenre.Crime));
         }
     }
 }

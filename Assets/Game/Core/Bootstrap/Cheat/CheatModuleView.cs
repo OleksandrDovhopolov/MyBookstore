@@ -7,6 +7,7 @@ using Game.Inventory.API;
 using Game.Resources.API;
 using Game.SalesStats.API;
 using Game.UI;
+using Infrastructure.ResourceAnimations;
 using Save;
 using UnityEngine;
 using UnityEngine.UI;
@@ -30,6 +31,7 @@ namespace Game.Cheat
         private ISalesStatsRecorder _salesStatsRecorder;
         private ISalesStatsReader _salesStatsReader;
         private ISaveService _save;
+        private IResourceAnimationService _resourceAnimations;
 
         // ISalesDayController is intentionally NOT injected here: this view lives in a UI window
         // prefab instantiated by the global UI factory, while the controller is registered in the
@@ -40,7 +42,7 @@ namespace Game.Cheat
         [Inject]
         private void Construct(UIManager uiManager, IInventoryService inventory, IConfigsService configs,
             IResourcesService resources, ISalesStatsRecorder salesStatsRecorder, ISalesStatsReader salesStatsReader,
-            ISaveService save)
+            ISaveService save, IResourceAnimationService resourceAnimations = null)
         {
             _uiManager = uiManager;
             _inventory = inventory;
@@ -49,6 +51,7 @@ namespace Game.Cheat
             _salesStatsRecorder = salesStatsRecorder;
             _salesStatsReader = salesStatsReader;
             _save = save;
+            _resourceAnimations = resourceAnimations;
         }
 
         public void Start()
@@ -126,7 +129,9 @@ namespace Game.Cheat
                 new DefaultCheatModule(_uiManager),
                 new DecorationCheatModule(_uiManager, _inventory, _configs, destroyCt),
                 new ResourcesCheatModule(_resources, destroyCt),
-                new SalesStatsCheatModule(_salesStatsRecorder, _salesStatsReader, _configs, _save, destroyCt)
+                new GoldFlightCheatModule(_resources, _resourceAnimations, destroyCt),
+                new SalesStatsCheatModule(_salesStatsRecorder, _salesStatsReader, _configs, _save, destroyCt),
+                new DialogueCheatModule(_uiManager, _configs)
             };
 
             return cheatsModules;

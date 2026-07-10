@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Book.Sell.API;
 using Book.Sell.Domain;
+using Book.Sell.Services.Director;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
@@ -26,6 +27,7 @@ namespace Book.Sell.Services
         private readonly SalesTuning _tuning;
         private readonly ISalesShelfBuilder _shelfBuilder;
         private readonly ISalesDayCommitService _commitService;
+        private readonly ICustomerDirector _director;
 
         private SalesShelf _shelf = new();
         private SalesDayResult _result = new();
@@ -35,6 +37,7 @@ namespace Book.Sell.Services
 
         private Customer _activeCustomer;
         private RequestConfig _activeRequest;
+        private Customer _dialogueCustomer;
 
         private float _spawnTimer;
         private int _nextToSpawn;
@@ -51,7 +54,8 @@ namespace Book.Sell.Services
             IInteractionLock interactionLock,
             SalesTuning tuning,
             ISalesShelfBuilder shelfBuilder = null,
-            ISalesDayCommitService commitService = null)
+            ISalesDayCommitService commitService = null,
+            ICustomerDirector director = null)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _setupProvider = setupProvider ?? throw new ArgumentNullException(nameof(setupProvider));
@@ -63,6 +67,7 @@ namespace Book.Sell.Services
             _tuning = tuning ?? throw new ArgumentNullException(nameof(tuning));
             _shelfBuilder = shelfBuilder ?? new SalesShelfBuilder(_configs);
             _commitService = commitService;   // optional in tests; in prod injected via DI
+            _director = director;             // optional in existing tests
         }
 
         public int Day { get; private set; }
@@ -74,10 +79,12 @@ namespace Book.Sell.Services
         public bool IsDayCompleted => _phase == SalesDayPhase.Completed;
 
         public event Action<RequestConfig> ActiveRequestStarted;
+        public event Action<Customer, DialoguePayload> DialogueStarted;
         public event Action<RecommendationResult> RecommendationResolved;
         public event Action<PassiveSaleEvent> PassiveSaleHappened;
         public event Action<Customer, RecommendationResult> CustomerRecommendationResolved;
         public event Action<Customer, PassiveSaleEvent> CustomerPassiveSaleHappened;
+        public event Action<Customer, CustomerCommentPayload> CustomerCommented;
         public event Action<Customer, string> CustomerPassivePurchaseFailed;
         public event Action<Customer, int> CustomerPurchaseCompleted;
         public event Action<Customer> CustomerThoughtBubbleHidden;
@@ -102,7 +109,7 @@ namespace Book.Sell.Services
 
             _shelf = _shelfBuilder.Build(setup.ShelfBookIds);
 
-            _result = new SalesDayResult { Day = setup.Day };
+            _result = new SalesDayResult { Day = setup.Day, LocationId = setup.LocationId };
             _ctx = new CustomerContext(_shelf, _lock, _random, _passiveResolver, _location, setup.DecorIds, this, _tuning);
 
             _customers = new List<Customer>(_spawner.BuildCustomers(setup, _tuning, _random));
@@ -110,6 +117,7 @@ namespace Book.Sell.Services
             _spawnTimer = _tuning.SpawnInterval;   // spawn the first customer on the first tick
             _activeCustomer = null;
             _activeRequest = null;
+            _dialogueCustomer = null;
             _phase = SalesDayPhase.Running;
             _spawningStopped = false;
 
@@ -200,10 +208,11 @@ namespace Book.Sell.Services
             // stops pumping Update once _dayRunning flips to false in OnDayCompleted.
             _activeCustomer = null;
             _activeRequest = null;
+            _dialogueCustomer = null;
 
             if (zeroOut)
             {
-                _result = new SalesDayResult { Day = Day };
+                _result = new SalesDayResult { Day = Day, LocationId = LocationId };
             }
 
             // Reuse the organic completion path: same save + event ordering as ConcludeDay.
@@ -236,6 +245,22 @@ namespace Book.Sell.Services
             CustomerRecommendationResolved?.Invoke(_activeCustomer, result);
             RecommendationResolved?.Invoke(result);
             ResolveActive();
+        }
+
+        public void CompleteDialogue()
+        {
+            if (_dialogueCustomer == null)
+            {
+                Debug.LogWarning($"{LogPrefix} CompleteDialogue with no open dialogue — ignored.");
+                return;
+            }
+
+            var customer = _dialogueCustomer;
+            _dialogueCustomer = null;
+
+            // Exits the DialogStep (releasing the lock) and advances the customer's plan — mirrors ResolveActive.
+            customer.ForceCompleteCurrentStep(_ctx);
+            UpdateDayPhase();
         }
 
         // ----- ISalesDaySink (facts reported by steps) -----
@@ -303,13 +328,24 @@ namespace Book.Sell.Services
 
             Debug.Log($"{LogPrefix} passive sale: book={saleEvent.BookId}, gold={saleEvent.GoldEarned}, " +
                       $"location={LocationId}");
+
+            _director?.OnPassiveSale(customer, saleEvent, _ctx);
         }
+
+        void ISalesDaySink.OnCustomerComment(Customer customer, CustomerCommentPayload payload)
+            => CustomerCommented?.Invoke(customer, payload);
 
         void ISalesDaySink.OnActiveRequestStarted(Customer customer, RequestConfig request)
         {
             _activeCustomer = customer;
             _activeRequest = request;
             ActiveRequestStarted?.Invoke(request);
+        }
+
+        void ISalesDaySink.OnDialogueStarted(Customer customer, DialoguePayload payload)
+        {
+            _dialogueCustomer = customer;
+            DialogueStarted?.Invoke(customer, payload);
         }
 
         void ISalesDaySink.OnHideThoughtBubble(Customer customer)

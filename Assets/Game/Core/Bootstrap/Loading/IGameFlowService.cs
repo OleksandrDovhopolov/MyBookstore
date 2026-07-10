@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -16,6 +17,10 @@ namespace Game.Bootstrap.Loading
 
         // True, когда LocationScene загружена (игрок «в локации»).
         bool IsLocationLoaded { get; }
+
+        // Срабатывает при смене состояния «в локации»: true после входа (до reveal), false перед
+        // возвратом в хаб (до reveal). Аргумент = IsLocationLoaded.
+        event Action<bool> LocationLoadedChanged;
 
         // Регистрирует корневой GameObject хаба, который гасится при входе в локацию.
         // Вызывается scene-компонентом хаба (через DI из GameplayLifetimeScope).

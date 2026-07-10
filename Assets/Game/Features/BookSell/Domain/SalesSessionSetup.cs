@@ -16,7 +16,11 @@ namespace Book.Sell.Domain
         /// <summary>Decor does not affect scoring yet (out of scope), but the field is preserved for future integration.</summary>
         public IReadOnlyList<string> DecorIds { get; }
 
-        public SalesSessionSetup(int day, string locationId, IReadOnlyList<string> shelfBookIds, IReadOnlyList<string> decorIds = null)
+        public SalesSessionSetup(
+            int day,
+            string locationId,
+            IReadOnlyList<string> shelfBookIds,
+            IReadOnlyList<string> decorIds = null)
         {
             Day = day;
             LocationId = locationId;

@@ -214,5 +214,6 @@ examples instead of one.
   are ready.
 - This document supersedes any inline TODOs that may live around `ResourceIds.cs`
   — point them here instead of duplicating analysis.
-- Related: `docs/TODO_SAVE_HOOK_BOOTSTRAP.md` (same iteration cleanup candidate
-  for the boot-side wiring). The two are independent; either can ship first.
+- Related: `docs/TODO.md` → **INF-9** (`SaveHookBootstrapper` cleanup — same
+  iteration candidate for the boot-side wiring). The two are independent; either
+  can ship first.

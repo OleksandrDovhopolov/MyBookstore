@@ -18,12 +18,6 @@ namespace Book.Sell.Services
     {
         private const string LogPrefix = "[Sales.Chance]";
 
-        // TEST ONLY: flat 50% sale gate per genre to exercise the passive purchase flow at runtime.
-        // Flip to false (or delete this field + the block in Compute) to restore the real
-        // economy-based chance. static readonly (not const) so the real formula below stays reachable.
-        private static readonly bool UseTestFlatChance = true;
-        private const double TestFlatChance = 0.5d;
-
         private readonly IConfigsService _configs;
         private readonly IDecorModifierProvider _decor;
 
@@ -39,13 +33,6 @@ namespace Book.Sell.Services
         public double Compute(string genre, int count, LocationConfig location, IReadOnlyList<string> activeDecorIds)
         {
             if (count <= 0 || string.IsNullOrEmpty(genre)) return 0d;
-
-            // TEST ONLY — see UseTestFlatChance. Forces every genre group to a flat 50% gate.
-            if (UseTestFlatChance)
-            {
-                Debug.Log($"{LogPrefix} genre={genre} copies={count} → chance={TestFlatChance:F3} (TEST flat 50%, economy ignored)");
-                return TestFlatChance;
-            }
 
             var economy = ResolveEconomy();
             if (economy == null) return 0d;

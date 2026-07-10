@@ -1,0 +1,55 @@
+[
+  {
+    "id": "dlg_intro_tilde",
+    "nodes": [
+      {
+        "nodeId": "root",
+        "lines": [
+          { "speaker": "Tilde", "text": "I heard you've opened a shop…" }
+        ],
+        "options": [
+          { "text": "Come on in!", "next": "warm" },
+          { "text": "We're still getting ready.", "next": "cool" }
+        ]
+      },
+      { "nodeId": "warm", "lines": [ { "speaker": "Tilde", "text": "See you then." } ], "options": [] },
+      { "nodeId": "cool", "lines": [ { "speaker": "Tilde", "text": "I understand, I'll drop by later." } ], "options": [] }
+    ]
+  },
+  {
+    "id": "dlg_quest_01",
+    "nodes": [
+      {
+        "nodeId": "root",
+        "lines": [
+          { "speaker": "Guest", "text": "I need one book. Can you help?" }
+        ],
+        "options": [
+          { "text": "Of course", "next": "end" },
+          { "text": "Later", "next": "end" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dlg_tilde_meet",
+    "nodes": [
+      {
+        "nodeId": "root",
+        "options": [],
+        "lines": [
+          { "speaker": "Tilde", "text": "So this is that new shop everyone's talking about. And here I thought the rumors were exaggerating." },
+          { "speaker": "Morgan", "text": "Rumors rarely exaggerate for the better. Come in — it's quiet right now." },
+          { "speaker": "Tilde", "text": "Quiet is good. I can't stand picking books in a crowd." },
+          { "speaker": "Morgan", "text": "Then you're in luck. What are you after — something specific, or just browsing?" },
+          { "speaker": "Tilde", "text": "Just browsing, mostly. A good book usually finds me on its own." },
+          { "speaker": "Morgan", "text": "There are plenty of them here, so its chances are pretty good." },
+          { "speaker": "Tilde", "text": "I like that confidence in a shopkeeper. Usually it's in short supply." },
+          { "speaker": "Morgan", "text": "I just know my shelves. If you need anything, don't hesitate to ask." },
+          { "speaker": "Tilde", "text": "Deal. And… I'm glad you've finally opened." },
+          { "speaker": "Morgan", "text": "Thank you. Make yourself at home — this is a place you can linger in." }
+        ]
+      }
+    ]
+  }
+]

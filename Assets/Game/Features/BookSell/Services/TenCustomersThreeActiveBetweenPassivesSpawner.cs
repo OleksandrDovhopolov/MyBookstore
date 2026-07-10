@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Book.Sell.Domain;
-using Book.Sell.Domain.Steps;
 using Game.Configs;
 using Game.Configs.Models;
 
@@ -32,28 +31,25 @@ namespace Book.Sell.Services
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
         {
             var requests = _configs.GetAll<RequestConfig>();
+            // Pre-loop random draw — kept here verbatim (consumes the random stream before the customer loop).
             var activeIndices = PickActiveIndices(CustomerCount, ActiveCustomerCount, random);
             var customers = new List<Customer>(CustomerCount);
             var activeOrder = 0;
 
             for (var i = 0; i < CustomerCount; i++)
             {
-                var steps = new List<ICustomerStep> { new ApproachStep(RandomApproachDuration(tuning, random)) };
-
-                var passiveAttempts = random.Range(MinPassiveAttempts, MaxPassiveAttempts + 1);
-                for (var p = 0; p < passiveAttempts; p++)
-                    steps.Add(new PassivePurchaseStep());
-
+                // requests.Count > 0 guard preserves the original behavior: an active-index customer with no
+                // requests falls back to the passive archetype (never an ActiveRequestStep(null)).
+                ICustomerArchetype archetype;
                 if (activeIndices.Contains(i) && requests.Count > 0)
-                {
-                    steps.Add(new ActiveRequestStep(requests[activeOrder++ % requests.Count]));
-                    steps.Add(new PassivePurchaseStep());   // one more passive after the active recommendation
-                }
+                    archetype = new PassiveActivePassiveArchetype(
+                        requests[activeOrder++ % requests.Count], MinPassiveAttempts, MaxPassiveAttempts);
+                else
+                    archetype = new PassiveAttemptsArchetype(MinPassiveAttempts, MaxPassiveAttempts);
 
-                steps.Add(new CompletePurchaseStep());
-                steps.Add(new LeaveStep(RandomLeaveDuration(tuning, random)));
-
-                customers.Add(new Customer($"cust_{i + 1}", steps));
+                customers.Add(CustomerPlanBuilder.Build(
+                    $"cust_{i + 1}", tuning, random,
+                    buildMiddle: () => archetype.BuildMiddle(setup, tuning, random)));
             }
 
             return customers;
@@ -76,30 +72,6 @@ namespace Book.Sell.Services
             var result = new HashSet<int>();
             for (var i = 0; i < picks; i++) result.Add(indices[i]);
             return result;
-        }
-
-        private static float RandomApproachDuration(SalesTuning tuning, ISalesRandom random)
-            => RandomInRange(tuning.MinApproachDuration, tuning.MaxApproachDuration, random);
-
-        private static float RandomLeaveDuration(SalesTuning tuning, ISalesRandom random)
-            => RandomInRange(tuning.MinLeaveDuration, tuning.MaxLeaveDuration, random);
-
-        private static float RandomInRange(float min, float max, ISalesRandom random)
-        {
-            if (max < min)
-            {
-                var tmp = min;
-                min = max;
-                max = tmp;
-            }
-
-            if (max <= min) return min;
-
-            var roll = random.NextDouble();
-            if (roll < 0d) roll = 0d;
-            if (roll > 1d) roll = 1d;
-
-            return min + (float)(roll * (max - min));
         }
     }
 }

@@ -105,7 +105,7 @@ resolver-ом. Окнам, которым нужны scene-scoped зависим
 
 - **Вход**: `PreparationWindow.Confirm` (окно Подготовки, открывается из `GameplaySceneController.StartGameAsync`) → `EnterLocationAsync()`.
 - **Возврат**: `SalesDayController.DayCompleted` → `ReturnToHubAsync()` → `ResultsWindow` в хабе.
-- **Next Day**: `ResultsSessionService.AdvanceToNextDayAsync` применяет прогресс и **закрывает Results /
+- **Next Day**: `ResultsSummarySessionService.AdvanceToNextDayAsync` применяет прогресс и **закрывает Results /
   возвращает хаб в Morning/Preparation без перезагрузки сцены** (раньше делал reload активной сцены).
 
 ## 5. Первый вход / обучение — TODO (отдельная задача)

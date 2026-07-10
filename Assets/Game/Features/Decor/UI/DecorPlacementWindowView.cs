@@ -1,47 +1,80 @@
 using Game.UI;
+using Game.UI.ContentWidget;
 using TMPro;
+using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Game.Decor.UI
 {
+    /// <summary>
+    /// Visual layout for <see cref="DecorPlacementWindow"/> (MVP): a room background with UI slot
+    /// anchors, a bottom inventory panel of decor cards, a selected-slot HUD (Replace/Remove) and
+    /// an info popup. Replaces the earlier debug/list layout. Slot anchors are authored in the
+    /// prefab and linked to config by their string slot id (see <see cref="DecorSlotAnchorView"/>).
+    /// </summary>
     public sealed class DecorPlacementWindowView : WindowView
     {
-        [Header("Summary panel")]
-        [SerializeField] private TextMeshProUGUI _summaryLabel;
-        [SerializeField] private TextMeshProUGUI _capHintLabel;
+        [Header("Room")]
+        [Tooltip("Container matching the VISIBLE room image; slot anchors live under it so they stay put across aspect ratios.")]
+        [SerializeField] private RectTransform _roomImageRect;
+        [SerializeField] private DecorSlotAnchorView[] _slotAnchors;
 
-        [Header("Lists")]
-        [SerializeField] private Transform _slotListRoot;
-        [SerializeField] private Transform _inventoryListRoot;
+        [Header("Bottom inventory panel")]
+        [Tooltip("Card prefab + parent are assigned on the pool in the inspector.")]
+        [SerializeField] private UIListPool<DecorInventoryCardView> _cardsPool = new();
+        [SerializeField] private DecorInfoWidgetView _decorInfoWidgetPrefab;
 
-        [Header("Templates (single child each)")]
-        [SerializeField] private DecorSlotRowView _slotRowTemplate;
-        [SerializeField] private DecorInventoryRowView _inventoryRowTemplate;
+        [Header("Selected decor info")]
+        [Tooltip("Name of the decor in the clicked placed slot.")]
+        [SerializeField] private TextMeshProUGUI _selectedDecorNameLabel;
+        [Tooltip("Sprite of the decor in the clicked placed slot.")]
+        [SerializeField] private Image _selectedDecorImage;
 
-        [Header("Footer buttons")]
-        [SerializeField] private Button _clearAllButton;
-        [SerializeField] private Button _closeButton;
+        [Header("Selected-slot HUD")]
+        [SerializeField] private GameObject _selectedSlotHud;
+        [Tooltip("Optional full-screen transparent button behind the HUD; clicking it closes the HUD.")]
+        [SerializeField] private Button _hudBackdrop;
+        [SerializeField] private Button _replaceButton; // Hidden in the current UX; replacement starts from filtered inventory.
+        [SerializeField] private Button _removeButton;
 
-        [Header("Colors")]
-        [SerializeField] private Color _positiveColor = new(0.2f, 0.8f, 0.2f);
-        [SerializeField] private Color _negativeColor = new(0.9f, 0.25f, 0.25f);
-        [SerializeField] private Color _capHintColor = new(0.95f, 0.85f, 0.2f);
+        [Header("Preview actions")]
+        [SerializeField] private GameObject _previewActionsRoot;
+        [SerializeField] private Button _cancelPreviewButton;
+        [SerializeField] private Button _applyPreviewButton;
 
-        public TextMeshProUGUI SummaryLabel => _summaryLabel;
-        public TextMeshProUGUI CapHintLabel => _capHintLabel;
+        [Header("Audio")]
+        [Tooltip("Optional. Played on a successful place; leave empty for silence until a clip exists.")]
+        [SerializeField] private AudioClip _placeClip;
+        [Tooltip("Optional. Played on a successful remove; leave empty for silence until a clip exists.")]
+        [SerializeField] private AudioClip _removeClip;
 
-        public Transform SlotListRoot => _slotListRoot;
-        public Transform InventoryListRoot => _inventoryListRoot;
+        public RectTransform RoomImageRect => _roomImageRect;
+        public DecorSlotAnchorView[] SlotAnchors => _slotAnchors;
 
-        public DecorSlotRowView SlotRowTemplate => _slotRowTemplate;
-        public DecorInventoryRowView InventoryRowTemplate => _inventoryRowTemplate;
+        public UIListPool<DecorInventoryCardView> CardsPool => _cardsPool;
 
-        public Button ClearAllButton => _clearAllButton;
-        public Button CloseButton => _closeButton;
+        public TextMeshProUGUI SelectedDecorNameLabel => _selectedDecorNameLabel;
+        public Image SelectedDecorImage => _selectedDecorImage;
 
-        public Color PositiveColor => _positiveColor;
-        public Color NegativeColor => _negativeColor;
-        public Color CapHintColor => _capHintColor;
+        public GameObject SelectedSlotHud => _selectedSlotHud;
+        public Button HudBackdrop => _hudBackdrop;
+        public Button ReplaceButton => _replaceButton;
+        public Button RemoveButton => _removeButton;
+
+        public GameObject PreviewActionsRoot => _previewActionsRoot;
+        public Button CancelPreviewButton => _cancelPreviewButton;
+        public Button ApplyPreviewButton => _applyPreviewButton;
+
+        public AudioClip PlaceClip => _placeClip;
+        public AudioClip RemoveClip => _removeClip;
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            if (_decorInfoWidgetPrefab != null)
+                WidgetRegistry.Register<DecorInfoWidgetData>(_decorInfoWidgetPrefab);
+        }
     }
 }

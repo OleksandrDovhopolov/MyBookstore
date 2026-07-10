@@ -67,6 +67,7 @@ namespace Book.Sell.UI.Customer
             _sales.CustomerPhaseChanged += OnCustomerPhaseChanged;
             _sales.BookReserved += OnBookReserved;
             _sales.CustomerPassiveSaleHappened += OnCustomerPassiveSaleHappened;
+            _sales.CustomerCommented += OnCustomerCommented;
             _sales.CustomerPassivePurchaseFailed += OnCustomerPassivePurchaseFailed;
             _sales.CustomerPurchaseCompleted += OnCustomerPurchaseCompleted;
             _sales.CustomerThoughtBubbleHidden += OnCustomerThoughtBubbleHidden;
@@ -79,6 +80,7 @@ namespace Book.Sell.UI.Customer
             _sales.CustomerPhaseChanged -= OnCustomerPhaseChanged;
             _sales.BookReserved -= OnBookReserved;
             _sales.CustomerPassiveSaleHappened -= OnCustomerPassiveSaleHappened;
+            _sales.CustomerCommented -= OnCustomerCommented;
             _sales.CustomerPassivePurchaseFailed -= OnCustomerPassivePurchaseFailed;
             _sales.CustomerPurchaseCompleted -= OnCustomerPurchaseCompleted;
             _sales.CustomerThoughtBubbleHidden -= OnCustomerThoughtBubbleHidden;
@@ -209,7 +211,17 @@ namespace Book.Sell.UI.Customer
 
         private void OnCustomerPassiveSaleHappened(Book.Sell.Domain.Customer customer, PassiveSaleEvent evt)
         {
-            EnsureBubbleAsync(customer, CustomerThoughtState.Comment, "Bought book").Forget();
+            EnsureBubbleAsync(customer, CustomerThoughtState.Comment).Forget();
+        }
+
+        private void OnCustomerCommented(Book.Sell.Domain.Customer customer, CustomerCommentPayload payload)
+        {
+            var text = !string.IsNullOrEmpty(payload.TextKey)
+                ? payload.TextKey
+                : !string.IsNullOrEmpty(payload.Genre)
+                    ? $"Nice {payload.Genre} pick"
+                    : "Nice pick";
+            EnsureBubbleAsync(customer, CustomerThoughtState.Comment, text).Forget();
         }
 
         private void OnCustomerRecommendationResolved(Book.Sell.Domain.Customer customer, RecommendationResult result)

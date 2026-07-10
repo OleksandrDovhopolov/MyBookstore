@@ -10,6 +10,9 @@ namespace Book.Sell.API
     {
         public int Day { get; set; }
 
+        /// <summary>Location the day was played at. Used to attribute sales per location in stats.</summary>
+        public string LocationId { get; set; }
+
         public int CustomersServed { get; set; }       // active + passive
         public int ManualRequests { get; set; }        // active only (including Skipped)
         public int SalesCount { get; set; }            // books actually sold (Normal + Excellent + passive)

@@ -16,6 +16,7 @@ using VContainer;
 
 namespace Book.Sell.UI
 {
+    //TODO rename? and delete old prefab for this class
     public sealed class SalesScreenView : MonoBehaviour
     {
         private bool _dayRunning;

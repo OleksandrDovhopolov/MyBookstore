@@ -12,6 +12,7 @@ namespace Game.Decor
         IReadOnlyList<string> GetActiveDecorIds();
 
         UniTask<DecorPlacementResult> PlaceAsync(string decorId, string slotId, CancellationToken ct);
+        UniTask<DecorPlacementResult> ReplaceAsync(string decorId, string slotId, CancellationToken ct);
         UniTask UnplaceAsync(string slotId, CancellationToken ct);
         UniTask ClearAllAsync(CancellationToken ct);
 

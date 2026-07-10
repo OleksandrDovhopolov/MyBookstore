@@ -42,6 +42,18 @@ namespace Book.Sell.Tests.Editor
                 new ApproachStep(), new ActiveRequestStep(req), new CompletePurchaseStep(), new LeaveStep()
             });
 
+        // Approach + scripted dialogue + Leave. The dialogue holds the interaction lock until the
+        // controller resolves it via CompleteDialogue(); no purchase steps.
+        private static Customer Dialog(string id, string dialogueId = "dlg")
+            => new(id, new ICustomerStep[] { new ApproachStep(), new DialogStep(new DialoguePayload(dialogueId)), new LeaveStep() });
+
+        // Ticks until a dialogue opens (DialogueStarted fired) or we give up. No CurrentDialogue getter
+        // exists, so detection is via the event — same shape as DriveUntilActive/CurrentRequest.
+        private static void DriveUntilDialogue(SalesDayController c, System.Func<int> firedCount, int maxTicks = 50)
+        {
+            for (var i = 0; i < maxTicks && firedCount() == 0 && c.Phase == SalesDayPhase.Running; i++) c.Tick(0.1f);
+        }
+
         private static SalesDayController Build(
             BookConfig[] books, RequestConfig[] requests, LocationConfig location, IReadOnlyList<Customer> customers,
             SalesTuning tuning = null,
@@ -174,53 +186,6 @@ namespace Book.Sell.Tests.Editor
             }
         }
 
-        private sealed class OrderedShelfStateService : ISalesShelfStateService
-        {
-            private readonly List<string> _operationLog;
-
-            public OrderedShelfStateService(List<string> operationLog)
-            {
-                _operationLog = operationLog;
-            }
-
-            public List<string> Sold { get; } = new();
-            public IReadOnlyList<string> ShelfBookIds => Array.Empty<string>();
-            public SalesShelfState CurrentState { get; } = new();
-            public bool IsSold(string bookId) => Sold.Contains(bookId);
-            public UniTask SetShelfAsync(IReadOnlyList<string> bookIds, CancellationToken ct) => UniTask.CompletedTask;
-
-            public UniTask MarkSoldAsync(string bookId, CancellationToken ct)
-            {
-                _operationLog.Add($"shelf:{bookId}");
-                if (!string.IsNullOrEmpty(bookId) && !Sold.Contains(bookId))
-                    Sold.Add(bookId);
-                return UniTask.CompletedTask;
-            }
-        }
-
-        private sealed class RecordingSoldBookCommitter : ISoldBookCommitter
-        {
-            public bool ResetCalled { get; private set; }
-            public bool CommitCalled { get; private set; }
-            public bool FlushCalled { get; private set; }
-
-            public void Reset()
-            {
-                ResetCalled = true;
-            }
-
-            public void CommitSoldBook(string bookId, string source)
-            {
-                CommitCalled = true;
-            }
-
-            public UniTask FlushAsync(CancellationToken ct)
-            {
-                FlushCalled = true;
-                return UniTask.CompletedTask;
-            }
-        }
-
         private sealed class RecordingSalesGoldCollector : ISalesGoldCollector
         {
             public bool ResetCalled { get; private set; }
@@ -323,6 +288,163 @@ namespace Book.Sell.Tests.Editor
         // ----- tests -----
 
         [Test]
+        public void Dialog_AcquiresLock_FiresDialogueStarted_PausesDay()
+        {
+            var expected = Dialog("c1");
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") },
+                Array.Empty<RequestConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { expected });
+
+            Customer startedCustomer = null;
+            DialoguePayload startedPayload = null;
+            var count = 0;
+            c.DialogueStarted += (cust, payload) => { startedCustomer = cust; startedPayload = payload; count++; };
+
+            StartDay(c);
+            DriveUntilDialogue(c, () => count);
+
+            Assert.AreEqual(1, count, "Dialogue opened exactly once.");
+            Assert.AreSame(expected, startedCustomer, "Event carries the dialogue's customer.");
+            Assert.AreEqual("dlg", startedPayload.DialogueId);
+            Assert.AreEqual(SalesDayPhase.Running, c.Phase);
+            Assert.AreEqual(CustomerPhase.InDialogue, expected.Phase);
+
+            // Lock is held → the day is paused: extra ticks neither re-fire nor advance the day.
+            for (var i = 0; i < 10; i++) c.Tick(0.1f);
+            Assert.AreEqual(1, count, "No duplicate DialogueStarted while paused.");
+            Assert.AreEqual(SalesDayPhase.Running, c.Phase);
+        }
+
+        [Test]
+        public void CompleteDialogue_ResumesDay_CustomerFinishes()
+        {
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") },
+                Array.Empty<RequestConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { Dialog("c1") });
+
+            var count = 0;
+            c.DialogueStarted += (_, _) => count++;
+
+            StartDay(c);
+            DriveUntilDialogue(c, () => count);
+            Assert.AreEqual(1, count);
+
+            c.CompleteDialogue();
+            Run(c);
+
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase, "Lock released → customer finishes and the day is closable.");
+        }
+
+        [Test]
+        public void CompleteDialogue_NoOpenDialogue_IsIgnored()
+        {
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") },
+                Array.Empty<RequestConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { Passive("c1") });
+
+            StartDay(c);
+
+            LogAssert.Expect(LogType.Warning, "[Sales.Day] CompleteDialogue with no open dialogue — ignored.");
+            Assert.DoesNotThrow(() => c.CompleteDialogue());
+            Assert.AreEqual(SalesDayPhase.Running, c.Phase);
+        }
+
+        [Test]
+        public void ForceCompleteDay_DuringDialogue_DropsState()
+        {
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") },
+                Array.Empty<RequestConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { Dialog("c1") });
+
+            var count = 0;
+            c.DialogueStarted += (_, _) => count++;
+
+            StartDay(c);
+            DriveUntilDialogue(c, () => count);
+            Assert.AreEqual(1, count);
+
+            c.ForceCompleteDay(zeroOut: false);
+
+            Assert.AreEqual(SalesDayPhase.Completed, c.Phase);
+            Assert.DoesNotThrow(() => c.Tick(0.1f), "Tick short-circuits on the completed phase; no hang.");
+        }
+
+        [Test]
+        public void QuestCharacterArchetype_PlanRunsEndToEnd_DialogThenPassiveThenLeave()
+        {
+            var tuning = SalesTestKit.FastTuning();
+            var random = new FakeSalesRandom();
+            var payload = new DialoguePayload("dlg");
+            var arch = new QuestCharacterArchetype(payload, passiveCount: 1);
+
+            // Build the plan THROUGH the archetype + CustomerPlanBuilder → production shape
+            // Approach → DialogStep → PassivePurchase → CompletePurchase → Leave.
+            var customer = CustomerPlanBuilder.Build(
+                "c1", tuning, random,
+                () => arch.BuildMiddle(new SalesSessionSetup(1, "loc", new[] { "b1" }), tuning, random));
+
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") },
+                Array.Empty<RequestConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { customer },
+                tuning);
+
+            DialoguePayload started = null;
+            var dialogueCount = 0;
+            var passiveSales = 0;
+            var purchaseCompletedCount = -1;
+            c.DialogueStarted += (_, p) => { started = p; dialogueCount++; };
+            c.PassiveSaleHappened += _ => passiveSales++;
+            c.CustomerPurchaseCompleted += (_, count) => purchaseCompletedCount = count;
+
+            StartDay(c);
+            DriveUntilDialogue(c, () => dialogueCount);
+
+            Assert.AreEqual(1, dialogueCount, "The archetype's DialogStep opened the dialogue.");
+            Assert.AreEqual("dlg", started.DialogueId);
+
+            c.CompleteDialogue();
+            Run(c);
+
+            // Proves Dialog → Passive → CompletePurchase → Leave, not just that the day closed.
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
+            Assert.AreEqual(1, c.AccumulatedResult.SalesCount, "Passive sale ran after the dialogue.");
+            Assert.AreEqual(1, passiveSales);
+            Assert.AreEqual(1, purchaseCompletedCount, "Visit completed with 1 purchased book.");
+        }
+
+        [Test]
+        public void CompleteDialogue_AfterForceCompleteDay_IsNoOp()
+        {
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") },
+                Array.Empty<RequestConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { Dialog("c1") });
+
+            var count = 0;
+            c.DialogueStarted += (_, _) => count++;
+
+            StartDay(c);
+            DriveUntilDialogue(c, () => count);
+            c.ForceCompleteDay(zeroOut: false);
+
+            // Async UI closes late, after the day was force-completed: dialogue state is already dropped.
+            LogAssert.Expect(LogType.Warning, "[Sales.Day] CompleteDialogue with no open dialogue — ignored.");
+            Assert.DoesNotThrow(() => c.CompleteDialogue());
+            Assert.AreEqual(SalesDayPhase.Completed, c.Phase);
+        }
+
+        [Test]
         public void SalesShelfBuilder_BuildsShelfFromBookIds()
         {
             var configs = new FakeConfigsService();
@@ -364,72 +486,6 @@ namespace Book.Sell.Tests.Editor
 
             Assert.AreEqual(0, builder.Build(Array.Empty<string>()).Books.Count);
             Assert.AreEqual(0, builder.Build(null).Books.Count);
-        }
-
-        [Test]
-        public void SoldBookCommitter_EmptyBookId_DoesNothing()
-        {
-            var shelfState = new RecordingShelfStateService();
-            var inventory = new RecordingInventoryService().Seed("b1", InventoryCategories.Book);
-            var committer = new SoldBookCommitter(inventory, shelfState);
-
-            committer.CommitSoldBook(null, "test");
-            committer.CommitSoldBook(string.Empty, "test");
-            committer.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
-
-            CollectionAssert.IsEmpty(shelfState.Sold);
-            CollectionAssert.IsEmpty(inventory.RemoveCalls);
-        }
-
-        [Test]
-        public void SoldBookCommitter_MarksShelfBeforeRemovingInventory()
-        {
-            var operationLog = new List<string>();
-            var shelfState = new OrderedShelfStateService(operationLog);
-            var inventory = new RecordingInventoryService(operationLog).Seed("b1", InventoryCategories.Book);
-            var committer = new SoldBookCommitter(inventory, shelfState);
-
-            committer.CommitSoldBook("b1", "test");
-            committer.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
-
-            CollectionAssert.AreEqual(new[] { "shelf:b1", "inventory:b1" }, operationLog);
-        }
-
-        [Test]
-        public void SoldBookCommitter_MissingInventoryService_LogsError()
-        {
-            var committer = new SoldBookCommitter(null, new RecordingShelfStateService());
-
-            LogAssert.Expect(LogType.Error,
-                "[Sales.Day] cannot remove sold book 'b1' from inventory (test): IInventoryService is not available.");
-
-            committer.CommitSoldBook("b1", "test");
-            committer.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
-        }
-
-        [Test]
-        public void SoldBookCommitter_RemoveReturnsFalse_LogsError()
-        {
-            var inventory = new RecordingInventoryService();
-            var committer = new SoldBookCommitter(inventory, new RecordingShelfStateService());
-
-            LogAssert.Expect(LogType.Error, "[Sales.Day] sold book 'b1' was not present in inventory during test sale.");
-
-            committer.CommitSoldBook("b1", "test");
-            committer.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
-        }
-
-        [Test]
-        public void SoldBookCommitter_Flush_CanBeCalledRepeatedly()
-        {
-            var inventory = new RecordingInventoryService().Seed("b1", InventoryCategories.Book);
-            var committer = new SoldBookCommitter(inventory, new RecordingShelfStateService());
-
-            committer.CommitSoldBook("b1", "test");
-            committer.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
-            committer.FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
-
-            Assert.AreEqual(1, inventory.RemoveCalls.Count);
         }
 
         [Test]

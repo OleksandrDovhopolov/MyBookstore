@@ -1,10 +1,12 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Bootstrap.Loading;
 using Game.Ftue;
 using Game.Ftue.Domain;
 using Game.Ftue.Services;
 using Game.UI;
+using MessagePipe;
 using Save;
 using UnityEngine;
 using VContainer;
@@ -13,14 +15,25 @@ public class MainSceneBootstrap : MonoBehaviour
 {
     private UIManager _uiManager;
     private ISaveService _save;
+    private ITransitionAnimationService _transition;
+    private IPublisher<GameplayHubReady> _hubReadyPublisher;
+    private WelcomeWindowStartupSettings _welcomeWindowStartupSettings;
 
     private CancellationToken _destroyToken;
 
     [Inject]
-    public void Install(UIManager uiManager, ISaveService save)
+    public void Install(
+        UIManager uiManager,
+        ISaveService save,
+        ITransitionAnimationService transition,
+        IPublisher<GameplayHubReady> hubReadyPublisher,
+        WelcomeWindowStartupSettings welcomeWindowStartupSettings)
     {
         _uiManager = uiManager;
         _save = save;
+        _transition = transition;
+        _hubReadyPublisher = hubReadyPublisher;
+        _welcomeWindowStartupSettings = welcomeWindowStartupSettings;
     }
 
     private void Awake()
@@ -39,23 +52,33 @@ public class MainSceneBootstrap : MonoBehaviour
         {
             ct.ThrowIfCancellationRequested();
 
-            var firstEntry = await IsFirstEntryAsync(ct);
-
             var hud = await _uiManager.ShowAsync<GameplaySceneController>(ct: ct);
 
-            // Keep the hub mounted (so it preloads) but invisible behind the non-full-screen welcome
-            // letter; reveal it once the player presses Start.
-            if (firstEntry)
-            {
-                hud.SetHudVisible(false);
-                await ShowWelcomeAndWaitAsync(ct);
-            }
-
-            await UniTask.WaitUntil(() => hud.IsShown && hud.SpritesLoaded, cancellationToken: ct);
+            // Wait until the hub window has loaded everything it needs to display (genre sprites, day
+            // context, ...) before revealing the screen.
+            await UniTask.WaitUntil(() => hud.IsShown && hud.IsDataReady, cancellationToken: ct);
             ct.ThrowIfCancellationRequested();
 
-            if (firstEntry)
+            var firstEntry = await IsFirstEntryAsync(ct);
+            var showWelcomeWindow = firstEntry && (_welcomeWindowStartupSettings?.StartWelcomeWindow ?? true);
+
+            // On first entry keep the hub invisible behind the non-full-screen welcome letter; the reveal
+            // then shows the scene background + letter without flashing the HUD.
+            if (showWelcomeWindow)
+                hud.SetHudVisible(false);
+
+            await _transition.PlayRevealAsync(ct);   // remove the transition cover
+
+            if (showWelcomeWindow)
+            {
+                await ShowWelcomeAndWaitAsync(ct);
                 hud.SetHudVisible(true);
+            }
+
+            // Hub is now actually visible and actionable — fire the tutorial's "hubReady" trigger.
+            // Published here (not right after IsDataReady) so a forced sequence never plays behind the
+            // transition cover or the first-entry welcome letter.
+            _hubReadyPublisher?.Publish(new GameplayHubReady(0));
         }
         catch (OperationCanceledException)
         {

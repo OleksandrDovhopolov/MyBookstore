@@ -1,6 +1,11 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Book.Sell.API;
+using Cysharp.Threading.Tasks;
+using Game.Configs;
+using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.DayCycle.Results.Domain;
 using Game.DayCycle.Results.Services;
@@ -12,6 +17,43 @@ namespace Game.DayCycle.Tests.Editor.Results
 {
     public sealed class ResultsSessionServiceTests
     {
+        private sealed class FakeConfigsService : IConfigsService
+        {
+            private readonly Dictionary<string, BookConfig> _books = new(StringComparer.Ordinal);
+
+            public FakeConfigsService AddBook(string id, string genre)
+            {
+                _books[id] = new BookConfig { Id = id, Genre = genre };
+                return this;
+            }
+
+            public UniTask WarmupAsync(CancellationToken ct) => UniTask.CompletedTask;
+
+            public T Get<T>(string id) where T : class, IConfig
+                => TryGet<T>(id, out var config) ? config : null;
+
+            public bool TryGet<T>(string id, out T config) where T : class, IConfig
+            {
+                config = null;
+                if (typeof(T) != typeof(BookConfig) || string.IsNullOrEmpty(id)) return false;
+                if (!_books.TryGetValue(id, out var book)) return false;
+                config = book as T;
+                return config != null;
+            }
+
+            public UniTask<T> GetAsync<T>(string id) where T : class, IConfig
+                => UniTask.FromResult(Get<T>(id));
+
+            public bool IsExists<T>(string id) where T : class, IConfig
+                => TryGet<T>(id, out _);
+
+            public IReadOnlyList<T> GetAll<T>() where T : class, IConfig
+            {
+                if (typeof(T) != typeof(BookConfig)) return Array.Empty<T>();
+                return _books.Values.Cast<T>().ToList();
+            }
+        }
+
         private sealed class Harness
         {
             public FakeSaveService Save { get; }
@@ -24,7 +66,8 @@ namespace Game.DayCycle.Tests.Editor.Results
             public int NoResultEmits { get; private set; }
 
             public Harness(SalesDayResult preloadedResult = null,
-                Dictionary<string, string> sharedStore = null)
+                Dictionary<string, string> sharedStore = null,
+                IConfigsService configs = null)
             {
                 Save = sharedStore != null ? new FakeSaveService(sharedStore) : new FakeSaveService();
                 if (preloadedResult != null)
@@ -37,7 +80,7 @@ namespace Game.DayCycle.Tests.Editor.Results
                 Sut = new ResultsSummarySessionService(
                     Save,
                     DayProgress,
-                    new ResultsSummaryBuilder(new DefaultResultsReviewTextProvider()));
+                    new ResultsSummaryBuilder(new DefaultResultsReviewTextProvider(), configs));
 
                 Sut.SummaryReady += s => Summaries.Add(s);
                 Sut.NoResultAvailable += () => NoResultEmits++;
@@ -169,6 +212,41 @@ namespace Game.DayCycle.Tests.Editor.Results
             Assert.AreEqual(5, s.SalesCount);
             Assert.AreEqual(4, s.ExcellentCount);
             Assert.AreEqual(1, s.FailedCount);
+        }
+
+        [Test]
+        public void Summary_SoldByGenre_ComesFromSoldBookIds()
+        {
+            var configs = new FakeConfigsService()
+                .AddBook("b1", "Fantasy")
+                .AddBook("b2", "Fantasy")
+                .AddBook("b3", "Crime");
+            var sales = Sales(gold: 77, exc: 3);
+            sales.SoldBookIds.AddRange(new[] { "b1", "b2", "b3" });
+
+            var h = new Harness(sales, configs: configs);
+            h.Run();
+
+            var sold = h.Summaries[0].SoldByGenre;
+            Assert.AreEqual(2, sold[BookGenre.Fantasy.ToConfigValue()]);
+            Assert.AreEqual(1, sold[BookGenre.Crime.ToConfigValue()]);
+            Assert.AreEqual(0, sold[BookGenre.Classic.ToConfigValue()]);
+        }
+
+        [Test]
+        public void Summary_SoldByGenre_SkipsMissingBookConfig()
+        {
+            var configs = new FakeConfigsService()
+                .AddBook("known", "Travel");
+            var sales = Sales(gold: 10, exc: 1);
+            sales.SoldBookIds.AddRange(new[] { "known", "missing" });
+
+            var h = new Harness(sales, configs: configs);
+            h.Run();
+
+            var sold = h.Summaries[0].SoldByGenre;
+            Assert.AreEqual(1, sold[BookGenre.Travel.ToConfigValue()]);
+            Assert.AreEqual(0, sold[BookGenre.Fantasy.ToConfigValue()]);
         }
     }
 }

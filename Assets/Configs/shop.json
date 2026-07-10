@@ -104,7 +104,8 @@
 
   {
     "id": "classic_decor_old_lamp",
-    "storefrontId": "classic.decor",
+    "storefrontId": "newspaper.decor",
+    "displayName": "Old lamp",
     "price": { "currency": "gold", "amount": 75 },
     "rewardId": "decor_old_lamp",
     "rewardItems": [
@@ -114,7 +115,8 @@
   },
   {
     "id": "classic_decor_houseplant",
-    "storefrontId": "classic.decor",
+    "storefrontId": "newspaper.decor",
+    "displayName": "Houseplant",
     "price": { "currency": "gold", "amount": 60 },
     "rewardId": "decor_houseplant",
     "rewardItems": [
@@ -124,7 +126,8 @@
   },
   {
     "id": "classic_decor_maritime_painting",
-    "storefrontId": "classic.decor",
+    "displayName": "Maritime painting",
+    "storefrontId": "newspaper.decor",
     "price": { "currency": "gold", "amount": 90 },
     "rewardId": "decor_maritime_painting",
     "rewardItems": [

@@ -1,4 +1,6 @@
+using Game.Conditions.API;
 using Game.Inventory.API;
+using Game.Inventory.Conditions;
 using Game.Inventory.Services;
 using Game.Inventory.UI;
 using Game.Inventory.UseHandlers;
@@ -35,6 +37,9 @@ namespace Game.Bootstrap
             builder.Register<IInventoryItemUseHandler, PuzzleAssembleUseHandler>(Lifetime.Singleton);
 
             builder.Register<IInventoryUseRouter, InventoryUseRouter>(Lifetime.Singleton);
+
+            // Quest/unlock condition adapter ("haveItem"); discovered via the IConditionFactory collection.
+            builder.Register<IConditionFactory, HaveItemConditionFactory>(Lifetime.Singleton);
 
             /*// Debug UI is registered only when present in the scene (same guard as other feature views).
             if (Object.FindAnyObjectByType<InventoryScreenView>(FindObjectsInactive.Include) != null)

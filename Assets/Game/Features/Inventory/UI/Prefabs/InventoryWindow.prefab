@@ -392,7 +392,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.0017700195, y: 0.016063482}
+  m_AnchoredPosition: {x: 0.0017700195, y: 0.000558379}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &2816780095940804823
@@ -556,6 +556,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _animation: {fileID: 8564571989903992922}
+  _closeButtons: []
   _tabContainer: {fileID: 7138879830108761658}
   _tabButtonPrefab: {fileID: 9049596926131000361, guid: 383cd5eeaf431c44887f560bfe1bc892, type: 3}
   _rowContainer: {fileID: 766977940136660962}

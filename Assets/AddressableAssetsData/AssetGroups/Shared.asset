@@ -25,13 +25,13 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 06756ce84d8ad4037baebd78c80b61d5
-    m_Address: vintage_globe
+  - m_GUID: 0798a10248885d34487c4faf78a650a9
+    m_Address: Fantasy
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 0798a10248885d34487c4faf78a650a9
-    m_Address: Fantasy
+  - m_GUID: 0824ad42d18b34a02a71938e31f68d11
+    m_Address: old_lamp
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -60,6 +60,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 404694c4f7588674b8f090f4ab82b935
+    m_Address: vintage_globe
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7405d3beb7b1e3947a94fe1abbb50846
     m_Address: loc_riverside_park
     m_ReadOnly: 0
@@ -75,8 +80,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9be6b51a5d70f485cb6fd28faf43d3ed
+    m_Address: houseplant
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ab8811f57efe48241b6671e7edca91db
     m_Address: loc_old_town
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: abd9e946d26bf402f954c10328c976ed
+    m_Address: maritime_painting
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

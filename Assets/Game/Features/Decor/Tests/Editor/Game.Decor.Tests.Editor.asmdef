@@ -10,6 +10,8 @@
         "Game.Inventory.API",
         "Game.Resources.API",
         "Book.Sell.API",
+        "Game.Conditions.API",
+        "Game.Conditions",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

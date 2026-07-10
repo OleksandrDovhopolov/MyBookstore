@@ -1,38 +1,45 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Bootstrap.Loading;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
+using Game.Decor.UI;
 using Game.Location.UI;
 using Game.LocationUnlock.API;
 using Game.Newspaper.UI;
 using Game.Preparation.Services;
 using Game.Preparation.UI;
-using Game.Resources.API;
 using Game.UI;
+using Game.UI.ContentWidget;
 using MessagePipe;
+using UIShared;
 using UnityEngine;
 using VContainer;
 
 [Window("GameplaySceneController", WindowType.HUD)]
-public class GameplaySceneController : WindowController<GameplaySceneView>
+public class GameplaySceneController : WindowController<GameplaySceneView>, IDataReadyWindow
 {
-    private IResourcesService _resources;
     private IDayProgressService _dayProgress;
     private IMorningSessionService _session;
     private IPreparationSessionService _preparationSession;
+    private ISaleChancePreviewService _saleChancePreview;
     private ILocationUnlockService _locationUnlock;
     private IConfigsService _configs;
     private IUiSpriteProvider _uiSprites;
+    private IGameFlowService _gameFlow;
 
-    public bool SpritesLoaded { get; private set; }
+    // True once the window has loaded all the data it needs to display (currently the genre sprites).
+    public bool IsDataReady { get; private set; }
 
     private IDisposable _salesGoldSubscription;
     private IDisposable _genreBookCountsSubscription;
     private IDisposable _buttonsInteractableSubscription;
+
+    private readonly HashSet<IWindowController> _panelHideOwners = new();
     
     private ISubscriber<GameplaySalesGoldChanged> _salesGoldSubscriber;
     private ISubscriber<GameplayGenreBookCountsChanged> _genreBookCountsSubscriber;
@@ -41,25 +48,27 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
 
     [Inject]
     public void Construct(
-        IResourcesService resources,
         IUiSpriteProvider uiSprites,
         IDayProgressService dayProgress,
         IMorningSessionService morningSessionService,
         ISubscriber<GameplaySceneButtonsInteractableChanged> buttonsInteractableSubscriber,
         IPreparationSessionService preparationSession = null,
+        ISaleChancePreviewService saleChancePreview = null,
         ILocationUnlockService locationUnlock = null,
         IConfigsService configs = null,
+        IGameFlowService gameFlow = null,
         ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
         ISubscriber<GameplaySalesGoldChanged> salesGoldSubscriber = null,
         IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null)
     {
-        _resources = resources;
         _uiSprites = uiSprites;
         _dayProgress = dayProgress;
         _session = morningSessionService;
         _preparationSession = preparationSession;
+        _saleChancePreview = saleChancePreview;
         _locationUnlock = locationUnlock;
         _configs = configs;
+        _gameFlow = gameFlow;
         _salesGoldSubscriber = salesGoldSubscriber;
         _genreBookCountsSubscriber = genreBookCountsSubscriber;
         _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
@@ -71,6 +80,11 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
         if (View.StartDayButton != null)
             View.StartDayButton.onClick.AddListener(OnStartGameClicked);
 
+        if (View.DecorButton != null)
+            View.DecorButton.onClick.AddListener(OnDecorButtonClicked);
+
+        View.GenreItemClicked += OnGenreItemClicked;
+
         _buttonsInteractableSubscription = _buttonsInteractableSubscriber.Subscribe(
             e => SetSceneButtonsInteractable(e.Interactable));
 
@@ -81,20 +95,21 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
 
         if (_dayProgress != null)
             _dayProgress.PhaseChanged += OnDayPhaseChanged;
+
+        if (_gameFlow != null)
+            _gameFlow.LocationLoadedChanged += OnLocationLoadedChanged;
     }
 
     protected override void OnShowStart()
     {
-        if (_resources == null)
-        {
-            Debug.LogWarning("[GameplaySceneController] dependencies missing — not registered in DI?");
-            return;
-        }
-
-        _resources.Changed += OnResourceChanged;
-
-        View.SetGoldAmount(_resources.GetAmount(ResourceIds.Gold));
         View.SetSalesGoldVisible(false);
+
+        // The genre panel is shown only inside the location; sync it instantly to the current state so a
+        // hub boot starts hidden and a resume in-location starts shown (no animation flash).
+        View.SetPanelShown(
+            AnimatedShowHidePanel.PanelId.GenreBookCounts,
+            _gameFlow?.IsLocationLoaded == true,
+            instant: true);
 
         LoadGenreSpritesAsync(View.destroyCancellationToken).Forget();
         RefreshDayAndGenreCountsAsync().Forget();
@@ -113,7 +128,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
             }
 
             View.SetGenreSprites(sprites);
-            SpritesLoaded = true;
+            IsDataReady = true;
         }
         catch (OperationCanceledException)
         {
@@ -141,17 +156,9 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
         }
     }
 
-    private void OnResourceChanged(ResourceChangeEvent _) => Refresh();
-
-    private void Refresh()
-    {
-        View.SetGoldAmount(_resources.GetAmount(ResourceIds.Gold));
-    }
-
     protected override void OnHideStart(bool isClosed)
     {
         base.OnHideStart(isClosed);
-        if (_resources != null) _resources.Changed -= OnResourceChanged;
     }
 
     protected override void OnDispose()
@@ -168,8 +175,21 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
         if (View != null && View.StartDayButton != null)
             View.StartDayButton.onClick.RemoveAllListeners();
 
+        if (View != null && View.DecorButton != null)
+            View.DecorButton.onClick.RemoveListener(OnDecorButtonClicked);
+
+        if (View != null)
+            View.GenreItemClicked -= OnGenreItemClicked;
+
+        foreach (var owner in _panelHideOwners)
+            owner.Closed -= OnPanelHidingWindowClosed;
+        _panelHideOwners.Clear();
+
         if (_dayProgress != null)
             _dayProgress.PhaseChanged -= OnDayPhaseChanged;
+
+        if (_gameFlow != null)
+            _gameFlow.LocationLoadedChanged -= OnLocationLoadedChanged;
     }
 
     private void SetSceneButtonsInteractable(bool interactable)
@@ -189,9 +209,60 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
     {
         if (state?.CurrentPhase == DayPhase.Morning)
             RefreshDayAndGenreCountsAsync().Forget();
+
+        if (state?.CurrentPhase == DayPhase.Results)
+            HideContentWidgetOnDayEnd();
+    }
+
+    // The genre panel tracks the location boundary (fired before each reveal), so it never flashes in the hub.
+    private void OnLocationLoadedChanged(bool loaded)
+    {
+        View?.SetPanelShown(AnimatedShowHidePanel.PanelId.GenreBookCounts, loaded);
     }
 
     private void OnStartGameClicked() => StartGameAsync().Forget();
+
+    private void OnGenreItemClicked(BookGenre genre, Sprite sprite, RectTransform anchor)
+    {
+        if (anchor == null) return;
+
+        ShowSaleChanceWidgetAsync(genre, sprite, anchor).Forget();
+    }
+
+    private async UniTaskVoid ShowSaleChanceWidgetAsync(BookGenre genre, Sprite sprite, RectTransform anchor)
+    {
+        try
+        {
+            if (anchor == null || View == null) return;
+            if (_saleChancePreview == null)
+            {
+                Debug.LogWarning("[GameplaySceneController] ISaleChancePreviewService is not injected.");
+                return;
+            }
+
+            var ct = View.destroyCancellationToken;
+            var percent = await _saleChancePreview.GetPercentAsync(genre, ct);
+            if (View == null || anchor == null || ct.IsCancellationRequested) return;
+
+            var data = new SaleChanceWidgetData(genre, percent, sprite);
+            var args = new ContentWidgetArgs(data, anchor, this);
+            await UIManager.ShowAsync<ContentWidgetController>(args, ct);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[GameplaySceneController] Failed to show sale chance widget: {e}");
+        }
+    }
+
+    private void HideContentWidgetOnDayEnd()
+    {
+        if (UIManager == null || !UIManager.IsWindowShown<ContentWidgetController>()) return;
+
+        UIManager.HideAsync<ContentWidgetController>(forceClose: true, ct: CancellationToken.None).Forget();
+    }
     
     private async UniTaskVoid StartGameAsync()
     {
@@ -283,6 +354,50 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
         return null;
     }
 
+    private void OnDecorButtonClicked() => ShowWindowWithPanelsHiddenAsync<DecorPlacementWindow>().Forget();
+
+    private async UniTaskVoid ShowWindowWithPanelsHiddenAsync<TWindow>(WindowArgs args = null)
+        where TWindow : class, IWindowController, new()
+    {
+        try
+        {
+            await View.HideAnimatedPanelsAsync();
+
+            var window = await UIManager.ShowAsync<TWindow>(args, View.destroyCancellationToken);
+            if (window == null)
+            {
+                ShowPanelsIfNoOwnersLeft();
+                return;
+            }
+
+            _panelHideOwners.Add(window);
+            window.Closed += OnPanelHidingWindowClosed;
+        }
+        catch (OperationCanceledException)
+        {
+            ShowPanelsIfNoOwnersLeft();
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[GameplaySceneController] Failed to open {typeof(TWindow).Name}: {e}");
+            ShowPanelsIfNoOwnersLeft();
+        }
+    }
+
+    private void OnPanelHidingWindowClosed(IWindowController controller)
+    {
+        controller.Closed -= OnPanelHidingWindowClosed;
+        _panelHideOwners.Remove(controller);
+        ShowPanelsIfNoOwnersLeft();
+    }
+
+    private void ShowPanelsIfNoOwnersLeft()
+    {
+        // Re-show is not gating anything, so fire-and-forget the animation.
+        if (_panelHideOwners.Count == 0)
+            View.ShowAnimatedPanelsAsync().Forget();
+    }
+
     private void OnPreparationWindowClosed(IWindowController controller)
     {
         if (controller is not PreparationWindow window) return;
@@ -304,9 +419,7 @@ public class GameplaySceneController : WindowController<GameplaySceneView>
         if (result == null)
             return false;
 
-        Debug.Log($"[GameplaySceneController] -> Preparation. Day {result.Day}, " +
-                  $"modifiers=[{string.Join(",", result.ActiveModifierIds)}], " +
-                  $"locations=[{string.Join(",", result.TargetLocationIds)}].");
+        Debug.Log($"[GameplaySceneController] -> Preparation. Day {result.Day}.");
 
         return true;
     }

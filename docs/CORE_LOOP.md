@@ -3,8 +3,8 @@
 Compact design reference for the four-phase day cycle:
 **Morning → Preparation → Sales → Results → (next day)**.
 
-> Scope: design intent and decisions. Implementation status, file paths, and "who
-> owns what" live in `docs/PROGRESS.md` (history) and Notion (current tasks).
+> Scope: design intent and decisions. Implementation status and current tasks live
+> in Notion; persisted state / commit semantics live in `docs/SAVE_DAY_FLOW.md`.
 > FTUE / first-day scripting is a separate document: `docs/FTUE.md`.
 
 ---
@@ -64,10 +64,10 @@ on the wrong day is a quiet day.
 The MVP ships with one functional location; the UI and data model still treat
 "location" as a list so locked entries can be added without rework.
 
-Entering a location costs a per-visit **entry fee** (`LocationConfig.EntryCost`,
-currency `EntryCurrencyId`, default gold), shiftable by active decor
-(`DecorConfig.VisitCostDelta`). It is charged on Preparation confirm as a sunk
-cost — see `docs/SAVE_DAY_FLOW.md`.
+Entering a location costs a per-visit **entry fee**. Design intent: a sunk cost
+that makes save-scumming pointless. The exact fields, charge order, and
+sunk-vs-refund rules are owned by `docs/SAVE_DAY_FLOW.md` ("Entry Fee") — not
+restated here.
 
 ### 2.2 Books
 
@@ -214,7 +214,7 @@ Short emotional summary; no tables.
   book found its reader."*
 - **Reward** — gold and reputation; sometimes a new book "found you" (a
   classifieds drop, a gift, a discovery).
-- **Hook** — a hint about tomorrow ("Tilde mentioned a festival" / "Rain is
+- **Hook** — a hint about tomorrow ("a festival is coming up" / "Rain is
   expected later this week" / "A returning professor will visit the university").
 
 After tap → **Next Day** → state advances and Morning opens for day N+1.
@@ -234,6 +234,12 @@ Restart on the Results screen does **not** double-grant. A dedicated save
 module (`results.applied_rewards`) records which days have been applied; if the
 day is already in the list, the screen rebuilds the summary from stored deltas
 instead of recomputing them.
+
+> This is the **Results-layer** guard (reputation/summary). It is distinct from
+> the **Sales-commit** guard described in `docs/SAVE_DAY_FLOW.md` ("Idempotency"),
+> which protects the gold/inventory/stats commit at day completion. The two
+> operate on different effects and complement each other — they are not
+> alternative designs for the same thing.
 
 **Out of scope:** detailed per-customer log, social feed, supplier shop on the
 Results screen, multi-screen post-day cinematics.
@@ -283,9 +289,7 @@ margins.
 
 - `docs/FTUE.md` — first-time experience (current implementation + future
   scripted day 1).
-- `docs/archive/REFERENCE_COZY_BOOKSHOP_DAY.md` — generic cozy-bookshop sim
-  reference notes (insights distilled, no game names).
 - `docs/adr/0003-customer-simulation.md` — Sales real-time simulation decision.
 - `docs/adr/0004-stock-model-hybrid-sale-chance.md` — per-title + per-genre
   hybrid stock model and the probabilistic passive sale.
-- `docs/PROGRESS.md` — implementation log per task.
+- `docs/SAVE_DAY_FLOW.md` — persisted save modules and the day-commit flow.

@@ -1,0 +1,226 @@
+using System;
+using DG.Tweening;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace Game.Decor.UI
+{
+    /// <summary>
+    /// A UI anchor for a single decor slot inside <see cref="DecorPlacementWindow"/>. One instance per
+    /// slot, authored in the window prefab; its position/scale live in the prefab and the link to the
+    /// config is the string <see cref="SlotId"/> (must match an id in bookshops.json).
+    /// The view is "dumb": it renders empty/placed/highlighted states and plays place/remove tweens,
+    /// while all placement logic and service calls stay in the controller.
+    /// </summary>
+    [RequireComponent(typeof(CanvasGroup))]
+    public sealed class DecorSlotAnchorView : MonoBehaviour
+    {
+        [Header("Identity")]
+        [Tooltip("Must match a slot id from bookshops.json, e.g. cart_table_1.")]
+        [SerializeField] private string _slotId;
+
+        [Header("Empty state")]
+        [SerializeField] private Button _markerButton;   // pin/marker shown when the slot is empty
+        [SerializeField] private GameObject _highlight;   // shown when this empty slot is a valid target
+
+        [Header("Placed state")]
+        [SerializeField] private Image _placedDecorImage; // decor visual when the slot is occupied
+        [SerializeField] private Button _placedButton;    // click on placed decor → opens the slot HUD
+        [SerializeField] private CanvasGroup _placedGroup; // drives the place/remove alpha tween
+        [SerializeField] private Material _plainMaterial; // null means default UGUI material
+        [SerializeField] private Material _outlineMaterial; // shader outline when this slot is selected
+
+        [Header("Availability")]
+        [SerializeField] private CanvasGroup _availabilityGroup; // dims the whole anchor, separate from place/remove tween alpha
+        [SerializeField, Range(0f, 1f)] private float _unavailableAlpha = 0.35f;
+
+        [Header("Animation")]
+        [SerializeField, Min(0f)] private float _placeDuration = 0.25f;
+        [SerializeField, Min(0f)] private float _removeDuration = 0.2f;
+
+        private Sequence _activeTween;
+        private const float DefaultUnavailableAlpha = 0.35f;
+
+        public string SlotId => _slotId;
+
+        public Sprite CurrentPlacedSprite => _placedDecorImage != null ? _placedDecorImage.sprite : null;
+
+        /// <summary>Raised when the empty-slot marker is clicked (decor-first placement target).</summary>
+        public event Action OnMarkerClicked;
+
+        /// <summary>Raised when the placed decor is clicked (opens Replace/Remove HUD).</summary>
+        public event Action OnPlacedClicked;
+
+        private void Awake()
+        {
+            if (_availabilityGroup == null) TryGetComponent(out _availabilityGroup);
+
+            if (_markerButton != null) _markerButton.onClick.AddListener(RaiseMarkerClicked);
+            if (_placedButton != null) _placedButton.onClick.AddListener(RaisePlacedClicked);
+        }
+
+        /// <summary>Empty slot: show the marker, hide the decor. The marker is interactable by default
+        /// (available); the focus filter in the controller greys out slots that don't match the focused decor.</summary>
+        public void SetEmpty()
+        {
+            KillActiveTween();
+            SetAvailabilityVisual(true);
+            SetSelectedOutline(false);
+
+            if (_placedDecorImage != null)
+            {
+                _placedDecorImage.sprite = null;
+                _placedDecorImage.gameObject.SetActive(false);
+            }
+            if (_placedButton != null) _placedButton.interactable = false;
+
+            if (_markerButton != null) _markerButton.gameObject.SetActive(true);
+            SetMarkerInteractable(true);
+            SetHighlighted(false);
+        }
+
+        /// <summary>Occupied slot: show the decor sprite (fully visible), hide the marker.</summary>
+        public void SetPlaced(Sprite sprite)
+        {
+            KillActiveTween();
+            SetAvailabilityVisual(true);
+            SetSelectedOutline(false);
+
+            SetHighlighted(false);
+            if (_markerButton != null) _markerButton.gameObject.SetActive(false);
+
+            if (_placedDecorImage != null)
+            {
+                _placedDecorImage.sprite = sprite;
+                _placedDecorImage.gameObject.SetActive(true);
+                _placedDecorImage.transform.localScale = Vector3.one;
+            }
+            if (_placedGroup != null) _placedGroup.alpha = 1f;
+            if (_placedButton != null) _placedButton.interactable = true;
+        }
+
+        /// <summary>Temporary UI-only preview for an empty slot. It looks placed, but cannot open the
+        /// occupied-slot HUD and is not committed until the controller applies it.</summary>
+        public void SetPreview(Sprite sprite)
+        {
+            KillActiveTween();
+            SetAvailabilityVisual(true);
+
+            SetHighlighted(false);
+            if (_markerButton != null) _markerButton.gameObject.SetActive(false);
+
+            if (_placedDecorImage != null)
+            {
+                _placedDecorImage.sprite = sprite;
+                _placedDecorImage.gameObject.SetActive(true);
+                _placedDecorImage.transform.localScale = Vector3.one;
+            }
+            if (_placedGroup != null) _placedGroup.alpha = 1f;
+            if (_placedButton != null) _placedButton.interactable = false;
+            SetSelectedOutline(true);
+        }
+
+        /// <summary>Toggle the "valid target" hint only (the green highlight). Availability is a separate
+        /// concern — see <see cref="SetMarkerInteractable"/>.</summary>
+        public void SetHighlighted(bool highlighted)
+        {
+            if (_highlight != null) _highlight.SetActive(highlighted);
+        }
+
+        /// <summary>Enable/disable the empty-slot marker button (availability). Independent of the
+        /// <see cref="SetHighlighted"/> hint. Driven by the controller's focus filter.</summary>
+        public void SetMarkerInteractable(bool interactable)
+        {
+            if (_markerButton != null) _markerButton.interactable = interactable;
+        }
+
+        public void SetAvailabilityVisual(bool available)
+        {
+            if (_availabilityGroup == null) return;
+            var unavailableAlpha = _unavailableAlpha > 0f ? _unavailableAlpha : DefaultUnavailableAlpha;
+            _availabilityGroup.alpha = available ? 1f : unavailableAlpha;
+        }
+
+        public void SetSelectedOutline(bool selected)
+        {
+            if (_placedDecorImage == null) return;
+
+            _placedDecorImage.material = selected && _outlineMaterial != null
+                ? _outlineMaterial
+                : _plainMaterial;
+        }
+
+        /// <summary>Place animation: scale 0.85 → 1.08 → 1.0, alpha 0 → 1. Visual only.</summary>
+        public void PlayPlaceTween()
+        {
+            KillActiveTween();
+            if (_placedDecorImage == null) return;
+
+            var target = _placedDecorImage.transform;
+            SetScale(target, 0.85f);
+            if (_placedGroup != null) _placedGroup.alpha = 0f;
+
+            var overshoot = _placeDuration * 0.6f;
+            var settle = _placeDuration - overshoot;
+
+            _activeTween = DOTween.Sequence()
+                .SetTarget(this)
+                .SetUpdate(true)
+                .Append(ScaleTween(target, 1.08f, overshoot).SetEase(Ease.OutQuad))
+                .Append(ScaleTween(target, 1.0f, settle).SetEase(Ease.OutQuad));
+
+            if (_placedGroup != null)
+                _activeTween.Insert(0f, AlphaTween(1f, _placeDuration).SetEase(Ease.OutQuad));
+        }
+
+        /// <summary>Remove animation: scale 1.0 → 0.85, alpha 1 → 0, then <paramref name="onComplete"/>.</summary>
+        public void PlayRemoveTween(Action onComplete)
+        {
+            KillActiveTween();
+            if (_placedDecorImage == null)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            var target = _placedDecorImage.transform;
+
+            _activeTween = DOTween.Sequence()
+                .SetTarget(this)
+                .SetUpdate(true)
+                .Join(ScaleTween(target, 0.85f, _removeDuration).SetEase(Ease.InQuad));
+
+            if (_placedGroup != null)
+                _activeTween.Join(AlphaTween(0f, _removeDuration).SetEase(Ease.InQuad));
+
+            _activeTween.OnComplete(() => onComplete?.Invoke());
+        }
+
+        private Tween ScaleTween(Transform target, float value, float duration) =>
+            DOTween.To(() => target.localScale.x, x => SetScale(target, x), value, duration);
+
+        private Tween AlphaTween(float value, float duration) =>
+            DOTween.To(() => _placedGroup.alpha, a => _placedGroup.alpha = a, value, duration);
+
+        private static void SetScale(Transform target, float value) =>
+            target.localScale = new Vector3(value, value, value);
+
+        private void RaiseMarkerClicked() => OnMarkerClicked?.Invoke();
+
+        private void RaisePlacedClicked() => OnPlacedClicked?.Invoke();
+
+        private void KillActiveTween()
+        {
+            if (_activeTween == null || !_activeTween.IsActive()) return;
+            _activeTween.Kill(false);
+            _activeTween = null;
+        }
+
+        private void OnDestroy()
+        {
+            KillActiveTween();
+            if (_markerButton != null) _markerButton.onClick.RemoveListener(RaiseMarkerClicked);
+            if (_placedButton != null) _placedButton.onClick.RemoveListener(RaisePlacedClicked);
+        }
+    }
+}

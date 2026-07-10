@@ -102,18 +102,15 @@ controller builds a runtime-only sales day from the setup provider:
 The current runtime sales simulation is not serialized. Customers, active
 steps, locks, request progress, timers, and dialogs exist only in memory.
 
-However, sale consequences are persisted during the day:
+Sale consequences are provisional during the day. Active and passive sales
+update the runtime `SalesDayResult` and UI state, but persistent modules are not
+mutated per sold book.
 
-- active and passive sales add gold through `IResourcesService`, writing the
-  `resources` module;
-- sold books are removed from `inventory`;
-- sold books are removed from `book_sell.shelf_state.ShelfBookIds` and added to
-  `SoldBookIds`;
-- sales stats are recorded in memory and flushed through the save hook on the
-  next save cycle.
-
-At actual day completion, `SalesDayController` writes
-`book_sell.last_day_result` before emitting `DayCompleted`.
+At actual day completion, `SalesDayController` calls
+`ISalesDayCommitService.CommitAsync`. `SalesDayCommitService` applies gold,
+inventory removal, shelf state, sales stats, `book_sell.last_day_result`, and
+the completed-day marker under one autosave block, then forces a save before
+`DayCompleted` is emitted.
 
 ### Results / Next Day
 
@@ -136,47 +133,46 @@ If the player exits while the sales day is still running:
 
 1. The runtime day is lost. Customers, current request/dialogue, lock state,
    and timers are not restored.
-2. Any sale side effects that already reached save services may persist:
-   `resources`, `inventory`, `book_sell.shelf_state`, and possibly
-   `sales_stats`.
-3. `book_sell.last_day_result` is not written unless the day completed.
+2. Provisional sale effects are discarded: no sales gold, sold-book inventory
+   removals, sold shelf state, sales stats, or `book_sell.last_day_result` are
+   committed unless the day completed.
+3. The location entry fee is not refunded on a normal exit/quit; it is a sunk
+   visit-attempt cost.
 4. `day_progress` may still say `Sales`, but the next hub startup calls
    `MorningSessionService.StartOrResumeAsync`, which moves an incomplete
    current day back to `Morning`.
 5. The player therefore returns to the hub, not to the middle of the location.
 
-This is close to the ADR-0003 MVP decision that "the day is recreated on
-restart", but the current implementation already persists some economic
-side effects during the day. That creates a partial-progress behavior rather
-than a pure restart.
+This matches the ADR-0003 MVP decision that "the day is recreated on restart":
+the player replays the day from a stable setup instead of resuming runtime
+customer state.
 
 ---
 
 ## FTUE Impact
 
-`ftue.welcome_completed` should only mean that the player finished the welcome
-letter window. It should not mean that the first location tutorial is complete.
+The FTUE save keys (`ftue.applied`, `ftue.welcome_completed`,
+`ftue.first_location_tutorial`) and what each means are documented in
+[FTUE.md](FTUE.md) ("Save state"). Only the day-flow consequence is noted here:
 
-The first location tutorial needs its own persisted state if it must not be
-skipped after a quit. A future module could track one current tutorial/day run,
-for example:
-
-```text
-ftue.first_location_tutorial
-  Status: NotStarted | InProgress | Completed
-  Day
-  LocationId
-  CurrentStepId
-  CompletedStepIds
-```
-
-If the tutorial includes authored customer/dialogue content, it should either
-restore from this state or intentionally restart the tutorial from a safe
-checkpoint. The current save/day flow does not provide that guarantee.
+`ftue.first_location_tutorial` exists so the scripted first-location tutorial is
+**not skipped after a quit**. If that tutorial includes authored
+customer/dialogue content, on relaunch it must either restore from this state or
+restart from a safe checkpoint. The current save/day flow does not yet provide
+that guarantee — the persisted-state seam is in place, the restore logic is
+backlog (see "Considered Alternative" and "Snapshot/restore variant" below for
+how a mid-day/tutorial resume could work).
 
 ---
 
 ## Chosen Direction
+
+> **Status: shipped.** This is no longer a proposal — the transactional sales day
+> is implemented by `SalesDayCommitService` (`ISalesDayCommitService`, registered in
+> `BookSellVContainerBindings`) and the entry-fee order is implemented in
+> `PreparationWindow.ConfirmAsync`. The sections below read as design rationale; the
+> behaviour they describe is the current behaviour. One decision was **reversed** in
+> implementation — see "Commit Ownership" on `CompletedDays`.
 
 Use a transactional sales day with defer-commit.
 
@@ -228,19 +224,18 @@ prepared setup.
 - UI can still show live provisional income through the existing sales-gold HUD
   without touching the persistent wallet.
 
-### Implementation Targets
+### Implemented Shape
 
-- `SalesGoldCollector`: collect earned gold in memory; apply to
-  `IResourcesService` only during final commit.
-- `SoldBookCommitter`: collect sold book ids in memory; remove from
-  `IInventoryService` only during final commit.
-- `SalesShelfStateService`: avoid writing sold shelf state during the running
-  day, or separate runtime shelf state from persisted shelf state.
-- `SalesStatsService`: avoid flushing day sales through autosave before final
-  commit. `RecordSold` currently sets `_dirty` and calls `_save.MarkDirty()`,
-  so it must NOT be called per sale during a transactional day — accumulate the
-  sold ids / delta in the day buffer and update stats only at final commit.
-- Final commit: make the full day application idempotent (see Idempotency below).
+- `SalesDayController` accumulates provisional gold and sold book ids in
+  `SalesDayResult`.
+- `SalesDayCommitService` is the only runtime path that applies sales effects
+  to `IResourcesService`, `IInventoryService`, `ISalesShelfStateService`,
+  `ISalesStatsRecorder`, `book_sell.last_day_result`, and `CompletedDays`.
+- `ISalesStatsRecorder.RecordSold` is called only from the final commit path
+  with `SaleContext { LocationId, Day }`, so location/day quest counters do not
+  move during an unfinished day.
+- The full commit is guarded by `CompletedDays` and runs under
+  `ISaveService.BlockAutosave()` followed by one forced save.
 
 ### Entry Fee (Sunk Visit Cost)
 
@@ -272,11 +267,11 @@ Why sunk and not refunded:
 New data + seam:
 
 - `LocationConfig.EntryCost` (gold; separate from `UnlockCost`).
-- `DecorConfig.EntryCostDelta` — **neutral, signed** contribution (allow negative
+- `DecorConfig.VisitCostDelta` — **neutral, signed** contribution (allow negative
   so decor can also discount; do not frame decor purely as a penalty). Do not
   conflate with a future `DailyUpkeepCost` mechanic.
 - `ILocationEntryCostCalculator` (mirror of `IDecorModifierProvider`):
-  `cost = EntryCost(location) + Σ EntryCostDelta(activeDecor)`, clamped ≥ 0.
+  `cost = EntryCost(location) + Σ VisitCostDelta(activeDecor)`, clamped ≥ 0.
   Active decor from `IDecorPlacementService.GetActiveDecorIds()`.
 - Preparation UI shows the cost breakdown (base + decor) and disables Confirm
   when the player cannot afford it.
@@ -312,13 +307,18 @@ clean reopen.
 - `Results` = output committed (sales effects applied).
 - `Exit mid-day` = discard the buffer; entry fee stays spent; replay the day.
 
-Keep `CompletedDays` ownership with **Results**, not the sales commit.
-`ResultsSummarySessionService.LoadAndApplyAsync` marks the day completed today
-([ResultsSummarySessionService.cs:64](Assets/Game/Features/DayCycle/Results/Services/ResultsSummarySessionService.cs)).
-The sales commit should atomically apply sales effects + `last_day_result`;
-Results then idempotently marks the day completed. Moving `CompletedDays` into
-the sales commit changes that contract (Sales would drive DayCycle phase) and
-must be a separate, explicit decision with updated Results tests.
+**Implemented decision (reversed from the original proposal):** `CompletedDays`
+is marked **inside the sales commit** by `SalesDayCommitService`, atomically with
+the gold/inventory/shelf/stats/`last_day_result` writes, under the same
+`BlockAutosave` lease. This guarantees a day can never be replayed for a second
+grant — the completion marker and the economic effects land in one save window.
+`ResultsSummarySessionService` then reads `last_day_result` and applies the
+Results-layer rewards (reputation/summary) idempotently on top.
+
+> The original proposal here was the opposite — "keep `CompletedDays` with
+> Results, not the sales commit." It was reversed because folding the completion
+> marker into the atomic sales commit is what makes the exactly-once guarantee
+> hold across a crash between the two services. Kept for the record.
 
 ### Dedicated Commit Service (do not bloat `SalesDayController`)
 
@@ -328,14 +328,16 @@ only assembles the result and calls commit; the service does the work: take a
 `BlockAutosave` lease, apply resources / inventory / shelf / stats /
 `last_day_result`, then one forced save.
 
-Also rename the buffering seams so intent is clear after defer-commit: today
-`FlushAsync` means "await launched write-through tasks"
-([SalesGoldCollector.cs:36](Assets/Game/Features/BookSell/Services/SalesGoldCollector.cs),
-[SoldBookCommitter.cs:42](Assets/Game/Features/BookSell/Services/SoldBookCommitter.cs)).
-After defer-commit it means "apply the accumulated effects". Prefer
-`Collect...` + `ApplyAsync`, or fold both into one `SalesDayEffectsBuffer`.
+Legacy per-sale write-through helpers were removed after defer-commit shipped.
+The controller now hands the accumulated `SalesDayResult` directly to
+`ISalesDayCommitService`.
 
 ### Idempotency
+
+> Scope: this is the **Sales-commit** guard (gold / inventory / shelf / stats /
+> `last_day_result`). The **Results-layer** guard (`results.applied_rewards`,
+> reputation/summary) is separate and lives in `docs/CORE_LOOP.md` §4.2. Different
+> effects, complementary guards — not two designs for the same thing.
 
 `CompletedDays` alone is not enough. If the commit fails after
 `resources.AddAsync` but before `last_day_result`, a retry could double-grant
@@ -389,43 +391,11 @@ choice effects.
 
 ## Development
 
-`CUSTOMER_STEP_PIPELINE_REFACTOR.md` describes the likely direction for future
-customer composition:
-
-```text
-Spawner -> Archetype -> CustomerPlanBuilder -> CustomerPlan -> CustomerDirector
-```
-
-Responsibilities:
-
-- `ICustomerSpawner` chooses which customers appear in the day.
-- `ICustomerArchetype` builds the initial middle steps for a customer.
-- `CustomerPlanBuilder` adds the mandatory skeleton:
-  `Approach -> middle -> CompletePurchase -> Leave`.
-- `CustomerPlan` owns traversal, insertion, and skip-to-closing behavior.
-- `CustomerDirector` observes in-visit facts and injects optional runtime steps.
-
-The director is the proposed place for behavior that is not known when the
-customer is spawned:
-
-- after a passive sale, insert `CommentStep`;
-- if decor is active, insert `DrinkCoffeeStep`;
-- if an in-visit quest condition is met, insert `QuestStep`;
-- if an active recommendation resolves in a special way, insert a follow-up
-  beat.
-
-Spawn-time and runtime composition should stay separate:
-
-- if a quest/story customer is known before the visit, use
-  `QuestCharacterArchetype` or `ScriptedSequenceArchetype`;
-- if the step depends on something that happened during the visit, inject it
-  through `CustomerDirector`.
-
-The director should receive domain facts synchronously before
-`Customer.Advance`, not through `SalesDayController` UI/log events. Example:
-`PassivePurchaseStep` emits `OnPassiveSale`, the director calls
-`customer.Plan.InsertNext(new CommentStep(...))`, and the inserted comment
-becomes the next step when the customer advances.
+The future customer-composition pipeline (`Spawner → Archetype →
+CustomerPlanBuilder → CustomerPlan → CustomerDirector`) is owned by
+[INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md](INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md)
+— not restated here. The only save-relevant angle is how a future mid-day resume
+would interact with that pipeline, below.
 
 ### Impact on Current Day Resume
 

@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
 using Game.UI;
+using Game.UI.ContentWidget;
 using TMPro;
 using UIShared;
 using UnityEngine;
@@ -8,7 +11,6 @@ using UnityEngine.UI;
 
 public class GameplaySceneView : WindowView
 {
-    [SerializeField] private TextMeshProUGUI _goldAmountText;
     [SerializeField] private GameObject _salesGoldRoot;
     [SerializeField] private TMP_Text _salesGoldLabel;
     [SerializeField] private TMP_Text _dayLabel;
@@ -16,18 +18,83 @@ public class GameplaySceneView : WindowView
     [Header("Shop entry")]
     [SerializeField] private Button _cheatButton;
     [SerializeField] private Button _startDayButton;
+    [SerializeField] private Button _decorButton;
 
     [Header("Genre book counts")]
     [SerializeField] private UIListPool<GameplayGenreBookCountItemView> _genreBookCountPool = new();
+    [SerializeField] private SaleChanceWidgetView _saleChanceWidgetPrefab;
 
     private readonly Dictionary<BookGenre, Sprite> _genreSprites = new();
 
     private bool _legacyGenreBookCountItemsHidden;
 
+    private AnimatedShowHidePanel[] _animatedPanels;
+
     public Button StartDayButton => _startDayButton;
+    public Button DecorButton => _decorButton;
+    public event Action<BookGenre, Sprite, RectTransform> GenreItemClicked;
+
+    // Collected from the view hierarchy at runtime (including inactive) so any number of
+    // panels — top / side / bottom / any future ones — is driven together without wiring
+    // each one by hand in the inspector. Cached on first use since the HUD hierarchy is static.
+    private AnimatedShowHidePanel[] AnimatedPanels =>
+        _animatedPanels ??= GetComponentsInChildren<AnimatedShowHidePanel>(includeInactive: true);
+
+    // Completes only after every panel has finished its show/hide tween, so callers can await
+    // the animation before doing the next thing (e.g. opening a window on top). Bound to the
+    // view's destroy token so it never hangs if the HUD is torn down mid-animation.
+    public UniTask ShowAnimatedPanelsAsync(bool instant = false) => RunPanelsAsync(show: true, instant);
+
+    public UniTask HideAnimatedPanelsAsync(bool instant = false) => RunPanelsAsync(show: false, instant);
+
+    // Shows/hides a single panel identified by its PanelId, leaving the others untouched. Used to drive
+    // the genre panel from the location state without affecting the top/side/bottom chrome panels.
+    public void SetPanelShown(AnimatedShowHidePanel.PanelId id, bool shown, bool instant = false)
+    {
+        if (id == AnimatedShowHidePanel.PanelId.None) return;
+
+        foreach (var panel in AnimatedPanels)
+        {
+            if (panel == null || panel.Id != id) continue;
+
+            if (shown)
+                panel.Show(instant);
+            else
+                panel.Hide(instant);
+        }
+    }
+
+    private UniTask RunPanelsAsync(bool show, bool instant)
+    {
+        var panels = AnimatedPanels;
+        var tasks = new List<UniTask>(panels.Length);
+
+        foreach (var panel in panels)
+        {
+            if (panel == null) continue;
+
+            // The genre panel's visibility is owned by the location state, not the generic show/hide-all
+            // flow (used by the Decor window), so the generic flow must never touch it.
+            if (panel.Id == AnimatedShowHidePanel.PanelId.GenreBookCounts) continue;
+
+            var completion = new UniTaskCompletionSource();
+            if (show)
+                panel.Show(instant, () => completion.TrySetResult());
+            else
+                panel.Hide(instant, () => completion.TrySetResult());
+
+            tasks.Add(completion.Task);
+        }
+
+        return UniTask.WhenAll(tasks).AttachExternalCancellation(destroyCancellationToken);
+    }
 
     protected override void Awake()
     {
+        base.Awake();
+        if (_saleChanceWidgetPrefab != null)
+            WidgetRegistry.Register<SaleChanceWidgetData>(_saleChanceWidgetPrefab);
+
         HideLegacyGenreBookCountItemsIfNeeded();
         SetSalesGoldVisible(false);
     }
@@ -40,6 +107,12 @@ public class GameplaySceneView : WindowView
             _cheatButton.gameObject.SetActive(interactable);
         }
 
+        if (_decorButton != null)
+        {
+            _decorButton.interactable = interactable;
+            _decorButton.gameObject.SetActive(interactable);
+        }
+
         SetStartButtonActive(interactable);
     }
 
@@ -50,11 +123,6 @@ public class GameplaySceneView : WindowView
             _startDayButton.interactable = active;
             _startDayButton.gameObject.SetActive(active);
         }
-    }
-
-    public void SetGoldAmount(int goldAmount)
-    {
-        _goldAmountText.text = goldAmount.ToString();
     }
 
     public void SetSalesGoldAmount(int amount)
@@ -97,7 +165,13 @@ public class GameplaySceneView : WindowView
 
             var item = _genreBookCountPool.GetNext();
             normalizedPurchasedCounts.TryGetValue(pair.Key, out var purchasedAmount);
-            item.Bind(genre, ResolveGenreSprite(genre), pair.Value, purchasedAmount, showPurchasedCounts);
+            item.Bind(
+                genre,
+                ResolveGenreSprite(genre),
+                pair.Value,
+                purchasedAmount,
+                showPurchasedCounts,
+                OnGenreItemClicked);
         }
 
         _genreBookCountPool.DisableNonActive();
@@ -132,5 +206,11 @@ public class GameplaySceneView : WindowView
 
     private Sprite ResolveGenreSprite(BookGenre genre)
         => _genreSprites.TryGetValue(genre, out var sprite) ? sprite : null;
+
+    private void OnGenreItemClicked(GameplayGenreBookCountItemView item)
+    {
+        if (item == null) return;
+        GenreItemClicked?.Invoke(item.Genre, ResolveGenreSprite(item.Genre), item.RectTransform);
+    }
 
 }

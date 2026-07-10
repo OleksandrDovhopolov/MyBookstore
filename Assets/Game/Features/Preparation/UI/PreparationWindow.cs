@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.Configs.Models;
 using Game.LocationEntry.API;
+using Game.LocationVisits.API;
 using Game.Newspaper.UI;
 using Game.Preparation.Domain;
 using Game.Preparation.Services;
@@ -24,6 +25,7 @@ namespace Game.Preparation.UI
         private IUiSpriteProvider _uiSprites;
         private ILocationEntryCostCalculator _entryCost;
         private IResourcesService _resources;
+        private ILocationVisitService _visits;
         private IPublisher<GameplayGenreBookCountsChanged> _genreCountsPublisher;
 
         private CancellationTokenSource _cts;
@@ -42,6 +44,7 @@ namespace Game.Preparation.UI
             IUiSpriteProvider uiSprites,
             ILocationEntryCostCalculator entryCost = null,
             IResourcesService resources = null,
+            ILocationVisitService visits = null,
             IPublisher<GameplayGenreBookCountsChanged> genreCountsPublisher = null)
         {
             _session = session;
@@ -49,6 +52,7 @@ namespace Game.Preparation.UI
             _uiSprites = uiSprites;
             _entryCost = entryCost;
             _resources = resources;
+            _visits = visits;
             _genreCountsPublisher = genreCountsPublisher;
         }
 
@@ -141,9 +145,12 @@ namespace Game.Preparation.UI
                 {
                     if (row == null) continue;
 
-                    var sprite = await _uiSprites.GetSpriteAsync(row.Genre, ct);
+                    var genre = row.Genre;
+                    if (string.IsNullOrEmpty(genre)) continue;
+
+                    var sprite = await _uiSprites.GetSpriteAsync(genre, ct);
                     if (ct.IsCancellationRequested) return;
-                    if (row != null) row.SetIcon(sprite);
+                    if (row != null && row.Genre == genre) row.SetIcon(sprite);
                 }
             }
             catch (System.OperationCanceledException)
@@ -155,24 +162,25 @@ namespace Game.Preparation.UI
         {
             ClearRows();
             _items = items;
+            if (items == null) return;
 
-            var container = View.GenreListContainer;
-            var prefab = View.GenreRowPrefab;
-            if (prefab == null || container == null) return;
+            var pool = View.GenreRowPool;
+            if (pool == null || pool.Prefab == null || pool.Parent == null) return;
 
             for (var i = 0; i < items.Count; i++)
             {
                 var item = items[i];
-                var row = Object.Instantiate(prefab, container);
+                var row = pool.GetNext();
                 row.Bind(item, OnSetGenreQuantity);
                 _rows[item.Genre] = row;
             }
+
+            pool.DisableNonActive();
         }
 
         private void ClearRows()
         {
-            foreach (var row in _rows.Values)
-                if (row != null) Object.Destroy(row.gameObject);
+            View?.GenreRowPool?.DisableAll();
             _rows.Clear();
         }
 
@@ -196,37 +204,9 @@ namespace Game.Preparation.UI
                 pair.Value.SetState(qty, canAddMore);
             }
 
-            UpdateShelfPreview(state);
             UpdateCounter();
             UpdateValidation();
             PublishGenreCounts(state);
-        }
-
-        private void UpdateShelfPreview(PreparationSessionState state)
-        {
-            if (_items == null) return;
-
-            // Keep the ordered items in sync with the authoritative quotas, then render the bar from them.
-            for (var i = 0; i < _items.Count; i++)
-            {
-                var item = _items[i];
-                if (item == null) continue;
-                state.GenreQuantities.TryGetValue(item.Genre, out var qty);
-                item.Quantity = qty;
-            }
-
-            View.RenderShelfPreview(_items, OnShelfSegmentClicked);
-        }
-
-        private void OnShelfSegmentClicked(string genre)
-        {
-            var state = _session?.CurrentState;
-            if (state == null) return;
-
-            state.GenreQuantities.TryGetValue(genre, out var qty);
-            if (qty <= 0) return;
-
-            OnSetGenreQuantity(genre, qty - 1);
         }
 
         // Прокидываем выбранные кол-ва по жанрам в HUD через тот же сигнал, что использует Sales.
@@ -359,6 +339,9 @@ namespace Game.Preparation.UI
                 try
                 {
                     await gameFlow.EnterLocationAsync(CancellationToken.None);
+                    // Entry succeeded → record the visit (persisted count + current location). On the
+                    // failure path below this is skipped, so a failed entry never counts as a visit.
+                    _visits?.RecordVisit(locationId);
                 }
                 catch (System.Exception e)
                 {

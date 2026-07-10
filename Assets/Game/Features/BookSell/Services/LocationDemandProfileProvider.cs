@@ -8,18 +8,23 @@ namespace Book.Sell.Services
 {
     /// <summary>
     /// Default profile policy: sample N distinct genres (N = <see cref="SalesTuning.PassiveRequestGenreCount"/>,
-    /// clamped to availability) from the location's demand genres; falls back to the genres present on
-    /// the day's shelf if the location lists none. Guarantees ≥1 genre whenever any genre exists.
+    /// clamped to availability) from genres present on the day's shelf. Location demand genres stay
+    /// sellable-demand hints: they receive extra weight but do not exclude other stocked genres.
     /// </summary>
     public sealed class LocationDemandProfileProvider : ICustomerProfileProvider
     {
         private readonly IConfigsService _configs;
         private readonly SalesTuning _tuning;
+        private readonly IDemandGenreWeightProvider _demandWeights;
 
-        public LocationDemandProfileProvider(IConfigsService configs, SalesTuning tuning)
+        public LocationDemandProfileProvider(
+            IConfigsService configs,
+            SalesTuning tuning,
+            IDemandGenreWeightProvider demandWeights)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _tuning = tuning;
+            _demandWeights = demandWeights ?? throw new ArgumentNullException(nameof(demandWeights));
         }
 
         public CustomerProfile Create(SalesSessionSetup setup, ISalesRandom random)
@@ -31,25 +36,15 @@ namespace Book.Sell.Services
             if (count < 1) count = 1;
             if (count > pool.Count) count = pool.Count;
 
-            return new CustomerProfile(SampleDistinct(pool, count, random));
+            var location = ResolveLocation(setup);
+            return new CustomerProfile(SampleDistinctWeighted(pool, count, location, random));
         }
 
         private List<string> ResolvePool(SalesSessionSetup setup)
         {
-            // TODO Gameplay: this currently treats LocationConfig.DemandGenres like an allowed-genre pool.
-            // Tiny Bookshop-style demand should be wider: any stocked genre can sell, while location demand
-            // genres get a higher chance/weight instead of excluding all other genres.
-            // 1) Location demand genres (one source, not the truth about the customer).
-            var location = !string.IsNullOrEmpty(setup?.LocationId)
-                ? _configs.Get<LocationConfig>(setup.LocationId)
-                : null;
-            var pool = DistinctNonEmpty(location?.DemandGenres);
-            if (pool.Count > 0) return pool;
-
-            // 2) Fallback: distinct genres present on the day's shelf.
+            var fromShelf = new List<string>();
             if (setup?.ShelfBookIds != null)
             {
-                var fromShelf = new List<string>();
                 var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var id in setup.ShelfBookIds)
                 {
@@ -57,34 +52,53 @@ namespace Book.Sell.Services
                     var g = cfg?.Genre;
                     if (!string.IsNullOrEmpty(g) && seen.Add(g)) fromShelf.Add(g);
                 }
-                if (fromShelf.Count > 0) return fromShelf;
             }
-            return new List<string>();
+            return fromShelf;
         }
 
-        private static List<string> DistinctNonEmpty(IReadOnlyList<string> src)
-        {
-            var list = new List<string>();
-            if (src == null) return list;
-            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            for (var i = 0; i < src.Count; i++)
-                if (!string.IsNullOrEmpty(src[i]) && seen.Add(src[i])) list.Add(src[i]);
-            return list;
-        }
+        private LocationConfig ResolveLocation(SalesSessionSetup setup)
+            => !string.IsNullOrEmpty(setup?.LocationId)
+                ? _configs.Get<LocationConfig>(setup.LocationId)
+                : null;
 
-        private static List<string> SampleDistinct(List<string> pool, int count, ISalesRandom random)
+        private List<string> SampleDistinctWeighted(
+            List<string> pool,
+            int count,
+            LocationConfig location,
+            ISalesRandom random)
         {
-            // Partial Fisher–Yates over a copy.
             var copy = new List<string>(pool);
             var result = new List<string>(count);
             for (var i = 0; i < count && copy.Count > 0; i++)
             {
-                var idx = copy.Count == 1 ? 0 : random.Range(0, copy.Count);
+                var idx = PickWeightedIndex(copy, location, random);
                 result.Add(copy[idx]);
                 copy[idx] = copy[copy.Count - 1];
                 copy.RemoveAt(copy.Count - 1);
             }
             return result;
+        }
+
+        private int PickWeightedIndex(IReadOnlyList<string> genres, LocationConfig location, ISalesRandom random)
+        {
+            if (genres.Count == 1) return 0;
+
+            double total = 0d;
+            for (var i = 0; i < genres.Count; i++)
+                total += Math.Max(1d, _demandWeights.GetWeight(genres[i], location));
+
+            if (total <= 0d)
+                return random.Range(0, genres.Count);
+
+            var roll = random.NextDouble() * total;
+            double cumulative = 0d;
+            for (var i = 0; i < genres.Count; i++)
+            {
+                cumulative += Math.Max(1d, _demandWeights.GetWeight(genres[i], location));
+                if (roll < cumulative) return i;
+            }
+
+            return genres.Count - 1;
         }
     }
 }

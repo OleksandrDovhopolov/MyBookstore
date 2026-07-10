@@ -117,6 +117,102 @@ namespace Game.Decor.Tests.Editor.Services
         }
 
         [Test]
+        public void Replace_OccupiedSlotWithCompatibleDecor_Succeeds()
+        {
+            _inventory.Seed("globe", InventoryCategories.Decor);
+            _inventory.Seed("coffeepot", InventoryCategories.Decor);
+            _service.PlaceAsync("globe", "s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+
+            var result = _service.ReplaceAsync("coffeepot", "s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(DecorPlacementResult.Success, result);
+            Assert.AreEqual("coffeepot", _service.GetDecorInSlot("s_stand_small"));
+            CollectionAssert.AreEqual(new[] { "coffeepot" }, _service.GetActiveDecorIds());
+            Assert.AreEqual(1, _service.GetAllPlacements().Count);
+        }
+
+        [Test]
+        public void Replace_EmptySlot_ReturnsSlotEmpty()
+        {
+            _inventory.Seed("globe", InventoryCategories.Decor);
+            var result = _service.ReplaceAsync("globe", "s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+            Assert.AreEqual(DecorPlacementResult.SlotEmpty, result);
+        }
+
+        [Test]
+        public void Replace_SameDecorInSameSlot_NoOpSuccess_DoesNotDuplicate()
+        {
+            _inventory.Seed("globe", InventoryCategories.Decor);
+            _service.PlaceAsync("globe", "s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+            var changed = 0;
+            _service.PlacementChanged += () => changed++;
+
+            var result = _service.ReplaceAsync("globe", "s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(DecorPlacementResult.Success, result);
+            Assert.AreEqual("globe", _service.GetDecorInSlot("s_stand_small"));
+            Assert.AreEqual(1, _service.GetAllPlacements().Count);
+            Assert.AreEqual(0, changed);
+        }
+
+        [Test]
+        public void Replace_DecorAlreadyPlacedElsewhere_ReturnsAlreadyPlaced()
+        {
+            _inventory.Seed("globe", InventoryCategories.Decor);
+            _inventory.Seed("coffeepot", InventoryCategories.Decor);
+            _service.PlaceAsync("globe", "s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+            _service.PlaceAsync("coffeepot", "s_stand_med", CancellationToken.None).GetAwaiter().GetResult();
+
+            var result = _service.ReplaceAsync("coffeepot", "s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(DecorPlacementResult.AlreadyPlaced, result);
+            Assert.AreEqual("globe", _service.GetDecorInSlot("s_stand_small"));
+            Assert.AreEqual("coffeepot", _service.GetDecorInSlot("s_stand_med"));
+        }
+
+        [Test]
+        public void Replace_PositionTypeMismatch_ReturnsPositionTypeMismatch()
+        {
+            _inventory.Seed("globe", InventoryCategories.Decor);
+            _inventory.Seed("painting", InventoryCategories.Decor);
+            _service.PlaceAsync("globe", "s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+
+            var result = _service.ReplaceAsync("painting", "s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(DecorPlacementResult.PositionTypeMismatch, result);
+            Assert.AreEqual("globe", _service.GetDecorInSlot("s_stand_small"));
+        }
+
+        [Test]
+        public void Replace_SizeMismatch_ReturnsSizeMismatch()
+        {
+            _inventory.Seed("globe", InventoryCategories.Decor);
+            _inventory.Seed("bigtable", InventoryCategories.Decor);
+            _service.PlaceAsync("globe", "s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+
+            var result = _service.ReplaceAsync("bigtable", "s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(DecorPlacementResult.SizeMismatch, result);
+            Assert.AreEqual("globe", _service.GetDecorInSlot("s_stand_small"));
+        }
+
+        [Test]
+        public void Replace_SaveRoundTrip_PersistsNewDecor()
+        {
+            _inventory.Seed("globe", InventoryCategories.Decor);
+            _inventory.Seed("coffeepot", InventoryCategories.Decor);
+            _service.PlaceAsync("globe", "s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+            _service.ReplaceAsync("coffeepot", "s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+
+            var storage = new SaveBackedDecorPlacementStorage(_save);
+            var loaded = storage.LoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, loaded.Placements.Count);
+            Assert.AreEqual("coffeepot", loaded.Placements[0].DecorId);
+            Assert.AreEqual("s_stand_small", loaded.Placements[0].SlotId);
+        }
+
+        [Test]
         public void SaveRoundTrip_Persists()
         {
             _inventory.Seed("globe", InventoryCategories.Decor);

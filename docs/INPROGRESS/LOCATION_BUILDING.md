@@ -341,7 +341,7 @@ y=2400
 ### Шаг 4 — Релиз
 1. `Tools/Configs/Sync Bundled Defaults to StreamingAssets` — чтобы новые `locations.json` лежали в bundled defaults.
 2. Build → проверить на физическом девайсе.
-3. Закоммитить в `docs/PROGRESS.md`.
+3. Зафиксировать выполненную задачу в Notion (источник истины по задачам).
 
 ---
 

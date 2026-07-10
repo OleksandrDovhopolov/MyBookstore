@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Morning.Model;
-using Game.LocationUnlock.API;
 
 namespace Game.DayCycle.Morning
 {
@@ -11,36 +9,17 @@ namespace Game.DayCycle.Morning
     public sealed class MorningContextResolver : IMorningContextResolver
     {
         private readonly IConfigsService _configs;
-        private readonly ILocationUnlockService _locationUnlock;
 
-        public MorningContextResolver(IConfigsService configs, ILocationUnlockService locationUnlock = null)
+        public MorningContextResolver(IConfigsService configs)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
-            _locationUnlock = locationUnlock;   // optional: when absent, no unlock filtering is applied
         }
 
         public MorningDayContext Resolve(int dayIndex)
         {
             var config = FindByDayIndex(dayIndex);
             var context = config != null ? FromConfig(dayIndex, config) : Fallback(dayIndex);
-            context.TargetLocationIds = FilterUnlocked(context.TargetLocationIds);
             return context;
-        }
-
-        // Morning must not advertise a location the player has not unlocked yet. With no unlock
-        // service wired (e.g. tests) the list passes through unchanged.
-        private IReadOnlyList<string> FilterUnlocked(IReadOnlyList<string> targetLocationIds)
-        {
-            if (_locationUnlock == null || targetLocationIds == null || targetLocationIds.Count == 0)
-                return targetLocationIds;
-
-            var unlocked = new List<string>(targetLocationIds.Count);
-            for (var i = 0; i < targetLocationIds.Count; i++)
-            {
-                if (_locationUnlock.IsUnlocked(targetLocationIds[i]))
-                    unlocked.Add(targetLocationIds[i]);
-            }
-            return unlocked;
         }
 
         private DayConfig FindByDayIndex(int dayIndex)
@@ -60,8 +39,6 @@ namespace Game.DayCycle.Morning
                     lastByIndex = day;
             }
 
-            // Нет точного совпадения — переиспользуем последний настроенный день,
-            // чтобы дни за пределами контента не валились в пустой fallback.
             return match ?? lastByIndex;
         }
 
@@ -70,17 +47,7 @@ namespace Game.DayCycle.Morning
             return new MorningDayContext
             {
                 Day = dayIndex,
-                DayId = config.Id,
-                Title = config.Title,
-                WeatherId = config.WeatherId,
-                EventId = config.EventId,
-                SummaryText = config.SummaryText,
-                HintText = config.HintText,
-                DemandGenres = config.DemandGenres ?? Array.Empty<string>(),
-                DemandTags = config.DemandTags ?? Array.Empty<string>(),
-                TargetLocationIds = config.TargetLocationIds ?? Array.Empty<string>(),
-                ActiveModifierIds = BuildModifierIds(config.WeatherId, config.EventId),
-                IsFallback = false
+                DayId = config.Id
             };
         }
 
@@ -89,32 +56,8 @@ namespace Game.DayCycle.Morning
             return new MorningDayContext
             {
                 Day = dayIndex,
-                DayId = $"fallback_day_{dayIndex}",
-                Title = MorningFallback.Title,
-                WeatherId = MorningFallback.WeatherId,
-                EventId = MorningFallback.EventId,
-                SummaryText = MorningFallback.SummaryText,
-                HintText = MorningFallback.HintText,
-                DemandGenres = Array.Empty<string>(),
-                DemandTags = Array.Empty<string>(),
-                TargetLocationIds = Array.Empty<string>(),
-                ActiveModifierIds = Array.Empty<string>(),
-                IsFallback = true
+                DayId = $"fallback_day_{dayIndex}"
             };
-        }
-
-        /// <summary>
-        /// Активные модификаторы дня = погода + событие (непустые), в формате,
-        /// который ждут Подготовка/Продажа: "weather_&lt;id&gt;", "event_&lt;id&gt;".
-        /// </summary>
-        private static IReadOnlyList<string> BuildModifierIds(string weatherId, string eventId)
-        {
-            var modifiers = new List<string>(2);
-            if (!string.IsNullOrWhiteSpace(weatherId))
-                modifiers.Add($"weather_{weatherId}");
-            if (!string.IsNullOrWhiteSpace(eventId))
-                modifiers.Add($"event_{eventId}");
-            return modifiers;
         }
     }
 }

@@ -1,7 +1,9 @@
 using Game.Commands;
 using Game.Http;
 using Infrastructure;
+using Infrastructure.Audio;
 using Game.Logging;
+using UIShared;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -35,13 +37,30 @@ namespace Game.Bootstrap
             // Прогрев каталога — теперь часть LoadingOrchestrator (AddressablesUpdateOperation).
             builder.Register<IAddressablesCatalogService, AddressablesCatalogService>(Lifetime.Singleton);
 
+            // Prefab-driven HUD resource counters (e.g. gold). The presenter is resolved in the
+            // build callback so it starts after Resources and MessagePipe brokers are registered.
+            builder.Register<IResourceCounterTargetRegistry, ResourceCounterTargetRegistry>(Lifetime.Singleton);
+            builder.Register<ResourceCounterHudPresenter>(Lifetime.Singleton);
+
+            // Audio: infrastructure-level Unity Audio wrapper. Gameplay features depend on IAudioService,
+            // not on AudioSource/AudioRoot details.
+            builder.Register<IAudioSettingsStore, PlayerPrefsAudioSettingsStore>(Lifetime.Singleton);
+            builder.Register<IAudioClipLoader, AddressablesAudioClipLoader>(Lifetime.Singleton);
+            builder.Register<IAudioService, AudioService>(Lifetime.Singleton);
+
             // TODO: Auth token provider
             // builder.Register<IAuthTokenProvider, JwtAuthTokenProvider>(Lifetime.Singleton);
 
             // TODO: Remote config loader
             // builder.Register<IRemoteConfigService, RemoteConfigService>(Lifetime.Singleton);
 
-            builder.RegisterBuildCallback(resolver => resolver.Resolve<ILogService>());
+            builder.RegisterBuildCallback(resolver =>
+            {
+                resolver.Resolve<ILogService>();
+                ResourceCounterTargets.Bind(resolver.Resolve<IResourceCounterTargetRegistry>());
+                resolver.Resolve<ResourceCounterHudPresenter>().Start();
+                Audio.Bind(resolver.Resolve<IAudioService>());
+            });
         }
     }
 }

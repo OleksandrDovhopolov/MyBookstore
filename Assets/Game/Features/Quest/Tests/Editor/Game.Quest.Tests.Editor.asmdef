@@ -1,0 +1,35 @@
+{
+    "name": "Game.Quest.Tests.Editor",
+    "rootNamespace": "Game.Quest.Tests.Editor",
+    "references": [
+        "UniTask",
+        "Configs",
+        "Game.Quest.API",
+        "Game.Quest",
+        "Game.Conditions.API",
+        "Game.Conditions",
+        "Save",
+        "Game.SalesStats.API",
+        "Game.SalesStats",
+        "Game.Decor.API",
+        "Game.Inventory.API",
+        "DayCycle",
+        "UnityEngine.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -12,14 +12,21 @@
         "Game.Resources.API",
         "Game.Progression.API",
         "Game.LocationUnlock.API",
+        "Game.Conditions.API",
         "Game.Core.UI",
-        "Game.Newspaper"
+        "Game.Newspaper",
+        "Infrastructure",
+        "MessagePipe",
+        "Game.Inventory.API",
+        "Game.Rewards.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],

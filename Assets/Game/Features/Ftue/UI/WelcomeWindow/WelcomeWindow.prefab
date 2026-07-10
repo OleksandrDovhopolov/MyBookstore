@@ -185,7 +185,7 @@ MonoBehaviour:
   _animator: {fileID: 7666706526294176552}
   _appearDuration: 1.4
   _letterClickDuration: 1.4
-  _disappearDuration: 1.05
+  _disappearDuration: 0.3
 --- !u!1 &984675401865770073
 GameObject:
   m_ObjectHideFlags: 0

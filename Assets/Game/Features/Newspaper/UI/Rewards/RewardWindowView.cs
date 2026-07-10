@@ -18,6 +18,7 @@ namespace Game.Newspaper.UI
         public Sprite Icon;
     }
     
+    //TODO move to Assets/Game/Features/Rewards ? 
     public class RewardWindowView : WindowView
     {
         [SerializeField] private UIListPool<RewardItemView> _cardGroupsPool;

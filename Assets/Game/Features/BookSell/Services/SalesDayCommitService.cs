@@ -4,6 +4,7 @@ using Book.Sell.API;
 using Cysharp.Threading.Tasks;
 using Game.DayCycle.Day;
 using Game.Inventory.API;
+using Game.Quest.API;
 using Game.Resources.API;
 using Game.SalesStats.API;
 using Save;
@@ -28,6 +29,7 @@ namespace Book.Sell.Services
         private readonly ISalesShelfStateService _shelfState;
         private readonly ISalesStatsRecorder _salesStats;
         private readonly IDayProgressService _dayProgress;
+        private readonly IQuestReevaluationGate _questGate; // optional: batch quest reeval across the commit
 
         public SalesDayCommitService(
             ISaveService save,
@@ -35,7 +37,8 @@ namespace Book.Sell.Services
             IInventoryService inventory,
             ISalesShelfStateService shelfState,
             ISalesStatsRecorder salesStats,
-            IDayProgressService dayProgress)
+            IDayProgressService dayProgress,
+            IQuestReevaluationGate questGate = null)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _resources = resources ?? throw new ArgumentNullException(nameof(resources));
@@ -43,6 +46,7 @@ namespace Book.Sell.Services
             _shelfState = shelfState ?? throw new ArgumentNullException(nameof(shelfState));
             _salesStats = salesStats ?? throw new ArgumentNullException(nameof(salesStats));
             _dayProgress = dayProgress ?? throw new ArgumentNullException(nameof(dayProgress));
+            _questGate = questGate;
         }
 
         public async UniTask CommitAsync(SalesDayResult result, CancellationToken ct)
@@ -61,6 +65,11 @@ namespace Book.Sell.Services
 
             // All mutations are in-memory under one autosave-block; the single forced save below writes
             // the whole consistent snapshot at once. Nothing reaches disk before that point.
+            // The quest gate batches quest re-evaluation across the whole commit so a quest's sales baseline
+            // is captured AFTER the day's sales are recorded (not on the first inventory change mid-commit) —
+            // i.e. a quest that activates this day counts from the next day. Disposed after BlockAutosave, so
+            // the single reeval runs before the forced save and persists in the same commit.
+            using (_questGate?.SuspendReevaluation())
             using (_save.BlockAutosave())
             {
                 if (result.GoldEarned > 0)
@@ -77,7 +86,7 @@ namespace Book.Sell.Services
                             Debug.LogError($"{LogPrefix} sold book '{bookId}' not present in inventory at commit (day {result.Day}).");
 
                         await _shelfState.MarkSoldAsync(bookId, ct);
-                        _salesStats.RecordSold(bookId);
+                        _salesStats.RecordSold(bookId, new SaleContext(result.LocationId, result.Day));
                     }
                 }
 
