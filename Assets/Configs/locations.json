@@ -4,7 +4,8 @@
     "displayName": "Downtown / Near University",
     "entryCost": 0,
     "demandGenres": ["Fantasy", "Classic", "Fact"],
-    "demandTags": ["study", "short", "science"]
+    "demandTags": ["study", "short", "science"],
+    "customerTrafficPercentDelta": 0.2
   },
   {
     "id": "loc_mall",

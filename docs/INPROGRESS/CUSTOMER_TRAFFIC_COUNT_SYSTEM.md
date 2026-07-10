@@ -10,10 +10,11 @@ Current customer simulation builds the whole customer list before the sales day 
 
 - `SalesDayController.StartDayAsync` calls `ICustomerSpawner.BuildCustomers(setup, tuning, random)`.
 - `SalesSessionSetup` already carries the main inputs needed for traffic decisions: `Day`, `LocationId`, `ShelfBookIds`, and `DecorIds`.
-- `DefaultCustomerSpawner` currently owns customer count directly with `count = max(requestCount, tuning.BaseCustomers)`.
-- Runtime scenario spawners also own their own counts, often as constants, because they are used as smoke-test tools.
+- `DefaultCustomerSpawner` illustrates the current count logic: `count = max(requestCount, tuning.BaseCustomers)`. This floor over the number of active `RequestConfig`s matters and must be preserved (see Integration With Spawners).
+- **Every current `ICustomerSpawner` implementation is a test / smoke tool.** `DefaultCustomerSpawner`, `TenCustomers*`, `Fifteen*`, `ActiveRequestsOnly*`, `OneToThreePassive*` all own their counts as constants for manual scenario testing. There is **no dedicated production base spawner yet**.
+- The only spawner wired into production DI is `QuestSchedulingCustomerSpawner`, a decorator currently wrapping the `TenCustomersThreeActiveAfterPassiveSpawner` test spawner (`BookSellVContainerBindings`). This decorator is the piece carried forward to the next iteration; the base it wraps is expected to be replaced by a real production spawner.
 - `CustomerPlanBuilder` centralizes the mandatory plan skeleton, while spawners remain responsible for day composition.
-- `QuestSchedulingCustomerSpawner` is already a decorator over a base spawner and prepends quest characters. This is useful precedent for future special-character scheduling.
+- `QuestSchedulingCustomerSpawner` prepending quest characters is useful precedent for future special-character scheduling.
 
 The current count logic is too local to each spawner. The number of visitors should become a separate policy so it can evolve without duplicating logic across spawners.
 
@@ -39,16 +40,23 @@ The system must support:
 
 ## Key Decision
 
-Add a separate customer traffic resolver, conceptually:
+Add a separate customer traffic resolver. It returns a **structured result**, not a bare `int`, so the same call feeds the spawner, debug logs, and a future Preparation forecast UI (see Open Questions #3, #4):
 
 ```csharp
 public interface ICustomerTrafficResolver
 {
-    int ResolveCustomerCount(SalesSessionSetup setup, SalesTuning tuning);
+    CustomerTrafficResult Resolve(SalesSessionSetup setup, SalesTuning tuning);
+}
+
+public sealed class CustomerTrafficResult
+{
+    public int FinalCount { get; }          // clamped count the spawner uses
+    public int Baseline { get; }            // day baseline before modifiers
+    public IReadOnlyList<CustomerTrafficContribution> Breakdown { get; } // for logs / forecast UI
 }
 ```
 
-The active production spawner asks this resolver for the number of regular customers, then builds that many regular customer plans.
+The active production spawner asks this resolver for the result, reads `FinalCount`, then builds that many regular customer plans.
 
 The resolver owns "how many customers". The spawner owns "what kind of regular customer plans are built".
 
@@ -56,11 +64,12 @@ The resolver owns "how many customers". The spawner owns "what kind of regular c
 
 Introduce a dedicated traffic config, separate from `SalesTuning`.
 
-`SalesTuning` is currently timing and pacing data: approach duration, browse duration, spawn interval, max concurrent customers, and similar knobs. Day-by-day traffic is content/balance data and should not live there long-term.
+`SalesTuning` is currently timing and pacing data: approach duration, browse duration, spawn interval, max concurrent customers, and similar knobs. Day-by-day traffic is content/balance data and should not live there long-term. The existing `BaseCustomers` field on `SalesTuning` is expected to be removed once the resolver owns the baseline — traffic count should have a single source of truth.
 
-Conceptual config:
+Follow the existing config pattern in this project: a designer-editable `ScriptableObject` that builds a plain domain object, exactly like `SalesTuningConfig.BuildTuning()` is registered via `RegisterInstance`. So introduce `SalesTrafficConfig : ScriptableObject` with a `BuildTrafficConfig()` method — **not** a raw JSON file. The shape below is the built domain object / authoring layout, shown as JSON only for readability:
 
-```json
+```jsonc
+// SalesTrafficConfig (ScriptableObject) — conceptual shape
 {
   "defaultCustomerCount": 10,
   "minCustomerCount": 0,
@@ -71,6 +80,8 @@ Conceptual config:
   ]
 }
 ```
+
+`dayOverrides` is an authoring list; the resolver should index it into a `Dictionary<int, DayOverride>` once at build time so day lookup is O(1) rather than a linear scan.
 
 Field meaning:
 
@@ -85,6 +96,8 @@ Confirmed rule:
 
 - Day 1 can be configured as `customerCount = 3`, `applyModifiers = false`.
 - That means exactly 3 regular customers, with no decor, weather, location, or event modifiers applied.
+- A hard override (`applyModifiers = false`) is truly hard: it bypasses **both** modifiers **and** the final min/max clamp, so day 1 is exactly 3 even if `minCustomerCount` is higher. Value validity (`customerCount >= 0`) is checked when the config is loaded, not silently clamped at resolve time.
+- Caveat: the request-count floor (see Integration With Spawners) can still raise a hard-override day above its stated number. Config validation should warn if a hard override is below the number of active `RequestConfig`s for that day so designers notice the conflict rather than getting a silently larger day.
 
 ## Calculation Flow
 
@@ -93,7 +106,7 @@ Confirmed rule:
    - Otherwise use `defaultCustomerCount`.
 
 2. Check whether modifiers are enabled.
-   - If the matching day override has `applyModifiers = false`, return the clamped override directly.
+   - If the matching day override has `applyModifiers = false`, return the override directly — no modifiers, no min/max clamp (hard override). Validity was enforced at config load.
    - If no override exists, modifiers are enabled by default.
    - If an override exists with `applyModifiers = true`, use the override as baseline and continue.
 
@@ -110,22 +123,27 @@ Confirmed rule:
 
 6. Round and clamp the final result.
 
-Conceptual formula:
+Conceptual formula. Contributions carry both additive percents (`PercentDelta`) and explicit multipliers (`Multiplier`); the two combine explicitly so behavior does not depend on which field a contributor happened to pick:
 
 ```text
-raw = (baseline + flatDelta) * percentMultiplier
-final = clamp(round(raw), minCustomerCount, maxCustomerCount)
+flatDelta        = Σ FlatDelta
+percentMultiplier = (1 + Σ PercentDelta) * Π Multiplier
+raw              = (baseline + flatDelta) * percentMultiplier
+final            = clamp(round(raw), minCustomerCount, maxCustomerCount)
 ```
+
+This multiplicative combination mirrors the existing decor precedent, where `ConfigBasedDecorModifierProvider` multiplies per-decor genre multipliers and then clamps into a soft cap. Percent deltas are summed (two "-5%" sources give -10%, not compounded), while explicit multipliers multiply.
 
 Example:
 
 ```text
 baseline = 10
-location = +20%
-rain = -5%
-decor = +1 flat
+location = +20%  (PercentDelta +0.20)
+rain     = -5%   (PercentDelta -0.05)
+decor    = +1 flat (FlatDelta +1)
 
-raw = (10 + 1) * 1.20 * 0.95 = 12.54
+percentMultiplier = 1 + (0.20 - 0.05) = 1.15
+raw = (10 + 1) * 1.15 = 12.65
 final = 13
 ```
 
@@ -261,15 +279,17 @@ Recommended first step: explicit fields, because they are easy to validate and e
 
 ## Integration With Spawners
 
-The default production spawner should change from owning the baseline count to consuming the resolver:
+There is no production base spawner today — every `ICustomerSpawner` is a test tool, and only `QuestSchedulingCustomerSpawner` (the decorator) is carried into the next iteration. So integration means **creating a real production base spawner** (or promoting one existing test spawner to that role) that consumes the resolver, and keeping the quest decorator wrapping it:
 
 ```text
-count = trafficResolver.ResolveCustomerCount(setup, tuning)
+result   = trafficResolver.Resolve(setup, tuning)
+count    = max(result.FinalCount, activeRequestCount)   // request-count floor, see below
+// build `count` regular customer plans
 ```
 
-Then it builds `count` regular customers.
-
 The resolver should not build customers.
+
+**Request-count floor.** The current logic is `count = max(requestCount, tuning.BaseCustomers)`. `BaseCustomers` goes away, but the `max(…, requestCount)` floor stays: every active `RequestConfig` scheduled for the day must get a customer, so the day can never have fewer visitors than there are scripted active requests. Apply this floor in the spawner, on top of `FinalCount`, because the spawner is what reads `RequestConfig`s (`_configs.GetAll<RequestConfig>()`) — the resolver stays free of that dependency and stays deterministic from config/modifiers. The floor's interaction with hard-override days is called out under Baseline Config.
 
 Runtime scenario spawners can keep hardcoded counts for manual testing. They are intentionally scenario tools and do not need to use the traffic resolver unless the scenario is meant to test real production traffic.
 
@@ -280,7 +300,7 @@ Special customers are a separate layer.
 Future rule:
 
 ```text
-regularCount = trafficResolver.ResolveCustomerCount(...)
+regularCount = trafficResolver.Resolve(...).FinalCount
 regularCustomers = baseSpawner.BuildRegularCustomers(regularCount)
 specialCustomers = specialSchedulers.BuildSpecialCustomers(...)
 finalCustomers = merge/sort/prepend according to scheduling policy
@@ -337,26 +357,30 @@ If a future contributor needs an absolute override, make that a named contributi
 
 ## Suggested First Iteration
 
-1. Add traffic config with:
+1. Add `SalesTrafficConfig : ScriptableObject` with `BuildTrafficConfig()` (mirrors `SalesTuningConfig`), carrying:
    - default count;
    - min/max;
    - per-day overrides;
    - `applyModifiers`.
+   Enforce `customerCount >= 0` and warn on hard-override-below-request-count at load.
 
-2. Add `ICustomerTrafficResolver`.
+2. Add `ICustomerTrafficResolver` returning `CustomerTrafficResult` (FinalCount + Baseline + Breakdown).
 
-3. Add simple resolver with no external contributors yet.
+3. Add simple resolver with no external contributors yet (must handle an empty contributor list).
 
-4. Register resolver in `BookSellVContainerBindings`.
+4. Register the config (via `RegisterInstance` from the SO, like `SalesTuning`) and resolver in `BookSellVContainerBindings`.
 
-5. Update the production base spawner to use resolver for regular customer count.
+5. Create a real production base spawner (or promote a test spawner) that reads `result.FinalCount`, applies the `max(…, requestCount)` floor, and builds that many regular customers. Keep `QuestSchedulingCustomerSpawner` wrapping it.
 
 6. Add tests:
-   - day 1 override returns exactly 3;
+   - day 1 hard override returns exactly 3;
    - day 1 ignores a fake modifier when `applyModifiers = false`;
+   - hard override bypasses the min/max clamp;
    - unknown day uses default count;
    - day override with `applyModifiers = true` applies modifiers;
-   - final value clamps to min/max.
+   - final value clamps to min/max (non-hard days);
+   - request-count floor raises the count when there are more active requests than the resolved value;
+   - resolver works with zero contributors.
 
 7. Add first optional contributor:
    - location or decor, whichever has stable config data first.
@@ -365,11 +389,11 @@ If a future contributor needs an absolute override, make that a named contributi
 
 1. Should `minCustomerCount` be 0 or 1 in production config?
 
-2. Should day overrides live in a new `sales_traffic.json`, or in a broader future `day_balance.json`?
+2. Resolved in this revision: config is a `SalesTrafficConfig` ScriptableObject (matching `SalesTuningConfig`), not a JSON file. Still open: whether it stays standalone or folds into a broader future `DayBalanceConfig`.
 
-3. Should special/story customers count toward the displayed "visitors today" number in UI?
+3. Should special/story customers count toward the displayed "visitors today" number in UI? (`CustomerTrafficResult.FinalCount` gives the regular count to build that display on.)
 
-4. Should traffic modifiers be visible to the player as forecast text during Preparation?
+4. Should traffic modifiers be visible to the player as forecast text during Preparation? (`CustomerTrafficResult.Breakdown` already carries per-contributor reasons for this, if enabled.)
 
 5. Should future random variance be allowed, or should traffic always be deterministic from day setup?
 

@@ -5,7 +5,7 @@ namespace Book.Sell.Services
 {
     /// <summary>
     /// Runtime scenario spawner for passive-only sales with selected books:
-    /// BaseCustomers customers, each with 1..3 passive purchase attempts and no active requests.
+    /// a fixed count of customers, each with 1..3 passive purchase attempts and no active requests.
     /// Plan: Approach -> Passive x N -> CompletePurchase -> Leave.
     /// </summary>
     public sealed class OneToThreePassiveAttemptsCustomerSpawner : ICustomerSpawner
@@ -15,7 +15,6 @@ namespace Book.Sell.Services
 
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
         {
-            //var count = tuning.BaseCustomers;
             var count = 10;
             var archetype = new PassiveAttemptsArchetype(MinPassiveAttempts, MaxPassiveAttempts);
             var customers = new List<Customer>(count);

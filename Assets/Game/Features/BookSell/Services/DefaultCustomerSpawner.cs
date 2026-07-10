@@ -9,11 +9,13 @@ namespace Book.Sell.Services
     /// <summary>
     /// Stub spawner for the MVP. Builds a finite, deterministic-from-random list of customers.
     /// Each customer: Approach -> [Passive x k] -> CompletePurchase -> Leave, with k in 1..2.
-    /// Count = max(requestCount, tuning.BaseCustomers).
+    /// Count = max(requestCount, FallbackCustomerCount). Smoke tool only — production traffic count
+    /// lives in <see cref="RegularCustomerSpawner"/> + <see cref="ICustomerTrafficResolver"/>.
     /// </summary>
     public sealed class DefaultCustomerSpawner : ICustomerSpawner
     {
         private const int MaxExtraPassivePerSide = 2;   // k in 1..2
+        private const int FallbackCustomerCount = 6;    // was tuning.BaseCustomers before the traffic resolver
 
         private readonly IConfigsService _configs;
 
@@ -29,7 +31,7 @@ namespace Book.Sell.Services
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
         {
             var requests = _configs.GetAll<RequestConfig>();
-            var count = Math.Max(requests.Count, tuning.BaseCustomers);
+            var count = Math.Max(requests.Count, FallbackCustomerCount);
 
             var archetype = new PassiveAttemptsArchetype(1, MaxExtraPassivePerSide);
             var customers = new List<Customer>(count);

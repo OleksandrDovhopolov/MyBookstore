@@ -28,6 +28,9 @@ namespace Game.Bootstrap
         [Tooltip("Sales timing/pacing asset. Leave empty to use code defaults.")]
         [SerializeField] private SalesTuningConfig _salesTuningConfig;
 
+        [Tooltip("Customer traffic knobs (default count, min/max, rounding). Leave empty to use code defaults.")]
+        [SerializeField] private SalesTrafficConfig _salesTrafficConfig;
+
         public override void InstallBindings(IContainerBuilder builder)
         {
             // ISalesSetupProvider читает выбор игрока из save-модуля preparation.session (его пишет хаб).
@@ -44,7 +47,8 @@ namespace Game.Bootstrap
                 _customerLaneAnchors,
                 _customerExitLeft,
                 _customerExitRight,
-                _salesTuningConfig);
+                _salesTuningConfig,
+                _salesTrafficConfig);
         }
     }
 }

@@ -34,7 +34,6 @@ namespace Book.Sell.Services
 
         [Header("Spawning")]
         [SerializeField] private float _spawnInterval = 5.0f;
-        [SerializeField] private int _baseCustomers = 6;
         [SerializeField] private int _maxConcurrentCustomers = 3;
         [Tooltip("Сколько жанров в пассивном запросе покупателя (requested-genre модель).")]
         [SerializeField] private int _passiveRequestGenreCount = 2;
@@ -56,7 +55,6 @@ namespace Book.Sell.Services
             MinLeaveDuration = _minLeaveDuration,
             MaxLeaveDuration = _maxLeaveDuration,
             SpawnInterval = _spawnInterval,
-            BaseCustomers = _baseCustomers,
             MaxConcurrentCustomers = _maxConcurrentCustomers,
             PassiveRequestGenreCount = _passiveRequestGenreCount
         };
