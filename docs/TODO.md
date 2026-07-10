@@ -32,13 +32,17 @@
   - Добавлены reader-getters для условий `soldGenreAtLocation` и `soldGenreInSingleDay`.
   - Покрыто EditMode-тестами и зафиксировано в [adr/0007-quest-system.md](adr/0007-quest-system.md).
 
-- [ ] **GAME-6. Runtime `DialogStep` через `CustomerDirector`.**
-  Что сделать:
-  - Добавить `DialogStep` как middle-step покупателя.
-  - Вставлять runtime-диалоги через `CustomerDirector.InsertNext(...)`.
-  - Для заранее известных сюжетных/квестовых покупателей использовать `ScriptedSequenceArchetype` / `QuestCharacterArchetype`.
-  - Держать interaction lock до завершения dialogue UI.
-  - Освобождать interaction lock на `Exit`.
+- [x] **GAME-6. Диалоги покупателей (базовый слайс).**
+  Что сделано:
+  - `DialogStep` (middle-step, держит interaction lock до завершения UI, релиз на `Exit`); sink +
+    контроллер (`DialogueStarted` / `CompleteDialogue`).
+  - Квест-driven спавн: `QuestConfig.DialogueId` + `QuestSchedulingCustomerSpawner` (читает
+    `IQuestsService.GetActiveQuests()`) + fire-once `IDeliveredDialoguesService` (день о диалогах не знает).
+  - Движок графа `DialogueEngine` (view-agnostic) + окно-лента `DialogWindow` / `DialogWindowView` /
+    `DialogLineView`: реплики со сторонами (L/R по говорящему), typewriter, DOTween-появление, скролл; чит-модуль.
+  - Контент `dialogues.json` (граф `{ nodeId, lines:[{ speaker, text }], options }`), англ. тексты.
+  - Спека, факт и расхождения — [INPROGRESS/CUSTOMER_DIALOG_STEP.md](INPROGRESS/CUSTOMER_DIALOG_STEP.md).
+  - Остаток (значимый выбор, world-HUD 2.2, реактивные диалоги, локализация, портреты, …) — см. **Backlog** ниже.
 
 - [ ] **GAME-7. Разобрать дублирование `SelectedBookIds` и `ShelfBookIds`.**
   Что сделать:
@@ -83,6 +87,20 @@
   - **Ремайндер по editor-обвязке** (если ещё не сделано): prefab текст-панели, asset
     `TutorialOverlaySettings` + назначение в `BootstrapInstaller`, `TutorialTargetTag` на кнопке Start Day
     (`hub.start_day_button`), `Tools/Configs/Sync Bundled Defaults` для билда.
+
+- [ ] **GAME-11. Определять размер книги по `pages` из конфига.**
+  Что сделать:
+  - Читать `pages` из `books.json` / `BookConfig` и выводить производный размер книги без ручного поля в контенте.
+  - Правила классификации: `XS <= 200`, `S > 200 && <= 400`, `M > 400 && <= 700`, `L > 700`.
+  - Найти все места, где нужен размер книги (визуал/полки/продажи/фильтры), и заменить хардкод/ручную классификацию на единый resolver.
+  - Покрыть boundary-тестами значения `200`, `201`, `400`, `401`, `700`, `701`.
+
+- [ ] **GAME-12. Определять возрастную категорию книги по `published` из конфига.**
+  Что сделать:
+  - Читать `published` из `books.json` / `BookConfig` и выводить производную категорию книги без ручного поля в контенте.
+  - Правила классификации: `Fresh` — 21 century, `New` — 20 century, `Classic` — below 20 century.
+  - Уточнить формат `published` в конфиге (год или дата) и централизовать парсинг/валидацию.
+  - Покрыть boundary-тестами границы веков.
 
 ---
 
@@ -132,6 +150,29 @@
   - Вынести из `Game.Core.UI` конкретные окна вроде настроек, confirm/smoke/debug-экранов и любые feature-specific UI в соответствующие feature/shared UI сборки.
   - Вынести конкретные анимации/эффекты из core UI, оставив в ядре только базовые интерфейсы, абстракции, common helpers и generic window infrastructure.
   - Проверить asmdef-зависимости после выноса: `Game.Core.UI` не должен зависеть от конкретных gameplay/feature namespaces и не должен быть местом для продуктовых окон.
+
+---
+
+## 📋 Backlog
+
+Отложенное, не входящее в текущие MVP-слайсы. Берётся по мере необходимости.
+
+- [ ] **GAME-6-D. Диалоги — доработки.** Базовый слайс закрыт (см. GAME-6 в «Геймплей» и
+  [INPROGRESS/CUSTOMER_DIALOG_STEP.md](INPROGRESS/CUSTOMER_DIALOG_STEP.md)). Осталось:
+  - **Геймплейно-значимый выбор**: `CompleteDialogue(choiceId)` / ветвление плана/квеста (сейчас варианты
+    косметические и в текущем контенте не используются).
+  - **Атрибуция выбора**: у `DialogueOptionConfig` нет `speaker`; выбранный вариант не отображается в ленте
+    как реплика игрока.
+  - **Skip** — сейчас disabled-заглушка; реальное поведение (домотать / закрыть).
+  - **Свап на world-HUD (2.2)** — движок view-agnostic, меняется только вью ([WORLD_HUD.md](WORLD_HUD.md)).
+  - **Реактивные диалоги** через `Customer.InsertNext` (по образцу `PassiveSaleCommentRule` → `CommentStep`).
+  - **Мульти-узловой линейный диалог**: в графе нет «линейного продолжения» между узлами (единственное
+    ребро — выбор), сейчас один узел на беседу.
+  - **Персонаж `tilde` в `characters.json`** — квест `q_intro_tilde` ссылается на `characterId: "tilde"`,
+    которого в конфиге нет (нужен для журнала/HUD/портретов).
+  - **Локализация** реплик/имён/опций (raw-строки) — через INF-4.
+  - **Портреты/аватары, цветовая тема бабла** по говорящему.
+  - **UI-автотесты** окна/анимации (сейчас только ручной прогон через чит).
 
 ---
 

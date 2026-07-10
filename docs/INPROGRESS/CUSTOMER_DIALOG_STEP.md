@@ -1,9 +1,40 @@
 # GAME-6 — Runtime DialogStep в симуляции покупателей
 
-> Статус: INPROGRESS (спека к реализации). Связано: [ADR-0003](../adr/0003-customer-simulation.md)
-> (симуляция покупателей), [CUSTOMER_STEP_PIPELINE_REFACTOR.md](CUSTOMER_STEP_PIPELINE_REFACTOR.md),
+> **Статус (2026-07-10): базовый слайс РЕАЛИЗОВАН.** Остаток вынесен в бэклог —
+> [TODO.md → Backlog → GAME-6-D](../TODO.md). Ниже §1–6 — исходная спека; фактическая реализация местами
+> разошлась с ней, ключевые расхождения зафиксированы в «§0 Статус реализации».
+> Связано: [ADR-0003](../adr/0003-customer-simulation.md) (симуляция покупателей),
+> [CUSTOMER_STEP_PIPELINE_REFACTOR.md](CUSTOMER_STEP_PIPELINE_REFACTOR.md),
 > [QUESTS.md](../QUESTS.md) / [CHARACTERS_AND_QUESTS.md](../CHARACTERS_AND_QUESTS.md) (квест-персонажи),
 > [WORLD_HUD.md](WORLD_HUD.md) (будущий вариант презентации 2.2), `UI_SYSTEM` (окна, вариант 2.1).
+
+## 0. Статус реализации (факт, актуально 2026-07-10)
+
+**Сделано:**
+- Домен/контроллер по спеке §Этап 1–2: `DialogStep` (держит lock до `CompleteDialogue()`, релиз на `Exit`),
+  sink `OnDialogueStarted`, эвент `DialogueStarted` + вход `CompleteDialogue()`.
+- Движок `DialogueEngine` (view-agnostic) + презентер `DialoguePresenter` + окно
+  `DialogWindow` / `DialogWindowView` / `DialogLineView` + чит `DialogueCheatModule`.
+- Спавн — **квест-driven** (расхождение 1). Контент `dialogues.json` — граф со `speaker`+`text` на реплику,
+  тексты английские (расхождение 3).
+
+**Ключевые расхождения с §3/§5 ниже:**
+1. **Спавн — не через `DayConfig.scheduledDialogueIds`, а через квест-состояние.** Диалог живёт на
+   [`QuestConfig.DialogueId`](../../Assets/Game/Features/Configs/Models/QuestConfig.cs); decorator
+   [`QuestSchedulingCustomerSpawner`](../../Assets/Game/Features/BookSell/Services/QuestSchedulingCustomerSpawner.cs)
+   читает `IQuestsService.GetActiveQuests()` и prepend'ит `QuestCharacterArchetype`-покупателя; fire-once —
+   save-backed [`IDeliveredDialoguesService`](../../Assets/Game/Features/BookSell/Services/Dialogue/IDeliveredDialoguesService.cs).
+   `DayConfig.scheduledDialogueIds` и поле в `SalesSessionSetup` удалены — **день о диалогах не знает**.
+2. **Презентация — не «реплики + 2–3 кнопки», а лента-мессенджер.** Реплики появляются по одной сверху вниз
+   в `ScrollRect` (пул `UIListPool<DialogLineView>`), со стороной по говорящему (1-й слева, 2-й справа),
+   DOTween fade+scale + typewriter; клик по экрану двигает беседу, клики блокируются во время анимации/печати.
+   Варианты ответа реализованы (панель кнопок опций), но в текущем контенте `dlg_tilde_meet` не используются.
+3. **Схема контента.** `DialogueNodeConfig.Lines`: `string[]` → `DialogueLineConfig[] { Speaker, Text }`;
+   тексты английские.
+
+**Остаток (бэклог):** [TODO.md → Backlog → GAME-6-D](../TODO.md) — геймплейно-значимый выбор, атрибуция
+выбора, Skip, world-HUD 2.2, реактивные диалоги, мульти-узловой линейный диалог, персонаж `tilde`,
+локализация, портреты, UI-автотесты.
 
 ## 1. Цель (MVP)
 
@@ -97,6 +128,8 @@
   без активного диалога — no-op + warning.
 
 ### Этап 3 — Конфиг диалогов (мелкий граф под 2–3 варианта)
+> ⚠️ Факт разошёлся: `Lines` теперь `DialogueLineConfig[] { Speaker, Text }` (не `string[]`), тексты
+> английские. См. §0.
 - `DialogueConfig` (`Game.Configs.Models`) c атрибутом `[ConfigFile("dialogues")]` (маппинг типа на файл,
   как у `QuestConfig`). Не «Id + Lines», а **плоский граф**: `Id` (корень) + список узлов; узел =
   `{ NodeId, Lines, Options[] }`; опция = `{ TextKey/Text, Next: nodeId | end }`. **Не строить Twine** —
@@ -145,6 +178,8 @@
   тестовым `CompleteDialogue()`, ассерты пассивной продажи + purchase-completed) — `SalesDayControllerTests`.
 
 ### Этап 5 — Презентация: движок диалога + вью (2.1 окно) — точка свапа на 2.2
+> ⚠️ Факт разошёлся: вью — лента-мессенджер (typewriter, L/R по говорящему, DOTween), а спавн — квест-driven
+> (через `IQuestsService`, не `DayConfig.scheduledDialogueIds`). См. §0.
 Теперь это **не «просто открыть окно»**, а два компонента (как и просил дизайн: «движок + вью»):
 - **Движок диалога** (presentation-side, view-agnostic): грузит граф `DialogueConfig` по корневому
   `DialogueId`, держит текущий узел, отдаёт вью «реплики + 2–3 опции», по выбранной опции переходит к
