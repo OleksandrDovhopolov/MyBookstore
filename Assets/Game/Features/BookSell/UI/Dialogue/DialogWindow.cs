@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using Book.Sell.API;
 using Book.Sell.Services;
@@ -16,10 +18,10 @@ namespace Book.Sell.UI
     /// through the bootstrap-scope <see cref="IConfigsService"/> (so the window also works from the debug cheat
     /// with a null controller).
     ///
-    /// Presents the entry node's replies as a top-to-bottom feed, one at a time (typewriter): a screen click
-    /// reveals the next reply; clicks are ignored while one is still typing; after the last reply a click closes
-    /// the window. Answer options (choices) are NOT rendered this iteration — the graph's <c>Options</c> stay in
-    /// config for a later iteration, so a choice dialogue just shows its root replies and closes.
+    /// Plays a node's replies as a top-to-bottom feed, one at a time (typewriter): a screen click reveals the
+    /// next reply; clicks are ignored while one is still typing. When a node's replies are exhausted, if the
+    /// node offers <c>Options</c> the answer buttons are shown and the pick advances the <see cref="DialogueEngine"/>
+    /// to the next node (its replies are appended to the same feed); a terminal node closes on the next click.
     ///
     /// <see cref="Complete"/> is the single completion point AND the anti-hang safety net: it sets
     /// <c>_completed</c> BEFORE calling <see cref="ISalesDayController.CompleteDialogue"/> so the hide/dispose
@@ -34,10 +36,16 @@ namespace Book.Sell.UI
         private IConfigsService _configs;
         private ISalesDayController _controller;
         private DialoguePayload _payload;
+        private DialogueEngine _engine;
+
+        // Auto speaker→side map for the whole conversation: first distinct speaker → left, second → right
+        // (2-character assumption). Persists across nodes so a speaker keeps its side.
+        private readonly Dictionary<string, bool> _speakerSide = new(StringComparer.Ordinal);
 
         private DialogueLineConfig[] _lines;
         private int _lineIndex;
         private bool _revealing;
+        private bool _awaitingChoice;
         private bool _completed;
         private bool _subscribed;
         private CancellationTokenSource _revealCts;
@@ -52,13 +60,16 @@ namespace Book.Sell.UI
             _payload = args?.Payload;
             _completed = false;
             _revealing = false;
+            _awaitingChoice = false;
             _lineIndex = 0;
+            _speakerSide.Clear();
 
             // Fresh CTS every show: windows are cached & reused, so a disposed field token from a prior show
             // would poison the next open.
             _revealCts = new CancellationTokenSource();
 
             View.ClearLines();
+            View.HideOptions();
 
             if (_payload == null)
             {
@@ -76,16 +87,13 @@ namespace Book.Sell.UI
                 return;
             }
 
-            // Engine resolves + validates the entry node (choices come next iteration; for now we play the
-            // entry node's replies).
-            var engine = new DialogueEngine(config);
-            _lines = engine.Current.Lines ?? System.Array.Empty<DialogueLineConfig>();
+            _engine = new DialogueEngine(config);
 
             // Skip is a stub this iteration — keep it visible-but-inert so it doesn't look like a live control.
             if (View.SkipButton != null) View.SkipButton.interactable = false;
 
             Subscribe();
-            RevealNextAsync().Forget();   // auto-show the first reply; clicks drive the rest
+            PlayCurrentNode();   // reveal the entry node's replies (or its options if it has none)
         }
 
         protected override void OnHideStart(bool isClosed)
@@ -105,6 +113,7 @@ namespace Book.Sell.UI
             if (!_completed)
                 Complete();
 
+            _engine = null;
             _lines = null;
             _controller = null;
             _payload = null;
@@ -128,17 +137,31 @@ namespace Book.Sell.UI
 
         private void OnScreenClicked()
         {
+            if (_awaitingChoice) return;            // options are up — only the option buttons act
             if (_revealing) return;                 // block clicks while a reply is still typing
             if (_lineIndex < (_lines?.Length ?? 0))
                 RevealNextAsync().Forget();
             else
-                CompleteAndClose();                 // all replies shown — a click ends the conversation
+                CompleteAndClose();                 // terminal node's replies shown — a click ends it
         }
 
         // Skip is intentionally inert this iteration (see class doc). TODO: fast-forward / close.
         private void OnSkipClicked()
         {
             CloseAsync().Forget();
+        }
+
+        // Loads the engine's current node into the feed: reveal its replies, or (if it has none) go straight
+        // to its options / terminal handling.
+        private void PlayCurrentNode()
+        {
+            _lines = _engine.Current.Lines ?? System.Array.Empty<DialogueLineConfig>();
+            _lineIndex = 0;
+
+            if (_lines.Length == 0)
+                MaybeShowOptionsOrEndNode();
+            else
+                RevealNextAsync().Forget();
         }
 
         private async UniTaskVoid RevealNextAsync()
@@ -149,11 +172,68 @@ namespace Book.Sell.UI
             var line = _lines[_lineIndex];
             _lineIndex++;
 
-            var view = View.AppendLine(line?.Speaker, line?.Text);
+            var view = View.AppendLine(line?.Speaker, line?.Text, SideFor(line?.Speaker));
             if (view != null && _revealCts != null)
                 await view.RevealAsync(_revealCts.Token);
 
             _revealing = false;
+
+            // Last reply of the node just finished — offer the choice (or wait for a close-click if terminal).
+            if (_lineIndex >= (_lines?.Length ?? 0))
+                MaybeShowOptionsOrEndNode();
+        }
+
+        // Current node's replies are exhausted (or it had none): show its answer options, or do nothing for a
+        // terminal node (a screen click will close it via OnScreenClicked).
+        private void MaybeShowOptionsOrEndNode()
+        {
+            if (_engine == null || _engine.IsTerminal) return;
+
+            var options = _engine.Current.Options;
+            var labels = new string[options.Length];
+            for (var i = 0; i < options.Length; i++)
+                labels[i] = options[i]?.Text ?? string.Empty;
+
+            View.ShowOptions(labels, OnOptionPicked);
+            _awaitingChoice = true;
+        }
+
+        private void OnOptionPicked(int optionIndex)
+        {
+            if (!_awaitingChoice) return;   // guard against a double / queued click firing Choose twice
+            _awaitingChoice = false;
+            View.HideOptions();
+
+            switch (_engine.Choose(optionIndex))
+            {
+                case ChooseResult.Advanced:
+                    PlayCurrentNode();      // append the next node's replies to the same feed
+                    break;
+
+                case ChooseResult.Ended:
+                    CompleteAndClose();
+                    break;
+
+                case ChooseResult.UnknownTarget:
+                    // Content error: option points at a missing node. Don't strand the player — treat as end.
+                    Debug.LogError($"{LogPrefix} Option {optionIndex} on node '{_engine.Current.NodeId}' " +
+                                   $"('{_payload.DialogueId}') targets an unknown node — ending the dialogue.");
+                    CompleteAndClose();
+                    break;
+            }
+        }
+
+        // First distinct speaker → left (false), second → right (true), third+ → left. Stable for a speaker
+        // across the whole conversation.
+        private bool SideFor(string speaker)
+        {
+            speaker ??= string.Empty;
+            if (_speakerSide.TryGetValue(speaker, out var isRight))
+                return isRight;
+
+            isRight = _speakerSide.Count == 1;
+            _speakerSide[speaker] = isRight;
+            return isRight;
         }
 
         private void CancelReveal()

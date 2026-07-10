@@ -87,6 +87,27 @@ namespace Book.Sell.Tests.Editor
         }
 
         // Single node whose options both point at "end". Mirrors dlg_quest_01.
+        // Dummy choice (dlg_tilde_meet): two options both point at the same node — either pick converges to
+        // the same continuation, so the dialogue plays identically regardless of the answer.
+        [Test]
+        public void Choose_ConvergingOptions_BothAdvanceToSameNode()
+        {
+            DialogueConfig Graph() => Config(
+                "converge",
+                Node("root", new[] { "a" },
+                    Opt("вариант A", "after"),
+                    Opt("вариант B", "after")),
+                Node("after", new[] { "b" }));
+
+            var a = new DialogueEngine(Graph());
+            Assert.AreEqual(ChooseResult.Advanced, a.Choose(0));
+            Assert.AreEqual("after", a.Current.NodeId);
+
+            var b = new DialogueEngine(Graph());
+            Assert.AreEqual(ChooseResult.Advanced, b.Choose(1));
+            Assert.AreEqual("after", b.Current.NodeId);
+        }
+
         [Test]
         public void Choose_SingleNode_OptionsEndConversation()
         {
