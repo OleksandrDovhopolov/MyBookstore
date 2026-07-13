@@ -14,7 +14,7 @@ namespace Game.Configs.Editor
     /// <summary>
     /// Валидация перед Publish (§9 спеки).
     /// Общие: массив; каждый item — object; id непустой и уникальный.
-    /// Books extras: title непустой, basePrice ≥ 0, rarityWeight ≥ 0.
+    /// Books extras: title непустой, genres[0] непустой, rarityWeight ≥ 0.
     /// </summary>
     internal static class SectionValidator
     {
@@ -58,9 +58,12 @@ namespace Game.Configs.Editor
                     if (string.IsNullOrWhiteSpace(title))
                         issues.Add(new ValidationIssue(id, "'title' is empty."));
 
-                    var basePrice = obj["basePrice"]?.Value<double?>() ?? 0;
-                    if (basePrice < 0)
-                        issues.Add(new ValidationIssue(id, "'basePrice' must be >= 0."));
+                    var genres = obj["genres"] as JArray;
+                    var primaryGenre = genres != null && genres.Count > 0
+                        ? genres[0]?.Value<string>()
+                        : null;
+                    if (string.IsNullOrWhiteSpace(primaryGenre))
+                        issues.Add(new ValidationIssue(id, "'genres[0]' is missing or empty."));
 
                     var rarity = obj["rarityWeight"]?.Value<double?>() ?? 0;
                     if (rarity < 0)

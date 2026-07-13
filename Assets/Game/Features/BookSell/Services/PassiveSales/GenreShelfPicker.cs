@@ -22,7 +22,7 @@ namespace Book.Sell.Services
             {
                 var book = shelf[i];
                 if (book == null || book.State != ShelfBookState.Available) continue;
-                var genre = book.Config?.Genre;
+                var genre = book.Config?.PrimaryGenre;
                 if (string.IsNullOrEmpty(genre)) continue;
 
                 if (!groups.TryGetValue(genre, out var list))

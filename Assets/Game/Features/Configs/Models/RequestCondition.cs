@@ -20,7 +20,7 @@ namespace Game.Configs.Models
     /// </summary>
     public sealed class RequestCondition
     {
-        /// <summary>Book field the condition inspects: genres, tags, publicationYear, pages, ...</summary>
+        /// <summary>Book field the condition inspects: genres, qualities, publicationYear, pages, ...</summary>
         public string Type { get; set; }
 
         /// <summary>Comparison operator, e.g. equal, between, contains, containsAll.</summary>

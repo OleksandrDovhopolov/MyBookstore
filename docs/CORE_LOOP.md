@@ -37,7 +37,7 @@ optional story hook for the day.
 (audience and demand modifiers), Save (current day, gold, unlocked locations).
 
 **Outputs to the next phase:** `Day`, `EventId`, `WeatherId`,
-`ActiveModifierIds`, `DemandGenres`, `DemandTags`, `TargetLocationIds`.
+`ActiveModifierIds`, `DemandGenres`, `DemandQualities`, `TargetLocationIds`.
 
 **Rules:**
 - Always reads in 5–10 seconds. No tables, no strategy panels. Atmosphere first.
@@ -58,7 +58,7 @@ park the shop, which books to stock, which decor to slot.**
 ### 2.1 Location
 
 The single most impactful choice of the day. Each location carries an audience,
-demand genres/tags, and hidden modifiers tied to weather/event. The wrong place
+demand genres/qualities, and hidden modifiers tied to weather/event. The wrong place
 on the wrong day is a quiet day.
 
 The MVP ships with one functional location; the UI and data model still treat
@@ -81,13 +81,13 @@ configured value and grows through shop upgrades.
 | `MinDailyBooks`     | 1                | Prevents starting Sales with an empty shelf.      |
 | `DailyDecorSlots`   | 1–2              | Same shape as books; modifier-bearing items.      |
 
-Books carry: genre, tags, mood/tone, base price, rarity weight. The player picks
+Books carry: genres, qualities, published year, pages, and rarity weight. The player picks
 **under today's context** (location demand + morning modifier) — not abstractly.
 
 ### 2.3 Decor
 
 In a mature build decor is **functional**, not cosmetic — each item modifies
-sale chance for a genre or mood (a plant nudges cozy themes, a globe nudges
+sale chance for a genre or quality (a plant nudges cozy themes, a globe nudges
 travel, a coffee machine extends customer stay). Decor accumulates between days
 and is the long-term progression of the shop.
 
@@ -130,7 +130,7 @@ are actually stocked) and rolls **only that genre's** probabilistic gate
 by weighted random over `RarityWeight`. Because the attempt commits to one genre
 up front, the chosen genre is known on **both** a hit and a miss — so the feedback
 bubble can show that genre's sprite either way. Passive sales **do not** use
-tag/mood matching — that depth belongs to the active mini-game. (Design: see
+quality matching — that depth belongs to the active mini-game. (Design: see
 [ADR-0006](adr/0006-passive-sales-requested-genre.md), refining the stage-1 gate
 of [ADR-0004](adr/0004-stock-model-hybrid-sale-chance.md).)
 
@@ -147,8 +147,8 @@ shelf/decor to nudge sale chance").
 
 A customer approaches and asks for a specific recommendation, sometimes plainly
 ("something light") and sometimes specifically ("a sea story that's tense but
-hopeful"). The request has hidden parameters — desired genres, tags, mood, and
-sometimes a price cap.
+hopeful"). The request has hidden parameters — desired genres, qualities, and
+sometimes a price cap against the fixed book price.
 
 The player opens the shelf, picks **one** card (or skips with a reason), and
 gets a result tier: **Excellent**, **Normal**, **Failed**, or **Skipped**.
@@ -160,8 +160,7 @@ A simple matrix of matches:
 | Match                | Points |
 |----------------------|-------:|
 | Genre                |     +3 |
-| Tag (per tag)        |     +2 |
-| Mood/tone (per item) |     +1 |
+| Quality (per item)   |     +2 |
 | Price within budget  |     +1 |
 | Location supports it |     +1 |
 
@@ -256,8 +255,8 @@ Results screen, multi-screen post-day cinematics.
    that this is *the* decision of the day.
 4. **Cozy ≠ no challenge.** The challenge is *reading the customer*, not
    surviving the economy. Money pressure should never dominate the feel.
-5. **Books carry character, not just price.** A book is genre + tags + mood +
-   price + rarity weight. Strip the qualitative fields and customer requests
+5. **Books carry character, not just price.** A book is genres + qualities +
+   rarity weight. Strip the qualitative fields and customer requests
    stop being interesting.
 6. **Decor is progression.** If decor stays purely cosmetic, the shop loses one
    of its return-loop hooks. Bake the modifier seam in from day one even if the

@@ -23,8 +23,8 @@ namespace Game.SalesStats.Tests.Editor
         private static (SalesStatsService svc, IConditionParser parser) Build()
         {
             var configs = new FakeConfigsService()
-                .Add(new BookConfig { Id = CrimeBook, Genre = BookGenre.Crime.ToConfigValue() })
-                .Add(new BookConfig { Id = KidsBook, Genre = BookGenre.Kids.ToConfigValue() });
+                .Add(new BookConfig { Id = CrimeBook, Genres = new[] { BookGenre.Crime.ToConfigValue() } })
+                .Add(new BookConfig { Id = KidsBook, Genres = new[] { BookGenre.Kids.ToConfigValue() } });
 
             var svc = new SalesStatsService(new FakeSaveService(), new FakeSalesStatsRepository(), configs);
             svc.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();

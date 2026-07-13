@@ -35,7 +35,7 @@ namespace Game.Decor.Tests.Editor.Services
                         GenreMultipliers = new[] { new DecorGenreModifier { Genre = "Fantasy", Multiplier = 1.5f } },
                     }
                 },
-                books: new[] { new BookConfig { Id = "b1", Genre = "Fantasy" } });
+                books: new[] { new BookConfig { Id = "b1", Genres = new[] { "Fantasy" } } });
 
             var report = v.Validate();
             Assert.IsFalse(report.HasErrors, "got errors: " + report.FormatErrors());
@@ -91,7 +91,7 @@ namespace Game.Decor.Tests.Editor.Services
                         GenreMultipliers = new[] { new DecorGenreModifier { Genre = "Mystery", Multiplier = 1.5f } }
                     }
                 },
-                books: new[] { new BookConfig { Id = "b1", Genre = "Fantasy" } });
+                books: new[] { new BookConfig { Id = "b1", Genres = new[] { "Fantasy" } } });
             var report = v.Validate();
             Assert.IsFalse(report.HasErrors);
             Assert.IsTrue(report.HasWarnings);

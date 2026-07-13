@@ -8,12 +8,16 @@ namespace Book.Sell.Tests.Editor.Fakes
     /// <summary>Small builders to keep sales tests terse.</summary>
     public static class SalesTestKit
     {
-        public static BookConfig Book(string id, string genre = "sci-fi", int price = 80,
-            string[] tags = null, string[] mood = null)
+        public static BookConfig Book(string id, string genre = "sci-fi", int price = BookConfig.FixedPriceGold,
+            string[] qualities = null)
             => new()
             {
-                Id = id, Title = id, Author = "author", Genre = genre, BasePrice = price,
-                Tags = tags ?? new[] { "space" }, Mood = mood ?? new[] { "smart" }
+                Id = id,
+                Title = id,
+                Author = "author",
+                Description = $"[description_{id}]",
+                Genres = string.IsNullOrEmpty(genre) ? null : new[] { genre },
+                Qualities = qualities ?? new[] { "space" }
             };
 
         public static RequestConfig Request(string id, string[] genres = null, int maxPrice = 100,
@@ -22,17 +26,16 @@ namespace Book.Sell.Tests.Editor.Fakes
             {
                 Id = id, Text = $"request {id}",
                 DesiredGenres = genres ?? new[] { "sci-fi" },
-                DesiredTags = new[] { "space" },
-                DesiredMood = new[] { "smart" },
+                DesiredQualities = new[] { "space" },
                 MaxPrice = maxPrice, Difficulty = difficulty, BaseRewardGold = 25
             };
 
-        public static LocationConfig Location(string id = "loc", string[] demandGenres = null, string[] demandTags = null)
+        public static LocationConfig Location(string id = "loc", string[] demandGenres = null, string[] demandQualities = null)
             => new()
             {
                 Id = id, DisplayName = id,
                 DemandGenres = demandGenres ?? new[] { "sci-fi" },
-                DemandTags = demandTags ?? new[] { "space" }
+                DemandQualities = demandQualities ?? new[] { "space" }
             };
 
         public static SalesShelf Shelf(params BookConfig[] books)

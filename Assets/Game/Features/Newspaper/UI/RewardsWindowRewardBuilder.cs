@@ -60,7 +60,7 @@ namespace Game.Newspaper.UI
             if (configs == null
                 || !configs.TryGet<BookConfig>(item.Id, out var book)
                 || book == null
-                || !BookGenreExtensions.TryParseGenre(book.Genre, out var genre))
+                || !BookGenreExtensions.TryParseGenre(book.PrimaryGenre, out var genre))
             {
                 Debug.LogWarning(
                     $"[RewardsWindow] Book reward '{item.Id}' has no valid BookConfig/genre. Skipped.");

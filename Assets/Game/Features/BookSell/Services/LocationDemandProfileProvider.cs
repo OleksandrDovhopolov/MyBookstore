@@ -49,7 +49,7 @@ namespace Book.Sell.Services
                 foreach (var id in setup.ShelfBookIds)
                 {
                     if (string.IsNullOrEmpty(id) || !_configs.TryGet<BookConfig>(id, out var cfg)) continue;
-                    var g = cfg?.Genre;
+                    var g = cfg?.PrimaryGenre;
                     if (!string.IsNullOrEmpty(g) && seen.Add(g)) fromShelf.Add(g);
                 }
             }

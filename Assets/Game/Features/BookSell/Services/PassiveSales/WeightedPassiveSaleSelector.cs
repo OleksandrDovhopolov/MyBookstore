@@ -14,7 +14,7 @@ namespace Book.Sell.Services
     /// Stage 2: pick one winner genre uniformly, then pick a concrete book within that genre
     /// using a cumulative-sum walk weighted by <see cref="BookConfig.RarityWeight"/>.
     ///
-    /// Passive sales intentionally ignore tags/mood — those belong to the active mini-game.
+    /// Passive sales intentionally ignore qualities — those belong to the active mini-game.
     /// </summary>
     public sealed class WeightedPassiveSaleSelector : IPassiveSaleSelector
     {
@@ -79,12 +79,12 @@ namespace Book.Sell.Services
                 return null;
             }
 
-            Debug.Log($"{LogPrefix} winner genre={pickedGenre} ({winners.Count} genre(s) passed) → book={book.BookId} \"{book.Config?.Title}\" rarity={EffectiveWeight(book):F3} price={book.Config?.BasePrice}");
+            Debug.Log($"{LogPrefix} winner genre={pickedGenre} ({winners.Count} genre(s) passed) → book={book.BookId} \"{book.Config?.Title}\" rarity={EffectiveWeight(book):F3} price={BookConfig.FixedPriceGold}");
 
             return new PassiveSaleCandidate(
                 book,
                 matchedGenres: new[] { pickedGenre },
-                matchedTags: Array.Empty<string>());
+                matchedQualities: Array.Empty<string>());
         }
 
         private static Dictionary<string, List<ShelfBook>> GroupByGenre(IReadOnlyList<ShelfBook> shelf)
@@ -94,7 +94,7 @@ namespace Book.Sell.Services
             {
                 var book = shelf[i];
                 if (book == null || book.State != ShelfBookState.Available) continue;
-                var genre = book.Config?.Genre;
+                var genre = book.Config?.PrimaryGenre;
                 if (string.IsNullOrEmpty(genre)) continue;
 
                 if (!groups.TryGetValue(genre, out var list))

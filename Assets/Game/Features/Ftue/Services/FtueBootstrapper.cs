@@ -102,8 +102,8 @@ namespace Game.Ftue.Services
             }
 
             var byGenre = catalog
-                .Where(b => !string.IsNullOrEmpty(b?.Genre))
-                .GroupBy(b => b.Genre)
+                .Where(b => !string.IsNullOrEmpty(b?.PrimaryGenre))
+                .GroupBy(b => b.PrimaryGenre)
                 .ToDictionary(g => g.Key, g => (IReadOnlyList<BookConfig>)g.ToList());
 
             var result = new List<string>(PresetCounts.Sum(p => p.Value));

@@ -50,7 +50,7 @@ namespace Game.DayCycle.Results.Services
                 if (string.IsNullOrWhiteSpace(bookId)) continue;
                 if (!_configs.TryGet<BookConfig>(bookId, out var book)
                     || book == null
-                    || !BookGenreExtensions.TryParseGenre(book.Genre, out var genre))
+                    || !BookGenreExtensions.TryParseGenre(book.PrimaryGenre, out var genre))
                 {
                     continue;
                 }

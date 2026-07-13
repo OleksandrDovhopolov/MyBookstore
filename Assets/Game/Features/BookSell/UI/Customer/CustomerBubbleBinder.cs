@@ -150,7 +150,7 @@ namespace Book.Sell.UI.Customer
         private async UniTask<Sprite> ResolveBookGenreSpriteAsync(string bookId)
         {
             if (string.IsNullOrEmpty(bookId) || !_configs.TryGet<BookConfig>(bookId, out var cfg)) return null;
-            return await ResolveGenreSpriteAsync(cfg?.Genre);
+            return await ResolveGenreSpriteAsync(cfg?.PrimaryGenre);
         }
 
         private async UniTask<Sprite> ResolveGenreSpriteAsync(string genre)

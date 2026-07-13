@@ -3,6 +3,7 @@ using Game.Configs.Models;
 using Game.Inventory.API;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Game.Inventory.UI
@@ -23,7 +24,8 @@ namespace Game.Inventory.UI
         [SerializeField] private TMP_Text _titleLabel;
         [SerializeField] private TMP_Text _authorLabel;
         [SerializeField] private TMP_Text _genreLabel;
-        [SerializeField] private TMP_Text _basePriceLabel;
+        [FormerlySerializedAs("_basePriceLabel")]
+        [SerializeField] private TMP_Text _priceLabel;
         [SerializeField] private TMP_Text _rarityWeightLabel;
         [SerializeField] private TMP_Text _tagsLabel;
         [SerializeField] private TMP_Text _moodLabel;
@@ -66,17 +68,14 @@ namespace Game.Inventory.UI
 
             if (_titleLabel != null) _titleLabel.text = book.Title ?? string.Empty;
             if (_authorLabel != null) _authorLabel.text = book.Author ?? string.Empty;
-            if (_genreLabel != null) _genreLabel.text = book.Genre ?? string.Empty;
-            if (_basePriceLabel != null) _basePriceLabel.text = $"{book.BasePrice} gold";
+            if (_genreLabel != null) _genreLabel.text = book.PrimaryGenre ?? string.Empty;
+            if (_priceLabel != null) _priceLabel.text = $"{BookConfig.FixedPriceGold} gold";
             if (_rarityWeightLabel != null) _rarityWeightLabel.text = $"R: {book.RarityWeight:F2}";
             if (_tagsLabel != null)
-                _tagsLabel.text = book.Tags != null && book.Tags.Length > 0
-                    ? string.Join(", ", book.Tags)
+                _tagsLabel.text = book.Qualities != null && book.Qualities.Length > 0
+                    ? string.Join(", ", book.Qualities)
                     : string.Empty;
-            if (_moodLabel != null)
-                _moodLabel.text = book.Mood != null && book.Mood.Length > 0
-                    ? string.Join(", ", book.Mood)
-                    : string.Empty;
+            if (_moodLabel != null) _moodLabel.text = string.Empty;
         }
 
         private void ClearBookDetailLabels()
@@ -84,7 +83,7 @@ namespace Game.Inventory.UI
             if (_titleLabel != null) _titleLabel.text = string.Empty;
             if (_authorLabel != null) _authorLabel.text = string.Empty;
             if (_genreLabel != null) _genreLabel.text = string.Empty;
-            if (_basePriceLabel != null) _basePriceLabel.text = string.Empty;
+            if (_priceLabel != null) _priceLabel.text = string.Empty;
             if (_rarityWeightLabel != null) _rarityWeightLabel.text = string.Empty;
             if (_tagsLabel != null) _tagsLabel.text = string.Empty;
             if (_moodLabel != null) _moodLabel.text = string.Empty;

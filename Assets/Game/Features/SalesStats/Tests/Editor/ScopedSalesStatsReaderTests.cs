@@ -19,7 +19,7 @@ namespace Game.SalesStats.Tests.Editor
         private static SalesStatsService Build()
         {
             var configs = new FakeConfigsService()
-                .Add(new BookConfig { Id = FantasyBook, Genre = BookGenre.Fantasy.ToConfigValue() });
+                .Add(new BookConfig { Id = FantasyBook, Genres = new[] { BookGenre.Fantasy.ToConfigValue() } });
             var svc = new SalesStatsService(new FakeSaveService(), new FakeSalesStatsRepository(), configs);
             svc.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
             return svc;

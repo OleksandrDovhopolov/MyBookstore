@@ -33,8 +33,8 @@ namespace Game.Rewards.Services
         // Hardcoded rules keyed by RewardSpec.Id (same id as the shop lot's rewardId).
         // book_box_common_15:        15 books, any genre. Lower RarityWeight = higher chance.
         // book_box_rare_8:           8 rare books (RarityWeight >= 0.6). Higher RarityWeight = higher chance.
-        // book_box_genre_dystopic_1: 1 book in Fantasy with "dark" mood. Weighted by RarityWeight.
-        // book_box_genre_heartfelt_1: 1 book in Drama with "romantic" mood. Weighted by RarityWeight.
+        // book_box_genre_dystopic_1: 1 book in Fantasy. Weighted by RarityWeight.
+        // book_box_genre_heartfelt_1: 1 book in Drama. Weighted by RarityWeight.
         private static readonly IReadOnlyDictionary<string, Rule> _rules = new Dictionary<string, Rule>
         {
             ["book_box_common_15"] = new Rule(
@@ -48,14 +48,12 @@ namespace Game.Rewards.Services
                 rolls: 8),
 
             ["book_box_genre_dystopic_1"] = new Rule(
-                filter: b => string.Equals(b.Genre, "Fantasy", StringComparison.OrdinalIgnoreCase)
-                             && HasMood(b, "dark"),
+                filter: b => string.Equals(b.PrimaryGenre, "Fantasy", StringComparison.OrdinalIgnoreCase),
                 weight: b => b.RarityWeight,
                 rolls: 1),
 
             ["book_box_genre_heartfelt_1"] = new Rule(
-                filter: b => string.Equals(b.Genre, "Drama", StringComparison.OrdinalIgnoreCase)
-                             && HasMood(b, "romantic"),
+                filter: b => string.Equals(b.PrimaryGenre, "Drama", StringComparison.OrdinalIgnoreCase),
                 weight: b => b.RarityWeight,
                 rolls: 1),
         };
@@ -65,12 +63,5 @@ namespace Game.Rewards.Services
         public static bool IsBookBoxId(string specId) =>
             !string.IsNullOrEmpty(specId) && specId.StartsWith("book_box_", StringComparison.Ordinal);
 
-        private static bool HasMood(BookConfig b, string mood)
-        {
-            if (b.Mood == null) return false;
-            for (var i = 0; i < b.Mood.Length; i++)
-                if (string.Equals(b.Mood[i], mood, StringComparison.OrdinalIgnoreCase)) return true;
-            return false;
-        }
     }
 }

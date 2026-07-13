@@ -25,7 +25,7 @@ namespace Book.Sell.Services
                 return PassiveAttemptResult.Miss(null);
 
             var genre = candidate.MatchedGenres is { Count: > 0 } ? candidate.MatchedGenres[0] : null;
-            return PassiveAttemptResult.Hit(genre, candidate.Book, candidate.MatchedGenres, candidate.MatchedTags);
+            return PassiveAttemptResult.Hit(genre, candidate.Book, candidate.MatchedGenres, candidate.MatchedQualities);
         }
     }
 }

@@ -153,7 +153,7 @@ namespace Game.Preparation.Services
 
                 selectedBookIds.Add(book.Id);
 
-                var genre = book.Genre;
+                var genre = book.PrimaryGenre;
                 if (string.IsNullOrEmpty(genre)) continue;
                 quantities.TryGetValue(genre, out var c);
                 quantities[genre] = c + 1;
@@ -228,19 +228,19 @@ namespace Game.Preparation.Services
 
             foreach (var book in _configs.GetAll<BookConfig>())
             {
-                if (book == null || string.IsNullOrEmpty(book.Genre)) continue;
-                if (!_availableByGenre.ContainsKey(book.Genre))
-                    _availableByGenre[book.Genre] = new List<BookConfig>();
+                if (book == null || string.IsNullOrEmpty(book.PrimaryGenre)) continue;
+                if (!_availableByGenre.ContainsKey(book.PrimaryGenre))
+                    _availableByGenre[book.PrimaryGenre] = new List<BookConfig>();
             }
 
             // Inventory is the ownership source of truth; sold books are removed by Sales.
             foreach (var book in _inventory.GetOwnedBooks())
             {
-                if (book == null || string.IsNullOrEmpty(book.Genre)) continue;
-                if (!_availableByGenre.TryGetValue(book.Genre, out var list))
+                if (book == null || string.IsNullOrEmpty(book.PrimaryGenre)) continue;
+                if (!_availableByGenre.TryGetValue(book.PrimaryGenre, out var list))
                 {
                     list = new List<BookConfig>();
-                    _availableByGenre[book.Genre] = list;
+                    _availableByGenre[book.PrimaryGenre] = list;
                 }
                 list.Add(book);
             }

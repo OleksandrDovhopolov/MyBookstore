@@ -7,14 +7,12 @@ namespace Book.Sell.Tests.Editor
 {
     public sealed class RecommendationScoringServiceTests
     {
-        private static BookConfig SciFiBook(int price = 80) => new()
+        private static BookConfig SciFiBook() => new()
         {
             Id = "book_sci",
             Title = "Sci",
-            Genre = "sci-fi",
-            BasePrice = price,
-            Tags = new[] { "space", "survival", "engineering" },
-            Mood = new[] { "smart", "tense", "optimistic" }
+            Genres = new[] { "sci-fi" },
+            Qualities = new[] { "space", "survival", "engineering" }
         };
 
         private static RequestConfig SciFiRequest(int maxPrice = 90) => new()
@@ -22,8 +20,7 @@ namespace Book.Sell.Tests.Editor
             Id = "req_sci",
             Text = "...",
             DesiredGenres = new[] { "sci-fi" },
-            DesiredTags = new[] { "space", "survival", "engineering" },
-            DesiredMood = new[] { "smart", "tense", "optimistic" },
+            DesiredQualities = new[] { "space", "survival", "engineering" },
             MaxPrice = maxPrice,
             BaseRewardGold = 25
         };
@@ -32,7 +29,7 @@ namespace Book.Sell.Tests.Editor
         {
             Id = "loc_uni",
             DemandGenres = new[] { "sci-fi" },
-            DemandTags = new[] { "study" }
+            DemandQualities = new[] { "study" }
         };
 
         private static RecommendationScoringService Sut() => new();
@@ -42,21 +39,20 @@ namespace Book.Sell.Tests.Editor
         {
             var result = Sut().Score(SciFiBook(), SciFiRequest(), University());
 
-            // genre +3, tag 3*2=6, mood 3*1=3, price +1, location +1 = 14
+            // genre +3, qualities 3*2=6, price +1, location +1 = 11
             Assert.AreEqual(RecommendationTier.Excellent, result.Tier);
             Assert.AreEqual(3, result.Breakdown.GenrePoints);
-            Assert.AreEqual(6, result.Breakdown.TagPoints);
-            Assert.AreEqual(3, result.Breakdown.MoodPoints);
+            Assert.AreEqual(6, result.Breakdown.QualityPoints);
             Assert.AreEqual(1, result.Breakdown.PricePoints);
             Assert.AreEqual(1, result.Breakdown.LocationPoints);
-            Assert.AreEqual(14, result.Breakdown.Total);
-            Assert.AreEqual(80 + 25, result.GoldEarned, "Excellent = BasePrice + BaseRewardGold.");
+            Assert.AreEqual(11, result.Breakdown.Total);
+            Assert.AreEqual(BookConfig.FixedPriceGold + 25, result.GoldEarned, "Excellent = fixed book price + BaseRewardGold.");
         }
 
         [Test]
-        public void GenreMismatch_NoTagsNoMood_Returns_Failed_ZeroGold()
+        public void GenreMismatch_NoQualities_Returns_Failed_ZeroGold()
         {
-            var book = new BookConfig { Id = "b1", Genre = "romance", BasePrice = 50 };
+            var book = new BookConfig { Id = "b1", Genres = new[] { "romance" } };
             var req = new RequestConfig { Id = "r1", DesiredGenres = new[] { "sci-fi" }, MaxPrice = 100 };
             var result = Sut().Score(book, req, null);
 
@@ -76,35 +72,34 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
-        public void Price_OverBudget_NoPricePoints_ButGenreTagsStillCount()
+        public void Price_OverBudget_NoPricePoints_ButGenreQualitiesStillCount()
         {
-            var book = SciFiBook(price: 200);
-            var req = SciFiRequest(maxPrice: 90);
-            var result = Sut().Score(book, req, null);
+            var req = SciFiRequest(maxPrice: 5);
+            var result = Sut().Score(SciFiBook(), req, null);
 
-            Assert.AreEqual(0, result.Breakdown.PricePoints);
-            Assert.Greater(result.Breakdown.Total, 3, "Genre + tags + mood still produce a lot.");
+            Assert.AreEqual(0, result.Breakdown.PricePoints, "Fixed price is 10, so a max price below 10 does not fit.");
+            Assert.Greater(result.Breakdown.Total, 3, "Genre + qualities still produce a lot.");
         }
 
         [Test]
         public void LocationBonus_Caps_AtOne_EvenWithGenreAndTagMatch()
         {
-            // Both Genre and Tags match the location — bonus stays at +1.
+            // Both Genre and Qualities match the location — bonus stays at +1.
             var result = Sut().Score(SciFiBook(), SciFiRequest(), University());
             Assert.AreEqual(1, result.Breakdown.LocationPoints);
             Assert.IsTrue(result.Reason.LocationBonus);
         }
 
         [Test]
-        public void NormalTier_3to5_Returns_Normal_AndGoldIsBasePrice()
+        public void NormalTier_3to5_Returns_Normal_AndGoldIsFixedPrice()
         {
             // genre +3 = 3 -> Normal
-            var book = new BookConfig { Id = "b1", Genre = "sci-fi", BasePrice = 80 };
+            var book = new BookConfig { Id = "b1", Genres = new[] { "sci-fi" } };
             var req = new RequestConfig { Id = "r1", DesiredGenres = new[] { "sci-fi" }, MaxPrice = 0 };
             var result = Sut().Score(book, req, null);
 
             Assert.AreEqual(RecommendationTier.Normal, result.Tier);
-            Assert.AreEqual(80, result.GoldEarned);
+            Assert.AreEqual(BookConfig.FixedPriceGold, result.GoldEarned);
         }
 
         [Test]
@@ -116,16 +111,16 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
-        public void MatchedTags_AreReported_InReason()
+        public void MatchedQualities_AreReported_InReason()
         {
             var result = Sut().Score(SciFiBook(), SciFiRequest(), null);
-            CollectionAssert.AreEquivalent(new[] { "space", "survival", "engineering" }, result.Reason.MatchedTags);
+            CollectionAssert.AreEquivalent(new[] { "space", "survival", "engineering" }, result.Reason.MatchedQualities);
         }
 
         [Test]
         public void CaseInsensitive_GenreMatch()
         {
-            var book = new BookConfig { Id = "b", Genre = "SCI-FI", BasePrice = 80 };
+            var book = new BookConfig { Id = "b", Genres = new[] { "SCI-FI" } };
             var req = new RequestConfig { Id = "r", DesiredGenres = new[] { "sci-fi" } };
             var result = Sut().Score(book, req, null);
             Assert.AreEqual(3, result.Breakdown.GenrePoints);

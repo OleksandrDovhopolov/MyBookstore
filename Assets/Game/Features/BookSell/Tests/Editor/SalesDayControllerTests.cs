@@ -564,7 +564,7 @@ namespace Book.Sell.Tests.Editor
 
             Assert.AreEqual(1, commit.CommitCalls, "The day result is committed exactly once at completion.");
             Assert.AreEqual(1, commit.LastResult.SalesCount);
-            Assert.AreEqual(80, commit.LastResult.GoldEarned);
+            Assert.AreEqual(BookConfig.FixedPriceGold, commit.LastResult.GoldEarned);
             Assert.IsTrue(committedBeforePublish, "Commit runs before DayCompleted is emitted.");
         }
 
@@ -650,7 +650,7 @@ namespace Book.Sell.Tests.Editor
             Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
             Assert.AreEqual(1, passive, "One PassivePurchaseStep → one book bought.");
             Assert.AreEqual(1, c.AccumulatedResult.SalesCount);
-            Assert.AreEqual(80, c.AccumulatedResult.GoldEarned);
+            Assert.AreEqual(BookConfig.FixedPriceGold, c.AccumulatedResult.GoldEarned);
             Assert.AreEqual(1, c.AccumulatedResult.CustomersServed);
         }
 
@@ -710,7 +710,7 @@ namespace Book.Sell.Tests.Editor
             c.RecommendBook("b1");
 
             // Provisional only: gold lands in the day result, not the wallet, until the day commits.
-            Assert.AreEqual(105, c.AccumulatedResult.GoldEarned);
+            Assert.AreEqual(BookConfig.FixedPriceGold + reqA.BaseRewardGold, c.AccumulatedResult.GoldEarned);
             CollectionAssert.Contains(c.AccumulatedResult.SoldBookIds, "b1");
         }
 
@@ -822,7 +822,7 @@ namespace Book.Sell.Tests.Editor
             StartDay(c);
             Run(c);
 
-            Assert.AreEqual(80, c.AccumulatedResult.GoldEarned);
+            Assert.AreEqual(BookConfig.FixedPriceGold, c.AccumulatedResult.GoldEarned);
             CollectionAssert.Contains(c.AccumulatedResult.SoldBookIds, "b1");
         }
 
@@ -1124,10 +1124,10 @@ namespace Book.Sell.Tests.Editor
                 new[]
                 {
                     SalesTestKit.Book("b1", genre: "sci-fi"),
-                    SalesTestKit.Book("b2", genre: "romance", tags: new[] { "summer" })
+                    SalesTestKit.Book("b2", genre: "romance", qualities: new[] { "summer" })
                 },
                 new RequestConfig[0],
-                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }, demandTags: new[] { "space" }),
+                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }, demandQualities: new[] { "space" }),
                 new List<Customer> { Passive("c1"), Passive("c2") });
 
             var soldIds = new List<string>();
@@ -1233,7 +1233,7 @@ namespace Book.Sell.Tests.Editor
             Assert.AreEqual(RecommendationTier.Excellent, resolved.Tier);
             Assert.AreEqual("b1", resolved.BookId);
             Assert.AreEqual(ShelfBookState.SoldOut, c.Shelf.Find("b1").State);
-            Assert.AreEqual(80 + 25, c.AccumulatedResult.GoldEarned);
+            Assert.AreEqual(BookConfig.FixedPriceGold + reqA.BaseRewardGold, c.AccumulatedResult.GoldEarned);
 
             Run(c);
             Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);

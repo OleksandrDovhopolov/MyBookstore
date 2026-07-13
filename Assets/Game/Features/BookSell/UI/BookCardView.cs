@@ -18,7 +18,7 @@ namespace Book.Sell.UI
         [SerializeField] private TMP_Text _authorLabel;
         [SerializeField] private TMP_Text _genreLabel;
         [SerializeField] private TMP_Text _priceLabel;
-        [SerializeField] private TMP_Text _tagsLabel;     // optional, can be left unassigned
+        [SerializeField] private TMP_Text _tagsLabel;     // optional, now renders qualities; prefab field name kept for compatibility
 
         [Header("Interaction")]
         [SerializeField] private Button _button;
@@ -45,13 +45,13 @@ namespace Book.Sell.UI
 
             Set(_titleLabel, book.Title);
             Set(_authorLabel, book.Author);
-            Set(_genreLabel, book.Genre);
-            Set(_priceLabel, book.BasePrice.ToString());
+            Set(_genreLabel, book.PrimaryGenre);
+            Set(_priceLabel, BookConfig.FixedPriceGold.ToString());
 
             if (_tagsLabel != null)
             {
-                var tags = book.Tags ?? Array.Empty<string>();
-                _tagsLabel.text = tags.Length > 0 ? string.Join(", ", tags) : "";
+                var qualities = book.Qualities ?? Array.Empty<string>();
+                _tagsLabel.text = qualities.Length > 0 ? string.Join(", ", qualities) : "";
             }
 
             SetSelected(false);

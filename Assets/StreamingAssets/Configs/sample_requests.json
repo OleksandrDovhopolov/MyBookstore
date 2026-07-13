@@ -35,7 +35,7 @@
     "conditions": {
       "all": [
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "containsAll",
           "value": [
             "Detective",
@@ -63,7 +63,7 @@
           "value": "Crime"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "contains",
           "value": "Horror"
         },
@@ -88,7 +88,7 @@
           "value": "Crime"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "containsAny",
           "value": [
             "Gore",
@@ -119,7 +119,7 @@
           "value": "Fact"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "contains",
           "value": "Academic"
         },
@@ -147,7 +147,7 @@
           "value": "Fact"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "containsAny",
           "value": [
             "Pop Science",
@@ -175,7 +175,7 @@
           "value": "Classic"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "contains",
           "value": "Dystopia"
         }
@@ -195,7 +195,7 @@
           "value": "Classic"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "containsAll",
           "value": [
             "Romance",
@@ -223,7 +223,7 @@
           "value": "Drama"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "containsAll",
           "value": [
             "Poetry",
@@ -246,7 +246,7 @@
           "value": "Drama"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "contains",
           "value": "YA"
         },
@@ -271,7 +271,7 @@
           "value": "Travel"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "contains",
           "value": "Travel Guide"
         }
@@ -291,7 +291,7 @@
           "value": "Travel"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "containsAny",
           "value": [
             "Biography",
@@ -339,7 +339,7 @@
           "value": "Kids"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "containsAll",
           "value": [
             "Graphic Novel",
@@ -362,7 +362,7 @@
           "value": "Fantasy"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "containsAll",
           "value": [
             "Magic",
@@ -385,7 +385,7 @@
           "value": "Fantasy"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "containsAny",
           "value": [
             "Space",
@@ -416,7 +416,7 @@
           "value": "Classic"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "contains",
           "value": "Magic"
         }
@@ -443,14 +443,14 @@
           "value": "Fantasy"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "contains",
           "value": "Space"
         }
       ],
       "none": [
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "contains",
           "value": "Female Author"
         }
@@ -470,7 +470,7 @@
           "value": "Fantasy"
         },
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "contains",
           "value": "Space"
         },
@@ -485,7 +485,7 @@
       ],
       "none": [
         {
-          "type": "tags",
+          "type": "qualities",
           "operator": "contains",
           "value": "Gore"
         }

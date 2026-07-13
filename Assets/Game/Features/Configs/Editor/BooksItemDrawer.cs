@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Game.Configs.Editor
 {
     /// <summary>
-    /// Типизированный редактор книги (§4.3 спеки): id/title/author/genre/basePrice/rarityWeight.
+    /// Типизированный редактор книги (§4.3 спеки): id/title/author/description/genres/qualities/rarityWeight.
     /// Пишет обратно в JObject — мутации видны всему окну через SectionState.WorkingArray.
     /// </summary>
     internal static class BooksItemDrawer
@@ -19,13 +19,13 @@ namespace Game.Configs.Editor
             DrawString(item, "id", "Id");
             DrawString(item, "title", "Title");
             DrawString(item, "author", "Author");
-            DrawString(item, "genre", "Genre");
-            DrawInt(item, "basePrice", "Base Price");
+            DrawString(item, "description", "Description");
+            DrawStringArray(item, "genres", "Genres");
             DrawFloat(item, "rarityWeight", "Rarity Weight");
+            DrawInt(item, "published", "Published");
+            DrawInt(item, "pages", "Pages");
             EditorGUILayout.Space(8);
-            DrawStringArray(item, "tags", "Tags");
-            EditorGUILayout.Space(4);
-            DrawStringArray(item, "mood", "Mood");
+            DrawStringArray(item, "qualities", "Qualities");
         }
 
         private static void DrawString(JObject obj, string field, string label)

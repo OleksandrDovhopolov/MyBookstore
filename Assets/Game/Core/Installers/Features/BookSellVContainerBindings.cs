@@ -40,6 +40,7 @@ namespace Game.Bootstrap
         }
 
         // Legacy passive (ADR-0004 shelf-roll): kept behind the seam for rollback. Not called by default.
+        //TODO delete this
         public static void RegisterLegacyPassiveSales(this IContainerBuilder builder)
         {
             builder.Register<IPassiveSaleSelector, WeightedPassiveSaleSelector>(Lifetime.Singleton);

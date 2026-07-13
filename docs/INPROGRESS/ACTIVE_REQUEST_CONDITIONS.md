@@ -16,9 +16,9 @@
 
 ## 1. Зачем меняем
 
-Текущая активная продажа: `RequestConfig` (requests.json) — плоский набор мягких предпочтений
-(`DesiredGenres/DesiredTags/DesiredMood/MaxPrice`), а `RecommendationScoringService` считает **взвешенный
-балл** (жанр +3, тег +2, mood +1, цена +1, локация +1) и раздаёт тир Excellent/Normal/Failed. Игрок сам
+Текущая legacy-активная продажа: `RequestConfig` (requests.json) — плоский набор мягких предпочтений
+(`DesiredGenres/DesiredQualities/MaxPrice`), а `RecommendationScoringService` считает **взвешенный
+балл** (жанр +3, quality +2, цена +1, локация +1) и раздаёт тир Excellent/Normal/Failed. Игрок сам
 выбирает книгу, система оценивает «насколько удачно».
 
 Ограничения этой модели:
@@ -83,11 +83,81 @@ C#-модель — [`RequestDefinitionConfig`](../../Assets/Game/Features/Confi
 | Списки | `contains`, `notContains` | scalar string |
 | Списки (мн.) | `containsAny`, `containsAll`, `containsNone` | array of strings |
 
-**Типы условий (по реально заполненным полям книги):** `genres`, `tags`, `publicationYear`, `pages`.
+**Типы условий (по реально заполненным полям книги):** `genres`, `qualities`, `publicationYear`, `pages`.
 
 > ⚠️ Поля `authorSex/size/price/rarity/country/language` из ранних набросков **в контенте не заполнены** —
 > под них нет колонок в исходной таблице книг, и в первой версии они **не используются**. Добавлять типы
 > под них — только когда появится контент.
+
+### Словарь `qualities` из `Unique Qualities`
+
+Источник: `Tiny_Bookshop_Books.xlsx`, вкладка `Unique Qualities`.
+
+Нормализация:
+- дефис и пробел считаются одним разделителем: `Non-Fiction` == `Non Fiction`;
+- опечаточные варианты `Bigraphy` / `Biobraphy` не используются — оставляем только `Biography`;
+- варианты `Humour` / `Humor` сведены к `Humor`.
+
+Разрешённые значения:
+
+- `Academic`
+- `Age Rating Mature`
+- `Age Rating Mature [customers do not accept this as fantasy]`
+- `Animals`
+- `Biography`
+- `Coming of Age`
+- `Contemporary`
+- `Cooking`
+- `Crime`
+- `Detective`
+- `Dry`
+- `Dystopia`
+- `Encyclopedic`
+- `Epic`
+- `Fact`
+- `Female Author`
+- `Fiction`
+- `Folklore`
+- `Gore`
+- `Graphic Novel`
+- `Happy Ending`
+- `Historic`
+- `Hobby`
+- `Horror`
+- `Humor`
+- `Kids`
+- `Light Reading`
+- `Long`
+- `Magic`
+- `Manga`
+- `Mature Rating`
+- `Mature Reading`
+- `Mystery`
+- `Nature`
+- `Niche`
+- `Non Fiction`
+- `Novel`
+- `Outdated`
+- `Philosophical`
+- `Philosophical Contemporary`
+- `Play`
+- `Plot Twist`
+- `Poetry`
+- `Political`
+- `Pop Science`
+- `Queer`
+- `Romance`
+- `Science Fiction`
+- `Self Help`
+- `Series`
+- `Short`
+- `Space`
+- `Thriller`
+- `Tragic`
+- `Travel Guide`
+- `Very Long`
+- `Whodunnit`
+- `YA`
 
 ### Полиморфный `value` → `JToken`
 
@@ -124,12 +194,11 @@ C#-модель — [`RequestDefinitionConfig`](../../Assets/Game/Features/Confi
   (копирует `Assets/Configs/*.json` и регенерит манифест).
 - `.meta` для новых `.json` Unity сгенерит при импорте.
 
-## 6. Зависимость: книги → список жанров (следующая итерация)
+## 6. Зависимость: книги → список жанров
 
-Сейчас `BookConfig.Genre` — **одиночная строка**. Условия используют `genres` + `contains`/`containsAll`,
-что подразумевает **массив жанров у книги**. В следующей итерации `BookConfig` будет обновлён
-(`Genres[]` вместо одного `Genre`). До миграции хендлер `genres` трактует `contains`/`equal` по одиночному
-полю (а `containsAll` по жанрам не имеет смысла на одиночном значении).
+`BookConfig.Genres` — **массив жанров**. Для старых систем, которым пока нужен один жанр, используется
+`BookConfig.PrimaryGenre` = первый элемент `Genres`. Условия используют `genres` + `contains`/`containsAll`
+по полному списку жанров книги.
 
 ## 7. Open questions / TODO
 
@@ -144,4 +213,4 @@ C#-модель — [`RequestDefinitionConfig`](../../Assets/Game/Features/Confi
 - [ ] Проверить, не переиспользовать ли существующий движок `Game.Conditions` ([ADR-0007](../adr/0007-quest-system.md))
       вместо новой сущности.
 - [ ] Оформить **ADR-0009** и пометить активную часть ADR-0003 как superseded (см. callout сверху).
-- [ ] Миграция `BookConfig` на `Genres[]` (см. §6).
+- [x] Миграция `BookConfig` на `Genres[]` (см. §6).

@@ -21,8 +21,6 @@ namespace Book.Sell.UI
     [Window("RecommendationMinigameWindow", WindowType.Popup)]
     public sealed class RecommendationMinigameWindow : WindowController<RecommendationMinigameWindowView>
     {
-        private const string TodoPlaceholder = "TODO";
-
         private ISalesDayController _controller;
         private readonly List<BookCardView> _cards = new();
         private string _selectedBookId;
@@ -149,8 +147,7 @@ namespace Book.Sell.UI
             Set(View.DetailTitle, book.Title);
             Set(View.DetailAuthor, book.Author);
 
-            // BookConfig has no description / publish date / page count yet — placeholder until added.
-            Set(View.DetailDescription, TodoPlaceholder);
+            Set(View.DetailDescription, book.Description);
             Set(View.DetailPublishDate, book.Published.ToString());
             Set(View.DetailPageCount, book.Pages.ToString());
         }

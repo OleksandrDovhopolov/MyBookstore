@@ -47,7 +47,7 @@ namespace Book.Sell.Tests.Editor.Steps
                 "Bought-book feedback is held so the HUD shows it before the next attempt.");
             Assert.AreEqual(1, sink.PassiveSales.Count);
             Assert.AreEqual("b1", sink.PassiveSales[0].evt.BookId);
-            Assert.AreEqual(80, sink.PassiveSales[0].evt.GoldEarned);
+            Assert.AreEqual(BookConfig.FixedPriceGold, sink.PassiveSales[0].evt.GoldEarned);
             Assert.AreEqual(ShelfBookState.SoldOut, shelf.Find("b1").State);
             Assert.IsFalse(shelf.IsReserved("b1"));
 
@@ -113,13 +113,13 @@ namespace Book.Sell.Tests.Editor.Steps
         }
 
         [Test]
-        public void SaleEvent_ReportsGenre_TagsAreEmpty()
+        public void SaleEvent_ReportsGenre_QualitiesAreEmpty()
         {
             var sink = new RecordingSink();
-            var shelf = SalesTestKit.Shelf(SalesTestKit.Book("b1", genre: "sci-fi", tags: new[] { "space", "survival" }));
+            var shelf = SalesTestKit.Shelf(SalesTestKit.Book("b1", genre: "sci-fi", qualities: new[] { "space", "survival" }));
             var ctx = SalesTestKit.Context(
                 shelf,
-                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }, demandTags: new[] { "space" }),
+                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }, demandQualities: new[] { "space" }),
                 sink,
                 tuning: Tuning(),
                 passiveSelector: SalesTestKit.AlwaysHitPassiveSelector());
@@ -132,7 +132,7 @@ namespace Book.Sell.Tests.Editor.Steps
 
             var evt = sink.PassiveSales[0].evt;
             CollectionAssert.Contains(evt.MatchedGenres.ToArray(), "sci-fi");
-            Assert.IsEmpty(evt.MatchedTags, "Passive sales no longer report tag matches (ADR-0004).");
+            Assert.IsEmpty(evt.MatchedQualities, "Passive sales do not report quality matches (ADR-0004).");
         }
 
         private sealed class FixedCandidateSelector : IPassiveSaleSelector
@@ -149,7 +149,7 @@ namespace Book.Sell.Tests.Editor.Steps
                 LocationConfig location,
                 System.Collections.Generic.IReadOnlyList<string> activeDecorIds,
                 ISalesRandom random)
-                => new(_book, new[] { _book.Config.Genre }, System.Array.Empty<string>());
+                => new(_book, new[] { _book.Config.PrimaryGenre }, System.Array.Empty<string>());
         }
     }
 }

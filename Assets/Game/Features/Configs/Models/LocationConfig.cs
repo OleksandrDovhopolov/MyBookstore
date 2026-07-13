@@ -16,7 +16,7 @@ namespace Game.Configs.Models
 
         public string[] DemandGenres { get; set; }
 
-        public string[] DemandTags { get; set; }
+        public string[] DemandQualities { get; set; }
 
         /// <summary>
         /// Additive percent modifier this location applies to the day's regular customer count.
