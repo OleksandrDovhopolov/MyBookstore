@@ -4,9 +4,11 @@ using Book.Sell.Domain;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
+using Game.Newspaper.UI;
 using Game.UI;
 using TMPro;
 using UnityEngine;
+using VContainer;
 
 namespace Book.Sell.UI
 {
@@ -22,9 +24,15 @@ namespace Book.Sell.UI
     public sealed class RecommendationMinigameWindow : WindowController<RecommendationMinigameWindowView>
     {
         private ISalesDayController _controller;
+        private IUiSpriteProvider _uiSprites;
         private readonly List<BookCardView> _cards = new();
         private string _selectedBookId;
         private bool _subscribed;
+
+        // Resolved from the bootstrap scope (global singleton), same as DialogWindow injects IConfigsService.
+        // Null-safe: BookCardView.Bind skips the icon load when the provider is unavailable.
+        [Inject]
+        public void InjectSprites(IUiSpriteProvider uiSprites) => _uiSprites = uiSprites;
 
         protected override void OnInit()
         {
@@ -112,7 +120,7 @@ namespace Book.Sell.UI
             foreach (var shelfBook in shelf.Books)
             {
                 var card = Object.Instantiate(View.BookCardPrefab, View.ShelfContainer);
-                card.Bind(shelfBook.Config, OnBookCardClicked);
+                card.Bind(shelfBook.Config, OnBookCardClicked, _uiSprites);
 
                 var available = shelfBook.State == ShelfBookState.Available && !shelf.IsReserved(shelfBook.BookId);
                 card.SetSoldOut(!available);
