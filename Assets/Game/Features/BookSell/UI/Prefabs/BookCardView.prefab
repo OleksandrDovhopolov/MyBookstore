@@ -100,7 +100,7 @@ MonoBehaviour:
   _tagsLabel: {fileID: 9166102612491277650}
   _genreImage: {fileID: 7655986347839279122}
   _button: {fileID: 5876751187240159342}
-  _selectedHighlight: {fileID: 0}
+  _selectedHighlight: {fileID: 6126674290003936307}
   _soldOutAlpha: 0.4
   _canvasGroup: {fileID: 5686418602021714780}
 --- !u!114 &5876751187240159342
@@ -361,9 +361,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 930916770392014569, guid: 12ba210409adeef46833afd178ec2e81, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -746,8 +746,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -0.6039963, y: 0}
+  m_SizeDelta: {x: -70.56, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2436285368201179444
 CanvasRenderer:
@@ -777,8 +777,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
+  m_Sprite: {fileID: 3634209595036322713, guid: f35acc55f36a38b4585d587cc67cb65a, type: 3}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4

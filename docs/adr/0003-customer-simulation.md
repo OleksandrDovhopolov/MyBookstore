@@ -8,7 +8,7 @@
 
 > ⚠️ **Активная продажа переведена на булевы условия (2026-07-13).** Взвешенный скоринг
 > (`RequestConfig` + `RecommendationScoringService`) **удалён**; активный запрос теперь — булев предикат
-> (`RequestDefinitionConfig`, `sample_requests.json`). Спека —
+> (`RequestDefinitionConfig`, `hard_requests.json`). Спека —
 > [ACTIVE_REQUEST_CONDITIONS.md](../INPROGRESS/ACTIVE_REQUEST_CONDITIONS.md). Осталось оформить
 > **ADR-0009** и пометить активную часть этого ADR как superseded. Пассивная часть не затрагивается.
 

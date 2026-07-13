@@ -1,6 +1,7 @@
 [
   {
     "id": "req_hard_01",
+    "description": "Хочу почитать, что-то из криминального.",
     "genre": "Crime",
     "enabled": true,
     "conditions": {
@@ -32,6 +33,7 @@
   },
   {
     "id": "req_hard_02",
+    "description": "Ищу какую-нибудь хорошую криминальную книгу.",
     "genre": "Crime",
     "enabled": true,
     "conditions": {
@@ -63,6 +65,7 @@
   },
   {
     "id": "req_hard_03",
+    "description": "Посоветуйте что-то почитать из криминала.",
     "genre": "Crime",
     "enabled": true,
     "conditions": {
@@ -94,6 +97,7 @@
   },
   {
     "id": "req_hard_04",
+    "description": "Настроение на книгу про преступления и расследования.",
     "genre": "Crime",
     "enabled": true,
     "conditions": {
@@ -125,6 +129,7 @@
   },
   {
     "id": "req_hard_05",
+    "description": "Хочется чего-нибудь мрачного и криминального.",
     "genre": "Crime",
     "enabled": true,
     "conditions": {
@@ -156,6 +161,7 @@
   },
   {
     "id": "req_hard_06",
+    "description": "Нужна книга в стиле крайм.",
     "genre": "Crime",
     "enabled": true,
     "conditions": {
@@ -187,6 +193,7 @@
   },
   {
     "id": "req_hard_07",
+    "description": "Хочу погрузиться в историю про преступный мир и расследование.",
     "genre": "Crime",
     "enabled": true,
     "conditions": {
@@ -218,6 +225,7 @@
   },
   {
     "id": "req_hard_08",
+    "description": "Хочу почитать что-нибудь из классики.",
     "genre": "Classic",
     "enabled": true,
     "conditions": {
@@ -244,6 +252,7 @@
   },
   {
     "id": "req_hard_09",
+    "description": "Ищу хорошую классическую книгу.",
     "genre": "Classic",
     "enabled": true,
     "conditions": {
@@ -270,6 +279,7 @@
   },
   {
     "id": "req_hard_10",
+    "description": "Посоветуйте что-нибудь почитать из мировой классики.",
     "genre": "Classic",
     "enabled": true,
     "conditions": {
@@ -296,6 +306,7 @@
   },
   {
     "id": "req_hard_11",
+    "description": "Настроение на проверенную временем классику.",
     "genre": "Classic",
     "enabled": true,
     "conditions": {
@@ -322,6 +333,7 @@
   },
   {
     "id": "req_hard_12",
+    "description": "Хочется чего-нибудь классического и глубокого.",
     "genre": "Classic",
     "enabled": true,
     "conditions": {
@@ -348,6 +360,7 @@
   },
   {
     "id": "req_hard_13",
+    "description": "Нужна книга в жанре классика.",
     "genre": "Classic",
     "enabled": true,
     "conditions": {
@@ -374,6 +387,7 @@
   },
   {
     "id": "req_hard_14",
+    "description": "Хочу погрузиться в одну из великих классических историй.",
     "genre": "Classic",
     "enabled": true,
     "conditions": {
@@ -400,6 +414,7 @@
   },
   {
     "id": "req_hard_15",
+    "description": "Хочу почитать что-нибудь драматичное.",
     "genre": "Drama",
     "enabled": true,
     "conditions": {
@@ -419,6 +434,7 @@
   },
   {
     "id": "req_hard_16",
+    "description": "Ищу хорошую книгу в жанре драмы.",
     "genre": "Drama",
     "enabled": true,
     "conditions": {
@@ -438,6 +454,7 @@
   },
   {
     "id": "req_hard_17",
+    "description": "Посоветуйте что-нибудь почитать из драм.",
     "genre": "Drama",
     "enabled": true,
     "conditions": {
@@ -457,6 +474,7 @@
   },
   {
     "id": "req_hard_18",
+    "description": "Настроение на сильную эмоциональную историю.",
     "genre": "Drama",
     "enabled": true,
     "conditions": {
@@ -476,6 +494,7 @@
   },
   {
     "id": "req_hard_19",
+    "description": "Хочется книги про человеческие переживания и судьбы.",
     "genre": "Drama",
     "enabled": true,
     "conditions": {
@@ -495,6 +514,7 @@
   },
   {
     "id": "req_hard_20",
+    "description": "Нужна книга в жанре драма.",
     "genre": "Drama",
     "enabled": true,
     "conditions": {
@@ -514,6 +534,7 @@
   },
   {
     "id": "req_hard_21",
+    "description": "Хочу погрузиться в трогательную и жизненную историю.",
     "genre": "Drama",
     "enabled": true,
     "conditions": {
@@ -533,6 +554,7 @@
   },
   {
     "id": "req_hard_22",
+    "description": "Хочу почитать что-нибудь из фэнтези.",
     "genre": "Fantasy",
     "enabled": true,
     "conditions": {
@@ -552,6 +574,7 @@
   },
   {
     "id": "req_hard_23",
+    "description": "Ищу хорошую фэнтезийную книгу.",
     "genre": "Fantasy",
     "enabled": true,
     "conditions": {
@@ -571,6 +594,7 @@
   },
   {
     "id": "req_hard_24",
+    "description": "Посоветуйте что-нибудь почитать про магию и приключения.",
     "genre": "Fantasy",
     "enabled": true,
     "conditions": {
@@ -592,6 +616,7 @@
   },
   {
     "id": "req_hard_25",
+    "description": "Настроение на историю с волшебными мирами.",
     "genre": "Fantasy",
     "enabled": true,
     "conditions": {
@@ -611,6 +636,7 @@
   },
   {
     "id": "req_hard_26",
+    "description": "Хочется чего-нибудь сказочного и эпичного.",
     "genre": "Fantasy",
     "enabled": true,
     "conditions": {
@@ -632,6 +658,7 @@
   },
   {
     "id": "req_hard_27",
+    "description": "Нужна книга в жанре фэнтези.",
     "genre": "Fantasy",
     "enabled": true,
     "conditions": {
@@ -651,6 +678,7 @@
   },
   {
     "id": "req_hard_28",
+    "description": "Хочу погрузиться в мир магии и невероятных существ.",
     "genre": "Fantasy",
     "enabled": true,
     "conditions": {
@@ -670,6 +698,7 @@
   },
   {
     "id": "req_hard_29",
+    "description": "Хочу почитать что-нибудь познавательное.",
     "genre": "Fact",
     "enabled": true,
     "conditions": {
@@ -689,6 +718,7 @@
   },
   {
     "id": "req_hard_30",
+    "description": "Ищу интересную научно-популярную книгу.",
     "genre": "Fact",
     "enabled": true,
     "conditions": {
@@ -708,6 +738,7 @@
   },
   {
     "id": "req_hard_31",
+    "description": "Посоветуйте что-нибудь почитать про реальные факты и открытия.",
     "genre": "Fact",
     "enabled": true,
     "conditions": {
@@ -727,6 +758,7 @@
   },
   {
     "id": "req_hard_32",
+    "description": "Настроение узнать что-то новое о мире.",
     "genre": "Fact",
     "enabled": true,
     "conditions": {
@@ -746,6 +778,7 @@
   },
   {
     "id": "req_hard_33",
+    "description": "Хочется книги, которая расширит кругозор.",
     "genre": "Fact",
     "enabled": true,
     "conditions": {
@@ -765,6 +798,7 @@
   },
   {
     "id": "req_hard_34",
+    "description": "Нужна книга в жанре науки и фактов.",
     "genre": "Fact",
     "enabled": true,
     "conditions": {
@@ -784,6 +818,7 @@
   },
   {
     "id": "req_hard_35",
+    "description": "Хочу почитать что-нибудь основанное на реальных знаниях и исследованиях.",
     "genre": "Fact",
     "enabled": true,
     "conditions": {
@@ -803,6 +838,7 @@
   },
   {
     "id": "req_hard_36",
+    "description": "Хочу почитать что-нибудь из детской литературы.",
     "genre": "Kids",
     "enabled": true,
     "conditions": {
@@ -834,6 +870,7 @@
   },
   {
     "id": "req_hard_37",
+    "description": "Ищу хорошую детскую книгу.",
     "genre": "Kids",
     "enabled": true,
     "conditions": {
@@ -865,6 +902,7 @@
   },
   {
     "id": "req_hard_38",
+    "description": "Посоветуйте что-нибудь доброе и детское для чтения.",
     "genre": "Kids",
     "enabled": true,
     "conditions": {
@@ -896,6 +934,7 @@
   },
   {
     "id": "req_hard_39",
+    "description": "Настроение на лёгкую и увлекательную историю для детей.",
     "genre": "Kids",
     "enabled": true,
     "conditions": {
@@ -927,6 +966,7 @@
   },
   {
     "id": "req_hard_40",
+    "description": "Хочется книги с добрыми героями и приключениями.",
     "genre": "Kids",
     "enabled": true,
     "conditions": {
@@ -958,6 +998,7 @@
   },
   {
     "id": "req_hard_41",
+    "description": "Нужна книга в жанре детской литературы.",
     "genre": "Kids",
     "enabled": true,
     "conditions": {
@@ -989,6 +1030,7 @@
   },
   {
     "id": "req_hard_42",
+    "description": "Хочу погрузиться в сказочную историю для детей.",
     "genre": "Kids",
     "enabled": true,
     "conditions": {
@@ -1020,6 +1062,7 @@
   },
   {
     "id": "req_hard_43",
+    "description": "Хочу почитать что-нибудь о путешествиях.",
     "genre": "Travel",
     "enabled": true,
     "conditions": {
@@ -1034,6 +1077,7 @@
   },
   {
     "id": "req_hard_44",
+    "description": "Ищу интересную книгу про разные страны и приключения.",
     "genre": "Travel",
     "enabled": true,
     "conditions": {
@@ -1048,6 +1092,7 @@
   },
   {
     "id": "req_hard_45",
+    "description": "Посоветуйте что-нибудь почитать в жанре путешествий.",
     "genre": "Travel",
     "enabled": true,
     "conditions": {
@@ -1062,6 +1107,7 @@
   },
   {
     "id": "req_hard_46",
+    "description": "Настроение отправиться в путешествие хотя бы через книгу.",
     "genre": "Travel",
     "enabled": true,
     "conditions": {
@@ -1076,6 +1122,7 @@
   },
   {
     "id": "req_hard_47",
+    "description": "Хочется истории про дороги, открытия и новые места.",
     "genre": "Travel",
     "enabled": true,
     "conditions": {
@@ -1090,6 +1137,7 @@
   },
   {
     "id": "req_hard_48",
+    "description": "Нужна книга в жанре путешествий.",
     "genre": "Travel",
     "enabled": true,
     "conditions": {
@@ -1104,6 +1152,7 @@
   },
   {
     "id": "req_hard_49",
+    "description": "Хочу погрузиться в увлекательное путешествие по миру.",
     "genre": "Travel",
     "enabled": true,
     "conditions": {

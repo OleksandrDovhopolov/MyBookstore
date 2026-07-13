@@ -25,12 +25,13 @@ namespace Book.Sell.Domain
         public RequestDifficulty Difficulty { get; }
         public RequestDefinitionConfig ConditionRequest { get; }
 
+        //TODO remove debugText
         public static ActiveRequestRuntime FromCondition(RequestDefinitionConfig request, string debugText)
         {
             if (request == null) return null;
             return new ActiveRequestRuntime(
                 request.Id,
-                debugText,
+                string.IsNullOrWhiteSpace(request.Description) ? debugText : request.Description,
                 RequestDifficulty.Unknown,
                 request);
         }

@@ -6,12 +6,15 @@ namespace Game.Configs.Models
     ///
     /// <para>See docs/INPROGRESS/ACTIVE_REQUEST_CONDITIONS.md for the model spec and the ADR to update.</para>
     ///
-    /// <para>File: sample_requests.json (JSON array).</para>
+    /// <para>File: hard_requests.json (JSON array).</para>
     /// </summary>
-    [ConfigFile("sample_requests")]
+    [ConfigFile("hard_requests")]
     public sealed class RequestDefinitionConfig : IConfig
     {
         public string Id { get; set; }
+
+        /// <summary>Authored customer-facing request text shown in the active recommendation UI.</summary>
+        public string Description { get; set; }
 
         /// <summary>Authoring metadata: the primary genre the request was designed around. Not used by evaluation.</summary>
         public string Genre { get; set; }
