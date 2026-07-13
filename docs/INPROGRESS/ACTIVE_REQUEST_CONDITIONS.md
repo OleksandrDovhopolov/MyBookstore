@@ -200,7 +200,20 @@ C#-модель — [`RequestDefinitionConfig`](../../Assets/Game/Features/Confi
 `BookConfig.PrimaryGenre` = первый элемент `Genres`. Условия используют `genres` + `contains`/`containsAll`
 по полному списку жанров книги.
 
-## 7. Open questions / TODO
+## 7. Accepted implementation decisions (2026-07-13)
+
+- Runtime seam: active purchase flow uses `ActiveRequestRuntime`; legacy `RequestConfig` is wrapped by an adapter and remains available for rollback.
+- Feature flag: `SalesTuning.ActiveRequestMode` switches `LegacyScoring` vs `Conditions`; production default is `Conditions`.
+- Conditions scoring: matching book => `Excellent` and `10` gold; non-matching book => `Failed` and `0` gold; skip => `Skipped` and `0` gold. `Normal` is legacy-only.
+- Request text v1: generated programmer-readable text from the condition tree; `Difficulty = Unknown`.
+- Condition semantics: `genres` checks only `BookConfig.Genres`; `qualities` checks only `BookConfig.Qualities`; sample content must target the field where the value actually lives.
+- Spawn semantics: in condition mode, regular customer spawning assigns the first `N` enabled valid condition requests to `Passive -> Active -> Passive` customers; the rest remain passive-only. Hard override days keep the exact customer count and warn if capacity is below request count.
+- Validation: invalid condition requests are filtered before spawning; direct evaluator calls fail closed and log an error.
+- Scope: active purchase predicates stay in BookSell and do not reuse the global `Game.Conditions` quest/location engine.
+
+## 8. Historical TODO / follow-up
+
+The original open questions below are kept as historical context. Gameplay, reward, seam, evaluator, and validator choices are superseded by the accepted implementation decisions above; ADR-0009 is still a follow-up documentation task.
 
 - [ ] **Геймплей.** Условия дают «множество подходящих книг» (фильтр), но не «насколько хорошо игрок угадал»
       (градация скоринга). Определить, как миниигра использует match-set: строгий pass/fail? частичный балл

@@ -17,21 +17,31 @@ namespace Book.Sell.Services
     {
         private const string TrafficLogTag = "[Sales.Traffic]";
 
-        private readonly IConfigsService _configs;
         private readonly ICustomerTrafficResolver _trafficResolver;
+        private readonly IActiveRequestRuntimeProvider _activeRequests;
 
         public RegularCustomerSpawner(IConfigsService configs, ICustomerTrafficResolver trafficResolver)
+            : this(configs, trafficResolver, new ConfigActiveRequestRuntimeProvider(configs, new BookConditionRequestEvaluator()))
         {
-            _configs = configs ?? throw new ArgumentNullException(nameof(configs));
+        }
+
+        public RegularCustomerSpawner(
+            IConfigsService configs,
+            ICustomerTrafficResolver trafficResolver,
+            IActiveRequestRuntimeProvider activeRequests)
+        {
+            if (configs == null) throw new ArgumentNullException(nameof(configs));
             _trafficResolver = trafficResolver ?? throw new ArgumentNullException(nameof(trafficResolver));
+            _activeRequests = activeRequests ?? throw new ArgumentNullException(nameof(activeRequests));
         }
 
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
         {
             var result = _trafficResolver.Resolve(setup, tuning);
-            var requestCount = _configs.GetAll<RequestConfig>().Count;
+            var requests = _activeRequests.GetRequests(tuning.ActiveRequestMode);
+            var requestCount = requests.Count;
 
-            // Request-count floor: every active RequestConfig must get a customer, but not on hard-override
+            // Request-count floor: every active request must get a customer, but not on hard-override
             // days, whose count is exact by design. The warning keeps that conflict visible in logs.
             var count = result.FinalCount;
             if (!result.IsHardOverride)
@@ -55,10 +65,14 @@ namespace Book.Sell.Services
 
             if (count < 0) count = 0;
 
-            var archetype = new PassiveAttemptsArchetype(tuning.MinPassiveAttempts, tuning.MaxPassiveAttempts);
+            var passive = new PassiveAttemptsArchetype(tuning.MinPassiveAttempts, tuning.MaxPassiveAttempts);
             var customers = new List<Customer>(count);
             for (var i = 0; i < count; i++)
             {
+                var archetype = i < requests.Count
+                    ? (ICustomerArchetype)new PassiveActivePassiveArchetype(requests[i], 1, 1)
+                    : passive;
+
                 customers.Add(CustomerPlanBuilder.Build(
                     $"cust_{i + 1}", tuning, random,
                     buildMiddle: () => archetype.BuildMiddle(setup, tuning, random)));

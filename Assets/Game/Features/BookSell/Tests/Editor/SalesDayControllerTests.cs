@@ -13,6 +13,7 @@ using Game.DayCycle.Day;
 using Game.Inventory.API;
 using Game.Preparation.Services;
 using Game.Resources.API;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -32,6 +33,9 @@ namespace Book.Sell.Tests.Editor
             => new(id, new ICustomerStep[] { new ApproachStep(), new LeaveStep() });
 
         private static Customer Active(string id, RequestConfig req)
+            => new(id, new ICustomerStep[] { new ApproachStep(), new ActiveRequestStep(ActiveRequestRuntime.FromLegacy(req)), new LeaveStep() });
+
+        private static Customer Active(string id, ActiveRequestRuntime req)
             => new(id, new ICustomerStep[] { new ApproachStep(), new ActiveRequestStep(req), new LeaveStep() });
 
         // Active request with the full closing tail, so CompletePurchaseStep actually runs after the
@@ -39,7 +43,7 @@ namespace Book.Sell.Tests.Editor
         private static Customer ActiveWithCompletion(string id, RequestConfig req)
             => new(id, new ICustomerStep[]
             {
-                new ApproachStep(), new ActiveRequestStep(req), new CompletePurchaseStep(), new LeaveStep()
+                new ApproachStep(), new ActiveRequestStep(ActiveRequestRuntime.FromLegacy(req)), new CompletePurchaseStep(), new LeaveStep()
             });
 
         // Approach + scripted dialogue + Leave. The dialogue holds the interaction lock until the
@@ -69,7 +73,7 @@ namespace Book.Sell.Tests.Editor
             return new SalesDayController(
                 configs,
                 new DefaultSalesSetupProvider(configs),
-                new RecommendationScoringService(),
+                new ActiveRequestScoringService(new RecommendationScoringService(), new BookConditionRequestEvaluator()),
                 SalesTestKit.LegacyResolver(),
                 new FakeSalesRandom(),
                 new StubCustomerSpawner(customers),
@@ -77,6 +81,29 @@ namespace Book.Sell.Tests.Editor
                 tuning ?? SalesTestKit.FastTuning(),
                 shelfBuilder: shelfBuilder,
                 commitService: commitService);
+        }
+
+        private static ActiveRequestRuntime ConditionRequest(string id, string quality)
+        {
+            var request = new RequestDefinitionConfig
+            {
+                Id = id,
+                Enabled = true,
+                Conditions = new RequestConditionGroup
+                {
+                    All = new[]
+                    {
+                        new RequestCondition
+                        {
+                            Type = "qualities",
+                            Operator = "contains",
+                            Value = JToken.FromObject(quality)
+                        }
+                    }
+                }
+            };
+
+            return ActiveRequestRuntime.FromCondition(request, $"ALL: qualities contains {quality}");
         }
 
         // Records the day result handed to the transactional commit at day completion.
@@ -969,7 +996,7 @@ namespace Book.Sell.Tests.Editor
                 {
                     new("c1", new ICustomerStep[]
                     {
-                        new ApproachStep(), new PassivePurchaseStep(), new ActiveRequestStep(req), new LeaveStep()
+                        new ApproachStep(), new PassivePurchaseStep(), new ActiveRequestStep(ActiveRequestRuntime.FromLegacy(req)), new LeaveStep()
                     })
                 });
 
@@ -1237,6 +1264,54 @@ namespace Book.Sell.Tests.Editor
 
             Run(c);
             Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
+        }
+
+        [Test]
+        public void RecommendBook_ConditionMatch_ReturnsExcellentAndFixedGold()
+        {
+            var request = ConditionRequest("req_condition", "Detective");
+            var c = Build(
+                new[] { SalesTestKit.Book("b1", genre: "Crime", qualities: new[] { "Detective" }) },
+                Array.Empty<RequestConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { Active("c1", request) });
+
+            RecommendationResult resolved = null;
+            c.RecommendationResolved += r => resolved = r;
+
+            StartDay(c);
+            DriveUntilActive(c);
+            c.RecommendBook("b1");
+
+            Assert.IsNotNull(resolved);
+            Assert.AreEqual(RecommendationTier.Excellent, resolved.Tier);
+            Assert.AreEqual(BookConfig.FixedPriceGold, resolved.GoldEarned);
+            Assert.AreEqual(BookConfig.FixedPriceGold, c.AccumulatedResult.GoldEarned);
+            Assert.AreEqual(ShelfBookState.SoldOut, c.Shelf.Find("b1").State);
+        }
+
+        [Test]
+        public void RecommendBook_ConditionMismatch_ReturnsFailedAndDoesNotSell()
+        {
+            var request = ConditionRequest("req_condition", "Detective");
+            var c = Build(
+                new[] { SalesTestKit.Book("b1", genre: "Crime", qualities: new[] { "Romance" }) },
+                Array.Empty<RequestConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { Active("c1", request) });
+
+            RecommendationResult resolved = null;
+            c.RecommendationResolved += r => resolved = r;
+
+            StartDay(c);
+            DriveUntilActive(c);
+            c.RecommendBook("b1");
+
+            Assert.IsNotNull(resolved);
+            Assert.AreEqual(RecommendationTier.Failed, resolved.Tier);
+            Assert.AreEqual(0, resolved.GoldEarned);
+            Assert.AreEqual(0, c.AccumulatedResult.GoldEarned);
+            Assert.AreEqual(ShelfBookState.Available, c.Shelf.Find("b1").State);
         }
 
         [Test]

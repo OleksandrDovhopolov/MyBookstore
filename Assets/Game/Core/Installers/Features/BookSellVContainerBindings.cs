@@ -66,6 +66,9 @@ namespace Game.Bootstrap
             // which reads the player's choice from preparation.session and falls back to the
             // catalog if no session exists yet.
             builder.Register<IRecommendationScoringService, RecommendationScoringService>(Lifetime.Singleton);
+            builder.Register<IBookConditionRequestEvaluator, BookConditionRequestEvaluator>(Lifetime.Singleton);
+            builder.Register<IActiveRequestRuntimeProvider, ConfigActiveRequestRuntimeProvider>(Lifetime.Singleton);
+            builder.Register<IActiveRequestScoringService, ActiveRequestScoringService>(Lifetime.Singleton);
 
             // Passive sale chance gate (ADR-0004) resolves from the global scope so HUD previews and
             // sales use the same calculator instance.
@@ -113,7 +116,7 @@ namespace Game.Bootstrap
                         r.Resolve<DecorTrafficContributor>() // registered in RegisterDecor (parent scope)
                     }),
                 Lifetime.Singleton);
-            // Boot-time warn if a hard-override day is under-supplied vs active RequestConfigs.
+            // Boot-time warn if a hard-override day is under-supplied vs active requests.
             builder.RegisterEntryPoint<CustomerTrafficConfigValidator>(Lifetime.Singleton);
 
             // Base composition (concrete type) + the quest-scheduling decorator as ICustomerSpawner (GAME-6).

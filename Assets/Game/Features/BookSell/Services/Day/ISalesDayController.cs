@@ -3,7 +3,6 @@ using System.Threading;
 using Book.Sell.API;
 using Book.Sell.Domain;
 using Cysharp.Threading.Tasks;
-using Game.Configs.Models;
 
 namespace Book.Sell.Services
 {
@@ -21,7 +20,7 @@ namespace Book.Sell.Services
         SalesDayResult AccumulatedResult { get; }
 
         /// <summary>Request of the customer currently in the active minigame (holding the lock), or null.</summary>
-        RequestConfig CurrentRequest { get; }
+        ActiveRequestRuntime CurrentRequest { get; }
 
         /// <summary>Current lifecycle phase of the day (Running / ReadyToClose / Completed).</summary>
         SalesDayPhase Phase { get; }
@@ -32,7 +31,7 @@ namespace Book.Sell.Services
         /// The view shows the "close shop" CTA in response; the day does NOT auto-complete.</summary>
         event Action DayReadyToClose;
 
-        event Action<RequestConfig> ActiveRequestStarted;
+        event Action<ActiveRequestRuntime> ActiveRequestStarted;
 
         /// <summary>A customer acquired the interaction lock and a scripted dialogue opened for them. The
         /// customer is carried so world-HUD presentation knows whom to anchor the dialogue to; presentation

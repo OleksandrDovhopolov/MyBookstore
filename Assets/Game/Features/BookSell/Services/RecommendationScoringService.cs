@@ -6,7 +6,7 @@ using Game.Configs.Models;
 namespace Book.Sell.Services
 {
     /// <inheritdoc cref="IRecommendationScoringService"/>
-    public sealed class RecommendationScoringService : IRecommendationScoringService
+    public sealed class RecommendationScoringService : IRecommendationScoringService, IActiveRequestScoringService
     {
         public const int GenreMatchPoints = 3;
         public const int QualityMatchPoints = 2;
@@ -36,6 +36,15 @@ namespace Book.Sell.Services
 
             var reason = new RecommendationReason(matchedGenres, matchedQualities, priceFits, locationBonus);
             return new RecommendationResult(request.Id, book.Id, tier, breakdown, reason, gold);
+        }
+
+        public RecommendationResult Score(BookConfig book, Domain.ActiveRequestRuntime request, LocationConfig location)
+        {
+            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (request.LegacyRequest == null)
+                throw new InvalidOperationException("RecommendationScoringService can only score legacy active requests.");
+
+            return Score(book, request.LegacyRequest, location);
         }
 
         private static RecommendationTier ClassifyTier(int total)

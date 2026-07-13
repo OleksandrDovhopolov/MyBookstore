@@ -1,8 +1,8 @@
 using System;
 using System.Threading;
+using Book.Sell.Domain;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
-using Game.Configs.Models;
 using Game.UI;
 using Game.WorldHud;
 using UnityEngine;
@@ -58,7 +58,7 @@ namespace Book.Sell.UI
             _cts.Dispose();
         }
 
-        private void OnActiveRequestStarted(RequestConfig req)
+        private void OnActiveRequestStarted(ActiveRequestRuntime req)
         {
             // Pause the day synchronously (so the very next Update skips Tick) and hide all world HUDs,
             // then open the window.

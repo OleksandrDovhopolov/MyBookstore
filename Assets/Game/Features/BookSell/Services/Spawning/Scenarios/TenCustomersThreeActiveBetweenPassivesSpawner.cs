@@ -43,7 +43,9 @@ namespace Book.Sell.Services
                 ICustomerArchetype archetype;
                 if (activeIndices.Contains(i) && requests.Count > 0)
                     archetype = new PassiveActivePassiveArchetype(
-                        requests[activeOrder++ % requests.Count], MinPassiveAttempts, MaxPassiveAttempts);
+                        ActiveRequestRuntime.FromLegacy(requests[activeOrder++ % requests.Count]),
+                        MinPassiveAttempts,
+                        MaxPassiveAttempts);
                 else
                     archetype = new PassiveAttemptsArchetype(MinPassiveAttempts, MaxPassiveAttempts);
 

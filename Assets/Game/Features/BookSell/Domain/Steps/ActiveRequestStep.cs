@@ -1,5 +1,3 @@
-using Game.Configs.Models;
-
 namespace Book.Sell.Domain.Steps
 {
     /// <summary>
@@ -14,17 +12,17 @@ namespace Book.Sell.Domain.Steps
     {
         private enum Sub { Think, AwaitingHelp }
 
-        private readonly RequestConfig _request;
+        private readonly ActiveRequestRuntime _request;
         private Sub _sub;
         private float _t;
         private bool _acquired;
 
-        public ActiveRequestStep(RequestConfig request)
+        public ActiveRequestStep(ActiveRequestRuntime request)
         {
             _request = request;
         }
 
-        public RequestConfig Request => _request;
+        public ActiveRequestRuntime Request => _request;
 
         public void Enter(Customer self, CustomerContext ctx)
         {

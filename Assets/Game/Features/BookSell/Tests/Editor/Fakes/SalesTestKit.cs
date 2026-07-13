@@ -30,6 +30,10 @@ namespace Book.Sell.Tests.Editor.Fakes
                 MaxPrice = maxPrice, Difficulty = difficulty, BaseRewardGold = 25
             };
 
+        public static ActiveRequestRuntime ActiveRequest(string id, string[] genres = null, int maxPrice = 100,
+            RequestDifficulty difficulty = RequestDifficulty.Medium)
+            => ActiveRequestRuntime.FromLegacy(Request(id, genres, maxPrice, difficulty));
+
         public static LocationConfig Location(string id = "loc", string[] demandGenres = null, string[] demandQualities = null)
             => new()
             {
@@ -49,6 +53,7 @@ namespace Book.Sell.Tests.Editor.Fakes
         public static SalesTuning FastTuning()
             => new()
             {
+                ActiveRequestMode = ActiveRequestMode.LegacyScoring,
                 ApproachDuration = 0f,
                 MinApproachDuration = 0f,
                 MaxApproachDuration = 0f,

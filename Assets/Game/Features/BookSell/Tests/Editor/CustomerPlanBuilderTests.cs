@@ -144,7 +144,7 @@ namespace Book.Sell.Tests.Editor
         {
             var sink = new RecordingSink();
             var ctx = SalesTestKit.Context(ShelfOf(1), SalesTestKit.Location(), sink);
-            var request = SalesTestKit.Request("r1");
+            var request = SalesTestKit.ActiveRequest("r1");
             var customer = CustomerPlanBuilder.Build("c1", SalesTestKit.FastTuning(), new FakeSalesRandom(),
                 buildMiddle: () => new ICustomerStep[] { new ActiveRequestStep(request) });
 
@@ -162,7 +162,7 @@ namespace Book.Sell.Tests.Editor
             var sink = new RecordingSink();
             var ctx = SalesTestKit.Context(ShelfOf(3), SalesTestKit.Location(), sink,
                 passiveSelector: SalesTestKit.AlwaysHitPassiveSelector());
-            var request = SalesTestKit.Request("r1");
+            var request = SalesTestKit.ActiveRequest("r1");
             var customer = CustomerPlanBuilder.Build("c1", SalesTestKit.FastTuning(), new FakeSalesRandom(),
                 buildMiddle: () => new ICustomerStep[]
                 {

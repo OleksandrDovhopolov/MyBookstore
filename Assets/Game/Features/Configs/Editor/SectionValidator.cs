@@ -69,9 +69,105 @@ namespace Game.Configs.Editor
                     if (rarity < 0)
                         issues.Add(new ValidationIssue(id, "'rarityWeight' must be >= 0."));
                 }
+
+                if (section == "sample_requests")
+                {
+                    ValidateSampleRequest(id, obj, issues);
+                }
             }
 
             return issues;
         }
+
+        private static void ValidateSampleRequest(string id, JObject obj, List<ValidationIssue> issues)
+        {
+            if (obj["enabled"] == null)
+                issues.Add(new ValidationIssue(id, "'enabled' is missing."));
+
+            if (obj["conditions"] is not JObject conditions)
+            {
+                issues.Add(new ValidationIssue(id, "'conditions' is missing or not an object."));
+                return;
+            }
+
+            ValidateConditionGroup(id, conditions["all"], "all", issues);
+            ValidateConditionGroup(id, conditions["any"], "any", issues);
+            ValidateConditionGroup(id, conditions["none"], "none", issues);
+        }
+
+        private static void ValidateConditionGroup(string id, JToken token, string groupName, List<ValidationIssue> issues)
+        {
+            if (token == null) return;
+            if (token is not JArray array)
+            {
+                issues.Add(new ValidationIssue(id, $"'conditions.{groupName}' must be an array."));
+                return;
+            }
+
+            for (var i = 0; i < array.Count; i++)
+            {
+                if (array[i] is not JObject condition)
+                {
+                    issues.Add(new ValidationIssue(id, $"'conditions.{groupName}[{i}]' must be an object."));
+                    continue;
+                }
+
+                ValidateCondition(id, condition, $"conditions.{groupName}[{i}]", issues);
+            }
+        }
+
+        private static void ValidateCondition(string id, JObject condition, string path, List<ValidationIssue> issues)
+        {
+            var type = condition["type"]?.Value<string>();
+            var op = condition["operator"]?.Value<string>();
+            var value = condition["value"];
+
+            if (!IsKnownType(type))
+                issues.Add(new ValidationIssue(id, $"'{path}.type' is unknown: '{type}'."));
+            if (!IsKnownOperator(op))
+                issues.Add(new ValidationIssue(id, $"'{path}.operator' is unknown: '{op}'."));
+            if (value == null || value.Type == JTokenType.Null)
+            {
+                issues.Add(new ValidationIssue(id, $"'{path}.value' is missing."));
+                return;
+            }
+
+            if (IsArrayOperator(op) && value is not JArray)
+                issues.Add(new ValidationIssue(id, $"'{path}.value' must be an array for '{op}'."));
+            if (op == "between" && (value is not JObject obj || obj["min"] == null || obj["max"] == null))
+                issues.Add(new ValidationIssue(id, $"'{path}.value' must be {{ min, max }} for 'between'."));
+            if (IsNumericType(type) && !IsNumericValue(op, value))
+                issues.Add(new ValidationIssue(id, $"'{path}.value' must be numeric for '{type}'."));
+            if (IsListType(type) && !IsArrayOperator(op) && value is JArray)
+                issues.Add(new ValidationIssue(id, $"'{path}.value' must be scalar for '{op}'."));
+        }
+
+        private static bool IsKnownType(string type)
+            => type == "genres" || type == "qualities" || type == "publicationYear" || type == "pages";
+
+        private static bool IsKnownOperator(string op)
+            => op == "equal" || op == "notEqual" ||
+               op == "greater" || op == "greaterOrEqual" || op == "less" || op == "lessOrEqual" ||
+               op == "between" ||
+               op == "contains" || op == "notContains" ||
+               op == "containsAny" || op == "containsAll" || op == "containsNone";
+
+        private static bool IsArrayOperator(string op)
+            => op == "containsAny" || op == "containsAll" || op == "containsNone";
+
+        private static bool IsListType(string type) => type == "genres" || type == "qualities";
+
+        private static bool IsNumericType(string type) => type == "publicationYear" || type == "pages";
+
+        private static bool IsNumericValue(string op, JToken value)
+        {
+            if (op == "between")
+                return value is JObject obj && IsNumber(obj["min"]) && IsNumber(obj["max"]);
+
+            return IsNumber(value);
+        }
+
+        private static bool IsNumber(JToken token)
+            => token != null && (token.Type == JTokenType.Integer || token.Type == JTokenType.Float);
     }
 }

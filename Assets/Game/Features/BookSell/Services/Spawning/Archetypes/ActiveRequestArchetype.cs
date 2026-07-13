@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Book.Sell.Domain;
 using Book.Sell.Domain.Steps;
-using Game.Configs.Models;
 
 namespace Book.Sell.Services
 {
@@ -11,9 +10,9 @@ namespace Book.Sell.Services
     /// </summary>
     public sealed class ActiveRequestArchetype : ICustomerArchetype
     {
-        private readonly RequestConfig _request;
+        private readonly ActiveRequestRuntime _request;
 
-        public ActiveRequestArchetype(RequestConfig request)
+        public ActiveRequestArchetype(ActiveRequestRuntime request)
         {
             _request = request;
         }

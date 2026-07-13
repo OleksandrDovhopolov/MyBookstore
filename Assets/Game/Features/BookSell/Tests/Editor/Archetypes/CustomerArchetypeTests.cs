@@ -116,7 +116,7 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void ActiveRequest_WithRequest_BuildsActiveStep()
         {
-            var request = SalesTestKit.Request("r1");
+            var request = SalesTestKit.ActiveRequest("r1");
             var middle = Middle(new ActiveRequestArchetype(request), new FakeSalesRandom());
 
             Assert.AreEqual(1, middle.Count);
@@ -134,7 +134,7 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void PassiveActivePassive_OrdersPassiveActivePassive()
         {
-            var request = SalesTestKit.Request("r1");
+            var request = SalesTestKit.ActiveRequest("r1");
             var random = new FakeSalesRandom().EnqueueRangeIndex(0); // Range(1,3) => 1 leading passive
             var middle = Middle(new PassiveActivePassiveArchetype(request, 1, 2), random);
 

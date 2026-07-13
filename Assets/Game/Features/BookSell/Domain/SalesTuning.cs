@@ -6,6 +6,9 @@ namespace Book.Sell.Domain
     /// </summary>
     public sealed class SalesTuning
     {
+        /// <summary>Active recommendation request source/scoring model. Default is the new condition model.</summary>
+        public ActiveRequestMode ActiveRequestMode { get; set; } = ActiveRequestMode.Conditions;
+
         /// <summary>Fallback fixed approach duration used by manually constructed approach steps.</summary>
         public float ApproachDuration { get; set; } = 3f;
 

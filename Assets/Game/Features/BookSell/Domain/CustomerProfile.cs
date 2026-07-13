@@ -5,7 +5,7 @@ namespace Book.Sell.Domain
 {
     /// <summary>
     /// A customer's desire profile — currently just the genres they are inclined to buy passively.
-    /// Pure domain. Foundation for future quest personas and convergence with the active RequestConfig
+    /// Pure domain. Foundation for future quest personas and convergence with active request runtime
     /// (kept separate for now).
     /// </summary>
     public sealed class CustomerProfile

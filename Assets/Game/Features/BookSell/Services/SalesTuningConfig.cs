@@ -11,6 +11,9 @@ namespace Book.Sell.Services
     [CreateAssetMenu(menuName = "Book Sell/Sales Tuning", fileName = "SalesTuning")]
     public sealed class SalesTuningConfig : ScriptableObject
     {
+        [Header("Active requests")]
+        [SerializeField] private ActiveRequestMode _activeRequestMode = ActiveRequestMode.Conditions;
+
         [Header("Approach")]
         [SerializeField] private float _approachDuration = 3f;
         [SerializeField] private float _minApproachDuration = 3f;
@@ -44,6 +47,7 @@ namespace Book.Sell.Services
 
         public SalesTuning BuildTuning() => new()
         {
+            ActiveRequestMode = _activeRequestMode,
             ApproachDuration = _approachDuration,
             MinApproachDuration = _minApproachDuration,
             MaxApproachDuration = _maxApproachDuration,

@@ -91,7 +91,7 @@ namespace Book.Sell.UI
 
         // ---------- request + shelf ----------
 
-        private void RenderRequest(RequestConfig request)
+        private void RenderRequest(ActiveRequestRuntime request)
         {
             Set(View.RequestText, request?.Text);
             if (View.DifficultyLabel != null)
@@ -190,7 +190,7 @@ namespace Book.Sell.UI
         // TODO: replace with proper reaction art/animation (hearts, speech bubble, etc.).
         private static string EmotionFor(RecommendationTier tier) => tier switch
         {
-            RecommendationTier.Excellent => "Woohoo! Sci-fi at its best!",
+            RecommendationTier.Excellent => "Perfect, that's exactly what I needed!",
             RecommendationTier.Normal => "Thanks, I'll take it!",
             RecommendationTier.Failed => "Hmm, that's not what I wanted...",
             RecommendationTier.Skipped => "Maybe next time.",

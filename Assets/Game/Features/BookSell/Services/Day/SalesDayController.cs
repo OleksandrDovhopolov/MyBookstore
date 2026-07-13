@@ -19,7 +19,7 @@ namespace Book.Sell.Services
 
         private readonly IConfigsService _configs;
         private readonly ISalesSetupProvider _setupProvider;
-        private readonly IRecommendationScoringService _scoring;
+        private readonly IActiveRequestScoringService _scoring;
         private readonly IPassivePurchaseResolver _passiveResolver;
         private readonly ISalesRandom _random;
         private readonly ICustomerSpawner _spawner;
@@ -36,7 +36,7 @@ namespace Book.Sell.Services
         private List<Customer> _customers = new();
 
         private Customer _activeCustomer;
-        private RequestConfig _activeRequest;
+        private ActiveRequestRuntime _activeRequest;
         private Customer _dialogueCustomer;
 
         private float _spawnTimer;
@@ -47,7 +47,7 @@ namespace Book.Sell.Services
         public SalesDayController(
             IConfigsService configs,
             ISalesSetupProvider setupProvider,
-            IRecommendationScoringService scoring,
+            IActiveRequestScoringService scoring,
             IPassivePurchaseResolver passiveResolver,
             ISalesRandom random,
             ICustomerSpawner spawner,
@@ -74,11 +74,11 @@ namespace Book.Sell.Services
         public string LocationId { get; private set; }
         public SalesShelf Shelf => _shelf;
         public SalesDayResult AccumulatedResult => _result;
-        public RequestConfig CurrentRequest => _activeRequest;
+        public ActiveRequestRuntime CurrentRequest => _activeRequest;
         public SalesDayPhase Phase => _phase;
         public bool IsDayCompleted => _phase == SalesDayPhase.Completed;
 
-        public event Action<RequestConfig> ActiveRequestStarted;
+        public event Action<ActiveRequestRuntime> ActiveRequestStarted;
         public event Action<Customer, DialoguePayload> DialogueStarted;
         public event Action<RecommendationResult> RecommendationResolved;
         public event Action<PassiveSaleEvent> PassiveSaleHappened;
@@ -335,7 +335,7 @@ namespace Book.Sell.Services
         void ISalesDaySink.OnCustomerComment(Customer customer, CustomerCommentPayload payload)
             => CustomerCommented?.Invoke(customer, payload);
 
-        void ISalesDaySink.OnActiveRequestStarted(Customer customer, RequestConfig request)
+        void ISalesDaySink.OnActiveRequestStarted(Customer customer, ActiveRequestRuntime request)
         {
             _activeCustomer = customer;
             _activeRequest = request;

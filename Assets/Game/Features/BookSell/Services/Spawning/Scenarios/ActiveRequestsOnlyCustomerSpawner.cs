@@ -32,7 +32,7 @@ namespace Book.Sell.Services
 
             for (var i = 0; i < count; i++)
             {
-                var request = requests.Count > 0 ? requests[i % requests.Count] : null;
+                var request = requests.Count > 0 ? ActiveRequestRuntime.FromLegacy(requests[i % requests.Count]) : null;
                 var archetype = new ActiveRequestArchetype(request);
                 customers.Add(CustomerPlanBuilder.Build(
                     $"active_only_{i + 1}", tuning, random,

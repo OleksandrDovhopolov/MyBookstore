@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Book.Sell.Domain;
 using Book.Sell.Domain.Steps;
-using Game.Configs.Models;
 
 namespace Book.Sell.Services
 {
@@ -15,11 +14,11 @@ namespace Book.Sell.Services
     /// </summary>
     public sealed class PassiveActivePassiveArchetype : ICustomerArchetype
     {
-        private readonly RequestConfig _request;
+        private readonly ActiveRequestRuntime _request;
         private readonly int _min;
         private readonly int _max;
 
-        public PassiveActivePassiveArchetype(RequestConfig request, int min, int max)
+        public PassiveActivePassiveArchetype(ActiveRequestRuntime request, int min, int max)
         {
             _request = request ?? throw new ArgumentNullException(nameof(request));
             _min = min;
