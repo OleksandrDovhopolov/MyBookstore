@@ -1457,6 +1457,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _animation: {fileID: 5653145718807376124}
+  _closeButtons: []
   _minigameRoot: {fileID: 9000035874164344811}
   _requestText: {fileID: 4540841737405967709}
   _difficultyLabel: {fileID: 3640929294258048286}

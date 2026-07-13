@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -3938546511409372009, guid: ce5c12c00e88a154ab25f58b569dda27, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -788,7 +788,6 @@ MonoBehaviour:
   _plusButton: {fileID: 1186464773964398506}
   _shelfCountLabel: {fileID: 913178968031545738}
   _shelfIconImage: {fileID: 3724009203851433612}
-  _palette: {fileID: 11400000, guid: e7917d9d2b9c9924284eaa35b1d4fba0, type: 2}
 --- !u!1 &3461569803122852526
 GameObject:
   m_ObjectHideFlags: 0
@@ -1370,7 +1369,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -3938546511409372009, guid: ce5c12c00e88a154ab25f58b569dda27, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
