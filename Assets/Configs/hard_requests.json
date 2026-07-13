@@ -1,7 +1,7 @@
 [
   {
     "id": "req_hard_01",
-    "description": "Хочу почитать, что-то из криминального.",
+    "description": "I'd like to read something crime-related.",
     "genre": "Crime",
     "enabled": true,
     "conditions": {
@@ -12,12 +12,12 @@
           "value": "Crime"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Detective"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Thriller"
         }
@@ -33,7 +33,7 @@
   },
   {
     "id": "req_hard_02",
-    "description": "Ищу какую-нибудь хорошую криминальную книгу.",
+    "description": "I'm looking for a good crime novel.",
     "genre": "Crime",
     "enabled": true,
     "conditions": {
@@ -44,12 +44,12 @@
           "value": "Crime"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Detective"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Thriller"
         }
@@ -65,7 +65,7 @@
   },
   {
     "id": "req_hard_03",
-    "description": "Посоветуйте что-то почитать из криминала.",
+    "description": "Recommend me something to read from the crime genre.",
     "genre": "Crime",
     "enabled": true,
     "conditions": {
@@ -76,12 +76,12 @@
           "value": "Crime"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Detective"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Thriller"
         }
@@ -97,7 +97,7 @@
   },
   {
     "id": "req_hard_04",
-    "description": "Настроение на книгу про преступления и расследования.",
+    "description": "I'm in the mood for a book about crimes and investigations.",
     "genre": "Crime",
     "enabled": true,
     "conditions": {
@@ -108,12 +108,12 @@
           "value": "Crime"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Detective"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Thriller"
         }
@@ -129,7 +129,7 @@
   },
   {
     "id": "req_hard_05",
-    "description": "Хочется чего-нибудь мрачного и криминального.",
+    "description": "I want something dark and criminal.",
     "genre": "Crime",
     "enabled": true,
     "conditions": {
@@ -140,12 +140,12 @@
           "value": "Crime"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Detective"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Thriller"
         }
@@ -161,7 +161,7 @@
   },
   {
     "id": "req_hard_06",
-    "description": "Нужна книга в стиле крайм.",
+    "description": "I need a book in the crime style.",
     "genre": "Crime",
     "enabled": true,
     "conditions": {
@@ -172,12 +172,12 @@
           "value": "Crime"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Detective"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Thriller"
         }
@@ -193,7 +193,7 @@
   },
   {
     "id": "req_hard_07",
-    "description": "Хочу погрузиться в историю про преступный мир и расследование.",
+    "description": "I want to dive into a story about the criminal underworld and an investigation.",
     "genre": "Crime",
     "enabled": true,
     "conditions": {
@@ -204,12 +204,12 @@
           "value": "Crime"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Detective"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Thriller"
         }
@@ -225,7 +225,7 @@
   },
   {
     "id": "req_hard_08",
-    "description": "Хочу почитать что-нибудь из классики.",
+    "description": "I'd like to read something classic.",
     "genre": "Classic",
     "enabled": true,
     "conditions": {
@@ -252,7 +252,7 @@
   },
   {
     "id": "req_hard_09",
-    "description": "Ищу хорошую классическую книгу.",
+    "description": "I'm looking for a good classic book.",
     "genre": "Classic",
     "enabled": true,
     "conditions": {
@@ -279,7 +279,7 @@
   },
   {
     "id": "req_hard_10",
-    "description": "Посоветуйте что-нибудь почитать из мировой классики.",
+    "description": "Recommend me something to read from the world classics.",
     "genre": "Classic",
     "enabled": true,
     "conditions": {
@@ -306,7 +306,7 @@
   },
   {
     "id": "req_hard_11",
-    "description": "Настроение на проверенную временем классику.",
+    "description": "I'm in the mood for a time-tested classic.",
     "genre": "Classic",
     "enabled": true,
     "conditions": {
@@ -333,7 +333,7 @@
   },
   {
     "id": "req_hard_12",
-    "description": "Хочется чего-нибудь классического и глубокого.",
+    "description": "I want something classic and profound.",
     "genre": "Classic",
     "enabled": true,
     "conditions": {
@@ -360,7 +360,7 @@
   },
   {
     "id": "req_hard_13",
-    "description": "Нужна книга в жанре классика.",
+    "description": "I need a book in the classic genre.",
     "genre": "Classic",
     "enabled": true,
     "conditions": {
@@ -387,7 +387,7 @@
   },
   {
     "id": "req_hard_14",
-    "description": "Хочу погрузиться в одну из великих классических историй.",
+    "description": "I want to dive into one of the great classic stories.",
     "genre": "Classic",
     "enabled": true,
     "conditions": {
@@ -414,7 +414,7 @@
   },
   {
     "id": "req_hard_15",
-    "description": "Хочу почитать что-нибудь драматичное.",
+    "description": "I'd like to read something dramatic.",
     "genre": "Drama",
     "enabled": true,
     "conditions": {
@@ -425,7 +425,7 @@
           "value": "Drama"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Romance"
         }
@@ -434,7 +434,7 @@
   },
   {
     "id": "req_hard_16",
-    "description": "Ищу хорошую книгу в жанре драмы.",
+    "description": "I'm looking for a good drama book.",
     "genre": "Drama",
     "enabled": true,
     "conditions": {
@@ -445,7 +445,7 @@
           "value": "Drama"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Romance"
         }
@@ -454,7 +454,7 @@
   },
   {
     "id": "req_hard_17",
-    "description": "Посоветуйте что-нибудь почитать из драм.",
+    "description": "Recommend me something to read from the drama genre.",
     "genre": "Drama",
     "enabled": true,
     "conditions": {
@@ -465,7 +465,7 @@
           "value": "Drama"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Romance"
         }
@@ -474,7 +474,7 @@
   },
   {
     "id": "req_hard_18",
-    "description": "Настроение на сильную эмоциональную историю.",
+    "description": "I'm in the mood for a strong, emotional story.",
     "genre": "Drama",
     "enabled": true,
     "conditions": {
@@ -485,7 +485,7 @@
           "value": "Drama"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Romance"
         }
@@ -494,7 +494,7 @@
   },
   {
     "id": "req_hard_19",
-    "description": "Хочется книги про человеческие переживания и судьбы.",
+    "description": "I want a book about human feelings and fates.",
     "genre": "Drama",
     "enabled": true,
     "conditions": {
@@ -505,7 +505,7 @@
           "value": "Drama"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Romance"
         }
@@ -514,7 +514,7 @@
   },
   {
     "id": "req_hard_20",
-    "description": "Нужна книга в жанре драма.",
+    "description": "I need a book in the drama genre.",
     "genre": "Drama",
     "enabled": true,
     "conditions": {
@@ -525,7 +525,7 @@
           "value": "Drama"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Romance"
         }
@@ -534,7 +534,7 @@
   },
   {
     "id": "req_hard_21",
-    "description": "Хочу погрузиться в трогательную и жизненную историю.",
+    "description": "I want to dive into a touching, true-to-life story.",
     "genre": "Drama",
     "enabled": true,
     "conditions": {
@@ -545,7 +545,7 @@
           "value": "Drama"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Romance"
         }
@@ -554,7 +554,7 @@
   },
   {
     "id": "req_hard_22",
-    "description": "Хочу почитать что-нибудь из фэнтези.",
+    "description": "I'd like to read something from the fantasy genre.",
     "genre": "Fantasy",
     "enabled": true,
     "conditions": {
@@ -565,7 +565,7 @@
           "value": "Fantasy"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Horror"
         }
@@ -574,7 +574,7 @@
   },
   {
     "id": "req_hard_23",
-    "description": "Ищу хорошую фэнтезийную книгу.",
+    "description": "I'm looking for a good fantasy book.",
     "genre": "Fantasy",
     "enabled": true,
     "conditions": {
@@ -585,7 +585,7 @@
           "value": "Fantasy"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Horror"
         }
@@ -594,7 +594,7 @@
   },
   {
     "id": "req_hard_24",
-    "description": "Посоветуйте что-нибудь почитать про магию и приключения.",
+    "description": "Recommend me something to read about magic and adventures.",
     "genre": "Fantasy",
     "enabled": true,
     "conditions": {
@@ -616,7 +616,7 @@
   },
   {
     "id": "req_hard_25",
-    "description": "Настроение на историю с волшебными мирами.",
+    "description": "I'm in the mood for a story with magical worlds.",
     "genre": "Fantasy",
     "enabled": true,
     "conditions": {
@@ -627,7 +627,7 @@
           "value": "Fantasy"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Horror"
         }
@@ -636,7 +636,7 @@
   },
   {
     "id": "req_hard_26",
-    "description": "Хочется чего-нибудь сказочного и эпичного.",
+    "description": "I want something fairy-tale-like and epic.",
     "genre": "Fantasy",
     "enabled": true,
     "conditions": {
@@ -658,7 +658,7 @@
   },
   {
     "id": "req_hard_27",
-    "description": "Нужна книга в жанре фэнтези.",
+    "description": "I need a book in the fantasy genre.",
     "genre": "Fantasy",
     "enabled": true,
     "conditions": {
@@ -669,7 +669,7 @@
           "value": "Fantasy"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Horror"
         }
@@ -678,7 +678,7 @@
   },
   {
     "id": "req_hard_28",
-    "description": "Хочу погрузиться в мир магии и невероятных существ.",
+    "description": "I want to dive into a world of magic and incredible creatures.",
     "genre": "Fantasy",
     "enabled": true,
     "conditions": {
@@ -689,7 +689,7 @@
           "value": "Fantasy"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Horror"
         }
@@ -698,7 +698,7 @@
   },
   {
     "id": "req_hard_29",
-    "description": "Хочу почитать что-нибудь познавательное.",
+    "description": "I'd like to read something educational.",
     "genre": "Fact",
     "enabled": true,
     "conditions": {
@@ -709,7 +709,7 @@
           "value": "Fact"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "History"
         }
@@ -718,7 +718,7 @@
   },
   {
     "id": "req_hard_30",
-    "description": "Ищу интересную научно-популярную книгу.",
+    "description": "I'm looking for an interesting popular-science book.",
     "genre": "Fact",
     "enabled": true,
     "conditions": {
@@ -729,7 +729,7 @@
           "value": "Fact"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "History"
         }
@@ -738,7 +738,7 @@
   },
   {
     "id": "req_hard_31",
-    "description": "Посоветуйте что-нибудь почитать про реальные факты и открытия.",
+    "description": "Recommend me something to read about real facts and discoveries.",
     "genre": "Fact",
     "enabled": true,
     "conditions": {
@@ -749,7 +749,7 @@
           "value": "Fact"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "History"
         }
@@ -758,7 +758,7 @@
   },
   {
     "id": "req_hard_32",
-    "description": "Настроение узнать что-то новое о мире.",
+    "description": "I'm in the mood to learn something new about the world.",
     "genre": "Fact",
     "enabled": true,
     "conditions": {
@@ -769,7 +769,7 @@
           "value": "Fact"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "History"
         }
@@ -778,7 +778,7 @@
   },
   {
     "id": "req_hard_33",
-    "description": "Хочется книги, которая расширит кругозор.",
+    "description": "I want a book that will broaden my horizons.",
     "genre": "Fact",
     "enabled": true,
     "conditions": {
@@ -789,7 +789,7 @@
           "value": "Fact"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "History"
         }
@@ -798,7 +798,7 @@
   },
   {
     "id": "req_hard_34",
-    "description": "Нужна книга в жанре науки и фактов.",
+    "description": "I need a book in the science and facts genre.",
     "genre": "Fact",
     "enabled": true,
     "conditions": {
@@ -809,7 +809,7 @@
           "value": "Fact"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "History"
         }
@@ -818,7 +818,7 @@
   },
   {
     "id": "req_hard_35",
-    "description": "Хочу почитать что-нибудь основанное на реальных знаниях и исследованиях.",
+    "description": "I'd like to read something based on real knowledge and research.",
     "genre": "Fact",
     "enabled": true,
     "conditions": {
@@ -829,7 +829,7 @@
           "value": "Fact"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "History"
         }
@@ -838,7 +838,7 @@
   },
   {
     "id": "req_hard_36",
-    "description": "Хочу почитать что-нибудь из детской литературы.",
+    "description": "I'd like to read something from children's literature.",
     "genre": "Kids",
     "enabled": true,
     "conditions": {
@@ -849,7 +849,7 @@
           "value": "Kids"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Fantasy"
         }
@@ -870,7 +870,7 @@
   },
   {
     "id": "req_hard_37",
-    "description": "Ищу хорошую детскую книгу.",
+    "description": "I'm looking for a good children's book.",
     "genre": "Kids",
     "enabled": true,
     "conditions": {
@@ -881,7 +881,7 @@
           "value": "Kids"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Fantasy"
         }
@@ -902,7 +902,7 @@
   },
   {
     "id": "req_hard_38",
-    "description": "Посоветуйте что-нибудь доброе и детское для чтения.",
+    "description": "Recommend me something kind and childlike to read.",
     "genre": "Kids",
     "enabled": true,
     "conditions": {
@@ -913,7 +913,7 @@
           "value": "Kids"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Fantasy"
         }
@@ -934,7 +934,7 @@
   },
   {
     "id": "req_hard_39",
-    "description": "Настроение на лёгкую и увлекательную историю для детей.",
+    "description": "I'm in the mood for a light, engaging story for children.",
     "genre": "Kids",
     "enabled": true,
     "conditions": {
@@ -945,7 +945,7 @@
           "value": "Kids"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Fantasy"
         }
@@ -966,7 +966,7 @@
   },
   {
     "id": "req_hard_40",
-    "description": "Хочется книги с добрыми героями и приключениями.",
+    "description": "I want a book with kind characters and adventures.",
     "genre": "Kids",
     "enabled": true,
     "conditions": {
@@ -977,7 +977,7 @@
           "value": "Kids"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Fantasy"
         }
@@ -998,7 +998,7 @@
   },
   {
     "id": "req_hard_41",
-    "description": "Нужна книга в жанре детской литературы.",
+    "description": "I need a book in the children's literature genre.",
     "genre": "Kids",
     "enabled": true,
     "conditions": {
@@ -1009,7 +1009,7 @@
           "value": "Kids"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Fantasy"
         }
@@ -1030,7 +1030,7 @@
   },
   {
     "id": "req_hard_42",
-    "description": "Хочу погрузиться в сказочную историю для детей.",
+    "description": "I want to dive into a fairy-tale story for children.",
     "genre": "Kids",
     "enabled": true,
     "conditions": {
@@ -1041,7 +1041,7 @@
           "value": "Kids"
         },
         {
-          "type": "genres",
+          "type": "qualities",
           "operator": "contains",
           "value": "Fantasy"
         }
@@ -1062,7 +1062,7 @@
   },
   {
     "id": "req_hard_43",
-    "description": "Хочу почитать что-нибудь о путешествиях.",
+    "description": "I'd like to read something about travel.",
     "genre": "Travel",
     "enabled": true,
     "conditions": {
@@ -1077,7 +1077,7 @@
   },
   {
     "id": "req_hard_44",
-    "description": "Ищу интересную книгу про разные страны и приключения.",
+    "description": "I'm looking for an interesting book about different countries and adventures.",
     "genre": "Travel",
     "enabled": true,
     "conditions": {
@@ -1092,7 +1092,7 @@
   },
   {
     "id": "req_hard_45",
-    "description": "Посоветуйте что-нибудь почитать в жанре путешествий.",
+    "description": "Recommend me something to read in the travel genre.",
     "genre": "Travel",
     "enabled": true,
     "conditions": {
@@ -1107,7 +1107,7 @@
   },
   {
     "id": "req_hard_46",
-    "description": "Настроение отправиться в путешествие хотя бы через книгу.",
+    "description": "I'm in the mood to set off on a journey, at least through a book.",
     "genre": "Travel",
     "enabled": true,
     "conditions": {
@@ -1122,7 +1122,7 @@
   },
   {
     "id": "req_hard_47",
-    "description": "Хочется истории про дороги, открытия и новые места.",
+    "description": "I want a story about roads, discoveries, and new places.",
     "genre": "Travel",
     "enabled": true,
     "conditions": {
@@ -1137,7 +1137,7 @@
   },
   {
     "id": "req_hard_48",
-    "description": "Нужна книга в жанре путешествий.",
+    "description": "I need a book in the travel genre.",
     "genre": "Travel",
     "enabled": true,
     "conditions": {
@@ -1152,7 +1152,7 @@
   },
   {
     "id": "req_hard_49",
-    "description": "Хочу погрузиться в увлекательное путешествие по миру.",
+    "description": "I want to dive into an exciting journey around the world.",
     "genre": "Travel",
     "enabled": true,
     "conditions": {

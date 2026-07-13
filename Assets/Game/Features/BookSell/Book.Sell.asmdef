@@ -17,7 +17,8 @@
         "Game.Inventory.API",
         "Game.Resources.API",
         "Game.SalesStats.API",
-        "Game.Quest.API"
+        "Game.Quest.API",
+        "DOTween.dll"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -20,7 +20,7 @@ namespace Book.Sell.UI
     /// closes the window. The day is paused by <see cref="SalesScreenView"/> while this window is open, so the
     /// shelf is static and rendered once on show.
     /// </summary>
-    [Window("RecommendationMinigameWindow", WindowType.Popup)]
+    [Window("RecommendationMinigameWindow", WindowType.Popup, true)]
     public sealed class RecommendationMinigameWindow : WindowController<RecommendationMinigameWindowView>
     {
         private ISalesDayController _controller;
@@ -38,6 +38,7 @@ namespace Book.Sell.UI
         {
             if (View.RecommendButton != null) View.RecommendButton.onClick.AddListener(OnRecommend);
             if (View.SkipButton != null) View.SkipButton.onClick.AddListener(OnSkip);
+            if (View.ClearFocusButton != null) View.ClearFocusButton.onClick.AddListener(OnClearFocus);
             if (View.FinishButton != null) View.FinishButton.onClick.AddListener(OnFinish);
         }
 
@@ -52,12 +53,18 @@ namespace Book.Sell.UI
 
             // Selection state visible, result hidden.
             if (View.MinigameRoot != null) View.MinigameRoot.SetActive(true);
-            if (View.ResultPanel != null) View.ResultPanel.SetActive(false);
-            if (View.DetailPanel != null) View.DetailPanel.SetActive(false);
+            if (View.Animator != null)
+                View.Animator.PrepareForRequest();
+            else
+            {
+                if (View.ResultPanel != null) View.ResultPanel.SetActive(false);
+                if (View.DetailPanel != null) View.DetailPanel.SetActive(false);
+            }
 
             RenderRequest(_controller.CurrentRequest);
             PopulateShelfCards();
-            ClearSelection();
+            ClearSelection(instant: true);
+            View.Animator?.PlayRequestIntro();
 
             Subscribe();
         }
@@ -65,18 +72,21 @@ namespace Book.Sell.UI
         protected override void OnHideStart(bool isClosed)
         {
             base.OnHideStart(isClosed);
+            View?.Animator?.HideSelection();
             Unsubscribe();
         }
 
         protected override void OnDispose()
         {
             Unsubscribe();
+            View?.Animator?.KillAll();
             ClearCards();
 
             if (View != null)
             {
                 if (View.RecommendButton != null) View.RecommendButton.onClick.RemoveListener(OnRecommend);
                 if (View.SkipButton != null) View.SkipButton.onClick.RemoveListener(OnSkip);
+                if (View.ClearFocusButton != null) View.ClearFocusButton.onClick.RemoveListener(OnClearFocus);
                 if (View.FinishButton != null) View.FinishButton.onClick.RemoveListener(OnFinish);
             }
 
@@ -102,13 +112,6 @@ namespace Book.Sell.UI
         private void RenderRequest(ActiveRequestRuntime request)
         {
             Set(View.RequestText, request?.Text);
-            if (View.DifficultyLabel != null)
-            {
-                var difficulty = request?.Difficulty ?? RequestDifficulty.Unknown;
-                View.DifficultyLabel.text = difficulty == RequestDifficulty.Unknown
-                    ? string.Empty
-                    : $"Difficulty: {(int)difficulty}/5";
-            }
         }
 
         private void PopulateShelfCards()
@@ -158,17 +161,54 @@ namespace Book.Sell.UI
             Set(View.DetailDescription, book.Description);
             Set(View.DetailPublishDate, book.Published.ToString());
             Set(View.DetailPageCount, book.Pages.ToString());
+
+            View.Animator?.ShowBookDetail();
         }
 
-        private void ClearSelection()
+        private void ClearSelection(bool instant = false)
         {
             _selectedBookId = null;
             foreach (var card in _cards) card.SetSelected(false);
-            if (View.DetailPanel != null) View.DetailPanel.SetActive(false);
+
+            if (View.Animator != null)
+            {
+                if (instant)
+                {
+                    View.Animator.HideBookDetailInstant();
+                    ClearDetailAfterHide();
+                }
+                else
+                {
+                    View.Animator.HideBookDetail(ClearDetailAfterHide);
+                }
+            }
+            else
+            {
+                if (View.DetailPanel != null) View.DetailPanel.SetActive(false);
+                ClearDetailText();
+            }
+
             if (View.RecommendButton != null) View.RecommendButton.interactable = false;
         }
 
+        private void ClearDetailText()
+        {
+            Set(View.DetailTitle, string.Empty);
+            Set(View.DetailAuthor, string.Empty);
+            Set(View.DetailDescription, string.Empty);
+            Set(View.DetailPublishDate, string.Empty);
+            Set(View.DetailPageCount, string.Empty);
+        }
+
+        private void ClearDetailAfterHide()
+        {
+            if (View.DetailPanel != null) View.DetailPanel.SetActive(false);
+            ClearDetailText();
+        }
+
         // ---------- actions ----------
+
+        private void OnClearFocus() => ClearSelection();
 
         private void OnRecommend()
         {
@@ -188,11 +228,23 @@ namespace Book.Sell.UI
 
         private void OnResolved(RecommendationResult result)
         {
-            if (View.MinigameRoot != null) View.MinigameRoot.SetActive(false);
-            if (View.ResultPanel != null) View.ResultPanel.SetActive(true);
-
-            Set(View.EmotionLabel, EmotionFor(result?.Tier ?? RecommendationTier.Skipped));
-            if (View.FinishButton != null) View.FinishButton.interactable = true;
+            var emotion = EmotionFor(result?.Tier ?? RecommendationTier.Skipped);
+            Set(View.EmotionLabel, emotion);
+            if (View.Animator != null)
+            {
+                View.Animator.HideSelection(onComplete: () =>
+                {
+                    if (View.MinigameRoot != null) View.MinigameRoot.SetActive(false);
+                    View.Animator.PlayResult(emotion);
+                });
+            }
+            else
+            {
+                if (View.MinigameRoot != null) View.MinigameRoot.SetActive(false);
+                if (View.ResultPanel != null) View.ResultPanel.SetActive(true);
+                Set(View.EmotionLabel, emotion);
+                if (View.FinishButton != null) View.FinishButton.interactable = true;
+            }
         }
 
         // TODO: replace with proper reaction art/animation (hearts, speech bubble, etc.).
