@@ -65,7 +65,6 @@ namespace Game.Bootstrap
             // ISalesSetupProvider is registered in LocationInstaller (PreparationSalesSetupProvider),
             // which reads the player's choice from preparation.session and falls back to the
             // catalog if no session exists yet.
-            builder.Register<IRecommendationScoringService, RecommendationScoringService>(Lifetime.Singleton);
             builder.Register<IBookConditionRequestEvaluator, BookConditionRequestEvaluator>(Lifetime.Singleton);
             builder.Register<IActiveRequestRuntimeProvider, ConfigActiveRequestRuntimeProvider>(Lifetime.Singleton);
             builder.Register<IActiveRequestScoringService, ActiveRequestScoringService>(Lifetime.Singleton);
@@ -89,11 +88,6 @@ namespace Game.Bootstrap
                 Lifetime.Singleton);
             
             
-            //builder.Register<ICustomerSpawner, DefaultCustomerSpawner>(Lifetime.Singleton);
-            //builder.Register<ICustomerSpawner, FifteenCustomersSinglePassiveAttemptSpawner>(Lifetime.Singleton); //TEST was created to test zero books selected
-            //builder.Register<ICustomerSpawner, ActiveRequestsOnlyCustomerSpawner>(Lifetime.Singleton); //TEST 3-5 active-request-only customers (1 request each)
-            //builder.Register<ICustomerSpawner, OneToThreePassiveAttemptsCustomerSpawner>(Lifetime.Singleton); //TEST 1-N passive purchases
-            //builder.Register<ICustomerSpawner, TenCustomersThreeActiveBetweenPassivesSpawner>(Lifetime.Singleton); //TEST 10 customers, 1-2 passive each; first 3: passive -> active -> 1 passive
 
             // Fire-once memory for scripted dialogues (GAME-6). Save-backed; ISaveService resolves from the
             // parent (global) scope. Used by the quest-scheduling spawner (filter) and DialoguePresenter (mark).
@@ -124,7 +118,6 @@ namespace Game.Bootstrap
             // dialogue — the day no longer knows about dialogues. NOTE: register the inner concretely —
             // resolving ICustomerSpawner inside the ICustomerSpawner factory would be a self-reference. Swap
             // the inner type here to change base composition. IQuestsService resolves from the global scope.
-            //builder.Register<TenCustomersThreeActiveAfterPassiveSpawner>(Lifetime.Singleton); //TEST 10 customers, 1-2 passive each; first 3 also active after passive
             builder.Register<RegularCustomerSpawner>(Lifetime.Singleton); // production base: count from ICustomerTrafficResolver
             builder.Register<ICustomerSpawner>(r => new QuestSchedulingCustomerSpawner(
                     r.Resolve<RegularCustomerSpawner>(),

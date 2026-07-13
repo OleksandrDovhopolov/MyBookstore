@@ -22,22 +22,18 @@ namespace Book.Sell.Services
 
         private readonly IConfigsService _configs;
         private readonly IActiveRequestRuntimeProvider _activeRequests;
-        private readonly SalesTuning _tuning;
 
         public CustomerTrafficConfigValidator(IConfigsService configs)
-            : this(configs, new ConfigActiveRequestRuntimeProvider(configs, new BookConditionRequestEvaluator()),
-                new SalesTuning { ActiveRequestMode = ActiveRequestMode.LegacyScoring })
+            : this(configs, new ConfigActiveRequestRuntimeProvider(configs, new BookConditionRequestEvaluator()))
         {
         }
 
         public CustomerTrafficConfigValidator(
             IConfigsService configs,
-            IActiveRequestRuntimeProvider activeRequests,
-            SalesTuning tuning)
+            IActiveRequestRuntimeProvider activeRequests)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _activeRequests = activeRequests ?? throw new ArgumentNullException(nameof(activeRequests));
-            _tuning = tuning ?? throw new ArgumentNullException(nameof(tuning));
         }
 
         public async UniTask StartAsync(CancellationToken cancellation)
@@ -52,7 +48,7 @@ namespace Book.Sell.Services
         public IReadOnlyList<string> Validate()
         {
             var warnings = new List<string>();
-            var requestCount = _activeRequests.GetRequests(_tuning.ActiveRequestMode).Count;
+            var requestCount = _activeRequests.GetRequests().Count;
 
             foreach (var day in _configs.GetAll<DayConfig>())
             {

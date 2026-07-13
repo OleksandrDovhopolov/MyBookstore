@@ -11,8 +11,8 @@ namespace Book.Sell.Tests.Editor.Services
         private static FakeConfigsService Configs(int requestCount, params DayConfig[] days)
         {
             var configs = new FakeConfigsService();
-            var requests = new RequestConfig[requestCount];
-            for (var i = 0; i < requestCount; i++) requests[i] = new RequestConfig { Id = $"r{i + 1}" };
+            var requests = new RequestDefinitionConfig[requestCount];
+            for (var i = 0; i < requestCount; i++) requests[i] = SalesTestKit.RequestDef($"r{i + 1}");
             configs.SetAll(requests);
             configs.SetAll(days);
             return configs;

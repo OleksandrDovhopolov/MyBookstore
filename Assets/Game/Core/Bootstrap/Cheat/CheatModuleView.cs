@@ -131,7 +131,8 @@ namespace Game.Cheat
                 new ResourcesCheatModule(_resources, destroyCt),
                 new GoldFlightCheatModule(_resources, _resourceAnimations, destroyCt),
                 new SalesStatsCheatModule(_salesStatsRecorder, _salesStatsReader, _configs, _save, destroyCt),
-                new DialogueCheatModule(_uiManager, _configs)
+                new DialogueCheatModule(_uiManager, _configs),
+                new ActiveSaleCheatModule(_uiManager, _configs)
             };
 
             return cheatsModules;

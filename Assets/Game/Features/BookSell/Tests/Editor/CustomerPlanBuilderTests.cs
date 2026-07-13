@@ -181,29 +181,6 @@ namespace Book.Sell.Tests.Editor
             Assert.Greater(lastBrowsingIndex, minigameIndex, "A passive (Browsing) followed the minigame.");
         }
 
-        // 6) Regression guard: TenCustomersThreeActiveAfterPassiveSpawner's active block is commented
-        //    out, so after migration NO customer must produce an active step.
-        [Test]
-        public void AfterPassiveSpawner_StillHasNoActiveSteps()
-        {
-            var configs = new FakeConfigsService();
-            configs.SetAll<RequestConfig>(new[] { SalesTestKit.Request("r1") });
-            var spawner = new TenCustomersThreeActiveAfterPassiveSpawner(configs, new FixedProfileProvider());
-            var setup = new SalesSessionSetup(1, "loc", Array.Empty<string>());
-
-            var customers = spawner.BuildCustomers(setup, SalesTestKit.FastTuning(), new FakeSalesRandom());
-
-            var sink = new RecordingSink();
-            foreach (var customer in customers)
-            {
-                var ctx = SalesTestKit.Context(ShelfOf(50), SalesTestKit.Location(), sink,
-                    passiveSelector: SalesTestKit.AlwaysHitPassiveSelector());
-                Drive(customer, ctx);
-            }
-
-            Assert.IsEmpty(sink.ActiveStarted, "Commented active block must stay disabled after migration.");
-        }
-
         // --- Random order -------------------------------------------------------------------
 
         // 7) Builder-local order is approach -> middle -> leave: the first double feeds Approach, the
@@ -240,22 +217,5 @@ namespace Book.Sell.Tests.Editor
             Assert.AreEqual(2, approachTicks, "Approach consumed the FIRST double (0.2 => 2), proving it drew first.");
         }
 
-        // 8) Spawner-level: a pre-loop draw (ActiveRequestsOnly's customer count = Range(3,6)) stays
-        //    BEFORE the builder calls — the count comes from the first Range, not per-customer draws.
-        [Test]
-        public void ActiveOnlySpawner_KeepsPreLoopCountDraw()
-        {
-            var configs = new FakeConfigsService();
-            configs.SetAll<RequestConfig>(new[] { SalesTestKit.Request("r1") });
-            var spawner = new ActiveRequestsOnlyCustomerSpawner(configs);
-            var setup = new SalesSessionSetup(1, "loc", Array.Empty<string>());
-            // First Range(3,6): index 2 => count 5. FastTuning leaves approach/leave at Min==Max==0 (no draws),
-            // and the active-only middle has no Range draw, so this is the only Range consumed.
-            var random = new FakeSalesRandom().EnqueueRangeIndex(2);
-
-            var customers = spawner.BuildCustomers(setup, SalesTestKit.FastTuning(), random);
-
-            Assert.AreEqual(5, customers.Count, "Customer count came from the pre-loop Range draw (3 + 2).");
-        }
     }
 }

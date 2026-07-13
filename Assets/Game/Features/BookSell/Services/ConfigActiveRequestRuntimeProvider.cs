@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Book.Sell.Domain;
 using Game.Configs;
@@ -18,37 +17,11 @@ namespace Book.Sell.Services
             IConfigsService configs,
             IBookConditionRequestEvaluator conditionEvaluator)
         {
-            _configs = configs ?? throw new ArgumentNullException(nameof(configs));
-            _conditionEvaluator = conditionEvaluator ?? throw new ArgumentNullException(nameof(conditionEvaluator));
+            _configs = configs ?? throw new System.ArgumentNullException(nameof(configs));
+            _conditionEvaluator = conditionEvaluator ?? throw new System.ArgumentNullException(nameof(conditionEvaluator));
         }
 
-        public IReadOnlyList<ActiveRequestRuntime> GetRequests(ActiveRequestMode mode)
-        {
-            switch (mode)
-            {
-                case ActiveRequestMode.LegacyScoring:
-                    return LegacyRequests();
-                case ActiveRequestMode.Conditions:
-                    return ConditionRequests();
-                default:
-                    return Array.Empty<ActiveRequestRuntime>();
-            }
-        }
-
-        private IReadOnlyList<ActiveRequestRuntime> LegacyRequests()
-        {
-            var configs = _configs.GetAll<RequestConfig>();
-            var requests = new List<ActiveRequestRuntime>(configs.Count);
-            for (var i = 0; i < configs.Count; i++)
-            {
-                var runtime = ActiveRequestRuntime.FromLegacy(configs[i]);
-                if (runtime != null) requests.Add(runtime);
-            }
-
-            return requests;
-        }
-
-        private IReadOnlyList<ActiveRequestRuntime> ConditionRequests()
+        public IReadOnlyList<ActiveRequestRuntime> GetRequests()
         {
             var configs = _configs.GetAll<RequestDefinitionConfig>();
             var requests = new List<ActiveRequestRuntime>(configs.Count);

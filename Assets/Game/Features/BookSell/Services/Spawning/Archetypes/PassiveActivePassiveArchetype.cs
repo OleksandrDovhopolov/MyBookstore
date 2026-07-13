@@ -7,8 +7,7 @@ namespace Book.Sell.Services
 {
     /// <summary>
     /// Passive×N -> ActiveRequest -> Passive×1. Only the leading passive count consumes random
-    /// (Range(min, max + 1), or min when min == max); the active step and trailing passive are fixed —
-    /// parity with TenCustomersThreeActiveBetweenPassivesSpawner's active customers.
+    /// (Range(min, max + 1), or min when min == max); the active step and trailing passive are fixed.
     /// Requires a non-null request (fail-fast); the spawner only builds this archetype when a request
     /// is available, so a null active step can never be produced.
     /// </summary>

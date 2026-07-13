@@ -10,7 +10,7 @@ Current customer simulation builds the whole customer list before the sales day 
 
 - `SalesDayController.StartDayAsync` calls `ICustomerSpawner.BuildCustomers(setup, tuning, random)`.
 - `SalesSessionSetup` already carries the main inputs needed for traffic decisions: `Day`, `LocationId`, `ShelfBookIds`, and `DecorIds`.
-- `DefaultCustomerSpawner` illustrates the current count logic: `count = max(requestCount, tuning.BaseCustomers)`. This floor over the number of active `RequestConfig`s matters and must be preserved (see Integration With Spawners).
+- `DefaultCustomerSpawner` illustrates the current count logic: `count = max(requestCount, tuning.BaseCustomers)`. This floor over the number of active requests (enabled `RequestDefinitionConfig`) matters and must be preserved (see Integration With Spawners).
 - **Every current `ICustomerSpawner` implementation is a test / smoke tool.** `DefaultCustomerSpawner`, `TenCustomers*`, `Fifteen*`, `ActiveRequestsOnly*`, `OneToThreePassive*` all own their counts as constants for manual scenario testing. There is **no dedicated production base spawner yet**.
 - The only spawner wired into production DI is `QuestSchedulingCustomerSpawner`, a decorator currently wrapping the `TenCustomersThreeActiveAfterPassiveSpawner` test spawner (`BookSellVContainerBindings`). This decorator is the piece carried forward to the next iteration; the base it wraps is expected to be replaced by a real production spawner.
 - `CustomerPlanBuilder` centralizes the mandatory plan skeleton, while spawners remain responsible for day composition.
@@ -97,7 +97,7 @@ Confirmed rule:
 - Day 1 can be configured as `customerCount = 3`, `applyModifiers = false`.
 - That means exactly 3 regular customers, with no decor, weather, location, or event modifiers applied.
 - A hard override (`applyModifiers = false`) is truly hard: it bypasses **both** modifiers **and** the final min/max clamp, so day 1 is exactly 3 even if `minCustomerCount` is higher. Value validity (`customerCount >= 0`) is checked when the config is loaded, not silently clamped at resolve time.
-- Caveat: the request-count floor (see Integration With Spawners) can still raise a hard-override day above its stated number. Config validation should warn if a hard override is below the number of active `RequestConfig`s for that day so designers notice the conflict rather than getting a silently larger day.
+- Caveat: the request-count floor (see Integration With Spawners) can still raise a hard-override day above its stated number. Config validation should warn if a hard override is below the number of active requests (enabled `RequestDefinitionConfig`) for that day so designers notice the conflict rather than getting a silently larger day.
 
 ## Calculation Flow
 

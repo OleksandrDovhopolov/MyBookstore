@@ -32,18 +32,15 @@ namespace Book.Sell.Tests.Editor
         private static Customer ApproachLeave(string id)
             => new(id, new ICustomerStep[] { new ApproachStep(), new LeaveStep() });
 
-        private static Customer Active(string id, RequestConfig req)
-            => new(id, new ICustomerStep[] { new ApproachStep(), new ActiveRequestStep(ActiveRequestRuntime.FromLegacy(req)), new LeaveStep() });
-
         private static Customer Active(string id, ActiveRequestRuntime req)
             => new(id, new ICustomerStep[] { new ApproachStep(), new ActiveRequestStep(req), new LeaveStep() });
 
         // Active request with the full closing tail, so CompletePurchaseStep actually runs after the
         // recommendation resolves (needed to assert the visit-completion event).
-        private static Customer ActiveWithCompletion(string id, RequestConfig req)
+        private static Customer ActiveWithCompletion(string id, ActiveRequestRuntime req)
             => new(id, new ICustomerStep[]
             {
-                new ApproachStep(), new ActiveRequestStep(ActiveRequestRuntime.FromLegacy(req)), new CompletePurchaseStep(), new LeaveStep()
+                new ApproachStep(), new ActiveRequestStep(req), new CompletePurchaseStep(), new LeaveStep()
             });
 
         // Approach + scripted dialogue + Leave. The dialogue holds the interaction lock until the
@@ -59,7 +56,7 @@ namespace Book.Sell.Tests.Editor
         }
 
         private static SalesDayController Build(
-            BookConfig[] books, RequestConfig[] requests, LocationConfig location, IReadOnlyList<Customer> customers,
+            BookConfig[] books, RequestDefinitionConfig[] requests, LocationConfig location, IReadOnlyList<Customer> customers,
             SalesTuning tuning = null,
             ISalesDayCommitService commitService = null)
         {
@@ -73,7 +70,7 @@ namespace Book.Sell.Tests.Editor
             return new SalesDayController(
                 configs,
                 new DefaultSalesSetupProvider(configs),
-                new ActiveRequestScoringService(new RecommendationScoringService(), new BookConditionRequestEvaluator()),
+                new ActiveRequestScoringService(new BookConditionRequestEvaluator()),
                 SalesTestKit.LegacyResolver(),
                 new FakeSalesRandom(),
                 new StubCustomerSpawner(customers),
@@ -320,7 +317,7 @@ namespace Book.Sell.Tests.Editor
             var expected = Dialog("c1");
             var c = Build(
                 new[] { SalesTestKit.Book("b1") },
-                Array.Empty<RequestConfig>(),
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer> { expected });
 
@@ -349,7 +346,7 @@ namespace Book.Sell.Tests.Editor
         {
             var c = Build(
                 new[] { SalesTestKit.Book("b1") },
-                Array.Empty<RequestConfig>(),
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer> { Dialog("c1") });
 
@@ -371,7 +368,7 @@ namespace Book.Sell.Tests.Editor
         {
             var c = Build(
                 new[] { SalesTestKit.Book("b1") },
-                Array.Empty<RequestConfig>(),
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer> { Passive("c1") });
 
@@ -387,7 +384,7 @@ namespace Book.Sell.Tests.Editor
         {
             var c = Build(
                 new[] { SalesTestKit.Book("b1") },
-                Array.Empty<RequestConfig>(),
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer> { Dialog("c1") });
 
@@ -420,7 +417,7 @@ namespace Book.Sell.Tests.Editor
 
             var c = Build(
                 new[] { SalesTestKit.Book("b1") },
-                Array.Empty<RequestConfig>(),
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer> { customer },
                 tuning);
@@ -454,7 +451,7 @@ namespace Book.Sell.Tests.Editor
         {
             var c = Build(
                 new[] { SalesTestKit.Book("b1") },
-                Array.Empty<RequestConfig>(),
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer> { Dialog("c1") });
 
@@ -577,7 +574,7 @@ namespace Book.Sell.Tests.Editor
             var commit = new RecordingSalesDayCommitService();
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
-                new RequestConfig[0],
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
                 new List<Customer> { Passive("c1") },
                 commitService: commit);
@@ -607,7 +604,7 @@ namespace Book.Sell.Tests.Editor
             tuning.MaxConcurrentCustomers = 3;
 
             var c = Build(
-                new[] { SalesTestKit.Book("b1") }, new RequestConfig[0],
+                new[] { SalesTestKit.Book("b1") }, Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(), customers, tuning: tuning);
 
             StartDay(c);
@@ -631,7 +628,7 @@ namespace Book.Sell.Tests.Editor
         public void StartDay_NoCustomers_BecomesReadyToClose_ThenConcludes()
         {
             var c = Build(
-                new[] { SalesTestKit.Book("b1") }, new RequestConfig[0],
+                new[] { SalesTestKit.Book("b1") }, Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(), new List<Customer>());
 
             var readyToClose = false;
@@ -664,7 +661,7 @@ namespace Book.Sell.Tests.Editor
                     SalesTestKit.Book("b1", genre: "sci-fi", price: 80),
                     SalesTestKit.Book("b2", genre: "sci-fi", price: 80)
                 },
-                new RequestConfig[0],
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
                 new List<Customer> { Passive("c1") });
 
@@ -686,7 +683,7 @@ namespace Book.Sell.Tests.Editor
         {
             var c = Build(
                 new[] { SalesTestKit.Book("b1"), SalesTestKit.Book("b2") },
-                new RequestConfig[0],
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer>());
 
@@ -702,10 +699,10 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void RecommendBook_SuccessfulSale_RaisesShelfChanged()
         {
-            var reqA = SalesTestKit.Request("reqA");
+            var reqA = SalesTestKit.ActiveRequest("reqA");
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
-                new[] { reqA },
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer> { Active("c1", reqA) });
 
@@ -724,10 +721,10 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void RecommendBook_SuccessfulSale_AccumulatesGoldInResult()
         {
-            var reqA = SalesTestKit.Request("reqA");
+            var reqA = SalesTestKit.ActiveRequest("reqA");
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
-                new[] { reqA },
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer> { Active("c1", reqA) });
 
@@ -737,7 +734,7 @@ namespace Book.Sell.Tests.Editor
             c.RecommendBook("b1");
 
             // Provisional only: gold lands in the day result, not the wallet, until the day commits.
-            Assert.AreEqual(BookConfig.FixedPriceGold + reqA.BaseRewardGold, c.AccumulatedResult.GoldEarned);
+            Assert.AreEqual(BookConfig.FixedPriceGold, c.AccumulatedResult.GoldEarned);
             CollectionAssert.Contains(c.AccumulatedResult.SoldBookIds, "b1");
         }
 
@@ -746,14 +743,14 @@ namespace Book.Sell.Tests.Editor
         {
             // Two books so the day ends via "all customers done" (b2 remains), letting the customer
             // reach CompletePurchase/Done after the active sale of b1.
-            var reqA = SalesTestKit.Request("reqA");
+            var reqA = SalesTestKit.ActiveRequest("reqA");
             var c = Build(
                 new[]
                 {
                     SalesTestKit.Book("b1", genre: "sci-fi", price: 80),
                     SalesTestKit.Book("b2", genre: "sci-fi", price: 80)
                 },
-                new[] { reqA },
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer> { ActiveWithCompletion("c1", reqA) });
 
@@ -772,10 +769,10 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void SkippedActiveRequest_BuysNothing_NoCompletion()
         {
-            var reqA = SalesTestKit.Request("reqA");
+            var reqA = SalesTestKit.ActiveRequest("reqA");
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
-                new[] { reqA },
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer> { ActiveWithCompletion("c1", reqA) });
 
@@ -798,10 +795,10 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void SkipCurrentRequest_DoesNotRaiseShelfChanged()
         {
-            var reqA = SalesTestKit.Request("reqA");
+            var reqA = SalesTestKit.ActiveRequest("reqA");
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
-                new[] { reqA },
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer> { Active("c1", reqA) });
 
@@ -822,7 +819,7 @@ namespace Book.Sell.Tests.Editor
         {
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
-                new RequestConfig[0],
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
                 new List<Customer> { Passive("c1") });
 
@@ -842,7 +839,7 @@ namespace Book.Sell.Tests.Editor
         {
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
-                new RequestConfig[0],
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
                 new List<Customer> { Passive("c1") });
 
@@ -938,7 +935,7 @@ namespace Book.Sell.Tests.Editor
         {
             var c = Build(
                 new BookConfig[0],
-                new RequestConfig[0],
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
                 new List<Customer> { Passive("c1") });
 
@@ -960,7 +957,7 @@ namespace Book.Sell.Tests.Editor
             // second PassivePurchaseStep never runs (one failure, not two).
             var c = Build(
                 new BookConfig[0],
-                new RequestConfig[0],
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer>
                 {
@@ -987,16 +984,16 @@ namespace Book.Sell.Tests.Editor
         {
             // Plan: Approach → Passive(miss) → Active → Leave. The passive miss ends the visit before
             // the active step is reached, so the minigame never opens.
-            var req = SalesTestKit.Request("reqA");
+            var req = SalesTestKit.ActiveRequest("reqA");
             var c = Build(
                 new BookConfig[0],
-                new[] { req },
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer>
                 {
                     new("c1", new ICustomerStep[]
                     {
-                        new ApproachStep(), new PassivePurchaseStep(), new ActiveRequestStep(ActiveRequestRuntime.FromLegacy(req)), new LeaveStep()
+                        new ApproachStep(), new PassivePurchaseStep(), new ActiveRequestStep(req), new LeaveStep()
                     })
                 });
 
@@ -1022,7 +1019,7 @@ namespace Book.Sell.Tests.Editor
                     SalesTestKit.Book("b1", genre: "sci-fi", price: 80),
                     SalesTestKit.Book("b2", genre: "sci-fi", price: 80)
                 },
-                new RequestConfig[0],
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
                 new List<Customer>
                 {
@@ -1055,7 +1052,7 @@ namespace Book.Sell.Tests.Editor
                     SalesTestKit.Book("b2", genre: "sci-fi", price: 80),
                     SalesTestKit.Book("b3", genre: "sci-fi", price: 80)
                 },
-                new RequestConfig[0],
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
                 new List<Customer>
                 {
@@ -1082,7 +1079,7 @@ namespace Book.Sell.Tests.Editor
             // Empty shelf → first passive misses → abort → CompletePurchase skipped (count 0).
             var c = Build(
                 new BookConfig[0],
-                new RequestConfig[0],
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer>
                 {
@@ -1107,11 +1104,11 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void ActiveRequest_OnlyOneMinigame_PausesOthers_ThenSequencesFifo()
         {
-            var reqA = SalesTestKit.Request("reqA");
-            var reqB = SalesTestKit.Request("reqB");
+            var reqA = SalesTestKit.ActiveRequest("reqA");
+            var reqB = SalesTestKit.ActiveRequest("reqB");
             var c = Build(
                 new[] { SalesTestKit.Book("b1") },
-                new[] { reqA, reqB },
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer> { Active("c1", reqA), Active("c2", reqB) });
 
@@ -1153,7 +1150,7 @@ namespace Book.Sell.Tests.Editor
                     SalesTestKit.Book("b1", genre: "sci-fi"),
                     SalesTestKit.Book("b2", genre: "romance", qualities: new[] { "summer" })
                 },
-                new RequestConfig[0],
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }, demandQualities: new[] { "space" }),
                 new List<Customer> { Passive("c1"), Passive("c2") });
 
@@ -1181,7 +1178,7 @@ namespace Book.Sell.Tests.Editor
 
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi") },
-                new RequestConfig[0],
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
                 new List<Customer> { Passive("c1"), Passive("c2"), Passive("c3") },
                 tuning);
@@ -1203,7 +1200,7 @@ namespace Book.Sell.Tests.Editor
             // book must NOT end the day before CompletePurchase + Leave run.
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 70) },
-                new RequestConfig[0],
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
                 new List<Customer>
                 {
@@ -1240,10 +1237,10 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void RecommendBook_ActiveMinigame_ScoresSellsAndCompletes()
         {
-            var reqA = SalesTestKit.Request("reqA");
+            var reqA = SalesTestKit.ActiveRequest("reqA");
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi", price: 80) },
-                new[] { reqA },
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer> { Active("c1", reqA) });
 
@@ -1260,7 +1257,7 @@ namespace Book.Sell.Tests.Editor
             Assert.AreEqual(RecommendationTier.Excellent, resolved.Tier);
             Assert.AreEqual("b1", resolved.BookId);
             Assert.AreEqual(ShelfBookState.SoldOut, c.Shelf.Find("b1").State);
-            Assert.AreEqual(BookConfig.FixedPriceGold + reqA.BaseRewardGold, c.AccumulatedResult.GoldEarned);
+            Assert.AreEqual(BookConfig.FixedPriceGold, c.AccumulatedResult.GoldEarned);
 
             Run(c);
             Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
@@ -1272,7 +1269,7 @@ namespace Book.Sell.Tests.Editor
             var request = ConditionRequest("req_condition", "Detective");
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "Crime", qualities: new[] { "Detective" }) },
-                Array.Empty<RequestConfig>(),
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer> { Active("c1", request) });
 
@@ -1296,7 +1293,7 @@ namespace Book.Sell.Tests.Editor
             var request = ConditionRequest("req_condition", "Detective");
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "Crime", qualities: new[] { "Romance" }) },
-                Array.Empty<RequestConfig>(),
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer> { Active("c1", request) });
 
@@ -1319,7 +1316,7 @@ namespace Book.Sell.Tests.Editor
         {
             var c = Build(
                 new[] { SalesTestKit.Book("b1", genre: "sci-fi") },
-                new RequestConfig[0],
+                Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
                 new List<Customer> { Passive("c1") });
 

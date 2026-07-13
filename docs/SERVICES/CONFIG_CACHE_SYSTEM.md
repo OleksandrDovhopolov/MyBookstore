@@ -47,7 +47,7 @@ IReadOnlyList<T> GetAll<T>();                   // все конфиги тип�
 |-----|------|-------------|
 | `BookConfig` | `books.json` | [Models/BookConfig.cs](../Assets/Game/Features/Configs/Models/BookConfig.cs) |
 | `LocationConfig` | `locations.json` | [Models/LocationConfig.cs](../Assets/Game/Features/Configs/Models/LocationConfig.cs) |
-| `RequestConfig` | `requests.json` | [Models/RequestConfig.cs](../Assets/Game/Features/Configs/Models/RequestConfig.cs) |
+| `RequestDefinitionConfig` | `sample_requests.json` | [Models/RequestDefinitionConfig.cs](../Assets/Game/Features/Configs/Models/RequestDefinitionConfig.cs) |
 | `EventConfig` | `events.json` | [Models/EventConfig.cs](../Assets/Game/Features/Configs/Models/EventConfig.cs) |
 
 Файл секции = JSON-массив объектов одного типа; индексируется по `id` (case-insensitive).

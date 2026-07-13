@@ -1,13 +1,10 @@
 namespace Game.Configs.Models
 {
     /// <summary>
-    /// New condition-based active-purchase request. A request is a boolean predicate over a book:
-    /// the book either satisfies it or it does not (set membership), as opposed to the legacy
-    /// weighted-scoring model in <see cref="RequestConfig"/> (requests.json).
+    /// Condition-based active-purchase request — the sole active-request model. A request is a boolean
+    /// predicate over a book: the book either satisfies it (Excellent) or it does not (Failed).
     ///
-    /// <para>This type COEXISTS with the legacy <see cref="RequestConfig"/> and does NOT replace it yet —
-    /// both config files are loaded. See docs/INPROGRESS/ACTIVE_REQUEST_CONDITIONS.md for the migration plan
-    /// and the ADR that must be updated when this model is accepted.</para>
+    /// <para>See docs/INPROGRESS/ACTIVE_REQUEST_CONDITIONS.md for the model spec and the ADR to update.</para>
     ///
     /// <para>File: sample_requests.json (JSON array).</para>
     /// </summary>

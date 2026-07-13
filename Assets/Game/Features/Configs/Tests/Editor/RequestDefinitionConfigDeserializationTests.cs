@@ -7,7 +7,7 @@ namespace Game.Configs.Tests.Editor
 {
     public sealed class RequestDefinitionConfigDeserializationTests
     {
-        [TestCase("Assets/Configs/Samples/sample_requests.json")]
+        [TestCase("Assets/Configs/sample_requests.json")]
         [TestCase("Assets/StreamingAssets/Configs/sample_requests.json")]
         public void SampleRequests_DeserializeConditionSchema(string path)
         {

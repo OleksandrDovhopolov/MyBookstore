@@ -5,8 +5,8 @@ using Book.Sell.Domain.Steps;
 namespace Book.Sell.Services
 {
     /// <summary>
-    /// A single active recommendation request. Empty middle when <paramref name="request"/> is null,
-    /// matching ActiveRequestsOnlyCustomerSpawner's "requests.Count > 0" guard. No random consumed.
+    /// A single active recommendation request. Empty middle when <paramref name="request"/> is null
+    /// (no request available for this customer). No random consumed.
     /// </summary>
     public sealed class ActiveRequestArchetype : ICustomerArchetype
     {

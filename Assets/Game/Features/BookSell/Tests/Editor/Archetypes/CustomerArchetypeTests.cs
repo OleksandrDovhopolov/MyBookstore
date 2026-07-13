@@ -151,36 +151,5 @@ namespace Book.Sell.Tests.Editor
             Assert.Throws<ArgumentNullException>(() => new PassiveActivePassiveArchetype(null, 1, 2));
         }
 
-        // --- Spawner-level parity (TenBetween) ----------------------------------------------
-
-        // The converted TenBetween spawner must still produce exactly ActiveCustomerCount active customers,
-        // and an active customer keeps Passive -> Active -> Passive (Browsing -> InMinigame -> Browsing).
-        [Test]
-        public void BetweenPassivesSpawner_PreservesActiveCountAndOrder()
-        {
-            var configs = new FakeConfigsService();
-            configs.SetAll<RequestConfig>(new[] { SalesTestKit.Request("r1") });
-            var spawner = new TenCustomersThreeActiveBetweenPassivesSpawner(configs);
-
-            // Empty random => PickActiveIndices selects {0,1,2}; each passive count Range falls back to min (1).
-            var customers = spawner.BuildCustomers(Setup, SalesTestKit.FastTuning(), new FakeSalesRandom());
-
-            var sink = new RecordingSink();
-            foreach (var customer in customers)
-            {
-                var ctx = SalesTestKit.Context(ShelfOf(3), SalesTestKit.Location(), sink,
-                    passiveSelector: SalesTestKit.AlwaysHitPassiveSelector());
-                Drive(customer, ctx);
-            }
-
-            var activeCustomers = sink.ActiveStarted.Select(a => a.customer).Distinct().ToList();
-            Assert.AreEqual(3, activeCustomers.Count, "Exactly ActiveCustomerCount customers ran an active step.");
-
-            var phases = PhasesOf(sink, activeCustomers[0]);
-            var minigameIndex = phases.IndexOf(CustomerPhase.InMinigame);
-            var lastBrowsingIndex = phases.LastIndexOf(CustomerPhase.Browsing);
-            Assert.Greater(minigameIndex, 0, "Minigame happened after the first passive (Browsing).");
-            Assert.Greater(lastBrowsingIndex, minigameIndex, "A passive (Browsing) followed the minigame.");
-        }
     }
 }

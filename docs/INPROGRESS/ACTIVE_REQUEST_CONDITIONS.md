@@ -6,29 +6,27 @@
   [CORE_LOOP.md](../CORE_LOOP.md)
 
 > ## ⚠️ ADR — не забыть обновить
-> Активная продажа сейчас зафиксирована в [ADR-0003](../adr/0003-customer-simulation.md) (миниигра подбора
-> поверх взвешенного скоринга). Этот документ описывает переход на **булеву модель условий**.
-> **Когда модель будет принята — оформить новый `ADR-0009` «Active requests over a condition tree» и пометить
-> активную часть ADR-0003 как частично superseded.** Пассивную часть ([ADR-0006](../adr/0006-passive-sales-requested-genre.md))
-> этот пересмотр НЕ трогает. Пока ADR не написан — источник истины по решению здесь.
+> Условная модель **внедрена**, а legacy-скоринг (`RequestConfig` + `RecommendationScoringService`) **удалён** —
+> активная продажа теперь работает только на булевых условиях. Осталась документация: **оформить новый
+> `ADR-0009` «Active requests over a condition tree» и пометить активную часть
+> [ADR-0003](../adr/0003-customer-simulation.md) как superseded.** Пассивную часть
+> ([ADR-0006](../adr/0006-passive-sales-requested-genre.md)) это не трогает. Пока ADR не написан —
+> источник истины по решению здесь.
 
 ---
 
-## 1. Зачем меняем
+## 1. Зачем меняли
 
-Текущая legacy-активная продажа: `RequestConfig` (requests.json) — плоский набор мягких предпочтений
-(`DesiredGenres/DesiredQualities/MaxPrice`), а `RecommendationScoringService` считает **взвешенный
-балл** (жанр +3, quality +2, цена +1, локация +1) и раздаёт тир Excellent/Normal/Failed. Игрок сам
-выбирает книгу, система оценивает «насколько удачно».
-
-Ограничения этой модели:
+Прежняя активная продажа была взвешенным скорингом (`RequestConfig` + `RecommendationScoringService`):
+плоский набор мягких предпочтений (`DesiredGenres/DesiredQualities/MaxPrice`), балл (жанр +3, quality +2,
+цена +1, локация +1) и тир Excellent/Normal/Failed. Её ограничения:
 - нет операторов сравнения — невыразимы `publicationYear между 1850..1900`, `pages ≤ 200`, `NOT genre X`;
-- `Published`/`Pages` у книги есть, но в скоринге **не участвуют**;
+- `Published`/`Pages` у книги есть, но в скоринге **не участвовали**;
 - нет булевой логики (AND/OR/NONE), нет исключений.
 
-Новая модель: запрос — **булев предикат над книгой** (подходит / не подходит). Data-driven, расширяется
-регистрацией хендлеров без изменения схемы (open/closed). Соответствует data-driven принципам
-[ADR-0002](../adr/0002-config-system-architecture.md).
+Эта модель **удалена**. Активный запрос теперь — **булев предикат над книгой** (подходит / не подходит).
+Data-driven, расширяется регистрацией хендлеров без изменения схемы (open/closed). Соответствует
+data-driven принципам [ADR-0002](../adr/0002-config-system-architecture.md).
 
 ## 2. Модель данных
 
@@ -165,17 +163,16 @@ C#-модель — [`RequestDefinitionConfig`](../../Assets/Game/Features/Confi
 `Newtonsoft.Json.Linq.JToken` (это «Вариант 3» из обсуждения). Не «universal fields» и не строка
 `"1850|1900"` — типобезопасность парсинга остаётся на хендлере, который знает форму своего оператора.
 
-## 3. Сосуществование со старой системой (НЕ удалять)
+## 3. Legacy удалён
 
-Старый расчёт **сохраняется целиком**:
-- `RequestConfig` + `requests.json` — остаются;
-- [`RecommendationScoringService`](../../Assets/Game/Features/BookSell/Services/RecommendationScoringService.cs)
-  и `IRecommendationScoringService` — **не трогаем и не удаляем**;
-- новый `RequestDefinitionConfig` + `sample_requests.json` — отдельный конфиг-тип, грузится параллельно.
+Старый скоринг удалён целиком: `RequestConfig`, `IRecommendationScoringService` /
+`RecommendationScoringService`, конфиг `requests.json` и переключатель режимов (`ActiveRequestMode` /
+`ActiveRequestSourceKind`). Активная продажа работает только на `RequestDefinitionConfig` +
+`sample_requests.json`; `IActiveRequestScoringService` всегда вызывает `IBookConditionRequestEvaluator`.
 
-Переключение моделей — явным seam на уровне выбора/спавна запросов (по образцу
-[ADR-0006](../adr/0006-passive-sales-requested-genre.md): две стратегии за одним интерфейсом, старая — legacy,
-откат одной строкой). Конкретный seam проектируется в следующей итерации (см. Open questions).
+Осталось как **общая** инфраструктура (не legacy-only): `RecommendationResult` / `RecommendationTier` /
+`RecommendationReason` / `ScoreBreakdown` / `RequestDifficulty` — их использует условный путь и окно
+миниигры (`Excellent`/`Failed`, `Difficulty.Unknown`, `RecommendationResult.Skipped`).
 
 ## 4. Escape-hatch для невыразимой логики
 
@@ -202,12 +199,11 @@ C#-модель — [`RequestDefinitionConfig`](../../Assets/Game/Features/Confi
 
 ## 7. Accepted implementation decisions (2026-07-13)
 
-- Runtime seam: active purchase flow uses `ActiveRequestRuntime`; legacy `RequestConfig` is wrapped by an adapter and remains available for rollback.
-- Feature flag: `SalesTuning.ActiveRequestMode` switches `LegacyScoring` vs `Conditions`; production default is `Conditions`.
-- Conditions scoring: matching book => `Excellent` and `10` gold; non-matching book => `Failed` and `0` gold; skip => `Skipped` and `0` gold. `Normal` is legacy-only.
+- Runtime seam: active purchase flow uses the neutral `ActiveRequestRuntime` (built only via `FromCondition`); no mode switch — conditions is the only path.
+- Conditions scoring: matching book => `Excellent` and `10` gold; non-matching book => `Failed` and `0` gold; skip => `Skipped` and `0` gold. `Normal` is unused by the active flow.
 - Request text v1: generated programmer-readable text from the condition tree; `Difficulty = Unknown`.
 - Condition semantics: `genres` checks only `BookConfig.Genres`; `qualities` checks only `BookConfig.Qualities`; sample content must target the field where the value actually lives.
-- Spawn semantics: in condition mode, regular customer spawning assigns the first `N` enabled valid condition requests to `Passive -> Active -> Passive` customers; the rest remain passive-only. Hard override days keep the exact customer count and warn if capacity is below request count.
+- Spawn semantics: regular customer spawning assigns the first `N` enabled valid condition requests to `Passive -> Active -> Passive` customers; the rest remain passive-only. Hard override days keep the exact customer count and warn if capacity is below request count.
 - Validation: invalid condition requests are filtered before spawning; direct evaluator calls fail closed and log an error.
 - Scope: active purchase predicates stay in BookSell and do not reuse the global `Game.Conditions` quest/location engine.
 

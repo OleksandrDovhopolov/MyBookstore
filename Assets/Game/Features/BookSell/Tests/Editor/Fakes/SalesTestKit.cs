@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Game.Configs.Models;
+using Newtonsoft.Json.Linq;
 
 namespace Book.Sell.Tests.Editor.Fakes
 {
@@ -20,19 +21,24 @@ namespace Book.Sell.Tests.Editor.Fakes
                 Qualities = qualities ?? new[] { "space" }
             };
 
-        public static RequestConfig Request(string id, string[] genres = null, int maxPrice = 100,
-            RequestDifficulty difficulty = RequestDifficulty.Medium)
+        /// <summary>A condition request that matches the default <see cref="Book"/> (a book whose
+        /// <c>Qualities</c> contain <paramref name="quality"/>). Default quality "space" matches the default book.</summary>
+        public static RequestDefinitionConfig RequestDef(string id, string quality = "space")
             => new()
             {
-                Id = id, Text = $"request {id}",
-                DesiredGenres = genres ?? new[] { "sci-fi" },
-                DesiredQualities = new[] { "space" },
-                MaxPrice = maxPrice, Difficulty = difficulty, BaseRewardGold = 25
+                Id = id,
+                Enabled = true,
+                Conditions = new RequestConditionGroup
+                {
+                    All = new[]
+                    {
+                        new RequestCondition { Type = "qualities", Operator = "contains", Value = JToken.FromObject(quality) }
+                    }
+                }
             };
 
-        public static ActiveRequestRuntime ActiveRequest(string id, string[] genres = null, int maxPrice = 100,
-            RequestDifficulty difficulty = RequestDifficulty.Medium)
-            => ActiveRequestRuntime.FromLegacy(Request(id, genres, maxPrice, difficulty));
+        public static ActiveRequestRuntime ActiveRequest(string id, string quality = "space")
+            => ActiveRequestRuntime.FromCondition(RequestDef(id, quality), $"ALL: qualities contains {quality}");
 
         public static LocationConfig Location(string id = "loc", string[] demandGenres = null, string[] demandQualities = null)
             => new()
@@ -53,7 +59,6 @@ namespace Book.Sell.Tests.Editor.Fakes
         public static SalesTuning FastTuning()
             => new()
             {
-                ActiveRequestMode = ActiveRequestMode.LegacyScoring,
                 ApproachDuration = 0f,
                 MinApproachDuration = 0f,
                 MaxApproachDuration = 0f,

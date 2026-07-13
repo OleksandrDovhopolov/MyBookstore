@@ -1,4 +1,3 @@
-using Book.Sell.Domain;
 using Book.Sell.Services;
 using Book.Sell.Tests.Editor.Fakes;
 using Game.Configs.Models;
@@ -41,28 +40,12 @@ namespace Book.Sell.Tests.Editor.Services
             });
 
             var provider = new ConfigActiveRequestRuntimeProvider(configs, new BookConditionRequestEvaluator());
-            var requests = provider.GetRequests(ActiveRequestMode.Conditions);
+            var requests = provider.GetRequests();
 
             Assert.AreEqual(1, requests.Count);
             Assert.AreEqual("valid", requests[0].Id);
-            Assert.AreEqual(ActiveRequestSourceKind.Conditions, requests[0].SourceKind);
             Assert.AreEqual(RequestDifficulty.Unknown, requests[0].Difficulty);
             StringAssert.Contains("genres", requests[0].Text);
-        }
-
-        [Test]
-        public void LegacyMode_WrapsRequestConfigs()
-        {
-            var configs = new FakeConfigsService();
-            configs.SetAll(new[] { SalesTestKit.Request("legacy") });
-
-            var provider = new ConfigActiveRequestRuntimeProvider(configs, new BookConditionRequestEvaluator());
-            var requests = provider.GetRequests(ActiveRequestMode.LegacyScoring);
-
-            Assert.AreEqual(1, requests.Count);
-            Assert.AreEqual("legacy", requests[0].Id);
-            Assert.AreEqual(ActiveRequestSourceKind.LegacyScoring, requests[0].SourceKind);
-            Assert.IsNotNull(requests[0].LegacyRequest);
         }
     }
 }

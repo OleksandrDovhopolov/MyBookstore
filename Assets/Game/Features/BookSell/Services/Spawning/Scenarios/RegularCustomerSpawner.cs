@@ -38,7 +38,7 @@ namespace Book.Sell.Services
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
         {
             var result = _trafficResolver.Resolve(setup, tuning);
-            var requests = _activeRequests.GetRequests(tuning.ActiveRequestMode);
+            var requests = _activeRequests.GetRequests();
             var requestCount = requests.Count;
 
             // Request-count floor: every active request must get a customer, but not on hard-override

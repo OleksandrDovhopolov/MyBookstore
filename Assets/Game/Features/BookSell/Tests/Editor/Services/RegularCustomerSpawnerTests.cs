@@ -29,7 +29,7 @@ namespace Book.Sell.Tests.Editor.Services
         {
             private readonly IReadOnlyList<ActiveRequestRuntime> _requests;
             public StubActiveRequests(IReadOnlyList<ActiveRequestRuntime> requests) => _requests = requests;
-            public IReadOnlyList<ActiveRequestRuntime> GetRequests(ActiveRequestMode mode) => _requests;
+            public IReadOnlyList<ActiveRequestRuntime> GetRequests() => _requests;
         }
 
         private static SalesSessionSetup Setup()
@@ -38,8 +38,8 @@ namespace Book.Sell.Tests.Editor.Services
         private static FakeConfigsService ConfigsWithRequests(int requestCount)
         {
             var configs = new FakeConfigsService();
-            var requests = new List<RequestConfig>(requestCount);
-            for (var i = 0; i < requestCount; i++) requests.Add(new RequestConfig { Id = $"r{i + 1}" });
+            var requests = new List<RequestDefinitionConfig>(requestCount);
+            for (var i = 0; i < requestCount; i++) requests.Add(SalesTestKit.RequestDef($"r{i + 1}"));
             configs.SetAll(requests);
             return configs;
         }
@@ -61,7 +61,6 @@ namespace Book.Sell.Tests.Editor.Services
                 new StubActiveRequests(requests));
 
             var tuning = SalesTestKit.FastTuning();
-            tuning.ActiveRequestMode = ActiveRequestMode.Conditions;
             return spawner.BuildCustomers(Setup(), tuning, new FakeSalesRandom());
         }
 

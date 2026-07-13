@@ -29,7 +29,7 @@ namespace Book.Sell.Tests.Editor.Services
         };
 
         private static ActiveRequestScoringService Sut()
-            => new(new RecommendationScoringService(), new BookConditionRequestEvaluator());
+            => new(new BookConditionRequestEvaluator());
 
         [Test]
         public void ConditionMatch_ReturnsExcellentAndFixedGold()
@@ -53,18 +53,6 @@ namespace Book.Sell.Tests.Editor.Services
 
             Assert.AreEqual(RecommendationTier.Failed, result.Tier);
             Assert.AreEqual(0, result.GoldEarned);
-        }
-
-        [Test]
-        public void LegacyRuntime_DelegatesToLegacyScoring()
-        {
-            var request = SalesTestKit.ActiveRequest("legacy");
-            var book = SalesTestKit.Book("book");
-
-            var result = Sut().Score(book, request, SalesTestKit.Location());
-
-            Assert.AreEqual(RecommendationTier.Excellent, result.Tier);
-            Assert.AreEqual(BookConfig.FixedPriceGold + 25, result.GoldEarned);
         }
     }
 }

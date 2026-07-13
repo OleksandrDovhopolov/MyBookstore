@@ -6,11 +6,11 @@
 - **Supersedes:** значительную часть Sales MVP slice (пошаговый `SalesSessionService` как оркестратор)
 - **Related:** `docs/INPROGRESS/Продажа.md`, `docs/INPROGRESS/SalesFeatureImplementationPlan.md`, `docs/INPROGRESS/customer-simulation-decisions.md`, `docs/REFERENCE_TinyBookshop_Day.md`, [ADR-0001](0001-save-data-modular-payload.md)
 
-> ⚠️ **Активная продажа пересматривается (2026-07-13).** Модель активного запроса переводится со
-> взвешенного скоринга (`RequestConfig` + `RecommendationScoringService`) на **булевы условия**
-> (`RequestDefinitionConfig`, `sample_requests.json`). Старый расчёт сохраняется. Спека —
-> [ACTIVE_REQUEST_CONDITIONS.md](../INPROGRESS/ACTIVE_REQUEST_CONDITIONS.md). При принятии — оформить
-> **ADR-0009** и пометить активную часть этого ADR как частично superseded. Пассивная часть не затрагивается.
+> ⚠️ **Активная продажа переведена на булевы условия (2026-07-13).** Взвешенный скоринг
+> (`RequestConfig` + `RecommendationScoringService`) **удалён**; активный запрос теперь — булев предикат
+> (`RequestDefinitionConfig`, `sample_requests.json`). Спека —
+> [ACTIVE_REQUEST_CONDITIONS.md](../INPROGRESS/ACTIVE_REQUEST_CONDITIONS.md). Осталось оформить
+> **ADR-0009** и пометить активную часть этого ADR как superseded. Пассивная часть не затрагивается.
 
 ## Context
 
