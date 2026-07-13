@@ -1,0 +1,28 @@
+{
+  "id": "req_scarlet_01",
+  "enabled": true,
+  "conditions": {
+    "all": [
+      {
+        "type": "genres",
+        "operator": "contains",
+        "value": "Crime"
+      },
+      {
+        "type": "publicationYear",
+        "operator": "between",
+        "value": {
+          "min": 1850,
+          "max": 1900
+        }
+      },
+      {
+        "type": "pages",
+        "operator": "lessOrEqual",
+        "value": 200
+      }
+    ],
+    "any": [],
+    "none": []
+  }
+}
