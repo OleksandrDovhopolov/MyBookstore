@@ -9,7 +9,6 @@ using Game.Decor.Services;
 using Game.Inventory.API;
 using Game.Newspaper.UI;
 using Game.UI;
-using Game.UI.Common;
 using Game.UI.ContentWidget;
 using Infrastructure.Audio;
 using UnityEngine;
@@ -758,30 +757,6 @@ namespace Game.Decor.UI
 
             try
             {
-                var config = _configs.Get<DecorConfig>(decorId);
-                if (config != null && HasNegativeEffect(config))
-                {
-                    var args = new ConfirmDialogArgs(
-                        title: $"Place {config.DisplayName}?",
-                        body: BuildNegativeWarning(config),
-                        confirmLabel: "Place anyway",
-                        cancelLabel: "Cancel");
-
-                    var dialog = await UIManager.ShowAsync<ConfirmDialog>(args, _cts.Token);
-                    if (dialog == null || !PreviewMatches(decorId, pointId))
-                    {
-                        RestoreApplyIfPreviewStillActive(decorId, pointId);
-                        return;
-                    }
-
-                    var confirm = await dialog.WaitForResultAsync<ConfirmDialogResult>(_cts.Token);
-                    if (confirm != ConfirmDialogResult.Confirmed || !PreviewMatches(decorId, pointId))
-                    {
-                        RestoreApplyIfPreviewStillActive(decorId, pointId);
-                        return;
-                    }
-                }
-
                 var result = isReplace
                     ? await _placement.ReplaceAsync(decorId, pointId, _cts.Token)
                     : await _placement.PlaceAsync(decorId, pointId, _cts.Token);

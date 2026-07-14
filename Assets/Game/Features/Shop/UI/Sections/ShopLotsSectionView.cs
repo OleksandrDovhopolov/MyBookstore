@@ -5,7 +5,6 @@ using Game.Newspaper.UI;
 using Game.Rewards.API;
 using Game.Shop.API;
 using Game.UI;
-using Game.UI.Common;
 using TMPro;
 using UnityEngine;
 
@@ -101,12 +100,6 @@ namespace Game.Shop.UI.Sections
             if (_shop == null) return;
             if (!_shop.TryGetLot(lotId, out var lot)) return;
 
-            if (_confirmPolicy != null && _confirmPolicy.RequiresConfirmation(lot))
-            {
-                var confirmed = await ShowConfirmAsync(lot);
-                if (!confirmed) return;
-            }
-
             var result = await _shop.BuyAsync(lotId, _ct);
 
             if (result.Status == ShopPurchaseStatus.Success && result.Granted != null
@@ -122,23 +115,6 @@ namespace Game.Shop.UI.Sections
             }
 
             Refresh();
-        }
-
-        private async UniTask<bool> ShowConfirmAsync(ShopLot lot)
-        {
-            if (_uiManager == null) return true;
-
-            var args = new ConfirmDialogArgs(
-                title: $"Buy {lot.RewardId}?",
-                body: $"Spend <b>{lot.Price.Amount} {lot.Price.Currency}</b> on this offer?",
-                confirmLabel: "Buy",
-                cancelLabel: "Cancel");
-
-            var dialog = await _uiManager.ShowAsync<ConfirmDialog>(args, _ct);
-            if (dialog == null) return false;
-
-            var result = await dialog.WaitForResultAsync<ConfirmDialogResult>(_ct);
-            return result == ConfirmDialogResult.Confirmed;
         }
     }
 }
