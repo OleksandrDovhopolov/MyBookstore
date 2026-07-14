@@ -295,8 +295,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 300, y: -0}
-  m_SizeDelta: {x: 600, y: 0}
+  m_AnchoredPosition: {x: 410, y: -0}
+  m_SizeDelta: {x: 710.01, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &7025505212546226278
 CanvasRenderer:
@@ -445,7 +445,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 214}
-  m_SizeDelta: {x: 600, y: 0}
+  m_SizeDelta: {x: 820, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &6614679656867926768
 MonoBehaviour:
@@ -465,7 +465,7 @@ MonoBehaviour:
   _bubbleCanvasGroup: {fileID: 1645726909725871854}
   _bubble: {fileID: 1222644676653475915}
   _bubbleLayout: {fileID: 6602367865357904064}
-  _maxBubbleWidth: 600
+  _bubbleWidth: 820
   _appearDuration: 0.2
   _appearScaleFrom: 0.85
   _charsPerSecond: 40
@@ -544,8 +544,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 300, y: -119}
-  m_SizeDelta: {x: 580, y: 0}
+  m_AnchoredPosition: {x: 355.005, y: -123.425}
+  m_SizeDelta: {x: 690.01, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &7044485117785364802
 CanvasRenderer:

@@ -5,6 +5,7 @@ using DG.Tweening;
 using TMPro;
 using UIShared;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Book.Sell.UI
@@ -30,9 +31,11 @@ namespace Book.Sell.UI
         [SerializeField] private HorizontalLayoutGroup _rowLayout;
         [SerializeField] private CanvasGroup _bubbleCanvasGroup;   // fade
         [SerializeField] private RectTransform _bubble;            // scale
-        [SerializeField] private LayoutElement _bubbleLayout;      // width cap
-        [Tooltip("Max bubble width in px (~70% of the panel). Long replies wrap at this width.")]
-        [SerializeField] private float _maxBubbleWidth = 600f;
+        [SerializeField] private LayoutElement _bubbleLayout;      // fixed width
+        [Tooltip("Fixed bubble width in px — EVERY bubble is exactly this wide regardless of text length " +
+                 "(set to ~70% of the feed/panel width). Text wraps inside this width.")]
+        [FormerlySerializedAs("_maxBubbleWidth")]
+        [SerializeField] private float _bubbleWidth = 600f;
 
         [Header("Appear animation")]
         [SerializeField] private float _appearDuration = 0.2f;
@@ -57,20 +60,17 @@ namespace Book.Sell.UI
         {
             ResetAppearStartVisual();
 
+            // Fixed bubble width regardless of text length — uniform chat bubbles. The row layout aligns the
+            // bubble left/right within the full-width row; the text wraps inside this width.
+            if (_bubbleLayout != null)
+                _bubbleLayout.preferredWidth = _bubbleWidth;
+
             if (_nameLabel != null) _nameLabel.text = speaker ?? string.Empty;
 
             if (_textLabel != null)
             {
                 _textLabel.text = text ?? string.Empty;
                 _textLabel.maxVisibleCharacters = 0;
-
-                // LayoutElement has no max-width, so cap the preferred width ourselves: compact when short,
-                // wraps at _maxBubbleWidth when long.
-                if (_bubbleLayout != null)
-                {
-                    var preferred = _textLabel.GetPreferredValues(_textLabel.text).x;
-                    _bubbleLayout.preferredWidth = Mathf.Min(preferred, _maxBubbleWidth);
-                }
             }
         }
 
