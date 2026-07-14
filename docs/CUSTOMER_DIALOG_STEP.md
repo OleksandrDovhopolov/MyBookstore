@@ -1,40 +1,48 @@
 # GAME-6 — Runtime DialogStep в симуляции покупателей
 
-> **Статус (2026-07-10): базовый слайс РЕАЛИЗОВАН.** Остаток вынесен в бэклог —
-> [TODO.md → Backlog → GAME-6-D](../TODO.md). Ниже §1–6 — исходная спека; фактическая реализация местами
-> разошлась с ней, ключевые расхождения зафиксированы в «§0 Статус реализации».
+> **Статус (2026-07-14): фича РЕАЛИЗОВАНА** — домен + презентация + ветвящийся контент (`eddy1`). Оставшиеся,
+> не-MVP доработки вынесены в бэклог — [TODO.md → Backlog → GAME-6-D](../TODO.md#-backlog). Ниже §1–6 —
+> **историческая спека** (staged-план реализации); актуальное состояние — «§0 Статус реализации».
 > Связано: [ADR-0003](../adr/0003-customer-simulation.md) (симуляция покупателей),
 > [CUSTOMER_STEP_PIPELINE_REFACTOR.md](CUSTOMER_STEP_PIPELINE_REFACTOR.md),
 > [QUESTS.md](../QUESTS.md) / [CHARACTERS_AND_QUESTS.md](../CHARACTERS_AND_QUESTS.md) (квест-персонажи),
 > [WORLD_HUD.md](WORLD_HUD.md) (будущий вариант презентации 2.2), `UI_SYSTEM` (окна, вариант 2.1).
 
-## 0. Статус реализации (факт, актуально 2026-07-10)
+## 0. Статус реализации (факт, актуально 2026-07-14)
 
 **Сделано:**
-- Домен/контроллер по спеке §Этап 1–2: `DialogStep` (держит lock до `CompleteDialogue()`, релиз на `Exit`),
+- Домен/контроллер (§Этап 1–2): `DialogStep` (держит lock до `CompleteDialogue()`, релиз на `Exit`),
   sink `OnDialogueStarted`, эвент `DialogueStarted` + вход `CompleteDialogue()`.
 - Движок `DialogueEngine` (view-agnostic) + презентер `DialoguePresenter` + окно
   `DialogWindow` / `DialogWindowView` / `DialogLineView` + чит `DialogueCheatModule`.
-- Спавн — **квест-driven** (расхождение 1). Контент `dialogues.json` — граф со `speaker`+`text` на реплику,
-  тексты английские (расхождение 3).
+- Спавн — **квест-driven** (расхождение 1). Контент `dialogues.json` — граф
+  `{ nodeId, lines:[{ speaker, text }], options }`, тексты английские (расхождение 3).
+- **Варианты ответа (кнопки) реализованы И используются** — ветвящийся диалог `eddy1` (два выбора + схождение веток).
+- **Опции — часть ленты (in-feed):** пул `UIListPool<DialogOptionView>` рендерит кнопки в `ScrollRect` под
+  последней репликой (контейнер `OptionsRoot`); на время показа опций гасится click-catcher, чтобы кнопки
+  получали клики. Выбор → опции исчезают, беседа продолжается ниже.
+- **Bridge-узлы (линейное продолжение):** опция с пустым `text` = **невидимый авто-переход**
+  (`DialogWindow.IsBridgeNode`) — кнопка не рисуется, тот же клик по ленте перематывает в `next`-узел.
+  Даёт линейные цепочки узлов и схождение веток без «фейковых» кнопок.
+- **Фикс-ширина бабла:** `DialogLineView` держит постоянную ширину (`_bubbleWidth`, ~70% ленты)
+  независимо от длины текста.
 
-**Ключевые расхождения с §3/§5 ниже:**
+**Ключевые расхождения с §3/§5 ниже (историческая спека):**
 1. **Спавн — не через `DayConfig.scheduledDialogueIds`, а через квест-состояние.** Диалог живёт на
    [`QuestConfig.DialogueId`](../../Assets/Game/Features/Configs/Models/QuestConfig.cs); decorator
    [`QuestSchedulingCustomerSpawner`](../../Assets/Game/Features/BookSell/Services/QuestSchedulingCustomerSpawner.cs)
    читает `IQuestsService.GetActiveQuests()` и prepend'ит `QuestCharacterArchetype`-покупателя; fire-once —
    save-backed [`IDeliveredDialoguesService`](../../Assets/Game/Features/BookSell/Services/Dialogue/IDeliveredDialoguesService.cs).
    `DayConfig.scheduledDialogueIds` и поле в `SalesSessionSetup` удалены — **день о диалогах не знает**.
-2. **Презентация — не «реплики + 2–3 кнопки», а лента-мессенджер.** Реплики появляются по одной сверху вниз
-   в `ScrollRect` (пул `UIListPool<DialogLineView>`), со стороной по говорящему (1-й слева, 2-й справа),
+2. **Презентация — не «реплики + панель кнопок сверху», а лента-мессенджер.** Реплики и опции живут в
+   `ScrollRect` (пулы `UIListPool<DialogLineView>` / `UIListPool<DialogOptionView>`), сторона по говорящему,
    DOTween fade+scale + typewriter; клик по экрану двигает беседу, клики блокируются во время анимации/печати.
-   Варианты ответа реализованы (панель кнопок опций), но в текущем контенте `dlg_tilde_meet` не используются.
 3. **Схема контента.** `DialogueNodeConfig.Lines`: `string[]` → `DialogueLineConfig[] { Speaker, Text }`;
    тексты английские.
 
-**Остаток (бэклог):** [TODO.md → Backlog → GAME-6-D](../TODO.md) — геймплейно-значимый выбор, атрибуция
-выбора, Skip, world-HUD 2.2, реактивные диалоги, мульти-узловой линейный диалог, персонаж `tilde`,
-локализация, портреты, UI-автотесты.
+**Не сделано (backlog) →** [TODO.md → Backlog → GAME-6-D](../TODO.md#-backlog): геймплейно-значимый выбор,
+атрибуция выбора (реплика игрока в ленте), Skip, world-HUD 2.2, реактивные диалоги, персонаж `tilde`,
+локализация, портреты/тема бабла, UI-автотесты.
 
 ## 1. Цель (MVP)
 
@@ -200,14 +208,16 @@
   «точка входа квест-осведомлённости»; делать её нужно в одном куске с движком/вью, чтобы у первого
   прод-спавна сразу был `CompleteDialogue()`-завершатель.
 
-## 4. Что НЕ входит в MVP (заложено, но не делаем сейчас)
-- Реактивные диалоги через `Customer.InsertNext` (по образцу `PassiveSaleCommentRule` → `CommentStep`) —
-  механизм существует, оставляем на потом.
-- **Геймплейно-значимый** выбор: `CompleteDialogue(choiceId)` (результат читает quest-система) или
-  план-ветвление выбранной опцией через `Customer.InsertNext`. В MVP варианты ответа **чисто
-  разговорные** (§1/§2), поэтому этот канал не строим, пока нет потребителя — домен и `CompleteDialogue()`
-  остаются без параметров.
-- Свап на world-HUD (2.2) — только когда решение будет принято; изолирован Этапом 5.
+## 4. Что НЕ входит в MVP → backlog
+
+Оставшиеся, не-MVP доработки вынесены в **[TODO.md → Backlog → GAME-6-D](../TODO.md#-backlog)**:
+геймплейно-значимый выбор (`CompleteDialogue(choiceId)` / ветвление плана-квеста), атрибуция выбора,
+Skip, свап на world-HUD 2.2, реактивные диалоги через `Customer.InsertNext`, node-level `next` (замена
+bridge-хака), персонаж `tilde`, локализация, портреты/тема бабла, UI-автотесты.
+
+Здесь фиксируется только **инвариант**: пока варианты ответа **чисто разговорные**, домен
+(`DialogStep`, payload) и `CompleteDialogue()` остаются **без параметров** — геймплейно-значимый выбор
+добавляется отдельным каналом, когда появится потребитель.
 
 ## 5. Верификация
 - Edit-mode тесты по этапам 1–4 (домен/контроллер/конфиг/архетип) — гоняются из Unity Editor.

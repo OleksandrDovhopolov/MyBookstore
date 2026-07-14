@@ -1,17 +1,14 @@
 # Active-purchase requests — condition-based model (пересмотр)
 
-- **Статус:** 🚧 In-progress / draft (2026-07-13)
+- **Статус:** ✅ Accepted / implemented (2026-07-14)
 - **Тип:** спека фичи (пересмотр активной продажи)
 - **Related:** [ADR-0003](../adr/0003-customer-simulation.md), [ADR-0006](../adr/0006-passive-sales-requested-genre.md),
   [CORE_LOOP.md](../CORE_LOOP.md)
 
-> ## ⚠️ ADR — не забыть обновить
+> ## Follow-up
 > Условная модель **внедрена**, а legacy-скоринг (`RequestConfig` + `RecommendationScoringService`) **удалён** —
-> активная продажа теперь работает только на булевых условиях. Осталась документация: **оформить новый
-> `ADR-0009` «Active requests over a condition tree» и пометить активную часть
-> [ADR-0003](../adr/0003-customer-simulation.md) как superseded.** Пассивную часть
-> ([ADR-0006](../adr/0006-passive-sales-requested-genre.md)) это не трогает. Пока ADR не написан —
-> источник истины по решению здесь.
+> активная продажа теперь работает только на булевых условиях. Оставшиеся не-MVP пункты вынесены в
+> [TODO.md → GAME-14](../TODO.md#-backlog).
 
 ---
 
@@ -208,19 +205,8 @@ C#-модель — [`RequestDefinitionConfig`](../../Assets/Game/Features/Confi
 - Validation: invalid condition requests are filtered before spawning; direct evaluator calls fail closed and log an error.
 - Scope: active purchase predicates stay in BookSell and do not reuse the global `Game.Conditions` quest/location engine.
 
-## 8. Historical TODO / follow-up
+## 8. Follow-up / backlog
 
-The original open questions below are kept as historical context. Gameplay, reward, seam, evaluator, and validator choices are superseded by the accepted implementation decisions above; ADR-0009 is still a follow-up documentation task.
-
-- [ ] **Геймплей.** Условия дают «множество подходящих книг» (фильтр), но не «насколько хорошо игрок угадал»
-      (градация скоринга). Определить, как миниигра использует match-set: строгий pass/fail? частичный балл
-      по числу пройденных условий? гибрид (условия — кандидаты, скоринг — оценка выбора)?
-- [ ] **Награда.** В `hard_requests.json` нет reward/difficulty. Решить, где
-      живёт награда в новой модели.
-- [ ] **Seam выбора модели** (legacy scoring ↔ conditions) — спроектировать по образцу ADR-0006.
-- [ ] **Evaluator + реестр хендлеров** (`IConditionHandler` по `type`, общий набор операторов) — реализация.
-- [ ] **Валидатор** конфигов условий (реестр типов/операторов, форма `value`) — иначе опечатки всплывают в рантайме.
-- [ ] Проверить, не переиспользовать ли существующий движок `Game.Conditions` ([ADR-0007](../adr/0007-quest-system.md))
-      вместо новой сущности.
-- [ ] Оформить **ADR-0009** и пометить активную часть ADR-0003 как superseded (см. callout сверху).
-- [x] Миграция `BookConfig` на `Genres[]` (см. §6).
+Функционал активных покупок на condition-модели считается готовым. Исторические открытые вопросы, которые
+не входят в готовый слайс или стали будущими улучшениями, перенесены в
+[TODO.md → GAME-14](../TODO.md#-backlog).

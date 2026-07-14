@@ -41,6 +41,8 @@
   - Движок графа `DialogueEngine` (view-agnostic) + окно-лента `DialogWindow` / `DialogWindowView` /
     `DialogLineView`: реплики со сторонами (L/R по говорящему), typewriter, DOTween-появление, скролл; чит-модуль.
   - Контент `dialogues.json` (граф `{ nodeId, lines:[{ speaker, text }], options }`), англ. тексты.
+  - Варианты ответа (кнопки **в ленте**, пул `UIListPool<DialogOptionView>`), ветвящийся диалог `eddy1`;
+    bridge-узлы (опция с пустым `text` = невидимый авто-переход по ленте); фикс-ширина бабла (`DialogLineView`).
   - Спека, факт и расхождения — [INPROGRESS/CUSTOMER_DIALOG_STEP.md](INPROGRESS/CUSTOMER_DIALOG_STEP.md).
   - Остаток (значимый выбор, world-HUD 2.2, реактивные диалоги, локализация, портреты, …) — см. **Backlog** ниже.
 
@@ -159,20 +161,40 @@
 
 - [ ] **GAME-6-D. Диалоги — доработки.** Базовый слайс закрыт (см. GAME-6 в «Геймплей» и
   [INPROGRESS/CUSTOMER_DIALOG_STEP.md](INPROGRESS/CUSTOMER_DIALOG_STEP.md)). Осталось:
-  - **Геймплейно-значимый выбор**: `CompleteDialogue(choiceId)` / ветвление плана/квеста (сейчас варианты
-    косметические и в текущем контенте не используются).
+  - **Геймплейно-значимый выбор**: `CompleteDialogue(choiceId)` / ветвление плана/квеста. Ветвящийся контент
+    уже есть (`eddy1`, два выбора + схождение), но выбор **косметический** — на геймплей/квест не влияет.
   - **Атрибуция выбора**: у `DialogueOptionConfig` нет `speaker`; выбранный вариант не отображается в ленте
     как реплика игрока.
   - **Skip** — сейчас disabled-заглушка; реальное поведение (домотать / закрыть).
   - **Свап на world-HUD (2.2)** — движок view-agnostic, меняется только вью ([WORLD_HUD.md](WORLD_HUD.md)).
   - **Реактивные диалоги** через `Customer.InsertNext` (по образцу `PassiveSaleCommentRule` → `CommentStep`).
-  - **Мульти-узловой линейный диалог**: в графе нет «линейного продолжения» между узлами (единственное
-    ребро — выбор), сейчас один узел на беседу.
+  - **Node-level `next` (опц., чистит bridge-хак):** линейное продолжение между узлами уже работает через
+    опцию с пустым `text` (невидимый авто-переход, `DialogWindow.IsBridgeNode`); по желанию — заменить на
+    явный `next` у узла вместо «фейковой» опции (аккуратнее в данных/валидации).
   - **Персонаж `tilde` в `characters.json`** — квест `q_intro_tilde` ссылается на `characterId: "tilde"`,
     которого в конфиге нет (нужен для журнала/HUD/портретов).
   - **Локализация** реплик/имён/опций (raw-строки) — через INF-4.
   - **Портреты/аватары, цветовая тема бабла** по говорящему.
   - **UI-автотесты** окна/анимации (сейчас только ручной прогон через чит).
+
+- [ ] **GAME-14. Active purchase conditions — follow-up после готового слайса.** Condition-based active
+  purchases считаются готовыми; базовое поведение зафиксировано в
+  [INPROGRESS/ACTIVE_REQUEST_CONDITIONS.md](INPROGRESS/ACTIVE_REQUEST_CONDITIONS.md). Осталось как backlog,
+  без блокировки текущего функционала:
+  - **ADR-0009:** оформить решение «Active requests over a condition tree» и пометить активную часть
+    [adr/0003-customer-simulation.md](adr/0003-customer-simulation.md) как superseded. Пассивную часть
+    [adr/0006-passive-sales-requested-genre.md](adr/0006-passive-sales-requested-genre.md) не трогать.
+  - **Баланс v2:** после плейтеста решить, хватает ли строгого `Excellent/Failed` и фиксированной награды
+    `10` gold, или нужен частичный балл / гибрид «условия как фильтр + оценка выбора» / authored
+    `reward`/`difficulty` в `hard_requests.json`.
+  - **Escape-hatch для сложных формул:** если появится запрос вида `(A AND B) OR (C AND D)`, добавить
+    точечный raw-JSON/расширенный condition для конкретного запроса, не усложняя базовую плоскую схему.
+  - **Новые типы условий только под контент:** `authorSex`, `size`, `price`, `rarity`, `country`, `language`
+    добавлять только когда эти поля реально появятся в книгах/таблицах.
+  - **Evaluator registry v2:** если число `type`/операторов начнёт расти, выделить явный реестр
+    `IConditionHandler` вместо текущего достаточного evaluator-подхода.
+  - **Docs cleanup:** убрать или пометить историческими оставшиеся упоминания `RequestConfig` /
+    `RecommendationScoringService` там, где они выглядят как актуальная документация.
 
 - [ ] **GAME-13. Архетипный микс покупателей + composition policy.**
   Сейчас `RegularCustomerSpawner` строит всех покупателей одним архетипом (`PassiveAttemptsArchetype`
