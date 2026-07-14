@@ -141,6 +141,8 @@ namespace Book.Sell.UI
             if (_revealing) return;                 // block clicks while a reply is still typing
             if (_lineIndex < (_lines?.Length ?? 0))
                 RevealNextAsync().Forget();
+            else if (IsBridgeNode())
+                AdvanceBridge();                    // invisible auto-advance: no button, the continue-click crosses over
             else
                 CompleteAndClose();                 // terminal node's replies shown — a click ends it
         }
@@ -189,10 +191,11 @@ namespace Book.Sell.UI
         }
 
         // Current node's replies are exhausted (or it had none): show its answer options, or do nothing for a
-        // terminal node (a screen click will close it via OnScreenClicked).
+        // terminal node (a screen click will close it via OnScreenClicked) or a bridge node (a screen click
+        // auto-advances via OnScreenClicked, so no button is shown).
         private void MaybeShowOptionsOrEndNode()
         {
-            if (_engine == null || _engine.IsTerminal) return;
+            if (_engine == null || _engine.IsTerminal || IsBridgeNode()) return;
 
             var options = _engine.Current.Options;
             var labels = new string[options.Length];
@@ -201,6 +204,35 @@ namespace Book.Sell.UI
 
             View.ShowOptions(labels, OnOptionPicked);
             _awaitingChoice = true;
+        }
+
+        // A "bridge" is a narrative pass-through with no real choice: exactly one option whose button text is
+        // empty. It is not rendered as a button — instead the same continue-click advances the feed to the
+        // option's target node, so the player never sees a node boundary. (A single option WITH text is still a
+        // real one-button choice and is shown normally.)
+        private bool IsBridgeNode()
+        {
+            if (_engine == null || _engine.IsTerminal) return false;
+            var options = _engine.Current.Options;
+            return options.Length == 1 && string.IsNullOrWhiteSpace(options[0]?.Text);
+        }
+
+        private void AdvanceBridge()
+        {
+            switch (_engine.Choose(0))
+            {
+                case ChooseResult.Advanced:
+                    PlayCurrentNode();      // append the target node's replies to the same feed
+                    break;
+
+                default:
+                    // "end"/empty target or a missing node on a bridge is a content error (a bridge should point
+                    // at a real node). Don't strand the player — end the conversation.
+                    Debug.LogError($"{LogPrefix} Bridge node '{_engine.Current.NodeId}' " +
+                                   $"('{_payload.DialogueId}') does not advance to a valid node — ending the dialogue.");
+                    CompleteAndClose();
+                    break;
+            }
         }
 
         private void OnOptionPicked(int optionIndex)
