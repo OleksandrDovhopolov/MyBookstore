@@ -90,7 +90,7 @@ namespace Book.Sell.UI
             _engine = new DialogueEngine(config);
 
             // Skip is a stub this iteration — keep it visible-but-inert so it doesn't look like a live control.
-            if (View.SkipButton != null) View.SkipButton.interactable = false;
+            //if (View.SkipButton != null) View.SkipButton.interactable = false;
 
             Subscribe();
             PlayCurrentNode();   // reveal the entry node's replies (or its options if it has none)

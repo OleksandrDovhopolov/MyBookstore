@@ -76,6 +76,7 @@
 | Документ | Что описывает | Зависит от | Связи / пересечения |
 |---|---|---|---|
 | ✅ [UI_SYSTEM.md](SERVICES/UI_SYSTEM.md) | Фреймворк окон (`Game.UI`, `Assets/Game/Core/UI/`): `IUIManager.ShowAsync/Hide`, `WindowController<TView>`/`WindowView`, слои (`WindowType` × `WindowLayer`), сортировка, кэш `UIStorage`, стек, анимации, blocker, фильтр показа. | → [ADDRESSABLES.md](SERVICES/ADDRESSABLES.md) (загрузка префабов окон через `ProdAddressablesWrapper`) | [improvements/UI_SYSTEM_FUTURE_PHASES.md](improvements/UI_SYSTEM_FUTURE_PHASES.md) (роадмап), [DI_ARCHITECTURE_WINDOWFACTORY.md](archive/DI_ARCHITECTURE_WINDOWFACTORY.md), [ANIMATION_BUILDER.md](SERVICES/ANIMATION_BUILDER.md). Потребители — все фичи с окнами. |
+| ✅ [UI_RULES.md](UI_RULES.md) | Живые правила хранения и использования UI-ресурсов: общие ассеты, feature-owned ассеты, shared-кнопки, core UI-префабы, политика обновления. | → [UI_SYSTEM.md](SERVICES/UI_SYSTEM.md) | Дополняет [UI_SYSTEM.md](SERVICES/UI_SYSTEM.md) практическими правилами размещения окон, префабов, спрайтов, материалов и shared UI-ассетов. |
 
 ---
 
