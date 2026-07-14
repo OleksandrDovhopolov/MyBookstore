@@ -147,6 +147,7 @@
 | Документ | Связи |
 |---|---|
 | ⏳ [TODO.md](TODO.md) | Рабочий список задач (Геймплей/Инфраструктура/Визуал). Источник истины по задачам — Notion. |
+| ✅ [BUILD.md](BUILD.md) | Чеклист подготовки к player-сборке (APK): обязательный `Tools/Configs/Sync Bundled Defaults` (конфиги грузятся из StreamingAssets/manifest, не из Assets/Configs), Addressables, Firebase, Android Player Settings. | [SERVICES/CONFIG_CACHE_SYSTEM.md](SERVICES/CONFIG_CACHE_SYSTEM.md), [SERVICES/ADDRESSABLES.md](SERVICES/ADDRESSABLES.md) |
 
 ---
 
