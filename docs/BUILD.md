@@ -52,6 +52,16 @@ Android-таргета на месте конфиг Firebase (`google-services.j
 привязано к нужному проекту. Секреты/ключи — по [SERVICES/SECRETS.md](SERVICES/SECRETS.md), не коммитить в
 репозиторий.
 
+**RC-override — этап загрузки (не отдельные конфиги).** RC работает как partial-overlay поверх base
+(сервер/bundled): ключ `cfg_<file>` (напр. `cfg_books`) хранит `{"<id>":{...поля...}}` и мёржится в момент
+ленивой десериализации секции — **после** фазы `configs_warmup`. Следствия для билда:
+
+- id в RC-ключе должны совпадать с id **опубликованной** секции. Иначе override молча ни к чему не
+  применяется — в логе `[RemoteConfigOverrideSource] '<key>' present, but no entry for id='…'` (безвредный
+  шум, но признак рассинхрона id между сервером и RC).
+- один и тот же ключ **не** держать одновременно в сервере и в RC (см. правило разделения в
+  [CONFIG_CACHE_SYSTEM.md §3](SERVICES/CONFIG_CACHE_SYSTEM.md)).
+
 ## 4. Android Player Settings
 
 Стандартные настройки под целевой таргет (проверить в `Project Settings → Player` / `Build Settings`):
