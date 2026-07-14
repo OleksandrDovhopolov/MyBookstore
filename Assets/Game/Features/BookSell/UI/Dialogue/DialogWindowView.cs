@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.UI;
-using TMPro;
 using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,11 +17,12 @@ namespace Book.Sell.UI
     /// blocking clicks while typing, when to offer options) lives in the window controller — this only
     /// appends, scrolls, toggles options, and forwards the click/skip/option events.
     ///
-    /// Prefab (authored by the user): a ScrollRect whose content hosts the pool, a <see cref="DialogLineView"/>
-    /// prefab, a full-screen <see cref="_clickCatcher"/> button, a <see cref="_skipButton"/>, and an
-    /// <see cref="_optionsPanel"/> with index-aligned <see cref="_optionButtons"/>/<see cref="_optionLabels"/>
-    /// placed ABOVE the click catcher (so option clicks register). Pool's prefab + parent are assigned on
-    /// <see cref="_linePool"/> in the inspector.
+    /// Prefab (authored by the user): a ScrollRect whose content hosts two stacked sub-containers — a lines
+    /// root for <see cref="_linePool"/> (<see cref="DialogLineView"/>) and an <see cref="_optionsRoot"/> for
+    /// <see cref="_buttonPool"/> (<see cref="DialogOptionView"/>) below it — plus a full-screen
+    /// <see cref="_clickCatcher"/> button and a <see cref="_skipButton"/>. Each pool's prefab + parent are
+    /// assigned in the inspector; the click catcher is disabled while options are shown so the in-feed option
+    /// buttons receive clicks.
     /// </summary>
     public sealed class DialogWindowView : WindowView
     {
@@ -35,12 +35,12 @@ namespace Book.Sell.UI
         [SerializeField] private Button _clickCatcher;   // full-screen: advance to the next reply
         [SerializeField] private Button _skipButton;
 
-        [Header("Answer options (index-aligned)")]
-        [SerializeField] private GameObject _optionsPanel;
-        [SerializeField] private Button[] _optionButtons;
-        [SerializeField] private TMP_Text[] _optionLabels;
+        [Header("Answer options (pooled, in-feed)")]
+        [Tooltip("Option-button prefab + parent (OptionsRoot) are assigned on the pool in the inspector.")]
+        [SerializeField] private UIListPool<DialogOptionView> _buttonPool = new();
+        [Tooltip("The OptionsRoot container (a layout child of the scroll content, below the lines root).")]
+        [SerializeField] private GameObject _optionsRoot;
 
-        private Action<int> _onOptionPick;
         private DialogClickCatcherGestureBridge _clickCatcherGestureBridge;
 
         /// <summary>Player clicked the screen (request the next reply / close at the end).</summary>
@@ -65,18 +65,6 @@ namespace Book.Sell.UI
 
             if (_skipButton != null) _skipButton.onClick.AddListener(RaiseSkipClicked);
 
-            // Bind option buttons once to a stable index closure; the active callback is swapped per node via
-            // ShowOptions, so we never add/remove listeners on every render.
-            if (_optionButtons != null)
-            {
-                for (var i = 0; i < _optionButtons.Length; i++)
-                {
-                    if (_optionButtons[i] == null) continue;
-                    var index = i;
-                    _optionButtons[i].onClick.AddListener(() => _onOptionPick?.Invoke(index));
-                }
-            }
-
             HideOptions();
         }
 
@@ -86,10 +74,6 @@ namespace Book.Sell.UI
             if (_clickCatcher != null) _clickCatcher.onClick.RemoveListener(RaiseScreenClicked);
             if (_clickCatcherGestureBridge != null) _clickCatcherGestureBridge.Clear();
             if (_skipButton != null) _skipButton.onClick.RemoveListener(RaiseSkipClicked);
-
-            if (_optionButtons != null)
-                foreach (var button in _optionButtons)
-                    if (button != null) button.onClick.RemoveAllListeners();
         }
 
         /// <summary>Appends a reply at the bottom of the feed (aligned to <paramref name="isRight"/>) and
@@ -123,35 +107,29 @@ namespace Book.Sell.UI
         /// <summary>Clears the feed (returns all pooled replies).</summary>
         public void ClearLines() => _linePool.DisableAll();
 
-        /// <summary>Shows one button per label (clamped to the available buttons) and routes clicks to
-        /// <paramref name="onPick"/> with the button index. Extra labels beyond the prefab's buttons are
-        /// dropped with a warning.</summary>
+        /// <summary>Spawns one pooled <see cref="DialogOptionView"/> per label (in the OptionsRoot, below the
+        /// reply feed) and routes clicks to <paramref name="onPick"/> with the option index. The click catcher
+        /// is disabled while options are up so the in-feed buttons receive clicks — but only when at least one
+        /// button is actually shown (fail-soft for empty/broken content).</summary>
         public void ShowOptions(IReadOnlyList<string> labels, Action<int> onPick)
         {
-            _onOptionPick = onPick;
+            _buttonPool.DisableAll();
 
-            var buttonCount = _optionButtons?.Length ?? 0;
-            var wanted = labels?.Count ?? 0;
-            var visible = Mathf.Min(wanted, buttonCount, _optionLabels?.Length ?? 0);
-            if (wanted > visible)
-                Debug.LogWarning($"[DialogWindowView] {wanted} option(s) but only {visible} button(s) — extras dropped.");
+            var count = labels?.Count ?? 0;
+            for (var i = 0; i < count; i++)
+                _buttonPool.GetNext().Bind(i, labels[i], onPick);
 
-            for (var i = 0; i < buttonCount; i++)
-            {
-                var show = i < visible;
-                if (_optionButtons[i] != null) _optionButtons[i].gameObject.SetActive(show);
-                if (show && _optionLabels != null && i < _optionLabels.Length && _optionLabels[i] != null)
-                    _optionLabels[i].text = labels[i] ?? string.Empty;
-            }
-
-            if (_optionsPanel != null) _optionsPanel.SetActive(visible > 0);
+            if (_optionsRoot != null) _optionsRoot.SetActive(count > 0);
+            if (count > 0 && _clickCatcher != null) _clickCatcher.gameObject.SetActive(false);
         }
 
-        /// <summary>Hides the options panel.</summary>
+        /// <summary>Clears the option buttons, hides the OptionsRoot, and re-enables the click catcher.
+        /// Null-safe and idempotent — safe to call from teardown/reset, not only while the window is open.</summary>
         public void HideOptions()
         {
-            _onOptionPick = null;
-            if (_optionsPanel != null) _optionsPanel.SetActive(false);
+            _buttonPool.DisableAll();
+            if (_optionsRoot != null) _optionsRoot.SetActive(false);
+            if (_clickCatcher != null) _clickCatcher.gameObject.SetActive(true);
         }
 
         private void ScrollToBottom()

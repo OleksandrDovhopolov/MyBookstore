@@ -204,6 +204,9 @@ namespace Book.Sell.UI
 
             View.ShowOptions(labels, OnOptionPicked);
             _awaitingChoice = true;
+
+            // The options block was just appended below the last reply — scroll it into view.
+            View.ScrollToBottomAfterLayoutAsync(_revealCts?.Token ?? default).Forget();
         }
 
         // A "bridge" is a narrative pass-through with no real choice: exactly one option whose button text is
