@@ -126,6 +126,7 @@ namespace Game.Cheat
 
             var cheatsModules = new List<ICheatsModule>
             {
+                new FpsCounterCheatModule(),
                 new DefaultCheatModule(_uiManager),
                 new DecorationCheatModule(_uiManager, _inventory, _configs, destroyCt),
                 new ResourcesCheatModule(_resources, destroyCt),
