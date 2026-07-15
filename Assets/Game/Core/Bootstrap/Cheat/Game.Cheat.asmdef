@@ -18,7 +18,8 @@
         "Game.Decor",
         "Game.Shop.UI",
         "Game.Newspaper",
-        "Game.Quest.UI"
+        "Game.Quest.UI",
+        "Dialogue"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

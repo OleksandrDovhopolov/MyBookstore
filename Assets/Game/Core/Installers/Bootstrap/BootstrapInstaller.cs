@@ -1,6 +1,8 @@
+using Game.Bootstrap.Loading;
 using Game.Tutorial.Presentation;
 using Game.UI;
 using Infrastructure.ResourceAnimations;
+using SpriteService;
 using UnityEngine;
 using VContainer;
 
@@ -23,7 +25,7 @@ namespace Game.Bootstrap
 
         [Header("UI Sprites")]
         [Tooltip("Addressable addresses of newspaper/rewards UI sprites, preloaded once at bootstrap.")]
-        [SerializeField] private Game.Newspaper.UI.UiSpriteCatalog _uiSpriteCatalog;
+        [SerializeField] private UiSpriteCatalog _uiSpriteCatalog;
 
         [Header("Resource Animations")]
         [Tooltip("Shared settings for flying resource UI animations.")]
@@ -91,12 +93,12 @@ namespace Game.Bootstrap
         private void ApplyDebugFlags()
         {
 #if UNITY_EDITOR
-            Game.Bootstrap.Loading.DebugStartFlags.UseDebugFeatures = _useDebugFeatures;
-            Game.Bootstrap.Loading.DebugStartFlags.SkipFullLoading = _useDebugFeatures && _skipFullLoading;
-            if (Game.Bootstrap.Loading.DebugStartFlags.UseDebugFeatures)
+            DebugStartFlags.UseDebugFeatures = _useDebugFeatures;
+            DebugStartFlags.SkipFullLoading = _useDebugFeatures && _skipFullLoading;
+            if (DebugStartFlags.UseDebugFeatures)
             {
                 Debug.LogWarning(
-                    $"[BootstrapInstaller] Debug flags ON. SkipFullLoading={Game.Bootstrap.Loading.DebugStartFlags.SkipFullLoading}");
+                    $"[BootstrapInstaller] Debug flags ON. SkipFullLoading={DebugStartFlags.SkipFullLoading}");
             }
 #endif
         }

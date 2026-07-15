@@ -1,0 +1,1168 @@
+[
+  {
+    "id": "req_hard_01",
+    "description": "I'd like to read something crime-related.",
+    "genre": "Crime",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Crime"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Detective"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Thriller"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_02",
+    "description": "I'm looking for a good crime novel.",
+    "genre": "Crime",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Crime"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Detective"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Thriller"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_03",
+    "description": "Recommend me something to read from the crime genre.",
+    "genre": "Crime",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Crime"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Detective"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Thriller"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_04",
+    "description": "I'm in the mood for a book about crimes and investigations.",
+    "genre": "Crime",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Crime"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Detective"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Thriller"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_05",
+    "description": "I want something dark and criminal.",
+    "genre": "Crime",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Crime"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Detective"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Thriller"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_06",
+    "description": "I need a book in the crime style.",
+    "genre": "Crime",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Crime"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Detective"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Thriller"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_07",
+    "description": "I want to dive into a story about the criminal underworld and an investigation.",
+    "genre": "Crime",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Crime"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Detective"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Thriller"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_08",
+    "description": "I'd like to read something classic.",
+    "genre": "Classic",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Classic"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_09",
+    "description": "I'm looking for a good classic book.",
+    "genre": "Classic",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Classic"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_10",
+    "description": "Recommend me something to read from the world classics.",
+    "genre": "Classic",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Classic"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_11",
+    "description": "I'm in the mood for a time-tested classic.",
+    "genre": "Classic",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Classic"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_12",
+    "description": "I want something classic and profound.",
+    "genre": "Classic",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Classic"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_13",
+    "description": "I need a book in the classic genre.",
+    "genre": "Classic",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Classic"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_14",
+    "description": "I want to dive into one of the great classic stories.",
+    "genre": "Classic",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Classic"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_15",
+    "description": "I'd like to read something dramatic.",
+    "genre": "Drama",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Romance"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_16",
+    "description": "I'm looking for a good drama book.",
+    "genre": "Drama",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Romance"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_17",
+    "description": "Recommend me something to read from the drama genre.",
+    "genre": "Drama",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Romance"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_18",
+    "description": "I'm in the mood for a strong, emotional story.",
+    "genre": "Drama",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Romance"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_19",
+    "description": "I want a book about human feelings and fates.",
+    "genre": "Drama",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Romance"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_20",
+    "description": "I need a book in the drama genre.",
+    "genre": "Drama",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Romance"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_21",
+    "description": "I want to dive into a touching, true-to-life story.",
+    "genre": "Drama",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Romance"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_22",
+    "description": "I'd like to read something from the fantasy genre.",
+    "genre": "Fantasy",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Horror"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_23",
+    "description": "I'm looking for a good fantasy book.",
+    "genre": "Fantasy",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Horror"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_24",
+    "description": "Recommend me something to read about magic and adventures.",
+    "genre": "Fantasy",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_25",
+    "description": "I'm in the mood for a story with magical worlds.",
+    "genre": "Fantasy",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Horror"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_26",
+    "description": "I want something fairy-tale-like and epic.",
+    "genre": "Fantasy",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_27",
+    "description": "I need a book in the fantasy genre.",
+    "genre": "Fantasy",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Horror"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_28",
+    "description": "I want to dive into a world of magic and incredible creatures.",
+    "genre": "Fantasy",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Horror"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_29",
+    "description": "I'd like to read something educational.",
+    "genre": "Fact",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fact"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "History"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_30",
+    "description": "I'm looking for an interesting popular-science book.",
+    "genre": "Fact",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fact"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "History"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_31",
+    "description": "Recommend me something to read about real facts and discoveries.",
+    "genre": "Fact",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fact"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "History"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_32",
+    "description": "I'm in the mood to learn something new about the world.",
+    "genre": "Fact",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fact"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "History"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_33",
+    "description": "I want a book that will broaden my horizons.",
+    "genre": "Fact",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fact"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "History"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_34",
+    "description": "I need a book in the science and facts genre.",
+    "genre": "Fact",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fact"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "History"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_35",
+    "description": "I'd like to read something based on real knowledge and research.",
+    "genre": "Fact",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fact"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "History"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_36",
+    "description": "I'd like to read something from children's literature.",
+    "genre": "Kids",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Fantasy"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        },
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Tragedy"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_37",
+    "description": "I'm looking for a good children's book.",
+    "genre": "Kids",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Fantasy"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        },
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Tragedy"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_38",
+    "description": "Recommend me something kind and childlike to read.",
+    "genre": "Kids",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Fantasy"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        },
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Tragedy"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_39",
+    "description": "I'm in the mood for a light, engaging story for children.",
+    "genre": "Kids",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Fantasy"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        },
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Tragedy"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_40",
+    "description": "I want a book with kind characters and adventures.",
+    "genre": "Kids",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Fantasy"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        },
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Tragedy"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_41",
+    "description": "I need a book in the children's literature genre.",
+    "genre": "Kids",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Fantasy"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        },
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Tragedy"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_42",
+    "description": "I want to dive into a fairy-tale story for children.",
+    "genre": "Kids",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Fantasy"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Horror"
+        },
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Tragedy"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_43",
+    "description": "I'd like to read something about travel.",
+    "genre": "Travel",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Travel"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_44",
+    "description": "I'm looking for an interesting book about different countries and adventures.",
+    "genre": "Travel",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Travel"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_45",
+    "description": "Recommend me something to read in the travel genre.",
+    "genre": "Travel",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Travel"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_46",
+    "description": "I'm in the mood to set off on a journey, at least through a book.",
+    "genre": "Travel",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Travel"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_47",
+    "description": "I want a story about roads, discoveries, and new places.",
+    "genre": "Travel",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Travel"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_48",
+    "description": "I need a book in the travel genre.",
+    "genre": "Travel",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Travel"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_hard_49",
+    "description": "I want to dive into an exciting journey around the world.",
+    "genre": "Travel",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Travel"
+        }
+      ]
+    }
+  }
+]

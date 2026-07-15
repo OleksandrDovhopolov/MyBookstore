@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Game.Newspaper.UI;
+using SpriteService;
 using TMPro;
 using UIShared;
 using UnityEngine;

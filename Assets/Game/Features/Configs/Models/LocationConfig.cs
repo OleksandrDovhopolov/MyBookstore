@@ -16,6 +16,13 @@ namespace Game.Configs.Models
 
         public string[] DemandGenres { get; set; }
 
-        public string[] DemandTags { get; set; }
+        public string[] DemandQualities { get; set; }
+
+        /// <summary>
+        /// Additive percent modifier this location applies to the day's regular customer count.
+        /// Neutral = 0 (e.g. +0.20 = +20% visitors). Consumed by the customer traffic resolver
+        /// (see docs/INPROGRESS/CUSTOMER_TRAFFIC_COUNT_SYSTEM.md).
+        /// </summary>
+        public float CustomerTrafficPercentDelta { get; set; }
     }
 }

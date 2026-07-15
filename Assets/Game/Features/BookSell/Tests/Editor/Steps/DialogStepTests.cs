@@ -3,6 +3,7 @@ using Book.Sell.Domain;
 using Book.Sell.Domain.Steps;
 using Book.Sell.Services;
 using Book.Sell.Tests.Editor.Fakes;
+using Dialogue;
 using NUnit.Framework;
 
 namespace Book.Sell.Tests.Editor.Steps

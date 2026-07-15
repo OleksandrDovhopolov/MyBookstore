@@ -10,7 +10,8 @@
         "Game.Core.UI",
         "Game.Shop.API",
         "Game.Rewards.API",
-        "Game.Inventory.API"
+        "Game.Inventory.API",
+        "Game.Rewards"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -163,8 +163,8 @@ namespace Game.Decor.Services
             var books = _configs.GetAll<BookConfig>();
             for (var i = 0; i < books.Count; i++)
             {
-                if (!string.IsNullOrEmpty(books[i].Genre))
-                    set.Add(books[i].Genre);
+                if (!string.IsNullOrEmpty(books[i].PrimaryGenre))
+                    set.Add(books[i].PrimaryGenre);
             }
             return set;
         }

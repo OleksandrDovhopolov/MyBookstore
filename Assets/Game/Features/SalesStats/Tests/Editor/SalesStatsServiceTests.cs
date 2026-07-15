@@ -20,8 +20,8 @@ namespace Game.SalesStats.Tests.Editor
             var save = new FakeSaveService();
             var repo = new FakeSalesStatsRepository();
             var configs = new FakeConfigsService()
-                .Add(new BookConfig { Id = CrimeBook, Genre = BookGenre.Crime.ToConfigValue() })
-                .Add(new BookConfig { Id = KidsBook, Genre = BookGenre.Kids.ToConfigValue() });
+                .Add(new BookConfig { Id = CrimeBook, Genres = new[] { BookGenre.Crime.ToConfigValue() } })
+                .Add(new BookConfig { Id = KidsBook, Genres = new[] { BookGenre.Kids.ToConfigValue() } });
 
             var svc = new SalesStatsService(save, repo, configs);
             svc.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();

@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Rewards.UI;
 using Game.Shop.API;
 using Game.UI;
-using Game.UI.Common;
+using SpriteService;
 using UIShared;
 using UnityEngine;
 using VContainer;
@@ -128,12 +129,6 @@ namespace Game.Newspaper.UI
                 return;
             }
 
-            if (_confirmPolicy != null && _confirmPolicy.RequiresConfirmation(lot))
-            {
-                var confirmed = await ShowConfirmAsync(lot);
-                if (!confirmed) return;
-            }
-
             var result = await _shop.BuyAsync(lotId, _cts.Token);
 
             if (result.Status == ShopPurchaseStatus.Success && result.Granted != null
@@ -150,21 +145,6 @@ namespace Game.Newspaper.UI
 
             RefreshOffers();
             LoadOfferIconsAsync(_cts.Token).Forget();
-        }
-
-        private async UniTask<bool> ShowConfirmAsync(ShopLot lot)
-        {
-            var args = new ConfirmDialogArgs(
-                title: $"Buy {lot.DisplayName ?? lot.RewardId}?",
-                body: $"Spend <b>{lot.Price.Amount} {lot.Price.Currency}</b> on this offer?",
-                confirmLabel: "Buy",
-                cancelLabel: "Cancel");
-
-            var dialog = await UIManager.ShowAsync<ConfirmDialog>(args, _cts.Token);
-            if (dialog == null) return false;
-
-            var result = await dialog.WaitForResultAsync<ConfirmDialogResult>(_cts.Token);
-            return result == ConfirmDialogResult.Confirmed;
         }
     }
 }

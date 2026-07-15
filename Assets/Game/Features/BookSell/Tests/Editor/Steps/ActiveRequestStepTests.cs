@@ -18,7 +18,7 @@ namespace Book.Sell.Tests.Editor.Steps
             var theLock = new InteractionLock();
             var ctx = SalesTestKit.Context(
                 SalesTestKit.Shelf(SalesTestKit.Book("b1")), SalesTestKit.Location(), sink, interactionLock: theLock);
-            var step = new ActiveRequestStep(SalesTestKit.Request("r1"));
+            var step = new ActiveRequestStep(SalesTestKit.ActiveRequest("r1"));
             var self = new Customer("c1", new[] { step });
 
             step.Enter(self, ctx);
@@ -41,7 +41,7 @@ namespace Book.Sell.Tests.Editor.Steps
 
             var ctx = SalesTestKit.Context(
                 SalesTestKit.Shelf(SalesTestKit.Book("b1")), SalesTestKit.Location(), sink, interactionLock: theLock);
-            var step = new ActiveRequestStep(SalesTestKit.Request("r1"));
+            var step = new ActiveRequestStep(SalesTestKit.ActiveRequest("r1"));
             var self = new Customer("c1", new[] { step });
 
             step.Enter(self, ctx);
@@ -59,7 +59,7 @@ namespace Book.Sell.Tests.Editor.Steps
             var theLock = new InteractionLock();
             var ctx = SalesTestKit.Context(
                 SalesTestKit.Shelf(SalesTestKit.Book("b1")), SalesTestKit.Location(), sink, interactionLock: theLock);
-            var step = new ActiveRequestStep(SalesTestKit.Request("r1"));
+            var step = new ActiveRequestStep(SalesTestKit.ActiveRequest("r1"));
             var self = new Customer("c1", new[] { step });
 
             step.Enter(self, ctx);
@@ -78,7 +78,7 @@ namespace Book.Sell.Tests.Editor.Steps
             var ctx = SalesTestKit.Context(
                 SalesTestKit.Shelf(SalesTestKit.Book("b1")), SalesTestKit.Location(), sink,
                 interactionLock: theLock, tuning: new SalesTuning { BrowseDuration = 1f });
-            var step = new ActiveRequestStep(SalesTestKit.Request("r1"));
+            var step = new ActiveRequestStep(SalesTestKit.ActiveRequest("r1"));
             var self = new Customer("c1", new[] { step });
 
             step.Enter(self, ctx);

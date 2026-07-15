@@ -21,7 +21,7 @@ namespace Book.Sell.Tests.Editor.Services
             new(new FakeBaseSaleChanceCalculator(chance));
 
         [Test]
-        public void StageOneHit_SingleBook_ReturnsThatBook_GenrePopulated_TagsEmpty()
+        public void StageOneHit_SingleBook_ReturnsThatBook_GenrePopulated_QualitiesEmpty()
         {
             var shelfBook = new ShelfBook(Book("b1", "Fantasy"));
             var random = new FakeSalesRandom().EnqueueDouble(0.0); // stage-1 passes
@@ -32,7 +32,7 @@ namespace Book.Sell.Tests.Editor.Services
             Assert.IsNotNull(result);
             Assert.AreEqual("b1", result.Book.BookId);
             CollectionAssert.AreEqual(new[] { "Fantasy" }, result.MatchedGenres.ToArray());
-            Assert.IsEmpty(result.MatchedTags);
+            Assert.IsEmpty(result.MatchedQualities);
         }
 
         [Test]
@@ -103,7 +103,7 @@ namespace Book.Sell.Tests.Editor.Services
         public void BooksWithoutGenre_AreIgnored()
         {
             var noGenre = SalesTestKit.Book("bNoGenre");
-            noGenre.Genre = null;
+            noGenre.Genres = null;
             var withGenre = Book("b1", "Fantasy");
 
             var shelf = new[] { new ShelfBook(noGenre), new ShelfBook(withGenre) };

@@ -1,0 +1,495 @@
+[
+  {
+    "id": "req_scarlet_01",
+    "genre": "Crime",
+    "bookTitle": "A Study in Scarlet",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Crime"
+        },
+        {
+          "type": "publicationYear",
+          "operator": "between",
+          "value": {
+            "min": 1850,
+            "max": 1900
+          }
+        },
+        {
+          "type": "pages",
+          "operator": "lessOrEqual",
+          "value": 200
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_scarlet_02",
+    "genre": "Crime",
+    "bookTitle": "A Study in Scarlet",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "qualities",
+          "operator": "containsAll",
+          "value": [
+            "Detective",
+            "Series"
+          ]
+        },
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Classic"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_psycho_01",
+    "genre": "Crime",
+    "bookTitle": "American Psycho",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "equal",
+          "value": "Crime"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Horror"
+        },
+        {
+          "type": "pages",
+          "operator": "greater",
+          "value": 400
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_psycho_02",
+    "genre": "Crime",
+    "bookTitle": "American Psycho",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Crime"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAny",
+          "value": [
+            "Gore",
+            "Tragic"
+          ]
+        },
+        {
+          "type": "publicationYear",
+          "operator": "between",
+          "value": {
+            "min": 1990,
+            "max": 2000
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_fact_01",
+    "genre": "Fact",
+    "bookTitle": "Design Patterns; Elements of Reusable Object-Oriented Software",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "equal",
+          "value": "Fact"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Academic"
+        },
+        {
+          "type": "pages",
+          "operator": "between",
+          "value": {
+            "min": 300,
+            "max": 500
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_fact_02",
+    "genre": "Fact",
+    "bookTitle": "A Short History of Nearly Everything",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fact"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAny",
+          "value": [
+            "Pop Science",
+            "Historic"
+          ]
+        },
+        {
+          "type": "pages",
+          "operator": "greater",
+          "value": 500
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_classic_01",
+    "genre": "Classic",
+    "bookTitle": "Nineteen Eighty-Four",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "equal",
+          "value": "Classic"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Dystopia"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_classic_02",
+    "genre": "Classic",
+    "bookTitle": "Emma",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Classic"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAll",
+          "value": [
+            "Romance",
+            "Female Author"
+          ]
+        },
+        {
+          "type": "publicationYear",
+          "operator": "less",
+          "value": 1900
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_drama_01",
+    "genre": "Drama",
+    "bookTitle": "Ariel",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "equal",
+          "value": "Drama"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAll",
+          "value": [
+            "Poetry",
+            "Tragic"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_drama_02",
+    "genre": "Drama",
+    "bookTitle": "Better Than the Movies",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "YA"
+        },
+        {
+          "type": "publicationYear",
+          "operator": "greater",
+          "value": 2015
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_travel_01",
+    "genre": "Travel",
+    "bookTitle": "1,000 Places to See Before You Die",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "equal",
+          "value": "Travel"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Travel Guide"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_travel_02",
+    "genre": "Travel",
+    "bookTitle": "A Tramp Abroad",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Travel"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAny",
+          "value": [
+            "Biography",
+            "Historic"
+          ]
+        },
+        {
+          "type": "pages",
+          "operator": "greater",
+          "value": 500
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_kids_01",
+    "genre": "Kids",
+    "bookTitle": "Frog and Toad Together",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "equal",
+          "value": "Kids"
+        },
+        {
+          "type": "pages",
+          "operator": "less",
+          "value": 100
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_kids_02",
+    "genre": "Kids",
+    "bookTitle": "The Invention of Hugo Cabret",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAll",
+          "value": [
+            "Graphic Novel",
+            "Mystery"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_fantasy_01",
+    "genre": "Fantasy",
+    "bookTitle": "A Game of Thrones",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "equal",
+          "value": "Fantasy"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAll",
+          "value": [
+            "Magic",
+            "Gore"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_fantasy_02",
+    "genre": "Fantasy",
+    "bookTitle": "A Deepness in the Sky",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAny",
+          "value": [
+            "Space",
+            "Dry"
+          ]
+        },
+        {
+          "type": "pages",
+          "operator": "between",
+          "value": {
+            "min": 700,
+            "max": 900
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_canterville_01",
+    "genre": "Classic",
+    "bookTitle": "The Canterville Ghost",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Classic"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Magic"
+        }
+      ],
+      "none": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_anathem_01",
+    "genre": "Fantasy",
+    "bookTitle": "Anathem",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Space"
+        }
+      ],
+      "none": [
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Female Author"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_fireupon_01",
+    "genre": "Fantasy",
+    "bookTitle": "A Fire Upon the Deep",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Space"
+        },
+        {
+          "type": "pages",
+          "operator": "between",
+          "value": {
+            "min": 550,
+            "max": 650
+          }
+        }
+      ],
+      "none": [
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Gore"
+        }
+      ]
+    }
+  }
+]

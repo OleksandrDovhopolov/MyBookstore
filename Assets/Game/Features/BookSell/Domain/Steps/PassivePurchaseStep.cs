@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Book.Sell.API;
+using Game.Configs.Models;
 using UnityEngine;
 
 namespace Book.Sell.Domain.Steps
@@ -21,7 +22,7 @@ namespace Book.Sell.Domain.Steps
         private string _targetId;
         private string _resolvedGenre;
         private IReadOnlyList<string> _matchedGenres = Array.Empty<string>();
-        private IReadOnlyList<string> _matchedTags = Array.Empty<string>();
+        private IReadOnlyList<string> _matchedQualities = Array.Empty<string>();
 
         public void Enter(Customer self, CustomerContext ctx)
         {
@@ -62,7 +63,7 @@ namespace Book.Sell.Domain.Steps
 
                 _targetId = result.Book.BookId;
                 _matchedGenres = result.MatchedGenres;
-                _matchedTags = result.MatchedTags;
+                _matchedQualities = result.MatchedQualities;
                 _sub = Sub.Commit;
                 _t = 0f;
                 ctx.Sink?.OnBookReserved(self, _targetId);
@@ -84,10 +85,10 @@ namespace Book.Sell.Domain.Steps
             if (_t < ctx.Tuning.PassiveCommitDelay) return StepStatus.Running;
 
             var book = ctx.Shelf.Find(_targetId);
-            var gold = book != null ? book.Config.BasePrice : 0;
+            var gold = book != null ? BookConfig.FixedPriceGold : 0;
             ctx.Shelf.CommitSale(_targetId);
 
-            var saleEvent = new PassiveSaleEvent(_targetId, gold, _matchedGenres, _matchedTags);
+            var saleEvent = new PassiveSaleEvent(_targetId, gold, _matchedGenres, _matchedQualities);
             ctx.Sink?.OnPassiveSale(self, saleEvent);
             self.RegisterPurchasedBook();
             Debug.Log($"{LogPrefix} customer={self.Id} BOUGHT book={_targetId} gold={gold} (books bought so far: {self.PurchasedBookCount})");

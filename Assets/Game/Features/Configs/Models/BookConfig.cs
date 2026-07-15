@@ -1,28 +1,48 @@
+using System;
+
 namespace Game.Configs.Models
 {
     /// <summary>
-    /// Конфиг книги. Расширен под scoring-систему продаж (Tags + Mood).
+    /// Конфиг книги. Цена больше не хранится в контенте: все книги продаются за <see cref="FixedPriceGold"/>.
     /// Файл: books.json (JSON-массив).
     /// </summary>
     [ConfigFile("books")]
     public sealed class BookConfig : IConfig
     {
+        public const int FixedPriceGold = 10;
+        private const string FemaleAuthorQuality = "Female Author";
+
         public string Id { get; set; }
         public string Title { get; set; }
         public string Author { get; set; }
+        public string Description { get; set; }
 
-        /// <summary>Основной жанр книги: sci-fi / mystery / romance / classic / nonfiction / ...</summary>
-        public string Genre { get; set; }
+        /// <summary>Жанры книги. Текущие legacy-системы используют первый жанр как основной.</summary>
+        public string[] Genres { get; set; }
 
-        public int BasePrice { get; set; }
         public float RarityWeight { get; set; }
         public int Published { get; set; }
         public int Pages { get; set; }
 
-        /// <summary>Темы/теги книги (survival, space, study, cozy, history, ...). Совпадение с запросом — +2 каждый.</summary>
-        public string[] Tags { get; set; }
+        /// <summary>Уникальные качества книги. Временно содержит legacy-значения из старого поля tags.</summary>
+        public string[] Qualities { get; set; }
 
-        /// <summary>Тон/настроение (smart, tense, cozy, romantic, dark, optimistic, ...). Совпадение — +1 каждый.</summary>
-        public string[] Mood { get; set; }
+        public string PrimaryGenre => Genres != null && Genres.Length > 0 ? Genres[0] : null;
+
+        //TODO do not calculate every request
+        public bool IsFemaleAuthor
+        {
+            get
+            {
+                if (Qualities == null) return false;
+                for (var i = 0; i < Qualities.Length; i++)
+                {
+                    if (string.Equals(Qualities[i], FemaleAuthorQuality, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                return false;
+            }
+        }
     }
 }

@@ -22,6 +22,10 @@ namespace Book.Sell.Services
         [SerializeField] private float _passiveFailureFeedbackDuration = 1.0f;
         [SerializeField] private float _passiveSaleFeedbackDuration = 1.0f;
         [SerializeField, Range(0f, 1f)] private float _passiveSaleCommentChance = 0.35f;
+        [Tooltip("Минимум пассивных попыток покупки за визит.")]
+        [SerializeField] private int _minPassiveAttempts = 1;
+        [Tooltip("Максимум пассивных попыток покупки за визит. Не зависит от числа книг на полке.")]
+        [SerializeField] private int _maxPassiveAttempts = 6;
         [Tooltip("Вес жанров из LocationConfig.DemandGenres при выборе пассивного запроса. Остальные жанры имеют вес 1.0.")]
         [SerializeField] private double _passiveDemandGenreWeight = 1.10d;
         [SerializeField] private float _commentDuration = 1.2f;
@@ -34,7 +38,6 @@ namespace Book.Sell.Services
 
         [Header("Spawning")]
         [SerializeField] private float _spawnInterval = 5.0f;
-        [SerializeField] private int _baseCustomers = 6;
         [SerializeField] private int _maxConcurrentCustomers = 3;
         [Tooltip("Сколько жанров в пассивном запросе покупателя (requested-genre модель).")]
         [SerializeField] private int _passiveRequestGenreCount = 2;
@@ -49,6 +52,8 @@ namespace Book.Sell.Services
             PassiveFailureFeedbackDuration = _passiveFailureFeedbackDuration,
             PassiveSaleFeedbackDuration = _passiveSaleFeedbackDuration,
             PassiveSaleCommentChance = _passiveSaleCommentChance,
+            MinPassiveAttempts = _minPassiveAttempts,
+            MaxPassiveAttempts = _maxPassiveAttempts,
             PassiveDemandGenreWeight = _passiveDemandGenreWeight,
             CommentDuration = _commentDuration,
             CompletePurchaseDuration = _completePurchaseDuration,
@@ -56,7 +61,6 @@ namespace Book.Sell.Services
             MinLeaveDuration = _minLeaveDuration,
             MaxLeaveDuration = _maxLeaveDuration,
             SpawnInterval = _spawnInterval,
-            BaseCustomers = _baseCustomers,
             MaxConcurrentCustomers = _maxConcurrentCustomers,
             PassiveRequestGenreCount = _passiveRequestGenreCount
         };

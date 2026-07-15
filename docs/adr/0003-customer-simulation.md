@@ -6,6 +6,12 @@
 - **Supersedes:** значительную часть Sales MVP slice (пошаговый `SalesSessionService` как оркестратор)
 - **Related:** `docs/INPROGRESS/Продажа.md`, `docs/INPROGRESS/SalesFeatureImplementationPlan.md`, `docs/INPROGRESS/customer-simulation-decisions.md`, `docs/REFERENCE_TinyBookshop_Day.md`, [ADR-0001](0001-save-data-modular-payload.md)
 
+> ⚠️ **Активная продажа переведена на булевы условия (2026-07-13).** Взвешенный скоринг
+> (`RequestConfig` + `RecommendationScoringService`) **удалён**; активный запрос теперь — булев предикат
+> (`RequestDefinitionConfig`, `hard_requests.json`). Спека —
+> [ACTIVE_REQUEST_CONDITIONS.md](../INPROGRESS/ACTIVE_REQUEST_CONDITIONS.md). Осталось оформить
+> **ADR-0009** и пометить активную часть этого ADR как superseded. Пассивная часть не затрагивается.
+
 ## Context
 
 Текущая фаза «Продажа» (`Assets/Game/Features/BookSell/`) реализована как **пошаговая модель**: очередь из N `RequestConfig`, один активный запрос в момент времени, игрок обязан закрыть его (`RecommendBook`/`Skip`), пассивные продажи — сайд-эффект между ходами. Нет времени, движения, одновременности. Домен чистый и покрыт EditMode-тестами.

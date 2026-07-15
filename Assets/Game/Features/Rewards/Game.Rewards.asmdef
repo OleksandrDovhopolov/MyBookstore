@@ -6,7 +6,11 @@
         "Game.Rewards.API",
         "Game.Resources.API",
         "Game.Inventory.API",
-        "Configs"
+        "Configs",
+        "Unity.TextMeshPro",
+        "Infrastructure",
+        "Game.Core.UI",
+        "VContainer"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

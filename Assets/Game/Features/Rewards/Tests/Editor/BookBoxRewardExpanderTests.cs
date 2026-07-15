@@ -12,17 +12,15 @@ namespace Game.Rewards.Tests.Editor
 {
     public sealed class BookBoxRewardExpanderTests
     {
-        private static BookConfig Book(string id, string genre, float rarity, params string[] mood) =>
+        private static BookConfig Book(string id, string genre, float rarity) =>
             new BookConfig
             {
                 Id = id,
                 Title = id,
                 Author = "test",
-                Genre = genre,
-                BasePrice = 10,
+                Genres = new[] { genre },
                 RarityWeight = rarity,
-                Tags = new string[0],
-                Mood = mood
+                Qualities = new string[0]
             };
 
         private static (BookBoxRewardExpander svc, FakeConfigsService cfg, FakeInventoryService inv, FakeRewardRandom rng) Build(
@@ -108,15 +106,15 @@ namespace Game.Rewards.Tests.Editor
         }
 
         [Test]
-        public void Expand_GenreDystopic_FiltersByGenreAndMood()
+        public void Expand_GenreDystopic_FiltersByGenreOnly()
         {
-            // Pool has exactly one Fantasy+dark book. Filter must isolate it regardless of RNG.
+            // Pool has two Fantasy books. With default RNG (NextDouble=0.0) the first Fantasy is selected.
             var pool = new List<BookConfig>
             {
-                Book("fantasy_dark", "Fantasy", 0.7f, "dark", "tense"),
-                Book("fantasy_cozy", "Fantasy", 0.6f, "cozy"),
-                Book("drama_dark",   "Drama",   0.5f, "dark"),
-                Book("crime_only",   "Crime",   0.8f, "tense"),
+                Book("fantasy_first", "Fantasy", 0.7f),
+                Book("fantasy_second", "Fantasy", 0.6f),
+                Book("drama", "Drama", 0.5f),
+                Book("crime", "Crime", 0.8f),
             };
 
             var (svc, _, _, _) = Build(pool);
@@ -125,18 +123,18 @@ namespace Game.Rewards.Tests.Editor
             var result = svc.ExpandAsync(spec, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(1, result.Items.Count);
-            Assert.AreEqual("fantasy_dark", result.Items[0].Id);
+            Assert.AreEqual("fantasy_first", result.Items[0].Id);
         }
 
         [Test]
-        public void Expand_GenreHeartfelt_FiltersByDramaAndRomanticMood()
+        public void Expand_GenreHeartfelt_FiltersByDramaOnly()
         {
             var pool = new List<BookConfig>
             {
-                Book("drama_romantic", "Drama", 0.7f, "romantic", "warm"),
-                Book("drama_dark", "Drama", 0.8f, "dark"),
-                Book("classic_romantic", "Classic", 0.9f, "romantic"),
-                Book("fantasy_romantic", "Fantasy", 0.6f, "romantic"),
+                Book("drama_first", "Drama", 0.7f),
+                Book("drama_second", "Drama", 0.8f),
+                Book("classic", "Classic", 0.9f),
+                Book("fantasy", "Fantasy", 0.6f),
             };
 
             var (svc, _, _, _) = Build(pool);
@@ -145,7 +143,7 @@ namespace Game.Rewards.Tests.Editor
             var result = svc.ExpandAsync(spec, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(1, result.Items.Count);
-            Assert.AreEqual("drama_romantic", result.Items[0].Id);
+            Assert.AreEqual("drama_first", result.Items[0].Id);
         }
 
         [Test]

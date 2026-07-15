@@ -796,6 +796,7 @@ MonoBehaviour:
   _customerExitLeft: {fileID: 1201158295}
   _customerExitRight: {fileID: 1146450427}
   _salesTuningConfig: {fileID: 11400000, guid: eb8717da2ebcd49e99ff720f98455748, type: 2}
+  _salesTrafficConfig: {fileID: 11400000, guid: 3f782d327d560544fbb0879d2c7218ce, type: 2}
 --- !u!4 &2029274985
 Transform:
   m_ObjectHideFlags: 0

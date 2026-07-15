@@ -23,7 +23,7 @@ namespace Game.DayCycle.Tests.Editor.Results
 
             public FakeConfigsService AddBook(string id, string genre)
             {
-                _books[id] = new BookConfig { Id = id, Genre = genre };
+                _books[id] = new BookConfig { Id = id, Genres = new[] { genre } };
                 return this;
             }
 

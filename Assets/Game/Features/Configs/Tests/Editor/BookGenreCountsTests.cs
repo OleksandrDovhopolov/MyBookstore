@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Game.Configs.Models;
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace Game.Configs.Tests.Editor
@@ -89,6 +90,32 @@ namespace Game.Configs.Tests.Editor
                     .Select(genre => genre.ToConfigValue())
                     .ToArray(),
                 normalized.Keys.ToArray());
+        }
+
+        [Test]
+        public void BookConfig_DeserializeNewSchema_PopulatesDescriptionGenresAndQualities()
+        {
+            const string json = @"{
+  ""id"": ""book_001"",
+  ""title"": ""Sea Winter"",
+  ""author"": ""Ada Reed"",
+  ""description"": ""[description_book_001]"",
+  ""genres"": [""Drama"", ""Classic""],
+  ""rarityWeight"": 0.35,
+  ""published"": 1893,
+  ""pages"": 189,
+  ""qualities"": [""Female Author"", ""history""]
+}";
+
+            var book = JsonConvert.DeserializeObject<BookConfig>(json);
+
+            Assert.IsNotNull(book);
+            Assert.AreEqual("[description_book_001]", book.Description);
+            CollectionAssert.AreEqual(new[] { "Drama", "Classic" }, book.Genres);
+            CollectionAssert.AreEqual(new[] { "Female Author", "history" }, book.Qualities);
+            Assert.AreEqual("Drama", book.PrimaryGenre);
+            Assert.IsTrue(book.IsFemaleAuthor);
+            Assert.AreEqual(10, BookConfig.FixedPriceGold);
         }
     }
 }

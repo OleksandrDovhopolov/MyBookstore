@@ -61,7 +61,7 @@ namespace Game.Cheat
             foreach (var book in _configs.GetAll<BookConfig>())
             {
                 if (book == null || string.IsNullOrEmpty(book.Id)) continue;
-                if (!BookGenreExtensions.TryParseGenre(book.Genre, out var genre)) continue;
+                if (!BookGenreExtensions.TryParseGenre(book.PrimaryGenre, out var genre)) continue;
                 if (!map.ContainsKey(genre)) map[genre] = book.Id;
             }
             return map;

@@ -3,8 +3,17 @@
     "id": "loc_downtown",
     "displayName": "Downtown / Near University",
     "entryCost": 0,
-    "demandGenres": ["Fantasy", "Classic", "Fact"],
-    "demandTags": ["study", "short", "science"]
+    "demandGenres": [
+      "Fantasy",
+      "Classic",
+      "Fact"
+    ],
+    "customerTrafficPercentDelta": 0.2,
+    "demandQualities": [
+      "study",
+      "short",
+      "science"
+    ]
   },
   {
     "id": "loc_mall",
@@ -12,11 +21,22 @@
     "entryCost": 30,
     "unlock": {
       "all": [
-        { "type": "soldGenre", "genre": "Crime", "min": 15 }
+        {
+          "type": "soldGenre",
+          "genre": "Crime",
+          "min": 15
+        }
       ]
     },
-    "demandGenres": ["Drama", "Crime"],
-    "demandTags": ["cozy", "summer", "letters"]
+    "demandGenres": [
+      "Drama",
+      "Crime"
+    ],
+    "demandQualities": [
+      "cozy",
+      "summer",
+      "letters"
+    ]
   },
   {
     "id": "loc_riverside_park",
@@ -24,12 +44,28 @@
     "entryCost": 50,
     "unlock": {
       "all": [
-        { "type": "soldGenre", "genre": "Kids", "min": 25 },
-        { "type": "soldGenre", "genre": "Fantasy", "min": 20 }
+        {
+          "type": "soldGenre",
+          "genre": "Kids",
+          "min": 25
+        },
+        {
+          "type": "soldGenre",
+          "genre": "Fantasy",
+          "min": 20
+        }
       ]
     },
-    "demandGenres": ["Kids", "Fantasy", "Travel"],
-    "demandTags": ["family", "summer", "adventure"]
+    "demandGenres": [
+      "Kids",
+      "Fantasy",
+      "Travel"
+    ],
+    "demandQualities": [
+      "family",
+      "summer",
+      "adventure"
+    ]
   },
   {
     "id": "loc_old_town",
@@ -37,13 +73,33 @@
     "entryCost": 80,
     "unlock": {
       "all": [
-        { "type": "soldGenre", "genre": "Classic", "min": 40 },
-        { "type": "soldGenre", "genre": "Drama", "min": 35 },
-        { "type": "soldGenre", "genre": "Fact", "min": 30 }
+        {
+          "type": "soldGenre",
+          "genre": "Classic",
+          "min": 40
+        },
+        {
+          "type": "soldGenre",
+          "genre": "Drama",
+          "min": 35
+        },
+        {
+          "type": "soldGenre",
+          "genre": "Fact",
+          "min": 30
+        }
       ]
     },
-    "demandGenres": ["Classic", "Drama", "Fact"],
-    "demandTags": ["history", "letters", "quiet"]
+    "demandGenres": [
+      "Classic",
+      "Drama",
+      "Fact"
+    ],
+    "demandQualities": [
+      "history",
+      "letters",
+      "quiet"
+    ]
   },
   {
     "id": "loc_train_station",
@@ -51,12 +107,32 @@
     "entryCost": 120,
     "unlock": {
       "all": [
-        { "type": "soldGenre", "genre": "Travel", "min": 60 },
-        { "type": "soldGenre", "genre": "Crime", "min": 50 },
-        { "type": "soldGenre", "genre": "Fact", "min": 45 }
+        {
+          "type": "soldGenre",
+          "genre": "Travel",
+          "min": 60
+        },
+        {
+          "type": "soldGenre",
+          "genre": "Crime",
+          "min": 50
+        },
+        {
+          "type": "soldGenre",
+          "genre": "Fact",
+          "min": 45
+        }
       ]
     },
-    "demandGenres": ["Travel", "Crime", "Fact"],
-    "demandTags": ["short", "road", "mystery"]
+    "demandGenres": [
+      "Travel",
+      "Crime",
+      "Fact"
+    ],
+    "demandQualities": [
+      "short",
+      "road",
+      "mystery"
+    ]
   }
 ]

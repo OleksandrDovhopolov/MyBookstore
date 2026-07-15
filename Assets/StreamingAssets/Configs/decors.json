@@ -11,6 +11,7 @@
       { "genre": "Fantasy", "multiplier": 1.5 },
       { "genre": "Fact", "multiplier": 1.2 }
     ],
+    "customerTrafficPercentDelta": 0.1,
     "styles": ["classic", "maritime"],
     "atmosphereTags": ["wood", "study"],
     "paintable": false,

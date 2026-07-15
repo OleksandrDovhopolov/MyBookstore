@@ -51,5 +51,65 @@
         ]
       }
     ]
+  },
+  {
+    "id": "eddy1",
+    "nodes": [
+      {
+        "nodeId": "root",
+        "lines": [
+          { "speaker": "Eddy", "text": "There we go, the last signature is in place. This place is yours now." },
+          { "speaker": "Eddy", "text": "And a well-earned retirement is waiting for me. For 40 years, I made children happy with sweets right here in this very spot." }
+        ],
+        "options": [
+          { "text": "This was my dream", "next": "dream" },
+          { "text": "Work is work", "next": "job" }
+        ]
+      },
+      {
+        "nodeId": "dream",
+        "lines": [
+          { "speaker": "Morgan", "text": "I always dreamed of having a bookshop." },
+          { "speaker": "Eddy", "text": "It's a good thing, finding your calling in life." }
+        ],
+        "options": [ { "text": "", "next": "mid" } ]
+      },
+      {
+        "nodeId": "job",
+        "lines": [
+          { "speaker": "Morgan", "text": "Work is work." },
+          { "speaker": "Eddy", "text": "That's true. But you know what they say? If you find your calling, you'll never work a day in your life!" }
+        ],
+        "options": [ { "text": "", "next": "mid" } ]
+      },
+      {
+        "nodeId": "mid",
+        "lines": [
+          { "speaker": "Eddy", "text": "Though you look far too young for that. Everything can still change many times over." }
+        ],
+        "options": [
+          { "text": "I agree", "next": "agree" },
+          { "text": "I disagree", "next": "disagree" }
+        ]
+      },
+      {
+        "nodeId": "agree",
+        "lines": [ { "speaker": "Morgan", "text": "That's why I came here - I'm looking for my calling." } ],
+        "options": [ { "text": "", "next": "outro" } ]
+      },
+      {
+        "nodeId": "disagree",
+        "lines": [ { "speaker": "Morgan", "text": "I know exactly what I want." } ],
+        "options": [ { "text": "", "next": "outro" } ]
+      },
+      {
+        "nodeId": "outro",
+        "lines": [
+          { "speaker": "Eddy", "text": "Well, looks like it's time for you to open the little shop. Customers have already noticed you and are heading this way." },
+          { "speaker": "Eddy", "text": "I'll pick out something to read this evening myself, so retirement doesn't get too dull." }
+        ],
+        "options": [ { "text": "Start selling", "next": "end" } ]
+      }
+    ]
   }
 ]

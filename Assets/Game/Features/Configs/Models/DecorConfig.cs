@@ -33,6 +33,13 @@ namespace Game.Configs.Models
         // Gameplay effect (Phase 0: only field with runtime effect)
         public DecorGenreModifier[] GenreMultipliers { get; set; }
 
+        /// <summary>
+        /// Additive percent modifier this decor applies to the day's regular customer count while placed.
+        /// Neutral = 0 (e.g. +0.10 = +10% visitors). Distinct from <see cref="GenreMultipliers"/> (sale chance).
+        /// Consumed by the customer traffic resolver (see docs/INPROGRESS/CUSTOMER_TRAFFIC_COUNT_SYSTEM.md).
+        /// </summary>
+        public float CustomerTrafficPercentDelta { get; set; }
+
         // Reserved (Phase 0: data-only)
         public string[] Styles { get; set; }
         public string[] AtmosphereTags { get; set; }

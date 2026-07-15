@@ -5,6 +5,7 @@ using Book.Sell.Services.Director;
 using Book.Sell.UI;
 using Book.Sell.UI.Customer;
 using Game.Configs;
+using Game.Decor.Services;
 using Game.Quest.API;
 using UnityEngine;
 using VContainer;
@@ -39,6 +40,7 @@ namespace Game.Bootstrap
         }
 
         // Legacy passive (ADR-0004 shelf-roll): kept behind the seam for rollback. Not called by default.
+        //TODO delete this
         public static void RegisterLegacyPassiveSales(this IContainerBuilder builder)
         {
             builder.Register<IPassiveSaleSelector, WeightedPassiveSaleSelector>(Lifetime.Singleton);
@@ -55,14 +57,17 @@ namespace Game.Bootstrap
             Transform[] customerLaneAnchors = null,
             Transform customerExitLeft = null,
             Transform customerExitRight = null,
-            SalesTuningConfig salesTuningConfig = null)
+            SalesTuningConfig salesTuningConfig = null,
+            SalesTrafficConfig salesTrafficConfig = null)
         {
             // Reused pure-domain services.
             builder.Register<ISalesRandom, UnityRandomSalesRandom>(Lifetime.Singleton);
             // ISalesSetupProvider is registered in LocationInstaller (PreparationSalesSetupProvider),
             // which reads the player's choice from preparation.session and falls back to the
             // catalog if no session exists yet.
-            builder.Register<IRecommendationScoringService, RecommendationScoringService>(Lifetime.Singleton);
+            builder.Register<IBookConditionRequestEvaluator, BookConditionRequestEvaluator>(Lifetime.Singleton);
+            builder.Register<IActiveRequestRuntimeProvider, ConfigActiveRequestRuntimeProvider>(Lifetime.Singleton);
+            builder.Register<IActiveRequestScoringService, ActiveRequestScoringService>(Lifetime.Singleton);
 
             // Passive sale chance gate (ADR-0004) resolves from the global scope so HUD previews and
             // sales use the same calculator instance.
@@ -83,24 +88,39 @@ namespace Game.Bootstrap
                 Lifetime.Singleton);
             
             
-            //builder.Register<ICustomerSpawner, DefaultCustomerSpawner>(Lifetime.Singleton);
-            //builder.Register<ICustomerSpawner, FifteenCustomersSinglePassiveAttemptSpawner>(Lifetime.Singleton); //TEST was created to test zero books selected
-            //builder.Register<ICustomerSpawner, ActiveRequestsOnlyCustomerSpawner>(Lifetime.Singleton); //TEST 3-5 active-request-only customers (1 request each)
-            //builder.Register<ICustomerSpawner, OneToThreePassiveAttemptsCustomerSpawner>(Lifetime.Singleton); //TEST 1-N passive purchases
-            //builder.Register<ICustomerSpawner, TenCustomersThreeActiveBetweenPassivesSpawner>(Lifetime.Singleton); //TEST 10 customers, 1-2 passive each; first 3: passive -> active -> 1 passive
 
             // Fire-once memory for scripted dialogues (GAME-6). Save-backed; ISaveService resolves from the
             // parent (global) scope. Used by the quest-scheduling spawner (filter) and DialoguePresenter (mark).
             builder.Register<IDeliveredDialoguesService, SaveBackedDeliveredDialoguesService>(Lifetime.Singleton);
+
+            // Customer traffic count (how many regular customers per day). Global knobs come from the
+            // SalesTrafficConfig SO (or code defaults); per-day counts live in days.json (DayConfig).
+            // Contributors are feature-owned: LocationTrafficContributor here, DecorTrafficContributor in
+            // RegisterDecor (global scope). VContainer cannot auto-aggregate a single IReadOnlyList across
+            // parent+child scopes, so the resolver composes them explicitly (concrete resolves walk up to
+            // the parent). See docs/INPROGRESS/CUSTOMER_TRAFFIC_COUNT_SYSTEM.md.
+            builder.RegisterInstance(salesTrafficConfig != null ? salesTrafficConfig.BuildSettings() : new SalesTrafficSettings());
+            builder.Register<LocationTrafficContributor>(Lifetime.Singleton);
+            builder.Register<ICustomerTrafficResolver>(r => new CustomerTrafficResolver(
+                    r.Resolve<SalesTrafficSettings>(),
+                    r.Resolve<IConfigsService>(),
+                    new ICustomerTrafficContributor[]
+                    {
+                        r.Resolve<LocationTrafficContributor>(),
+                        r.Resolve<DecorTrafficContributor>() // registered in RegisterDecor (parent scope)
+                    }),
+                Lifetime.Singleton);
+            // Boot-time warn if a hard-override day is under-supplied vs active requests.
+            builder.RegisterEntryPoint<CustomerTrafficConfigValidator>(Lifetime.Singleton);
 
             // Base composition (concrete type) + the quest-scheduling decorator as ICustomerSpawner (GAME-6).
             // The decorator prepends a quest character per ACTIVE quest that carries a (not-yet-delivered)
             // dialogue — the day no longer knows about dialogues. NOTE: register the inner concretely —
             // resolving ICustomerSpawner inside the ICustomerSpawner factory would be a self-reference. Swap
             // the inner type here to change base composition. IQuestsService resolves from the global scope.
-            builder.Register<TenCustomersThreeActiveAfterPassiveSpawner>(Lifetime.Singleton); //TEST 10 customers, 1-2 passive each; first 3 also active after passive
+            builder.Register<RegularCustomerSpawner>(Lifetime.Singleton); // production base: count from ICustomerTrafficResolver
             builder.Register<ICustomerSpawner>(r => new QuestSchedulingCustomerSpawner(
-                    r.Resolve<TenCustomersThreeActiveAfterPassiveSpawner>(),
+                    r.Resolve<RegularCustomerSpawner>(),
                     r.Resolve<IConfigsService>(),
                     r.Resolve<IQuestsService>(),
                     r.Resolve<IDeliveredDialoguesService>()),

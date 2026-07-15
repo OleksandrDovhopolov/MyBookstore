@@ -69,7 +69,7 @@ namespace Game.Quest.Tests.Editor
         {
             var save = new FakeSaveService();
             var configs = new FakeConfigsService()
-                .Add(new BookConfig { Id = FantasyBook, Genre = BookGenre.Fantasy.ToConfigValue() });
+                .Add(new BookConfig { Id = FantasyBook, Genres = new[] { BookGenre.Fantasy.ToConfigValue() } });
             foreach (var q in quests) configs.Add(q);
 
             var sales = new SalesStatsService(save, new SaveBackedSalesStatsRepository(save), configs);

@@ -1,5 +1,5 @@
 using Book.Sell.API;
-using Game.Configs.Models;
+using Dialogue;
 
 namespace Book.Sell.Domain
 {
@@ -33,7 +33,7 @@ namespace Book.Sell.Domain
         void OnPurchaseCompleted(Customer customer, int purchasedBookCount);
 
         /// <summary>A customer acquired the interaction lock and the active minigame opens for them.</summary>
-        void OnActiveRequestStarted(Customer customer, RequestConfig request);
+        void OnActiveRequestStarted(Customer customer, ActiveRequestRuntime request);
 
         /// <summary>A customer acquired the interaction lock and a scripted dialogue opens for them. The
         /// controller re-emits this as a public fact; presentation (window or world-HUD) subscribes and

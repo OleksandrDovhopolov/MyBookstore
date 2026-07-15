@@ -8,6 +8,7 @@ using Game.Configs.Models;
 using Game.Inventory.API;
 using Game.Newspaper.UI;
 using Game.Rewards.API;
+using Game.Rewards.UI;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 
@@ -103,7 +104,7 @@ namespace Game.Newspaper.Tests.Editor
         }
 
         private static BookConfig Book(string id, string genre) =>
-            new BookConfig { Id = id, Genre = genre };
+            new BookConfig { Id = id, Genres = new[] { genre } };
 
         private static DecorConfig Decor(string id, string displayName, string iconAddress) =>
             new DecorConfig { Id = id, DisplayName = displayName, IconAddress = iconAddress };

@@ -129,7 +129,7 @@ namespace Book.Sell.Tests.Editor
             var controller = new SalesDayController(
                 configs,
                 new DefaultSalesSetupProvider(configs),
-                new RecommendationScoringService(),
+                new ActiveRequestScoringService(new BookConditionRequestEvaluator()),
                 SalesTestKit.LegacyResolver(),
                 new FakeSalesRandom(),
                 spawner,

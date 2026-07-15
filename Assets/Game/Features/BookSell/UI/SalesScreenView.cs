@@ -207,7 +207,7 @@ namespace Book.Sell.UI
                 var book = books[i];
                 if (book == null || book.State != ShelfBookState.Available) continue;
 
-                var genre = book.Config?.Genre;
+                var genre = book.Config?.PrimaryGenre;
                 if (string.IsNullOrEmpty(genre)) continue;
 
                 counts.TryGetValue(genre, out var count);
@@ -229,7 +229,7 @@ namespace Book.Sell.UI
                 if (string.IsNullOrEmpty(bookId) || _shelfState.IsSold(bookId)) continue;
                 if (!_configs.TryGet<BookConfig>(bookId, out var book) || book == null) continue;
 
-                var genre = book.Genre;
+                var genre = book.PrimaryGenre;
                 if (string.IsNullOrEmpty(genre)) continue;
 
                 counts.TryGetValue(genre, out var count);

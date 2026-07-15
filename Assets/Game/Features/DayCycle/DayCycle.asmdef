@@ -18,7 +18,8 @@
         "Infrastructure",
         "MessagePipe",
         "Game.Inventory.API",
-        "Game.Rewards.API"
+        "Game.Rewards.API",
+        "Game.Rewards"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -2,37 +2,50 @@ using System.Collections.Generic;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Game.Configs.Models;
+using Newtonsoft.Json.Linq;
 
 namespace Book.Sell.Tests.Editor.Fakes
 {
     /// <summary>Small builders to keep sales tests terse.</summary>
     public static class SalesTestKit
     {
-        public static BookConfig Book(string id, string genre = "sci-fi", int price = 80,
-            string[] tags = null, string[] mood = null)
+        public static BookConfig Book(string id, string genre = "sci-fi", int price = BookConfig.FixedPriceGold,
+            string[] qualities = null)
             => new()
             {
-                Id = id, Title = id, Author = "author", Genre = genre, BasePrice = price,
-                Tags = tags ?? new[] { "space" }, Mood = mood ?? new[] { "smart" }
+                Id = id,
+                Title = id,
+                Author = "author",
+                Description = $"[description_{id}]",
+                Genres = string.IsNullOrEmpty(genre) ? null : new[] { genre },
+                Qualities = qualities ?? new[] { "space" }
             };
 
-        public static RequestConfig Request(string id, string[] genres = null, int maxPrice = 100,
-            RequestDifficulty difficulty = RequestDifficulty.Medium)
+        /// <summary>A condition request that matches the default <see cref="Book"/> (a book whose
+        /// <c>Qualities</c> contain <paramref name="quality"/>). Default quality "space" matches the default book.</summary>
+        public static RequestDefinitionConfig RequestDef(string id, string quality = "space")
             => new()
             {
-                Id = id, Text = $"request {id}",
-                DesiredGenres = genres ?? new[] { "sci-fi" },
-                DesiredTags = new[] { "space" },
-                DesiredMood = new[] { "smart" },
-                MaxPrice = maxPrice, Difficulty = difficulty, BaseRewardGold = 25
+                Id = id,
+                Enabled = true,
+                Conditions = new RequestConditionGroup
+                {
+                    All = new[]
+                    {
+                        new RequestCondition { Type = "qualities", Operator = "contains", Value = JToken.FromObject(quality) }
+                    }
+                }
             };
 
-        public static LocationConfig Location(string id = "loc", string[] demandGenres = null, string[] demandTags = null)
+        public static ActiveRequestRuntime ActiveRequest(string id, string quality = "space")
+            => ActiveRequestRuntime.FromCondition(RequestDef(id, quality), $"ALL: qualities contains {quality}");
+
+        public static LocationConfig Location(string id = "loc", string[] demandGenres = null, string[] demandQualities = null)
             => new()
             {
                 Id = id, DisplayName = id,
                 DemandGenres = demandGenres ?? new[] { "sci-fi" },
-                DemandTags = demandTags ?? new[] { "space" }
+                DemandQualities = demandQualities ?? new[] { "space" }
             };
 
         public static SalesShelf Shelf(params BookConfig[] books)
@@ -58,7 +71,6 @@ namespace Book.Sell.Tests.Editor.Fakes
                 CompletePurchaseDuration = 0f,
                 LeaveDuration = 0f,
                 SpawnInterval = 0f,
-                BaseCustomers = 0,
                 MaxConcurrentCustomers = 0,  // no concurrency cap by default — all customers spawn at once
                 PassiveRequestGenreCount = 2,
                 PassiveDemandGenreWeight = 1.10d

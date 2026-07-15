@@ -100,7 +100,7 @@ namespace Book.Sell.Tests.Editor.Services
                         Id = locationId,
                         DisplayName = locationId,
                         DemandGenres = demandGenres,
-                        DemandTags = Array.Empty<string>()
+                        DemandQualities = Array.Empty<string>()
                     }
                 });
             }

@@ -1,4 +1,4 @@
-using Book.Sell.UI;
+using Dialogue;
 using Game.Configs.Models;
 using NUnit.Framework;
 

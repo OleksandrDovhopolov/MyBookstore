@@ -262,9 +262,9 @@ namespace Game.SalesStats.Services
                 return false;
             }
 
-            if (!BookGenreExtensions.TryParseGenre(book.Genre, out genre))
+            if (!BookGenreExtensions.TryParseGenre(book.PrimaryGenre, out genre))
             {
-                Debug.LogWarning($"{LogPrefix} book '{bookId}' has unknown genre '{book.Genre}'; not counted.");
+                Debug.LogWarning($"{LogPrefix} book '{bookId}' has unknown genre '{book.PrimaryGenre}'; not counted.");
                 return false;
             }
 

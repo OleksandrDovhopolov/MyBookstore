@@ -148,3 +148,24 @@ Debug.Log("anything")
 
 - **`BotLogger`** (`Assets/Game/Expeditions/Bot/BotLogger.cs`) — написан напрямую через `Debug.Log`, обходит систему
 - **`AbstractDevelopmentTraceLogger<T>`** — полезная база для dev-трейсинга с `[Conditional]`
+
+---
+
+## Project logging note: Sales traffic
+
+`docs/INPROGRESS/CUSTOMER_TRAFFIC_COUNT_SYSTEM.md` defines a parser-friendly log contract for the future customer traffic resolver.
+
+Required stable tag:
+
+```text
+[Sales.Traffic]
+```
+
+Required event names:
+
+- `resolved` - one summary per sales day traffic resolution;
+- `contribution` - one optional breakdown entry per non-neutral `ICustomerTrafficContributor`;
+- `spawnerFloor` - only when the production spawner changes the resolver result because of an active-request floor;
+- `warning` - invalid config, duplicate day overrides, missing referenced config, or hard-override conflicts.
+
+Messages should use stable key-value fields (`key=value`) so a raw log file can explain how the final regular customer count was formed: baseline, modifiers, raw value, rounded value, clamp, final count, and contributor count.

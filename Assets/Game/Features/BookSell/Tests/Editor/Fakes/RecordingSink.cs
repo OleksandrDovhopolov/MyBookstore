@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Book.Sell.API;
 using Book.Sell.Domain;
-using Game.Configs.Models;
+using Dialogue;
 
 namespace Book.Sell.Tests.Editor.Fakes
 {
@@ -16,7 +16,7 @@ namespace Book.Sell.Tests.Editor.Fakes
         public List<(Customer customer, int count)> PurchaseCompletions { get; } = new();
         public List<(Customer customer, PassiveSaleEvent evt)> PassiveSales { get; } = new();
         public List<(Customer customer, CustomerCommentPayload payload)> Comments { get; } = new();
-        public List<(Customer customer, RequestConfig request)> ActiveStarted { get; } = new();
+        public List<(Customer customer, ActiveRequestRuntime request)> ActiveStarted { get; } = new();
         public List<(Customer customer, DialoguePayload payload)> DialoguesStarted { get; } = new();
 
         public void OnPhaseChanged(Customer customer, CustomerPhase phase)
@@ -43,7 +43,7 @@ namespace Book.Sell.Tests.Editor.Fakes
         public void OnCustomerComment(Customer customer, CustomerCommentPayload payload)
             => Comments.Add((customer, payload));
 
-        public void OnActiveRequestStarted(Customer customer, RequestConfig request)
+        public void OnActiveRequestStarted(Customer customer, ActiveRequestRuntime request)
             => ActiveStarted.Add((customer, request));
 
         public void OnDialogueStarted(Customer customer, DialoguePayload payload)

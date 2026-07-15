@@ -4,9 +4,9 @@ using Game.Configs;
 using Game.Configs.Models;
 using Game.LocationEntry.API;
 using Game.LocationUnlock.API;
-using Game.Newspaper.UI;
 using Game.Resources.API;
 using Game.UI;
+using SpriteService;
 using UnityEngine;
 using VContainer;
 

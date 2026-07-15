@@ -17,11 +17,12 @@ namespace Game.Configs.Editor
                     ["id"] = "",
                     ["title"] = "",
                     ["author"] = "",
-                    ["genre"] = "",
-                    ["basePrice"] = 0,
+                    ["description"] = "",
+                    ["genres"] = new JArray(),
                     ["rarityWeight"] = 0.0,
-                    ["tags"] = new JArray(),
-                    ["mood"] = new JArray()
+                    ["published"] = 0,
+                    ["pages"] = 0,
+                    ["qualities"] = new JArray()
                 },
                 "locations" => new JObject
                 {

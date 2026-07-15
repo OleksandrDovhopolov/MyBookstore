@@ -12,16 +12,16 @@ namespace Book.Sell.Domain
     {
         public ShelfBook Book { get; }
         public IReadOnlyList<string> MatchedGenres { get; }
-        public IReadOnlyList<string> MatchedTags { get; }
+        public IReadOnlyList<string> MatchedQualities { get; }
 
         public PassiveSaleCandidate(
             ShelfBook book,
             IReadOnlyList<string> matchedGenres,
-            IReadOnlyList<string> matchedTags)
+            IReadOnlyList<string> matchedQualities)
         {
             Book = book;
             MatchedGenres = matchedGenres ?? Array.Empty<string>();
-            MatchedTags = matchedTags ?? Array.Empty<string>();
+            MatchedQualities = matchedQualities ?? Array.Empty<string>();
         }
     }
 }

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
-using Game.Newspaper.UI;
 using Infrastructure.ResourceAnimations;
+using SpriteService;
 using UnityEngine;
 
 namespace Game.UI.ResourceAnimations

@@ -7,7 +7,9 @@
         "Game.Newspaper",
         "Game.Rewards.API",
         "Game.Inventory.API",
-        "UnityEngine.TestRunner"
+        "UnityEngine.TestRunner",
+        "Game.Rewards",
+        "Game.Shop.API"
     ],
     "includePlatforms": [
         "Editor"

@@ -147,7 +147,7 @@ QuestWorldEffectConfig { string Type; JObject Params; }                         
 | `soldGenre` | продать N книг жанра (глобально) | **есть** — `SoldGenreCondition` |
 | `soldGenreAtLocation` | продать 15 `Fantasy` на `location_01` | **готово** (GAME-4) — `Game.SalesStats` |
 | `soldGenreInSingleDay` | продать 15 `Fantasy` за один день | **готово** (GAME-4) — `Game.SalesStats` |
-| `soldByTags` | продать книги с тегами `{nature, academic}` жанра `Fact` | требует учёта продаж по `Tags` (есть `BookConfig.Tags/Mood`) — см. §12 |
+| `soldByQualities` | продать книги с qualities `{nature, academic}` жанра `Fact` | требует учёта продаж по `Qualities` (есть `BookConfig.Qualities`) — см. §12 |
 | `decorEquipped` | установить `decor_donation_box` / `decor_fireplace` | **готово** (Этап 3) — `Game.Decor` (`IDecorPlacementService`) |
 | `haveItem` | найден квест-предмет | **готово** (Этап 3) — `Game.Inventory` (`Has/GetCount`) |
 | `weatherIs` | дождь, шторм, снег, солнце | **готово** (Этап 3) — `Game.DayCycle` (`ICurrentDayWeatherProvider` поверх `IMorningContextResolver`) |
@@ -216,7 +216,7 @@ Pending -> Active -> Completed
 
 ## 7. Примеры цепочек
 
-> **MVP-замечание.** Сезонных гейтов в MVP нет (Prereq §0): сезонные «пики» заменены доступными триггерами — погодой (`weatherIs`), продажей «за один день» и прогрессом продаж. Все id (`location_NN`, `decor_*`, `quest_*`) и теги в таблицах — **плейсхолдеры**; в коде жанр ограничен `BookGenre` (`Classic/Crime/Drama/Fact/Fantasy/Kids/Travel`), а тонкая выборка «особенных» книг делается по `BookConfig.Tags`/`Mood` (см. §12), а не по RPG-редкости.
+> **MVP-замечание.** Сезонных гейтов в MVP нет (Prereq §0): сезонные «пики» заменены доступными триггерами — погодой (`weatherIs`), продажей «за один день» и прогрессом продаж. Все id (`location_NN`, `decor_*`, `quest_*`) и qualities в таблицах — **плейсхолдеры**; в коде жанр ограничен `BookGenre` (`Classic/Crime/Drama/Fact/Fantasy/Kids/Travel`), а тонкая выборка «особенных» книг делается по `BookConfig.Qualities` (см. §12), а не по RPG-редкости.
 
 ### Цепочка A — строительство объекта на локации (world-state)
 
@@ -241,7 +241,7 @@ Pending -> Active -> Completed
 | Этап | Условия/задачи | Награда/эффект |
 |---|---|---|
 | open | открыть `location_05` | старт цепочки |
-| tags | продать 10 книг с тегами `{maritime, history}` на `location_05` (`soldByTags`) | NPC начинает диалог |
+| qualities | продать 10 книг с qualities `{maritime, history}` на `location_05` (`soldByQualities`) | NPC начинает диалог |
 | weather | в шторм (`weatherIs: storm`) кликнуть интерактивный объект | квест-предмет |
 | sustain | держать `decor_fireplace` 3 игровых дня | восстановленный предмет |
 | finale | вернуть предмет NPC | `GenrePriceMultiplier(Crime, +20%, evening/coast)`, ночная торговля, декор-награда |
@@ -306,7 +306,7 @@ Pending -> Active -> Completed
 | `AllOfCondition` / `AnyOfCondition` / `NotCondition` | `Conditions/Services/Composites` | Композиция условий задачи без своего кода. |
 | `SoldGenreCondition` + `SoldGenreConditionFactory` (`"soldGenre"`) | `SalesStats/Conditions` | Готовый шаблон-прототип квестового условия «продать N книг жанра». |
 
-**Рекомендация — вариант A (выбран):** квесты зависят от `Game.Conditions.API`, хранят `ConditionConfig` как JSON-узлы и прогоняют их через `IConditionParser`. Новые лист-условия (`visitLocation`, `soldGenreAtLocation`, `weatherIs`, `equipDecor`, `haveItem`, `soldByTags`, ...) добавляются как `IConditionFactory` в **своих** фичах (по примеру `SoldGenreConditionFactory`) и подхватываются движком без его изменения. `Game.Quest` владеет только тем, чего в `Conditions` нет: машиной состояний, прогрессом/сохранением задач, цепочками `NextQuestIds`, наградами и permanent effects, а также **триггером пере-оценки** условий (`ICondition.Evaluate()` — pull-модель, ей нужен повод пересчитаться: доменные сигналы продаж/дня/локации/декора).
+**Рекомендация — вариант A (выбран):** квесты зависят от `Game.Conditions.API`, хранят `ConditionConfig` как JSON-узлы и прогоняют их через `IConditionParser`. Новые лист-условия (`visitLocation`, `soldGenreAtLocation`, `weatherIs`, `equipDecor`, `haveItem`, `soldByQualities`, ...) добавляются как `IConditionFactory` в **своих** фичах (по примеру `SoldGenreConditionFactory`) и подхватываются движком без его изменения. `Game.Quest` владеет только тем, чего в `Conditions` нет: машиной состояний, прогрессом/сохранением задач, цепочками `NextQuestIds`, наградами и permanent effects, а также **триггером пере-оценки** условий (`ICondition.Evaluate()` — pull-модель, ей нужен повод пересчитаться: доменные сигналы продаж/дня/локации/декора).
 
 Отвергнутые варианты:
 
@@ -372,11 +372,10 @@ Game.Quest = владелец состояния, цепочек, наград �
 ```csharp
 public string Genre { get; set; }       // основной жанр (BookGenre: Classic/Crime/Drama/Fact/Fantasy/Kids/Travel)
 public float  RarityWeight { get; set; } // ВЕС ПОЯВЛЕНИЯ в ассортименте, не «тир»
-public string[] Tags { get; set; }       // survival, space, study, history, nature, ...  (совпадение с запросом +2)
-public string[] Mood { get; set; }       // smart, tense, cozy, romantic, dark, ...        (совпадение +1)
+public string[] Qualities { get; set; }  // survival, space, study, history, nature, ...  (совпадение с запросом +2)
 ```
 
-**Рекомендация — вариант 1 (выбран):** квестовые требования формулируются как совпадение по `Genre` + `Tags` (+`Mood`), без ввода нового rarity-тира. Например, «редкий справочник» = `genre: Fact` + `tags ⊇ {nature, academic}`. Это переиспользует ту же scoring-механику, что и обычные продажи, и не плодит новых перечислений. Нужно лишь, чтобы `SalesStats` умел считать продажи по тегам (условие `soldByTags`) — это часть работ Prereq §0 (расширение учёта продаж).
+**Рекомендация — вариант 1 (выбран):** квестовые требования формулируются как совпадение по `Genres` + `Qualities`, без ввода нового rarity-тира. Например, «редкий справочник» = `genres contains Fact` + `qualities ⊇ {nature, academic}`. Это переиспользует ту же scoring-механику, что и обычные продажи, и не плодит новых перечислений. Нужно лишь, чтобы `SalesStats` умел считать продажи по qualities (условие `soldByQualities`) — это часть работ Prereq §0 (расширение учёта продаж).
 
 Дополнительно:
 

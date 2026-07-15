@@ -71,15 +71,25 @@ Content-Type: application/json
 ```json
 [
   {
-    "id": "book_dune",
-    "title": "Dune",
-    "author": "Frank Herbert",
-    "genre": "sci-fi",
-    "basePrice": 120,
-    "rarityWeight": 0.2
+    "id": "Book1",
+    "title": "The Housemaid",
+    "author": "Freida McFadden",
+    "description": "…",
+    "genres": ["Crime"],
+    "qualities": ["Thriller", "Detective"],
+    "rarityWeight": 0.5,
+    "published": 2022,
+    "pages": 336
   }
 ]
 ```
+
+> Форма объекта секции `books` должна совпадать с клиентской моделью
+> [`BookConfig`](C:\Projects\MyBookstore\Assets\Game\Features\Configs\Models\BookConfig.cs): жанры — массив
+> `genres` (первый элемент = основной жанр), плюс `qualities`, `published`, `pages`. Поля вида `genre`
+> (строкой) или `basePrice` клиент **игнорирует** — при такой схеме `PrimaryGenre` пустой и FTUE сидирует 0
+> стартовых книг. Backend хранит секцию как «сырой» JSON-массив и схему не навязывает, поэтому корректность
+> shape — на стороне публикующего (Editor Window валидирует `genres[0]` перед Publish).
 
 ## 3. Admin API
 

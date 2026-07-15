@@ -1,9 +1,10 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
-using Game.Newspaper.UI;
 using Game.UI;
+using SpriteService;
 using UIShared;
 using UnityEngine;
 using VContainer;
@@ -76,7 +77,7 @@ namespace Game.Decor.UI
                 if (ct.IsCancellationRequested) return;
                 if (View != null && View.Icon != null) View.Icon.sprite = sprite;
             }
-            catch (System.OperationCanceledException) { }
+            catch (OperationCanceledException) { }
         }
 
         private void CancelIcon()

@@ -4,6 +4,7 @@ using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
+using Dialogue;
 using Game.UI;
 using UnityEngine;
 using VContainer.Unity;
@@ -13,10 +14,11 @@ namespace Book.Sell.UI
     /// <summary>
     /// Owns the lifecycle of <see cref="DialogWindow"/> (GAME-6 §Этап 5, A5) — the dialogue counterpart of
     /// <see cref="RecommendationMinigamePresenter"/>. Listens for <see cref="ISalesDayController.DialogueStarted"/>
-    /// and opens the window, handing it the gameplay-scoped controller + payload via <see cref="DialogWindowArgs"/>
-    /// (the bootstrap-scoped window factory cannot inject the controller).
+    /// and opens the window, handing it the payload plus <see cref="ISalesDayController.CompleteDialogue"/> as a
+    /// neutral completion callback via <see cref="DialogWindowArgs"/> (the bootstrap-scoped window factory cannot
+    /// inject the gameplay-scope controller, and the Dialogue module must not depend on the sales feature).
     ///
-    /// Completion is owned by the window (<c>Ended</c> → <see cref="ISalesDayController.CompleteDialogue"/>);
+    /// Completion is owned by the window (it invokes the callback on end/teardown → <c>CompleteDialogue()</c>);
     /// this presenter only opens it and provides the anti-hang safety net if the open itself fails — a missing
     /// <see cref="IUIManager"/>, a null window, or an exception all call <c>CompleteDialogue()</c> so the held
     /// interaction lock is released and the day never hangs.
@@ -59,9 +61,9 @@ namespace Book.Sell.UI
         }
 
         private void OnDialogueStarted(Book.Sell.Domain.Customer customer, DialoguePayload payload)
-            => OpenAsync(customer, payload).Forget();
+            => OpenAsync(payload).Forget();
 
-        private async UniTaskVoid OpenAsync(Book.Sell.Domain.Customer customer, DialoguePayload payload)
+        private async UniTaskVoid OpenAsync(DialoguePayload payload)
         {
             if (_uiManager == null)
             {
@@ -73,7 +75,7 @@ namespace Book.Sell.UI
             try
             {
                 var window = await _uiManager.ShowAsync<DialogWindow>(
-                    new DialogWindowArgs(_controller, payload, customer), _cts.Token);
+                    new DialogWindowArgs(payload, _controller.CompleteDialogue), _cts.Token);
 
                 if (window == null)
                 {

@@ -4,13 +4,16 @@
     "dayIndex": 1,
     "title": "Первый день у парка",
     "weatherId": "clear",
-    "eventId": "exam_week"
+    "eventId": "exam_week",
+    "customerCount": 3,
+    "applyModifiers": false
   },
   {
     "id": "day_002",
     "dayIndex": 2,
     "title": "Дождливое утро",
     "weatherId": "rain",
-    "eventId": ""
+    "eventId": "",
+    "customerCount": 5
   }
 ]

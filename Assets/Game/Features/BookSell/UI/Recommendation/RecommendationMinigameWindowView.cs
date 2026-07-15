@@ -15,14 +15,15 @@ namespace Book.Sell.UI
     {
         [Header("Minigame (selection) root")]
         [SerializeField] private GameObject _minigameRoot;
+        [SerializeField] private RecommendationMinigameAnimator _animator;
 
         [Header("Active request")]
         [SerializeField] private TMP_Text _requestText;
-        [SerializeField] private TMP_Text _difficultyLabel;     // "Difficulty: 3/5" — empty when none/Unknown
 
         [Header("Shelf (grid)")]
         [SerializeField] private Transform _shelfContainer;
         [SerializeField] private BookCardView _bookCardPrefab;
+        [SerializeField] private Button _clearFocusButton;      // Transparent/background button for clearing book focus
 
         [Header("Book detail panel")]
         [SerializeField] private GameObject _detailPanel;
@@ -42,12 +43,13 @@ namespace Book.Sell.UI
         [SerializeField] private Button _finishButton;
 
         public GameObject MinigameRoot => _minigameRoot;
+        public RecommendationMinigameAnimator Animator => _animator;
 
         public TMP_Text RequestText => _requestText;
-        public TMP_Text DifficultyLabel => _difficultyLabel;
 
         public Transform ShelfContainer => _shelfContainer;
         public BookCardView BookCardPrefab => _bookCardPrefab;
+        public Button ClearFocusButton => _clearFocusButton;
 
         public GameObject DetailPanel => _detailPanel;
         public TMP_Text DetailTitle => _detailTitle;

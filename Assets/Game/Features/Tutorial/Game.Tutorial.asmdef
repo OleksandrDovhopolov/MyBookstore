@@ -14,7 +14,8 @@
         "Game.Bootstrap.Loading",
         "Game.Tutorial.API",
         "Infrastructure",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Game.GameplayUI.Signals"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
