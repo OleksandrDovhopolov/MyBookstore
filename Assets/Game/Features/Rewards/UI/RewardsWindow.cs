@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
-using Game.Newspaper.UI;
 using Game.UI;
+using SpriteService;
 using VContainer;
 
 namespace Game.Rewards.UI

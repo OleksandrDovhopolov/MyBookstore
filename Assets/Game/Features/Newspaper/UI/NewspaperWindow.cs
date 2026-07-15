@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using Game.Rewards.UI;
 using Game.Shop.API;
 using Game.UI;
+using SpriteService;
 using UIShared;
 using UnityEngine;
 using VContainer;

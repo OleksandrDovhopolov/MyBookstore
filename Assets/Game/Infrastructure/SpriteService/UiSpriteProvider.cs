@@ -5,7 +5,7 @@ using Cysharp.Threading.Tasks;
 using Infrastructure;
 using UnityEngine;
 
-namespace Game.Newspaper.UI
+namespace SpriteService
 {
     /// <summary>
     /// Default <see cref="IUiSpriteProvider"/>. Loads sprites from Addressables by id through

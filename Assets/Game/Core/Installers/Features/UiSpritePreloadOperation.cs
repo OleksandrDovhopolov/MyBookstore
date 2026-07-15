@@ -2,7 +2,8 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
-using Game.Newspaper.UI;
+using Game.Ftue.Services;
+using SpriteService;
 
 namespace Game.Bootstrap
 {

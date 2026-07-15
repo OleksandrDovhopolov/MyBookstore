@@ -2,7 +2,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace Game.Newspaper.UI
+namespace SpriteService
 {
     /// <summary>
     /// Long-lived (singleton) async sprite cache for newspaper/rewards UI. Loads sprites from

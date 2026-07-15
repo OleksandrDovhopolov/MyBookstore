@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -6,12 +7,12 @@ using Game.Bootstrap.Loading;
 using Game.Configs.Models;
 using Game.LocationEntry.API;
 using Game.LocationVisits.API;
-using Game.Newspaper.UI;
 using Game.Preparation.Domain;
 using Game.Preparation.Services;
 using Game.Resources.API;
 using Game.UI;
 using MessagePipe;
+using SpriteService;
 using UnityEngine;
 using VContainer;
 
@@ -153,7 +154,7 @@ namespace Game.Preparation.UI
                     if (row != null && row.Genre == genre) row.SetIcon(sprite);
                 }
             }
-            catch (System.OperationCanceledException)
+            catch (OperationCanceledException)
             {
             }
         }
@@ -265,7 +266,7 @@ namespace Game.Preparation.UI
             {
                 await _session.RandomizeAsync(ct); // StateChanged обновит строки/счётчик
             }
-            catch (System.OperationCanceledException)
+            catch (OperationCanceledException)
             {
             }
             finally
@@ -343,7 +344,7 @@ namespace Game.Preparation.UI
                     // failure path below this is skipped, so a failed entry never counts as a visit.
                     _visits?.RecordVisit(locationId);
                 }
-                catch (System.Exception e)
+                catch (Exception e)
                 {
                     // Technical entry failure → refund the sunk fee and reopen with the same location.
                     Debug.LogError($"[PreparationWindow] EnterLocationAsync failed after confirm: {e}");
@@ -354,7 +355,7 @@ namespace Game.Preparation.UI
                     await ReopenAfterTransitionFailureAsync(locationId, displayName);
                 }
             }
-            catch (System.OperationCanceledException)
+            catch (OperationCanceledException)
             {
             }
             finally
@@ -378,7 +379,7 @@ namespace Game.Preparation.UI
                 await UIManager.ShowAsync<PreparationWindow>(
                     new PreparationWindowArgs(locationId, displayName), CancellationToken.None);
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Debug.LogError($"[PreparationWindow] Failed to reopen after transition failure: {e}");
             }

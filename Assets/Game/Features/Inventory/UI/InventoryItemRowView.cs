@@ -8,11 +8,6 @@ using UnityEngine.UI;
 
 namespace Game.Inventory.UI
 {
-    /// <summary>
-    /// Single row in the debug inventory list. Bound by <see cref="InventoryScreenView"/>; one
-    /// instantiated per item. Book rows can optionally render the full <c>BookConfig</c> through
-    /// <see cref="BindBook"/> — other categories use the plain <see cref="Bind"/>.
-    /// </summary>
     public sealed class InventoryItemRowView : MonoBehaviour
     {
         [SerializeField] private TMP_Text _idLabel;

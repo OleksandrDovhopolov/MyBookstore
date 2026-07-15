@@ -1,9 +1,10 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Game.Newspaper.UI;
+using SpriteService;
 using TMPro;
 using UIShared;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,7 +13,7 @@ namespace Game.Characters.UI
     /// <summary>
     /// One character row. Locked (undiscovered) characters show <c>_lockedPanel</c> as a placeholder and
     /// load no portrait; discovered characters load their portrait by <c>PortraitKey</c> via the shared
-    /// async sprite cache. Mirrors <see cref="Game.Location.UI.LocationRowView"/>.
+    /// async sprite cache. Mirrors <see cref="FilePathAttribute.Location.UI.LocationRowView"/>.
     /// </summary>
     public sealed class JournalCharacterRowView : MonoBehaviour, ICleanup
     {

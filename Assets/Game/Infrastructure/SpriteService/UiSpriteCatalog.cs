@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Game.Newspaper.UI
+namespace SpriteService
 {
     /// <summary>
     /// Authoring asset for <see cref="IUiSpriteProvider"/>. Maps a sprite id to its Addressables

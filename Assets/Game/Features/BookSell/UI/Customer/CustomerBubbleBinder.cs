@@ -7,8 +7,8 @@ using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
-using Game.Newspaper.UI;
 using Game.WorldHud;
+using SpriteService;
 using UnityEngine;
 using VContainer.Unity;
 
@@ -91,12 +91,12 @@ namespace Book.Sell.UI.Customer
             _cts.Dispose();
         }
 
-        private void OnCustomerPhaseChanged(Book.Sell.Domain.Customer customer)
+        private void OnCustomerPhaseChanged(Domain.Customer customer)
         {
             HandlePhaseAsync(customer).Forget();
         }
 
-        private async UniTaskVoid HandlePhaseAsync(Book.Sell.Domain.Customer customer)
+        private async UniTaskVoid HandlePhaseAsync(Domain.Customer customer)
         {
             switch (customer.Phase)
             {
@@ -123,13 +123,13 @@ namespace Book.Sell.UI.Customer
             }
         }
 
-        private void OnBookReserved(Book.Sell.Domain.Customer customer, string bookId)
+        private void OnBookReserved(Domain.Customer customer, string bookId)
         {
             ShowLockedBookAsync(customer, bookId).Forget();
         }
 
         // Book locked (commit delay): show the book's genre sprite in the bubble's BookIcon.
-        private async UniTaskVoid ShowLockedBookAsync(Book.Sell.Domain.Customer customer, string bookId)
+        private async UniTaskVoid ShowLockedBookAsync(Domain.Customer customer, string bookId)
         {
             try
             {
@@ -159,7 +159,7 @@ namespace Book.Sell.UI.Customer
             return await _uiSprites.GetSpriteAsync(parsed.ToString(), _cts.Token);
         }
 
-        private void OnCustomerPassivePurchaseFailed(Book.Sell.Domain.Customer customer, string genre)
+        private void OnCustomerPassivePurchaseFailed(Domain.Customer customer, string genre)
         {
             _keepBubbleUntilDespawn.Add(customer.Id);
             ShowFailedAsync(customer, genre).Forget();
@@ -167,7 +167,7 @@ namespace Book.Sell.UI.Customer
 
         // Passive attempt failed: mirror the success flow — show the (missed) genre sprite for the
         // commit-delay window first, then switch to the Fail icon.
-        private async UniTaskVoid ShowFailedAsync(Book.Sell.Domain.Customer customer, string genre)
+        private async UniTaskVoid ShowFailedAsync(Domain.Customer customer, string genre)
         {
             try
             {
@@ -195,13 +195,13 @@ namespace Book.Sell.UI.Customer
             }
         }
 
-        private void OnCustomerPurchaseCompleted(Book.Sell.Domain.Customer customer, int purchasedBookCount)
+        private void OnCustomerPurchaseCompleted(Domain.Customer customer, int purchasedBookCount)
         {
             _keepBubbleUntilDespawn.Add(customer.Id);
             EnsureBubbleAsync(customer, CustomerThoughtState.PurchaseCompleted, $"Bought {purchasedBookCount} books").Forget();
         }
 
-        private void OnCustomerThoughtBubbleHidden(Book.Sell.Domain.Customer customer)
+        private void OnCustomerThoughtBubbleHidden(Domain.Customer customer)
         {
             // LeaveStep asked to clear the HUD: drop the keep-alive flag and detach so the customer
             // walks away without a bubble (feedback already had its dwell in the prior steps).
@@ -209,12 +209,12 @@ namespace Book.Sell.UI.Customer
             DetachBubbleAsync(customer.Id).Forget();
         }
 
-        private void OnCustomerPassiveSaleHappened(Book.Sell.Domain.Customer customer, PassiveSaleEvent evt)
+        private void OnCustomerPassiveSaleHappened(Domain.Customer customer, PassiveSaleEvent evt)
         {
             EnsureBubbleAsync(customer, CustomerThoughtState.Comment).Forget();
         }
 
-        private void OnCustomerCommented(Book.Sell.Domain.Customer customer, CustomerCommentPayload payload)
+        private void OnCustomerCommented(Domain.Customer customer, CustomerCommentPayload payload)
         {
             var text = !string.IsNullOrEmpty(payload.TextKey)
                 ? payload.TextKey
@@ -224,7 +224,7 @@ namespace Book.Sell.UI.Customer
             EnsureBubbleAsync(customer, CustomerThoughtState.Comment, text).Forget();
         }
 
-        private void OnCustomerRecommendationResolved(Book.Sell.Domain.Customer customer, RecommendationResult result)
+        private void OnCustomerRecommendationResolved(Domain.Customer customer, RecommendationResult result)
         {
             // The active-sale reaction is shown inside the minigame window, not in the world HUD. Detach the
             // active-request bubble (for all tiers) so it can't blink when the window closes and HUD
@@ -234,7 +234,7 @@ namespace Book.Sell.UI.Customer
         }
 
         private UniTask EnsureBubbleAsync(
-            Book.Sell.Domain.Customer customer,
+            Domain.Customer customer,
             CustomerThoughtState state,
             string stateText)
         {
@@ -245,11 +245,11 @@ namespace Book.Sell.UI.Customer
             return EnsureBubbleAsync(customer, state, payload);
         }
 
-        private UniTask EnsureBubbleAsync(Book.Sell.Domain.Customer customer, CustomerThoughtState state)
+        private UniTask EnsureBubbleAsync(Domain.Customer customer, CustomerThoughtState state)
             => EnsureBubbleAsync(customer, state, CustomerThoughtPayload.Empty);
 
         private async UniTask EnsureBubbleAsync(
-            Book.Sell.Domain.Customer customer,
+            Domain.Customer customer,
             CustomerThoughtState state,
             CustomerThoughtPayload payload)
         {
@@ -262,7 +262,7 @@ namespace Book.Sell.UI.Customer
         // Returns the customer's bubble, attaching it on first use. Concurrent callers (the AwaitingHelp +
         // InMinigame burst on an active request) await the same in-flight attach, so only one bubble is ever
         // created — avoiding two overlapping world-space bubbles z-fighting (the active-purchase flicker).
-        private async UniTask<CustomerThoughtBubble> GetOrAttachBubbleAsync(Book.Sell.Domain.Customer customer)
+        private async UniTask<CustomerThoughtBubble> GetOrAttachBubbleAsync(Domain.Customer customer)
         {
             var customerId = customer.Id;
             if (_detachRequested.Contains(customerId)) return null;

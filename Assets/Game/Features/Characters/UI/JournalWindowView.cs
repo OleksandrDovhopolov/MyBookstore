@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Game.Newspaper.UI;
 using Game.UI;
+using SpriteService;
 using UIShared;
 using UnityEngine;
 

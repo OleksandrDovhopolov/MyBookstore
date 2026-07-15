@@ -1,6 +1,7 @@
 using Game.Characters.API;
-using Game.Newspaper.UI;
 using Game.UI;
+using SpriteService;
+using UnityEditor;
 using VContainer;
 
 namespace Game.Characters.UI
@@ -8,7 +9,7 @@ namespace Game.Characters.UI
     /// <summary>
     /// Journal — Characters section. Lists every character; undiscovered ones render a placeholder
     /// (see <see cref="JournalCharacterRowView"/>). Live-refreshes on discovery / memory-unlock events
-    /// (Stage 2). Mirrors <see cref="Game.Location.UI.LocationWindow"/>. Opened via
+    /// (Stage 2). Mirrors <see cref="FilePathAttribute.Location.UI.LocationWindow"/>. Opened via
     /// <c>uiManager.ShowAsync&lt;JournalWindow&gt;()</c>; needs a prefab at address "JournalWindow".
     /// </summary>
     [Window("JournalWindow", WindowType.Page)]

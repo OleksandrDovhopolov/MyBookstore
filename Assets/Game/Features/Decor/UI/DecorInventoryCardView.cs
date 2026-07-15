@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
-using Game.Newspaper.UI;
+using SpriteService;
 using TMPro;
 using UIShared;
 using UnityEngine;
