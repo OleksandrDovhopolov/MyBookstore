@@ -100,20 +100,20 @@
     "worldEffects": []
   },
   {
-    "id": "q_intro_tilde",
+    "id": "q_intro_eddi",
     "type": "story",
     "chainId": null,
-    "characterId": "tilde",
-    "dialogueId": "dlg_tilde_meet",
-    "titleKey": "quest.q_intro_tilde.title",
-    "descriptionKey": "quest.q_intro_tilde.desc",
+    "characterId": "eddi",
+    "dialogueId": "eddy1",
+    "titleKey": "quest.q_intro_eddi.title",
+    "descriptionKey": "quest.q_intro_eddi.desc",
     "nextQuestIds": [],
     "activationConditions": null,
     "failConditions": null,
     "tasks": [
       {
         "id": 1,
-        "descriptionKey": "task.q_intro_tilde_meet",
+        "descriptionKey": "task.q_intro_eddi_meet",
         "completionConditions": {
           "all": [
             { "type": "visitLocation", "locationId": "loc_downtown", "min": 3 }

@@ -38,5 +38,10 @@
         "isGolden": true
       }
     ]
+  },
+  {
+    "id": "eddi",
+    "displayNameKey": "character.eddi.name",
+    "discoveryQuestIds": ["q_intro_eddi"]
   }
 ]

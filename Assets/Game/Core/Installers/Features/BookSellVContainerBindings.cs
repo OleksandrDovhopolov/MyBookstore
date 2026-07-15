@@ -113,13 +113,13 @@ namespace Game.Bootstrap
             // Boot-time warn if a hard-override day is under-supplied vs active requests.
             builder.RegisterEntryPoint<CustomerTrafficConfigValidator>(Lifetime.Singleton);
 
-            // Base composition (concrete type) + the quest-scheduling decorator as ICustomerSpawner (GAME-6).
-            // The decorator prepends a quest character per ACTIVE quest that carries a (not-yet-delivered)
-            // dialogue — the day no longer knows about dialogues. NOTE: register the inner concretely —
+            // Base composition (concrete type) + the quest-replacing decorator as ICustomerSpawner (GAME-6).
+            // The decorator replaces regular customer slots with ACTIVE quest dialogue customers instead of
+            // increasing the total visitor count. NOTE: register the inner concretely —
             // resolving ICustomerSpawner inside the ICustomerSpawner factory would be a self-reference. Swap
             // the inner type here to change base composition. IQuestsService resolves from the global scope.
             builder.Register<RegularCustomerSpawner>(Lifetime.Singleton); // production base: count from ICustomerTrafficResolver
-            builder.Register<ICustomerSpawner>(r => new QuestSchedulingCustomerSpawner(
+            builder.Register<ICustomerSpawner>(r => new QuestReplacingCustomerSpawner(
                     r.Resolve<RegularCustomerSpawner>(),
                     r.Resolve<IConfigsService>(),
                     r.Resolve<IQuestsService>(),
