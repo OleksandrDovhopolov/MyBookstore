@@ -5,38 +5,41 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public sealed class SaleChanceWidgetView : MonoBehaviour, IContentWidgetView
+namespace GameplayUI
 {
-    [SerializeField] private TMP_Text _percentLabel;
-    [SerializeField] private Button _closeButton;
-
-    private void Awake()
+    public sealed class SaleChanceWidgetView : MonoBehaviour, IContentWidgetView
     {
-        if (_closeButton != null)
-            _closeButton.onClick.AddListener(OnCloseClicked);
-    }
+        [SerializeField] private TMP_Text _percentLabel;
+        [SerializeField] private Button _closeButton;
 
-    public bool Setup(ContentWidgetDataBase data)
-    {
-        if (data is not SaleChanceWidgetData saleChance)
-            return false;
+        private void Awake()
+        {
+            if (_closeButton != null)
+                _closeButton.onClick.AddListener(OnCloseClicked);
+        }
 
-        if (_percentLabel != null)
-            _percentLabel.text = $"{saleChance.Percent}%";
+        public bool Setup(ContentWidgetDataBase data)
+        {
+            if (data is not SaleChanceWidgetData saleChance)
+                return false;
 
-        return true;
-    }
+            if (_percentLabel != null)
+                _percentLabel.text = $"{saleChance.Percent}%";
 
-    public UniTask OnViewCreatedAsync(CancellationToken ct) => UniTask.CompletedTask;
+            return true;
+        }
 
-    private void OnCloseClicked()
-    {
-        GetComponentInParent<ContentWidgetView>()?.RequestClose();
-    }
+        public UniTask OnViewCreatedAsync(CancellationToken ct) => UniTask.CompletedTask;
 
-    private void OnDestroy()
-    {
-        if (_closeButton != null)
-            _closeButton.onClick.RemoveListener(OnCloseClicked);
+        private void OnCloseClicked()
+        {
+            GetComponentInParent<ContentWidgetView>()?.RequestClose();
+        }
+
+        private void OnDestroy()
+        {
+            if (_closeButton != null)
+                _closeButton.onClick.RemoveListener(OnCloseClicked);
+        }
     }
 }

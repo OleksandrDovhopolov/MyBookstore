@@ -11,91 +11,94 @@ using Save;
 using UnityEngine;
 using VContainer;
 
-public class MainSceneBootstrap : MonoBehaviour
+namespace GameplayUI
 {
-    private UIManager _uiManager;
-    private ISaveService _save;
-    private ITransitionAnimationService _transition;
-    private IPublisher<GameplayHubReady> _hubReadyPublisher;
-    private WelcomeWindowStartupSettings _welcomeWindowStartupSettings;
-
-    private CancellationToken _destroyToken;
-
-    [Inject]
-    public void Install(
-        UIManager uiManager,
-        ISaveService save,
-        ITransitionAnimationService transition,
-        IPublisher<GameplayHubReady> hubReadyPublisher,
-        WelcomeWindowStartupSettings welcomeWindowStartupSettings)
+    public class MainSceneBootstrap : MonoBehaviour
     {
-        _uiManager = uiManager;
-        _save = save;
-        _transition = transition;
-        _hubReadyPublisher = hubReadyPublisher;
-        _welcomeWindowStartupSettings = welcomeWindowStartupSettings;
-    }
+        private UIManager _uiManager;
+        private ISaveService _save;
+        private ITransitionAnimationService _transition;
+        private IPublisher<GameplayHubReady> _hubReadyPublisher;
+        private WelcomeWindowStartupSettings _welcomeWindowStartupSettings;
 
-    private void Awake()
-    {
-        _destroyToken = this.GetCancellationTokenOnDestroy();
-    }
+        private CancellationToken _destroyToken;
 
-    private void Start()
-    {
-        LoadGameplayAsync(_destroyToken).Forget();
-    }
-
-    private async UniTaskVoid LoadGameplayAsync(CancellationToken ct)
-    {
-        try
+        [Inject]
+        public void Install(
+            UIManager uiManager,
+            ISaveService save,
+            ITransitionAnimationService transition,
+            IPublisher<GameplayHubReady> hubReadyPublisher,
+            WelcomeWindowStartupSettings welcomeWindowStartupSettings)
         {
-            ct.ThrowIfCancellationRequested();
+            _uiManager = uiManager;
+            _save = save;
+            _transition = transition;
+            _hubReadyPublisher = hubReadyPublisher;
+            _welcomeWindowStartupSettings = welcomeWindowStartupSettings;
+        }
 
-            var hud = await _uiManager.ShowAsync<GameplaySceneController>(ct: ct);
+        private void Awake()
+        {
+            _destroyToken = this.GetCancellationTokenOnDestroy();
+        }
 
-            // Wait until the hub window has loaded everything it needs to display (genre sprites, day
-            // context, ...) before revealing the screen.
-            await UniTask.WaitUntil(() => hud.IsShown && hud.IsDataReady, cancellationToken: ct);
-            ct.ThrowIfCancellationRequested();
+        private void Start()
+        {
+            LoadGameplayAsync(_destroyToken).Forget();
+        }
 
-            var firstEntry = await IsFirstEntryAsync(ct);
-            var showWelcomeWindow = firstEntry && (_welcomeWindowStartupSettings?.StartWelcomeWindow ?? true);
-
-            // On first entry keep the hub invisible behind the non-full-screen welcome letter; the reveal
-            // then shows the scene background + letter without flashing the HUD.
-            if (showWelcomeWindow)
-                hud.SetHudVisible(false);
-
-            await _transition.PlayRevealAsync(ct);   // remove the transition cover
-
-            if (showWelcomeWindow)
+        private async UniTaskVoid LoadGameplayAsync(CancellationToken ct)
+        {
+            try
             {
-                await ShowWelcomeAndWaitAsync(ct);
-                hud.SetHudVisible(true);
+                ct.ThrowIfCancellationRequested();
+
+                var hud = await _uiManager.ShowAsync<GameplaySceneController>(ct: ct);
+
+                // Wait until the hub window has loaded everything it needs to display (genre sprites, day
+                // context, ...) before revealing the screen.
+                await UniTask.WaitUntil(() => hud.IsShown && hud.IsDataReady, cancellationToken: ct);
+                ct.ThrowIfCancellationRequested();
+
+                var firstEntry = await IsFirstEntryAsync(ct);
+                var showWelcomeWindow = firstEntry && (_welcomeWindowStartupSettings?.StartWelcomeWindow ?? true);
+
+                // On first entry keep the hub invisible behind the non-full-screen welcome letter; the reveal
+                // then shows the scene background + letter without flashing the HUD.
+                if (showWelcomeWindow)
+                    hud.SetHudVisible(false);
+
+                await _transition.PlayRevealAsync(ct); // remove the transition cover
+
+                if (showWelcomeWindow)
+                {
+                    await ShowWelcomeAndWaitAsync(ct);
+                    hud.SetHudVisible(true);
+                }
+
+                // Hub is now actually visible and actionable — fire the tutorial's "hubReady" trigger.
+                // Published here (not right after IsDataReady) so a forced sequence never plays behind the
+                // transition cover or the first-entry welcome letter.
+                _hubReadyPublisher?.Publish(new GameplayHubReady(0));
             }
-
-            // Hub is now actually visible and actionable — fire the tutorial's "hubReady" trigger.
-            // Published here (not right after IsDataReady) so a forced sequence never plays behind the
-            // transition cover or the first-entry welcome letter.
-            _hubReadyPublisher?.Publish(new GameplayHubReady(0));
+            catch (OperationCanceledException)
+            {
+            }
         }
-        catch (OperationCanceledException)
+
+        private async UniTask<bool> IsFirstEntryAsync(CancellationToken ct)
         {
+            var welcome = await _save.GetModuleAsync<WelcomeCompletedState>(FtueSaveKeys.WelcomeCompleted, ct);
+            return welcome == null || !welcome.Completed;
         }
-    }
 
-    private async UniTask<bool> IsFirstEntryAsync(CancellationToken ct)
-    {
-        var welcome = await _save.GetModuleAsync<WelcomeCompletedState>(FtueSaveKeys.WelcomeCompleted, ct);
-        return welcome == null || !welcome.Completed;
-    }
+        private async UniTask ShowWelcomeAndWaitAsync(CancellationToken ct)
+        {
+            var welcome = await _uiManager.ShowAsync<WelcomeWindowController>(ct: ct);
+            if (welcome == null) return;
 
-    private async UniTask ShowWelcomeAndWaitAsync(CancellationToken ct)
-    {
-        var welcome = await _uiManager.ShowAsync<WelcomeWindowController>(ct: ct);
-        if (welcome == null) return;
-
-        await UniTask.WaitUntil(() => !welcome.IsShown, cancellationToken: ct);
+            await UniTask.WaitUntil(() => !welcome.IsShown, cancellationToken: ct);
+        }
     }
 }

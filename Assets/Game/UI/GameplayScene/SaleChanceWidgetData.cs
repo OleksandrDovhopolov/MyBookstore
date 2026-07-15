@@ -2,16 +2,19 @@ using Game.Configs.Models;
 using Game.UI.ContentWidget;
 using UnityEngine;
 
-public sealed class SaleChanceWidgetData : ContentWidgetDataBase
+namespace GameplayUI
 {
-    public BookGenre Genre { get; }
-    public int Percent { get; }
-    public Sprite GenreSprite { get; }
-
-    public SaleChanceWidgetData(BookGenre genre, int percent, Sprite genreSprite)
+    public sealed class SaleChanceWidgetData : ContentWidgetDataBase
     {
-        Genre = genre;
-        Percent = percent;
-        GenreSprite = genreSprite;
+        public BookGenre Genre { get; }
+        public int Percent { get; }
+        public Sprite GenreSprite { get; }
+
+        public SaleChanceWidgetData(BookGenre genre, int percent, Sprite genreSprite)
+        {
+            Genre = genre;
+            Percent = percent;
+            GenreSprite = genreSprite;
+        }
     }
 }
