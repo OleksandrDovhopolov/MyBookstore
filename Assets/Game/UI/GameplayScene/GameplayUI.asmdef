@@ -21,7 +21,8 @@
         "Configs",
         "Game.Decor",
         "Game.Ftue",
-        "Save"
+        "Save",
+        "Game.GameplayUI.Signals"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

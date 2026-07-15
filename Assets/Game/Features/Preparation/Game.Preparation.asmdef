@@ -18,7 +18,8 @@
         "Game.LocationEntry.API",
         "Game.Resources.API",
         "Infrastructure",
-        "Game.LocationVisits.API"
+        "Game.LocationVisits.API",
+        "Game.GameplayUI.Signals"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
