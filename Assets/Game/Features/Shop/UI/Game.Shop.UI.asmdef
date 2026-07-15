@@ -7,7 +7,6 @@
         "Game.Shop.API",
         "Game.Rewards.API",
         "Game.Core.UI",
-        "Game.Newspaper",
         "Unity.TextMeshPro",
         "Game.Rewards"
     ],

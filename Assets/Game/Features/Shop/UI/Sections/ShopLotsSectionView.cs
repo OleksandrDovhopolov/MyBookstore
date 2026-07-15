@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Game.Newspaper.UI;
-using Game.Rewards.API;
 using Game.Rewards.UI;
 using Game.Shop.API;
 using Game.UI;
@@ -84,7 +82,7 @@ namespace Game.Shop.UI.Sections
         private ShopLotCardView SpawnCard()
         {
             if (_cardTemplate == null || _cardContainer == null) return null;
-            var card = Object.Instantiate(_cardTemplate, _cardContainer);
+            var card = Instantiate(_cardTemplate, _cardContainer);
             _pool.Add(card);
             return card;
         }
@@ -92,7 +90,7 @@ namespace Game.Shop.UI.Sections
         private void ClearPool()
         {
             for (var i = 0; i < _pool.Count; i++)
-                if (_pool[i] != null) Object.Destroy(_pool[i].gameObject);
+                if (_pool[i] != null) Destroy(_pool[i].gameObject);
             _pool.Clear();
         }
 

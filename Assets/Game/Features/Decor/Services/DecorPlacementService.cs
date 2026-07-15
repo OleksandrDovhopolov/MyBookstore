@@ -29,7 +29,6 @@ namespace Game.Decor.Services
         private readonly IConfigsService _configs;
 
         private DecorPlacementState _state = new();
-        private bool _loaded;
 
         public event Action PlacementChanged;
 
@@ -189,7 +188,6 @@ namespace Game.Decor.Services
         public async UniTask AfterLoadAsync(CancellationToken ct)
         {
             _state = await _storage.LoadAsync(ct);
-            _loaded = true;
 
             // Bootstrap runs ConfigsWarmup + SaveDataLoad in parallel (Bootstrap.cs phase_data_load).
             // Orphan cleanup below reads DecorConfig / BookShopConfig — both must be warmed up first,
