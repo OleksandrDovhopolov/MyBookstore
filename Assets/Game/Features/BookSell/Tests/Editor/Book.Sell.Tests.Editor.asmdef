@@ -15,7 +15,8 @@
         "Game.Decor.API",
         "DayCycle",
         "Game.Resources.API",
-        "Game.SalesStats.API"
+        "Game.SalesStats.API",
+        "Dialogue"
     ],
     "includePlatforms": [
         "Editor"

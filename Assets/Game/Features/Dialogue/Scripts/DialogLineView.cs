@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-namespace Book.Sell.UI
+namespace Dialogue
 {
     /// <summary>
     /// One reply in the dialogue feed (GAME-6): a speaker name + its text in a bubble, aligned to a side

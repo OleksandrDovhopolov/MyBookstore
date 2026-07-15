@@ -18,7 +18,8 @@
         "Game.Resources.API",
         "Game.SalesStats.API",
         "Game.Quest.API",
-        "Game.GameplayUI.Signals"
+        "Game.GameplayUI.Signals",
+        "Dialogue"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

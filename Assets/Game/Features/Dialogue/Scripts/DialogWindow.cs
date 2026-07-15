@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Book.Sell.API;
-using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
@@ -10,13 +8,13 @@ using Game.UI;
 using UnityEngine;
 using VContainer;
 
-namespace Book.Sell.UI
+namespace Dialogue
 {
     /// <summary>
-    /// Modal dialogue window (GAME-6). Mirrors <see cref="RecommendationMinigameWindow"/>: the gameplay-scoped
-    /// controller + payload arrive via <see cref="DialogWindowArgs"/>, while the content graph is resolved
-    /// through the bootstrap-scope <see cref="IConfigsService"/> (so the window also works from the debug cheat
-    /// with a null controller).
+    /// Modal dialogue window (GAME-6). The <see cref="DialoguePayload"/> + an optional completion callback
+    /// arrive via <see cref="DialogWindowArgs"/>, while the content graph is resolved through the
+    /// bootstrap-scope <see cref="IConfigsService"/> (so the window also works from the debug cheat with no
+    /// callback).
     ///
     /// Plays a node's replies as a top-to-bottom feed, one at a time (typewriter): a screen click reveals the
     /// next reply; clicks are ignored while one is still typing. When a node's replies are exhausted, if the
@@ -24,9 +22,9 @@ namespace Book.Sell.UI
     /// to the next node (its replies are appended to the same feed); a terminal node closes on the next click.
     ///
     /// <see cref="Complete"/> is the single completion point AND the anti-hang safety net: it sets
-    /// <c>_completed</c> BEFORE calling <see cref="ISalesDayController.CompleteDialogue"/> so the hide/dispose
-    /// fallbacks do not double-fire, and <see cref="OnHideStart"/>/<see cref="OnDispose"/> call it if the window
-    /// is torn down without ending — guaranteeing the interaction lock is always released.
+    /// <c>_completed</c> BEFORE invoking the injected completion callback so the hide/dispose fallbacks do not
+    /// double-fire, and <see cref="OnHideStart"/>/<see cref="OnDispose"/> call it if the window is torn down
+    /// without ending — guaranteeing any held interaction lock is always released.
     /// </summary>
     [Window("DialogWindow", WindowType.Popup)]
     public sealed class DialogWindow : WindowController<DialogWindowView>
@@ -34,7 +32,7 @@ namespace Book.Sell.UI
         private const string LogPrefix = "[DialogWindow]";
 
         private IConfigsService _configs;
-        private ISalesDayController _controller;
+        private Action _onCompleted;
         private DialoguePayload _payload;
         private DialogueEngine _engine;
 
@@ -56,7 +54,7 @@ namespace Book.Sell.UI
         protected override void OnShowStart()
         {
             var args = Arguments as DialogWindowArgs;
-            _controller = args?.Controller;
+            _onCompleted = args?.OnCompleted;
             _payload = args?.Payload;
             _completed = false;
             _revealing = false;
@@ -115,7 +113,7 @@ namespace Book.Sell.UI
 
             _engine = null;
             _lines = null;
-            _controller = null;
+            _onCompleted = null;
             _payload = null;
         }
 
@@ -283,13 +281,13 @@ namespace Book.Sell.UI
             _revealCts = null;
         }
 
-        // Single completion point + anti-hang safety net. Sets the flag BEFORE notifying the controller so the
-        // OnHideStart/OnDispose fallbacks cannot fire a second CompleteDialogue.
+        // Single completion point + anti-hang safety net. Sets the flag BEFORE invoking the callback so the
+        // OnHideStart/OnDispose fallbacks cannot fire a second completion.
         private void Complete()
         {
             if (_completed) return;
             _completed = true;
-            _controller?.CompleteDialogue();
+            _onCompleted?.Invoke();
         }
 
         private void CompleteAndClose()

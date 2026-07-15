@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Domain.Steps;
+using Dialogue;
 
 namespace Book.Sell.Services
 {

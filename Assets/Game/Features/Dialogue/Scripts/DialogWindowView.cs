@@ -7,7 +7,7 @@ using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Book.Sell.UI
+namespace Dialogue
 {
     /// <summary>
     /// Dumb render surface for <see cref="DialogWindow"/> (GAME-6): a top-to-bottom feed of reply views, a

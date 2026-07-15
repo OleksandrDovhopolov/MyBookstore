@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Book.Sell.UI
+namespace Dialogue
 {
     /// <summary>
     /// Lets the full-screen dialogue click catcher behave like a tap-to-advance surface and still forward

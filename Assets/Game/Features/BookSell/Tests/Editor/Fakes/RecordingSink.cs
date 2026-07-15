@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Book.Sell.API;
 using Book.Sell.Domain;
+using Dialogue;
 
 namespace Book.Sell.Tests.Editor.Fakes
 {

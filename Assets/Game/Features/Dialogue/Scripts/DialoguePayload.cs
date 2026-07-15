@@ -1,6 +1,6 @@
 using System;
 
-namespace Book.Sell.API
+namespace Dialogue
 {
     /// <summary>
     /// Ready domain payload for a customer dialogue. Carries only the content key: line lookup is left to

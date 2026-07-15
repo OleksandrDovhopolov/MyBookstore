@@ -1,7 +1,7 @@
 using System;
 using Game.Configs.Models;
 
-namespace Book.Sell.UI
+namespace Dialogue
 {
     /// <summary>Outcome of <see cref="DialogueEngine.Choose"/>.</summary>
     public enum ChooseResult

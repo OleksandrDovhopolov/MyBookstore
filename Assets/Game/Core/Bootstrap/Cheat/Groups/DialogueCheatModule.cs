@@ -1,7 +1,6 @@
 using System;
-using Book.Sell.API;
-using Book.Sell.UI;
 using cheatModule;
+using Dialogue;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
@@ -10,12 +9,6 @@ using UnityEngine;
 
 namespace Game.Cheat
 {
-    /// <summary>
-    /// Debug trigger for the dialogue flow (GAME-6 §Этап 5, A6): one button per <see cref="DialogueConfig"/>
-    /// that opens <see cref="DialogWindow"/> with a null controller. That makes Part A self-demoable without a
-    /// sales scene or a real spawn — and it is safe: a null controller means no interaction lock is held, so
-    /// there is nothing to hang. The window resolves the graph through the global <see cref="IConfigsService"/>.
-    /// </summary>
     public class DialogueCheatModule : ICheatsModule
     {
         private const string CardsGroup = "Dialogue";
@@ -47,9 +40,9 @@ namespace Game.Cheat
         {
             try
             {
-                // controller: null → no sim/lock, the window just renders the graph and closes (§A6).
+                // No completion callback → no sim/lock, the window just renders the graph and closes (§A6).
                 await _uiManager.ShowAsync<DialogWindow>(
-                    new DialogWindowArgs(controller: null, payload: new DialoguePayload(dialogueId)));
+                    new DialogWindowArgs(new DialoguePayload(dialogueId)));
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
 using Book.Sell.API;
+using Dialogue;
 
 namespace Book.Sell.Domain
 {

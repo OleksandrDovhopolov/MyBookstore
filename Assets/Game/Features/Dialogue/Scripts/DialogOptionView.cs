@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-namespace Book.Sell.UI
+namespace Dialogue
 {
     /// <summary>
     /// One answer-option button in the dialogue feed (GAME-6): a button + its label, pooled via
