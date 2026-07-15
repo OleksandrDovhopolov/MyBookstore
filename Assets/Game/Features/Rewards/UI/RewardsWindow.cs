@@ -3,10 +3,11 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
+using Game.Newspaper.UI;
 using Game.UI;
 using VContainer;
 
-namespace Game.Newspaper.UI
+namespace Game.Rewards.UI
 {
     //TODO should remove this from Game.Newspaper.UI and move closer to its domain
     /// <summary>

@@ -10,6 +10,7 @@ using Game.Inventory.API;
 using Game.Newspaper.UI;
 using Game.Resources.API;
 using Game.Rewards.API;
+using Game.Rewards.UI;
 using Game.UI;
 using Infrastructure.ResourceAnimations;
 using MessagePipe;

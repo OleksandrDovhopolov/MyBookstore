@@ -5,19 +5,8 @@ using Game.UI;
 using UIShared;
 using UnityEngine;
 
-namespace Game.Newspaper.UI
+namespace Game.Rewards.UI
 {
-    [Serializable]
-    public class RewardSpecResource
-    {
-        public string ResourceId;
-        public string DisplayName;
-        public RewardKind Kind;
-        public int Amount;
-        public string Category;
-        public Sprite Icon;
-    }
-    
     //TODO move to Assets/Game/Features/Rewards ? 
     public class RewardWindowView : WindowView
     {

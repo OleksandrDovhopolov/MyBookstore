@@ -8,7 +8,8 @@
         "Game.Rewards.API",
         "Game.Core.UI",
         "Game.Newspaper",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Game.Rewards"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

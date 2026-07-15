@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Game.Newspaper.UI
+namespace Game.Rewards.UI
 {
     public class RewardItemView : MonoBehaviour
     {

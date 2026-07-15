@@ -1,7 +1,7 @@
 using Game.Rewards.API;
 using Game.UI;
 
-namespace Game.Newspaper.UI
+namespace Game.Rewards.UI
 {
     /// <summary>
     /// Args passed to <see cref="RewardsWindow"/>. Carries the spec actually granted (post-expansion)

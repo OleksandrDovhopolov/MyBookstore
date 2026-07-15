@@ -6,7 +6,7 @@ using Game.Inventory.API;
 using Game.Rewards.API;
 using UnityEngine;
 
-namespace Game.Newspaper.UI
+namespace Game.Rewards.UI
 {
     public static class RewardsWindowRewardBuilder
     {

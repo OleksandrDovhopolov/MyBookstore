@@ -8,6 +8,7 @@ using Game.Configs.Models;
 using Game.Inventory.API;
 using Game.Newspaper.UI;
 using Game.Rewards.API;
+using Game.Rewards.UI;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 

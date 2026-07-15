@@ -3,6 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Newspaper.UI;
 using Game.Rewards.API;
+using Game.Rewards.UI;
 using Game.Shop.API;
 using Game.UI;
 using TMPro;
