@@ -43,10 +43,6 @@
     "id": "eddi",
     "displayNameKey": "character.eddi.name",
     "favoriteGenres": ["Fact", "Travel"],
-    "scriptedPassivePurchases": [
-      { "genre": "Fact", "forceHit": true },
-      { "genre": "Travel", "forceHit": false }
-    ],
     "discoveryQuestIds": ["q_intro_eddi"]
   }
 ]

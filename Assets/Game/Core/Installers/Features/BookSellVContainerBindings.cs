@@ -47,7 +47,6 @@ namespace Game.Bootstrap
         {
             builder.Register<RequestedGenrePassiveResolver>(Lifetime.Singleton);
             builder.Register<IPassivePurchaseResolver>(r => new ScriptedPassivePurchaseResolver(
-                    r.Resolve<IConfigsService>(),
                     r.Resolve<RequestedGenrePassiveResolver>()),
                 Lifetime.Singleton);
         }

@@ -121,6 +121,10 @@
         }
       }
     ],
+    "scriptedPassivePurchases": [
+      { "genre": "Fact", "forceHit": true },
+      { "genre": "Travel", "forceHit": false }
+    ],
     "rewards": [],
     "worldEffects": []
   }

@@ -34,8 +34,18 @@ namespace Book.Sell.Tests.Editor
             }
         };
 
-        private static IQuest ActiveQuestWithDialogue(string questId, string dialogueId, string characterId)
-            => new FakeQuest(questId, new QuestConfig { Id = questId, DialogueId = dialogueId, CharacterId = characterId });
+        private static IQuest ActiveQuestWithDialogue(
+            string questId,
+            string dialogueId,
+            string characterId,
+            ScriptedPassivePurchaseConfig[] script = null)
+            => new FakeQuest(questId, new QuestConfig
+            {
+                Id = questId,
+                DialogueId = dialogueId,
+                CharacterId = characterId,
+                ScriptedPassivePurchases = script
+            });
 
         [Test]
         public void ReplacesRegularSlot_WithQuestCharacter()
@@ -70,12 +80,13 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void QuestCharacter_UsesScriptedPassiveCount()
         {
-            var configs = Configs(script: new[]
+            var configs = Configs();
+            var script = new[]
             {
                 new ScriptedPassivePurchaseConfig { Genre = "Fact", ForceHit = true },
                 new ScriptedPassivePurchaseConfig { Genre = "Travel", ForceHit = false }
-            });
-            var quests = new FakeQuestsService(ActiveQuestWithDialogue("q_intro_eddi", "eddy1", "eddi"));
+            };
+            var quests = new FakeQuestsService(ActiveQuestWithDialogue("q_intro_eddi", "eddy1", "eddi", script));
             var inner = new StubCustomerSpawner(new List<Customer> { Passive("inner_1") });
 
             var spawner = new QuestReplacingCustomerSpawner(
@@ -97,6 +108,56 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void QuestCharacter_CarriesScriptedPassivePlanFromQuest()
+        {
+            var configs = Configs();
+            var script = new[]
+            {
+                new ScriptedPassivePurchaseConfig { Genre = "Fact", ForceHit = true },
+                new ScriptedPassivePurchaseConfig { Genre = "Travel", ForceHit = false }
+            };
+            var quests = new FakeQuestsService(ActiveQuestWithDialogue("q_intro_eddi", "eddy1", "eddi", script));
+            var inner = new StubCustomerSpawner(new List<Customer> { Passive("inner_1") });
+
+            var spawner = new QuestReplacingCustomerSpawner(
+                inner, configs, quests, new StubDeliveredDialogues(), new StubProfileProvider());
+            var customer = spawner.BuildCustomers(Setup, Tuning, new FakeSalesRandom())[0];
+
+            Assert.IsTrue(customer.TryConsumeNextScriptedPassiveAttempt(out var first));
+            Assert.AreEqual("Fact", first.Genre);
+            Assert.IsTrue(first.ForceHit);
+
+            Assert.IsTrue(customer.TryConsumeNextScriptedPassiveAttempt(out var second));
+            Assert.AreEqual("Travel", second.Genre);
+            Assert.IsFalse(second.ForceHit);
+
+            Assert.IsFalse(customer.TryConsumeNextScriptedPassiveAttempt(out _));
+        }
+
+        [Test]
+        public void OtherQuestForSameCharacterWithoutScript_UsesDefaultSinglePassiveStep()
+        {
+            var configs = Configs();
+            var quests = new FakeQuestsService(ActiveQuestWithDialogue("q_other_eddi", "eddy1", "eddi"));
+            var inner = new StubCustomerSpawner(new List<Customer> { Passive("inner_1") });
+
+            var spawner = new QuestReplacingCustomerSpawner(
+                inner, configs, quests, new StubDeliveredDialogues(), new StubProfileProvider());
+            var customer = spawner.BuildCustomers(Setup, Tuning, new FakeSalesRandom())[0];
+            var ctx = SalesTestKit.Context(SalesTestKit.Shelf(), SalesTestKit.Location(), new RecordingSink());
+
+            customer.Tick(ctx, 1f); // Approach -> Dialog
+            customer.Tick(ctx, 1f); // Dialog acquires lock
+            customer.ForceCompleteCurrentStep(ctx);
+
+            Assert.IsInstanceOf<PassivePurchaseStep>(customer.CurrentStep);
+            customer.ForceCompleteCurrentStep(ctx);
+
+            Assert.IsInstanceOf<CompletePurchaseStep>(customer.CurrentStep);
+            Assert.IsFalse(customer.TryConsumeNextScriptedPassiveAttempt(out _));
+        }
+
+        [Test]
         public void MissingFavoriteGenres_FallsBackToProfileProvider()
         {
             var configs = Configs(characterGenres: Array.Empty<string>());
@@ -111,8 +172,7 @@ namespace Book.Sell.Tests.Editor
         }
 
         private static FakeConfigsService Configs(
-            string[] characterGenres = null,
-            ScriptedPassivePurchaseConfig[] script = null)
+            string[] characterGenres = null)
         {
             var configs = new FakeConfigsService();
             configs.SetAll(new[] { SingleNodeDialogue("eddy1") });
@@ -122,8 +182,7 @@ namespace Book.Sell.Tests.Editor
                 new CharacterConfig
                 {
                     Id = "eddi",
-                    FavoriteGenres = characterGenres ?? new[] { "Fact", "Travel" },
-                    ScriptedPassivePurchases = script
+                    FavoriteGenres = characterGenres ?? new[] { "Fact", "Travel" }
                 }
             });
             return configs;

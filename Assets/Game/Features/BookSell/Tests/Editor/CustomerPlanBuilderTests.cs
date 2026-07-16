@@ -70,6 +70,24 @@ namespace Book.Sell.Tests.Editor
             Assert.AreEqual("eddi", customer.CharacterId);
         }
 
+        [Test]
+        public void Build_StoresScriptedPassivePlan_WhenProvided()
+        {
+            var script = new ScriptedPassivePurchasePlan(new[]
+            {
+                new ScriptedPassiveAttempt("Fact", forceHit: true)
+            });
+
+            var customer = CustomerPlanBuilder.Build(
+                "quest_q_intro_eddi", SalesTestKit.FastTuning(), new FakeSalesRandom(),
+                buildMiddle: () => Array.Empty<ICustomerStep>(),
+                scriptedPassivePlan: script);
+
+            Assert.IsTrue(customer.TryConsumeNextScriptedPassiveAttempt(out var attempt));
+            Assert.AreEqual("Fact", attempt.Genre);
+            Assert.IsTrue(attempt.ForceHit);
+        }
+
         // 1) Skeleton order: Approach -> middle -> CompletePurchase -> Leave is observable as
         //    Approaching first and Leaving last, with the customer finishing.
         [Test]

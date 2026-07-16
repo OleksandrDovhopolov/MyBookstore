@@ -21,6 +21,9 @@ namespace Book.Sell.Domain
         /// (legacy passive model ignores it).</summary>
         public CustomerProfile Profile { get; }
 
+        /// <summary>Quest-authored passive hit/miss beats for this spawned visit, if any.</summary>
+        public ScriptedPassivePurchasePlan ScriptedPassivePlan { get; }
+
         /// <summary>Total books this customer has bought during the visit (active recommendations + passive sales).</summary>
         public int PurchasedBookCount { get; private set; }
 
@@ -30,12 +33,20 @@ namespace Book.Sell.Domain
             string id,
             IReadOnlyList<ICustomerStep> plan,
             CustomerProfile profile = null,
-            string characterId = null)
+            string characterId = null,
+            ScriptedPassivePurchasePlan scriptedPassivePlan = null)
         {
             Id = id;
             CharacterId = characterId;
             _plan = new CustomerPlan(plan);   // CustomerPlan copies the list
             Profile = profile ?? CustomerProfile.Empty;
+            ScriptedPassivePlan = scriptedPassivePlan;
+        }
+
+        public bool TryConsumeNextScriptedPassiveAttempt(out ScriptedPassiveAttempt attempt)
+        {
+            attempt = null;
+            return ScriptedPassivePlan?.TryConsumeNext(out attempt) == true;
         }
 
         public bool IsDone => _plan.IsDone;

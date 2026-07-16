@@ -25,12 +25,6 @@ namespace Game.Configs.Models
         public string[] FavoriteGenres { get; set; }
 
         /// <summary>
-        /// Optional scripted passive purchase attempts for story customers. Each entry pins a genre and
-        /// either forces a hit or a miss while the shared passive purchase step still owns feedback/commit.
-        /// </summary>
-        public ScriptedPassivePurchaseConfig[] ScriptedPassivePurchases { get; set; }
-
-        /// <summary>
         /// Quests whose start (state != Pending) discovers this character — for intro/dialogue quests that
         /// have no memory. Optional; discovery also fires from any memory-linked quest. See §10/§7.
         /// </summary>

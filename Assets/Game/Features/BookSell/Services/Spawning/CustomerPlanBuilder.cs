@@ -28,7 +28,8 @@ namespace Book.Sell.Services
             ISalesRandom random,
             Func<IEnumerable<ICustomerStep>> buildMiddle,
             Func<CustomerProfile> buildProfile = null,
-            string characterId = null)
+            string characterId = null,
+            ScriptedPassivePurchasePlan scriptedPassivePlan = null)
         {
             var steps = new List<ICustomerStep>
             {
@@ -43,7 +44,7 @@ namespace Book.Sell.Services
             steps.Add(new LeaveStep(RandomInRange(tuning.MinLeaveDuration, tuning.MaxLeaveDuration, random)));
 
             var profile = buildProfile?.Invoke();
-            return new Customer(id, steps, profile, characterId);
+            return new Customer(id, steps, profile, characterId, scriptedPassivePlan);
         }
 
         /// <summary>Uniform value in [min, max], drawn from the sales random port. Moved verbatim from

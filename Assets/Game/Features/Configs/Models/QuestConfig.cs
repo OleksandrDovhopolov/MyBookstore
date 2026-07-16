@@ -37,6 +37,12 @@ namespace Game.Configs.Models
 
         public QuestTaskConfig[] Tasks { get; set; }
 
+        /// <summary>
+        /// Optional authored passive purchase attempts for the quest customer. The sales spawner maps this
+        /// config data onto the spawned customer; the shared passive step still owns feedback/commit.
+        /// </summary>
+        public ScriptedPassivePurchaseConfig[] ScriptedPassivePurchases { get; set; }
+
         /// <summary>Condition tree that activates the quest (Pending → Active). Null/empty = auto-active.</summary>
         public JObject ActivationConditions { get; set; }
 

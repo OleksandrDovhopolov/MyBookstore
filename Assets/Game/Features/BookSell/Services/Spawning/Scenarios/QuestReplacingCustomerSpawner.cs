@@ -82,26 +82,41 @@ namespace Book.Sell.Services
                     continue;
                 }
 
+                var scriptedPlan = BuildScriptedPassivePlan(quest.Config?.ScriptedPassivePurchases);
                 var archetype = new QuestCharacterArchetype(
                     new DialoguePayload(dialogueId),
-                    PassiveCountFor(quest.CharacterId));
+                    PassiveCountFor(scriptedPlan));
                 questCustomers.Add(CustomerPlanBuilder.Build(
                     $"quest_{quest.Id}", tuning, random,
                     buildMiddle: () => archetype.BuildMiddle(setup, tuning, random),
                     buildProfile: () => BuildProfile(quest, setup, random),
-                    characterId: quest.CharacterId));
+                    characterId: quest.CharacterId,
+                    scriptedPassivePlan: scriptedPlan));
             }
 
             return questCustomers;
         }
 
-        private int PassiveCountFor(string characterId)
-        {
-            if (string.IsNullOrEmpty(characterId)) return 1;
-            if (!_configs.TryGet<CharacterConfig>(characterId, out var character)) return 1;
+        private static int PassiveCountFor(ScriptedPassivePurchasePlan script)
+            => script is { Count: > 0 } ? script.Count : 1;
 
-            var script = character.ScriptedPassivePurchases;
-            return script is { Length: > 0 } ? script.Length : 1;
+        private static ScriptedPassivePurchasePlan BuildScriptedPassivePlan(
+            IReadOnlyList<ScriptedPassivePurchaseConfig> script)
+        {
+            if (script == null || script.Count == 0)
+                return null;
+
+            var attempts = new List<ScriptedPassiveAttempt>(script.Count);
+            for (var i = 0; i < script.Count; i++)
+            {
+                var attempt = script[i];
+                if (attempt == null) continue;
+                attempts.Add(new ScriptedPassiveAttempt(attempt.Genre, attempt.ForceHit));
+            }
+
+            return attempts.Count > 0
+                ? new ScriptedPassivePurchasePlan(attempts)
+                : null;
         }
 
         private CustomerProfile BuildProfile(IQuest quest, SalesSessionSetup setup, ISalesRandom random)

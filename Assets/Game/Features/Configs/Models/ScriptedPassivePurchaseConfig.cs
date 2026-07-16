@@ -1,7 +1,7 @@
 namespace Game.Configs.Models
 {
     /// <summary>
-    /// One authored passive purchase attempt for a story/customer character.
+    /// One authored passive purchase attempt for a quest customer.
     /// </summary>
     public sealed class ScriptedPassivePurchaseConfig
     {

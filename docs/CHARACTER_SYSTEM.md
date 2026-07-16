@@ -73,7 +73,6 @@ public sealed class CharacterConfig : IConfig
     public string DescriptionKey { get; set; }
     public string PortraitKey { get; set; }                 // Addressables-ключ портрета (пусто → заглушка)
     public string[] FavoriteGenres { get; set; }            // жанры персонажа для passive-профиля
-    public ScriptedPassivePurchaseConfig[] ScriptedPassivePurchases { get; set; } // authored passive hit/miss
 
     public string[] DiscoveryQuestIds { get; set; }         // явные discovery-связи (intro/dialogue-квесты без memory)
     public string[] DiscoveryQuestChainIds { get; set; }
@@ -94,6 +93,8 @@ public sealed class CharacterMemoryConfig
 ```
 
 > `DiscoveryQuestIds` / `DiscoveryQuestChainIds` открывают персонажа, когда связанный квест/цепочка **стартовали** (`state != Pending`), а не когда квест завершён или выдан (`Awarded`). Для открытия строго после завершения используйте memory-связь или отдельное quest-condition решение.
+
+> Скриптовые passive-действия (например authored hit/miss для intro-покупателя) живут на `QuestConfig` как `scriptedPassivePurchases`, а не на `CharacterConfig`. `FavoriteGenres` — стабильная черта персонажа; форсированные исходы продажи — действия квеста.
 
 Save (модуль-ключ `"characters"`, `StateSchemaVersion = 1`):
 
