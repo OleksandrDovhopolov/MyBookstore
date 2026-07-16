@@ -2,9 +2,14 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
+using Game.Configs;
+using Game.DayCycle.Day;
+using Game.DayCycle.Morning;
 using Game.Ftue;
 using Game.Ftue.Domain;
 using Game.Ftue.Services;
+using Game.LocationUnlock.API;
+using Game.Preparation.Services;
 using Game.UI;
 using MessagePipe;
 using Save;
@@ -21,6 +26,10 @@ namespace GameplayUI
         private IPublisher<GameplayHubReady> _hubReadyPublisher;
         private WelcomeWindowStartupSettings _welcomeWindowStartupSettings;
 
+        private FirstDayEntrySettings _firstDayEntrySettings;
+        private IDayProgressService _dayProgress;
+        private FirstDayEntryFlow _firstDayEntryFlow;
+
         private CancellationToken _destroyToken;
 
         [Inject]
@@ -29,13 +38,28 @@ namespace GameplayUI
             ISaveService save,
             ITransitionAnimationService transition,
             IPublisher<GameplayHubReady> hubReadyPublisher,
-            WelcomeWindowStartupSettings welcomeWindowStartupSettings)
+            WelcomeWindowStartupSettings welcomeWindowStartupSettings,
+            FirstDayEntrySettings firstDayEntrySettings = null,
+            IDayProgressService dayProgress = null,
+            IMorningSessionService morningSession = null,
+            IPreparationSessionService preparationSession = null,
+            IGameFlowService gameFlow = null,
+            IConfigsService configs = null,
+            ILocationUnlockService locationUnlock = null)
         {
             _uiManager = uiManager;
             _save = save;
             _transition = transition;
             _hubReadyPublisher = hubReadyPublisher;
             _welcomeWindowStartupSettings = welcomeWindowStartupSettings;
+            _firstDayEntrySettings = firstDayEntrySettings;
+            _dayProgress = dayProgress;
+
+            if (morningSession != null && preparationSession != null && gameFlow != null && configs != null)
+            {
+                _firstDayEntryFlow = new FirstDayEntryFlow(
+                    morningSession, preparationSession, gameFlow, configs, locationUnlock);
+            }
         }
 
         private void Awake()
@@ -56,20 +80,20 @@ namespace GameplayUI
 
                 var hud = await _uiManager.ShowAsync<GameplaySceneController>(ct: ct);
 
-                // Wait until the hub window has loaded everything it needs to display (genre sprites, day
-                // context, ...) before revealing the screen.
                 await UniTask.WaitUntil(() => hud.IsShown && hud.IsDataReady, cancellationToken: ct);
                 ct.ThrowIfCancellationRequested();
 
                 var firstEntry = await IsFirstEntryAsync(ct);
                 var showWelcomeWindow = firstEntry && (_welcomeWindowStartupSettings?.StartWelcomeWindow ?? true);
+                var directEntry = await ShouldEnterFirstDayLocationAsync(ct);
 
-                // On first entry keep the hub invisible behind the non-full-screen welcome letter; the reveal
-                // then shows the scene background + letter without flashing the HUD.
-                if (showWelcomeWindow)
+                var deferHubReveal = directEntry && !showWelcomeWindow;
+
+                if (showWelcomeWindow || deferHubReveal)
                     hud.SetHudVisible(false);
 
-                await _transition.PlayRevealAsync(ct); // remove the transition cover
+                if (!deferHubReveal)
+                    await _transition.PlayRevealAsync(ct);
 
                 if (showWelcomeWindow)
                 {
@@ -77,9 +101,16 @@ namespace GameplayUI
                     hud.SetHudVisible(true);
                 }
 
-                // Hub is now actually visible and actionable — fire the tutorial's "hubReady" trigger.
-                // Published here (not right after IsDataReady) so a forced sequence never plays behind the
-                // transition cover or the first-entry welcome letter.
+                if (directEntry)
+                {
+                    if (await _firstDayEntryFlow.EnterAsync(ct))
+                        return;
+
+                    hud.SetHudVisible(true);
+                    if (deferHubReveal)
+                        await _transition.PlayRevealAsync(ct);
+                }
+
                 _hubReadyPublisher?.Publish(new GameplayHubReady(0));
             }
             catch (OperationCanceledException)
@@ -91,6 +122,20 @@ namespace GameplayUI
         {
             var welcome = await _save.GetModuleAsync<WelcomeCompletedState>(FtueSaveKeys.WelcomeCompleted, ct);
             return welcome == null || !welcome.Completed;
+        }
+
+        // Day-1 "drop straight into the location" gate. True only on a fresh, not-yet-started day 1 when the
+        // product switch is set to Location and the orchestrator is available. Any miss → normal hub flow.
+        private async UniTask<bool> ShouldEnterFirstDayLocationAsync(CancellationToken ct)
+        {
+            if (_firstDayEntrySettings?.Mode != FirstDayEntryMode.Location) return false;
+            if (_firstDayEntryFlow == null || _dayProgress == null) return false;
+
+            var state = await _dayProgress.LoadAsync(ct);
+            return state != null
+                   && state.CurrentDay == 1
+                   && state.CurrentPhase == DayPhase.Morning
+                   && !(state.CompletedDays?.Contains(state.CurrentDay) ?? false);
         }
 
         private async UniTask ShowWelcomeAndWaitAsync(CancellationToken ct)

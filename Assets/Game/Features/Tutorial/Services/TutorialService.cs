@@ -238,8 +238,8 @@ namespace Game.Tutorial.Services
             return _parser.Parse(seq.ActivationConditions).Evaluate().IsMet;
         }
 
-        // Activation gate only (NOT mid-run abort — cross-context sequences like day1_hub_intro start in the
-        // hub and then wait for Sales in the location).
+        // Activation gate only (NOT mid-run abort — a sequence gated to one context can still await events
+        // that fire in another, e.g. a location sequence that waits for the Results window).
         private bool ContextAllows(TutorialSequenceConfig seq)
         {
             var inLocation = _gameFlow?.IsLocationLoaded ?? false;

@@ -1,9 +1,9 @@
 [
   {
-    "id": "day1_hub_intro",
+    "id": "tutorial_day_1",
     "priority": 10,
-    "context": "hub",
-    "trigger": "hubReady",
+    "context": "location",
+    "trigger": "locationLoaded",
     "triggerParam": null,
     "resumePolicy": "restart",
     "activationConditions": null,
@@ -11,38 +11,13 @@
       {
         "id": "welcome",
         "type": "showText",
-        "text": "Welcome to your bookshop! Let's run your first day.",
+        "text": "Welcome to your bookshop! You're open for your first day - customers buy books on their own as they browse.",
         "placement": "bottom"
       },
       {
-        "id": "point_start",
-        "type": "highlightClick",
-        "target": "hub.start_day_button",
-        "pointer": true,
-        "text": "Tap Start Day to choose a location.",
-        "placement": "aboveTarget",
-        "padding": 16
-      },
-      {
-        "id": "wait_location_window",
-        "type": "awaitWindow",
-        "window": "location"
-      },
-      {
-        "id": "guide_location",
+        "id": "sale_chance",
         "type": "showText",
-        "text": "Pick a location to visit today.",
-        "placement": "bottom"
-      },
-      {
-        "id": "wait_preparation_window",
-        "type": "awaitWindow",
-        "window": "preparation"
-      },
-      {
-        "id": "guide_stock",
-        "type": "showText",
-        "text": "Stock your shelf: add books by genre, then tap Open Shop to start selling.",
+        "text": "Each sale depends on the genre's sale chance. Keep the shelf stocked with genres your visitors like.",
         "placement": "bottom"
       },
       {
@@ -53,7 +28,7 @@
       {
         "id": "wrap_up",
         "type": "showText",
-        "text": "Day complete - nice work! Each day you'll stock, sell, and review your results.",
+        "text": "Day complete - nice work! From tomorrow you'll stock the shelf and choose where to trade yourself.",
         "placement": "bottom"
       }
     ]

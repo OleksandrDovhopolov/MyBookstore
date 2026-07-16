@@ -291,19 +291,24 @@ condition `tutorialCompleted`; опц. мягкий pointer на журнал �
 
 ### 6.1 Day 1 v1 — что реализовано (упрощённо)
 
-Секвенция `day1_hub_intro` (tutorials.json, `resumePolicy:"restart"`): welcome → highlight `StartDay` →
-`awaitWindow("location")` → текст «pick location» → `awaitWindow("preparation")` → текст «stock + Open Shop»
-→ `awaitWindow("results")` → wrap-up. `awaitWindow("results")` требует `"results"` в `TutorialWindowChecker`.
+**Обновлено:** day 1 теперь входит **сразу в локацию** (авто-сток, см. [FTUE.md](../FTUE.md)
+«Day-1 direct entry»), поэтому хаб-секвенция `day1_hub_intro` **заменена** на `tutorial_day_1`.
 
-**Форма продиктована модальным overlay** (single-hole): подсвечиваем только одиночную кнопку `StartDay`;
-на экранах свободного взаимодействия (Location/Preparation) — поясняющий `showText` (тап → свобода), день
-ведём пассивным `awaitWindow`. **`awaitQuest(конкретная продажа)` как блокирующий шаг НЕ используем**
-(вероятностная продажа → риск зависания). Layer-1 квесты (`tut_first_day`/`tut_first_sale`) — отдельно,
-журнальные.
+Секвенция `tutorial_day_1` (tutorials.json, `context:"location"`, `trigger:"locationLoaded"`,
+`resumePolicy:"restart"`): welcome (пассивные продажи) → showText про sale chance → `awaitWindow("results")`
+→ wrap-up. Триггер поднимается `GameFlowService.EnterLocationAsync` (→ `LocationLoadedChanged`); он —
+исключение из transition-guard, так что стартует прямо во время перехода в локацию. `awaitWindow("results")`
+требует `"results"` в `TutorialWindowChecker`. Требует `_tutorialAutoStart = 1` в `BootstrapInstaller`.
 
-**Известные ограничения v1:** нет строгого day-gate (one-way completion, играет один раз при первом hub);
-resume посреди Day 1 — best-effort (`restart` само-исцеляется только в hub); cancel-path (закрыл окно, не
-подтвердив) — секвенция ждёт действия, без принудительной блокировки закрытия окон.
+**Форма — только `showText` + `awaitWindow`** (без `highlightClick`): игрок уже в локации, кнопки
+Open Shop / список жанров ещё не имеют target-id (`TutorialTargetIds` пока только `hub.*`). Подсветка
+in-location контролов — follow-up (новые id + `TutorialTargetTag` в Location-view). **`awaitQuest(конкретная
+продажа)` как блокирующий шаг НЕ используем** (вероятностная продажа → риск зависания). Layer-1 квесты
+(`tut_first_day`/`tut_first_sale`) — отдельно, журнальные.
+
+**Известные ограничения v1:** нет строгого day-gate (one-way completion, играет один раз при первом входе
+в локацию); resume посреди Day 1 — best-effort (`restart`); при `_firstDayEntry = Hub` day 1 идёт **без**
+скриптового туториала (хаб-секвенция ретайрнута).
 
 **Следующее для визуальной подсветки контролов** (Open Shop / список жанров / динамический «+»):
 немодальный callout-режим (pointer+текст **без** dim; тип шага `pointAt`/`callout`) + динамическая

@@ -122,10 +122,10 @@ namespace Game.Ftue
                 FtueSaveKeys.WelcomeCompleted, state, FtueSaveKeys.WelcomeCompletedSchemaVersion, ct);
         }
 
-        // TODO (FTUE first-entry): TEMPORARY — the window is shown over GameplayScene, which IS the
-        // current destination, so for now Start just closes the window (revealing the hub). Future:
-        // replace this whole body with IGameFlowService.EnterLocationAsync (additive LocationScene
-        // over the hub). Keeping it isolated here makes that a one-spot change.
+        // Start just closes the welcome letter, revealing the scene underneath. What happens next is
+        // owned by MainSceneBootstrap: on a fresh day 1 with FirstDayEntryMode.Location it drives the
+        // direct entry into the location (auto-stock + additive LocationScene); otherwise it reveals the
+        // hub. This window only tracks the welcome letter (ftue.welcome_completed), nothing else.
         private UniTask EnterFirstSceneAsync(CancellationToken ct)
             => CloseAsync(ct);   // return it so StartAsync awaits the close (and its catch can react)
     }

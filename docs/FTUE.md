@@ -20,7 +20,34 @@ understands the loop." Two responsibilities:
    decor) through a curated sequence rather than a procedural day.
 
 Responsibility 1 ships today. Responsibility 2 is partial: the loop is playable
-end-to-end but the day 1 narrative scripting is in backlog.
+end-to-end, day 1 now **drops the player straight into the location** (see
+"Day-1 direct entry" below), and a simplified location tutorial (`tutorial_day_1`)
+runs on arrival — but the richer day 1 narrative scripting (dialogue, scripted
+customers) is still in backlog.
+
+### Day-1 direct entry (ships today)
+
+`BootstrapInstaller` exposes `_firstDayEntry` (`FirstDayEntryMode`, default
+`Location`). On a fresh day 1 (`CurrentDay == 1`, phase `Morning`) the gameplay
+bootstrap skips the hub/location-pick/preparation UI and drops the player
+straight into the fixed day-1 location with an **auto-stocked shelf**:
+
+- `MainSceneBootstrap` decides direct entry (gate: mode `Location` + fresh day 1)
+  and delegates to `GameplayUI.FirstDayEntryFlow`.
+- `FirstDayEntryFlow` resolves the first unlocked location, runs the day pipeline
+  headlessly — `IMorningSessionService.ContinueToPreparationAsync` →
+  `IPreparationSessionService.StartOrResumeAsync/RandomizeAsync/ConfirmAsync`
+  (fills the shelf from the 27 seeded books, advances to `Sales`) →
+  `IGameFlowService.EnterLocationAsync`. **Day 1 entry is free** (no entry-fee charge).
+- Entering the location raises `LocationLoadedChanged`, which triggers the
+  `tutorial_day_1` sequence (context `location`). Requires `_tutorialAutoStart = 1`.
+- Set `_firstDayEntry = Hub` to keep the classic flow (hub → Start Day →
+  Location Window → Preparation). In Hub mode day 1 has no scripted tutorial
+  (the old hub-intro sequence was retired in favour of `tutorial_day_1`).
+
+**Known limitation (v1):** the gate is `phase == Morning`, so a relaunch *mid*
+day-1 Sales (shelf already stocked, phase `Sales`) currently returns to the hub
+instead of re-entering the location. Re-enter-on-Sales is a follow-up.
 
 ---
 
