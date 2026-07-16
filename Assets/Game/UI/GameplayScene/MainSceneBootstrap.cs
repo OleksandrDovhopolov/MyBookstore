@@ -48,6 +48,7 @@ namespace GameplayUI
             IGameFlowService gameFlow = null,
             IConfigsService configs = null,
             ILocationUnlockService locationUnlock = null,
+            IPreparationInventoryProvider preparationInventory = null,
             ITutorialAutoStartGate tutorialAutoStartGate = null)
         {
             _uiManager = uiManager;
@@ -62,7 +63,7 @@ namespace GameplayUI
             if (morningSession != null && preparationSession != null && gameFlow != null && configs != null)
             {
                 _firstDayEntryFlow = new FirstDayEntryFlow(
-                    morningSession, preparationSession, gameFlow, configs, locationUnlock);
+                    morningSession, preparationSession, gameFlow, configs, locationUnlock, preparationInventory);
             }
         }
 

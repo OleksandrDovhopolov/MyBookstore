@@ -72,6 +72,8 @@ public sealed class CharacterConfig : IConfig
     public string RoleKey { get; set; }
     public string DescriptionKey { get; set; }
     public string PortraitKey { get; set; }                 // Addressables-ключ портрета (пусто → заглушка)
+    public string[] FavoriteGenres { get; set; }            // жанры персонажа для passive-профиля
+    public ScriptedPassivePurchaseConfig[] ScriptedPassivePurchases { get; set; } // authored passive hit/miss
 
     public string[] DiscoveryQuestIds { get; set; }         // явные discovery-связи (intro/dialogue-квесты без memory)
     public string[] DiscoveryQuestChainIds { get; set; }

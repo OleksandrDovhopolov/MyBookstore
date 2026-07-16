@@ -12,7 +12,9 @@
         "Game.Tutorial.API",
         "Game.GameplayUI.Signals",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "DayCycle",
+        "Game.Quest.API"
     ],
     "includePlatforms": [
         "Editor"

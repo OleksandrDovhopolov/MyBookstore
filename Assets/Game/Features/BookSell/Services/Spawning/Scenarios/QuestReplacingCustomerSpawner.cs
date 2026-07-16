@@ -82,7 +82,9 @@ namespace Book.Sell.Services
                     continue;
                 }
 
-                var archetype = new QuestCharacterArchetype(new DialoguePayload(dialogueId));
+                var archetype = new QuestCharacterArchetype(
+                    new DialoguePayload(dialogueId),
+                    PassiveCountFor(quest.CharacterId));
                 questCustomers.Add(CustomerPlanBuilder.Build(
                     $"quest_{quest.Id}", tuning, random,
                     buildMiddle: () => archetype.BuildMiddle(setup, tuning, random),
@@ -91,6 +93,15 @@ namespace Book.Sell.Services
             }
 
             return questCustomers;
+        }
+
+        private int PassiveCountFor(string characterId)
+        {
+            if (string.IsNullOrEmpty(characterId)) return 1;
+            if (!_configs.TryGet<CharacterConfig>(characterId, out var character)) return 1;
+
+            var script = character.ScriptedPassivePurchases;
+            return script is { Length: > 0 } ? script.Length : 1;
         }
 
         private CustomerProfile BuildProfile(IQuest quest, SalesSessionSetup setup, ISalesRandom random)

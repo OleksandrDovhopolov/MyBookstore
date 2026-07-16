@@ -47,22 +47,30 @@ namespace Book.Sell.Domain
             _insertCursor = -1;
         }
 
-        /// <summary>Repositions to the first <see cref="IClosingStep"/> ahead of the current step.
-        /// Skipped steps were never entered, so the caller does not Exit them. Returns false when no
-        /// closing step lies ahead (the caller then handles the degenerate finish).</summary>
-        public bool SkipToClosing()
+        /// <summary>
+        /// Drops every <see cref="IPassivePurchaseStep"/> ahead of the current step — the customer plans no
+        /// further passive intents once one has failed (ADR-0003). Non-passive steps (active request,
+        /// dialogue, comment) and the closing tail are left in place, so the caller can simply
+        /// <see cref="Advance"/> onto whatever comes next.
+        ///
+        /// Removes rather than repositions: a passive step can sit AFTER a non-passive one
+        /// (PassiveActivePassiveArchetype builds passive → active → passive), so skipping forward to the
+        /// next non-passive step would leave that trailing passive to run after the minigame.
+        ///
+        /// Removed steps were never entered, so the caller does not Exit them. Returns how many were dropped.
+        /// </summary>
+        public int RemoveRemainingPassivePurchases()
         {
-            for (var i = _index + 1; i < _steps.Count; i++)
+            var removed = 0;
+            for (var i = _steps.Count - 1; i > _index; i--)
             {
-                if (_steps[i] is IClosingStep)
-                {
-                    _index = i;
-                    _insertCursor = -1;
-                    return true;
-                }
+                if (_steps[i] is not IPassivePurchaseStep) continue;
+                _steps.RemoveAt(i);
+                removed++;
             }
 
-            return false;
+            if (removed > 0) _insertCursor = -1;
+            return removed;
         }
 
         /// <summary>Inserts <paramref name="step"/> right after the current step (FIFO across repeated

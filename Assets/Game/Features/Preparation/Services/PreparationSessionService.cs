@@ -90,6 +90,7 @@ namespace Game.Preparation.Services
                     LocationId = string.IsNullOrEmpty(locationId) ? DefaultLocationId : locationId,
                     GenreQuantities = SeedInitialQuantities(),
                     SelectedDecorIds = new List<string>(),
+                    UseExplicitSelectedBookIds = false,
                     Confirmed = false
                 };
             }
@@ -103,7 +104,7 @@ namespace Game.Preparation.Services
                 ClampQuantitiesToAvailable(_state.GenreQuantities);
             }
 
-            _state.SelectedBookIds = ResolveSelectedBookIds(_state.GenreQuantities);
+            RefreshSelectedBookIds();
             await PersistAsync(ct);
 
             if (setPreparationPhase && _dayProgress.Current.CurrentPhase != DayPhase.Preparation)
@@ -130,8 +131,21 @@ namespace Game.Preparation.Services
 
             var clamped = Mathf.Clamp(quantity, 0, Mathf.Min(available, maxForThis));
             _state.GenreQuantities[genre] = clamped;
+            _state.UseExplicitSelectedBookIds = false;
 
             _state.SelectedBookIds = ResolveSelectedBookIds(_state.GenreQuantities);
+            await PersistAsync(ct);
+            StateChanged?.Invoke(_state);
+        }
+
+        public async UniTask SetSelectedBookIdsAsync(IReadOnlyList<string> bookIds, CancellationToken ct)
+        {
+            if (_state == null) return;
+
+            _state.SelectedBookIds = ClampExplicitSelectedBookIds(bookIds);
+            _state.GenreQuantities = BuildQuantitiesFromBookIds(_state.SelectedBookIds);
+            _state.UseExplicitSelectedBookIds = true;
+
             await PersistAsync(ct);
             StateChanged?.Invoke(_state);
         }
@@ -161,6 +175,7 @@ namespace Game.Preparation.Services
 
             _state.GenreQuantities = quantities;
             _state.SelectedBookIds = selectedBookIds;
+            _state.UseExplicitSelectedBookIds = false;
             await PersistAsync(ct);
             StateChanged?.Invoke(_state);
         }
@@ -186,7 +201,7 @@ namespace Game.Preparation.Services
             }
 
             _state.Confirmed = true;
-            _state.SelectedBookIds = ResolveSelectedBookIds(_state.GenreQuantities);
+            RefreshSelectedBookIds();
             await _shelfState.SetShelfAsync(_state.SelectedBookIds, ct);
             await PersistAsync(ct);
             await _dayProgress.SetPhaseAsync(DayPhase.Sales, ct);
@@ -208,7 +223,7 @@ namespace Game.Preparation.Services
                 _state.LocationId = locationId;
 
             _state.Confirmed = false;
-            _state.SelectedBookIds = ResolveSelectedBookIds(_state.GenreQuantities);
+            RefreshSelectedBookIds();
 
             await _shelfState.SetShelfAsync(_state.SelectedBookIds, ct);
             await PersistAsync(ct);
@@ -289,6 +304,37 @@ namespace Game.Preparation.Services
                 quantities[genre] -= 1;
                 total -= 1;
             }
+        }
+
+        private void RefreshSelectedBookIds()
+        {
+            if (_state.UseExplicitSelectedBookIds)
+            {
+                _state.SelectedBookIds = ClampExplicitSelectedBookIds(_state.SelectedBookIds);
+                _state.GenreQuantities = BuildQuantitiesFromBookIds(_state.SelectedBookIds);
+                return;
+            }
+
+            _state.SelectedBookIds = ResolveSelectedBookIds(_state.GenreQuantities);
+        }
+
+        private List<string> ClampExplicitSelectedBookIds(IReadOnlyList<string> bookIds)
+        {
+            var result = new List<string>();
+            if (bookIds == null || bookIds.Count == 0) return result;
+
+            var available = BuildGenreById();
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            for (var i = 0; i < bookIds.Count && result.Count < Capacity.DailyBookSlots; i++)
+            {
+                var id = bookIds[i];
+                if (string.IsNullOrEmpty(id)) continue;
+                if (!available.ContainsKey(id)) continue;
+                if (!seen.Add(id)) continue;
+                result.Add(id);
+            }
+
+            return result;
         }
 
         private Dictionary<string, string> BuildGenreById()

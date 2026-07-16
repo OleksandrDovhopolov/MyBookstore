@@ -41,6 +41,17 @@ namespace Game.Bootstrap
             builder.Register<IPassivePurchaseResolver, RequestedGenrePassiveResolver>(Lifetime.Singleton);
         }
 
+        // Scripted passive attempts for authored story customers, falling back to requested-genre for
+        // everyone else. Default model for production.
+        public static void RegisterScriptedRequestedGenrePassiveSales(this IContainerBuilder builder)
+        {
+            builder.Register<RequestedGenrePassiveResolver>(Lifetime.Singleton);
+            builder.Register<IPassivePurchaseResolver>(r => new ScriptedPassivePurchaseResolver(
+                    r.Resolve<IConfigsService>(),
+                    r.Resolve<RequestedGenrePassiveResolver>()),
+                Lifetime.Singleton);
+        }
+
         // Legacy passive (ADR-0004 shelf-roll): kept behind the seam for rollback. Not called by default.
         //TODO delete this
         public static void RegisterLegacyPassiveSales(this IContainerBuilder builder)
@@ -76,9 +87,9 @@ namespace Game.Bootstrap
             // Per-customer desire profile — used by the spawner in both passive models.
             builder.Register<IDemandGenreWeightProvider, SalesTuningDemandGenreWeightProvider>(Lifetime.Singleton);
             builder.Register<ICustomerProfileProvider, LocationDemandProfileProvider>(Lifetime.Singleton);
-            // Passive model behind the IPassivePurchaseResolver seam. Default = requested-genre (v2).
-            // To roll back to the old shelf-roll model, call RegisterLegacyPassiveSales(builder) instead.
-            RegisterRequestedGenrePassiveSales(builder);
+            // Passive model behind the IPassivePurchaseResolver seam. Default = scripted story attempts
+            // over requested-genre (v2). To roll back to pure v2, call RegisterRequestedGenrePassiveSales.
+            RegisterScriptedRequestedGenrePassiveSales(builder);
             // ISalesShelfStateService НЕ здесь — он общий для хаба (Preparation) и локации (Sales),
             // регистрируется глобально через RegisterBookSellSharedState. См. ниже.
 

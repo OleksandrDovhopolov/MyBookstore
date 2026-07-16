@@ -152,5 +152,34 @@ namespace Book.Sell.Tests.Editor
             Assert.Throws<ArgumentNullException>(() => new PassiveActivePassiveArchetype(null, 1, 2));
         }
 
+        /// <summary>
+        /// End-to-end guard on the real archetype shape (ADR-0003): the leading passive misses, the active
+        /// step still runs, and the trailing passive — which sits AFTER the active step — is dropped.
+        /// Before the passive-chain fix, the leading miss skipped straight to the closing tail and the
+        /// minigame never opened.
+        /// </summary>
+        [Test]
+        public void PassiveActivePassive_LeadingMiss_RunsActive_AndDropsTrailingPassive()
+        {
+            var request = SalesTestKit.ActiveRequest("r1");
+            var steps = new List<ICustomerStep> { new ApproachStep() };
+            steps.AddRange(Middle(new PassiveActivePassiveArchetype(request, 1, 1), new FakeSalesRandom()));
+            steps.Add(new LeaveStep());
+
+            var sink = new RecordingSink();
+            var customer = new Customer("c1", steps);
+            var ctx = SalesTestKit.Context(
+                ShelfOf(2),   // non-empty: ActiveRequestStep completes without a minigame on an empty shelf
+                SalesTestKit.Location(),
+                sink,
+                passiveSelector: SalesTestKit.AlwaysMissPassiveSelector());
+
+            Drive(customer, ctx);
+
+            Assert.AreEqual(1, sink.ActiveStarted.Count, "The leading passive miss must not swallow the active step.");
+            Assert.AreEqual(1, sink.PassiveFailures.Count,
+                "Only the leading passive ran — the trailing passive was dropped when the chain ended.");
+            Assert.IsTrue(customer.IsDone);
+        }
     }
 }

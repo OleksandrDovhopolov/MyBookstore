@@ -59,7 +59,8 @@ namespace Book.Sell.Tests.Editor
         private static SalesDayController Build(
             BookConfig[] books, RequestDefinitionConfig[] requests, LocationConfig location, IReadOnlyList<Customer> customers,
             SalesTuning tuning = null,
-            ISalesDayCommitService commitService = null)
+            ISalesDayCommitService commitService = null,
+            IPassivePurchaseResolver passiveResolver = null)
         {
             var configs = new FakeConfigsService();
             configs.SetAll(books);
@@ -72,7 +73,7 @@ namespace Book.Sell.Tests.Editor
                 configs,
                 new DefaultSalesSetupProvider(configs),
                 new ActiveRequestScoringService(new BookConditionRequestEvaluator()),
-                SalesTestKit.LegacyResolver(),
+                passiveResolver ?? SalesTestKit.LegacyResolver(),
                 new FakeSalesRandom(),
                 new StubCustomerSpawner(customers),
                 new InteractionLock(),
@@ -932,6 +933,74 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void PreparationSession_SetSelectedBookIds_PreservesExactIdsThroughConfirm()
+        {
+            var books = new[]
+            {
+                SalesTestKit.Book("b1", genre: "Fact"),
+                SalesTestKit.Book("b2", genre: "Travel"),
+                SalesTestKit.Book("b3", genre: "Fantasy")
+            };
+            var configs = new FakeConfigsService();
+            configs.SetAll(books);
+            var shelfState = new RecordingShelfStateService();
+
+            var service = new PreparationSessionService(
+                new FakeSaveService(),
+                new FakeDayProgressService(),
+                new StaticPreparationInventoryProvider(books),
+                shelfState,
+                configs);
+
+            service.StartOrResumeAsync(CancellationToken.None).GetAwaiter().GetResult();
+            service.SetSelectedBookIdsAsync(new[] { "b3", "b1" }, CancellationToken.None)
+                .GetAwaiter()
+                .GetResult();
+            service.ConfirmAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.IsTrue(service.CurrentState.UseExplicitSelectedBookIds);
+            CollectionAssert.AreEqual(new[] { "b3", "b1" }, service.CurrentState.SelectedBookIds);
+            CollectionAssert.AreEqual(new[] { "b3", "b1" }, shelfState.ShelfBookIds);
+        }
+
+        [Test]
+        public void PreparationSession_RandomizeAndManualQuantity_ClearExplicitSelection()
+        {
+            var books = new[]
+            {
+                SalesTestKit.Book("b1", genre: "Fact"),
+                SalesTestKit.Book("b2", genre: "Travel"),
+                SalesTestKit.Book("b3", genre: "Fantasy")
+            };
+            var configs = new FakeConfigsService();
+            configs.SetAll(books);
+
+            var service = new PreparationSessionService(
+                new FakeSaveService(),
+                new FakeDayProgressService(),
+                new StaticPreparationInventoryProvider(books),
+                new RecordingShelfStateService(),
+                configs);
+
+            service.StartOrResumeAsync(CancellationToken.None).GetAwaiter().GetResult();
+            service.SetSelectedBookIdsAsync(new[] { "b1", "b2" }, CancellationToken.None)
+                .GetAwaiter()
+                .GetResult();
+
+            service.RandomizeAsync(CancellationToken.None).GetAwaiter().GetResult();
+            Assert.IsFalse(service.CurrentState.UseExplicitSelectedBookIds);
+
+            service.SetSelectedBookIdsAsync(new[] { "b1", "b2" }, CancellationToken.None)
+                .GetAwaiter()
+                .GetResult();
+            service.SetGenreQuantityAsync("Fact", 1, CancellationToken.None)
+                .GetAwaiter()
+                .GetResult();
+
+            Assert.IsFalse(service.CurrentState.UseExplicitSelectedBookIds);
+        }
+
+        [Test]
         public void PassiveMiss_RaisesCustomerPassivePurchaseFailed()
         {
             var c = Build(
@@ -954,8 +1023,8 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void PassiveFailure_AbandonsRemainingPassiveSteps_AndLeaves()
         {
-            // Empty shelf → every passive attempt misses. The first miss must end the visit, so the
-            // second PassivePurchaseStep never runs (one failure, not two).
+            // Empty shelf → every passive attempt misses. The first miss ends the passive chain, so the
+            // second PassivePurchaseStep is dropped (one failure, not two) and only the closing tail runs.
             var c = Build(
                 new BookConfig[0],
                 Array.Empty<RequestDefinitionConfig>(),
@@ -981,13 +1050,15 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
-        public void PassiveFailure_BeforeActiveRequest_SkipsTheMinigame()
+        public void PassiveFailure_BeforeActiveRequest_StillRunsTheMinigame()
         {
-            // Plan: Approach → Passive(miss) → Active → Leave. The passive miss ends the visit before
-            // the active step is reached, so the minigame never opens.
+            // Plan: Approach → Passive(miss) → Active → Leave. Per ADR-0003 a passive miss ends only the
+            // PASSIVE chain — the active step must still be entered, so the minigame opens.
+            // The shelf must NOT be empty: ActiveRequestStep completes without opening the minigame when
+            // there is nothing to recommend. So stock a book and force the miss with an always-miss gate.
             var req = SalesTestKit.ActiveRequest("reqA");
             var c = Build(
-                new BookConfig[0],
+                new[] { SalesTestKit.Book("b1", genre: "sci-fi") },
                 Array.Empty<RequestDefinitionConfig>(),
                 SalesTestKit.Location(),
                 new List<Customer>
@@ -996,17 +1067,58 @@ namespace Book.Sell.Tests.Editor
                     {
                         new ApproachStep(), new PassivePurchaseStep(), new ActiveRequestStep(req), new LeaveStep()
                     })
-                });
+                },
+                passiveResolver: SalesTestKit.LegacyResolver(SalesTestKit.AlwaysMissPassiveSelector()));
 
             var activeStarted = 0;
             c.ActiveRequestStarted += _ => activeStarted++;
+            var failures = 0;
+            c.CustomerPassivePurchaseFailed += (_, _) => failures++;
 
             StartDay(c);
+            DriveUntilActive(c);
+
+            Assert.AreEqual(1, failures, "The passive attempt missed.");
+            Assert.AreEqual(1, activeStarted, "The passive miss must not swallow the active step.");
+            Assert.IsNotNull(c.CurrentRequest, "The minigame opened for the active request.");
+
+            // The active step holds the interaction lock until the player resolves it; without resolving,
+            // the day would never reach ReadyToClose.
+            c.SkipCurrentRequest();
             Run(c);
 
             Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
-            Assert.IsNull(c.CurrentRequest, "No active minigame should ever open.");
-            Assert.AreEqual(0, activeStarted, "Passive failure aborts before the active step is entered.");
+        }
+
+        [Test]
+        public void PassiveFailure_BeforeDialogue_StillRunsTheDialogue()
+        {
+            // Same ADR-0003 rule for the other non-passive step: a passive miss must not swallow a dialogue.
+            var c = Build(
+                new BookConfig[0],
+                Array.Empty<RequestDefinitionConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer>
+                {
+                    new("c1", new ICustomerStep[]
+                    {
+                        new ApproachStep(), new PassivePurchaseStep(),
+                        new DialogStep(new DialoguePayload("dlg")), new LeaveStep()
+                    })
+                });
+
+            var dialogues = 0;
+            c.DialogueStarted += (_, _) => dialogues++;
+
+            StartDay(c);
+            DriveUntilDialogue(c, () => dialogues);
+
+            Assert.AreEqual(1, dialogues, "The passive miss must not swallow the dialogue step.");
+
+            c.CompleteDialogue();
+            Run(c);
+
+            Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
         }
 
         [Test]

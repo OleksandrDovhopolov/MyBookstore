@@ -39,6 +39,12 @@ namespace Game.Preparation.Services
         /// <summary>Задаёт квоту жанра (клампится в [0, available] и под общий лимит DailyBookSlots).</summary>
         UniTask SetGenreQuantityAsync(string genre, int quantity, CancellationToken ct);
 
+        /// <summary>
+        /// Sets the exact shelf book ids for authored flows. ConfirmAsync preserves these ids instead of
+        /// resolving the genre quotas again.
+        /// </summary>
+        UniTask SetSelectedBookIdsAsync(IReadOnlyList<string> bookIds, CancellationToken ct);
+
         /// <summary>Случайно заполняет квоты до лимита (кнопка Random).</summary>
         UniTask RandomizeAsync(CancellationToken ct);
 

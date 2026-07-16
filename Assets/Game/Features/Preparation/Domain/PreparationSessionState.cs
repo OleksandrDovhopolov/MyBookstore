@@ -29,6 +29,12 @@ namespace Game.Preparation.Domain
         /// </summary>
         public List<string> SelectedBookIds { get; set; } = new();
 
+        /// <summary>
+        /// True when SelectedBookIds were authored directly and must not be re-resolved from GenreQuantities
+        /// on confirm. Default false preserves old saves.
+        /// </summary>
+        public bool UseExplicitSelectedBookIds { get; set; }
+
         /// <summary>В MVP всегда пусто — декор подключается в задаче baseSaleChance.</summary>
         public List<string> SelectedDecorIds { get; set; } = new();
 

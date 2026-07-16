@@ -82,8 +82,8 @@ namespace Book.Sell.Tests.Editor.Steps
             Assert.AreEqual(StepStatus.Running, step.Tick(self, ctx, 0.5f));
             Assert.AreEqual(1, sink.PassiveFailures.Count, "Failed feedback is emitted once.");
 
-            Assert.AreEqual(StepStatus.CompletedAndLeave, step.Tick(self, ctx, 0.5f),
-                "After the Failed hold, the shopping cycle ends and closing steps can run.");
+            Assert.AreEqual(StepStatus.CompletedAndEndPassiveChain, step.Tick(self, ctx, 0.5f),
+                "After the Failed hold, the passive chain ends; non-passive and closing steps still run.");
             Assert.AreEqual(1, sink.PassiveFailures.Count, "Completing the hold does not emit another failure.");
         }
 
@@ -108,7 +108,7 @@ namespace Book.Sell.Tests.Editor.Steps
             Assert.AreEqual(1, sink.PassiveFailures.Count);
             Assert.IsTrue(shelf.IsReserved("b1"), "The step did not own the reservation, so it must not release it.");
 
-            Assert.AreEqual(StepStatus.CompletedAndLeave, step.Tick(self, ctx, 1f));
+            Assert.AreEqual(StepStatus.CompletedAndEndPassiveChain, step.Tick(self, ctx, 1f));
             Assert.AreEqual(1, sink.PassiveFailures.Count);
         }
 

@@ -72,31 +72,17 @@ namespace Book.Sell.Domain
 
             var status = step.Tick(this, ctx, dt);
             if (status == StepStatus.Completed)
+            {
                 Advance(ctx);
-            else if (status == StepStatus.CompletedAndLeave)
-                AbandonRemainingPurchasesAndClose(ctx);
-        }
-
-        /// <summary>
-        /// Ends the shopping cycle early: exits the current step (freeing any held reservation), skips
-        /// the remaining purchase steps, and resumes at the first closing step (CompletePurchase then
-        /// Leave) so the completion animation and walk-away still run. The skipped intermediate steps were
-        /// never entered, so their Exit is intentionally not called. A defensive fallback finishes
-        /// immediately if no closing step lies ahead.
-        /// </summary>
-        private void AbandonRemainingPurchasesAndClose(CustomerContext ctx)
-        {
-            _plan.Current.Exit(this, ctx);
-            _entered = false;
-
-            if (_plan.SkipToClosing())
-                return;   // first closing step Enters and runs normally next tick
-
-            UnityEngine.Debug.LogWarning($"[Customer] plan for '{Id}' has no closing step — leaving instantly.");
-            // Defensive: no closing step ahead — finish immediately.
-            _plan.Finish();
-            SetPhase(CustomerPhase.Leaving, ctx);
-            SetPhase(CustomerPhase.Done, ctx);
+            }
+            else if (status == StepStatus.CompletedAndEndPassiveChain)
+            {
+                // A failed passive attempt ends the passive chain, not the visit (ADR-0003): drop the
+                // remaining passive steps, then advance normally onto whatever is left — an active
+                // request, a dialogue, a comment, or the closing tail.
+                _plan.RemoveRemainingPassivePurchases();
+                Advance(ctx);
+            }
         }
 
         /// <summary>
