@@ -23,7 +23,7 @@ namespace Game.Configs.Models
 
         /// <summary>
         /// Optional. When set and the quest is Active, a quest character arrives in Sales carrying this
-        /// dialogue — once (GAME-6). The <c>QuestSchedulingCustomerSpawner</c> reads it via <c>IQuest.Config</c>;
+        /// dialogue — once (GAME-6). Quest-aware customer spawners read it via <c>IQuest.Config</c>;
         /// the dialogue engine resolves the graph from dialogues.json by this id. Fire-once is tracked
         /// separately (delivered-dialogues store), not by quest state.
         /// </summary>

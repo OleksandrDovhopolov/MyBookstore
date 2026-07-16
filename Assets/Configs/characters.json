@@ -42,6 +42,7 @@
   {
     "id": "eddi",
     "displayNameKey": "character.eddi.name",
+    "favoriteGenres": ["Fact", "Travel"],
     "discoveryQuestIds": ["q_intro_eddi"]
   }
 ]

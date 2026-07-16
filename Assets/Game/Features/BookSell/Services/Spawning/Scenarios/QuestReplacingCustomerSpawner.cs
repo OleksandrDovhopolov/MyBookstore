@@ -22,17 +22,20 @@ namespace Book.Sell.Services
         private readonly IConfigsService _configs;
         private readonly IQuestsService _quests;
         private readonly IDeliveredDialoguesService _delivered;
+        private readonly ICustomerProfileProvider _profiles;
 
         public QuestReplacingCustomerSpawner(
             ICustomerSpawner inner,
             IConfigsService configs,
             IQuestsService quests,
-            IDeliveredDialoguesService delivered)
+            IDeliveredDialoguesService delivered,
+            ICustomerProfileProvider profiles)
         {
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _quests = quests ?? throw new ArgumentNullException(nameof(quests));
             _delivered = delivered ?? throw new ArgumentNullException(nameof(delivered));
+            _profiles = profiles ?? throw new ArgumentNullException(nameof(profiles));
         }
 
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
@@ -82,10 +85,42 @@ namespace Book.Sell.Services
                 var archetype = new QuestCharacterArchetype(new DialoguePayload(dialogueId));
                 questCustomers.Add(CustomerPlanBuilder.Build(
                     $"quest_{quest.Id}", tuning, random,
-                    buildMiddle: () => archetype.BuildMiddle(setup, tuning, random)));
+                    buildMiddle: () => archetype.BuildMiddle(setup, tuning, random),
+                    buildProfile: () => BuildProfile(quest, setup, random)));
             }
 
             return questCustomers;
+        }
+
+        private CustomerProfile BuildProfile(IQuest quest, SalesSessionSetup setup, ISalesRandom random)
+        {
+            var fallback = _profiles.Create(setup, random);
+            var characterId = quest?.CharacterId;
+            if (string.IsNullOrEmpty(characterId)) return fallback;
+
+            if (!_configs.TryGet<CharacterConfig>(characterId, out var character)) return fallback;
+            var genres = character.FavoriteGenres;
+            if (genres == null || genres.Length == 0) return fallback;
+
+            WarnUnknownGenres(character.Id, genres);
+            return new CustomerProfile(genres);
+        }
+
+        private void WarnUnknownGenres(string characterId, IReadOnlyList<string> genres)
+        {
+            var known = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var book in _configs.GetAll<BookConfig>())
+            {
+                var genre = book?.PrimaryGenre;
+                if (!string.IsNullOrEmpty(genre)) known.Add(genre);
+            }
+
+            for (var i = 0; i < genres.Count; i++)
+            {
+                var genre = genres[i];
+                if (!string.IsNullOrEmpty(genre) && !known.Contains(genre))
+                    Debug.LogWarning($"{LogPrefix} character '{characterId}' favorite genre '{genre}' is not present in BookConfig.PrimaryGenre.");
+            }
         }
     }
 }

@@ -32,6 +32,12 @@ namespace Book.Sell.Tests.Editor.Services
             public IReadOnlyList<ActiveRequestRuntime> GetRequests() => _requests;
         }
 
+        private sealed class StubProfileProvider : ICustomerProfileProvider
+        {
+            public CustomerProfile Create(SalesSessionSetup setup, ISalesRandom random)
+                => new(new[] { "Fact", "Travel" });
+        }
+
         private static SalesSessionSetup Setup()
             => new SalesSessionSetup(1, "loc", Array.Empty<string>(), Array.Empty<string>());
 
@@ -52,13 +58,15 @@ namespace Book.Sell.Tests.Editor.Services
 
         private static IReadOnlyList<Customer> BuildCustomers(
             IReadOnlyList<ActiveRequestRuntime> requests,
-            CustomerTrafficResult result)
+            CustomerTrafficResult result,
+            ICustomerProfileProvider profiles = null)
         {
             var configs = new FakeConfigsService();
             var spawner = new RegularCustomerSpawner(
                 configs,
                 new StubResolver(result),
-                new StubActiveRequests(requests));
+                new StubActiveRequests(requests),
+                profiles);
 
             var tuning = SalesTestKit.FastTuning();
             return spawner.BuildCustomers(Setup(), tuning, new FakeSalesRandom());
@@ -147,6 +155,18 @@ namespace Book.Sell.Tests.Editor.Services
 
             Assert.AreEqual(2, customers.Count);
             CollectionAssert.AreEqual(new[] { "cust_1", "cust_2" }, sink.ActiveStarted.Select(x => x.customer.Id).ToArray());
+        }
+
+        [Test]
+        public void RegularCustomers_ReceiveProfileFromProvider()
+        {
+            var customers = BuildCustomers(
+                Array.Empty<ActiveRequestRuntime>(),
+                new CustomerTrafficResult(1, 1, isHardOverride: true, breakdown: null),
+                new StubProfileProvider());
+
+            Assert.AreEqual(1, customers.Count);
+            CollectionAssert.AreEqual(new[] { "Fact", "Travel" }, customers[0].Profile.DesiredGenres);
         }
     }
 }

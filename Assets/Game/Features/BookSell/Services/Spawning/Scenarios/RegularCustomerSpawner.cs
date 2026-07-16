@@ -10,8 +10,8 @@ namespace Book.Sell.Services
     /// <summary>
     /// Production base spawner: sources the regular customer count from <see cref="ICustomerTrafficResolver"/>
     /// instead of owning it. Composition (each customer's plan) is the same passive-attempts shape the
-    /// stub spawners use. Wrapped by <see cref="QuestSchedulingCustomerSpawner"/>, which prepends quest
-    /// characters. See docs/INPROGRESS/CUSTOMER_TRAFFIC_COUNT_SYSTEM.md.
+    /// stub spawners use. Wrapped by <see cref="QuestReplacingCustomerSpawner"/>, which can replace regular
+    /// slots with quest characters. See docs/INPROGRESS/CUSTOMER_TRAFFIC_COUNT_SYSTEM.md.
     /// </summary>
     public sealed class RegularCustomerSpawner : ICustomerSpawner
     {
@@ -19,20 +19,27 @@ namespace Book.Sell.Services
 
         private readonly ICustomerTrafficResolver _trafficResolver;
         private readonly IActiveRequestRuntimeProvider _activeRequests;
+        private readonly ICustomerProfileProvider _profiles;
 
         public RegularCustomerSpawner(IConfigsService configs, ICustomerTrafficResolver trafficResolver)
-            : this(configs, trafficResolver, new ConfigActiveRequestRuntimeProvider(configs, new BookConditionRequestEvaluator()))
+            : this(
+                configs,
+                trafficResolver,
+                new ConfigActiveRequestRuntimeProvider(configs, new BookConditionRequestEvaluator()),
+                profileProvider: null)
         {
         }
 
         public RegularCustomerSpawner(
             IConfigsService configs,
             ICustomerTrafficResolver trafficResolver,
-            IActiveRequestRuntimeProvider activeRequests)
+            IActiveRequestRuntimeProvider activeRequests,
+            ICustomerProfileProvider profileProvider = null)
         {
             if (configs == null) throw new ArgumentNullException(nameof(configs));
             _trafficResolver = trafficResolver ?? throw new ArgumentNullException(nameof(trafficResolver));
             _activeRequests = activeRequests ?? throw new ArgumentNullException(nameof(activeRequests));
+            _profiles = profileProvider;
         }
 
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
@@ -75,7 +82,8 @@ namespace Book.Sell.Services
 
                 customers.Add(CustomerPlanBuilder.Build(
                     $"cust_{i + 1}", tuning, random,
-                    buildMiddle: () => archetype.BuildMiddle(setup, tuning, random)));
+                    buildMiddle: () => archetype.BuildMiddle(setup, tuning, random),
+                    buildProfile: () => _profiles?.Create(setup, random) ?? CustomerProfile.Empty));
             }
 
             return customers;

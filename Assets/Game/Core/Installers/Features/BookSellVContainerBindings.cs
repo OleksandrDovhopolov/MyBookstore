@@ -118,12 +118,18 @@ namespace Game.Bootstrap
             // increasing the total visitor count. NOTE: register the inner concretely —
             // resolving ICustomerSpawner inside the ICustomerSpawner factory would be a self-reference. Swap
             // the inner type here to change base composition. IQuestsService resolves from the global scope.
-            builder.Register<RegularCustomerSpawner>(Lifetime.Singleton); // production base: count from ICustomerTrafficResolver
+            builder.Register<RegularCustomerSpawner>(r => new RegularCustomerSpawner(
+                    r.Resolve<IConfigsService>(),
+                    r.Resolve<ICustomerTrafficResolver>(),
+                    r.Resolve<IActiveRequestRuntimeProvider>(),
+                    r.Resolve<ICustomerProfileProvider>()),
+                Lifetime.Singleton); // production base: count from ICustomerTrafficResolver
             builder.Register<ICustomerSpawner>(r => new QuestReplacingCustomerSpawner(
                     r.Resolve<RegularCustomerSpawner>(),
                     r.Resolve<IConfigsService>(),
                     r.Resolve<IQuestsService>(),
-                    r.Resolve<IDeliveredDialoguesService>()),
+                    r.Resolve<IDeliveredDialoguesService>(),
+                    r.Resolve<ICustomerProfileProvider>()),
                 Lifetime.Singleton);
             
             
