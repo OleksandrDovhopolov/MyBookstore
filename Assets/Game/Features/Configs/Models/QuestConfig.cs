@@ -40,6 +40,15 @@ namespace Game.Configs.Models
         /// <summary>
         /// Optional authored passive purchase attempts for the quest customer. The sales spawner maps this
         /// config data onto the spawned customer; the shared passive step still owns feedback/commit.
+        ///
+        /// This is the beat sheet of the SAME one-time encounter <see cref="DialogueId"/> declares — the two
+        /// fields describe one scripted visit ("who shows up and talks" + "what they do"), which is why they
+        /// live together. Fire-once comes from the same place: the delivered-dialogues store keyed by
+        /// <see cref="DialogueId"/>, so the script cannot replay while the quest stays Active.
+        ///
+        /// Deliberately a TEMPORARY anchor: both fields migrate to a dedicated customer-script config
+        /// (docs/INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md "Candidate E") once a SECOND scripted
+        /// encounter exists — one instance does not justify the new noun. See TODO GAME-16.
         /// </summary>
         public ScriptedPassivePurchaseConfig[] ScriptedPassivePurchases { get; set; }
 

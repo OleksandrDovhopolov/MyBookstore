@@ -150,36 +150,6 @@ namespace Game.Preparation.Services
             StateChanged?.Invoke(_state);
         }
 
-        public async UniTask RandomizeAsync(CancellationToken ct)
-        {
-            if (_state == null) return;
-
-            var pool = _availableByGenre.Values.SelectMany(b => b).ToList();
-            Shuffle(pool);
-
-            var take = Mathf.Min(Capacity.DailyBookSlots, pool.Count);
-            var quantities = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var selectedBookIds = new List<string>(take);
-            for (var i = 0; i < take; i++)
-            {
-                var book = pool[i];
-                if (book == null || string.IsNullOrEmpty(book.Id)) continue;
-
-                selectedBookIds.Add(book.Id);
-
-                var genre = book.PrimaryGenre;
-                if (string.IsNullOrEmpty(genre)) continue;
-                quantities.TryGetValue(genre, out var c);
-                quantities[genre] = c + 1;
-            }
-
-            _state.GenreQuantities = quantities;
-            _state.SelectedBookIds = selectedBookIds;
-            _state.UseExplicitSelectedBookIds = false;
-            await PersistAsync(ct);
-            StateChanged?.Invoke(_state);
-        }
-
         public PreparationValidationResult Validate()
         {
             if (_state == null)

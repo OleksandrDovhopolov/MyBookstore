@@ -36,8 +36,9 @@ straight into the fixed day-1 location with an **auto-stocked shelf**:
   and delegates to `GameplayUI.FirstDayEntryFlow`.
 - `FirstDayEntryFlow` resolves the first unlocked location, runs the day pipeline
   headlessly — `IMorningSessionService.ContinueToPreparationAsync` →
-  `IPreparationSessionService.StartOrResumeAsync/RandomizeAsync/ConfirmAsync`
-  (fills the shelf from the 27 seeded books, advances to `Sales`) →
+  `IPreparationSessionService.StartOrResumeAsync` →
+  `SetSelectedBookIdsAsync(BuildFirstDayShelfPreset())` → `ConfirmAsync`
+  (fills the shelf from the 27 seeded books with a deterministic day-1 preset, advances to `Sales`) →
   `IGameFlowService.EnterLocationAsync`. **Day 1 entry is free** (no entry-fee charge).
 - Entering the location raises `LocationLoadedChanged`, which triggers the
   `tutorial_day_1` sequence (context `location`). Requires `_tutorialAutoStart = 1`.
@@ -91,6 +92,18 @@ for organic discovery later.
 | Travel  |             3 |                7 |
 | Kids    |             2 |                6 |
 | **Total** |       **27** |           **60** |
+
+### Day-1 shelf preset
+
+The first direct-entry sales day does not randomize the shelf. `FirstDayEntryFlow`
+reads the seeded owned books through `IPreparationInventoryProvider` and writes an
+exact shelf selection through `IPreparationSessionService.SetSelectedBookIdsAsync`.
+The shelf capacity is the current `DailyBookSlots` value (12 in the MVP).
+
+The authored picker first pins one `Fact` book and one `Travel` book when those
+genres are available, then fills the remaining slots by genre order:
+`Fact`, `Travel`, `Fantasy`, `Crime`, `Drama`, `Classic`, `Kids`. Within a genre,
+books are ordered by `RarityWeight` descending, then by `Id`.
 
 ### Constants and config seam
 

@@ -25,6 +25,27 @@
 - `Game.Characters` хранит только то, что не выводится из квестов: persisted-флаг `Discovered` и леджер открытых memory (для одноразовости событий и устойчивости read-model).
 - `Game.Characters` **не** дублирует quest lifecycle, condition-parser, rewards или save-машину квестов.
 
+### 1.1. Черта vs действие — что можно класть в `CharacterConfig`
+
+Правило: **`CharacterConfig` хранит постоянные черты персонажа. Сценарные действия в нём не живут** —
+они принадлежат событию, которое их вызывает (квест). Это конкретизация строчки из самого конфига:
+*«A character is an index over story progression — the actions themselves live in Game.Quest»*.
+
+| Можно (черта — верна всегда) | Нельзя (действие — верно однократно/в контексте) |
+|---|---|
+| `FavoriteGenres` — Eddi любит Fact/Travel в любой сцене | `scriptedPassivePurchases` — «Fact hit, потом Travel miss» |
+| `PortraitKey`, `DisplayNameKey`, `RoleKey` | одноразовые реплики, форсированные исходы, beat-sheet визита |
+| `DiscoveryQuestIds` — связь, а не поведение | |
+
+Проверка: *«верно ли это про персонажа всегда, в любой сцене?»* Да → черта, сюда. Нет → это сценарий
+конкретной встречи, ему место у квеста/скрипта встречи.
+
+Исторический пример: `scriptedPassivePurchases` (форсированный `Fact hit → Travel miss` у Eddi для
+туториала дня 1) сначала положили сюда — и он применялся бы к Eddi **навсегда, в любом квесте**, который
+его заспавнит. Переехал на `QuestConfig` рядом с `DialogueId`, который объявляет ту же одноразовую встречу.
+Долгосрочный дом — `CustomerScriptConfig` (TODO GAME-16 / Candidate E в
+[INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md](INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md)).
+
 ---
 
 ## 2. Структура модуля

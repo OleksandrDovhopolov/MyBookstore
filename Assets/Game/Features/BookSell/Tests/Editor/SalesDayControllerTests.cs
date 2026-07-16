@@ -903,36 +903,6 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
-        public void PreparationSession_RandomizeAfterSales_FillsFromFullInventory()
-        {
-            var books = Enumerable.Range(1, 12)
-                .Select(i => SalesTestKit.Book($"b{i}", genre: "sci-fi"))
-                .ToArray();
-            var configs = new FakeConfigsService();
-            configs.SetAll(books);
-
-            var shelfState = new RecordingShelfStateService();
-            shelfState.SetShelfAsync(new[] { "b1", "b2", "b3", "b4" }, CancellationToken.None)
-                .GetAwaiter()
-                .GetResult();
-
-            var service = new PreparationSessionService(
-                new FakeSaveService(),
-                new FakeDayProgressService(),
-                new StaticPreparationInventoryProvider(books),
-                shelfState,
-                configs);
-
-            service.StartOrResumeAsync(CancellationToken.None).GetAwaiter().GetResult();
-            Assert.AreEqual(4, service.TotalSelected, "Fresh day keeps unsold books from the previous shelf.");
-
-            service.RandomizeAsync(CancellationToken.None).GetAwaiter().GetResult();
-
-            Assert.AreEqual(12, service.TotalSelected, "Random must refill to DailyBookSlots from all owned inventory.");
-            CollectionAssert.AreEquivalent(books.Select(b => b.Id), service.CurrentState.SelectedBookIds);
-        }
-
-        [Test]
         public void PreparationSession_SetSelectedBookIds_PreservesExactIdsThroughConfirm()
         {
             var books = new[]
@@ -964,7 +934,7 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
-        public void PreparationSession_RandomizeAndManualQuantity_ClearExplicitSelection()
+        public void PreparationSession_ManualQuantity_ClearsExplicitSelection()
         {
             var books = new[]
             {
@@ -983,13 +953,6 @@ namespace Book.Sell.Tests.Editor
                 configs);
 
             service.StartOrResumeAsync(CancellationToken.None).GetAwaiter().GetResult();
-            service.SetSelectedBookIdsAsync(new[] { "b1", "b2" }, CancellationToken.None)
-                .GetAwaiter()
-                .GetResult();
-
-            service.RandomizeAsync(CancellationToken.None).GetAwaiter().GetResult();
-            Assert.IsFalse(service.CurrentState.UseExplicitSelectedBookIds);
-
             service.SetSelectedBookIdsAsync(new[] { "b1", "b2" }, CancellationToken.None)
                 .GetAwaiter()
                 .GetResult();

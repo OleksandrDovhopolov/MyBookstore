@@ -118,6 +118,38 @@
     [комментарии:22-24](../Assets/Game/Features/Ftue/Services/FtueBootstrapper.cs)), парно с рефактором
     `DailyBookSlots`.
 
+- [ ] **GAME-16. Вынести сценарную встречу из `QuestConfig` в `CustomerScriptConfig` (Candidate E).**
+  **Триггер: делать, когда появится ВТОРАЯ сценарная встреча.** Сегодня она ровно одна —
+  `q_intro_eddi` / диалог `eddy1`.
+  Сейчас `QuestConfig` несёт поведение встречи двумя полями: `DialogueId` («когда квест Active, в Sales
+  приходит персонаж с этим диалогом — однократно») и `ScriptedPassivePurchases` (beat-sheet той же встречи:
+  `Fact hit → Travel miss`). Это осознанный временный якорь, а не свалка — оба поля описывают **одну**
+  сущность и потому лежат рядом; fire-once обоим даёт delivered-dialogues store по `DialogueId`.
+  Почему не сейчас:
+  - Один экземпляр не оправдывает новое существительное: `CustomerScriptConfig` + `StepFactory` + валидация —
+    каркас под контент, которого пока нет.
+  - Вынести только beats (оставив `DialogueId` на квесте) = размазать одну встречу по двум файлам — хуже текущего.
+  - Вынести всё = двигать `DialogueId` (читают quest-aware спавнеры через `IQuest.Config`) и `CharacterId`
+    (торчит на `IQuest`, Quest.API) — правка API квестов ради одного контент-кейса.
+  - Сам Candidate E просит подождать устаканивания step-словаря, а он менялся недавно (Candidate D:
+    `IPassivePurchaseStep`, `CompletedAndEndPassiveChain`).
+  Что сделать по триггеру: см. [INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md](INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md)
+  «Candidate E» — скрипт вбирает `DialogueId` + `ScriptedPassivePurchases` (и, вероятно, `CharacterId`),
+  в `QuestConfig` остаётся ссылка `customerScriptId`. Заодно решить вопрос оттуда же: может ли
+  director-вставка (`CommentStep`) вклиниваться в сценарную последовательность, и нужен ли opt-out для FTUE.
+
+- [ ] **GAME-17. Валидация связки «FTUE-пресет ↔ полка дня 1 ↔ сценарный скрипт».**
+  Туториал дня 1 держится на согласии трёх независимых мест: `FtueBootstrapper.PresetCounts` сеет книгу
+  жанра `Fact` → `FirstDayEntryFlow.BuildFirstDayShelfPreset()` прибивает `Fact`/`Travel` на полку
+  (`AddFirstByGenre`) → `q_intro_eddi.scriptedPassivePurchases` требует `Fact forceHit: true`. Ноль валидации:
+  при рассинхроне `ScriptedPassivePurchaseResolver` пишет **warning** и возвращает miss, а
+  `RemoveRemainingPassivePurchases` (Candidate D) тут же удаляет второй beat — то есть урок про sale chance
+  молча исчезает, а в логе одна строка. Что сделать:
+  - Провал форсированного хита — это дефект контента: `LogError` вместо `LogWarning`.
+  - Editor-валидатор: жанры скрипта существуют в `BookConfig.PrimaryGenre` и покрыты FTUE-пресетом
+    (по образцу валидатора id-шников из GAME-10 §7).
+  - Связано с GAME-15 (пресет FTUE vs каталог книг) — чинить парно.
+
 ---
 
 ## 🛠️ Инфраструктура
@@ -126,7 +158,7 @@
   языка). Закладывать заранее — под Steam-релиз на нескольких языках.
 
 - [ ] **INF-5. Детерминированный (seeded) RNG.** Отдельный сервис для воспроизводимой генерации
-  дневного спроса/покупателей и тестов баланса. Заменить обычный рандом (напр. в `RandomizeAsync`).
+  дневного спроса/покупателей и тестов баланса.
 
 - [ ] **INF-6. Свести Save в инфраслой + версионирование.** `ISaveService` сейчас живёт вне
   `Infrastructure` (используется в `PreparationSessionService`). Централизовать и задать схему
@@ -166,6 +198,17 @@
   - Вынести из `Game.Core.UI` конкретные окна вроде настроек, confirm/smoke/debug-экранов и любые feature-specific UI в соответствующие feature/shared UI сборки.
   - Вынести конкретные анимации/эффекты из core UI, оставив в ядре только базовые интерфейсы, абстракции, common helpers и generic window infrastructure.
   - Проверить asmdef-зависимости после выноса: `Game.Core.UI` не должен зависеть от конкретных gameplay/feature namespaces и не должен быть местом для продуктовых окон.
+
+- [ ] **INF-11. `book_sell.last_day_result` растёт линейно от числа покупателей.**
+  Единственный модуль сейва, размер которого зависит от размера дня: остальные 12 константные (24-704B),
+  а этот в логах рос `230B` (1 покупатель) → `2894B` (33 покупателя) ≈ **~88B на покупателя**; при 49
+  покупателях ≈ 4.3KB. Лимит payload — 30720B, так что сейчас не горит (после фикса трафика дни стали по
+  6 покупателей, ~573B), но это единственная неограниченная величина в сейве. Что решить:
+  - Хранить агрегаты (counts по тирам) вместо строки на покупателя;
+  - либо кап на число строк;
+  - либо **не персистить вовсе**: данные живут ровно один переход Sales→Results и восстановимы из
+    `sales_stats` (v2, 244B).
+  Смотреть парно с INF-6 (версионирование сейва).
 
 ---
 
