@@ -1,3 +1,4 @@
+using System;
 using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
@@ -10,6 +11,7 @@ using Game.Quest.API;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
+using Object = UnityEngine.Object;
 
 namespace Game.Bootstrap
 {
@@ -110,7 +112,16 @@ namespace Game.Bootstrap
                         r.Resolve<DecorTrafficContributor>() // registered in RegisterDecor (parent scope)
                     }),
                 Lifetime.Singleton);
-            // Boot-time warn if a hard-override day is under-supplied vs active requests.
+            // How many customers arrive with an active request. Same shape/knobs as the traffic resolver;
+            // the requests.json catalog is only a pool to draw from and must never size the day.
+            // Contributor list is empty for now — the seam is here for decor/events to plug into later.
+            builder.Register<IActiveRequestCountResolver>(r => new ActiveRequestCountResolver(
+                    r.Resolve<SalesTrafficSettings>(),
+                    r.Resolve<IConfigsService>(),
+                    Array.Empty<IActiveRequestCountContributor>()),
+                Lifetime.Singleton);
+
+            // Warns once per process if a day asks for more active requests than it has customers.
             builder.RegisterEntryPoint<CustomerTrafficConfigValidator>(Lifetime.Singleton);
 
             // Base composition (concrete type) + the quest-replacing decorator as ICustomerSpawner (GAME-6).
@@ -122,7 +133,8 @@ namespace Game.Bootstrap
                     r.Resolve<IConfigsService>(),
                     r.Resolve<ICustomerTrafficResolver>(),
                     r.Resolve<IActiveRequestRuntimeProvider>(),
-                    r.Resolve<ICustomerProfileProvider>()),
+                    r.Resolve<ICustomerProfileProvider>(),
+                    r.Resolve<IActiveRequestCountResolver>()),
                 Lifetime.Singleton); // production base: count from ICustomerTrafficResolver
             builder.Register<ICustomerSpawner>(r => new QuestReplacingCustomerSpawner(
                     r.Resolve<RegularCustomerSpawner>(),

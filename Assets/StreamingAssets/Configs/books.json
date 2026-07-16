@@ -1018,5 +1018,606 @@
     "rarityWeight": 0.5,
     "published": 2016,
     "pages": 238
+  },
+  {
+    "id": "Book64",
+    "title": "The Hobbit",
+    "author": "Book64_author",
+    "description": "Book64_description",
+    "genres": [
+      "Fantasy"
+    ],
+    "qualities": [
+      "Magic",
+      "Epic",
+      "Coming of Age"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1937,
+    "pages": 310
+  },
+  {
+    "id": "Book65",
+    "title": "A Wizard of Earthsea",
+    "author": "Book65_author",
+    "description": "Book65_description",
+    "genres": [
+      "Fantasy"
+    ],
+    "qualities": [
+      "Magic",
+      "YA"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1968,
+    "pages": 205
+  },
+  {
+    "id": "Book66",
+    "title": "The Last Unicorn",
+    "author": "Book66_author",
+    "description": "Book66_description",
+    "genres": [
+      "Fantasy"
+    ],
+    "qualities": [
+      "Magic",
+      "Folklore"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1968,
+    "pages": 294
+  },
+  {
+    "id": "Book67",
+    "title": "The Neverending Story",
+    "author": "Book67_author",
+    "description": "Book67_description",
+    "genres": [
+      "Fantasy"
+    ],
+    "qualities": [
+      "Magic",
+      "Kids"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1979,
+    "pages": 448
+  },
+  {
+    "id": "Book68",
+    "title": "The Name of the Wind",
+    "author": "Book68_author",
+    "description": "Book68_description",
+    "genres": [
+      "Fantasy"
+    ],
+    "qualities": [
+      "Magic",
+      "Epic"
+    ],
+    "rarityWeight": 0.5,
+    "published": 2007,
+    "pages": 662
+  },
+  {
+    "id": "Book69",
+    "title": "Stardust",
+    "author": "Book69_author",
+    "description": "Book69_description",
+    "genres": [
+      "Fantasy"
+    ],
+    "qualities": [
+      "Magic",
+      "Romance"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1999,
+    "pages": 248
+  },
+  {
+    "id": "Book70",
+    "title": "The Princess Bride",
+    "author": "Book70_author",
+    "description": "Book70_description",
+    "genres": [
+      "Fantasy"
+    ],
+    "qualities": [
+      "Humor",
+      "Romance"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1973,
+    "pages": 448
+  },
+  {
+    "id": "Book71",
+    "title": "Charlotte's Web",
+    "author": "Book71_author",
+    "description": "Book71_description",
+    "genres": [
+      "Kids"
+    ],
+    "qualities": [
+      "Animals",
+      "Kids"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1952,
+    "pages": 192
+  },
+  {
+    "id": "Book72",
+    "title": "Matilda",
+    "author": "Book72_author",
+    "description": "Book72_description",
+    "genres": [
+      "Kids"
+    ],
+    "qualities": [
+      "Kids",
+      "Humor"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1988,
+    "pages": 240
+  },
+  {
+    "id": "Book73",
+    "title": "The Secret Garden",
+    "author": "Book73_author",
+    "description": "Book73_description",
+    "genres": [
+      "Kids"
+    ],
+    "qualities": [
+      "Kids",
+      "Nature"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1911,
+    "pages": 375
+  },
+  {
+    "id": "Book74",
+    "title": "Where the Wild Things Are",
+    "author": "Book74_author",
+    "description": "Book74_description",
+    "genres": [
+      "Kids"
+    ],
+    "qualities": [
+      "Kids",
+      "Animals"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1963,
+    "pages": 48
+  },
+  {
+    "id": "Book75",
+    "title": "The Lion, the Witch and the Wardrobe",
+    "author": "Book75_author",
+    "description": "Book75_description",
+    "genres": [
+      "Kids"
+    ],
+    "qualities": [
+      "Kids",
+      "Magic"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1950,
+    "pages": 208
+  },
+  {
+    "id": "Book76",
+    "title": "Anne of Green Gables",
+    "author": "Book76_author",
+    "description": "Book76_description",
+    "genres": [
+      "Kids"
+    ],
+    "qualities": [
+      "Kids",
+      "Coming of Age"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1908,
+    "pages": 320
+  },
+  {
+    "id": "Book77",
+    "title": "The Little Prince",
+    "author": "Book77_author",
+    "description": "Book77_description",
+    "genres": [
+      "Kids"
+    ],
+    "qualities": [
+      "Kids",
+      "Philosophical"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1943,
+    "pages": 96
+  },
+  {
+    "id": "Book78",
+    "title": "Pippi Longstocking",
+    "author": "Book78_author",
+    "description": "Book78_description",
+    "genres": [
+      "Kids"
+    ],
+    "qualities": [
+      "Kids",
+      "Humor"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1945,
+    "pages": 160
+  },
+  {
+    "id": "Book79",
+    "title": "The Wind in the Willows",
+    "author": "Book79_author",
+    "description": "Book79_description",
+    "genres": [
+      "Kids"
+    ],
+    "qualities": [
+      "Kids",
+      "Animals",
+      "Nature"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1908,
+    "pages": 256
+  },
+  {
+    "id": "Book80",
+    "title": "Wonder",
+    "author": "Book80_author",
+    "description": "Book80_description",
+    "genres": [
+      "Kids"
+    ],
+    "qualities": [
+      "Kids",
+      "Contemporary",
+      "Coming of Age"
+    ],
+    "rarityWeight": 0.5,
+    "published": 2012,
+    "pages": 320
+  },
+  {
+    "id": "Book81",
+    "title": "Around the World in Eighty Days",
+    "author": "Book81_author",
+    "description": "Book81_description",
+    "genres": [
+      "Travel"
+    ],
+    "qualities": [
+      "Travel Guide",
+      "Historic"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1873,
+    "pages": 256
+  },
+  {
+    "id": "Book82",
+    "title": "The Great Railway Bazaar",
+    "author": "Book82_author",
+    "description": "Book82_description",
+    "genres": [
+      "Travel"
+    ],
+    "qualities": [
+      "Travel Guide",
+      "Non Fiction"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1975,
+    "pages": 352
+  },
+  {
+    "id": "Book83",
+    "title": "In Patagonia",
+    "author": "Book83_author",
+    "description": "Book83_description",
+    "genres": [
+      "Travel"
+    ],
+    "qualities": [
+      "Travel Guide",
+      "Non Fiction",
+      "Nature"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1977,
+    "pages": 204
+  },
+  {
+    "id": "Book84",
+    "title": "A Walk in the Woods",
+    "author": "Book84_author",
+    "description": "Book84_description",
+    "genres": [
+      "Travel"
+    ],
+    "qualities": [
+      "Travel Guide",
+      "Humor",
+      "Nature"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1998,
+    "pages": 276
+  },
+  {
+    "id": "Book85",
+    "title": "The Snow Leopard",
+    "author": "Book85_author",
+    "description": "Book85_description",
+    "genres": [
+      "Travel"
+    ],
+    "qualities": [
+      "Travel Guide",
+      "Nature",
+      "Philosophical"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1978,
+    "pages": 338
+  },
+  {
+    "id": "Book86",
+    "title": "The Geography of Bliss",
+    "author": "Book86_author",
+    "description": "Book86_description",
+    "genres": [
+      "Travel"
+    ],
+    "qualities": [
+      "Travel Guide",
+      "Humor",
+      "Non Fiction"
+    ],
+    "rarityWeight": 0.5,
+    "published": 2008,
+    "pages": 345
+  },
+  {
+    "id": "Book87",
+    "title": "Wild",
+    "author": "Book87_author",
+    "description": "Book87_description",
+    "genres": [
+      "Travel"
+    ],
+    "qualities": [
+      "Travel Guide",
+      "Biography",
+      "Nature"
+    ],
+    "rarityWeight": 0.5,
+    "published": 2012,
+    "pages": 336
+  },
+  {
+    "id": "Book88",
+    "title": "Travels with Charley",
+    "author": "Book88_author",
+    "description": "Book88_description",
+    "genres": [
+      "Travel"
+    ],
+    "qualities": [
+      "Travel Guide",
+      "Animals"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1962,
+    "pages": 288
+  },
+  {
+    "id": "Book89",
+    "title": "Into Thin Air",
+    "author": "Book89_author",
+    "description": "Book89_description",
+    "genres": [
+      "Travel"
+    ],
+    "qualities": [
+      "Travel Guide",
+      "Biography",
+      "Nature"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1997,
+    "pages": 352
+  },
+  {
+    "id": "Book90",
+    "title": "Blue Highways",
+    "author": "Book90_author",
+    "description": "Book90_description",
+    "genres": [
+      "Travel"
+    ],
+    "qualities": [
+      "Travel Guide",
+      "Non Fiction"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1982,
+    "pages": 420
+  },
+  {
+    "id": "Book91",
+    "title": "A Brief History of Time",
+    "author": "Book91_author",
+    "description": "Book91_description",
+    "genres": [
+      "Fact"
+    ],
+    "qualities": [
+      "Pop Science",
+      "Space"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1988,
+    "pages": 256
+  },
+  {
+    "id": "Book92",
+    "title": "Sapiens",
+    "author": "Book92_author",
+    "description": "Book92_description",
+    "genres": [
+      "Fact"
+    ],
+    "qualities": [
+      "Non Fiction",
+      "Historic"
+    ],
+    "rarityWeight": 0.5,
+    "published": 2011,
+    "pages": 443
+  },
+  {
+    "id": "Book93",
+    "title": "The Immortal Life of Henrietta Lacks",
+    "author": "Book93_author",
+    "description": "Book93_description",
+    "genres": [
+      "Fact"
+    ],
+    "qualities": [
+      "Biography",
+      "Non Fiction"
+    ],
+    "rarityWeight": 0.5,
+    "published": 2010,
+    "pages": 381
+  },
+  {
+    "id": "Book94",
+    "title": "Silent Spring",
+    "author": "Book94_author",
+    "description": "Book94_description",
+    "genres": [
+      "Fact"
+    ],
+    "qualities": [
+      "Nature",
+      "Political"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1962,
+    "pages": 368
+  },
+  {
+    "id": "Book95",
+    "title": "The Selfish Gene",
+    "author": "Book95_author",
+    "description": "Book95_description",
+    "genres": [
+      "Fact"
+    ],
+    "qualities": [
+      "Pop Science",
+      "Nature"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1976,
+    "pages": 360
+  },
+  {
+    "id": "Book96",
+    "title": "Cosmos",
+    "author": "Book96_author",
+    "description": "Book96_description",
+    "genres": [
+      "Fact"
+    ],
+    "qualities": [
+      "Pop Science",
+      "Space"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1980,
+    "pages": 384
+  },
+  {
+    "id": "Book97",
+    "title": "The Man Who Mistook His Wife for a Hat",
+    "author": "Book97_author",
+    "description": "Book97_description",
+    "genres": [
+      "Fact"
+    ],
+    "qualities": [
+      "Pop Science",
+      "Non Fiction"
+    ],
+    "rarityWeight": 0.5,
+    "published": 1985,
+    "pages": 256
+  },
+  {
+    "id": "Book98",
+    "title": "Freakonomics",
+    "author": "Book98_author",
+    "description": "Book98_description",
+    "genres": [
+      "Fact"
+    ],
+    "qualities": [
+      "Non Fiction",
+      "Political"
+    ],
+    "rarityWeight": 0.5,
+    "published": 2005,
+    "pages": 336
+  },
+  {
+    "id": "Book99",
+    "title": "The Omnivore's Dilemma",
+    "author": "Book99_author",
+    "description": "Book99_description",
+    "genres": [
+      "Fact"
+    ],
+    "qualities": [
+      "Cooking",
+      "Nature"
+    ],
+    "rarityWeight": 0.5,
+    "published": 2006,
+    "pages": 450
+  },
+  {
+    "id": "Book100",
+    "title": "The Sixth Extinction",
+    "author": "Book100_author",
+    "description": "Book100_description",
+    "genres": [
+      "Fact"
+    ],
+    "qualities": [
+      "Nature",
+      "Pop Science"
+    ],
+    "rarityWeight": 0.5,
+    "published": 2014,
+    "pages": 336
   }
 ]

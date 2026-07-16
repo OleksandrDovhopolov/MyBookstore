@@ -20,6 +20,15 @@ namespace Book.Sell.Services
         [SerializeField] private int _minCustomerCount = 0;
         [SerializeField] private int _maxCustomerCount = 50;
 
+        [Header("Active requests")]
+        [Tooltip("Сколько покупателей приходят с активным запросом в день, у которого нет своего " +
+                 "activeRequestCount в days.json. Размер каталога requests.json на это НЕ влияет — " +
+                 "он лишь пул, из которого делается выборка.")]
+        [SerializeField] private int _defaultActiveRequestCount = 1;
+
+        [SerializeField] private int _minActiveRequestCount = 0;
+        [SerializeField] private int _maxActiveRequestCount = 50;
+
         [Header("Rounding")]
         [SerializeField] private TrafficRounding _rounding = TrafficRounding.NearestAwayFromZero;
 
@@ -28,6 +37,9 @@ namespace Book.Sell.Services
             DefaultCustomerCount = _defaultCustomerCount,
             MinCustomerCount = _minCustomerCount,
             MaxCustomerCount = _maxCustomerCount,
+            DefaultActiveRequestCount = _defaultActiveRequestCount,
+            MinActiveRequestCount = _minActiveRequestCount,
+            MaxActiveRequestCount = _maxActiveRequestCount,
             Rounding = _rounding
         };
     }

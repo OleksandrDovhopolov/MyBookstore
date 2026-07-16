@@ -103,10 +103,11 @@ namespace GameplayUI
 
                 if (directEntry)
                 {
+                    hud.SetHudVisible(true);
+
                     if (await _firstDayEntryFlow.EnterAsync(ct))
                         return;
 
-                    hud.SetHudVisible(true);
                     if (deferHubReveal)
                         await _transition.PlayRevealAsync(ct);
                 }

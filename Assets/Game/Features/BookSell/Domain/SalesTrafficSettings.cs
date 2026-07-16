@@ -27,6 +27,19 @@ namespace Book.Sell.Domain
         /// <summary>Final upper clamp (non-hard-override days).</summary>
         public int MaxCustomerCount { get; set; } = 50;
 
+        /// <summary>
+        /// Baseline number of customers arriving with an active request, for a day with no explicit
+        /// <c>DayConfig.ActiveRequestCount</c>. The requests catalog (requests.json) is a POOL to draw
+        /// from — its size must never decide how many requests a day runs.
+        /// </summary>
+        public int DefaultActiveRequestCount { get; set; } = 1;
+
+        /// <summary>Final lower clamp for the active-request count (non-hard-override days).</summary>
+        public int MinActiveRequestCount { get; set; } = 0;
+
+        /// <summary>Final upper clamp for the active-request count (non-hard-override days).</summary>
+        public int MaxActiveRequestCount { get; set; } = 50;
+
         public TrafficRounding Rounding { get; set; } = TrafficRounding.NearestAwayFromZero;
     }
 }

@@ -224,16 +224,21 @@ Resolver logs:
 
 Spawner logs:
 
-- `spawnerFloor` when non-hard active-request floor raises the count;
-- warning when hard override skips the floor and active requests exceed the exact count.
+- `requestCap` warning when the day asks for more active requests than it can serve (capped at the
+  customer count / pool size).
+
+> **Removed:** the `spawnerFloor` / `requestFloor` lines. The spawner used to floor the customer count at
+> "number of enabled requests" (`Math.Max(count, requestCount)`), so a 49-entry `requests.json` forced a
+> 49-customer day. Active-request demand now comes from `IActiveRequestCountResolver` (day config), and the
+> catalog is only a pool to draw from — it can never raise traffic.
 
 Current parser-friendly examples:
 
 ```text
 [Sales.Traffic] resolved day=2 location=loc baselineSource=dayOverride baseline=10 applyModifiers=true hardOverride=false percentDelta=0.15 multiplier=1.00 flatDelta=0 raw=11.5 rounded=12 min=0 max=100 final=12 contributors=2
 [Sales.Traffic] contribution day=2 source=location id=loc percentDelta=0.2 multiplier=1.00 flatDelta=0 reason=location.loc
-[Sales.Traffic] spawnerFloor day=4 resolvedRegular=3 requestCount=5 finalRegular=5 applied=true
-[Sales.Traffic] warning day=1 hardOverride=true regularCount=3 requestFloor=5 applied=false
+[Sales.Requests] resolved day=2 location=loc baselineSource=dayOverride baseline=2 applyModifiers=true hardOverride=false percentDelta=0 raw=2 rounded=2 min=0 max=50 final=2 contributors=0
+[Sales.Traffic] requestCap day=1 demand=5 customers=2 pool=5 final=2 — the day asks for more active requests than it can serve.
 ```
 
 The log still includes `multiplier=1.00 flatDelta=0` for compatibility with the broader planned shape, even

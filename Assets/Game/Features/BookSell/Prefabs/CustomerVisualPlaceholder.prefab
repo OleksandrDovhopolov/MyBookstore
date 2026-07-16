@@ -102,6 +102,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _figure: {fileID: 5518803971935560202}
+  _fallbackSprite: {fileID: 7152930139536384079, guid: c14349b49eba5aa45a0bc56c5b96c3e4, type: 3}
   _bubbleAnchor: {fileID: 9181436580959938620}
 --- !u!1 &5645480424308229883
 GameObject:
