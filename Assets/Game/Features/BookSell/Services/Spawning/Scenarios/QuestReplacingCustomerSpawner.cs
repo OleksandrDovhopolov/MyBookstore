@@ -86,7 +86,8 @@ namespace Book.Sell.Services
                 questCustomers.Add(CustomerPlanBuilder.Build(
                     $"quest_{quest.Id}", tuning, random,
                     buildMiddle: () => archetype.BuildMiddle(setup, tuning, random),
-                    buildProfile: () => BuildProfile(quest, setup, random)));
+                    buildProfile: () => BuildProfile(quest, setup, random),
+                    characterId: quest.CharacterId));
             }
 
             return questCustomers;

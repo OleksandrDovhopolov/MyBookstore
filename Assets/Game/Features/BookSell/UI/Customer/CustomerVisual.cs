@@ -22,6 +22,14 @@ namespace Book.Sell.UI.Customer
             gameObject.name = $"CustomerVisual({customer.Id})";
         }
 
+        public void ApplyFigureSprite(Sprite sprite)
+        {
+            if (sprite == null || _figure == null)
+                return;
+
+            _figure.sprite = sprite;
+        }
+
         public async UniTask MoveToAsync(Vector3 target, float duration, Func<bool> isPaused = null, CancellationToken ct = default)
         {
             _moveCts?.Cancel();

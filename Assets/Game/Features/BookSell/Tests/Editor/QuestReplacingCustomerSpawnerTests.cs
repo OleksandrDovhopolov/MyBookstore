@@ -50,6 +50,7 @@ namespace Book.Sell.Tests.Editor
 
             Assert.AreEqual(1, customers.Count, "Quest character replaces the only regular slot.");
             Assert.AreEqual("quest_q_intro_eddi", customers[0].Id);
+            Assert.AreEqual("eddi", customers[0].CharacterId);
         }
 
         [Test]

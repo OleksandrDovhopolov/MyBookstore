@@ -42,8 +42,13 @@ namespace Book.Sell.Tests.Editor
             }
         };
 
-        private static IQuest ActiveQuestWithDialogue(string questId, string dialogueId)
-            => new FakeQuest(questId, new QuestConfig { Id = questId, DialogueId = dialogueId });
+        private static IQuest ActiveQuestWithDialogue(string questId, string dialogueId, string characterId = null)
+            => new FakeQuest(questId, new QuestConfig
+            {
+                Id = questId,
+                DialogueId = dialogueId,
+                CharacterId = characterId
+            });
 
         // --- decorator unit tests -----------------------------------------------------------
 
@@ -52,7 +57,7 @@ namespace Book.Sell.Tests.Editor
         {
             var configs = new FakeConfigsService();
             configs.SetAll(new[] { SingleNodeDialogue("dlg") });
-            var quests = new FakeQuestsService(ActiveQuestWithDialogue("q1", "dlg"));
+            var quests = new FakeQuestsService(ActiveQuestWithDialogue("q1", "dlg", "eddi"));
             var inner = new StubCustomerSpawner(new List<Customer> { Passive("inner_1"), Passive("inner_2") });
 
             var spawner = new QuestSchedulingCustomerSpawner(inner, configs, quests, new StubDeliveredDialogues());
@@ -60,6 +65,7 @@ namespace Book.Sell.Tests.Editor
 
             Assert.AreEqual(3, customers.Count, "inner (2) + 1 quest character.");
             Assert.AreEqual("quest_q1", customers[0].Id, "Quest character (id from quest) is prepended.");
+            Assert.AreEqual("eddi", customers[0].CharacterId);
             Assert.AreEqual("inner_1", customers[1].Id);
         }
 

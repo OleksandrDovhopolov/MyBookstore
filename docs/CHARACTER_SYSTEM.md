@@ -91,6 +91,8 @@ public sealed class CharacterMemoryConfig
 }
 ```
 
+> `DiscoveryQuestIds` / `DiscoveryQuestChainIds` открывают персонажа, когда связанный квест/цепочка **стартовали** (`state != Pending`), а не когда квест завершён или выдан (`Awarded`). Для открытия строго после завершения используйте memory-связь или отдельное quest-condition решение.
+
 Save (модуль-ключ `"characters"`, `StateSchemaVersion = 1`):
 
 ```csharp

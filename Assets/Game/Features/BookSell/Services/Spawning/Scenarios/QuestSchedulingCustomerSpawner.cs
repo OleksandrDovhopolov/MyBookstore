@@ -66,7 +66,8 @@ namespace Book.Sell.Services
                 var archetype = new QuestCharacterArchetype(new DialoguePayload(dialogueId));
                 questCustomers.Add(CustomerPlanBuilder.Build(
                     $"quest_{quest.Id}", tuning, random,
-                    buildMiddle: () => archetype.BuildMiddle(setup, tuning, random)));
+                    buildMiddle: () => archetype.BuildMiddle(setup, tuning, random),
+                    characterId: quest.CharacterId));
             }
 
             if (questCustomers.Count == 0)

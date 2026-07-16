@@ -49,6 +49,27 @@ namespace Book.Sell.Tests.Editor
 
         // --- Passive (deep) ------------------------------------------------------------------
 
+        [Test]
+        public void Build_DefaultsCharacterIdToNull()
+        {
+            var customer = CustomerPlanBuilder.Build(
+                "c1", SalesTestKit.FastTuning(), new FakeSalesRandom(),
+                buildMiddle: () => Array.Empty<ICustomerStep>());
+
+            Assert.IsNull(customer.CharacterId);
+        }
+
+        [Test]
+        public void Build_StoresCharacterId_WhenProvided()
+        {
+            var customer = CustomerPlanBuilder.Build(
+                "quest_q_intro_eddi", SalesTestKit.FastTuning(), new FakeSalesRandom(),
+                buildMiddle: () => Array.Empty<ICustomerStep>(),
+                characterId: "eddi");
+
+            Assert.AreEqual("eddi", customer.CharacterId);
+        }
+
         // 1) Skeleton order: Approach -> middle -> CompletePurchase -> Leave is observable as
         //    Approaching first and Leaving last, with the customer finishing.
         [Test]
