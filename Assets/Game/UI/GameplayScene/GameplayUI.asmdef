@@ -16,6 +16,7 @@
         "Configs",
         "Game.Decor",
         "Game.Ftue",
+        "Game.Tutorial.API",
         "Save",
         "Game.GameplayUI.Signals"
     ],

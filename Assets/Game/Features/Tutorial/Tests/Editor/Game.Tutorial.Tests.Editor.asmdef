@@ -1,0 +1,33 @@
+{
+    "name": "Game.Tutorial.Tests.Editor",
+    "rootNamespace": "Game.Tutorial.Tests.Editor",
+    "references": [
+        "UniTask",
+        "MessagePipe",
+        "Save",
+        "Configs",
+        "Game.Conditions.API",
+        "Game.Bootstrap.Loading",
+        "Game.Tutorial",
+        "Game.Tutorial.API",
+        "Game.GameplayUI.Signals",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

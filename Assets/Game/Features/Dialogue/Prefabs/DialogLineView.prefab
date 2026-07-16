@@ -468,7 +468,7 @@ MonoBehaviour:
   _bubbleWidth: 820
   _appearDuration: 0.2
   _appearScaleFrom: 0.85
-  _charsPerSecond: 40
+  _charsPerSecond: 500
 --- !u!114 &6437465210589396659
 MonoBehaviour:
   m_ObjectHideFlags: 0

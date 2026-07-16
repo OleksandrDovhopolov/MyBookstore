@@ -10,6 +10,7 @@ using Game.Ftue.Domain;
 using Game.Ftue.Services;
 using Game.LocationUnlock.API;
 using Game.Preparation.Services;
+using Game.Tutorial.API;
 using Game.UI;
 using MessagePipe;
 using Save;
@@ -29,6 +30,7 @@ namespace GameplayUI
         private FirstDayEntrySettings _firstDayEntrySettings;
         private IDayProgressService _dayProgress;
         private FirstDayEntryFlow _firstDayEntryFlow;
+        private ITutorialAutoStartGate _tutorialAutoStartGate;
 
         private CancellationToken _destroyToken;
 
@@ -45,7 +47,8 @@ namespace GameplayUI
             IPreparationSessionService preparationSession = null,
             IGameFlowService gameFlow = null,
             IConfigsService configs = null,
-            ILocationUnlockService locationUnlock = null)
+            ILocationUnlockService locationUnlock = null,
+            ITutorialAutoStartGate tutorialAutoStartGate = null)
         {
             _uiManager = uiManager;
             _save = save;
@@ -54,6 +57,7 @@ namespace GameplayUI
             _welcomeWindowStartupSettings = welcomeWindowStartupSettings;
             _firstDayEntrySettings = firstDayEntrySettings;
             _dayProgress = dayProgress;
+            _tutorialAutoStartGate = tutorialAutoStartGate;
 
             if (morningSession != null && preparationSession != null && gameFlow != null && configs != null)
             {
@@ -87,30 +91,44 @@ namespace GameplayUI
                 var showWelcomeWindow = firstEntry && (_welcomeWindowStartupSettings?.StartWelcomeWindow ?? true);
                 var directEntry = await ShouldEnterFirstDayLocationAsync(ct);
 
-                var deferHubReveal = directEntry && !showWelcomeWindow;
-
-                if (showWelcomeWindow || deferHubReveal)
-                    hud.SetHudVisible(false);
-
-                if (!deferHubReveal)
-                    await _transition.PlayRevealAsync(ct);
-
-                if (showWelcomeWindow)
-                {
-                    await ShowWelcomeAndWaitAsync(ct);
-                    hud.SetHudVisible(true);
-                }
-
                 if (directEntry)
                 {
-                    hud.SetHudVisible(true);
+                    hud.SetHudVisible(false);
 
-                    if (await _firstDayEntryFlow.EnterAsync(ct))
+                    var gateTutorialUntilWelcomeCloses = showWelcomeWindow && _tutorialAutoStartGate != null;
+                    if (gateTutorialUntilWelcomeCloses)
+                        _tutorialAutoStartGate.Block();
+
+                    var enteredLocation = false;
+                    try
+                    {
+                        enteredLocation = await _firstDayEntryFlow.EnterAsync(ct);
+                        if (enteredLocation && showWelcomeWindow)
+                            await ShowWelcomeAndWaitAsync(ct);
+                    }
+                    finally
+                    {
+                        if (gateTutorialUntilWelcomeCloses)
+                            _tutorialAutoStartGate.Release();
+                    }
+
+                    if (enteredLocation)
                         return;
 
-                    if (deferHubReveal)
-                        await _transition.PlayRevealAsync(ct);
+                    await _transition.PlayRevealAsync(ct);
                 }
+                else
+                {
+                    if (showWelcomeWindow)
+                        hud.SetHudVisible(false);
+
+                    await _transition.PlayRevealAsync(ct);
+                }
+
+                if (showWelcomeWindow)
+                    await ShowWelcomeAndWaitAsync(ct);
+
+                hud.SetHudVisible(true);
 
                 _hubReadyPublisher?.Publish(new GameplayHubReady(0));
             }

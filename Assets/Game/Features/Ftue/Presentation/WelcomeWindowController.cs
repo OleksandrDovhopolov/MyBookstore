@@ -122,10 +122,9 @@ namespace Game.Ftue
                 FtueSaveKeys.WelcomeCompleted, state, FtueSaveKeys.WelcomeCompletedSchemaVersion, ct);
         }
 
-        // Start just closes the welcome letter, revealing the scene underneath. What happens next is
-        // owned by MainSceneBootstrap: on a fresh day 1 with FirstDayEntryMode.Location it drives the
-        // direct entry into the location (auto-stock + additive LocationScene); otherwise it reveals the
-        // hub. This window only tracks the welcome letter (ftue.welcome_completed), nothing else.
+        // Start just closes the welcome letter, revealing the scene underneath. MainSceneBootstrap owns
+        // which scene is prepared before this window is shown (hub or first-day location). This window only
+        // tracks the welcome letter (ftue.welcome_completed), nothing else.
         private UniTask EnterFirstSceneAsync(CancellationToken ct)
             => CloseAsync(ct);   // return it so StartAsync awaits the close (and its catch can react)
     }

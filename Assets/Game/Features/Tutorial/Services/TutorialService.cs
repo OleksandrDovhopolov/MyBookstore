@@ -46,6 +46,7 @@ namespace Game.Tutorial.Services
         private readonly IGameFlowService _gameFlow;
         private readonly IQuestsService _quests;
         private readonly IQuestReevaluationGate _questReevaluation;
+        private readonly ITutorialAutoStartGate _autoStartGate;
 
         private readonly Dictionary<string, TutorialSequenceConfig> _sequences =
             new(StringComparer.Ordinal);
@@ -59,6 +60,7 @@ namespace Game.Tutorial.Services
         private bool _running;
         private string _activeSequenceId;
         private CancellationTokenSource _runCts;
+        private PendingTrigger _pendingAutoStartTrigger;
 
         public TutorialService(
             ISaveService save,
@@ -73,6 +75,7 @@ namespace Game.Tutorial.Services
             IGameFlowService gameFlow = null,
             IQuestsService quests = null,
             IQuestReevaluationGate questReevaluation = null,
+            ITutorialAutoStartGate autoStartGate = null,
             bool autoStart = true)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
@@ -88,6 +91,10 @@ namespace Game.Tutorial.Services
             _gameFlow = gameFlow;
             _quests = quests;
             _questReevaluation = questReevaluation;
+            _autoStartGate = autoStartGate;
+
+            if (_autoStartGate != null)
+                _autoStartGate.Released += OnAutoStartGateReleased;
 
             _save.RegisterHook(this);
         }
@@ -212,6 +219,12 @@ namespace Game.Tutorial.Services
         {
             if (!_loaded || _running || !_autoStart) return;
 
+            if (_autoStartGate?.IsBlocked == true)
+            {
+                _pendingAutoStartTrigger = new PendingTrigger(trigger, param);
+                return;
+            }
+
             // Don't start a sequence mid-transition (overlay would appear under the transition cover).
             // Exception: locationLoaded fires DURING the transition (before reveal) — guarding it would
             // drop location sequences entirely.
@@ -230,6 +243,20 @@ namespace Game.Tutorial.Services
                 BeginRun(seq, startIndex: 0);
                 return; // one exclusive runner
             }
+        }
+
+        private void OnAutoStartGateReleased()
+        {
+            if (!_pendingAutoStartTrigger.HasValue)
+                return;
+
+            var trigger = _pendingAutoStartTrigger;
+            _pendingAutoStartTrigger = default;
+
+            if (!_loaded || _running || !_autoStart)
+                return;
+
+            OnTrigger(trigger.Trigger, trigger.Param);
         }
 
         private bool IsEligible(TutorialSequenceConfig seq)
@@ -356,9 +383,24 @@ namespace Game.Tutorial.Services
                 _quests.QuestStarted -= OnQuestStarted;
                 _quests.QuestCompleted -= OnQuestCompleted;
             }
+            if (_autoStartGate != null) _autoStartGate.Released -= OnAutoStartGateReleased;
 
             if (!_cts.IsCancellationRequested) _cts.Cancel();
             _cts.Dispose();
+        }
+
+        private readonly struct PendingTrigger
+        {
+            public PendingTrigger(string trigger, string param)
+            {
+                Trigger = trigger;
+                Param = param;
+                HasValue = true;
+            }
+
+            public string Trigger { get; }
+            public string Param { get; }
+            public bool HasValue { get; }
         }
     }
 }
