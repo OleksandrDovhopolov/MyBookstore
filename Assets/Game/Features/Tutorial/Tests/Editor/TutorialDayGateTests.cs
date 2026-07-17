@@ -7,52 +7,26 @@ using Game.Bootstrap.Loading;
 using Game.DayCycle.Day;
 using Game.Tutorial.API;
 using Game.Tutorial.Services;
-using MessagePipe;
 using NUnit.Framework;
 using Save;
 using UnityEngine;
 
 namespace Game.Tutorial.Tests.Editor
 {
-    public sealed class TutorialAutoStartGateTests
+    public sealed class TutorialDayGateTests
     {
         [Test]
-        public async Task BlockedLocationLoaded_DoesNotStartImmediately()
+        public async Task Day1_LocationLoaded_StartsDayOneSequence()
         {
-            var gate = new TutorialAutoStartGate();
-            gate.Block();
-
+            var dayProgress = new FakeDayProgress();
+            dayProgress.Current.CurrentDay = 1;
             var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
-            var service = BuildService(gate, gameFlow, autoStart: true);
+            var service = BuildService(dayProgress, gameFlow);
             try
             {
                 await service.AfterLoadAsync(CancellationToken.None);
 
                 gameFlow.RaiseLocationLoaded(true);
-
-                Assert.IsFalse(service.IsRunning);
-                Assert.IsNull(service.ActiveSequenceId);
-            }
-            finally
-            {
-                service.Dispose();
-            }
-        }
-
-        [Test]
-        public async Task Release_ReplaysDeferredLocationLoaded()
-        {
-            var gate = new TutorialAutoStartGate();
-            gate.Block();
-
-            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
-            var service = BuildService(gate, gameFlow, autoStart: true);
-            try
-            {
-                await service.AfterLoadAsync(CancellationToken.None);
-                gameFlow.RaiseLocationLoaded(true);
-
-                gate.Release();
 
                 Assert.IsTrue(service.IsRunning);
                 Assert.AreEqual("tutorial_day_1", service.ActiveSequenceId);
@@ -64,19 +38,21 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
-        public async Task AutoStartFalse_DoesNotReplayDeferredTrigger()
+        public async Task Day1_DayOneCompleted_ReEnterLocation_StartsNothing()
         {
-            var gate = new TutorialAutoStartGate();
-            gate.Block();
-
+            var dayProgress = new FakeDayProgress();
+            dayProgress.Current.CurrentDay = 1;
+            var save = new FakeSaveService(new TutorialSaveState
+            {
+                CompletedSequenceIds = new List<string> { "tutorial_day_1" }
+            });
             var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
-            var service = BuildService(gate, gameFlow, autoStart: false);
+            var service = BuildService(dayProgress, gameFlow, save);
             try
             {
                 await service.AfterLoadAsync(CancellationToken.None);
-                gameFlow.RaiseLocationLoaded(true);
 
-                gate.Release();
+                gameFlow.RaiseLocationLoaded(true);
 
                 Assert.IsFalse(service.IsRunning);
                 Assert.IsNull(service.ActiveSequenceId);
@@ -88,41 +64,42 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
-        public async Task ResumeFromStep_UsesSavedStepIdBeforeIndex()
+        public async Task Day2_LocationLoaded_StartsDayTwoSequence()
         {
-            var save = new FakeSaveService(new TutorialSaveState
-            {
-                ActiveSequenceId = "tutorial_day_1",
-                NextStepId = "second",
-                NextStepIndex = 0,
-                CompletedSequenceIds = new List<string>()
-            });
-            var sequence = new FakeSequence
-            {
-                ResumePolicy = TutorialResumePolicy.FromStep,
-                Steps = new ITutorialStep[]
-                {
-                    new BlockingStep("first"),
-                    new BlockingStep("second")
-                }
-            };
-            var stepPub = new RecordingPublisher<TutorialStepChanged>();
+            var dayProgress = new FakeDayProgress();
+            dayProgress.Current.CurrentDay = 2;
             var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
-            var service = BuildService(
-                gate: null,
-                gameFlow: gameFlow,
-                autoStart: true,
-                save: save,
-                sequence: sequence,
-                stepPub: stepPub);
+            var service = BuildService(dayProgress, gameFlow);
             try
             {
                 await service.AfterLoadAsync(CancellationToken.None);
-                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                gameFlow.RaiseLocationLoaded(true);
 
                 Assert.IsTrue(service.IsRunning);
-                Assert.AreEqual("second", stepPub.Last.StepId);
-                Assert.AreEqual(1, stepPub.Last.StepIndex);
+                Assert.AreEqual("tutorial_day_2", service.ActiveSequenceId);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task Day2_DayOneNotCompleted_StartsDayTwoNotDayOne()
+        {
+            var dayProgress = new FakeDayProgress();
+            dayProgress.Current.CurrentDay = 2;
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
+            var service = BuildService(dayProgress, gameFlow);
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+
+                gameFlow.RaiseLocationLoaded(true);
+
+                Assert.IsTrue(service.IsRunning);
+                Assert.AreEqual("tutorial_day_2", service.ActiveSequenceId);
             }
             finally
             {
@@ -131,39 +108,60 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         private static TutorialService BuildService(
-            TutorialAutoStartGate gate,
+            FakeDayProgress dayProgress,
             FakeGameFlow gameFlow,
-            bool autoStart,
-            FakeSaveService save = null,
-            ITutorialSequence sequence = null,
-            IReadOnlyList<ITutorialSequence> sequences = null,
-            IDayProgressService dayProgress = null,
-            IPublisher<TutorialStepChanged> stepPub = null)
-            => new(
+            FakeSaveService save = null)
+        {
+            var dayOne = new FakeSequence
+            {
+                Id = "tutorial_day_1",
+                Priority = 10,
+                IsEligibleFunc = () => dayProgress.Current.CurrentDay == 1
+            };
+            var dayTwo = new FakeSequence
+            {
+                Id = "tutorial_day_2",
+                Priority = 20,
+                IsEligibleFunc = () => dayProgress.Current.CurrentDay == 2
+            };
+
+            return new TutorialService(
                 save ?? new FakeSaveService(),
-                sequences ?? new[] { sequence ?? new FakeSequence() },
+                new ITutorialSequence[] { dayOne, dayTwo },
                 hubReadySub: null,
                 startedPub: null,
-                stepPub: stepPub,
+                stepPub: null,
                 completedPub: null,
                 dayProgress: dayProgress,
-                gameFlow: gameFlow,
-                autoStartGate: gate,
-                autoStart: autoStart);
+                gameFlow: gameFlow);
+        }
 
         private sealed class FakeSequence : ITutorialSequence
         {
-            public string Id { get; set; } = "tutorial_day_1";
-            public int Priority { get; set; } = 10;
+            public string Id { get; set; }
+            public int Priority { get; set; }
             public TutorialContext Context { get; set; } = TutorialContext.Location;
             public TutorialTrigger Trigger { get; set; } = TutorialTrigger.LocationLoaded;
             public string TriggerParam { get; set; }
             public TutorialResumePolicy ResumePolicy { get; set; } = TutorialResumePolicy.Restart;
-            public bool Eligible { get; set; } = true;
+            public Func<bool> IsEligibleFunc { get; set; } = () => true;
             public IReadOnlyList<ITutorialStep> Steps { get; set; } = new ITutorialStep[] { new BlockingStep("hold") };
 
-            public bool IsEligible() => Eligible;
+            public bool IsEligible() => IsEligibleFunc();
             public IReadOnlyList<ITutorialStep> GetSteps() => Steps;
+        }
+
+        private sealed class BlockingStep : ITutorialStep
+        {
+            public BlockingStep(string id) => Id = id;
+
+            public string Id { get; }
+
+            public async UniTask ExecuteAsync(CancellationToken ct)
+            {
+                while (true)
+                    await UniTask.Yield(PlayerLoopTiming.Update, ct);
+            }
         }
 
         private sealed class FakeDayProgress : IDayProgressService
@@ -183,29 +181,6 @@ namespace Game.Tutorial.Tests.Editor
             public UniTask MarkCurrentDayCompletedAsync(CancellationToken ct) => UniTask.CompletedTask;
             public UniTask AdvanceToNextDayAsync(CancellationToken ct) => UniTask.CompletedTask;
             public UniTask SaveAsync(CancellationToken ct) => UniTask.CompletedTask;
-        }
-
-        private sealed class BlockingStep : ITutorialStep
-        {
-            public BlockingStep(string id) => Id = id;
-
-            public string Id { get; }
-
-            public async UniTask ExecuteAsync(CancellationToken ct)
-            {
-                while (true)
-                    await UniTask.Yield(PlayerLoopTiming.Update, ct);
-            }
-        }
-
-        private sealed class RecordingPublisher<T> : IPublisher<T>
-        {
-            public T Last { get; private set; }
-
-            public void Publish(T message)
-            {
-                Last = message;
-            }
         }
 
         private sealed class FakeSaveService : ISaveService

@@ -145,9 +145,8 @@ Game.Bootstrap (Assets/Game/Core/Installers/Features/)
 ```
 
 Текст — сырой ASCII/English (локализации в проекте нет), поле `textKey` зарезервировано для будущей
-миграции. **Условия `dayIs`/`currentDayIs` пока НЕ реализованы** (нет строгого day-gate — см. §6.1
-«известные ограничения»); `activationConditions` использует уже существующие leaf-условия
-(`Game.Conditions`) либо `tutorialCompleted` (§4.4).
+миграции. Строгий day-gate живёт в C#-секвенциях через `ITutorialSequence.IsEligible()`; отдельный
+condition-factory `currentDayIs` для этого не пишется.
 
 ### 4.2 Типы шагов — 6 штук (все реальные)
 
@@ -306,14 +305,12 @@ in-location контролов — follow-up (новые id + `TutorialTargetTag
 продажа)` как блокирующий шаг НЕ используем** (вероятностная продажа → риск зависания). Layer-1 квесты
 (`tut_first_day`/`tut_first_sale`) — отдельно, журнальные.
 
-**Известные ограничения v1:** нет строгого day-gate (one-way completion, играет один раз при первом входе
-в локацию); resume посреди Day 1 — best-effort (`restart`); при `_firstDayEntry = Hub` day 1 идёт **без**
-скриптового туториала (хаб-секвенция ретайрнута).
+**Известные ограничения v1:** resume посреди Day 1 — best-effort (`restart`); при `_firstDayEntry = Hub`
+day 1 идёт **без** скриптового туториала (хаб-секвенция ретайрнута).
 
 **Следующее для визуальной подсветки контролов** (Open Shop / список жанров / динамический «+»):
 немодальный callout-режим (pointer+текст **без** dim; тип шага `pointAt`/`callout`) + динамическая
-регистрация таргетов из `PreparationGenreRowView` через фасад `TutorialTargets`; строгий `currentDayIs`
-condition-factory для day-gate.
+регистрация таргетов из `PreparationGenreRowView` через фасад `TutorialTargets`.
 
 ## 7. Риски / открытые вопросы
 
@@ -325,7 +322,7 @@ condition-factory для day-gate.
 | Нет локализации | Сырой RU-текст + зарезервированный `textKey`; миграция механическая |
 | Дрейф string-id (таргеты/окна/квесты) | Валидатор §7 (⏳ не сделан), включая скан префабов на `TutorialTargetTag` |
 | Резолв таргета сделан DI-реестром `ITutorialTargetRegistry` + фасадом `TutorialTargets` (для тегов) | Реализовано (§4.5); purge null при lookup |
-| Resume/cancel-path Day 1 (§6.1) | Осознанные ограничения v1; строгий day-gate и recovery — позже |
+| Resume/cancel-path Day 1 (§6.1) | Осознанные ограничения v1; recovery — позже |
 
 ## 8. Платные решения (если появится бюджет)
 
@@ -473,7 +470,7 @@ runtime-warning'ом с auto-advance. Для Day 1 с Eddi выигрыш кон
 
 ### 9.2 Зафиксированные решения
 
-1. **Day-gate — строгий.** `IsEligible()` смотрит на `_dayProgress.CurrentDay`, а не на историю секвенций.
+1. **Day-gate — строгий.** `IsEligible()` смотрит на `_dayProgress.Current.CurrentDay`, а не на историю секвенций.
    Причина: контент приварен к состоянию мира дня (приход Eddi — fire-once через delivered-dialogues; день-1-туториал,
    доигранный на дне 2, ждал бы продажу, которой не будет → тихий висяк). Догоняющий вариант («пропустил —
    доиграй позже») отвергнут. Строгий гейт лечит **два живых бага**, которые старая модель «очередь по priority»
@@ -503,7 +500,7 @@ runtime-warning'ом с auto-advance. Для Day 1 с Eddi выигрыш кон
 | # | Этап | Содержание | Критерий |
 |---|---|---|---|
 | 1 | **Каркас** | Новый asmdef `Game.Tutorial.Content` наверху графа (refs: `Game.Tutorial(.API)`, `Game.Core.UI`, `DayCycle`; **без** `VContainer` — POCO-ctor). Контракты `ITutorialSequence`/`ITutorialStep` + enum'ы `TutorialContext`/`TutorialResumePolicy`/`TutorialTrigger` в `Game.Tutorial.API`. `TutorialService`: ctor теряет `IConfigsService`/`IConditionParser`/`TutorialStepHandlerRegistry`, получает `IReadOnlyList<ITutorialSequence>`; каталог, `IsEligible`, шаг-луп переключаются. Порт `showText` + `awaitWindow` в step-классы, `TutorialDay1`. **Снос JSON-слоя**: обе `tutorials.json`, `TutorialSequenceConfig`/`TutorialStepConfig`, `TutorialStepTypes`, registry, `ITutorialStepHandler`, 6 хендлеров, `ITutorialWindowChecker`+`TutorialWindowChecker`, `TutorialTriggers`. Перегенерировать `manifest.json` через `Tools/Configs/Sync Bundled Defaults` | **Fresh save → день 1 играется бит-в-бит как сегодня**, но из класса. Старого пути не осталось. EditMode-тесты зелёные |
-| 2 | **Строгий day-gate** | `IsEligible() => _dayProgress.CurrentDay == N` (решение §9.2-1). Condition-factory `currentDayIs` **не пишется никогда** — в C# это однострочник (отменяет шаг 1 из TODO GAME-18) | Две секвенции в каталоге, каждая играется в свой день; повторный вход в локацию и релонч не выдают чужой туториал |
+| 2 | **Строгий day-gate** | `IsEligible() => _dayProgress.Current.CurrentDay == N` (решение §9.2-1). Condition-factory `currentDayIs` **не пишется никогда** — в C# это однострочник (отменяет шаг 1 из TODO GAME-18) | Две секвенции в каталоге, каждая играется в свой день; повторный вход в локацию и релонч не выдают чужой туториал |
 | 3 | **Немодальный callout** | Режим текста **без dim и без блокировки ввода** в `TutorialOverlayController`. Показ/обновление/скрытие — три отдельные операции (callout не ждёт тап), а не один await'ящий шаг. Гашение при отмене run'а — в `finally` секвенции | Текст висит, игра под ним живая и кликабельная |
 | 4 | **День 1 с Eddi** → **результат 1** | `TutorialDay1` подписывается на `ISalesDayController`: `CustomerPhaseChanged`→`Choosing`, `CustomerPassiveSaleHappened`, `CustomerPassivePurchaseFailed`; фильтр на покупателя Eddi. Аналог `TutorialWhileWaiter`. Биты: callout при старте поиска → обновление после покупки → текст при провале второй покупки. Сценарные покупки (`Fact forceHit:true` / `Travel forceHit:false`) уже в `quests.json` — не трогаем. `Game.Tutorial.Content` получает ref на `Book.Sell` | Тексты привязаны к реальным моментам симуляции; отписка на cancel гарантирована |
 | 5 | **Блокирующий клик по таргету** | Порт `highlightClick`. Закрыть дыру «не-Button таргет» (`TutorialOverlayController` — «empty hole catches no raycast»): bespoke hit-area, иначе панель `_genreBookCountPool` даёт warning + auto-advance | Дырка над панелью/item'ом, клик проходит и продвигает туториал |
@@ -531,7 +528,8 @@ runtime-warning'ом с auto-advance. Для Day 1 с Eddi выигрыш кон
   `SaveDataLoadOperation`); зависимость из scene-скоупа `GameInstaller` уронит стартап. `IUIManager`,
   `IDayProgressService`, `TutorialOverlayController` — Global, безопасны.
 - **Потеря опциональности.** `TutorialService` объявляет `IDayProgressService`/`IGameFlowService` как `= null`
-  (graceful degradation). Секвенция с *обязательным* `IDayProgressService` это ломает — учесть на этапе 2.
+  (graceful degradation). Секвенции с *обязательным* `IDayProgressService` ломают эту опциональность осознанно:
+  контенту day-gate нужен всегда, а зависимость зарегистрирована в Global scope.
 - **Молчаливый ноль.** VContainer резолвит `IReadOnlyList<T>` даже при нуле регистраций (fallback → пустой
   массив, без исключения) — забытая регистрация секвенции падает молча. **Лог количества в `AfterLoadAsync`
   оставить.**
@@ -551,3 +549,8 @@ runtime-warning'ом с auto-advance. Для Day 1 с Eddi выигрыш кон
 уже так живёт, §3: «concrete-ссылки на окна живут ЗДЕСЬ»), но это **дверь в одну сторону**: обратно к «туториал
 не знает о фичах» возврата не будет. Правило слоёв ([ASMDEF_RULES.md](../ASMDEF_RULES.md)) не нарушается —
 `Infrastructure` и `Game.Tutorial` остаются чистыми, «всезнающим» становится только контент-сборка наверху графа.
+
+### 9.6 Статус реализации
+
+- Этап 1 «Каркас» реализован в коммите `5e09f52c`.
+- Этап 2 «Строгий day-gate» реализован; коммит ещё не зафиксирован.

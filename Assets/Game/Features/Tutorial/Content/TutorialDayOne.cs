@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Game.DayCycle.Day;
 using Game.DayCycle.Results.UI;
 using Game.Tutorial.API;
 using Game.Tutorial.Presentation;
@@ -18,11 +19,13 @@ namespace Game.Tutorial.Content
 
         private readonly TutorialOverlayController _overlay;
         private readonly IUIManager _ui;
+        private readonly IDayProgressService _dayProgress;
 
-        public TutorialDayOne(TutorialOverlayController overlay, IUIManager ui)
+        public TutorialDayOne(TutorialOverlayController overlay, IUIManager ui, IDayProgressService dayProgress)
         {
             _overlay = overlay;
             _ui = ui;
+            _dayProgress = dayProgress;
         }
 
         public string Id => "tutorial_day_1";
@@ -32,7 +35,7 @@ namespace Game.Tutorial.Content
         public string TriggerParam => null;
         public TutorialResumePolicy ResumePolicy => TutorialResumePolicy.Restart;
 
-        public bool IsEligible() => true;
+        public bool IsEligible() => _dayProgress.Current.CurrentDay == 1;
 
         public IReadOnlyList<ITutorialStep> GetSteps()
             => new ITutorialStep[]

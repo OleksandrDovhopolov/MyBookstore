@@ -79,8 +79,8 @@
   - **Немодальный callout-режим** (pointer+текст **без** dim; тип шага `pointAt`/`callout`) — чтобы
     подсвечивать контролы на экранах свободного взаимодействия (Open Shop, список жанров, динамический
     «+» жанра) + динамическая регистрация таргетов из `PreparationGenreRowView` через фасад `TutorialTargets`.
-  - **Строгий day-gate**: condition-factory `currentDayIs` (сейчас Day 1 играет один раз при первом hub,
-    не строго «день == 1»). → вынесено в **GAME-18** вместе с condition-driven запуском; делать там.
+  - ✅ **Строгий day-gate** закрыт в C# `ITutorialSequence.IsEligible()`; отдельный `currentDayIs`
+    condition-factory не нужен.
   - **Устойчивость Day 1** (известные ограничения v1 в §6.1): корректный resume посреди дня и cancel-path
     (закрыл Location/Preparation, не подтвердив) — recovery/блокировка закрытия окон.
   - **Локализация** текста туториала (сейчас ASCII/English) — через INF-4; поле `textKey` зарезервировано.
@@ -209,9 +209,8 @@
     эксклюзивный, старт терминален — достаточно одного прохода.
 
   Порядок работ (шаги разносить):
-  1. **Строгий day-gate в `TutorialDay1.IsEligible()`** — закрывает day-gate в рамках текущей trigger-модели,
-     без рефакторинга. Малая, изолированная, полезна сама по себе. Это тот же пункт, что в GAME-10
-     («Строгий day-gate»); делать здесь.
+  1. ✅ **Строгий day-gate в `TutorialDayOne.IsEligible()`** — закрыт в рамках текущей trigger-модели,
+     без re-evaluation loop и без `currentDayIs` condition-factory.
   2. **Re-evaluation loop** — когда реально понадобится запуск от покупки/диалога. Тогда же:
      pending-scan вместо pending-trigger и re-scan после завершения run'а.
 
