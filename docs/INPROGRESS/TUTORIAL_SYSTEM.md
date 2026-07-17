@@ -456,10 +456,9 @@ JSON-walker сейчас vs NodeCanvas DialogueTree потом), и этот в�
 | `TutorialTargetIds` + скан префабов в валидаторе | адресация таргета строкой | типизированный доступ (**реестр остаётся**, см. §9.2) |
 
 Побочно отпадает пункт §7 «editor-валидатор id-шников»: опечатка становится ошибкой компиляции, а не
-runtime-warning'ом с auto-advance. Для Day 1 с Eddi выигрыш конкретен: всё нужное **уже** торчит публичными
-событиями `ISalesDayController` (`CustomerPhaseChanged`, `CustomerPassiveSaleHappened`,
-`CustomerPassivePurchaseFailed`) — контент-класс просто подпишется, без моста BookSell→Tutorial, без новых
-типов шагов и триггеров.
+runtime-warning'ом с auto-advance. Для Day 1 с Eddi выигрыш конкретен: факты продаж приходят из
+`ISalesDayController` через `SalesTutorialSignalsBridge` → глобальный MessagePipe → leaf-сигналы
+`Game.GameplayUI.Signals`. Так `Game.Tutorial.Content` не зависит от location-scope `Book.Sell`.
 
 Референс формата — heroes (§2): `TutorialWhileWaiter(() => предикат)`, `TutorialSilentStepAction(() => эффект)`,
 `AddOpenDailyQuestSteps(steps)` — произвольный предикат, произвольный side-effect и подпрограмма; ровно те
@@ -502,7 +501,7 @@ runtime-warning'ом с auto-advance. Для Day 1 с Eddi выигрыш кон
 | 1 | **Каркас** | Новый asmdef `Game.Tutorial.Content` наверху графа (refs: `Game.Tutorial(.API)`, `Game.Core.UI`, `DayCycle`; **без** `VContainer` — POCO-ctor). Контракты `ITutorialSequence`/`ITutorialStep` + enum'ы `TutorialContext`/`TutorialResumePolicy`/`TutorialTrigger` в `Game.Tutorial.API`. `TutorialService`: ctor теряет `IConfigsService`/`IConditionParser`/`TutorialStepHandlerRegistry`, получает `IReadOnlyList<ITutorialSequence>`; каталог, `IsEligible`, шаг-луп переключаются. Порт `showText` + `awaitWindow` в step-классы, `TutorialDay1`. **Снос JSON-слоя**: обе `tutorials.json`, `TutorialSequenceConfig`/`TutorialStepConfig`, `TutorialStepTypes`, registry, `ITutorialStepHandler`, 6 хендлеров, `ITutorialWindowChecker`+`TutorialWindowChecker`, `TutorialTriggers`. Перегенерировать `manifest.json` через `Tools/Configs/Sync Bundled Defaults` | **Fresh save → день 1 играется бит-в-бит как сегодня**, но из класса. Старого пути не осталось. EditMode-тесты зелёные |
 | 2 | **Строгий day-gate** | `IsEligible() => _dayProgress.Current.CurrentDay == N` (решение §9.2-1). Condition-factory `currentDayIs` **не пишется никогда** — в C# это однострочник (отменяет шаг 1 из TODO GAME-18) | Две секвенции в каталоге, каждая играется в свой день; повторный вход в локацию и релонч не выдают чужой туториал |
 | 3 | **Немодальный callout** | Режим текста **без dim и без блокировки ввода** в `TutorialOverlayController`. Показ/обновление/скрытие — три отдельные операции (callout не ждёт тап), а не один await'ящий шаг. Гашение при отмене run'а — в `finally` секвенции | Текст висит, игра под ним живая и кликабельная |
-| 4 | **День 1 с Eddi** → **результат 1** | `TutorialDay1` подписывается на `ISalesDayController`: `CustomerPhaseChanged`→`Choosing`, `CustomerPassiveSaleHappened`, `CustomerPassivePurchaseFailed`; фильтр на покупателя Eddi. Аналог `TutorialWhileWaiter`. Биты: callout при старте поиска → обновление после покупки → текст при провале второй покупки. Сценарные покупки (`Fact forceHit:true` / `Travel forceHit:false`) уже в `quests.json` — не трогаем. `Game.Tutorial.Content` получает ref на `Book.Sell` | Тексты привязаны к реальным моментам симуляции; отписка на cancel гарантирована |
+| 4 | **День 1 с Eddi** → **результат 1** | `SalesTutorialSignalsBridge` в `Book.Sell` публикует `CustomerPhaseChanged`/passive sale/fail как primitive MessagePipe-сигналы. `TutorialDayOne` подписывается в `OnRunStarted`, держит latch-факты Eddi и вставляет callout-биты между `sale_chance` и `awaitWindow(Results)`. Сценарные покупки (`Fact forceHit:true` / `Travel forceHit:false`) уже в `quests.json` — не трогаем. `Game.Tutorial.Content` получает refs на `MessagePipe` + `Game.GameplayUI.Signals`, **без** ref на `Book.Sell` | Тексты привязаны к реальным моментам симуляции; гонка со стартом дня закрыта latch'ами; отписка на cancel гарантирована |
 | 5 | **Блокирующий клик по таргету** | Порт `highlightClick`. Закрыть дыру «не-Button таргет» (`TutorialOverlayController` — «empty hole catches no raycast»): bespoke hit-area, иначе панель `_genreBookCountPool` даёт warning + auto-advance | Дырка над панелью/item'ом, клик проходит и продвигает туториал |
 | 6 | **День 2 с NPC** → **результат 2** | `TutorialDay2`: `text_1..3` (блокирующие, advance по тапу) → подсветка `_genreBookCountPool` + клик → `ContentWidgetController` открывается сам от клика, поверх блокирующий `text_4` → конец. N случайных пассивных покупателей — существующий спавнер | Сквозной прогон дня 2 |
 | 7 | **Тексты → `textKey`/INF-4** | Решение §9.2-5. Можно параллельно этапам 4–6, но **форму принять на этапе 1**, иначе переписывать все биты | Сырых строк в контент-классах нет |
@@ -510,6 +509,7 @@ runtime-warning'ом с auto-advance. Для Day 1 с Eddi выигрыш кон
 
 Этапы 1–2 — рефакторинг с проверяемым «ничего не изменилось», удобно катить отдельными коммитами.
 Этап 3 добавляет text-only немодальный callout; pointer/highlight остаются этапом 5.
+Этап 4 даёт первый продуктовый результат Day 1 с Eddi; прямой ref `Game.Tutorial.Content → Book.Sell` не используется.
 
 ### 9.4 Подводные камни (найдены при review дизайна этапа 1)
 
@@ -543,6 +543,9 @@ runtime-warning'ом с auto-advance. Для Day 1 с Eddi выигрыш кон
 - **`SectionValidator` / `ConfigEditorWindow` менять не нужно** (генерические / хардкодят другой список);
   `ConfigsService` читает `[ConfigFile]` лениво, так что опубликованная на сервере секция `tutorials` просто
   перестанет запрашиваться — серверная чистка опциональна.
+- **Гонка со стартом дня.** Sales simulation тикает независимо от `IUIManager.SetManualLock`, поэтому Eddi может
+  пройти нужные фазы до того, как linear runner дойдёт до соответствующего await-step. Day 1 решает это latch'ами:
+  подписка ставится в `OnRunStarted`, а шаги ждут уже запомненные факты с timeout + warning.
 
 ### 9.5 Цена решения
 
@@ -555,4 +558,5 @@ runtime-warning'ом с auto-advance. Для Day 1 с Eddi выигрыш кон
 
 - Этап 1 «Каркас» реализован в коммите `5e09f52c`.
 - Этап 2 «Строгий day-gate» реализован в коммите `8a527db7`.
-- Этап 3 «Немодальный callout» реализован; коммит ещё не зафиксирован.
+- Этап 3 «Немодальный callout» реализован в коммите `d5a0b43b`.
+- Этап 4 «День 1 с Eddi» реализован; коммит ещё не зафиксирован.

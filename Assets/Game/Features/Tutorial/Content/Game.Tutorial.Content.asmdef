@@ -6,7 +6,9 @@
         "Game.Tutorial",
         "Game.Tutorial.API",
         "Game.Core.UI",
-        "DayCycle"
+        "DayCycle",
+        "MessagePipe",
+        "Game.GameplayUI.Signals"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

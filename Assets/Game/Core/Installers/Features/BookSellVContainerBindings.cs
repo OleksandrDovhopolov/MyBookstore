@@ -178,6 +178,7 @@ namespace Game.Bootstrap
                 .AsImplementedInterfaces() // exposes ICustomerVisualRegistry, IStartable, IDisposable
                 .AsSelf();
             builder.RegisterEntryPoint<CustomerBubbleBinder>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<SalesTutorialSignalsBridge>(Lifetime.Singleton);
 
             // Opens RecommendationMinigameWindow on active requests and pauses the day while it is up.
             // IUIManager resolves from the parent (bootstrap) scope; the controller is passed via WindowArgs.

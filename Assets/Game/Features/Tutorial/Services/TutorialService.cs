@@ -324,6 +324,7 @@ namespace Game.Tutorial.Services
             {
                 _startedPub?.Publish(new TutorialSequenceStarted(seq.Id));
                 Debug.Log($"{LogPrefix} sequence '{seq.Id}' started at step {startIndex}.");
+                seq.OnRunStarted();
 
                 for (var i = startIndex; i < steps.Count; i++)
                 {

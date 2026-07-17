@@ -41,6 +41,54 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
+        public async Task RunStarted_ThenRunEnded_HooksCalledInOrder()
+        {
+            var order = new List<string>();
+            var sequence = new FakeSequence
+            {
+                Order = order,
+                Steps = new ITutorialStep[] { new RecordingStep("record", order) }
+            };
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
+            var service = BuildService(sequence, gameFlow);
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+                gameFlow.RaiseLocationLoaded(true);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                CollectionAssert.AreEqual(new[] { "started", "step", "ended" }, order);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task OnRunStartedThrew_ServiceStillIdle()
+        {
+            var sequence = new FakeSequence { ThrowOnRunStarted = true };
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
+            var service = BuildService(sequence, gameFlow);
+            try
+            {
+                LogAssert.Expect(LogType.Error, new Regex(@"\[Tutorial\] sequence 'tutorial_test' failed: .*startup failed"));
+                await service.AfterLoadAsync(CancellationToken.None);
+                gameFlow.RaiseLocationLoaded(true);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                Assert.IsFalse(service.IsRunning);
+                Assert.AreEqual(1, sequence.OnRunStartedCallCount);
+                Assert.AreEqual(1, sequence.OnRunEndedCallCount);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
         public async Task RunCancelled_CallsOnRunEnded()
         {
             var sequence = new FakeSequence
@@ -143,17 +191,48 @@ namespace Game.Tutorial.Tests.Editor
             public string TriggerParam { get; set; }
             public TutorialResumePolicy ResumePolicy { get; set; } = TutorialResumePolicy.Restart;
             public IReadOnlyList<ITutorialStep> Steps { get; set; } = new ITutorialStep[] { new InstantStep("done") };
+            public List<string> Order { get; set; }
             public int OnRunEndedCallCount { get; private set; }
+            public int OnRunStartedCallCount { get; private set; }
+            public bool ThrowOnRunStarted { get; set; }
             public bool ThrowOnRunEnded { get; set; }
 
             public bool IsEligible() => true;
             public IReadOnlyList<ITutorialStep> GetSteps() => Steps;
 
+            public void OnRunStarted()
+            {
+                OnRunStartedCallCount++;
+                Order?.Add("started");
+                if (ThrowOnRunStarted)
+                    throw new InvalidOperationException("startup failed");
+            }
+
             public void OnRunEnded()
             {
                 OnRunEndedCallCount++;
+                Order?.Add("ended");
                 if (ThrowOnRunEnded)
                     throw new InvalidOperationException("teardown failed");
+            }
+        }
+
+        private sealed class RecordingStep : ITutorialStep
+        {
+            private readonly List<string> _order;
+
+            public RecordingStep(string id, List<string> order)
+            {
+                Id = id;
+                _order = order;
+            }
+
+            public string Id { get; }
+
+            public UniTask ExecuteAsync(CancellationToken ct)
+            {
+                _order.Add("step");
+                return UniTask.CompletedTask;
             }
         }
 

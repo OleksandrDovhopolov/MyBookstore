@@ -164,6 +164,7 @@ namespace Game.Tutorial.Tests.Editor
 
             public bool IsEligible() => Eligible;
             public IReadOnlyList<ITutorialStep> GetSteps() => Steps;
+            public void OnRunStarted() { }
             public void OnRunEnded() { }
         }
 

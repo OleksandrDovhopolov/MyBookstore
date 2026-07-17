@@ -29,6 +29,7 @@ namespace Game.Tutorial.Content
 
         public bool IsEligible() => _dayProgress.Current.CurrentDay == 2;
 
+        public void OnRunStarted() { }
         public void OnRunEnded() => _overlay.HideCallout();
 
         public IReadOnlyList<ITutorialStep> GetSteps()

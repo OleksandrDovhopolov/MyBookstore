@@ -8,6 +8,7 @@
         "Game.Bootstrap.Loading",
         "Game.Tutorial",
         "Game.Tutorial.API",
+        "Game.Tutorial.Content",
         "Game.GameplayUI.Signals",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",

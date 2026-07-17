@@ -79,6 +79,8 @@
   - ✅ **Text-only немодальный callout** закрыт: текст без dim/lock, обновление на месте, teardown по концу run'а.
     Открыто отдельно: pointer/highlight для контролов свободного взаимодействия (Open Shop, список жанров,
     динамический «+» жанра) + динамическая регистрация таргетов из `PreparationGenreRowView`.
+  - ✅ **Day 1 с Eddi / результат 1** закрыт: Eddi-факты приходят из BookSell через MessagePipe-сигналы,
+    Day 1 обновляет callout по browsing/sale/fail и не зависит напрямую от `Book.Sell`.
   - ✅ **Строгий day-gate** закрыт в C# `ITutorialSequence.IsEligible()`; отдельный `currentDayIs`
     condition-factory не нужен.
   - **Устойчивость Day 1** (известные ограничения v1 в §6.1): корректный resume посреди дня и cancel-path
