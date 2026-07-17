@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using Analytics;
 using Game.DayCycle.Day;
 using Game.DayCycle.Results.UI;
 using Game.Tutorial.API;
 using Game.Tutorial.Presentation;
 using Game.UI;
 using MessagePipe;
+using UnityEngine;
 
 namespace Game.Tutorial.Content
 {
@@ -13,8 +15,9 @@ namespace Game.Tutorial.Content
     {
         private const string EddiCharacterId = "eddi";
         private const string BrowsingPhase = "Browsing";
+        private const string DonePhase = "Done";
         private const string EddiSearchText =
-            "Eddi is looking for a Fact book. Watch how the shelf and sale chance work together.";
+            "Eddi is looking for a book. Watch how the shelf and sale chance work together.";
         private const string EddiSoldText =
             "Nice - Eddi bought a {0} book. A good genre match makes passive sales much more likely.";
         private const string EddiFailedText =
@@ -22,8 +25,8 @@ namespace Game.Tutorial.Content
         private const string WrapUpText =
             "Day complete - nice work! From tomorrow you'll stock the shelf and choose where to trade yourself.";
         private const string BottomPlacement = "bottom";
-        private static readonly TimeSpan EddiFactTimeout = TimeSpan.FromSeconds(12);
-        private static readonly TimeSpan CalloutReadDelay = TimeSpan.FromSeconds(3);
+        private const string LogPrefix = "[Tutorial]";
+        private const string EddiIncompleteEvent = "tutorial_day1_eddi_incomplete";
 
         private readonly TutorialOverlayController _overlay;
         private readonly IUIManager _ui;
@@ -31,10 +34,12 @@ namespace Game.Tutorial.Content
         private readonly ISubscriber<SalesCustomerPhaseChanged> _phaseSub;
         private readonly ISubscriber<SalesPassiveSaleHappened> _saleSub;
         private readonly ISubscriber<SalesPassivePurchaseFailed> _failSub;
+        private readonly IAnalyticsService _analytics;
         private readonly List<IDisposable> _subscriptions = new();
         private bool _eddiBrowsing;
         private bool _eddiSold;
         private bool _eddiFailed;
+        private bool _eddiLeft;
         private string _eddiSoldGenre;
         private string _eddiFailedGenre;
 
@@ -44,7 +49,8 @@ namespace Game.Tutorial.Content
             IDayProgressService dayProgress,
             ISubscriber<SalesCustomerPhaseChanged> phaseSub,
             ISubscriber<SalesPassiveSaleHappened> saleSub,
-            ISubscriber<SalesPassivePurchaseFailed> failSub)
+            ISubscriber<SalesPassivePurchaseFailed> failSub,
+            IAnalyticsService analytics)
         {
             _overlay = overlay;
             _ui = ui;
@@ -52,6 +58,7 @@ namespace Game.Tutorial.Content
             _phaseSub = phaseSub;
             _saleSub = saleSub;
             _failSub = failSub;
+            _analytics = analytics;
         }
 
         public string Id => "tutorial_day_1";
@@ -62,6 +69,7 @@ namespace Game.Tutorial.Content
         public TutorialResumePolicy ResumePolicy => TutorialResumePolicy.Restart;
 
         public bool IsEligible() => _dayProgress.Current.CurrentDay == 1;
+        private bool ResultsShown => _ui.IsWindowShown<ResultsWindow>();
 
         public void OnRunStarted()
         {
@@ -82,24 +90,33 @@ namespace Game.Tutorial.Content
         public IReadOnlyList<ITutorialStep> GetSteps()
             => new ITutorialStep[]
             {
-                new TutorialAwaitFactStep("await_eddi_dialogue_complete", () => _eddiBrowsing),
-                new TutorialShowCalloutStep("callout_search", _overlay, EddiSearchText, BottomPlacement),
-                new TutorialAwaitFactStep("await_eddi_sale", () => _eddiSold, EddiFactTimeout),
+                new TutorialAwaitFactStep("await_eddi_dialogue_complete", Until(() => _eddiBrowsing)),
+                new TutorialShowCalloutStep(
+                    "callout_search",
+                    _overlay,
+                    () => _eddiBrowsing ? EddiSearchText : null,
+                    BottomPlacement),
+                new TutorialAwaitFactStep("await_eddi_sale", Until(() => _eddiSold)),
                 new TutorialShowCalloutStep(
                     "callout_sold",
                     _overlay,
                     () => FormatGenreCallout(_eddiSold, _eddiSoldGenre, EddiSoldText),
                     BottomPlacement),
-                new TutorialAwaitFactStep("await_eddi_fail", () => _eddiFailed, EddiFactTimeout),
+                new TutorialAwaitFactStep("await_eddi_fail", Until(() => _eddiFailed)),
                 new TutorialShowCalloutStep(
                     "callout_failed",
                     _overlay,
                     () => FormatGenreCallout(_eddiFailed, _eddiFailedGenre, EddiFailedText),
                     BottomPlacement),
-                new TutorialDelayStep("callout_read_delay", CalloutReadDelay),
+                new TutorialAwaitFactStep("await_eddi_left", Until(() => _eddiLeft)),
                 new TutorialHideCalloutStep("hide_eddi_callout", _overlay),
-                new TutorialAwaitWindowStep("wait_results_window", () => _ui.IsWindowShown<ResultsWindow>()),
-                new TutorialShowTextStep("wrap_up", _overlay, _ui, WrapUpText, BottomPlacement),
+                // Eddi's scripted beats are the whole point of day 1. If the guaranteed sale never landed
+                // (Eddi absent, or Fact missing from the shelf — a content desync, see TODO GAME-17), the
+                // day still completes cleanly, but the lesson silently did not happen. Report it.
+                new TutorialAssertStep("verify_eddi_participated", () => _eddiSold, ReportEddiIncomplete),
+                new TutorialAwaitWindowStep("wait_results_window", () => ResultsShown),
+                new TutorialShowCalloutStep("wrap_up", _overlay, WrapUpText, BottomPlacement),
+                new TutorialAwaitWindowStep("wait_results_closed", () => !ResultsShown),
             };
 
         private void OnSalesCustomerPhaseChanged(SalesCustomerPhaseChanged message)
@@ -109,6 +126,8 @@ namespace Game.Tutorial.Content
             // Browsing is the first passive sales phase after DialogStep is completed by the dialogue UI.
             if (string.Equals(message.Phase, BrowsingPhase, StringComparison.Ordinal))
                 _eddiBrowsing = true;
+            if (string.Equals(message.Phase, DonePhase, StringComparison.Ordinal))
+                _eddiLeft = true;
         }
 
         private void OnSalesPassiveSaleHappened(SalesPassiveSaleHappened message)
@@ -130,6 +149,20 @@ namespace Game.Tutorial.Content
         private static bool IsEddi(string characterId)
             => string.Equals(characterId, EddiCharacterId, StringComparison.Ordinal);
 
+        // Invariant that should always hold on day 1; a violation is a content/spawn defect, not player input.
+        private void ReportEddiIncomplete()
+        {
+            Debug.LogError(
+                $"{LogPrefix} day 1 completed without Eddi's scripted sale " +
+                $"(browsed={_eddiBrowsing}, sold={_eddiSold}, failed={_eddiFailed}). " +
+                "Eddi did not participate — check q_intro_eddi spawn and the day-1 shelf preset (TODO GAME-17).");
+
+            _analytics?.TrackEvent(new AnalyticsEvent(EddiIncompleteEvent));
+        }
+
+        private Func<bool> Until(Func<bool> fact)
+            => () => fact() || ResultsShown;
+
         private static string FormatGenreCallout(bool happened, string genre, string format)
         {
             if (!happened || string.IsNullOrEmpty(genre))
@@ -143,6 +176,7 @@ namespace Game.Tutorial.Content
             _eddiBrowsing = false;
             _eddiSold = false;
             _eddiFailed = false;
+            _eddiLeft = false;
             _eddiSoldGenre = null;
             _eddiFailedGenre = null;
         }

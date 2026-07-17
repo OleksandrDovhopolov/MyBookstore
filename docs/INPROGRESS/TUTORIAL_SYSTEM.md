@@ -289,25 +289,77 @@ condition `tutorialCompleted`; опц. мягкий pointer на журнал �
 | 6 | **Контент Day 1** | Полный упрощённый Day 1 в `TutorialDay1` C# content + quests.json по [FTUE.md](../FTUE.md), без диалогов: location arrival text → sale chance → results window → wrap-up | Сквозной прогон fresh-save Day 1; Day 2 — без туториала |
 | 7 | **Debug/replay + polish** | Cheat-модуль в `Game.Cheat` (list/force-run/force-complete/reset одной или всех + сброс `ftue.*` = полный replay Day 1); editor-валидатор (target id ↔ `TutorialTargetIds` ↔ скан префабов на `TutorialTargetTag`; questIds ↔ quests.json); аналитика (`tutorial_seq_start`/`step_start` автоматом, `seq_complete` явно — heroes-конвенция) | Cheat-панель реиграет Day 1 на прогресснутом сейве; валидатор ловит намеренно сломанный id; события видны в debug-провайдере |
 
-### 6.1 Day 1 v1 — что реализовано (упрощённо)
+### 6.1 Day 1 — канонический флоу
 
-**Обновлено:** day 1 теперь входит **сразу в локацию** (авто-сток, см. [FTUE.md](../FTUE.md)
-«Day-1 direct entry»), поэтому хаб-секвенция `day1_hub_intro` **заменена** на `tutorial_day_1`.
+**Это спека дня 1. При расхождении кода с этим разделом прав раздел.** Зафиксировано 2026-07-17.
 
-Секвенция `tutorial_day_1` (`TutorialDay1`, `Context = Location`, `Trigger = LocationLoaded`,
-`ResumePolicy = Restart`): ждёт завершения Eddi-диалога (переход Eddi в `Browsing`) → немодальные callout-биты
-по первой удачной/неудачной пассивной покупке (жанр подставляется из sales-сигналов) → typed await `ResultsWindow` → wrap-up. Триггер поднимается
-`GameFlowService.EnterLocationAsync` (→ `LocationLoadedChanged`); он — исключение из transition-guard, так что
-стартует прямо во время перехода в локацию. Требует `_tutorialAutoStart = 1` в `BootstrapInstaller`.
+Day 1 входит **сразу в локацию** (авто-сток, см. [FTUE.md](../FTUE.md) «Day-1 direct entry»), поэтому
+хаб-секвенция `day1_hub_intro` ретайрнута; действует `tutorial_day_1` (`TutorialDayOne`,
+`Context = Location`, `Trigger = LocationLoaded`, `ResumePolicy = Restart`, `IsEligible → CurrentDay == 1`).
+Триггер поднимает `GameFlowService.EnterLocationAsync` (→ `LocationLoadedChanged`) — исключение из
+transition-guard, стартует прямо во время перехода. Требует `_tutorialAutoStart = 1` в `BootstrapInstaller`.
 
-**Форма — `callout` + финальный `showText` + `awaitWindow`** (без `highlightClick`): игрок уже в локации, кнопки
-Open Shop / список жанров ещё не имеют target-id (`TutorialTargetIds` пока только `hub.*`). Подсветка
-in-location контролов — follow-up (новые id + `TutorialTargetTag` в Location-view). **`awaitQuest(конкретная
-продажа)` как блокирующий шаг НЕ используем** (вероятностная продажа → риск зависания). Layer-1 квесты
-(`tut_first_day`/`tut_first_sale`) — отдельно, журнальные.
+#### Флоу
 
-**Известные ограничения v1:** resume посреди Day 1 — best-effort (`restart`); при `_firstDayEntry = Hub`
-day 1 идёт **без** скриптового туториала (хаб-секвенция ретайрнута).
+| # | Событие в игре | Что делает туториал |
+|---|---|---|
+| 1 | Приходит Eddi | ничего (секвенция уже запущена, ждёт) |
+| 2 | Eddi начинает диалог | ничего |
+| 3 | Диалог завершён → начинается первая пассивная продажа | **здесь начинается активная часть** |
+| 4 | Eddi ищет книгу | callout `EddiSearchText` |
+| 5 | Пассивная покупка **успешна** | callout обновляется на `EddiSoldText` (жанр из сигнала) |
+| 6 | Вторая пассивная продажа **провалена** | callout обновляется на `EddiFailedText` (жанр из сигнала), держится до ухода Eddi, гаснет |
+| 7 | Eddi ушёл; день доигран; показан `ResultsWindow` | callout с финальным текстом **поверх** окна |
+| 8 | Игрок закрывает `ResultsWindow` | финальный callout гаснет, **секвенция завершена** |
+
+**Весь день 1 — немодальный.** Ни одного `TutorialShowTextStep`: никакого затемнения, никакого
+`SetManualLock`, никакого «тапни, чтобы продолжить». Игра под текстом всё время живая и кликабельная.
+Все четыре текста — один и тот же `TutorialShowCalloutStep`, обновляющий одну панель на месте.
+
+#### Принятые решения (разбор спорных мест)
+
+- **Финальный текст (п.7) — callout, а не `TutorialShowTextStep`.** В исходной формулировке было
+  противоречие («TutorialShowTextStep (не блокирующий, без затемнения)») — `TutorialShowTextStep` по
+  устройству модальный. Победило требование «без затемнения»: день 1 неблокирующий целиком.
+- **Конец (п.8) — показать → ждать закрытия `ResultsWindow` → завершиться.** `OnRunEnded()` гасит callout,
+  поэтому финальный текст живёт ровно столько, сколько игрок смотрит на результаты. Таймера нет.
+- **`EddiFailedText` (п.6) гаснет по событию ухода Eddi.** Берём фазу `Done`, а не фиксированную задержку:
+  если уход покупателей замедлится или ускорится, текст останется синхронизирован с тем же игровым битом.
+- **Вступительных текстов нет.** `welcome` / `sale_chance` убраны намеренно: активная часть начинается с
+  пассивной продажи (п.3). Блокирующий текст в начале накрывал бы диалог Eddi (оверлей 3600 > окна 3000).
+
+#### Реализация
+
+`TutorialDayOne` подписывается в `OnRunStarted()` на sales-сигналы (`SalesCustomerPhaseChanged`,
+`SalesPassiveSaleHappened`, `SalesPassivePurchaseFailed`) через **глобальный брокер MessagePipe**, латчит факты
+по `CharacterId == "eddi"`, отписывается и сбрасывает латч в `OnRunEnded()`. Латч (а не ожидание события)
+закрывает гонку: день стартует автоматически (`SalesScreenView.OnInit` → `StartDayAsync`), и факт может
+случиться раньше, чем до него дойдёт шаг.
+
+Шаги: `awaitFact(Browsing || ResultsShown)` → callout → `awaitFact(sale || ResultsShown)` → callout →
+`awaitFact(fail || ResultsShown)` → callout → `awaitFact(Eddi Done || ResultsShown)` → hide →
+`awaitWindow(ResultsShown)` → callout → `awaitWindow(!ResultsShown)` → конец.
+
+Day 1 не содержит ни одного таймера и не зависит от `SalesTuning`: изменение длительности browsing,
+commit-feedback или ухода покупателей только растягивает соответствующий игровой бит.
+
+Прямой ссылки `Game.Tutorial.Content → Book.Sell` **нет**: сигналы несут примитивы
+(`customerId`, `characterId`, `phase`/`genre`/`bookId`) и живут в leaf-сборке `Game.GameplayUI.Signals`.
+Публикует `SalesTutorialSignalsBridge` — entry point в scope локации; `SalesDayController` не тронут.
+Жанр берётся из `PassiveSaleEvent.ResolvedGenre` (собственная атрибуция резолвера), **не** из
+`MatchedGenres` — последнее означает спрос локации (`LocationConfig.DemandGenres`) и для сценарной покупки
+может быть пустым.
+
+**`highlightClick` в дне 1 не используется** (in-location контролы ещё без target-id — этап 5).
+**`awaitQuest(конкретная продажа)` как блокирующий шаг не используем** (вероятностная продажа → риск
+зависания). Layer-1 квесты (`tut_first_day` / `tut_first_sale`) — отдельно, журнальные.
+
+#### Известные ограничения
+
+Resume посреди Day 1 — best-effort (`Restart`). При `_firstDayEntry = Hub` day 1 идёт **без** скриптового
+туториала. Связка «FTUE-пресет ↔ полка дня 1 ↔ `q_intro_eddi.scriptedPassivePurchases`» **не валидируется** —
+TODO GAME-17; перестановка жанров в `quests.json` ломает флоу (Candidate D выкидывает остаток пассивной
+цепочки после первого промаха).
 
 **Следующее для визуальной подсветки контролов** (Open Shop / список жанров / динамический «+»):
 pointer/highlight для таргетов + динамическая регистрация таргетов из `PreparationGenreRowView` через
@@ -546,8 +598,8 @@ runtime-warning'ом с auto-advance. Для Day 1 с Eddi выигрыш кон
   перестанет запрашиваться — серверная чистка опциональна.
 - **Гонка со стартом дня.** Sales simulation тикает независимо от `IUIManager.SetManualLock`, поэтому Eddi может
   пройти нужные фазы до того, как linear runner дойдёт до соответствующего await-step. Day 1 решает это latch'ами:
-  подписка ставится в `OnRunStarted`, шаг завершения диалога ждёт реальный переход Eddi в `Browsing` без timeout,
-  а sale/fail-шаги ждут уже запомненные факты с timeout + warning.
+  подписка ставится в `OnRunStarted`, Eddi-шаги ждут уже запомненные факты без timeout, а `ResultsWindow`
+  служит терминатором degraded-пути, где Eddi уже не придёт.
 
 ### 9.5 Цена решения
 
