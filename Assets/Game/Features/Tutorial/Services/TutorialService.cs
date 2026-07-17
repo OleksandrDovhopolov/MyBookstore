@@ -3,13 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
-using Game.Conditions.API;
-using Game.Configs;
-using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.Quest.API;
 using Game.Tutorial.API;
-using Game.Tutorial.Steps;
 using Game.UI;
 using MessagePipe;
 using Save;
@@ -19,9 +15,8 @@ namespace Game.Tutorial.Services
 {
     /// <summary>
     /// Layer 2 forced-step engine. Global singleton, mirrors QuestsService: registers as
-    /// <see cref="ISaveHook"/> for init timing — the catalog is built in <see cref="AfterLoadAsync"/>
-    /// (configs are warm by then), state is restored, triggers are subscribed. One exclusive sequence runs
-    /// at a time; step handlers are resolved by type. Pass 1: handlers are stubs (log + auto-advance).
+    /// <see cref="ISaveHook"/> for init timing, restores state, subscribes triggers, and runs one
+    /// exclusive sequence at a time. Tutorial content is provided by DI-registered C# sequences.
     /// One-way completion persisted in the <c>tutorial.state</c> save module.
     /// </summary>
     public sealed class TutorialService : ITutorialService, ISaveHook, IDisposable
@@ -29,9 +24,7 @@ namespace Game.Tutorial.Services
         private const string LogPrefix = "[Tutorial]";
 
         private readonly ISaveService _save;
-        private readonly IConfigsService _configs;
-        private readonly IConditionParser _parser;
-        private readonly TutorialStepHandlerRegistry _handlers;
+        private readonly IReadOnlyList<ITutorialSequence> _registeredSequences;
 
         // When false, sequences never auto-start from triggers or resume on load; explicit TryStartAsync still runs.
         private readonly bool _autoStart;
@@ -48,9 +41,9 @@ namespace Game.Tutorial.Services
         private readonly IQuestReevaluationGate _questReevaluation;
         private readonly ITutorialAutoStartGate _autoStartGate;
 
-        private readonly Dictionary<string, TutorialSequenceConfig> _sequences =
+        private readonly Dictionary<string, ITutorialSequence> _sequences =
             new(StringComparer.Ordinal);
-        private readonly List<TutorialSequenceConfig> _byPriority = new();
+        private readonly List<ITutorialSequence> _byPriority = new();
 
         private readonly List<IDisposable> _subscriptions = new();
         private readonly CancellationTokenSource _cts = new();
@@ -64,9 +57,7 @@ namespace Game.Tutorial.Services
 
         public TutorialService(
             ISaveService save,
-            IConfigsService configs,
-            IConditionParser parser,
-            TutorialStepHandlerRegistry handlers,
+            IReadOnlyList<ITutorialSequence> sequences,
             ISubscriber<GameplayHubReady> hubReadySub,
             IPublisher<TutorialSequenceStarted> startedPub,
             IPublisher<TutorialStepChanged> stepPub,
@@ -79,9 +70,7 @@ namespace Game.Tutorial.Services
             bool autoStart = true)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
-            _configs = configs ?? throw new ArgumentNullException(nameof(configs));
-            _parser = parser ?? throw new ArgumentNullException(nameof(parser));
-            _handlers = handlers ?? throw new ArgumentNullException(nameof(handlers));
+            _registeredSequences = sequences ?? Array.Empty<ITutorialSequence>();
             _autoStart = autoStart;
             _hubReadySub = hubReadySub;
             _startedPub = startedPub;
@@ -136,15 +125,16 @@ namespace Game.Tutorial.Services
             if (!force && (!ContextAllows(seq) || !IsEligible(seq)))
                 return UniTask.FromResult(false);
 
-            BeginRun(seq, startIndex: 0);
+            var steps = MaterializeSteps(seq);
+            BeginRun(seq, steps, startIndex: 0);
             return UniTask.FromResult(true);
         }
 
         public UniTask SkipActiveAsync(CancellationToken ct)
         {
             // Abort the active run WITHOUT marking complete; the activation scan can re-trigger it later.
-            // Cancelling the run token unblocks a long-running step (showText/highlightClick) and lets its
-            // finally-cleanup hide the overlay; the runner's finally clears _running/_activeSequenceId.
+            // Cancelling the run token unblocks a long-running step and lets its finally-cleanup hide UI;
+            // the runner's finally clears _running/_activeSequenceId.
             _runCts?.Cancel();
             return UniTask.CompletedTask;
         }
@@ -157,6 +147,7 @@ namespace Game.Tutorial.Services
             {
                 _state.ActiveSequenceId = null;
                 _state.NextStepIndex = 0;
+                _state.NextStepId = null;
                 changed = true;
             }
             if (changed) await PersistAsync(ct);
@@ -169,16 +160,16 @@ namespace Game.Tutorial.Services
             _sequences.Clear();
             _byPriority.Clear();
 
-            foreach (var cfg in _configs.GetAll<TutorialSequenceConfig>())
+            foreach (var seq in _registeredSequences)
             {
-                if (cfg == null || string.IsNullOrEmpty(cfg.Id)) continue;
-                if (_sequences.ContainsKey(cfg.Id))
+                if (seq == null || string.IsNullOrEmpty(seq.Id)) continue;
+                if (_sequences.ContainsKey(seq.Id))
                 {
-                    Debug.LogError($"{LogPrefix} duplicate sequence id '{cfg.Id}', ignoring the later one.");
+                    Debug.LogError($"{LogPrefix} duplicate sequence id '{seq.Id}', ignoring the later one.");
                     continue;
                 }
-                _sequences[cfg.Id] = cfg;
-                _byPriority.Add(cfg);
+                _sequences[seq.Id] = seq;
+                _byPriority.Add(seq);
             }
 
             _byPriority.Sort((a, b) => a.Priority.CompareTo(b.Priority));
@@ -187,7 +178,7 @@ namespace Game.Tutorial.Services
         private void Subscribe()
         {
             if (_hubReadySub != null)
-                _subscriptions.Add(_hubReadySub.Subscribe(_ => OnTrigger(TutorialTriggers.HubReady, null)));
+                _subscriptions.Add(_hubReadySub.Subscribe(_ => OnTrigger(TutorialTrigger.HubReady, null)));
 
             if (_dayProgress != null)
                 _dayProgress.PhaseChanged += OnPhaseChanged;
@@ -203,19 +194,19 @@ namespace Game.Tutorial.Services
         }
 
         private void OnPhaseChanged(DayProgressState state)
-            => OnTrigger(TutorialTriggers.PhaseChanged, state?.CurrentPhase.ToString());
+            => OnTrigger(TutorialTrigger.PhaseChanged, state?.CurrentPhase.ToString());
 
         private void OnLocationLoadedChanged(bool loaded)
         {
-            if (loaded) OnTrigger(TutorialTriggers.LocationLoaded, null);
+            if (loaded) OnTrigger(TutorialTrigger.LocationLoaded, null);
         }
 
-        private void OnQuestStarted(IQuest quest) => OnTrigger(TutorialTriggers.QuestStarted, quest?.Id);
-        private void OnQuestCompleted(IQuest quest) => OnTrigger(TutorialTriggers.QuestCompleted, quest?.Id);
+        private void OnQuestStarted(IQuest quest) => OnTrigger(TutorialTrigger.QuestStarted, quest?.Id);
+        private void OnQuestCompleted(IQuest quest) => OnTrigger(TutorialTrigger.QuestCompleted, quest?.Id);
 
         // ----- Activation scan -----
 
-        private void OnTrigger(string trigger, string param)
+        private void OnTrigger(TutorialTrigger trigger, string param)
         {
             if (!_loaded || _running || !_autoStart) return;
 
@@ -226,21 +217,21 @@ namespace Game.Tutorial.Services
             }
 
             // Don't start a sequence mid-transition (overlay would appear under the transition cover).
-            // Exception: locationLoaded fires DURING the transition (before reveal) — guarding it would
+            // Exception: locationLoaded fires DURING the transition (before reveal), so guarding it would
             // drop location sequences entirely.
-            if (!string.Equals(trigger, TutorialTriggers.LocationLoaded, StringComparison.OrdinalIgnoreCase)
-                && _gameFlow?.IsTransitioning == true)
+            if (trigger != TutorialTrigger.LocationLoaded && _gameFlow?.IsTransitioning == true)
                 return;
 
             foreach (var seq in _byPriority)
             {
-                if (!string.Equals(seq.Trigger, trigger, StringComparison.OrdinalIgnoreCase)) continue;
+                if (seq.Trigger != trigger) continue;
                 if (!string.IsNullOrEmpty(seq.TriggerParam) &&
                     !string.Equals(seq.TriggerParam, param, StringComparison.Ordinal)) continue;
                 if (!ContextAllows(seq)) continue;
                 if (!IsEligible(seq)) continue;
 
-                BeginRun(seq, startIndex: 0);
+                var steps = MaterializeSteps(seq);
+                BeginRun(seq, steps, startIndex: 0);
                 return; // one exclusive runner
             }
         }
@@ -259,22 +250,22 @@ namespace Game.Tutorial.Services
             OnTrigger(trigger.Trigger, trigger.Param);
         }
 
-        private bool IsEligible(TutorialSequenceConfig seq)
+        private bool IsEligible(ITutorialSequence seq)
         {
             if (_state.CompletedSequenceIds.Contains(seq.Id)) return false;
-            return _parser.Parse(seq.ActivationConditions).Evaluate().IsMet;
+            return seq.IsEligible();
         }
 
-        // Activation gate only (NOT mid-run abort — a sequence gated to one context can still await events
+        // Activation gate only (NOT mid-run abort - a sequence gated to one context can still await events
         // that fire in another, e.g. a location sequence that waits for the Results window).
-        private bool ContextAllows(TutorialSequenceConfig seq)
+        private bool ContextAllows(ITutorialSequence seq)
         {
             var inLocation = _gameFlow?.IsLocationLoaded ?? false;
-            switch (seq.Context?.ToLowerInvariant())
+            switch (seq.Context)
             {
-                case "hub": return !inLocation;
-                case "location": return inLocation;
-                default: return true; // "any" / null
+                case TutorialContext.Hub: return !inLocation;
+                case TutorialContext.Location: return inLocation;
+                default: return true;
             }
         }
 
@@ -287,54 +278,77 @@ namespace Game.Tutorial.Services
             if (!_sequences.TryGetValue(id, out var seq)) return;
             if (_state.CompletedSequenceIds.Contains(id)) return;
 
-            var fromStep = string.Equals(seq.ResumePolicy, "fromStep", StringComparison.OrdinalIgnoreCase)
-                ? Mathf.Clamp(_state.NextStepIndex, 0, seq.Steps?.Length ?? 0)
+            var steps = MaterializeSteps(seq);
+            var fromStep = seq.ResumePolicy == TutorialResumePolicy.FromStep
+                ? ResolveResumeIndex(steps)
                 : 0;
 
-            BeginRun(seq, fromStep);
+            BeginRun(seq, steps, fromStep);
         }
 
         // ----- Runner -----
 
-        private void BeginRun(TutorialSequenceConfig seq, int startIndex)
+        private static IReadOnlyList<ITutorialStep> MaterializeSteps(ITutorialSequence seq)
+            => seq.GetSteps() ?? Array.Empty<ITutorialStep>();
+
+        private int ResolveResumeIndex(IReadOnlyList<ITutorialStep> steps)
+        {
+            if (!string.IsNullOrEmpty(_state.NextStepId))
+            {
+                for (var i = 0; i < steps.Count; i++)
+                {
+                    if (string.Equals(steps[i]?.Id, _state.NextStepId, StringComparison.Ordinal))
+                        return i;
+                }
+            }
+
+            return Mathf.Clamp(_state.NextStepIndex, 0, steps.Count);
+        }
+
+        private void BeginRun(ITutorialSequence seq, IReadOnlyList<ITutorialStep> steps, int startIndex)
         {
             _running = true;
             _activeSequenceId = seq.Id;
             _runCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
-            RunSequenceAsync(seq, startIndex, _runCts.Token).Forget();
+            var clampedStartIndex = Mathf.Clamp(startIndex, 0, steps.Count);
+            RunSequenceAsync(seq, steps, clampedStartIndex, _runCts.Token).Forget();
         }
 
-        private async UniTaskVoid RunSequenceAsync(TutorialSequenceConfig seq, int startIndex, CancellationToken ct)
+        private async UniTaskVoid RunSequenceAsync(
+            ITutorialSequence seq,
+            IReadOnlyList<ITutorialStep> steps,
+            int startIndex,
+            CancellationToken ct)
         {
             try
             {
                 _startedPub?.Publish(new TutorialSequenceStarted(seq.Id));
                 Debug.Log($"{LogPrefix} sequence '{seq.Id}' started at step {startIndex}.");
 
-                var steps = seq.Steps ?? Array.Empty<TutorialStepConfig>();
-                for (var i = startIndex; i < steps.Length; i++)
+                for (var i = startIndex; i < steps.Count; i++)
                 {
                     var step = steps[i];
+                    if (step == null)
+                    {
+                        Debug.LogError($"{LogPrefix} null step in '{seq.Id}' (step {i}); skipping.");
+                        continue;
+                    }
 
-                    // Persist BEFORE running the step: quitting mid-step resumes THIS (not-yet-finished) step.
+                    // Persist BEFORE running the step: quitting mid-step resumes THIS not-yet-finished step.
                     _state.ActiveSequenceId = seq.Id;
                     _state.NextStepIndex = i;
+                    _state.NextStepId = step.Id;
                     await PersistAsync(ct);
 
-                    _stepPub?.Publish(new TutorialStepChanged(seq.Id, step?.Id, i));
-
-                    if (_handlers.TryGet(step?.Type, out var handler))
-                        await handler.ExecuteAsync(step, ct);
-                    else
-                        Debug.LogError($"{LogPrefix} no handler for step type '{step?.Type}' " +
-                                       $"in '{seq.Id}' (step {i}); skipping.");
+                    _stepPub?.Publish(new TutorialStepChanged(seq.Id, step.Id, i));
+                    await step.ExecuteAsync(ct);
                 }
 
                 await CompleteAsync(seq, ct);
             }
             catch (OperationCanceledException)
             {
-                // Torn down / aborted — do not mark complete.
+                // Torn down / aborted - do not mark complete.
             }
             catch (Exception e)
             {
@@ -349,12 +363,13 @@ namespace Game.Tutorial.Services
             }
         }
 
-        private async UniTask CompleteAsync(TutorialSequenceConfig seq, CancellationToken ct)
+        private async UniTask CompleteAsync(ITutorialSequence seq, CancellationToken ct)
         {
             if (!_state.CompletedSequenceIds.Contains(seq.Id))
                 _state.CompletedSequenceIds.Add(seq.Id);
             _state.ActiveSequenceId = null;
             _state.NextStepIndex = 0;
+            _state.NextStepId = null;
             await PersistAsync(ct);
 
             _completedPub?.Publish(new TutorialSequenceCompleted(seq.Id));
@@ -391,14 +406,14 @@ namespace Game.Tutorial.Services
 
         private readonly struct PendingTrigger
         {
-            public PendingTrigger(string trigger, string param)
+            public PendingTrigger(TutorialTrigger trigger, string param)
             {
                 Trigger = trigger;
                 Param = param;
                 HasValue = true;
             }
 
-            public string Trigger { get; }
+            public TutorialTrigger Trigger { get; }
             public string Param { get; }
             public bool HasValue { get; }
         }

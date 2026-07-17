@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
-using Game.Conditions.API;
-using Game.Configs;
-using Game.Configs.Models;
+using Game.Tutorial.API;
 using Game.Tutorial.Services;
-using Game.Tutorial.Steps;
+using MessagePipe;
 using NUnit.Framework;
 using Save;
 using UnityEngine;
@@ -89,96 +86,113 @@ namespace Game.Tutorial.Tests.Editor
             }
         }
 
+        [Test]
+        public async Task ResumeFromStep_UsesSavedStepIdBeforeIndex()
+        {
+            var save = new FakeSaveService(new TutorialSaveState
+            {
+                ActiveSequenceId = "tutorial_day_1",
+                NextStepId = "second",
+                NextStepIndex = 0,
+                CompletedSequenceIds = new List<string>()
+            });
+            var sequence = new FakeSequence
+            {
+                ResumePolicy = TutorialResumePolicy.FromStep,
+                Steps = new ITutorialStep[]
+                {
+                    new BlockingStep("first"),
+                    new BlockingStep("second")
+                }
+            };
+            var stepPub = new RecordingPublisher<TutorialStepChanged>();
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
+            var service = BuildService(
+                gate: null,
+                gameFlow: gameFlow,
+                autoStart: true,
+                save: save,
+                sequence: sequence,
+                stepPub: stepPub);
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                Assert.IsTrue(service.IsRunning);
+                Assert.AreEqual("second", stepPub.Last.StepId);
+                Assert.AreEqual(1, stepPub.Last.StepIndex);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
         private static TutorialService BuildService(
             TutorialAutoStartGate gate,
             FakeGameFlow gameFlow,
-            bool autoStart)
-        {
-            var configs = new FakeConfigsService(new[]
-            {
-                new TutorialSequenceConfig
-                {
-                    Id = "tutorial_day_1",
-                    Priority = 10,
-                    Context = "location",
-                    Trigger = TutorialTriggers.LocationLoaded,
-                    Steps = new[]
-                    {
-                        new TutorialStepConfig { Id = "hold", Type = BlockingStepHandler.TypeId }
-                    }
-                }
-            });
-
-            return new TutorialService(
-                new FakeSaveService(),
-                configs,
-                new AlwaysMetParser(),
-                new TutorialStepHandlerRegistry(new ITutorialStepHandler[] { new BlockingStepHandler() }),
+            bool autoStart,
+            FakeSaveService save = null,
+            ITutorialSequence sequence = null,
+            IPublisher<TutorialStepChanged> stepPub = null)
+            => new(
+                save ?? new FakeSaveService(),
+                new[] { sequence ?? new FakeSequence() },
                 hubReadySub: null,
                 startedPub: null,
-                stepPub: null,
+                stepPub: stepPub,
                 completedPub: null,
                 gameFlow: gameFlow,
                 autoStartGate: gate,
                 autoStart: autoStart);
+
+        private sealed class FakeSequence : ITutorialSequence
+        {
+            public string Id { get; set; } = "tutorial_day_1";
+            public int Priority { get; set; } = 10;
+            public TutorialContext Context { get; set; } = TutorialContext.Location;
+            public TutorialTrigger Trigger { get; set; } = TutorialTrigger.LocationLoaded;
+            public string TriggerParam { get; set; }
+            public TutorialResumePolicy ResumePolicy { get; set; } = TutorialResumePolicy.Restart;
+            public IReadOnlyList<ITutorialStep> Steps { get; set; } = new ITutorialStep[] { new BlockingStep("hold") };
+
+            public bool IsEligible() => true;
+            public IReadOnlyList<ITutorialStep> GetSteps() => Steps;
         }
 
-        private sealed class BlockingStepHandler : ITutorialStepHandler
+        private sealed class BlockingStep : ITutorialStep
         {
-            public const string TypeId = "hold";
-            public string Type => TypeId;
+            public BlockingStep(string id) => Id = id;
 
-            public async UniTask ExecuteAsync(TutorialStepConfig step, CancellationToken ct)
+            public string Id { get; }
+
+            public async UniTask ExecuteAsync(CancellationToken ct)
             {
                 while (true)
                     await UniTask.Yield(PlayerLoopTiming.Update, ct);
             }
         }
 
-        private sealed class AlwaysMetParser : IConditionParser
+        private sealed class RecordingPublisher<T> : IPublisher<T>
         {
-            public ICondition Parse(Newtonsoft.Json.Linq.JObject node) => new AlwaysMetCondition();
-        }
+            public T Last { get; private set; }
 
-        private sealed class AlwaysMetCondition : ICondition
-        {
-            public ConditionResult Evaluate() => ConditionResult.Boolean(true, "test.always");
-        }
-
-        private sealed class FakeConfigsService : IConfigsService
-        {
-            private readonly IReadOnlyList<TutorialSequenceConfig> _tutorials;
-
-            public FakeConfigsService(IReadOnlyList<TutorialSequenceConfig> tutorials)
+            public void Publish(T message)
             {
-                _tutorials = tutorials;
+                Last = message;
             }
-
-            public UniTask WarmupAsync(CancellationToken ct) => UniTask.CompletedTask;
-
-            public T Get<T>(string id) where T : class, IConfig
-                => GetAll<T>().FirstOrDefault(c => c.Id == id);
-
-            public bool TryGet<T>(string id, out T config) where T : class, IConfig
-            {
-                config = Get<T>(id);
-                return config != null;
-            }
-
-            public UniTask<T> GetAsync<T>(string id) where T : class, IConfig
-                => UniTask.FromResult(Get<T>(id));
-
-            public bool IsExists<T>(string id) where T : class, IConfig => Get<T>(id) != null;
-
-            public IReadOnlyList<T> GetAll<T>() where T : class, IConfig
-                => typeof(T) == typeof(TutorialSequenceConfig)
-                    ? _tutorials.Cast<T>().ToList()
-                    : Array.Empty<T>();
         }
 
         private sealed class FakeSaveService : ISaveService
         {
             private readonly Dictionary<string, object> _modules = new();
+
+            public FakeSaveService(TutorialSaveState initialState = null)
+            {
+                if (initialState != null)
+                    _modules[TutorialSaveKeys.State] = initialState;
+            }
 
             public UniTask LoadAsync(CancellationToken ct) => UniTask.CompletedTask;
             public UniTask SaveAsync(CancellationToken ct, SaveMode mode = SaveMode.Regular) => UniTask.CompletedTask;

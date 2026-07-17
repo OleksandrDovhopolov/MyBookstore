@@ -51,6 +51,7 @@
         "Game.LocationVisits.API",
         "Game.Tutorial",
         "Game.Tutorial.API",
+        "Game.Tutorial.Content",
         "Game.GameplayUI.Signals"
     ],
     "includePlatforms": [],

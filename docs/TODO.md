@@ -74,13 +74,13 @@
   Осталось:
   - **§7 — debug/качество**: cheat-модуль в `Game.Cheat` (list/force-run/force-complete/reset + сброс
     `ftue.*` = replay Day 1); editor-валидатор id-шников (target ↔ `TutorialTargetIds` ↔ скан префабов на
-    `TutorialTargetTag`; questId ↔ `quests.json`; window id ↔ `TutorialWindowChecker`; парс типов шагов);
+    `TutorialTargetTag`; questId ↔ `quests.json`);
     аналитика (`seq_start`/`step_start` автоматом, `seq_complete` явно).
   - **Немодальный callout-режим** (pointer+текст **без** dim; тип шага `pointAt`/`callout`) — чтобы
     подсвечивать контролы на экранах свободного взаимодействия (Open Shop, список жанров, динамический
     «+» жанра) + динамическая регистрация таргетов из `PreparationGenreRowView` через фасад `TutorialTargets`.
   - **Строгий day-gate**: condition-factory `currentDayIs` (сейчас Day 1 играет один раз при первом hub,
-    не строго «день == 1»).
+    не строго «день == 1»). → вынесено в **GAME-18** вместе с condition-driven запуском; делать там.
   - **Устойчивость Day 1** (известные ограничения v1 в §6.1): корректный resume посреди дня и cancel-path
     (закрыл Location/Preparation, не подтвердив) — recovery/блокировка закрытия окон.
   - **Локализация** текста туториала (сейчас ASCII/English) — через INF-4; поле `textKey` зарезервировано.
@@ -149,6 +149,85 @@
   - Editor-валидатор: жанры скрипта существуют в `BookConfig.PrimaryGenre` и покрыты FTUE-пресетом
     (по образцу валидатора id-шников из GAME-10 §7).
   - Связано с GAME-15 (пресет FTUE vs каталог книг) — чинить парно.
+
+- [ ] **GAME-18. Condition-driven запуск туториалов (re-evaluation loop в `TutorialService`).**
+  **Новых классов не нужно; отдельный сервис не заводить.** `TutorialService` уже и есть тот сервис,
+  который запускает туториалы, и у него уже есть activation-скан с проверкой `seq.IsEligible()`
+  ([TutorialService.cs](../Assets/Game/Features/Tutorial/Services/TutorialService.cs)). После переезда с JSON
+  условия живут внутри C#-секвенций; не хватает **входящих событий**, от которых скан запускается.
+
+  Проблема: **condition — это фильтр при триггере, а не повод запуститься.** `IsEligible` вызывается только
+  из `OnTrigger` ([:218](../Assets/Game/Features/Tutorial/Services/TutorialService.cs)) и `TryStartAsync`,
+  а trigger enum values ровно 5 (`HubReady`, `LocationLoaded`, `PhaseChanged`, `QuestStarted`, `QuestCompleted`).
+  Следствия:
+  - `day == 1` — сработает (условие истинно весь день, `locationLoaded` — точный момент проверки).
+  - «Купил предмет» — **нет**: инвентарь изменился, условие стало истинным, движку никто не сказал.
+    Туториал поднимется позже, когда случайно прилетит один из 5 триггеров — момент запуска оторван
+    от события на минуты.
+  - «Диалог» — нет ни триггера, ни leaf-condition (`IDeliveredDialoguesService` движку не виден).
+  - Добавлять по триггеру на источник не масштабируется: N новых `TutorialTrigger` enum values + N подписок +
+    N asmdef-связей `Game.Tutorial` → все фичи.
+
+  Решение — скопировать паттерн из `QuestsService` (**референс реализации, не зависимость**):
+  `Subscribe()` ([QuestsService.cs:606](../Assets/Game/Features/Quest/Services/QuestsService.cs)) подписан
+  на источники изменений (`_sales.Changed`, `_decor.PlacementChanged`, `_inventory.Changed`,
+  `_dayProgress.PhaseChanged`), каждый зовёт `Reevaluate()` → автоактивация всех eligible по
+  `IsActivationMet()`. Условие — единственная правда, событие — лишь повод пересчитать.
+
+  Что сделать:
+  - В `TutorialService.Subscribe()` ([:187](../Assets/Game/Features/Tutorial/Services/TutorialService.cs))
+    добавить подписки на источники изменений; каждая зовёт **существующий** `OnTrigger`-скан — он уже
+    проверяет `ContextAllows` + `IsEligible` + priority + эксклюзивность runner'а. Переписывать не надо,
+    надо чаще звать.
+  - `Trigger` в C#-секвенции становится **опциональным сужением**, а не обязательным условием старта;
+    `IsEligible()` — единственная правда. Существующий `tutorial_day_1` с
+    `Trigger = LocationLoaded` продолжает работать без изменений.
+  - Стоимость нового источника падает до «1 condition-factory + 1 подписка», без ссылок из `Game.Tutorial`
+    на фичи: factory регистрирует своя фича через `IConditionFactory` — как `TutorialCompletedConditionFactory`
+    регистрируется туториалом для квестов.
+
+  Острые углы (продумать до реализации):
+  - **Туториал рисует overlay — квест меняет число.** У квестов `Reevaluate` зовётся синхронно внутри
+    колбэка `_inventory.Changed`, и им это безразлично. Туториал в этот момент поднимет модальный blackout —
+    возможно, посреди анимации окна магазина сразу после клика «купить». Нужен отложенный старт. Механизм
+    есть: `ITutorialAutoStartGate` + `_pendingAutoStartTrigger`
+    ([:222](../Assets/Game/Features/Tutorial/Services/TutorialService.cs)) + transition-guard
+    ([:231](../Assets/Game/Features/Tutorial/Services/TutorialService.cs)), но сейчас он хранит **один**
+    pending-триггер — переосмыслить как «пересчитать, когда станет безопасно».
+  - **`_running` guard теряет события — регресс.** `OnTrigger` early-return'ит на `_running`
+    ([:220](../Assets/Game/Features/Tutorial/Services/TutorialService.cs)) и **ничего не запоминает**.
+    У квестов состояние остаётся eligible и следующий `Reevaluate` подхватит; у туториала условие может
+    стать истинным пока бежит другая секвенция — и потеряться навсегда. Лечится re-scan'ом в `finally`
+    у `RunSequenceAsync` ([:343](../Assets/Game/Features/Tutorial/Services/TutorialService.cs)); баг иначе
+    будет плавающий.
+  - **One-way completion становится критичнее.** `day == 1` истинно весь день → без `CompletedSequenceIds`
+    секвенция перезапускалась бы на каждый re-eval. Защита есть
+    ([:264](../Assets/Game/Features/Tutorial/Services/TutorialService.cs)), но теперь несёт нагрузку,
+    которую раньше страховал одноразовый триггер.
+  - **`do/while` из `Reevaluate` не копировать** ([QuestsService.cs:356](../Assets/Game/Features/Quest/Services/QuestsService.cs)):
+    цикл до стабилизации нужен квестам (активация одного активирует следующий); у туториала runner
+    эксклюзивный, старт терминален — достаточно одного прохода.
+
+  Порядок работ (шаги разносить):
+  1. **Строгий day-gate в `TutorialDay1.IsEligible()`** — закрывает day-gate в рамках текущей trigger-модели,
+     без рефакторинга. Малая, изолированная, полезна сама по себе. Это тот же пункт, что в GAME-10
+     («Строгий day-gate»); делать здесь.
+  2. **Re-evaluation loop** — когда реально понадобится запуск от покупки/диалога. Тогда же:
+     pending-scan вместо pending-trigger и re-scan после завершения run'а.
+
+  Зачем это нужно уже сейчас: со второй секвенцией (туториал дня 2) цена отсутствия day-gate меняется.
+  Порядок сейчас держится не на номере дня, а на цепочке «day1 завершился → следующий по priority».
+  Дырки: (а) `SkipActiveAsync`/abort **не** помечают complete
+  ([:337](../Assets/Game/Features/Tutorial/Services/TutorialService.cs)) → выход посреди дня 1 проиграет
+  туториал дня 1 **на дне 2**, а всё остальное сдвинется; (б) повторный вход в локацию в тот же день (если
+  `GameFlowLoop` его допускает — **проверить**) запустит туториал дня 2 в первый день; (в) при сдвиге
+  будущий шаг с подсветкой панели не найдёт таргет → туториал молча деградирует, если такой шаг будет
+  реализован fail-open. Ломается не happy path, а recovery.
+
+  Дизайн-решение, которое надо принять явно: строгое `day == 1` означает «пропустил — потерял навсегда»
+  (на дне 2 условие ложно), что **противоположно** текущей догоняющей очереди. Компромисс в духе остальных
+  C#-контента: `CurrentDay >= 1` + `!IsSequenceCompleted(day2_seq)` — «не раньше дня 1, но догонит,
+  если пропустил».
 
 ---
 

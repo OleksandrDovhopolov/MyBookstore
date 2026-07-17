@@ -14,8 +14,11 @@ namespace Game.Tutorial.Services
         /// <summary>Sequence currently mid-run (for resume after relaunch), or null.</summary>
         public string ActiveSequenceId { get; set; }
 
-        /// <summary>Index of the step to run NEXT — saved after a step succeeds, so resume never repeats a shown step.</summary>
+        /// <summary>Index of the current step; kept as a compatibility fallback when <see cref="NextStepId"/> is absent.</summary>
         public int NextStepIndex { get; set; }
+
+        /// <summary>Id of the current step; preferred resume anchor for FromStep sequences.</summary>
+        public string NextStepId { get; set; }
 
         public string UpdatedAtUtcIso { get; set; }
     }

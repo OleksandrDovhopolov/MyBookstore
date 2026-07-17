@@ -6,7 +6,6 @@
         "VContainer",
         "MessagePipe",
         "Save",
-        "Configs",
         "Game.Conditions.API",
         "Game.Quest.API",
         "Game.Core.UI",
