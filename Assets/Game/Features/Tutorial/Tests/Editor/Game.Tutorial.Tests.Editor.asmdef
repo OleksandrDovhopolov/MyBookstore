@@ -13,7 +13,8 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "DayCycle",
-        "Game.Quest.API"
+        "Game.Quest.API",
+        "Game.Core.UI"
     ],
     "includePlatforms": [
         "Editor"

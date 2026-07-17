@@ -11,9 +11,9 @@ namespace Game.Tutorial.Content
         private const string LogPrefix = "[Tutorial]";
 
         private readonly Func<bool> _fact;
-        private readonly TimeSpan _timeout;
+        private readonly TimeSpan? _timeout;
 
-        public TutorialAwaitFactStep(string id, Func<bool> fact, TimeSpan timeout)
+        public TutorialAwaitFactStep(string id, Func<bool> fact, TimeSpan? timeout = null)
         {
             Id = id;
             _fact = fact;
@@ -28,7 +28,13 @@ namespace Game.Tutorial.Content
                 return;
 
             var waitFact = UniTask.WaitUntil(() => _fact?.Invoke() == true, cancellationToken: ct);
-            var timeout = UniTask.Delay(_timeout, cancellationToken: ct);
+            if (!_timeout.HasValue)
+            {
+                await waitFact;
+                return;
+            }
+
+            var timeout = UniTask.Delay(_timeout.Value, cancellationToken: ct);
             var winner = await UniTask.WhenAny(waitFact, timeout);
             if (winner == 1)
                 Debug.LogWarning($"{LogPrefix} await fact step '{Id}' timed out; auto-advancing.");

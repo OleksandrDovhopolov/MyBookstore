@@ -13,16 +13,12 @@ namespace Game.Tutorial.Content
     {
         private const string EddiCharacterId = "eddi";
         private const string BrowsingPhase = "Browsing";
-        private const string WelcomeText =
-            "Welcome to your bookshop! You're open for your first day - customers buy books on their own as they browse.";
-        private const string SaleChanceText =
-            "Each sale depends on the genre's sale chance. Keep the shelf stocked with genres your visitors like.";
         private const string EddiSearchText =
             "Eddi is looking for a Fact book. Watch how the shelf and sale chance work together.";
         private const string EddiSoldText =
-            "Nice - Eddi bought a Fact book. A good genre match makes passive sales much more likely.";
+            "Nice - Eddi bought a {0} book. A good genre match makes passive sales much more likely.";
         private const string EddiFailedText =
-            "That Travel attempt missed. Even interested customers can walk away when the sale chance does not roll your way.";
+            "That {0} attempt missed. Even interested customers can walk away when the sale chance does not roll your way.";
         private const string WrapUpText =
             "Day complete - nice work! From tomorrow you'll stock the shelf and choose where to trade yourself.";
         private const string BottomPlacement = "bottom";
@@ -39,6 +35,8 @@ namespace Game.Tutorial.Content
         private bool _eddiBrowsing;
         private bool _eddiSold;
         private bool _eddiFailed;
+        private string _eddiSoldGenre;
+        private string _eddiFailedGenre;
 
         public TutorialDayOne(
             TutorialOverlayController overlay,
@@ -84,14 +82,20 @@ namespace Game.Tutorial.Content
         public IReadOnlyList<ITutorialStep> GetSteps()
             => new ITutorialStep[]
             {
-                new TutorialShowTextStep("welcome", _overlay, _ui, WelcomeText, BottomPlacement),
-                new TutorialShowTextStep("sale_chance", _overlay, _ui, SaleChanceText, BottomPlacement),
-                new TutorialAwaitFactStep("await_eddi_browse", () => _eddiBrowsing, EddiFactTimeout),
+                new TutorialAwaitFactStep("await_eddi_dialogue_complete", () => _eddiBrowsing),
                 new TutorialShowCalloutStep("callout_search", _overlay, EddiSearchText, BottomPlacement),
                 new TutorialAwaitFactStep("await_eddi_sale", () => _eddiSold, EddiFactTimeout),
-                new TutorialShowCalloutStep("callout_sold", _overlay, EddiSoldText, BottomPlacement),
+                new TutorialShowCalloutStep(
+                    "callout_sold",
+                    _overlay,
+                    () => FormatGenreCallout(_eddiSold, _eddiSoldGenre, EddiSoldText),
+                    BottomPlacement),
                 new TutorialAwaitFactStep("await_eddi_fail", () => _eddiFailed, EddiFactTimeout),
-                new TutorialShowCalloutStep("callout_failed", _overlay, EddiFailedText, BottomPlacement),
+                new TutorialShowCalloutStep(
+                    "callout_failed",
+                    _overlay,
+                    () => FormatGenreCallout(_eddiFailed, _eddiFailedGenre, EddiFailedText),
+                    BottomPlacement),
                 new TutorialDelayStep("callout_read_delay", CalloutReadDelay),
                 new TutorialHideCalloutStep("hide_eddi_callout", _overlay),
                 new TutorialAwaitWindowStep("wait_results_window", () => _ui.IsWindowShown<ResultsWindow>()),
@@ -101,30 +105,46 @@ namespace Game.Tutorial.Content
         private void OnSalesCustomerPhaseChanged(SalesCustomerPhaseChanged message)
         {
             if (!IsEddi(message.CharacterId)) return;
+
+            // Browsing is the first passive sales phase after DialogStep is completed by the dialogue UI.
             if (string.Equals(message.Phase, BrowsingPhase, StringComparison.Ordinal))
                 _eddiBrowsing = true;
         }
 
         private void OnSalesPassiveSaleHappened(SalesPassiveSaleHappened message)
         {
-            if (IsEddi(message.CharacterId))
-                _eddiSold = true;
+            if (!IsEddi(message.CharacterId)) return;
+
+            _eddiSold = true;
+            _eddiSoldGenre = message.Genre;
         }
 
         private void OnSalesPassivePurchaseFailed(SalesPassivePurchaseFailed message)
         {
-            if (IsEddi(message.CharacterId))
-                _eddiFailed = true;
+            if (!IsEddi(message.CharacterId)) return;
+
+            _eddiFailed = true;
+            _eddiFailedGenre = message.Genre;
         }
 
         private static bool IsEddi(string characterId)
             => string.Equals(characterId, EddiCharacterId, StringComparison.Ordinal);
+
+        private static string FormatGenreCallout(bool happened, string genre, string format)
+        {
+            if (!happened || string.IsNullOrEmpty(genre))
+                return null;
+
+            return string.Format(format, genre);
+        }
 
         private void ResetLatch()
         {
             _eddiBrowsing = false;
             _eddiSold = false;
             _eddiFailed = false;
+            _eddiSoldGenre = null;
+            _eddiFailedGenre = null;
         }
 
         private void DisposeSubscriptions()

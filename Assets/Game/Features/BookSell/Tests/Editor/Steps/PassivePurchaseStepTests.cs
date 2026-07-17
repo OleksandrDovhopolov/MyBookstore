@@ -131,6 +131,7 @@ namespace Book.Sell.Tests.Editor.Steps
             step.Tick(self, ctx, 1f);
 
             var evt = sink.PassiveSales[0].evt;
+            Assert.AreEqual("sci-fi", evt.ResolvedGenre);
             CollectionAssert.Contains(evt.MatchedGenres.ToArray(), "sci-fi");
             Assert.IsEmpty(evt.MatchedQualities, "Passive sales do not report quality matches (ADR-0004).");
         }

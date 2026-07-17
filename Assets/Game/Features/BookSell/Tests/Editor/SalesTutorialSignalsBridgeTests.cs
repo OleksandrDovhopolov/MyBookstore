@@ -47,6 +47,25 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void PassiveSale_PrefersResolvedGenre()
+        {
+            var h = new Harness();
+            h.Bridge.Start();
+            var sale = new PassiveSaleEvent(
+                "book_fact",
+                10,
+                new[] { "Legacy" },
+                resolvedGenre: "Fact");
+
+            h.Sales.RaiseCustomerPassiveSaleHappened(new Customer(
+                "customer_1",
+                Array.Empty<ICustomerStep>(),
+                characterId: "eddi"), sale);
+
+            Assert.AreEqual("Fact", h.SalePublisher.Last.Genre);
+        }
+
+        [Test]
         public void PassivePurchaseFailed_PublishesFailedGenre()
         {
             var h = new Harness();

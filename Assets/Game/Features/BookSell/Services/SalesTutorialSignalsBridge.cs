@@ -54,7 +54,7 @@ namespace Book.Sell.Services
             _salePublisher.Publish(new SalesPassiveSaleHappened(
                 customer?.Id,
                 customer?.CharacterId,
-                sale?.MatchedGenres?.FirstOrDefault(),
+                sale?.ResolvedGenre ?? sale?.MatchedGenres?.FirstOrDefault(),
                 sale?.BookId));
         }
 

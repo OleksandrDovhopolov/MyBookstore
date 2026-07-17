@@ -90,7 +90,12 @@ namespace Book.Sell.Domain.Steps
             var gold = book != null ? BookConfig.FixedPriceGold : 0;
             ctx.Shelf.CommitSale(_targetId);
 
-            var saleEvent = new PassiveSaleEvent(_targetId, gold, _matchedGenres, _matchedQualities);
+            var saleEvent = new PassiveSaleEvent(
+                _targetId,
+                gold,
+                _matchedGenres,
+                _matchedQualities,
+                _resolvedGenre);
             ctx.Sink?.OnPassiveSale(self, saleEvent);
             self.RegisterPurchasedBook();
             Debug.Log($"{LogPrefix} customer={self.Id} BOUGHT book={_targetId} gold={gold} (books bought so far: {self.PurchasedBookCount})");

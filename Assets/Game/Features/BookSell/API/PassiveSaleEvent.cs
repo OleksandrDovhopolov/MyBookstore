@@ -13,6 +13,9 @@ namespace Book.Sell.API
         public string BookId { get; }
         public int GoldEarned { get; }
 
+        /// <summary>The genre this passive attempt was resolved against, if the resolver can attribute one.</summary>
+        public string ResolvedGenre { get; }
+
         /// <summary>Genres from LocationConfig.DemandGenres that matched the sold book. Empty if none.</summary>
         public IReadOnlyList<string> MatchedGenres { get; }
 
@@ -23,10 +26,12 @@ namespace Book.Sell.API
             string bookId,
             int goldEarned,
             IReadOnlyList<string> matchedGenres = null,
-            IReadOnlyList<string> matchedQualities = null)
+            IReadOnlyList<string> matchedQualities = null,
+            string resolvedGenre = null)
         {
             BookId = bookId;
             GoldEarned = goldEarned;
+            ResolvedGenre = resolvedGenre;
             MatchedGenres = matchedGenres ?? Array.Empty<string>();
             MatchedQualities = matchedQualities ?? Array.Empty<string>();
         }
