@@ -356,10 +356,21 @@ namespace Game.Tutorial.Services
             }
             finally
             {
-                _running = false;
-                _activeSequenceId = null;
-                _runCts?.Dispose();
-                _runCts = null;
+                try
+                {
+                    seq.OnRunEnded();
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"{LogPrefix} sequence '{seq.Id}' teardown failed: {e}");
+                }
+                finally
+                {
+                    _running = false;
+                    _activeSequenceId = null;
+                    _runCts?.Dispose();
+                    _runCts = null;
+                }
             }
         }
 

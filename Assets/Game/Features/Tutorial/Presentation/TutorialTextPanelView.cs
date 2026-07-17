@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Game.Tutorial.Presentation
 {
@@ -14,6 +15,13 @@ namespace Game.Tutorial.Presentation
 
         private RectTransform _rt;
         private RectTransform RectTransform => _rt != null ? _rt : _rt = (RectTransform)transform;
+
+        private void Awake()
+        {
+            // Tutorial text is display-only; modal taps are caught by blackout and callouts must pass clicks through.
+            foreach (var graphic in GetComponentsInChildren<Graphic>(true))
+                graphic.raycastTarget = false;
+        }
 
         public void SetText(string value, string placement)
         {

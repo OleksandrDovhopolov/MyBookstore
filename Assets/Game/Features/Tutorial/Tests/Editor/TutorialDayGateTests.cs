@@ -149,6 +149,7 @@ namespace Game.Tutorial.Tests.Editor
 
             public bool IsEligible() => IsEligibleFunc();
             public IReadOnlyList<ITutorialStep> GetSteps() => Steps;
+            public void OnRunEnded() { }
         }
 
         private sealed class BlockingStep : ITutorialStep

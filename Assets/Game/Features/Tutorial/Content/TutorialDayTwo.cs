@@ -1,8 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Game.DayCycle.Day;
 using Game.Tutorial.API;
 using Game.Tutorial.Presentation;
-using Game.UI;
 
 namespace Game.Tutorial.Content
 {
@@ -12,13 +12,11 @@ namespace Game.Tutorial.Content
         private const string BottomPlacement = "bottom";
 
         private readonly TutorialOverlayController _overlay;
-        private readonly IUIManager _ui;
         private readonly IDayProgressService _dayProgress;
 
-        public TutorialDayTwo(TutorialOverlayController overlay, IUIManager ui, IDayProgressService dayProgress)
+        public TutorialDayTwo(TutorialOverlayController overlay, IDayProgressService dayProgress)
         {
             _overlay = overlay;
-            _ui = ui;
             _dayProgress = dayProgress;
         }
 
@@ -31,10 +29,14 @@ namespace Game.Tutorial.Content
 
         public bool IsEligible() => _dayProgress.Current.CurrentDay == 2;
 
+        public void OnRunEnded() => _overlay.HideCallout();
+
         public IReadOnlyList<ITutorialStep> GetSteps()
             => new ITutorialStep[]
             {
-                new TutorialShowTextStep("day_2_placeholder", _overlay, _ui, PlaceholderText, BottomPlacement),
+                new TutorialShowCalloutStep("day_2_placeholder_show", _overlay, PlaceholderText, BottomPlacement),
+                new TutorialDelayStep("day_2_placeholder_wait", TimeSpan.FromSeconds(3)),
+                new TutorialHideCalloutStep("day_2_placeholder_hide", _overlay),
             };
     }
 }

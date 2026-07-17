@@ -76,9 +76,9 @@
     `ftue.*` = replay Day 1); editor-валидатор id-шников (target ↔ `TutorialTargetIds` ↔ скан префабов на
     `TutorialTargetTag`; questId ↔ `quests.json`);
     аналитика (`seq_start`/`step_start` автоматом, `seq_complete` явно).
-  - **Немодальный callout-режим** (pointer+текст **без** dim; тип шага `pointAt`/`callout`) — чтобы
-    подсвечивать контролы на экранах свободного взаимодействия (Open Shop, список жанров, динамический
-    «+» жанра) + динамическая регистрация таргетов из `PreparationGenreRowView` через фасад `TutorialTargets`.
+  - ✅ **Text-only немодальный callout** закрыт: текст без dim/lock, обновление на месте, teardown по концу run'а.
+    Открыто отдельно: pointer/highlight для контролов свободного взаимодействия (Open Shop, список жанров,
+    динамический «+» жанра) + динамическая регистрация таргетов из `PreparationGenreRowView`.
   - ✅ **Строгий day-gate** закрыт в C# `ITutorialSequence.IsEligible()`; отдельный `currentDayIs`
     condition-factory не нужен.
   - **Устойчивость Day 1** (известные ограничения v1 в §6.1): корректный resume посреди дня и cancel-path

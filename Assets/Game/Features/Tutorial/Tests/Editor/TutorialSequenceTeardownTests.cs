@@ -1,128 +1,38 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
-using Game.DayCycle.Day;
 using Game.Tutorial.API;
 using Game.Tutorial.Services;
-using MessagePipe;
 using NUnit.Framework;
 using Save;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Game.Tutorial.Tests.Editor
 {
-    public sealed class TutorialAutoStartGateTests
+    public sealed class TutorialSequenceTeardownTests
     {
         [Test]
-        public async Task BlockedLocationLoaded_DoesNotStartImmediately()
+        public async Task RunCompleted_CallsOnRunEnded()
         {
-            var gate = new TutorialAutoStartGate();
-            gate.Block();
-
-            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
-            var service = BuildService(gate, gameFlow, autoStart: true);
-            try
-            {
-                await service.AfterLoadAsync(CancellationToken.None);
-
-                gameFlow.RaiseLocationLoaded(true);
-
-                Assert.IsFalse(service.IsRunning);
-                Assert.IsNull(service.ActiveSequenceId);
-            }
-            finally
-            {
-                service.Dispose();
-            }
-        }
-
-        [Test]
-        public async Task Release_ReplaysDeferredLocationLoaded()
-        {
-            var gate = new TutorialAutoStartGate();
-            gate.Block();
-
-            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
-            var service = BuildService(gate, gameFlow, autoStart: true);
-            try
-            {
-                await service.AfterLoadAsync(CancellationToken.None);
-                gameFlow.RaiseLocationLoaded(true);
-
-                gate.Release();
-
-                Assert.IsTrue(service.IsRunning);
-                Assert.AreEqual("tutorial_day_1", service.ActiveSequenceId);
-            }
-            finally
-            {
-                service.Dispose();
-            }
-        }
-
-        [Test]
-        public async Task AutoStartFalse_DoesNotReplayDeferredTrigger()
-        {
-            var gate = new TutorialAutoStartGate();
-            gate.Block();
-
-            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
-            var service = BuildService(gate, gameFlow, autoStart: false);
-            try
-            {
-                await service.AfterLoadAsync(CancellationToken.None);
-                gameFlow.RaiseLocationLoaded(true);
-
-                gate.Release();
-
-                Assert.IsFalse(service.IsRunning);
-                Assert.IsNull(service.ActiveSequenceId);
-            }
-            finally
-            {
-                service.Dispose();
-            }
-        }
-
-        [Test]
-        public async Task ResumeFromStep_UsesSavedStepIdBeforeIndex()
-        {
-            var save = new FakeSaveService(new TutorialSaveState
-            {
-                ActiveSequenceId = "tutorial_day_1",
-                NextStepId = "second",
-                NextStepIndex = 0,
-                CompletedSequenceIds = new List<string>()
-            });
             var sequence = new FakeSequence
             {
-                ResumePolicy = TutorialResumePolicy.FromStep,
-                Steps = new ITutorialStep[]
-                {
-                    new BlockingStep("first"),
-                    new BlockingStep("second")
-                }
+                Steps = new ITutorialStep[] { new InstantStep("done") }
             };
-            var stepPub = new RecordingPublisher<TutorialStepChanged>();
             var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
-            var service = BuildService(
-                gate: null,
-                gameFlow: gameFlow,
-                autoStart: true,
-                save: save,
-                sequence: sequence,
-                stepPub: stepPub);
+            var service = BuildService(sequence, gameFlow);
             try
             {
                 await service.AfterLoadAsync(CancellationToken.None);
+                gameFlow.RaiseLocationLoaded(true);
                 await UniTask.Yield(PlayerLoopTiming.Update);
 
-                Assert.IsTrue(service.IsRunning);
-                Assert.AreEqual("second", stepPub.Last.StepId);
-                Assert.AreEqual(1, stepPub.Last.StepIndex);
+                Assert.IsFalse(service.IsRunning);
+                Assert.AreEqual(1, sequence.OnRunEndedCallCount);
             }
             finally
             {
@@ -130,60 +40,130 @@ namespace Game.Tutorial.Tests.Editor
             }
         }
 
-        private static TutorialService BuildService(
-            TutorialAutoStartGate gate,
-            FakeGameFlow gameFlow,
-            bool autoStart,
-            FakeSaveService save = null,
-            ITutorialSequence sequence = null,
-            IReadOnlyList<ITutorialSequence> sequences = null,
-            IDayProgressService dayProgress = null,
-            IPublisher<TutorialStepChanged> stepPub = null)
+        [Test]
+        public async Task RunCancelled_CallsOnRunEnded()
+        {
+            var sequence = new FakeSequence
+            {
+                Steps = new ITutorialStep[] { new BlockingStep("hold") }
+            };
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
+            var service = BuildService(sequence, gameFlow);
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+                gameFlow.RaiseLocationLoaded(true);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                await service.SkipActiveAsync(CancellationToken.None);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                Assert.IsFalse(service.IsRunning);
+                Assert.AreEqual(1, sequence.OnRunEndedCallCount);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task StepThrew_CallsOnRunEnded()
+        {
+            var sequence = new FakeSequence
+            {
+                Steps = new ITutorialStep[] { new ThrowingStep("throw") }
+            };
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
+            var service = BuildService(sequence, gameFlow);
+            try
+            {
+                LogAssert.Expect(LogType.Error, new Regex(@"\[Tutorial\] sequence 'tutorial_test' failed: .*step failed"));
+                await service.AfterLoadAsync(CancellationToken.None);
+                gameFlow.RaiseLocationLoaded(true);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                Assert.IsFalse(service.IsRunning);
+                Assert.AreEqual(1, sequence.OnRunEndedCallCount);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task OnRunEndedThrew_ServiceStillIdle()
+        {
+            var sequence = new FakeSequence
+            {
+                ThrowOnRunEnded = true,
+                Steps = new ITutorialStep[] { new ThrowingStep("throw") }
+            };
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
+            var service = BuildService(sequence, gameFlow);
+            try
+            {
+                LogAssert.Expect(LogType.Error, new Regex(@"\[Tutorial\] sequence 'tutorial_test' failed: .*step failed"));
+                LogAssert.Expect(LogType.Error, new Regex(@"\[Tutorial\] sequence 'tutorial_test' teardown failed: .*teardown failed"));
+                await service.AfterLoadAsync(CancellationToken.None);
+                gameFlow.RaiseLocationLoaded(true);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                Assert.IsFalse(service.IsRunning);
+                Assert.AreEqual(1, sequence.OnRunEndedCallCount);
+                sequence.ThrowOnRunEnded = false;
+                sequence.Steps = new ITutorialStep[] { new BlockingStep("hold_after_teardown_error") };
+
+                Assert.IsTrue(await service.TryStartAsync(sequence.Id, true, CancellationToken.None));
+                Assert.IsTrue(service.IsRunning);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        private static TutorialService BuildService(FakeSequence sequence, FakeGameFlow gameFlow)
             => new(
-                save ?? new FakeSaveService(),
-                sequences ?? new[] { sequence ?? new FakeSequence() },
+                new FakeSaveService(),
+                new ITutorialSequence[] { sequence },
                 hubReadySub: null,
                 startedPub: null,
-                stepPub: stepPub,
+                stepPub: null,
                 completedPub: null,
-                dayProgress: dayProgress,
-                gameFlow: gameFlow,
-                autoStartGate: gate,
-                autoStart: autoStart);
+                gameFlow: gameFlow);
 
         private sealed class FakeSequence : ITutorialSequence
         {
-            public string Id { get; set; } = "tutorial_day_1";
+            public string Id { get; set; } = "tutorial_test";
             public int Priority { get; set; } = 10;
             public TutorialContext Context { get; set; } = TutorialContext.Location;
             public TutorialTrigger Trigger { get; set; } = TutorialTrigger.LocationLoaded;
             public string TriggerParam { get; set; }
             public TutorialResumePolicy ResumePolicy { get; set; } = TutorialResumePolicy.Restart;
-            public bool Eligible { get; set; } = true;
-            public IReadOnlyList<ITutorialStep> Steps { get; set; } = new ITutorialStep[] { new BlockingStep("hold") };
+            public IReadOnlyList<ITutorialStep> Steps { get; set; } = new ITutorialStep[] { new InstantStep("done") };
+            public int OnRunEndedCallCount { get; private set; }
+            public bool ThrowOnRunEnded { get; set; }
 
-            public bool IsEligible() => Eligible;
+            public bool IsEligible() => true;
             public IReadOnlyList<ITutorialStep> GetSteps() => Steps;
-            public void OnRunEnded() { }
+
+            public void OnRunEnded()
+            {
+                OnRunEndedCallCount++;
+                if (ThrowOnRunEnded)
+                    throw new InvalidOperationException("teardown failed");
+            }
         }
 
-        private sealed class FakeDayProgress : IDayProgressService
+        private sealed class InstantStep : ITutorialStep
         {
-            public event Action<DayProgressState> PhaseChanged;
+            public InstantStep(string id) => Id = id;
 
-            public DayProgressState Current { get; } = new();
+            public string Id { get; }
 
-            public UniTask<DayProgressState> LoadAsync(CancellationToken ct) => UniTask.FromResult(Current);
-            public UniTask SetPhaseAsync(DayPhase phase, CancellationToken ct)
-            {
-                Current.CurrentPhase = phase;
-                PhaseChanged?.Invoke(Current);
-                return UniTask.CompletedTask;
-            }
-
-            public UniTask MarkCurrentDayCompletedAsync(CancellationToken ct) => UniTask.CompletedTask;
-            public UniTask AdvanceToNextDayAsync(CancellationToken ct) => UniTask.CompletedTask;
-            public UniTask SaveAsync(CancellationToken ct) => UniTask.CompletedTask;
+            public UniTask ExecuteAsync(CancellationToken ct) => UniTask.CompletedTask;
         }
 
         private sealed class BlockingStep : ITutorialStep
@@ -199,25 +179,19 @@ namespace Game.Tutorial.Tests.Editor
             }
         }
 
-        private sealed class RecordingPublisher<T> : IPublisher<T>
+        private sealed class ThrowingStep : ITutorialStep
         {
-            public T Last { get; private set; }
+            public ThrowingStep(string id) => Id = id;
 
-            public void Publish(T message)
-            {
-                Last = message;
-            }
+            public string Id { get; }
+
+            public UniTask ExecuteAsync(CancellationToken ct)
+                => throw new InvalidOperationException("step failed");
         }
 
         private sealed class FakeSaveService : ISaveService
         {
             private readonly Dictionary<string, object> _modules = new();
-
-            public FakeSaveService(TutorialSaveState initialState = null)
-            {
-                if (initialState != null)
-                    _modules[TutorialSaveKeys.State] = initialState;
-            }
 
             public UniTask LoadAsync(CancellationToken ct) => UniTask.CompletedTask;
             public UniTask SaveAsync(CancellationToken ct, SaveMode mode = SaveMode.Regular) => UniTask.CompletedTask;

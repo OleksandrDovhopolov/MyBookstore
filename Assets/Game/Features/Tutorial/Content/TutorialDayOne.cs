@@ -37,6 +37,8 @@ namespace Game.Tutorial.Content
 
         public bool IsEligible() => _dayProgress.Current.CurrentDay == 1;
 
+        public void OnRunEnded() { }
+
         public IReadOnlyList<ITutorialStep> GetSteps()
             => new ITutorialStep[]
             {

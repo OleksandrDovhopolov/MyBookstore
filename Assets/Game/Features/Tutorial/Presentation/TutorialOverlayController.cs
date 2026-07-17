@@ -58,6 +58,19 @@ namespace Game.Tutorial.Presentation
             _textPanel?.HideView();
         }
 
+        public void ShowCallout(string text, string placement)
+        {
+            if (!EnsureRoot()) return;
+
+            _textPanel?.SetText(text, placement);
+            _pointer?.HideView();
+        }
+
+        public void HideCallout()
+        {
+            _textPanel?.HideView();
+        }
+
         public async UniTask HighlightAndWaitClickAsync(
             RectTransform target, string text, string placement, bool pointer, CancellationToken ct)
         {

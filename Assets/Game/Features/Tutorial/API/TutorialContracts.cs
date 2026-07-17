@@ -44,5 +44,6 @@ namespace Game.Tutorial.API
 
         bool IsEligible();
         IReadOnlyList<ITutorialStep> GetSteps();
+        void OnRunEnded();
     }
 }
