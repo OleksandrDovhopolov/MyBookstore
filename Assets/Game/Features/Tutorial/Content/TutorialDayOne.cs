@@ -17,11 +17,11 @@ namespace Game.Tutorial.Content
         private const string BrowsingPhase = "Browsing";
         private const string DonePhase = "Done";
         private const string EddiSearchText =
-            "Eddi is looking for a book. Watch how the shelf and sale chance work together.";
+            "The client selects books from genres of interest to him.";
         private const string EddiSoldText =
-            "Nice - Eddi bought a {0} book. A good genre match makes passive sales much more likely.";
+            "If the customer finds the book he needs, he continues shopping.";
         private const string EddiFailedText =
-            "That {0} attempt missed. Even interested customers can walk away when the sale chance does not roll your way.";
+            "If not, then he leaves the store.";
         private const string WrapUpText =
             "Day complete - nice work! From tomorrow you'll stock the shelf and choose where to trade yourself.";
         private const string BottomPlacement = "bottom";
@@ -111,7 +111,8 @@ namespace Game.Tutorial.Content
                     _pausePublisher,
                     () => _eddiSold,
                     () => FormatGenreCallout(_eddiSold, _eddiSoldGenre, EddiSoldText),
-                    BottomPlacement),
+                    BottomPlacement,
+                    hideTextAfterTap: true),
                 new TutorialAwaitFactStep("await_eddi_fail", Until(() => _eddiFailed)),
                 new TutorialBlockingCalloutStep(
                     "callout_failed",

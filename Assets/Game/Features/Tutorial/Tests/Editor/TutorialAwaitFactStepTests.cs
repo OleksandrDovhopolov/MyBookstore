@@ -317,6 +317,43 @@ namespace Game.Tutorial.Tests.Editor
             }
         }
 
+        [Test]
+        public async Task HideTextAfterTap_HidesPanelAndPublishesResume()
+        {
+            var h = new OverlayHarness("TutorialBlockingCalloutStepTests_Root");
+            try
+            {
+                var publisher = new RecordingPublisher<SalesPauseRequested>();
+                var step = new TutorialBlockingCalloutStep(
+                    "hide_after_tap",
+                    new FakeUIManager(),
+                    h.Overlay,
+                    publisher,
+                    () => true,
+                    () => "Sold text",
+                    "bottom",
+                    hideTextAfterTap: true);
+
+                var run = step.ExecuteAsync(CancellationToken.None);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                Assert.IsTrue(h.Blackout.gameObject.activeSelf);
+                Assert.IsTrue(h.TextPanel.gameObject.activeSelf);
+
+                h.Blackout.OnPointerClick(null);
+                await run;
+
+                Assert.AreEqual(2, publisher.Messages.Count);
+                Assert.IsFalse(publisher.Messages[1].Paused);
+                Assert.IsFalse(h.Blackout.gameObject.activeSelf);
+                Assert.IsFalse(h.TextPanel.gameObject.activeSelf);
+            }
+            finally
+            {
+                h.Dispose();
+            }
+        }
+
         private sealed class OverlayHarness : IDisposable
         {
             private readonly TutorialOverlaySettings _settings;
