@@ -1,0 +1,10 @@
+[
+  {
+    "id": "day2_missed_sale",
+    "dayIndex": 2,
+    "characterId": null,
+    "passiveAttempts": [
+      { "genre": "Travel", "forceHit": false }
+    ]
+  }
+]

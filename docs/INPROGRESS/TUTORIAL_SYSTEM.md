@@ -377,6 +377,49 @@ TODO GAME-17; перестановка жанров в `quests.json` ломае�
 pointer/highlight для таргетов + динамическая регистрация таргетов из `PreparationGenreRowView` через
 фасад `TutorialTargets`. Text-only немодальный callout уже есть; привязка к таргетам — follow-up этапа 5.
 
+### 6.2 Day 2 — канонический флоу
+
+**Это спека дня 2.** Статус: **не реализовано** — `TutorialDayTwo` пока placeholder-callout. Зафиксировано 2026-07-18.
+Секвенция `tutorial_day_2` (`TutorialDayTwo`, `Context = Location`, `Trigger = LocationLoaded`,
+`ResumePolicy = Restart`, `IsEligible → CurrentDay == 2`).
+
+**Состав дня:** 3 покупателя, **все обычные NPC** (без Eddi/квест-персонажа). Количество настраивается в
+[days.json](../../Assets/Configs/days.json) (`DayConfig.CustomerCount` для дня 2). Только **пассивные** покупки
+(активных запросов нет).
+
+**Цель обучения:** объяснить механику sale chance на живом **провале** пассивной покупки.
+
+#### Флоу
+
+| # | Событие в игре | Что делает туториал |
+|---|---|---|
+| 1 | Идёт день, покупатели совершают пассивные покупки | ждёт первый **провал** пассивной покупки у **любого** покупателя |
+| 2 | У кого-то пассивная покупка провалилась | **blocking** текст: *"The presence of books in the genres themselves does not guarantee sales."* |
+| 3 | Клик | **blocking** текст: *"The more books you have on your shelves in a particular genre, the higher your chance of selling them."* |
+| 4 | Клик | **blocking** текст: *"Click on a book to find out its chance of sale."* |
+
+Все три текста — blocking (dim + pause + tap-to-continue), тем же механизмом, что search intro дня 1
+(`TutorialBlockingCalloutStep` → `SalesPauseRequested` → location-scope `IInteractionLock`).
+
+**Отличие от дня 1 в подписке:** день 2 слушает `SalesPassivePurchaseFailed` **без фильтра по `CharacterId`** —
+ловит первый провал любого из трёх NPC (день 1 фильтровал по `"eddi"`).
+
+#### Открытые вопросы / зависимости
+
+- **Гарантия провала (критично).** Покупатели дня 2 — обычные NPC, их пассивная покупка вероятностная
+  (`RequestedGenrePassiveResolver` + sale-chance gate; сейчас ещё и `DebugMinimumSaleChanceCalculator` флорит
+  шанс на 50%). Гипотетически все 3 могут купить успешно → провала не будет → урок не покажется. Нужен
+  **детерминированный** провал, а не «маловероятно, что все успешны». Решение — см. разбор ниже (реюз
+  `ScriptedPassivePurchasePlan{forceHit:false}`, тот же механизм, что даёт детерминированный Travel-miss у Eddi).
+  Плюс, как и в дне 1, ожидание провала должно иметь fallback (`fail || ResultsShown`), чтобы туториал не завис,
+  если гарантия почему-то не сработала.
+- **Шаг 4 «Click on a book…» требует этапа 5.** Текст-инструкция «кликни по книге» — это blocking-callout,
+  доступный сейчас. Но **форсировать/подсветить** сам клик по книге (highlight + gate + hit-area над карточкой)
+  — это `highlightClick`/этап 5, который **ещё не реализован**. Пока шаг 4 = только инструктивный текст; реальный
+  gated book-click — follow-up.
+- **Конец секвенции** после шага 4 в этой спеке не задан (ждать закрытия окна / клика по книге / просто конец) —
+  уточнить при реализации.
+
 ## 7. Риски / открытые вопросы
 
 | Риск | Митигация |

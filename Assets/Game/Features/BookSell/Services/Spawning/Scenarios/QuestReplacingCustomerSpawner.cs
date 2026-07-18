@@ -82,10 +82,10 @@ namespace Book.Sell.Services
                     continue;
                 }
 
-                var scriptedPlan = BuildScriptedPassivePlan(quest.Config?.ScriptedPassivePurchases);
+                var scriptedPlan = ScriptedPassivePlanFactory.Build(quest.Config?.ScriptedPassivePurchases);
                 var archetype = new QuestCharacterArchetype(
                     new DialoguePayload(dialogueId),
-                    PassiveCountFor(scriptedPlan));
+                    ScriptedPassivePlanFactory.PassiveCountFor(scriptedPlan));
                 questCustomers.Add(CustomerPlanBuilder.Build(
                     $"quest_{quest.Id}", tuning, random,
                     buildMiddle: () => archetype.BuildMiddle(setup, tuning, random),
@@ -95,28 +95,6 @@ namespace Book.Sell.Services
             }
 
             return questCustomers;
-        }
-
-        private static int PassiveCountFor(ScriptedPassivePurchasePlan script)
-            => script is { Count: > 0 } ? script.Count : 1;
-
-        private static ScriptedPassivePurchasePlan BuildScriptedPassivePlan(
-            IReadOnlyList<ScriptedPassivePurchaseConfig> script)
-        {
-            if (script == null || script.Count == 0)
-                return null;
-
-            var attempts = new List<ScriptedPassiveAttempt>(script.Count);
-            for (var i = 0; i < script.Count; i++)
-            {
-                var attempt = script[i];
-                if (attempt == null) continue;
-                attempts.Add(new ScriptedPassiveAttempt(attempt.Genre, attempt.ForceHit));
-            }
-
-            return attempts.Count > 0
-                ? new ScriptedPassivePurchasePlan(attempts)
-                : null;
         }
 
         private CustomerProfile BuildProfile(IQuest quest, SalesSessionSetup setup, ISalesRandom random)
