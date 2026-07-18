@@ -307,28 +307,37 @@ transition-guard, стартует прямо во время перехода. 
 | 2 | Eddi начинает диалог | ничего |
 | 3 | Диалог завершён → начинается первая пассивная продажа | **здесь начинается активная часть**: blocking search intro |
 | 4 | Eddi ищет книгу | fullscreen text `EddiSearchText`, sales simulation paused; после тапа blackout уходит, тот же текст остаётся callout'ом |
-| 5 | Пассивная покупка **успешна** | callout обновляется на `EddiSoldText` (жанр из сигнала) |
-| 6 | Вторая пассивная продажа **провалена** | callout обновляется на `EddiFailedText` (жанр из сигнала), держится до ухода Eddi, гаснет |
-| 7 | Eddi ушёл; день доигран; показан `ResultsWindow` | callout с финальным текстом **поверх** окна |
+| 5 | Пассивная покупка **успешна** | fullscreen text `EddiSoldText` (жанр из сигнала), после тапа остаётся callout'ом |
+| 6 | Вторая пассивная продажа **провалена** | fullscreen text `EddiFailedText` (жанр из сигнала), после тапа остаётся callout'ом до ухода Eddi, затем гаснет |
+| 7 | Eddi ушёл; день доигран; показан `ResultsWindow` | fullscreen final text **поверх** окна; после тапа остаётся callout'ом |
 | 8 | Игрок закрывает `ResultsWindow` | финальный callout гаснет, **секвенция завершена** |
 
-Day 1 почти весь немодальный, но search intro — единственный осознанный blocking-бит. Он не использует
-глобальный `Time.timeScale`: туториал публикует `SalesPauseRequested`, а listener в location scope держит
-`IInteractionLock`, тот же domain-lock, который останавливает день во время диалога/миниигры. `SetManualLock`
-в этом шаге нужен только как UI-защита от всплывающих окон; саму симуляцию продаж он не останавливает.
+Каждый текстовый бит Day 1 начинается как blocking-intro: fullscreen blackout + tap-to-continue + pause sales
+simulation. После тапа blackout и pause снимаются, но та же текстовая панель остаётся видимой как callout до
+следующего текста, hide-step или конца run'а. Пауза не использует глобальный `Time.timeScale`: туториал
+публикует `SalesPauseRequested`, а listener в location scope держит `IInteractionLock`, тот же domain-lock,
+который останавливает день во время диалога/миниигры. `SetManualLock` в этом шаге нужен только как UI-защита
+от всплывающих окон; саму симуляцию продаж он не останавливает.
+
+Известная деталь — **микро-окно перед заморозкой**: `_eddiBrowsing` латчится в `PassivePurchaseStep.Enter`, а
+`SalesPauseRequested(true)` публикуется на кадр-два позже (завершение `awaitFact` → `PersistAsync` → старт
+blocking-шага). В этом окне (несколько кадров + save ~100 мс) симуляция ещё тикает, и Eddi чуть-чуть листает до
+заморозки. При `BrowseDuration ~3.5 с` это ~3%, продажу поймать невозможно — freeze стабильно застаёт Eddi в
+поиске, — но окно ненулевое. Benign; фиксируется здесь, чтобы не искать «почему покупатель дёрнулся под dim».
 
 #### Принятые решения (разбор спорных мест)
 
 - **Финальный текст (п.7) — callout, а не `TutorialShowTextStep`.** В исходной формулировке было
   противоречие («TutorialShowTextStep (не блокирующий, без затемнения)») — `TutorialShowTextStep` по
-  устройству модальный. Победило требование «без затемнения»: день 1 неблокирующий целиком.
+  устройству модальный и скрывает текст в конце шага. Победила новая гибридная форма: blocking-intro по
+  клику превращается в тот же callout и живёт до закрытия `ResultsWindow`.
 - **Конец (п.8) — показать → ждать закрытия `ResultsWindow` → завершиться.** `OnRunEnded()` гасит callout,
   поэтому финальный текст живёт ровно столько, сколько игрок смотрит на результаты. Таймера нет.
 - **`EddiFailedText` (п.6) гаснет по событию ухода Eddi.** Берём фазу `Done`, а не фиксированную задержку:
   если уход покупателей замедлится или ускорится, текст останется синхронизирован с тем же игровым битом.
-- **Blocking только на search intro.** `welcome` / `sale_chance` убраны намеренно: активная часть начинается
-  после Eddi-диалога, когда приходит `Browsing`. На этом моменте Eddi уже ищет книгу, поэтому можно
-  остановить sales tick, дать игроку прочитать текст, а по тапу оставить тот же текст как немодальный callout.
+- **Blocking применяется ко всем Day 1 текстам.** `welcome` / `sale_chance` убраны намеренно: активная часть
+  начинается после Eddi-диалога, когда приходит `Browsing`. Каждый последующий факт (sale/fail/results)
+  возвращает blackout с новым текстом; по тапу текст остаётся callout'ом, а день продолжает идти.
 
 #### Реализация
 
@@ -338,9 +347,10 @@ Day 1 почти весь немодальный, но search intro — един
 закрывает гонку: день стартует автоматически (`SalesScreenView.OnInit` → `StartDayAsync`), и факт может
 случиться раньше, чем до него дойдёт шаг.
 
-Шаги: `awaitFact(Browsing || ResultsShown)` → blocking callout + sales pause → `awaitFact(sale || ResultsShown)`
-→ callout → `awaitFact(fail || ResultsShown)` → callout → `awaitFact(Eddi Done || ResultsShown)` → hide →
-`awaitWindow(ResultsShown)` → callout → `awaitWindow(!ResultsShown)` → конец.
+Шаги: `awaitFact(Browsing || ResultsShown)` → blocking search → `awaitFact(sale || ResultsShown)` →
+blocking sold → `awaitFact(fail || ResultsShown)` → blocking failed →
+`awaitFact(Eddi Done || ResultsShown)` → hide → `awaitWindow(ResultsShown)` → blocking wrap →
+`awaitWindow(!ResultsShown)` → конец.
 
 Day 1 не содержит ни одного таймера и не зависит от `SalesTuning`: изменение длительности browsing,
 commit-feedback или ухода покупателей только растягивает соответствующий игровой бит.
@@ -548,8 +558,8 @@ runtime-warning'ом с auto-advance. Для Day 1 с Eddi выигрыш кон
 
 ### 9.3 Этапы
 
-Результаты, к которым идём: **(1)** день 1 с Eddi и неблокирующими текстами; **(2)** день 2 с NPC,
-блокирующими текстами и ожиданием клика.
+Результаты, к которым идём: **(1)** день 1 с Eddi и blocking-intro текстами, которые после клика остаются
+callout'ами; **(2)** день 2 с NPC, блокирующими текстами и ожиданием клика.
 
 | # | Этап | Содержание | Критерий |
 |---|---|---|---|

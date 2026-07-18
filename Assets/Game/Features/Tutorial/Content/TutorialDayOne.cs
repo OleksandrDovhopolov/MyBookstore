@@ -104,15 +104,21 @@ namespace Game.Tutorial.Content
                     () => EddiSearchText,
                     BottomPlacement),
                 new TutorialAwaitFactStep("await_eddi_sale", Until(() => _eddiSold)),
-                new TutorialShowCalloutStep(
+                new TutorialBlockingCalloutStep(
                     "callout_sold",
+                    _ui,
                     _overlay,
+                    _pausePublisher,
+                    () => _eddiSold,
                     () => FormatGenreCallout(_eddiSold, _eddiSoldGenre, EddiSoldText),
                     BottomPlacement),
                 new TutorialAwaitFactStep("await_eddi_fail", Until(() => _eddiFailed)),
-                new TutorialShowCalloutStep(
+                new TutorialBlockingCalloutStep(
                     "callout_failed",
+                    _ui,
                     _overlay,
+                    _pausePublisher,
+                    () => _eddiFailed,
                     () => FormatGenreCallout(_eddiFailed, _eddiFailedGenre, EddiFailedText),
                     BottomPlacement),
                 new TutorialAwaitFactStep("await_eddi_left", Until(() => _eddiLeft)),
@@ -122,7 +128,14 @@ namespace Game.Tutorial.Content
                 // day still completes cleanly, but the lesson silently did not happen. Report it.
                 new TutorialAssertStep("verify_eddi_participated", () => _eddiSold, ReportEddiIncomplete),
                 new TutorialAwaitWindowStep("wait_results_window", () => ResultsShown),
-                new TutorialShowCalloutStep("wrap_up", _overlay, WrapUpText, BottomPlacement),
+                new TutorialBlockingCalloutStep(
+                    "wrap_up",
+                    _ui,
+                    _overlay,
+                    _pausePublisher,
+                    () => true,
+                    () => WrapUpText,
+                    BottomPlacement),
                 new TutorialAwaitWindowStep("wait_results_closed", () => !ResultsShown),
             };
 

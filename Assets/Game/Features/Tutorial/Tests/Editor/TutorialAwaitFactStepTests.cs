@@ -263,6 +263,60 @@ namespace Game.Tutorial.Tests.Editor
             }
         }
 
+        [Test]
+        public async Task ConsecutiveBlockingCallouts_ReblockAndReplaceText()
+        {
+            var h = new OverlayHarness("TutorialBlockingCalloutStepTests_Root");
+            try
+            {
+                var ui = new FakeUIManager();
+                var publisher = new RecordingPublisher<SalesPauseRequested>();
+                var first = new TutorialBlockingCalloutStep(
+                    "first",
+                    ui,
+                    h.Overlay,
+                    publisher,
+                    () => true,
+                    () => "text_1",
+                    "bottom");
+                var second = new TutorialBlockingCalloutStep(
+                    "second",
+                    ui,
+                    h.Overlay,
+                    publisher,
+                    () => true,
+                    () => "text_2",
+                    "bottom");
+
+                var firstRun = first.ExecuteAsync(CancellationToken.None);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+                Assert.IsTrue(h.Blackout.gameObject.activeSelf);
+                Assert.IsTrue(publisher.Messages[0].Paused);
+
+                h.Blackout.OnPointerClick(null);
+                await firstRun;
+                Assert.IsFalse(h.Blackout.gameObject.activeSelf);
+                Assert.IsTrue(h.TextPanel.gameObject.activeSelf);
+                Assert.IsFalse(publisher.Messages[1].Paused);
+
+                var secondRun = second.ExecuteAsync(CancellationToken.None);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+                Assert.IsTrue(h.Blackout.gameObject.activeSelf, "Second blocking callout must dim again.");
+                Assert.IsTrue(h.TextPanel.gameObject.activeSelf, "The text panel is reused and remains visible.");
+                Assert.IsTrue(publisher.Messages[2].Paused);
+
+                h.Blackout.OnPointerClick(null);
+                await secondRun;
+                Assert.IsFalse(h.Blackout.gameObject.activeSelf);
+                Assert.IsTrue(h.TextPanel.gameObject.activeSelf);
+                Assert.IsFalse(publisher.Messages[3].Paused);
+            }
+            finally
+            {
+                h.Dispose();
+            }
+        }
+
         private sealed class OverlayHarness : IDisposable
         {
             private readonly TutorialOverlaySettings _settings;

@@ -81,8 +81,8 @@
     динамический «+» жанра) + динамическая регистрация таргетов из `PreparationGenreRowView`.
   - ✅ **Day 1 с Eddi / результат 1** закрыт: Eddi-факты приходят из BookSell через MessagePipe-сигналы,
     Day 1 ждёт завершения Eddi-диалога через browsing, обновляет callout по sale/fail с жанром из сигнала
-    и не зависит напрямую от `Book.Sell`. Search intro — единственный blocking-бит: sales tick ставится на
-    паузу через `SalesPauseRequested` → location-scope `IInteractionLock`, после тапа текст остаётся callout'ом.
+    и не зависит напрямую от `Book.Sell`. Каждый Day 1 текст начинается как blocking-intro: sales tick ставится
+    на паузу через `SalesPauseRequested` → location-scope `IInteractionLock`, после тапа текст остаётся callout'ом.
   - ✅ **Строгий day-gate** закрыт в C# `ITutorialSequence.IsEligible()`; отдельный `currentDayIs`
     condition-factory не нужен.
   - **Устойчивость Day 1** (известные ограничения v1 в §6.1): корректный resume посреди дня и cancel-path
