@@ -114,7 +114,10 @@ namespace GameplayUI
                     }
 
                     if (enteredLocation)
+                    {
+                        hud.SetHudVisible(true);
                         return;
+                    }
 
                     await _transition.PlayRevealAsync(ct);
                 }

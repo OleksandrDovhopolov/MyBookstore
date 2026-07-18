@@ -14,7 +14,8 @@
         "UnityEditor.TestRunner",
         "DayCycle",
         "Game.Quest.API",
-        "Game.Core.UI"
+        "Game.Core.UI",
+        "Infrastructure"
     ],
     "includePlatforms": [
         "Editor"

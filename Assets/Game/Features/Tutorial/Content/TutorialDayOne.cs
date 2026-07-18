@@ -34,6 +34,7 @@ namespace Game.Tutorial.Content
         private readonly ISubscriber<SalesCustomerPhaseChanged> _phaseSub;
         private readonly ISubscriber<SalesPassiveSaleHappened> _saleSub;
         private readonly ISubscriber<SalesPassivePurchaseFailed> _failSub;
+        private readonly IPublisher<SalesPauseRequested> _pausePublisher;
         private readonly IAnalyticsService _analytics;
         private readonly List<IDisposable> _subscriptions = new();
         private bool _eddiBrowsing;
@@ -50,6 +51,7 @@ namespace Game.Tutorial.Content
             ISubscriber<SalesCustomerPhaseChanged> phaseSub,
             ISubscriber<SalesPassiveSaleHappened> saleSub,
             ISubscriber<SalesPassivePurchaseFailed> failSub,
+            IPublisher<SalesPauseRequested> pausePublisher,
             IAnalyticsService analytics)
         {
             _overlay = overlay;
@@ -58,6 +60,7 @@ namespace Game.Tutorial.Content
             _phaseSub = phaseSub;
             _saleSub = saleSub;
             _failSub = failSub;
+            _pausePublisher = pausePublisher;
             _analytics = analytics;
         }
 
@@ -82,6 +85,7 @@ namespace Game.Tutorial.Content
 
         public void OnRunEnded()
         {
+            _pausePublisher.Publish(new SalesPauseRequested(false));
             DisposeSubscriptions();
             ResetLatch();
             _overlay.HideCallout();
@@ -91,10 +95,13 @@ namespace Game.Tutorial.Content
             => new ITutorialStep[]
             {
                 new TutorialAwaitFactStep("await_eddi_dialogue_complete", Until(() => _eddiBrowsing)),
-                new TutorialShowCalloutStep(
+                new TutorialBlockingCalloutStep(
                     "callout_search",
+                    _ui,
                     _overlay,
-                    () => _eddiBrowsing ? EddiSearchText : null,
+                    _pausePublisher,
+                    () => _eddiBrowsing,
+                    () => EddiSearchText,
                     BottomPlacement),
                 new TutorialAwaitFactStep("await_eddi_sale", Until(() => _eddiSold)),
                 new TutorialShowCalloutStep(

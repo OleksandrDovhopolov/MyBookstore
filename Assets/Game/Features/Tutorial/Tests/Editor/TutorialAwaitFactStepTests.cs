@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +8,8 @@ using Cysharp.Threading.Tasks;
 using Game.Tutorial.Content;
 using Game.Tutorial.Presentation;
 using Game.UI;
+using Infrastructure.TutorialUI;
+using MessagePipe;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -122,6 +126,223 @@ namespace Game.Tutorial.Tests.Editor
             public Transform WindowsRoot { get; }
             public GameObject Blocker => null;
             public MonoBehaviour TransitionAnimation => null;
+        }
+    }
+
+    public sealed class TutorialBlockingCalloutStepTests
+    {
+        [Test]
+        public async Task HappyPath_PublishesPauseSymmetrically_AndLeavesPanelVisible()
+        {
+            var h = new OverlayHarness("TutorialBlockingCalloutStepTests_Root");
+            try
+            {
+                var ui = new FakeUIManager();
+                var publisher = new RecordingPublisher<SalesPauseRequested>();
+                var step = new TutorialBlockingCalloutStep(
+                    "blocking",
+                    ui,
+                    h.Overlay,
+                    publisher,
+                    () => true,
+                    () => "Search text",
+                    "bottom");
+
+                var run = step.ExecuteAsync(CancellationToken.None);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                Assert.AreEqual(1, publisher.Messages.Count);
+                Assert.IsTrue(publisher.Messages[0].Paused);
+                Assert.IsTrue(ui.HasManualLock);
+
+                h.Blackout.OnPointerClick(null);
+                await run;
+
+                Assert.AreEqual(2, publisher.Messages.Count);
+                Assert.IsFalse(publisher.Messages[1].Paused);
+                Assert.IsFalse(ui.HasManualLock);
+                Assert.IsFalse(h.Blackout.gameObject.activeSelf);
+                Assert.IsTrue(h.TextPanel.gameObject.activeSelf);
+            }
+            finally
+            {
+                h.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task GateFalse_DoesNotCreateOverlayOrPublishPause()
+        {
+            var h = new OverlayHarness("TutorialBlockingCalloutStepTests_Root");
+            try
+            {
+                var publisher = new RecordingPublisher<SalesPauseRequested>();
+                var step = new TutorialBlockingCalloutStep(
+                    "gate_false",
+                    new FakeUIManager(),
+                    h.Overlay,
+                    publisher,
+                    () => false,
+                    () => "Search text",
+                    "bottom");
+
+                await step.ExecuteAsync(CancellationToken.None);
+
+                Assert.AreEqual(0, publisher.Messages.Count);
+                Assert.IsNull(h.Root.transform.Find("TutorialOverlayRoot"));
+            }
+            finally
+            {
+                h.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task EmptyLazyText_DoesNotCreateOverlayOrPublishPause()
+        {
+            var h = new OverlayHarness("TutorialBlockingCalloutStepTests_Root");
+            try
+            {
+                var publisher = new RecordingPublisher<SalesPauseRequested>();
+                var step = new TutorialBlockingCalloutStep(
+                    "empty_text",
+                    new FakeUIManager(),
+                    h.Overlay,
+                    publisher,
+                    () => true,
+                    () => null,
+                    "bottom");
+
+                await step.ExecuteAsync(CancellationToken.None);
+
+                Assert.AreEqual(0, publisher.Messages.Count);
+                Assert.IsNull(h.Root.transform.Find("TutorialOverlayRoot"));
+            }
+            finally
+            {
+                h.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task CancellationAfterPause_PublishesResume()
+        {
+            var h = new OverlayHarness("TutorialBlockingCalloutStepTests_Root");
+            using var cts = new CancellationTokenSource();
+            try
+            {
+                var publisher = new RecordingPublisher<SalesPauseRequested>();
+                var step = new TutorialBlockingCalloutStep(
+                    "cancel",
+                    new FakeUIManager(),
+                    h.Overlay,
+                    publisher,
+                    () => true,
+                    () => "Search text",
+                    "bottom");
+
+                var run = step.ExecuteAsync(cts.Token);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+                cts.Cancel();
+
+                try
+                {
+                    await run;
+                }
+                catch (OperationCanceledException)
+                {
+                }
+
+                Assert.AreEqual(2, publisher.Messages.Count);
+                Assert.IsTrue(publisher.Messages[0].Paused);
+                Assert.IsFalse(publisher.Messages[1].Paused);
+            }
+            finally
+            {
+                h.Dispose();
+            }
+        }
+
+        private sealed class OverlayHarness : IDisposable
+        {
+            private readonly TutorialOverlaySettings _settings;
+            private readonly GameObject _panelPrefab;
+
+            public OverlayHarness(string rootName)
+            {
+                Root = new GameObject(rootName);
+                _panelPrefab = new GameObject("TutorialTextPanelPrefab", typeof(RectTransform), typeof(TutorialTextPanelView));
+                _settings = TutorialOverlaySettings.CreateDefault();
+                typeof(TutorialOverlaySettings)
+                    .GetField("_textPanelPrefab", BindingFlags.Instance | BindingFlags.NonPublic)
+                    ?.SetValue(_settings, _panelPrefab.GetComponent<TutorialTextPanelView>());
+                Overlay = new TutorialOverlayController(new FakeCanvasRoot(Root.transform), _settings);
+            }
+
+            public GameObject Root { get; }
+            public TutorialOverlayController Overlay { get; }
+            public TutorialBlackoutView Blackout => Root.transform
+                .Find("TutorialOverlayRoot/Blackout")
+                .GetComponent<TutorialBlackoutView>();
+            public TutorialTextPanelView TextPanel => Root.GetComponentInChildren<TutorialTextPanelView>(true);
+
+            public void Dispose()
+            {
+                UnityEngine.Object.DestroyImmediate(Root);
+                UnityEngine.Object.DestroyImmediate(_panelPrefab);
+                UnityEngine.Object.DestroyImmediate(_settings);
+            }
+        }
+
+        private sealed class FakeCanvasRoot : IUICanvasRoot
+        {
+            public FakeCanvasRoot(Transform root)
+            {
+                HudRoot = root;
+                WindowsRoot = root;
+            }
+
+            public Transform HudRoot { get; }
+            public Transform WindowsRoot { get; }
+            public GameObject Blocker => null;
+            public MonoBehaviour TransitionAnimation => null;
+        }
+
+        private sealed class FakeUIManager : IUIManager
+        {
+            private readonly LockMonitor _locks = new();
+
+            public event Action<IWindowController> WindowShown;
+            public bool HasManualLock => _locks.HasAnyLock;
+
+            public UniTask<T> ShowAsync<T>(WindowArgs args = null, CancellationToken ct = default)
+                where T : class, IWindowController, new()
+                => UniTask.FromResult<T>(null);
+
+            public UniTask HideAsync<T>(bool forceClose = false, CancellationToken ct = default)
+                where T : class, IWindowController
+                => UniTask.CompletedTask;
+
+            public UniTask HideAsync(IWindowController controller, bool forceClose = false, CancellationToken ct = default)
+                => UniTask.CompletedTask;
+
+            public UniTask HideTopAsync(WindowLayer? layer = null, CancellationToken ct = default)
+                => UniTask.CompletedTask;
+
+            public IWindowController GetTopWindow(WindowLayer? layer = null) => null;
+            public bool IsWindowShown<T>() where T : class, IWindowController => false;
+            public bool IsWindowSpawned<T>() where T : class, IWindowController => false;
+            public Game.UI.Lock SetManualLock(object owner) => _locks.Acquire(owner);
+        }
+
+        private sealed class RecordingPublisher<T> : IPublisher<T>
+        {
+            public List<T> Messages { get; } = new();
+
+            public void Publish(T message)
+            {
+                Messages.Add(message);
+            }
         }
     }
 }

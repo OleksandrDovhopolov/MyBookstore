@@ -58,6 +58,11 @@ namespace Game.Tutorial.Presentation
             _textPanel?.HideView();
         }
 
+        public void HideBlackout()
+        {
+            _blackout?.HideView();
+        }
+
         public void ShowCallout(string text, string placement)
         {
             if (!EnsureRoot()) return;
