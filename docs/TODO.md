@@ -135,17 +135,29 @@
   - `QuestConfig`/`IQuest` очищены от `CharacterId`/`DialogueId`/`ScriptedPassivePurchases`; старые
     quest-spawner классы удалены.
 
-- [ ] **GAME-17. Валидация связки «FTUE-пресет ↔ полка дня 1 ↔ сценарный скрипт».**
-  Туториал дня 1 держится на согласии трёх независимых мест: `FtueBootstrapper.PresetCounts` сеет книгу
-  жанра `Fact` → `FirstDayEntryFlow.BuildFirstDayShelfPreset()` прибивает `Fact`/`Travel` на полку
-  (`AddFirstByGenre`) → `customer_scripts.json` / `eddi_intro.passiveAttempts` требует `Fact forceHit: true`.
-  Ноль валидации:
-  при рассинхроне `ScriptedPassivePurchaseResolver` пишет **warning** и возвращает miss, а
-  `RemoveRemainingPassivePurchases` (Candidate D) тут же удаляет второй beat — то есть урок про sale chance
-  молча исчезает, а в логе одна строка. Что сделать:
-  - Провал форсированного хита — это дефект контента: `LogError` вместо `LogWarning`.
-  - Editor-валидатор: жанры скрипта существуют в `BookConfig.PrimaryGenre` и покрыты FTUE-пресетом
-    (по образцу валидатора id-шников из GAME-10 §7).
+- [ ] **GAME-17. Валидация связки «полка дня ↔ сценарный скрипт» (дни 1 и 2).**
+  Уроки туториала держатся на согласии независимых мест, и **ни одно не валидируется** — при рассинхроне
+  `ScriptedPassivePurchaseResolver` пишет одну строку в лог, а урок молча ломается.
+
+  **День 1 (forced HIT):** `FtueBootstrapper.PresetCounts` сеет книгу жанра `Fact` →
+  `FirstDayEntryFlow.BuildFirstDayShelfPreset()` прибивает `Fact`/`Travel` на полку (`AddFirstByGenre`) →
+  `customer_scripts.json` / `eddi_intro.passiveAttempts` требует `Fact forceHit: true`. Инвариант: жанр
+  форсированного **хита обязан быть на полке** — иначе `ScriptedPassivePurchaseResolver` не находит сток,
+  форсированный хит становится miss, а `RemoveRemainingPassivePurchases` (Candidate D) тут же выкидывает второй
+  beat → урок про sale chance исчезает.
+
+  **День 2 (forced MISS):** `day2_missed_sale.passiveAttempts` требует `Travel forceHit: false`, а урок —
+  «книги в жанре есть, но продажа не гарантирована». Инвариант **обратный, но родственный**: жанр
+  форсированного промаха обязан быть **на полке дня 2** — иначе «книги были, а не продалось» это ложь (книг не
+  было), и урок читается неверно. Полка дня 2 стокается не из FTUE-пресета (это day-1 seeding), а из
+  preparation/restock-флоу — валидировать против него.
+
+  Что сделать:
+  - Провал форсированного **хита** — дефект контента: `LogError` вместо `LogWarning` (уже частично — проверить).
+  - Editor-валидатор/EditMode-тест по **всем** записям `customer_scripts.json`: жанр каждой `PassiveAttempt`
+    существует в `BookConfig.PrimaryGenre` и **присутствует на полке того дня**, к которому привязан скрипт
+    (день из `DayIndex`, либо день визита для `ActivationQuestId`-скриптов). По образцу валидатора id-шников
+    из GAME-10 §7; EditMode предпочтительнее editor-валидатора (падает в CI).
   - Связано с GAME-15 (пресет FTUE vs каталог книг) — чинить парно.
 
 - [ ] **GAME-18. Condition-driven запуск туториалов (re-evaluation loop в `TutorialService`).**

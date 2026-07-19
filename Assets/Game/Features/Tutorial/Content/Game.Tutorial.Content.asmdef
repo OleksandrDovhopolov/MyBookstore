@@ -9,7 +9,8 @@
         "DayCycle",
         "MessagePipe",
         "Game.GameplayUI.Signals",
-        "Analytics"
+        "Analytics",
+        "Infrastructure"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

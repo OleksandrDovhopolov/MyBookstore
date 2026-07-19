@@ -1075,6 +1075,7 @@ GameObject:
   - component: {fileID: 8192651978420619540}
   - component: {fileID: 4016592294506036714}
   - component: {fileID: 182752884887178524}
+  - component: {fileID: 2359602457028433362}
   m_Layer: 5
   m_Name: BookGenreShelf
   m_TagString: Untagged
@@ -1157,6 +1158,19 @@ MonoBehaviour:
   _slideDistance: 200
   _ease: 13
   _startShown: 1
+--- !u!114 &2359602457028433362
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6241554979539080085}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dddf468c31cac9f4380a7292a5cdb548, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _targetId: location.genre_book_count_panel
 --- !u!1 &6249064203545711063
 GameObject:
   m_ObjectHideFlags: 0
