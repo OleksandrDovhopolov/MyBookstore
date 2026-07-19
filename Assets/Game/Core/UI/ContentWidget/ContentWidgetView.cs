@@ -28,10 +28,13 @@ namespace Game.UI.ContentWidget
         private int _showVersion;
 
         public void ShowContentView(ContentWidgetDataBase data, RectTransform anchor)
+            => ShowContentView(data, anchor, autoCloseEnabled: true);
+
+        public void ShowContentView(ContentWidgetDataBase data, RectTransform anchor, bool autoCloseEnabled)
         {
             CancelPendingShow();
             _showCts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
-            ShowContentViewAsync(data, anchor, _showCts.Token, ++_showVersion).Forget();
+            ShowContentViewAsync(data, anchor, autoCloseEnabled, _showCts.Token, ++_showVersion).Forget();
         }
 
         public void RequestClose()
@@ -49,6 +52,7 @@ namespace Game.UI.ContentWidget
         private async UniTaskVoid ShowContentViewAsync(
             ContentWidgetDataBase data,
             RectTransform anchor,
+            bool autoCloseEnabled,
             CancellationToken ct,
             int version)
         {
@@ -93,7 +97,8 @@ namespace Game.UI.ContentWidget
                 if (ct.IsCancellationRequested || version != _showVersion) return;
 
                 Reposition(anchor);
-                StartAutoCloseTimer(ct, version);
+                if (autoCloseEnabled)
+                    StartAutoCloseTimer(ct, version);
             }
             catch (OperationCanceledException)
             {

@@ -354,6 +354,55 @@ namespace Game.Tutorial.Tests.Editor
             }
         }
 
+        [Test]
+        public async Task NoDimNoUiLock_ShowsTextWithoutBlackout_AndKeepsUiUnlocked()
+        {
+            var h = new OverlayHarness("TutorialBlockingCalloutStepTests_NoDim");
+            using var cts = new CancellationTokenSource();
+            try
+            {
+                var ui = new FakeUIManager();
+                var publisher = new RecordingPublisher<SalesPauseRequested>();
+                var step = new TutorialBlockingCalloutStep(
+                    "no_dim",
+                    ui,
+                    h.Overlay,
+                    publisher,
+                    () => true,
+                    () => "Chance text",
+                    "bottom",
+                    hideTextAfterTap: true,
+                    dimBackground: false,
+                    lockUi: false);
+
+                var run = step.ExecuteAsync(cts.Token);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                Assert.AreEqual(1, publisher.Messages.Count);
+                Assert.IsTrue(publisher.Messages[0].Paused);
+                Assert.IsFalse(ui.HasManualLock);
+                Assert.IsFalse(h.Blackout.gameObject.activeSelf);
+                Assert.IsTrue(h.TextPanel.gameObject.activeSelf);
+
+                cts.Cancel();
+                try
+                {
+                    await run;
+                }
+                catch (OperationCanceledException)
+                {
+                }
+
+                Assert.AreEqual(2, publisher.Messages.Count);
+                Assert.IsFalse(publisher.Messages[1].Paused);
+                Assert.IsFalse(h.TextPanel.gameObject.activeSelf);
+            }
+            finally
+            {
+                h.Dispose();
+            }
+        }
+
         private sealed class OverlayHarness : IDisposable
         {
             private readonly TutorialOverlaySettings _settings;

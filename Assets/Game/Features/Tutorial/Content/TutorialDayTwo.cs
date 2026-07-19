@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Analytics;
 using Game.DayCycle.Day;
 using Game.DayCycle.Results.UI;
 using Game.Tutorial.API;
 using Game.Tutorial.Presentation;
 using Game.UI;
+using Game.UI.ContentWidget;
 using Infrastructure.TutorialUI;
 using MessagePipe;
 using UnityEngine;
@@ -78,6 +80,7 @@ namespace Game.Tutorial.Content
             DisposeSubscriptions();
             ResetLatch();
             _overlay.HideCallout();
+            HideContentWidgetIfShown();
         }
 
         public IReadOnlyList<ITutorialStep> GetSteps()
@@ -129,7 +132,10 @@ namespace Game.Tutorial.Content
                     () => _passiveFailed,
                     () => Text4,
                     BottomPlacement,
-                    hideTextAfterTap: true),
+                    hideTextAfterTap: true,
+                    dimBackground: false,
+                    lockUi: false),
+                new TutorialHideWindowStep<ContentWidgetController>("hide_sale_chance_widget", _ui),
             };
 
         private void OnSalesPassivePurchaseFailed(SalesPassivePurchaseFailed message)
@@ -159,6 +165,20 @@ namespace Game.Tutorial.Content
             for (var i = 0; i < _subscriptions.Count; i++)
                 _subscriptions[i]?.Dispose();
             _subscriptions.Clear();
+        }
+
+        private void HideContentWidgetIfShown()
+        {
+            HideWindowIfShown<ContentWidgetController>();
+        }
+
+        private void HideWindowIfShown<TWindow>()
+            where TWindow : class, IWindowController
+        {
+            if (_ui == null || !_ui.IsWindowShown<TWindow>())
+                return;
+
+            _ui.HideAsync<TWindow>(forceClose: true).Forget();
         }
     }
 }

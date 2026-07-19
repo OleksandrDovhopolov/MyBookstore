@@ -379,46 +379,79 @@ pointer/highlight для таргетов + динамическая регис�
 
 ### 6.2 Day 2 — канонический флоу
 
-**Это спека дня 2.** Статус: **не реализовано** — `TutorialDayTwo` пока placeholder-callout. Зафиксировано 2026-07-18.
-Секвенция `tutorial_day_2` (`TutorialDayTwo`, `Context = Location`, `Trigger = LocationLoaded`,
-`ResumePolicy = Restart`, `IsEligible → CurrentDay == 2`).
+**Это спека дня 2.** Зафиксировано 2026-07-18; **пересмотрено 2026-07-19** (модель «весь урок блокирует
+покупки» + добавлен `highlightClick`-шаг после реализации этапа 5). Секвенция `tutorial_day_2`
+(`TutorialDayTwo`, `Context = Location`, `Trigger = LocationLoaded`, `ResumePolicy = Restart`,
+`IsEligible → CurrentDay == 2`).
 
 **Состав дня:** 3 покупателя, **все обычные NPC** (без Eddi/квест-персонажа). Количество настраивается в
 [days.json](../../Assets/Configs/days.json) (`DayConfig.CustomerCount` для дня 2). Только **пассивные** покупки
 (активных запросов нет).
 
-**Цель обучения:** объяснить механику sale chance на живом **провале** пассивной покупки.
+**Цель обучения:** показать игроку, **как посмотреть % шанса продажи книги** (sale-chance виджет), оттолкнувшись
+от живого **провала** пассивной покупки.
+
+**Ключевое решение (2026-07-19): весь урок — единый блокирующий блок.** С момента первого провала и до тапа по
+финальному тексту **покупки всех NPC заморожены**; день физически не может закончиться посреди урока. Это не
+«пауза на каждый текст», а **одна удерживаемая пауза на всю цепочку** (обоснование — ниже, в открытых вопросах:
+день короткий, 3 пассивных покупателя ≈ 20–25 c, и per-step-пауза оставляла бы highlightClick-шаг без заморозки —
+день доигрывался сам, а шаг парковался, см. лог-разбор от 2026-07-19).
 
 #### Флоу
 
 | # | Событие в игре | Что делает туториал |
 |---|---|---|
 | 1 | Идёт день, покупатели совершают пассивные покупки | ждёт первый **провал** пассивной покупки у **любого** покупателя |
-| 2 | У кого-то пассивная покупка провалилась | **blocking** текст: *"The presence of books in the genres themselves does not guarantee sales."* |
-| 3 | Клик | **blocking** текст: *"The more books you have on your shelves in a particular genre, the higher your chance of selling them."* |
-| 4 | Клик | **blocking** текст: *"Click on a book to find out its chance of sale."* |
+| 2 | У кого-то пассивная покупка провалилась | **→ включается заморозка покупок на весь урок.** Blocking текст: *"The presence of books in the genres themselves does not guarantee sales."* |
+| 3 | Тап | Blocking текст: *"The more books you have on your shelves in a particular genre, the higher your chance of selling them."* |
+| 4 | Тап | Blocking текст: *"Click on a book to find out its chance of sale."* |
+| 5 | Тап | **Blocking `highlightClick`**: подсветка зоны жанровой панели (`_genreBookCountPool`, target-id `location.genre_book_count_panel`) дыркой в затемнении + pointer; ждём клик по жанру |
+| 6 | Клик по зоне жанра | Отрабатывает **штатное** поведение панели — `await UIManager.ShowAsync<ContentWidgetController>(args, ct)` открывает sale-chance виджет (клик проходит сквозь дырку к `Button` item'а). Поверх виджета — blocking текст: *"The chance of selling will decrease as people buy up the books."* |
+| 7 | Тап | **Заморозка снимается — все покупатели продолжают свои покупки.** Секвенция завершена |
 
-Все три текста — blocking (dim + pause + tap-to-continue), тем же механизмом, что search intro дня 1
-(`TutorialBlockingCalloutStep` → `SalesPauseRequested` → location-scope `IInteractionLock`).
+Все текстовые биты и highlightClick — blocking (dim + tap-to-continue). Отличие от дня 1: **пауза продаж
+удерживается сквозной**, а не переключается на каждом шаге (см. механизм ниже).
 
 **Отличие от дня 1 в подписке:** день 2 слушает `SalesPassivePurchaseFailed` **без фильтра по `CharacterId`** —
 ловит первый провал любого из трёх NPC (день 1 фильтровал по `"eddi"`).
 
-#### Открытые вопросы / зависимости
+#### Механизм сквозной заморозки
 
-- **Гарантия провала (критично).** Покупатели дня 2 — обычные NPC, их пассивная покупка вероятностная
-  (`RequestedGenrePassiveResolver` + sale-chance gate; сейчас ещё и `DebugMinimumSaleChanceCalculator` флорит
-  шанс на 50%). Гипотетически все 3 могут купить успешно → провала не будет → урок не покажется. Нужен
-  **детерминированный** провал, а не «маловероятно, что все успешны». Решение — см. разбор ниже (реюз
-  `ScriptedPassivePurchasePlan{forceHit:false}`, тот же механизм, что даёт детерминированный Travel-miss у Eddi).
-  Плюс, как и в дне 1, ожидание провала должно иметь fallback (`fail || ResultsShown`), чтобы туториал не завис,
-  если гарантия почему-то не сработала.
-- **Шаг 4 «Click on a book…» требует этапа 5.** Текст-инструкция «кликни по книге» — это blocking-callout,
-  доступный сейчас. Но **форсировать/подсветить** сам клик по книге (highlight + gate + hit-area над карточкой)
-  — это `highlightClick`/этап 5, который **ещё не реализован**. Пока шаг 4 = только инструктивный текст; реальный
-  gated book-click — follow-up.
-- **Конец секвенции** после шага 4 в этой спеке не задан (ждать закрытия окна / клика по книге / просто конец) —
-  уточнить при реализации.
+Пауза продаж идёт через `SalesPauseRequested` → location-scope `SalesInteractionPauseBridge` → `IInteractionLock`.
+Важно: `SalesInteractionPauseBridge` держит **булев** lock (один общий токен, `Resume` освобождает безусловно),
+**не refcount**. Поэтому нельзя оставить per-step пауз у `TutorialBlockingCalloutStep` — `Resume` одного шага снял
+бы удержание соседнего. Модель дня 2:
+
+- Секвенция публикует `SalesPauseRequested(true)` **один раз** при старте урока (сразу после латча первого провала,
+  шаг 2) и `SalesPauseRequested(false)` **один раз** после тапа по финальному тексту (шаг 7); плюс страховочный
+  `false` в `OnRunEnded()` (отмена run'а не должна оставить день замороженным).
+- Блокирующие тексты и `highlightClick` при этом дают **dim + tap-to-continue без собственного toggle паузы**
+  (иначе они сняли бы сквозное удержание). `highlightClick` `SetManualLock` не берёт (§4.2 — глобальный blocker
+  перехватил бы клик в дырку); дырка сама блокирует всё вне зоны.
+
+#### Тексты (сырой English; `textKey` — этап 7)
+
+- `text_1` = "The presence of books in the genres themselves does not guarantee sales."
+- `text_2` = "The more books you have on your shelves in a particular genre, the higher your chance of selling them."
+- `text_3` = "Click on a book to find out its chance of sale."
+- `text_4` = "The chance of selling will decrease as people buy up the books."
+
+#### Статус зависимостей (было «открытые вопросы»)
+
+- **Гарантия провала — решено.** Детерминированный провал реализован через `day2_missed_sale` в
+  [customer_scripts.json](../../Assets/Configs/customer_scripts.json) (обе копии — `Assets/Configs` и
+  `Assets/StreamingAssets/Configs`): `dayIndex:2`, `characterId:null`, `passiveAttempts:[{Travel, forceHit:false}]`.
+  `ScriptedCustomerSpawner` подменяет им первый слот дня 2 (`days.json`: `customerCount:3`, `activeRequestCount:0`) →
+  гарантированный `SalesPassivePurchaseFailed` у обычного NPC (тот же механизм, что Travel-miss у Eddi). Ожидание
+  провала всё равно держит fallback `fail || ResultsShown`, чтобы не зависнуть, если гарантия не сработает.
+  (Прим.: `DebugMinimumSaleChanceCalculator`, флорящий шанс на 50%, в текущем билде неактивен — реальные шансы
+  идут из экономики; на детерминированный провал `forceHit:false` это не влияет.)
+- **`highlightClick` — решено.** Реализован на этапе 5 (коммит `cd68bc13`): `TutorialHighlightClickStep` +
+  forwarding-hit-area для не-`Button` таргета. Зона панели помечена `TutorialTargetTag` с id
+  `location.genre_book_count_panel` на `BookGenreShelf` в `GameplaySceneController.prefab`.
+- **Конец секвенции — решено.** После тапа по `text_4`: снять сквозную паузу → покупатели продолжают → секвенция
+  завершается сразу (без ожидания закрытия виджета/дня). Сквозная заморозка гарантирует, что до этого момента день
+  не закончится сам (это и был баг per-step-модели, см. лог-разбор 2026-07-19).
 
 ## 7. Риски / открытые вопросы
 

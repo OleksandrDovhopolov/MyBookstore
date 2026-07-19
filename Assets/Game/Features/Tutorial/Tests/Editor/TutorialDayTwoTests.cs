@@ -9,6 +9,7 @@ using Game.Tutorial.API;
 using Game.Tutorial.Content;
 using Game.Tutorial.Presentation;
 using Game.UI;
+using Game.UI.ContentWidget;
 using Infrastructure.TutorialUI;
 using MessagePipe;
 using NUnit.Framework;
@@ -18,6 +19,23 @@ namespace Game.Tutorial.Tests.Editor
 {
     public sealed class TutorialDayTwoTests
     {
+        [Test]
+        public async System.Threading.Tasks.Task AsyncActionStep_InvokesAction()
+        {
+            var called = false;
+            var step = new TutorialAsyncActionStep(
+                "action",
+                ct =>
+                {
+                    called = true;
+                    return UniTask.CompletedTask;
+                });
+
+            await step.ExecuteAsync(CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
         [Test]
         public async System.Threading.Tasks.Task AwaitPassiveFail_CompletesForAnyCharacter()
         {
@@ -92,6 +110,24 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
+        public void OnRunEnded_HidesShownContentWidget()
+        {
+            var h = new Harness();
+            try
+            {
+                h.Ui.ContentWidgetShown = true;
+
+                h.Sequence.OnRunEnded();
+
+                Assert.AreEqual(1, h.Ui.HideContentWidgetCount);
+            }
+            finally
+            {
+                h.Dispose();
+            }
+        }
+
+        [Test]
         public void GetSteps_UsesExpectedDayTwoFlow()
         {
             var h = new Harness();
@@ -109,6 +145,7 @@ namespace Game.Tutorial.Tests.Editor
                         "text_3",
                         "click_genre_panel",
                         "text_4",
+                        "hide_sale_chance_widget",
                     },
                     StepIds(steps));
                 Assert.IsInstanceOf<TutorialAwaitFactStep>(steps[0]);
@@ -116,11 +153,33 @@ namespace Game.Tutorial.Tests.Editor
                 Assert.IsInstanceOf<TutorialBlockingCalloutStep>(steps[2]);
                 Assert.IsInstanceOf<TutorialHighlightClickStep>(steps[5]);
                 Assert.IsInstanceOf<TutorialBlockingCalloutStep>(steps[6]);
+                Assert.IsInstanceOf<TutorialHideWindowStep<ContentWidgetController>>(steps[7]);
                 Assert.AreEqual(
                     TutorialPointerPlacement.Left,
                     ReadPointerPlacement((TutorialHighlightClickStep)steps[5]));
                 Assert.IsTrue(ReadPauseSales((TutorialHighlightClickStep)steps[5]));
                 Assert.IsTrue(ReadHideTextAfterTap((TutorialBlockingCalloutStep)steps[6]));
+                Assert.IsFalse(ReadDimBackground((TutorialBlockingCalloutStep)steps[6]));
+                Assert.IsFalse(ReadLockUi((TutorialBlockingCalloutStep)steps[6]));
+            }
+            finally
+            {
+                h.Dispose();
+            }
+        }
+
+        [Test]
+        public async System.Threading.Tasks.Task HideWindowStep_HidesTypedWindowWhenShown()
+        {
+            var h = new Harness();
+            try
+            {
+                h.Ui.ContentWidgetShown = true;
+                var step = h.Sequence.GetSteps()[7];
+
+                await step.ExecuteAsync(CancellationToken.None);
+
+                Assert.AreEqual(1, h.Ui.HideContentWidgetCount);
             }
             finally
             {
@@ -157,6 +216,16 @@ namespace Game.Tutorial.Tests.Editor
         private static bool ReadHideTextAfterTap(TutorialBlockingCalloutStep step)
             => (bool)typeof(TutorialBlockingCalloutStep)
                 .GetField("_hideTextAfterTap", BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetValue(step);
+
+        private static bool ReadDimBackground(TutorialBlockingCalloutStep step)
+            => (bool)typeof(TutorialBlockingCalloutStep)
+                .GetField("_dimBackground", BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetValue(step);
+
+        private static bool ReadLockUi(TutorialBlockingCalloutStep step)
+            => (bool)typeof(TutorialBlockingCalloutStep)
+                .GetField("_lockUi", BindingFlags.Instance | BindingFlags.NonPublic)
                 .GetValue(step);
 
         private static TutorialPointerPlacement ReadPointerPlacement(TutorialHighlightClickStep step)
@@ -223,6 +292,8 @@ namespace Game.Tutorial.Tests.Editor
         {
             public event Action<IWindowController> WindowShown;
             public bool ResultsShown { get; set; }
+            public bool ContentWidgetShown { get; set; }
+            public int HideContentWidgetCount { get; private set; }
 
             public UniTask<T> ShowAsync<T>(WindowArgs args = null, CancellationToken ct = default)
                 where T : class, IWindowController, new()
@@ -230,7 +301,15 @@ namespace Game.Tutorial.Tests.Editor
 
             public UniTask HideAsync<T>(bool forceClose = false, CancellationToken ct = default)
                 where T : class, IWindowController
-                => UniTask.CompletedTask;
+            {
+                if (typeof(T) == typeof(ContentWidgetController))
+                {
+                    HideContentWidgetCount++;
+                    ContentWidgetShown = false;
+                }
+
+                return UniTask.CompletedTask;
+            }
 
             public UniTask HideAsync(IWindowController controller, bool forceClose = false, CancellationToken ct = default)
                 => UniTask.CompletedTask;
@@ -240,7 +319,8 @@ namespace Game.Tutorial.Tests.Editor
 
             public IWindowController GetTopWindow(WindowLayer? layer = null) => null;
             public bool IsWindowShown<T>() where T : class, IWindowController
-                => typeof(T) == typeof(ResultsWindow) && ResultsShown;
+                => (typeof(T) == typeof(ResultsWindow) && ResultsShown)
+                   || (typeof(T) == typeof(ContentWidgetController) && ContentWidgetShown);
             public bool IsWindowSpawned<T>() where T : class, IWindowController => false;
             public Game.UI.Lock SetManualLock(object owner) => new LockMonitor().Acquire(owner);
         }

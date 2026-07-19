@@ -15,7 +15,7 @@ namespace Game.UI.ContentWidget
         {
             if (Arguments is ContentWidgetArgs args)
             {
-                View.ShowContentView(args.Data, args.Anchor);
+                View.ShowContentView(args.Data, args.Anchor, args.AutoCloseEnabled);
                 return;
             }
 

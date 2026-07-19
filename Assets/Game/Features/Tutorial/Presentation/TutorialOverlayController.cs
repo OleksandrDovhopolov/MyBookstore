@@ -32,25 +32,25 @@ namespace Game.Tutorial.Presentation
         }
 
         public async UniTask ShowTextAndWaitTapAsync(string text, string placement, CancellationToken ct)
+            => await ShowTextAndWaitTapAsync(text, placement, dimBackground: true, ct);
+
+        public async UniTask ShowTextAndWaitTapAsync(
+            string text, string placement, bool dimBackground, CancellationToken ct)
         {
             if (!EnsureRoot()) return;
 
-            _blackout.ShowFullCover();
+            if (dimBackground)
+                _blackout.ShowFullCover();
+            else
+                _blackout.HideView();
             _hitArea?.HideView();
             _textPanel?.SetText(text, placement);
             _pointer?.HideView();
 
-            var tcs = new UniTaskCompletionSource();
-            void OnTap() => tcs.TrySetResult();
-            _blackout.Tapped += OnTap;
-            try
-            {
-                await tcs.Task.AttachExternalCancellation(ct);
-            }
-            finally
-            {
-                _blackout.Tapped -= OnTap;
-            }
+            if (dimBackground)
+                await WaitForBlackoutTapAsync(ct);
+            else
+                await WaitForPassThroughTapAsync(ct);
         }
 
         public void HideText()
@@ -165,6 +165,41 @@ namespace Game.Tutorial.Presentation
             => target == null
                || !target.gameObject.activeInHierarchy
                || (button != null && !button.interactable);
+
+        private async UniTask WaitForBlackoutTapAsync(CancellationToken ct)
+        {
+            var tcs = new UniTaskCompletionSource();
+            void OnTap() => tcs.TrySetResult();
+            _blackout.Tapped += OnTap;
+            try
+            {
+                await tcs.Task.AttachExternalCancellation(ct);
+            }
+            finally
+            {
+                _blackout.Tapped -= OnTap;
+            }
+        }
+
+        private async UniTask WaitForPassThroughTapAsync(CancellationToken ct)
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                if (Input.GetMouseButtonDown(0) || HasTouchBegan())
+                    return;
+
+                await UniTask.Yield(PlayerLoopTiming.Update, ct);
+            }
+        }
+
+        private static bool HasTouchBegan()
+        {
+            for (var i = 0; i < Input.touchCount; i++)
+                if (Input.GetTouch(i).phase == TouchPhase.Began)
+                    return true;
+
+            return false;
+        }
 
         public void HideHighlight()
         {

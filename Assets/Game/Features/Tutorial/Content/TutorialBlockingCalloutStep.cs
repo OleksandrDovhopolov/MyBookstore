@@ -17,6 +17,8 @@ namespace Game.Tutorial.Content
         private readonly Func<string> _textFactory;
         private readonly string _placement;
         private readonly bool _hideTextAfterTap;
+        private readonly bool _dimBackground;
+        private readonly bool _lockUi;
 
         public TutorialBlockingCalloutStep(
             string id,
@@ -26,7 +28,9 @@ namespace Game.Tutorial.Content
             Func<bool> gate,
             Func<string> textFactory,
             string placement,
-            bool hideTextAfterTap = false)
+            bool hideTextAfterTap = false,
+            bool dimBackground = true,
+            bool lockUi = true)
         {
             Id = id;
             _ui = ui;
@@ -36,6 +40,8 @@ namespace Game.Tutorial.Content
             _textFactory = textFactory;
             _placement = placement;
             _hideTextAfterTap = hideTextAfterTap;
+            _dimBackground = dimBackground;
+            _lockUi = lockUi;
         }
 
         public string Id { get; }
@@ -52,8 +58,15 @@ namespace Game.Tutorial.Content
             _pausePublisher.Publish(new SalesPauseRequested(true));
             try
             {
-                using (_ui.SetManualLock(this))
-                    await _overlay.ShowTextAndWaitTapAsync(text, _placement, ct);
+                if (_lockUi)
+                {
+                    using (_ui.SetManualLock(this))
+                        await _overlay.ShowTextAndWaitTapAsync(text, _placement, _dimBackground, ct);
+                }
+                else
+                {
+                    await _overlay.ShowTextAndWaitTapAsync(text, _placement, _dimBackground, ct);
+                }
             }
             finally
             {
