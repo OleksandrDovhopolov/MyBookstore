@@ -25,7 +25,6 @@ namespace Game.Quest.UI.Tests.Editor
             public QuestType Type { get; set; }
             public QuestState State { get; set; }
             public string ChainId { get; set; }
-            public string CharacterId { get; set; }
             public QuestConfig Config { get; set; }
             public IReadOnlyList<IQuestTask> Tasks { get; set; }
             public IQuestTask GetTask(int id) => null;

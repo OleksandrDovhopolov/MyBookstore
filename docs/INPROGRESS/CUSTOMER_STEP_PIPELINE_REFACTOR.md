@@ -918,26 +918,18 @@ Implementation notes:
 - Preserve code-first archetypes for tests and quick smoke scenarios.
 - Decide whether scripted sequences can receive director insertions, and add an explicit opt-out for FTUE/story sequences.
 
-**Entry trigger — pull this in when a SECOND scripted encounter appears.** Tracked as TODO GAME-16.
+**Entry trigger has fired.** GAME-16 introduced `CustomerScriptConfig` and moved both existing scripted
+encounters there:
 
-Today exactly one scripted encounter exists (`q_intro_eddi` / dialogue `eddy1`), and it is anchored on
-`QuestConfig`: `DialogueId` declares the one-time visit ("who arrives and talks") and
-`ScriptedPassivePurchases` is that same visit's beat sheet ("what they do"). That co-location is deliberate
-and temporary:
+- `eddi_intro` is quest-activated by `q_intro_eddi`, opens `eddy1`, and carries the authored
+  `Fact forceHit:true -> Travel forceHit:false` passive sequence.
+- `day2_missed_sale` is day-scheduled by `DayIndex = 2`.
+- `QuestConfig` no longer carries encounter behavior (`DialogueId`, `CharacterId`,
+  `ScriptedPassivePurchases` were removed), and `ScriptedCustomerSpawner` is the single decorator over
+  `RegularCustomerSpawner`.
 
-- One instance does not justify a new noun. `CustomerScriptConfig` + `StepFactory` + validation is scaffolding
-  for content that does not exist yet.
-- Extracting only the beats while `DialogueId` stays on the quest would split ONE encounter across two files —
-  strictly worse than the current shape.
-- Extracting both means moving `DialogueId` (read by the quest-aware spawners via `IQuest.Config`) and
-  `CharacterId` (exposed on the `IQuest` API surface) out of `QuestConfig` — a Quest.API change, too much for
-  a single content case.
-- This section's own note above ("do not start here until `DialogStep`, quest/dialogue resolution … are
-  clear") still applies: the step vocabulary moved recently (Candidate D shipped `IPassivePurchaseStep` and
-  `CompletedAndEndPassiveChain`).
-
-When the trigger fires, the extraction should absorb `DialogueId` + `ScriptedPassivePurchases` (and probably
-`CharacterId`) into the script config, leaving `QuestConfig` with a `customerScriptId` reference.
+Candidate E's remaining broader work is the full data-driven step vocabulary/factory beyond today's
+dialogue + passive-attempt shape.
 
 Minimum done:
 
@@ -945,4 +937,4 @@ Minimum done:
 - Invalid scripts fail validation early with actionable errors.
 - Existing code-first archetypes still work.
 - Tests cover exact authored order and factory validation.
-- `QuestConfig` no longer carries encounter behavior — only a reference to the script.
+- `QuestConfig` no longer carries encounter behavior.

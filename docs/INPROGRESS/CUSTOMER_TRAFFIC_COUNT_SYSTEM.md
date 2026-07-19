@@ -2,7 +2,7 @@
 
 > Status: implemented baseline / follow-up backlog.
 > Date: 2026-07-10.
-> Last updated: 2026-07-14.
+> Last updated: 2026-07-18.
 > Scope: calculates how many **regular** customers should visit during a sales day. Quest/story customers are
 > scheduled by composition decorators on top of the regular count.
 
@@ -13,11 +13,11 @@ Customer traffic is no longer owned by individual scenario spawners. The impleme
 ```text
 SalesDayController.StartDayAsync
   -> ICustomerSpawner.BuildCustomers(setup, tuning, random)
-      -> QuestSchedulingCustomerSpawner
+      -> ScriptedCustomerSpawner
           -> RegularCustomerSpawner
               -> ICustomerTrafficResolver.Resolve(setup, tuning)
               -> build N regular customers
-          -> prepend quest dialogue customers
+          -> replace first slots with day/quest scripted customers
 ```
 
 The resolver owns **how many regular customers** should be built. The spawner owns **what those customers do**.
@@ -40,8 +40,8 @@ Implemented files:
   - `Game.Decor.Services.DecorTrafficContributor`
 - Production base spawner:
   - `RegularCustomerSpawner`
-- Quest/story composition decorator:
-  - `QuestSchedulingCustomerSpawner`
+- Scripted day/quest composition decorator:
+  - `ScriptedCustomerSpawner`
 - Boot validation:
   - `CustomerTrafficConfigValidator`
 
@@ -161,26 +161,28 @@ The active-request floor is skipped. If active requests exceed `count`, `Regular
 
 This is intentional: a scripted day such as day 1 can remain exactly `3` regular customers.
 
-## Quest And Story Customers
+## Scripted Customers
 
-Special customers are a composition layer, not part of regular traffic.
+Special customers are a composition layer on top of regular traffic.
 
 Current implementation:
 
 - `RegularCustomerSpawner` builds regular customers.
-- `QuestSchedulingCustomerSpawner` wraps it and prepends one quest dialogue customer per active quest with an
-  undelivered `DialogueId`.
+- `ScriptedCustomerSpawner` wraps it and replaces regular slots at the front with eligible scripts from
+  `customer_scripts.json`.
+- A script is eligible either by `DayIndex == setup.Day` or by active `ActivationQuestId`. Dialogue scripts
+  additionally use delivered-dialogue state as their fire-once guard.
 
 Therefore:
 
 ```text
 regularCount = traffic resolver result (+ active request floor on non-hard days)
-questCount   = quest scheduling decorator result
-totalShown   = regularCount + questCount
+scriptCount  = replacement count, capped by regular slots
+totalShown   = regularCount
 ```
 
-Open product question: if UI shows "visitors today", should it show regular-only or total visitors including
-quest/story customers? The resolver result is regular-only.
+The resolver result is still the total visible customer count because scripted customers replace regular slots
+instead of increasing the list.
 
 ## Contributor Ownership
 

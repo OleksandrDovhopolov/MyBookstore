@@ -134,8 +134,8 @@ namespace Game.Bootstrap
             // Warns once per process if a day asks for more active requests than it has customers.
             builder.RegisterEntryPoint<CustomerTrafficConfigValidator>(Lifetime.Singleton);
 
-            // Base composition (concrete type) + replacing decorators as ICustomerSpawner (GAME-6/GAME-16).
-            // Decorators replace regular customer slots instead of increasing the total visitor count.
+            // Base composition (concrete type) + scripted-customer decorator as ICustomerSpawner (GAME-16).
+            // The decorator replaces regular customer slots instead of increasing the total visitor count.
             // NOTE: register the inner concretely —
             // resolving ICustomerSpawner inside the ICustomerSpawner factory would be a self-reference. Swap
             // the inner type here to change base composition. IQuestsService resolves from the global scope.
@@ -147,13 +147,11 @@ namespace Game.Bootstrap
                     r.Resolve<IActiveRequestCountResolver>()),
                 Lifetime.Singleton); // production base: count from ICustomerTrafficResolver
             builder.Register<ICustomerSpawner>(r => new ScriptedCustomerSpawner(
-                    new QuestReplacingCustomerSpawner(
-                        r.Resolve<RegularCustomerSpawner>(),
-                        r.Resolve<IConfigsService>(),
-                        r.Resolve<IQuestsService>(),
-                        r.Resolve<IDeliveredDialoguesService>(),
-                        r.Resolve<ICustomerProfileProvider>()),
-                    r.Resolve<IConfigsService>()),
+                    r.Resolve<RegularCustomerSpawner>(),
+                    r.Resolve<IConfigsService>(),
+                    r.Resolve<IQuestsService>(),
+                    r.Resolve<IDeliveredDialoguesService>(),
+                    r.Resolve<ICustomerProfileProvider>()),
                 Lifetime.Singleton);
             
             

@@ -151,7 +151,6 @@ namespace Game.Characters.Tests.Editor.Fakes
         public QuestType Type => default;
         public QuestState State { get; }
         public string ChainId { get; }
-        public string CharacterId => null;
         public QuestConfig Config => null;
         public IReadOnlyList<IQuestTask> Tasks => Array.Empty<IQuestTask>();
         public IQuestTask GetTask(int id) => null;

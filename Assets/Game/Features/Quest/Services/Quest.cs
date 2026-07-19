@@ -18,7 +18,6 @@ namespace Game.Quest.Services
         public QuestType Type { get; }
         public QuestState State { get; private set; } = QuestState.Pending;
         public string ChainId { get; }
-        public string CharacterId { get; }
         public QuestConfig Config { get; }
 
         /// <summary>0 or 1 element (MVP linear chain).</summary>
@@ -39,7 +38,6 @@ namespace Game.Quest.Services
             Id = config.Id;
             Type = type;
             ChainId = config.ChainId;
-            CharacterId = config.CharacterId;
             _activation = activation;
             _fail = fail;
             _tasks = tasks;

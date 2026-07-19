@@ -36,8 +36,8 @@
   Что сделано:
   - `DialogStep` (middle-step, держит interaction lock до завершения UI, релиз на `Exit`); sink +
     контроллер (`DialogueStarted` / `CompleteDialogue`).
-  - Квест-driven спавн: `QuestConfig.DialogueId` + `QuestSchedulingCustomerSpawner` (читает
-    `IQuestsService.GetActiveQuests()`) + fire-once `IDeliveredDialoguesService` (день о диалогах не знает).
+  - Скриптовый спавн: `CustomerScriptConfig.ActivationQuestId`/`DialogueId` + `ScriptedCustomerSpawner`
+    (читает quest-state) + fire-once `IDeliveredDialoguesService` (день о диалогах не знает).
   - Движок графа `DialogueEngine` (view-agnostic) + окно-лента `DialogWindow` / `DialogWindowView` /
     `DialogLineView`: реплики со сторонами (L/R по говорящему), typewriter, DOTween-появление, скролл; чит-модуль.
   - Контент `dialogues.json` (граф `{ nodeId, lines:[{ speaker, text }], options }`), англ. тексты.
@@ -122,30 +122,24 @@
     [комментарии:22-24](../Assets/Game/Features/Ftue/Services/FtueBootstrapper.cs)), парно с рефактором
     `DailyBookSlots`.
 
-- [ ] **GAME-16. Вынести сценарную встречу из `QuestConfig` в `CustomerScriptConfig` (Candidate E).**
-  **Триггер: делать, когда появится ВТОРАЯ сценарная встреча.** Сегодня она ровно одна —
-  `q_intro_eddi` / диалог `eddy1`.
-  Сейчас `QuestConfig` несёт поведение встречи двумя полями: `DialogueId` («когда квест Active, в Sales
-  приходит персонаж с этим диалогом — однократно») и `ScriptedPassivePurchases` (beat-sheet той же встречи:
-  `Fact hit → Travel miss`). Это осознанный временный якорь, а не свалка — оба поля описывают **одну**
-  сущность и потому лежат рядом; fire-once обоим даёт delivered-dialogues store по `DialogueId`.
-  Почему не сейчас:
-  - Один экземпляр не оправдывает новое существительное: `CustomerScriptConfig` + `StepFactory` + валидация —
-    каркас под контент, которого пока нет.
-  - Вынести только beats (оставив `DialogueId` на квесте) = размазать одну встречу по двум файлам — хуже текущего.
-  - Вынести всё = двигать `DialogueId` (читают quest-aware спавнеры через `IQuest.Config`) и `CharacterId`
-    (торчит на `IQuest`, Quest.API) — правка API квестов ради одного контент-кейса.
-  - Сам Candidate E просит подождать устаканивания step-словаря, а он менялся недавно (Candidate D:
-    `IPassivePurchaseStep`, `CompletedAndEndPassiveChain`).
-  Что сделать по триггеру: см. [INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md](INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md)
-  «Candidate E» — скрипт вбирает `DialogueId` + `ScriptedPassivePurchases` (и, вероятно, `CharacterId`),
-  в `QuestConfig` остаётся ссылка `customerScriptId`. Заодно решить вопрос оттуда же: может ли
-  director-вставка (`CommentStep`) вклиниваться в сценарную последовательность, и нужен ли opt-out для FTUE.
+- [x] **GAME-16. `CustomerScriptConfig` (Candidate E) — один дом для сценарных покупателей.**
+  Закрыто: `QuestConfig` больше не несёт поведение встречи; Eddi и day-2 forced miss живут в
+  `customer_scripts.json`.
+  - `CustomerScriptConfig` (`[ConfigFile("customer_scripts")]`): `DayIndex?` или `ActivationQuestId` (ровно
+    одно), `DialogueId?`, `CharacterId?`, `PassiveAttempts: ScriptedPassivePurchaseConfig[]`.
+  - `ScriptedCustomerSpawner` — единственный decorator над `RegularCustomerSpawner`: заменяет обычные слоты
+    в начале списка, валидирует dialogue, применяет fire-once по delivered-dialogues и берёт профиль персонажа
+    из `CharacterConfig.FavoriteGenres`.
+  - Eddi: `eddi_intro` (`activationQuestId=q_intro_eddi`, `characterId=eddi`, `dialogueId=eddy1`,
+    `Fact forceHit:true → Travel forceHit:false`); день 2: `day2_missed_sale`.
+  - `QuestConfig`/`IQuest` очищены от `CharacterId`/`DialogueId`/`ScriptedPassivePurchases`; старые
+    quest-spawner классы удалены.
 
 - [ ] **GAME-17. Валидация связки «FTUE-пресет ↔ полка дня 1 ↔ сценарный скрипт».**
   Туториал дня 1 держится на согласии трёх независимых мест: `FtueBootstrapper.PresetCounts` сеет книгу
   жанра `Fact` → `FirstDayEntryFlow.BuildFirstDayShelfPreset()` прибивает `Fact`/`Travel` на полку
-  (`AddFirstByGenre`) → `q_intro_eddi.scriptedPassivePurchases` требует `Fact forceHit: true`. Ноль валидации:
+  (`AddFirstByGenre`) → `customer_scripts.json` / `eddi_intro.passiveAttempts` требует `Fact forceHit: true`.
+  Ноль валидации:
   при рассинхроне `ScriptedPassivePurchaseResolver` пишет **warning** и возвращает miss, а
   `RemoveRemainingPassivePurchases` (Candidate D) тут же удаляет второй beat — то есть урок про sale chance
   молча исчезает, а в логе одна строка. Что сделать:

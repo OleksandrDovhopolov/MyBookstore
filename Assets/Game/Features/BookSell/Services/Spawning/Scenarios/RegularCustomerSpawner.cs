@@ -12,7 +12,7 @@ namespace Book.Sell.Services
     /// Production base spawner: sources the regular customer count from <see cref="ICustomerTrafficResolver"/>
     /// and the active-request count from <see cref="IActiveRequestCountResolver"/> — it owns neither number.
     /// Composition (each customer's plan) is the same passive-attempts shape the stub spawners use. Wrapped
-    /// by <see cref="QuestReplacingCustomerSpawner"/>, which can replace regular slots with quest characters.
+    /// by <see cref="ScriptedCustomerSpawner"/>, which can replace regular slots with scripted customers.
     /// See docs/INPROGRESS/CUSTOMER_TRAFFIC_COUNT_SYSTEM.md.
     ///
     /// The request catalog is a POOL, never a schedule: demand comes from the day config, is capped by the

@@ -18,7 +18,6 @@ namespace Game.Quest.Tests.Editor
     ""id"": ""far_beach_intro"",
     ""type"": ""story"",
     ""chainId"": ""far_beach_sand_empire"",
-    ""characterId"": null,
     ""titleKey"": ""quest.far_beach_intro.title"",
     ""descriptionKey"": ""quest.far_beach_intro.desc"",
     ""nextQuestIds"": [""sand_inspiration""],
@@ -62,31 +61,10 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual("far_beach_intro", intro.Id);
             Assert.AreEqual("story", intro.Type);
             Assert.AreEqual("far_beach_sand_empire", intro.ChainId);
-            Assert.IsNull(intro.CharacterId);
             Assert.AreEqual(new[] { "sand_inspiration" }, intro.NextQuestIds);
             Assert.IsNull(intro.ActivationConditions);
             Assert.AreEqual(1, intro.Tasks.Length);
             Assert.AreEqual(1, intro.Tasks[0].Id);
-        }
-
-        [Test]
-        public void Deserialize_PopulatesDialogueId()
-        {
-            const string json = @"
-[ { ""id"": ""q_intro_tilde"", ""type"": ""story"", ""characterId"": ""tilde"",
-    ""dialogueId"": ""dlg_intro_tilde"", ""tasks"": [], ""rewards"": [], ""worldEffects"": [] } ]";
-
-            var quests = JsonConvert.DeserializeObject<QuestConfig[]>(json);
-
-            Assert.AreEqual("dlg_intro_tilde", quests[0].DialogueId, "GAME-6: quest carries its dialogue id.");
-            Assert.AreEqual("tilde", quests[0].CharacterId);
-        }
-
-        [Test]
-        public void Deserialize_MissingDialogueId_IsNull()
-        {
-            var quests = JsonConvert.DeserializeObject<QuestConfig[]>(Json);
-            Assert.IsNull(quests[0].DialogueId, "A quest without a dialogueId schedules no dialogue.");
         }
 
         [Test]

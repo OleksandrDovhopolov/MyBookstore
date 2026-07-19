@@ -108,7 +108,6 @@ QuestConfig
     string Id;
     string Type;        // "story" | "side" | "tutorial" (парсится QuestTypeExtensions)
     string ChainId;
-    string CharacterId; // null до появления персонажей
     string TitleKey;
     string DescriptionKey;
     string[] NextQuestIds;        // MVP: 0 или 1 (линейная цепочка)

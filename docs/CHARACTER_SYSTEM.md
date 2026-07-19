@@ -33,18 +33,17 @@
 
 | Можно (черта — верна всегда) | Нельзя (действие — верно однократно/в контексте) |
 |---|---|
-| `FavoriteGenres` — Eddi любит Fact/Travel в любой сцене | `scriptedPassivePurchases` — «Fact hit, потом Travel miss» |
+| `FavoriteGenres` — Eddi любит Fact/Travel в любой сцене | `CustomerScriptConfig.PassiveAttempts` — «Fact hit, потом Travel miss» |
 | `PortraitKey`, `DisplayNameKey`, `RoleKey` | одноразовые реплики, форсированные исходы, beat-sheet визита |
 | `DiscoveryQuestIds` — связь, а не поведение | |
 
 Проверка: *«верно ли это про персонажа всегда, в любой сцене?»* Да → черта, сюда. Нет → это сценарий
-конкретной встречи, ему место у квеста/скрипта встречи.
+конкретной встречи, ему место в `CustomerScriptConfig`.
 
-Исторический пример: `scriptedPassivePurchases` (форсированный `Fact hit → Travel miss` у Eddi для
-туториала дня 1) сначала положили сюда — и он применялся бы к Eddi **навсегда, в любом квесте**, который
-его заспавнит. Переехал на `QuestConfig` рядом с `DialogueId`, который объявляет ту же одноразовую встречу.
-Долгосрочный дом — `CustomerScriptConfig` (TODO GAME-16 / Candidate E в
-[INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md](INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md)).
+Исторический пример: `PassiveAttempts` (форсированный `Fact hit → Travel miss` у Eddi для туториала дня 1)
+сначала пытались положить на персонажа — и он применялся бы к Eddi **навсегда, в любом квесте**, который
+его заспавнит. Теперь одноразовая встреча живёт в `customer_scripts.json` (`eddi_intro`), а `QuestConfig`
+остаётся только про quest-state.
 
 ---
 
@@ -115,7 +114,7 @@ public sealed class CharacterMemoryConfig
 
 > `DiscoveryQuestIds` / `DiscoveryQuestChainIds` открывают персонажа, когда связанный квест/цепочка **стартовали** (`state != Pending`), а не когда квест завершён или выдан (`Awarded`). Для открытия строго после завершения используйте memory-связь или отдельное quest-condition решение.
 
-> Скриптовые passive-действия (например authored hit/miss для intro-покупателя) живут на `QuestConfig` как `scriptedPassivePurchases`, а не на `CharacterConfig`. `FavoriteGenres` — стабильная черта персонажа; форсированные исходы продажи — действия квеста.
+> Скриптовые passive-действия (например authored hit/miss для intro-покупателя) живут в `CustomerScriptConfig`, а не на `CharacterConfig`. `FavoriteGenres` — стабильная черта персонажа; форсированные исходы продажи — действия конкретной встречи.
 
 Save (модуль-ключ `"characters"`, `StateSchemaVersion = 1`):
 

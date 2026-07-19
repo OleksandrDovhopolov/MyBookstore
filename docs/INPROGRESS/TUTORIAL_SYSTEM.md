@@ -369,9 +369,9 @@ commit-feedback или ухода покупателей только растя
 #### Известные ограничения
 
 Resume посреди Day 1 — best-effort (`Restart`). При `_firstDayEntry = Hub` day 1 идёт **без** скриптового
-туториала. Связка «FTUE-пресет ↔ полка дня 1 ↔ `q_intro_eddi.scriptedPassivePurchases`» **не валидируется** —
-TODO GAME-17; перестановка жанров в `quests.json` ломает флоу (Candidate D выкидывает остаток пассивной
-цепочки после первого промаха).
+туториала. Связка «FTUE-пресет ↔ полка дня 1 ↔ `customer_scripts.json` / `eddi_intro.passiveAttempts`»
+**не валидируется** — TODO GAME-17; перестановка жанров в `customer_scripts.json` ломает флоу (Candidate D
+выкидывает остаток пассивной цепочки после первого промаха).
 
 **Следующее для визуальной подсветки контролов** (Open Shop / список жанров / динамический «+»):
 pointer/highlight для таргетов + динамическая регистрация таргетов из `PreparationGenreRowView` через
