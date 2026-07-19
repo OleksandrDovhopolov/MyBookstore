@@ -93,6 +93,9 @@
   - **Future soft pointer step**: вынести стрелку в отдельный step только когда понадобится сценарий
     "pointer without highlightClick"; текущий `TutorialHighlightClickStep` остаётся владельцем стрелки для
     blocking highlight-click флоу.
+  - **Temporary Day 2 UI coupling**: заменить знание `tutorial_day_2` / `click_genre_panel` / `text_4`
+    внутри `GameplaySceneController` на явный gameplay/UI signal или policy для подавления auto-close у
+    sale-chance `ContentWidget`; tutorial-content должен владеть id-шниками шагов.
   - **Ремайндер по editor-обвязке** (если ещё не сделано): prefab текст-панели, asset
     `TutorialOverlaySettings` + назначение в `BootstrapInstaller`, `TutorialTargetTag` на кнопке Start Day
     (`hub.start_day_button`), `Tools/Configs/Sync Bundled Defaults` для билда.

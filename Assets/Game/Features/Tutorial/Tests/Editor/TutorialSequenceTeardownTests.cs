@@ -303,7 +303,7 @@ namespace Game.Tutorial.Tests.Editor
             public event Action<bool> LocationLoadedChanged;
 
             public void RegisterHubRoot(GameObject hubRoot) { }
-            public UniTask EnterLocationAsync(CancellationToken ct = default) => UniTask.CompletedTask;
+            public UniTask EnterLocationAsync(string locationId, CancellationToken ct = default) => UniTask.CompletedTask;
             public UniTask ReturnToHubAsync(CancellationToken ct = default) => UniTask.CompletedTask;
 
             public void RaiseLocationLoaded(bool loaded)

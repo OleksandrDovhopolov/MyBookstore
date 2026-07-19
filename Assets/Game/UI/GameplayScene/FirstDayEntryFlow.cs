@@ -95,7 +95,7 @@ namespace GameplayUI
             }
 
             // Additively load the location over the hub. Raises LocationLoadedChanged → triggers tutorial_day_1.
-            await _gameFlow.EnterLocationAsync(ct);
+            await _gameFlow.EnterLocationAsync(locationId, ct);
 
             Debug.Log($"{LogPrefix} entered location '{locationId}' directly with an auto-stocked shelf.");
             return true;

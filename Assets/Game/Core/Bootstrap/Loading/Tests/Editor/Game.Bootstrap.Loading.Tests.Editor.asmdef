@@ -3,7 +3,10 @@
     "rootNamespace": "Game.Bootstrap.Loading.Tests.Editor",
     "references": [
         "UniTask",
+        "VContainer",
+        "Game.Bootstrap",
         "Game.Bootstrap.Loading",
+        "Game.LocationVisits.API",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
