@@ -15,7 +15,8 @@
         "DayCycle",
         "Game.Quest.API",
         "Game.Core.UI",
-        "Infrastructure"
+        "Infrastructure",
+        "Analytics"
     ],
     "includePlatforms": [
         "Editor"

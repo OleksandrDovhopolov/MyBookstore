@@ -90,6 +90,9 @@
   - **Локализация** текста туториала (сейчас ASCII/English) — через INF-4; поле `textKey` зарезервировано.
   - **Полировка**: feather-дырка шейдером за тем же API `TutorialBlackoutView`; player-facing Skip;
     вариант `awaitWindow("closed")`; опц. мягкий pointer на кнопку журнала по `QuestStarted`.
+  - **Future soft pointer step**: вынести стрелку в отдельный step только когда понадобится сценарий
+    "pointer without highlightClick"; текущий `TutorialHighlightClickStep` остаётся владельцем стрелки для
+    blocking highlight-click флоу.
   - **Ремайндер по editor-обвязке** (если ещё не сделано): prefab текст-панели, asset
     `TutorialOverlaySettings` + назначение в `BootstrapInstaller`, `TutorialTargetTag` на кнопке Start Day
     (`hub.start_day_button`), `Tools/Configs/Sync Bundled Defaults` для билда.

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -6,6 +8,7 @@ using Game.Tutorial.Content;
 using Game.Tutorial.Presentation;
 using Game.UI;
 using Infrastructure.TutorialUI;
+using MessagePipe;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -32,6 +35,32 @@ namespace Game.Tutorial.Tests.Editor
                 LogAssert.Expect(
                     LogType.Warning,
                     new Regex(@"\[Tutorial\] highlight target 'missing\.target' not found; auto-advancing\."));
+                await step.ExecuteAsync(CancellationToken.None);
+
+                Assert.IsNull(h.OverlayRoot);
+            }
+            finally
+            {
+                h.Dispose();
+            }
+        }
+
+        [Test]
+        public async System.Threading.Tasks.Task GateFalse_CompletesWithoutResolvingTargetOrCreatingOverlay()
+        {
+            var h = new OverlayHarness("TutorialHighlightClickStepTests_GateFalse");
+            try
+            {
+                var step = new TutorialHighlightClickStep(
+                    "gated",
+                    h.Overlay,
+                    new TutorialTargetRegistry(),
+                    "missing.target",
+                    "Text",
+                    "bottom",
+                    true,
+                    () => false);
+
                 await step.ExecuteAsync(CancellationToken.None);
 
                 Assert.IsNull(h.OverlayRoot);
@@ -155,6 +184,84 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
+        public async System.Threading.Tasks.Task PointerPlacementLeft_PositionsPointerLeftOfTarget()
+        {
+            var h = new OverlayHarness("TutorialHighlightClickStepTests_PointerLeft");
+            try
+            {
+                var run = h.Overlay.HighlightAndWaitClickAsync(
+                    h.Target,
+                    "Text",
+                    "bottom",
+                    true,
+                    TutorialPointerPlacement.Left,
+                    CancellationToken.None);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                InvokeLateUpdate(h.Pointer);
+
+                Assert.IsTrue(ScreenRectUtility.TryGetLocalRect(
+                    h.Target,
+                    (RectTransform)h.OverlayRoot,
+                    out var targetRect));
+                var pointerRt = (RectTransform)h.Pointer.transform;
+
+                Assert.Less(pointerRt.anchoredPosition.x, targetRect.xMin);
+                Assert.AreEqual(targetRect.center.y, pointerRt.anchoredPosition.y, 0.5f);
+
+                h.HitArea.OnPointerClick(null);
+                await run;
+            }
+            finally
+            {
+                h.Dispose();
+            }
+        }
+
+        [Test]
+        public async System.Threading.Tasks.Task PauseSales_PublishesPauseAroundHighlight_AndStillCompletesFromHitAreaClick()
+        {
+            var h = new OverlayHarness("TutorialHighlightClickStepTests_PauseSales");
+            try
+            {
+                var registry = new TutorialTargetRegistry();
+                registry.Register("panel", h.Target);
+                var publisher = new RecordingPublisher<SalesPauseRequested>();
+
+                var step = new TutorialHighlightClickStep(
+                    "pause_panel",
+                    h.Overlay,
+                    registry,
+                    "panel",
+                    "Text",
+                    "bottom",
+                    true,
+                    null,
+                    TutorialPointerPlacement.Left,
+                    publisher,
+                    pauseSales: true);
+
+                var run = step.ExecuteAsync(CancellationToken.None);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                Assert.AreEqual(1, publisher.Messages.Count);
+                Assert.IsTrue(publisher.Messages[0].Paused);
+                Assert.IsTrue(h.HitArea.gameObject.activeSelf);
+
+                h.HitArea.OnPointerClick(null);
+                await run;
+
+                Assert.AreEqual(2, publisher.Messages.Count);
+                Assert.IsFalse(publisher.Messages[1].Paused);
+                Assert.IsFalse(h.HitArea.gameObject.activeSelf);
+            }
+            finally
+            {
+                h.Dispose();
+            }
+        }
+
+        [Test]
         public async System.Threading.Tasks.Task Hide_HidesActiveHitArea()
         {
             var h = new OverlayHarness("TutorialHighlightClickStepTests_Hide");
@@ -181,6 +288,11 @@ namespace Game.Tutorial.Tests.Editor
                 h.Dispose();
             }
         }
+
+        private static void InvokeLateUpdate(TutorialPointerView pointer)
+            => typeof(TutorialPointerView)
+                .GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(pointer, null);
 
         private sealed class OverlayHarness : IDisposable
         {
@@ -211,6 +323,7 @@ namespace Game.Tutorial.Tests.Editor
             public Transform OverlayRoot => Root.transform.Find("TutorialOverlayRoot");
             public TutorialBlackoutView Blackout => OverlayRoot.GetComponentInChildren<TutorialBlackoutView>(true);
             public TutorialHitAreaView HitArea => OverlayRoot.GetComponentInChildren<TutorialHitAreaView>(true);
+            public TutorialPointerView Pointer => OverlayRoot.GetComponentInChildren<TutorialPointerView>(true);
 
             public void Dispose()
             {
@@ -231,6 +344,16 @@ namespace Game.Tutorial.Tests.Editor
             public Transform WindowsRoot { get; }
             public GameObject Blocker => null;
             public MonoBehaviour TransitionAnimation => null;
+        }
+
+        private sealed class RecordingPublisher<T> : IPublisher<T>
+        {
+            public List<T> Messages { get; } = new();
+
+            public void Publish(T message)
+            {
+                Messages.Add(message);
+            }
         }
     }
 }

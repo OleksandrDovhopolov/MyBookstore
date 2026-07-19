@@ -78,8 +78,23 @@ namespace Game.Tutorial.Presentation
             _textPanel?.HideView();
         }
 
-        public async UniTask HighlightAndWaitClickAsync(
+        public UniTask HighlightAndWaitClickAsync(
             RectTransform target, string text, string placement, bool pointer, CancellationToken ct)
+            => HighlightAndWaitClickAsync(
+                target,
+                text,
+                placement,
+                pointer,
+                TutorialPointerPlacement.Top,
+                ct);
+
+        public async UniTask HighlightAndWaitClickAsync(
+            RectTransform target,
+            string text,
+            string placement,
+            bool pointer,
+            TutorialPointerPlacement pointerPlacement,
+            CancellationToken ct)
         {
             if (!EnsureRoot()) return;
             if (target == null)
@@ -91,7 +106,7 @@ namespace Game.Tutorial.Presentation
             _blackout.ShowWithHole(target, _settings.HolePadding);
             _hitArea?.HideView();
             _textPanel?.SetText(text, placement);
-            if (pointer) _pointer?.PointAt(target); else _pointer?.HideView();
+            if (pointer) _pointer?.PointAt(target, pointerPlacement); else _pointer?.HideView();
 
             var button = target != null ? target.GetComponent<Button>() : null;
             if (button == null)

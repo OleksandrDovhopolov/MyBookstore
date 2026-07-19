@@ -1,9 +1,11 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.UI;
 using Game.Tutorial.API;
 using Game.Tutorial.Presentation;
 using Infrastructure.TutorialUI;
+using MessagePipe;
 using UnityEngine;
 
 namespace Game.Tutorial.Content
@@ -18,6 +20,10 @@ namespace Game.Tutorial.Content
         private readonly Func<string> _textFactory;
         private readonly string _placement;
         private readonly bool _pointer;
+        private readonly TutorialPointerPlacement _pointerPlacement;
+        private readonly Func<bool> _gate;
+        private readonly IPublisher<SalesPauseRequested> _pausePublisher;
+        private readonly bool _pauseSales;
 
         public TutorialHighlightClickStep(
             string id,
@@ -26,8 +32,23 @@ namespace Game.Tutorial.Content
             string targetId,
             string text,
             string placement,
-            bool pointer = true)
-            : this(id, overlay, targets, targetId, () => text, placement, pointer)
+            bool pointer = true,
+            Func<bool> gate = null,
+            TutorialPointerPlacement pointerPlacement = TutorialPointerPlacement.Top,
+            IPublisher<SalesPauseRequested> pausePublisher = null,
+            bool pauseSales = false)
+            : this(
+                id,
+                overlay,
+                targets,
+                targetId,
+                () => text,
+                placement,
+                pointer,
+                gate,
+                pointerPlacement,
+                pausePublisher,
+                pauseSales)
         {
         }
 
@@ -38,7 +59,11 @@ namespace Game.Tutorial.Content
             string targetId,
             Func<string> textFactory,
             string placement,
-            bool pointer = true)
+            bool pointer = true,
+            Func<bool> gate = null,
+            TutorialPointerPlacement pointerPlacement = TutorialPointerPlacement.Top,
+            IPublisher<SalesPauseRequested> pausePublisher = null,
+            bool pauseSales = false)
         {
             Id = id;
             _overlay = overlay;
@@ -47,12 +72,19 @@ namespace Game.Tutorial.Content
             _textFactory = textFactory;
             _placement = placement;
             _pointer = pointer;
+            _pointerPlacement = pointerPlacement;
+            _gate = gate;
+            _pausePublisher = pausePublisher;
+            _pauseSales = pauseSales;
         }
 
         public string Id { get; }
 
         public async UniTask ExecuteAsync(CancellationToken ct)
         {
+            if (_gate != null && !_gate())
+                return;
+
             if (_targets == null || !_targets.TryGetTarget(_targetId, out var target))
             {
                 Debug.LogWarning($"{LogPrefix} highlight target '{_targetId}' not found; auto-advancing.");
@@ -61,17 +93,28 @@ namespace Game.Tutorial.Content
 
             try
             {
+                SetSalesPaused(true);
                 await _overlay.HighlightAndWaitClickAsync(
                     target,
                     _textFactory?.Invoke(),
                     _placement,
                     _pointer,
+                    _pointerPlacement,
                     ct);
             }
             finally
             {
                 _overlay.HideHighlight();
+                SetSalesPaused(false);
             }
+        }
+
+        private void SetSalesPaused(bool paused)
+        {
+            if (!_pauseSales)
+                return;
+
+            _pausePublisher?.Publish(new SalesPauseRequested(paused));
         }
     }
 }
