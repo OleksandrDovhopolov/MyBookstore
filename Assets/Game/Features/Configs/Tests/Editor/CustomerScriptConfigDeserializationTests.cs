@@ -15,7 +15,7 @@ namespace Game.Configs.Tests.Editor
 [
   {
     ""id"": ""day2_missed_sale"",
-    ""dayIndex"": 2,
+    ""dayIndex"": 1,
     ""characterId"": null,
     ""passiveAttempts"": [
       { ""genre"": ""Travel"", ""forceHit"": false }
@@ -44,7 +44,7 @@ namespace Game.Configs.Tests.Editor
             var script = scripts[0];
             Assert.AreEqual("day2_missed_sale", script.Id);
             Assert.IsTrue(script.DayIndex.HasValue);
-            Assert.AreEqual(2, script.DayIndex.Value);
+            Assert.AreEqual(1, script.DayIndex.Value);
             Assert.IsNull(script.ActivationQuestId);
             Assert.IsNull(script.DialogueId);
             Assert.IsNull(script.CharacterId);
@@ -72,7 +72,7 @@ namespace Game.Configs.Tests.Editor
             var script = service.Get<CustomerScriptConfig>("day2_missed_sale");
             Assert.IsNotNull(script, "Resolved by Id -> [ConfigFile] + lazy load + indexing all wired.");
             Assert.IsTrue(script.DayIndex.HasValue);
-            Assert.AreEqual(2, script.DayIndex.Value);
+            Assert.AreEqual(1, script.DayIndex.Value);
 
             var eddi = service.Get<CustomerScriptConfig>("eddi_intro");
             Assert.IsNotNull(eddi);
@@ -80,22 +80,48 @@ namespace Game.Configs.Tests.Editor
         }
 
         [Test]
-        public void Content_DayTwo_IsThreePassiveOnlyCustomers()
+        public void Deserialize_PopulatesDayWaves()
+        {
+            const string daysJson = @"[
+  {
+    ""id"": ""day_001"",
+    ""dayIndex"": 1,
+    ""customerCount"": 4,
+    ""activeRequestCount"": 0,
+    ""waveSizes"": [1, 3],
+    ""waveGapSeconds"": 3,
+    ""applyModifiers"": false
+  }
+]";
+
+            var days = JsonConvert.DeserializeObject<DayConfig[]>(daysJson);
+            var day1 = days.Single(d => d.DayIndex == 1);
+
+            CollectionAssert.AreEqual(new[] { 1, 3 }, day1.WaveSizes);
+            Assert.IsTrue(day1.WaveGapSeconds.HasValue);
+            Assert.AreEqual(3f, day1.WaveGapSeconds.Value);
+        }
+
+        [Test]
+        public void Content_DayOne_UsesTwoWavesForEddiThenMissNpc()
         {
             var days = JsonConvert.DeserializeObject<DayConfig[]>(
                 File.ReadAllText(Path.Combine("Assets", "Configs", "days.json")));
 
-            var day2 = days.Single(d => d.DayIndex == 2);
-            Assert.IsTrue(day2.CustomerCount.HasValue);
-            Assert.AreEqual(3, day2.CustomerCount.Value);
-            Assert.IsTrue(day2.ActiveRequestCount.HasValue);
-            Assert.AreEqual(0, day2.ActiveRequestCount.Value);
-            Assert.IsTrue(day2.ApplyModifiers.HasValue);
-            Assert.IsFalse(day2.ApplyModifiers.Value);
+            var day1 = days.Single(d => d.DayIndex == 1);
+            Assert.IsTrue(day1.CustomerCount.HasValue);
+            Assert.AreEqual(4, day1.CustomerCount.Value);
+            Assert.IsTrue(day1.ActiveRequestCount.HasValue);
+            Assert.AreEqual(0, day1.ActiveRequestCount.Value);
+            CollectionAssert.AreEqual(new[] { 1, 3 }, day1.WaveSizes);
+            Assert.IsTrue(day1.WaveGapSeconds.HasValue);
+            Assert.AreEqual(3f, day1.WaveGapSeconds.Value);
+            Assert.IsTrue(day1.ApplyModifiers.HasValue);
+            Assert.IsFalse(day1.ApplyModifiers.Value);
         }
 
         [Test]
-        public void Content_DayTwoScript_UsesKnownTravelGenre()
+        public void Content_DayOneMissScript_UsesKnownTravelGenre()
         {
             var scripts = JsonConvert.DeserializeObject<CustomerScriptConfig[]>(
                 File.ReadAllText(Path.Combine("Assets", "Configs", "customer_scripts.json")));
@@ -104,7 +130,7 @@ namespace Game.Configs.Tests.Editor
 
             var script = scripts.Single(s => s.Id == "day2_missed_sale");
             Assert.IsTrue(script.DayIndex.HasValue);
-            Assert.AreEqual(2, script.DayIndex.Value);
+            Assert.AreEqual(1, script.DayIndex.Value);
 
             var attempt = AssertOneAttempt(script);
             Assert.AreEqual("Travel", attempt.Genre);

@@ -42,6 +42,10 @@ namespace Book.Sell.Services
 
         private float _spawnTimer;
         private int _nextToSpawn;
+        private int[] _waveEndExclusive = Array.Empty<int>();
+        private int _currentWaveIndex;
+        private float _waveGapTimer;
+        private float _waveGapSeconds;
         private SalesDayPhase _phase = SalesDayPhase.Running;
         private bool _spawningStopped;
 
@@ -114,6 +118,11 @@ namespace Book.Sell.Services
             _ctx = new CustomerContext(_shelf, _lock, _random, _passiveResolver, _location, setup.DecorIds, this, _tuning);
 
             _customers = new List<Customer>(_spawner.BuildCustomers(setup, _tuning, _random));
+            var dayConfig = FindDayConfig(setup.Day);
+            _waveEndExclusive = BuildWaveEndExclusive(dayConfig, _customers.Count);
+            _currentWaveIndex = 0;
+            _waveGapTimer = 0f;
+            _waveGapSeconds = ResolveWaveGapSeconds(dayConfig);
             _nextToSpawn = 0;
             _spawnTimer = _tuning.SpawnInterval;   // spawn the first customer on the first tick
             _activeCustomer = null;
@@ -358,10 +367,13 @@ namespace Book.Sell.Services
         {
             if (_spawningStopped) return;   // shelf sold out — no new customers (in-flight ones still finish)
             if (_nextToSpawn >= _customers.Count) return;
+            if (!TryOpenCurrentWave(dt)) return;
+
+            var waveEnd = CurrentWaveEndExclusive();
             _spawnTimer += dt;
             // Cap check inside the loop prevents bursts: one freed slot lets at most one new customer in.
             while (_spawnTimer >= _tuning.SpawnInterval
-                   && _nextToSpawn < _customers.Count
+                   && _nextToSpawn < waveEnd
                    && !IsConcurrencyCapReached())
             {
                 _spawnTimer -= _tuning.SpawnInterval;
@@ -374,6 +386,91 @@ namespace Book.Sell.Services
             var cap = _tuning.MaxConcurrentCustomers;
             if (cap <= 0) return false;   // no limit
             return ActiveCustomerCount() >= cap;
+        }
+
+        private bool TryOpenCurrentWave(float dt)
+        {
+            if (_waveEndExclusive.Length == 0) return true;
+
+            var waveEnd = CurrentWaveEndExclusive();
+            if (_nextToSpawn < waveEnd) return true;
+            if (_nextToSpawn >= _customers.Count) return true;
+            if (!AllSpawnedCustomersDone(waveEnd)) return false;
+
+            _waveGapTimer += Mathf.Max(0f, dt);
+            if (_waveGapTimer < _waveGapSeconds) return false;
+
+            _currentWaveIndex = Mathf.Min(_currentWaveIndex + 1, _waveEndExclusive.Length - 1);
+            _waveGapTimer = 0f;
+            _spawnTimer = _tuning.SpawnInterval;
+            return true;
+        }
+
+        private int CurrentWaveEndExclusive()
+        {
+            if (_waveEndExclusive.Length == 0) return _customers.Count;
+
+            var index = Mathf.Clamp(_currentWaveIndex, 0, _waveEndExclusive.Length - 1);
+            return _waveEndExclusive[index];
+        }
+
+        private bool AllSpawnedCustomersDone(int exclusiveEnd)
+        {
+            for (var i = 0; i < exclusiveEnd; i++)
+            {
+                if (!_customers[i].IsDone) return false;
+            }
+
+            return true;
+        }
+
+        private DayConfig FindDayConfig(int dayIndex)
+        {
+            foreach (var day in _configs.GetAll<DayConfig>())
+            {
+                if (day?.DayIndex == dayIndex) return day;
+            }
+
+            return null;
+        }
+
+        private float ResolveWaveGapSeconds(DayConfig day)
+        {
+            if (day?.WaveGapSeconds == null) return 0f;
+            if (day.WaveGapSeconds.Value >= 0f) return day.WaveGapSeconds.Value;
+
+            Debug.LogWarning($"{LogPrefix} day '{day.Id}' has negative waveGapSeconds={day.WaveGapSeconds.Value}; using 0.");
+            return 0f;
+        }
+
+        private int[] BuildWaveEndExclusive(DayConfig day, int customerCount)
+        {
+            if (customerCount <= 0) return Array.Empty<int>();
+
+            var waveSizes = day?.WaveSizes;
+            if (waveSizes == null || waveSizes.Length == 0) return new[] { customerCount };
+
+            for (var i = 0; i < waveSizes.Length; i++)
+            {
+                if (waveSizes[i] <= 0)
+                {
+                    Debug.LogWarning($"{LogPrefix} day '{day.Id}' has invalid waveSizes; using one wave.");
+                    return new[] { customerCount };
+                }
+            }
+
+            var ends = new List<int>();
+            var consumed = 0;
+            for (var i = 0; i < waveSizes.Length && consumed < customerCount; i++)
+            {
+                consumed = Mathf.Min(customerCount, consumed + waveSizes[i]);
+                ends.Add(consumed);
+            }
+
+            if (consumed < customerCount)
+                ends.Add(customerCount);
+
+            return ends.Count > 0 ? ends.ToArray() : new[] { customerCount };
         }
 
         // Customers present on the floor = spawned [0.._nextToSpawn) that are not yet Done.

@@ -923,7 +923,7 @@ encounters there:
 
 - `eddi_intro` is quest-activated by `q_intro_eddi`, opens `eddy1`, and carries the authored
   `Fact forceHit:true -> Travel forceHit:false` passive sequence.
-- `day2_missed_sale` is day-scheduled by `DayIndex = 2`.
+- `day2_missed_sale` keeps its id but is now day-scheduled by `DayIndex = 1` for day-1 wave 2.
 - `QuestConfig` no longer carries encounter behavior (`DialogueId`, `CharacterId`,
   `ScriptedPassivePurchases` were removed), and `ScriptedCustomerSpawner` is the single decorator over
   `RegularCustomerSpawner`.

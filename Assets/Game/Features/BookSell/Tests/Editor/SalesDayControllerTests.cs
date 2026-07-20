@@ -33,6 +33,9 @@ namespace Book.Sell.Tests.Editor
         private static Customer ApproachLeave(string id)
             => new(id, new ICustomerStep[] { new ApproachStep(), new LeaveStep() });
 
+        private static Customer Hold(string id)
+            => new(id, new ICustomerStep[] { new HoldStep() });
+
         private static Customer Active(string id, ActiveRequestRuntime req)
             => new(id, new ICustomerStep[] { new ApproachStep(), new ActiveRequestStep(req), new LeaveStep() });
 
@@ -60,12 +63,14 @@ namespace Book.Sell.Tests.Editor
             BookConfig[] books, RequestDefinitionConfig[] requests, LocationConfig location, IReadOnlyList<Customer> customers,
             SalesTuning tuning = null,
             ISalesDayCommitService commitService = null,
-            IPassivePurchaseResolver passiveResolver = null)
+            IPassivePurchaseResolver passiveResolver = null,
+            DayConfig[] dayConfigs = null)
         {
             var configs = new FakeConfigsService();
             configs.SetAll(books);
             configs.SetAll(requests);
             configs.SetAll(new[] { location });
+            configs.SetAll(dayConfigs ?? Array.Empty<DayConfig>());
 
             var shelfBuilder = new SalesShelfBuilder(configs);
 
@@ -119,8 +124,23 @@ namespace Book.Sell.Tests.Editor
             }
         }
 
+        private sealed class HoldStep : ICustomerStep
+        {
+            public void Enter(Customer self, CustomerContext ctx)
+            {
+                self.SetPhase(CustomerPhase.Approaching, ctx);
+            }
+
+            public StepStatus Tick(Customer self, CustomerContext ctx, float dt) => StepStatus.Running;
+
+            public void Exit(Customer self, CustomerContext ctx) { }
+        }
+
         private static void StartDay(SalesDayController c)
             => c.StartDayAsync(1, CancellationToken.None).GetAwaiter().GetResult();
+
+        private static int SpawnedCount(IReadOnlyList<Customer> customers)
+            => customers.Count(x => x.Phase != CustomerPhase.Spawned);
 
         // Drives the day until it stops being Running (i.e. reaches ReadyToClose). The day no longer
         // auto-completes; tests assert at ReadyToClose, then call ConcludeDay() when they need the
@@ -624,6 +644,97 @@ namespace Book.Sell.Tests.Editor
             Assert.AreEqual(3, maxPresent, "Cap of 3 was never reached — the gate is not being exercised.");
             Assert.IsTrue(customers.All(x => x.IsDone), "Not all customers were eventually served.");
             Assert.AreEqual(SalesDayPhase.ReadyToClose, c.Phase);
+        }
+
+        [Test]
+        public void Spawning_WaveGate_WaitsForPreviousWaveDoneAndGap()
+        {
+            var customers = new List<Customer>
+            {
+                ApproachLeave("c0"),
+                ApproachLeave("c1"),
+                ApproachLeave("c2"),
+                ApproachLeave("c3")
+            };
+            var tuning = SalesTestKit.FastTuning();
+            var day = new DayConfig { Id = "d1", DayIndex = 1, WaveSizes = new[] { 1, 3 }, WaveGapSeconds = 0.5f };
+
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") }, Array.Empty<RequestDefinitionConfig>(),
+                SalesTestKit.Location(), customers, tuning: tuning, dayConfigs: new[] { day });
+
+            StartDay(c);
+
+            c.Tick(0.1f);
+            Assert.AreEqual(1, SpawnedCount(customers), "First wave should contain only Eddi's slot.");
+
+            for (var i = 0; i < 4; i++)
+                c.Tick(0.1f);
+
+            Assert.AreEqual(1, SpawnedCount(customers), "Second wave should wait for the configured gap.");
+
+            c.Tick(0.1f);
+            Assert.AreEqual(4, SpawnedCount(customers), "Second wave should open after the gap passes.");
+        }
+
+        [Test]
+        public void Spawning_WaveGate_PreservesSpawnIntervalInsideWave()
+        {
+            var customers = new List<Customer> { Hold("c0"), Hold("c1"), Hold("c2") };
+            var tuning = SalesTestKit.FastTuning();
+            tuning.SpawnInterval = 0.25f;
+            var day = new DayConfig { Id = "d1", DayIndex = 1, WaveSizes = new[] { 3 }, WaveGapSeconds = 0f };
+
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") }, Array.Empty<RequestDefinitionConfig>(),
+                SalesTestKit.Location(), customers, tuning: tuning, dayConfigs: new[] { day });
+
+            StartDay(c);
+
+            c.Tick(0.1f);
+            Assert.AreEqual(1, SpawnedCount(customers));
+
+            c.Tick(0.1f);
+            Assert.AreEqual(1, SpawnedCount(customers));
+
+            c.Tick(0.1f);
+            Assert.AreEqual(2, SpawnedCount(customers));
+        }
+
+        [Test]
+        public void Spawning_WaveGate_PreservesMaxConcurrentCustomersInsideWave()
+        {
+            var customers = new List<Customer> { Hold("c0"), Hold("c1"), Hold("c2"), Hold("c3") };
+            var tuning = SalesTestKit.FastTuning();
+            tuning.MaxConcurrentCustomers = 2;
+            var day = new DayConfig { Id = "d1", DayIndex = 1, WaveSizes = new[] { 4 }, WaveGapSeconds = 0f };
+
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") }, Array.Empty<RequestDefinitionConfig>(),
+                SalesTestKit.Location(), customers, tuning: tuning, dayConfigs: new[] { day });
+
+            StartDay(c);
+
+            for (var i = 0; i < 5; i++)
+                c.Tick(0.1f);
+
+            Assert.AreEqual(2, SpawnedCount(customers));
+        }
+
+        [Test]
+        public void Spawning_NullWaveSizes_KeepsSingleWaveBehavior()
+        {
+            var customers = new List<Customer> { Hold("c0"), Hold("c1"), Hold("c2") };
+            var day = new DayConfig { Id = "d1", DayIndex = 1, WaveSizes = null, WaveGapSeconds = 10f };
+
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") }, Array.Empty<RequestDefinitionConfig>(),
+                SalesTestKit.Location(), customers, dayConfigs: new[] { day });
+
+            StartDay(c);
+            c.Tick(0.1f);
+
+            Assert.AreEqual(3, SpawnedCount(customers));
         }
 
         [Test]

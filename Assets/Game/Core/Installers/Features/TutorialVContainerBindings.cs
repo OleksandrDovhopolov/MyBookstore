@@ -30,7 +30,6 @@ namespace Game.Bootstrap
             builder.RegisterBuildCallback(resolver => TutorialTargets.Bind(resolver.Resolve<ITutorialTargetRegistry>()));
 
             builder.Register<TutorialDayOne>(Lifetime.Singleton).As<ITutorialSequence>();
-            builder.Register<TutorialDayTwo>(Lifetime.Singleton).As<ITutorialSequence>();
 
             // TutorialService self-registers as ISaveHook in its constructor; AfterLoadAsync builds the
             // catalog from registered C# tutorial content, restores state, subscribes triggers.

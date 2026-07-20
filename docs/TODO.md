@@ -93,7 +93,7 @@
   - **Future soft pointer step**: вынести стрелку в отдельный step только когда понадобится сценарий
     "pointer without highlightClick"; текущий `TutorialHighlightClickStep` остаётся владельцем стрелки для
     blocking highlight-click флоу.
-  - **Temporary Day 2 UI coupling**: заменить знание `tutorial_day_2` / `click_genre_panel` / `text_4`
+  - **Temporary tutorial UI coupling**: заменить знание `tutorial_day_1` / `click_genre_panel` / `text_4`
     внутри `GameplaySceneController` на явный gameplay/UI signal или policy для подавления auto-close у
     sale-chance `ContentWidget`; tutorial-content должен владеть id-шниками шагов.
   - **Ремайндер по editor-обвязке** (если ещё не сделано): prefab текст-панели, asset
@@ -137,7 +137,7 @@
     в начале списка, валидирует dialogue, применяет fire-once по delivered-dialogues и берёт профиль персонажа
     из `CharacterConfig.FavoriteGenres`.
   - Eddi: `eddi_intro` (`activationQuestId=q_intro_eddi`, `characterId=eddi`, `dialogueId=eddy1`,
-    `Fact forceHit:true → Travel forceHit:false`); день 2: `day2_missed_sale`.
+    `Fact forceHit:true → Travel forceHit:false`); day-1 wave 2: `day2_missed_sale`.
   - `QuestConfig`/`IQuest` очищены от `CharacterId`/`DialogueId`/`ScriptedPassivePurchases`; старые
     quest-spawner классы удалены.
 
@@ -152,7 +152,7 @@
   форсированный хит становится miss, а `RemoveRemainingPassivePurchases` (Candidate D) тут же выкидывает второй
   beat → урок про sale chance исчезает.
 
-  **День 2 (forced MISS):** `day2_missed_sale.passiveAttempts` требует `Travel forceHit: false`, а урок —
+  **Day-1 wave 2 (forced MISS):** `day2_missed_sale.passiveAttempts` требует `Travel forceHit: false`, а урок —
   «книги в жанре есть, но продажа не гарантирована». Инвариант **обратный, но родственный**: жанр
   форсированного промаха обязан быть **на полке дня 2** — иначе «книги были, а не продалось» это ложь (книг не
   было), и урок читается неверно. Полка дня 2 стокается не из FTUE-пресета (это day-1 seeding), а из
@@ -241,7 +241,7 @@
 
   Дизайн-решение, которое надо принять явно: строгое `day == 1` означает «пропустил — потерял навсегда»
   (на дне 2 условие ложно), что **противоположно** текущей догоняющей очереди. Компромисс в духе остальных
-  C#-контента: `CurrentDay >= 1` + `!IsSequenceCompleted(day2_seq)` — «не раньше дня 1, но догонит,
+  C#-контента: `CurrentDay == 1` + единый `tutorial_day_1` — «не раньше дня 1, но догонит,
   если пропустил».
 
 - [ ] **GAME-19. `TutorialSignalLatch` — убрать бойлерплейт подписок из секвенций туториала.**

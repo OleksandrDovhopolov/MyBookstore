@@ -17,33 +17,16 @@ using UnityEngine;
 
 namespace Game.Tutorial.Tests.Editor
 {
-    public sealed class TutorialDayTwoTests
+    public sealed class TutorialDayOneTests
     {
         [Test]
-        public async System.Threading.Tasks.Task AsyncActionStep_InvokesAction()
-        {
-            var called = false;
-            var step = new TutorialAsyncActionStep(
-                "action",
-                ct =>
-                {
-                    called = true;
-                    return UniTask.CompletedTask;
-                });
-
-            await step.ExecuteAsync(CancellationToken.None);
-
-            Assert.IsTrue(called);
-        }
-
-        [Test]
-        public async System.Threading.Tasks.Task AwaitPassiveFail_CompletesForAnyCharacter()
+        public async System.Threading.Tasks.Task AwaitPostEddiPassiveFail_CompletesForNullCharacter()
         {
             var h = new Harness();
             try
             {
                 h.Sequence.OnRunStarted();
-                var step = h.Sequence.GetSteps()[0];
+                var step = h.Sequence.GetSteps()[9];
 
                 var run = step.ExecuteAsync(CancellationToken.None);
                 await UniTask.Yield(PlayerLoopTiming.Update);
@@ -60,7 +43,39 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
-        public async System.Threading.Tasks.Task AwaitPassiveFail_CompletesWhenResultsShown()
+        public async System.Threading.Tasks.Task AwaitPostEddiPassiveFail_IgnoresEddiFailure()
+        {
+            var h = new Harness();
+            using var cts = new CancellationTokenSource();
+            try
+            {
+                h.Sequence.OnRunStarted();
+                var task = h.Sequence.GetSteps()[9].ExecuteAsync(cts.Token).AsTask();
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                h.FailSubscriber.Publish(new SalesPassivePurchaseFailed("eddi_customer", "eddi", "Travel"));
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                Assert.IsFalse(task.IsCompleted);
+                cts.Cancel();
+
+                try
+                {
+                    await task;
+                }
+                catch (OperationCanceledException)
+                {
+                    Assert.Pass();
+                }
+            }
+            finally
+            {
+                h.Dispose();
+            }
+        }
+
+        [Test]
+        public async System.Threading.Tasks.Task AwaitPostEddiPassiveFail_CompletesWhenResultsShown()
         {
             var h = new Harness();
             try
@@ -68,7 +83,7 @@ namespace Game.Tutorial.Tests.Editor
                 h.Sequence.OnRunStarted();
                 h.Ui.ResultsShown = true;
 
-                await h.Sequence.GetSteps()[0].ExecuteAsync(CancellationToken.None);
+                await h.Sequence.GetSteps()[9].ExecuteAsync(CancellationToken.None);
 
                 Assert.Pass();
             }
@@ -79,12 +94,14 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
-        public async System.Threading.Tasks.Task OnRunEnded_UnsubscribesAndResetsLatch_AndPublishesResume()
+        public void OnRunEnded_UnsubscribesAndResetsLatch_AndPublishesResume()
         {
             var h = new Harness();
             try
             {
                 h.Sequence.OnRunStarted();
+                Assert.AreEqual(1, h.PhaseSubscriber.HandlerCount);
+                Assert.AreEqual(1, h.SaleSubscriber.HandlerCount);
                 Assert.AreEqual(1, h.FailSubscriber.HandlerCount);
 
                 h.FailSubscriber.Publish(new SalesPassivePurchaseFailed("customer_2", null, "Travel"));
@@ -92,16 +109,9 @@ namespace Game.Tutorial.Tests.Editor
 
                 Assert.AreEqual(1, h.PausePublisher.Messages.Count);
                 Assert.IsFalse(h.PausePublisher.Messages[0].Paused);
+                Assert.AreEqual(0, h.PhaseSubscriber.HandlerCount);
+                Assert.AreEqual(0, h.SaleSubscriber.HandlerCount);
                 Assert.AreEqual(0, h.FailSubscriber.HandlerCount);
-
-                h.FailSubscriber.Publish(new SalesPassivePurchaseFailed("customer_after_end", null, "Travel"));
-                h.Sequence.OnRunStarted();
-                Assert.AreEqual(1, h.FailSubscriber.HandlerCount);
-
-                var run = h.Sequence.GetSteps()[0].ExecuteAsync(CancellationToken.None);
-                await UniTask.Yield(PlayerLoopTiming.Update);
-                h.FailSubscriber.Publish(new SalesPassivePurchaseFailed("customer_after_restart", null, "Travel"));
-                await run;
             }
             finally
             {
@@ -128,7 +138,7 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
-        public void GetSteps_UsesExpectedDayTwoFlow()
+        public void GetSteps_UsesMergedDayOneFlow()
         {
             var h = new Harness();
             try
@@ -138,6 +148,15 @@ namespace Game.Tutorial.Tests.Editor
                 CollectionAssert.AreEqual(
                     new[]
                     {
+                        "await_eddi_dialogue_complete",
+                        "callout_search",
+                        "await_eddi_sale",
+                        "callout_sold",
+                        "await_eddi_fail",
+                        "callout_failed",
+                        "await_eddi_left",
+                        "hide_eddi_callout",
+                        "verify_eddi_participated",
                         "await_passive_fail",
                         "verify_passive_fail",
                         "text_1",
@@ -146,21 +165,24 @@ namespace Game.Tutorial.Tests.Editor
                         "click_genre_panel",
                         "text_4",
                         "hide_sale_chance_widget",
+                        "wait_results_window",
+                        "wrap_up",
+                        "wait_results_closed",
                     },
                     StepIds(steps));
-                Assert.IsInstanceOf<TutorialAwaitFactStep>(steps[0]);
-                Assert.IsInstanceOf<TutorialAssertStep>(steps[1]);
-                Assert.IsInstanceOf<TutorialBlockingCalloutStep>(steps[2]);
-                Assert.IsInstanceOf<TutorialHighlightClickStep>(steps[5]);
-                Assert.IsInstanceOf<TutorialBlockingCalloutStep>(steps[6]);
-                Assert.IsInstanceOf<TutorialHideWindowStep<ContentWidgetController>>(steps[7]);
+                Assert.IsInstanceOf<TutorialAwaitFactStep>(steps[9]);
+                Assert.IsInstanceOf<TutorialAssertStep>(steps[10]);
+                Assert.IsInstanceOf<TutorialBlockingCalloutStep>(steps[11]);
+                Assert.IsInstanceOf<TutorialHighlightClickStep>(steps[14]);
+                Assert.IsInstanceOf<TutorialBlockingCalloutStep>(steps[15]);
+                Assert.IsInstanceOf<TutorialHideWindowStep<ContentWidgetController>>(steps[16]);
                 Assert.AreEqual(
                     TutorialPointerPlacement.Left,
-                    ReadPointerPlacement((TutorialHighlightClickStep)steps[5]));
-                Assert.IsTrue(ReadPauseSales((TutorialHighlightClickStep)steps[5]));
-                Assert.IsTrue(ReadHideTextAfterTap((TutorialBlockingCalloutStep)steps[6]));
-                Assert.IsFalse(ReadDimBackground((TutorialBlockingCalloutStep)steps[6]));
-                Assert.IsFalse(ReadLockUi((TutorialBlockingCalloutStep)steps[6]));
+                    ReadPointerPlacement((TutorialHighlightClickStep)steps[14]));
+                Assert.IsTrue(ReadPauseSales((TutorialHighlightClickStep)steps[14]));
+                Assert.IsTrue(ReadHideTextAfterTap((TutorialBlockingCalloutStep)steps[15]));
+                Assert.IsFalse(ReadDimBackground((TutorialBlockingCalloutStep)steps[15]));
+                Assert.IsFalse(ReadLockUi((TutorialBlockingCalloutStep)steps[15]));
             }
             finally
             {
@@ -175,7 +197,7 @@ namespace Game.Tutorial.Tests.Editor
             try
             {
                 h.Ui.ContentWidgetShown = true;
-                var step = h.Sequence.GetSteps()[7];
+                var step = h.Sequence.GetSteps()[16];
 
                 await step.ExecuteAsync(CancellationToken.None);
 
@@ -188,15 +210,15 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
-        public void IsEligible_OnlyOnDayTwo()
+        public void IsEligible_OnlyOnDayOne()
         {
             var h = new Harness();
             try
             {
-                h.DayProgress.Current.CurrentDay = 1;
+                h.DayProgress.Current.CurrentDay = 2;
                 Assert.IsFalse(h.Sequence.IsEligible());
 
-                h.DayProgress.Current.CurrentDay = 2;
+                h.DayProgress.Current.CurrentDay = 1;
                 Assert.IsTrue(h.Sequence.IsEligible());
             }
             finally
@@ -244,16 +266,18 @@ namespace Game.Tutorial.Tests.Editor
 
             public Harness()
             {
-                Root = new GameObject("TutorialDayTwoTests_Root");
+                Root = new GameObject("TutorialDayOneTests_Root");
                 _settings = TutorialOverlaySettings.CreateDefault();
                 Overlay = new TutorialOverlayController(new FakeCanvasRoot(Root.transform), _settings);
-                Sequence = new TutorialDayTwo(
+                Sequence = new TutorialDayOne(
                     Overlay,
                     Ui,
                     DayProgress,
                     Targets,
-                    PausePublisher,
+                    PhaseSubscriber,
+                    SaleSubscriber,
                     FailSubscriber,
+                    PausePublisher,
                     analytics: null);
             }
 
@@ -261,10 +285,12 @@ namespace Game.Tutorial.Tests.Editor
             public FakeUIManager Ui { get; } = new();
             public FakeDayProgress DayProgress { get; } = new();
             public TutorialTargetRegistry Targets { get; } = new();
-            public RecordingPublisher<SalesPauseRequested> PausePublisher { get; } = new();
+            public RecordingSubscriber<SalesCustomerPhaseChanged> PhaseSubscriber { get; } = new();
+            public RecordingSubscriber<SalesPassiveSaleHappened> SaleSubscriber { get; } = new();
             public RecordingSubscriber<SalesPassivePurchaseFailed> FailSubscriber { get; } = new();
+            public RecordingPublisher<SalesPauseRequested> PausePublisher { get; } = new();
             public TutorialOverlayController Overlay { get; }
-            public TutorialDayTwo Sequence { get; }
+            public TutorialDayOne Sequence { get; }
 
             public void Dispose()
             {
@@ -329,7 +355,7 @@ namespace Game.Tutorial.Tests.Editor
         {
             public event Action<DayProgressState> PhaseChanged;
 
-            public DayProgressState Current { get; } = new() { CurrentDay = 2 };
+            public DayProgressState Current { get; } = new() { CurrentDay = 1 };
             public UniTask<DayProgressState> LoadAsync(CancellationToken ct) => UniTask.FromResult(Current);
             public UniTask SetPhaseAsync(DayPhase phase, CancellationToken ct)
             {
@@ -361,32 +387,32 @@ namespace Game.Tutorial.Tests.Editor
             public IDisposable Subscribe(IMessageHandler<T> handler, params MessageHandlerFilter<T>[] filters)
             {
                 _handlers.Add(handler);
-                return new Subscription(this, handler);
+                return new Subscription(_handlers, handler);
             }
 
             public void Publish(T message)
             {
-                for (var i = 0; i < _handlers.Count; i++)
-                    _handlers[i]?.Handle(message);
+                var snapshot = _handlers.ToArray();
+                for (var i = 0; i < snapshot.Length; i++)
+                    snapshot[i].Handle(message);
             }
 
             private sealed class Subscription : IDisposable
             {
-                private readonly RecordingSubscriber<T> _owner;
-                private readonly IMessageHandler<T> _handler;
-                private bool _disposed;
+                private readonly List<IMessageHandler<T>> _handlers;
+                private IMessageHandler<T> _handler;
 
-                public Subscription(RecordingSubscriber<T> owner, IMessageHandler<T> handler)
+                public Subscription(List<IMessageHandler<T>> handlers, IMessageHandler<T> handler)
                 {
-                    _owner = owner;
+                    _handlers = handlers;
                     _handler = handler;
                 }
 
                 public void Dispose()
                 {
-                    if (_disposed) return;
-                    _disposed = true;
-                    _owner._handlers.Remove(_handler);
+                    if (_handler == null) return;
+                    _handlers.Remove(_handler);
+                    _handler = null;
                 }
             }
         }

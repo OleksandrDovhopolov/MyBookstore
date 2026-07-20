@@ -64,7 +64,7 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
-        public async Task Day2_LocationLoaded_StartsDayTwoSequence()
+        public async Task Day2_LocationLoaded_StartsNothing()
         {
             var dayProgress = new FakeDayProgress();
             dayProgress.Current.CurrentDay = 2;
@@ -76,8 +76,8 @@ namespace Game.Tutorial.Tests.Editor
 
                 gameFlow.RaiseLocationLoaded(true);
 
-                Assert.IsTrue(service.IsRunning);
-                Assert.AreEqual("tutorial_day_2", service.ActiveSequenceId);
+                Assert.IsFalse(service.IsRunning);
+                Assert.IsNull(service.ActiveSequenceId);
             }
             finally
             {
@@ -86,7 +86,7 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
-        public async Task Day2_DayOneNotCompleted_StartsDayTwoNotDayOne()
+        public async Task Day2_DayOneNotCompleted_StartsNothing()
         {
             var dayProgress = new FakeDayProgress();
             dayProgress.Current.CurrentDay = 2;
@@ -98,8 +98,8 @@ namespace Game.Tutorial.Tests.Editor
 
                 gameFlow.RaiseLocationLoaded(true);
 
-                Assert.IsTrue(service.IsRunning);
-                Assert.AreEqual("tutorial_day_2", service.ActiveSequenceId);
+                Assert.IsFalse(service.IsRunning);
+                Assert.IsNull(service.ActiveSequenceId);
             }
             finally
             {
@@ -118,16 +118,9 @@ namespace Game.Tutorial.Tests.Editor
                 Priority = 10,
                 IsEligibleFunc = () => dayProgress.Current.CurrentDay == 1
             };
-            var dayTwo = new FakeSequence
-            {
-                Id = "tutorial_day_2",
-                Priority = 20,
-                IsEligibleFunc = () => dayProgress.Current.CurrentDay == 2
-            };
-
             return new TutorialService(
                 save ?? new FakeSaveService(),
-                new ITutorialSequence[] { dayOne, dayTwo },
+                new ITutorialSequence[] { dayOne },
                 hubReadySub: null,
                 startedPub: null,
                 stepPub: null,

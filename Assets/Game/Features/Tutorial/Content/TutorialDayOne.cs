@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using Analytics;
+using Cysharp.Threading.Tasks;
 using Game.DayCycle.Day;
 using Game.DayCycle.Results.UI;
 using Game.Tutorial.API;
 using Game.Tutorial.Presentation;
 using Game.UI;
+using Game.UI.ContentWidget;
+using Infrastructure.TutorialUI;
 using MessagePipe;
 using UnityEngine;
 
@@ -22,15 +25,25 @@ namespace Game.Tutorial.Content
             "If the customer finds the book he needs, he continues shopping.";
         private const string EddiFailedText =
             "If not, then he leaves the store.";
+        private const string GenrePanelTargetId = "location.genre_book_count_panel";
+        private const string Text1 = "The presence of books in the genres themselves does not guarantee sales.";
+        private const string Text2 =
+            "The more books you have on your shelves in a particular genre, the higher your chance of selling them.";
+        private const string Text3 = "Click on a book to find out its chance of sale.";
+        private const string HighlightText = "Tap a genre to inspect sale chance.";
+        private const string Text4 =
+            "This is the chance a book of that genre will sell. Stock more of a genre to raise it.";
         private const string WrapUpText =
             "Day complete - nice work! From tomorrow you'll stock the shelf and choose where to trade yourself.";
         private const string BottomPlacement = "bottom";
         private const string LogPrefix = "[Tutorial]";
         private const string EddiIncompleteEvent = "tutorial_day1_eddi_incomplete";
+        private const string PassiveFailMissingEvent = "tutorial_day1_wave2_passive_fail_missing";
 
         private readonly TutorialOverlayController _overlay;
         private readonly IUIManager _ui;
         private readonly IDayProgressService _dayProgress;
+        private readonly ITutorialTargetRegistry _targets;
         private readonly ISubscriber<SalesCustomerPhaseChanged> _phaseSub;
         private readonly ISubscriber<SalesPassiveSaleHappened> _saleSub;
         private readonly ISubscriber<SalesPassivePurchaseFailed> _failSub;
@@ -41,6 +54,7 @@ namespace Game.Tutorial.Content
         private bool _eddiSold;
         private bool _eddiFailed;
         private bool _eddiLeft;
+        private bool _postEddiPassiveFailed;
         private string _eddiSoldGenre;
         private string _eddiFailedGenre;
 
@@ -48,6 +62,7 @@ namespace Game.Tutorial.Content
             TutorialOverlayController overlay,
             IUIManager ui,
             IDayProgressService dayProgress,
+            ITutorialTargetRegistry targets,
             ISubscriber<SalesCustomerPhaseChanged> phaseSub,
             ISubscriber<SalesPassiveSaleHappened> saleSub,
             ISubscriber<SalesPassivePurchaseFailed> failSub,
@@ -57,6 +72,7 @@ namespace Game.Tutorial.Content
             _overlay = overlay;
             _ui = ui;
             _dayProgress = dayProgress;
+            _targets = targets;
             _phaseSub = phaseSub;
             _saleSub = saleSub;
             _failSub = failSub;
@@ -89,6 +105,8 @@ namespace Game.Tutorial.Content
             DisposeSubscriptions();
             ResetLatch();
             _overlay.HideCallout();
+            _overlay.HideHighlight();
+            HideContentWidgetIfShown();
         }
 
         public IReadOnlyList<ITutorialStep> GetSteps()
@@ -128,6 +146,56 @@ namespace Game.Tutorial.Content
                 // (Eddi absent, or Fact missing from the shelf — a content desync, see TODO GAME-17), the
                 // day still completes cleanly, but the lesson silently did not happen. Report it.
                 new TutorialAssertStep("verify_eddi_participated", () => _eddiSold, ReportEddiIncomplete),
+                new TutorialAwaitFactStep("await_passive_fail", Until(() => _postEddiPassiveFailed)),
+                new TutorialAssertStep("verify_passive_fail", () => _postEddiPassiveFailed, ReportPassiveFailMissing),
+                new TutorialBlockingCalloutStep(
+                    "text_1",
+                    _ui,
+                    _overlay,
+                    _pausePublisher,
+                    () => _postEddiPassiveFailed,
+                    () => Text1,
+                    BottomPlacement),
+                new TutorialBlockingCalloutStep(
+                    "text_2",
+                    _ui,
+                    _overlay,
+                    _pausePublisher,
+                    () => _postEddiPassiveFailed,
+                    () => Text2,
+                    BottomPlacement),
+                new TutorialBlockingCalloutStep(
+                    "text_3",
+                    _ui,
+                    _overlay,
+                    _pausePublisher,
+                    () => _postEddiPassiveFailed,
+                    () => Text3,
+                    BottomPlacement),
+                new TutorialHighlightClickStep(
+                    "click_genre_panel",
+                    _overlay,
+                    _targets,
+                    GenrePanelTargetId,
+                    HighlightText,
+                    BottomPlacement,
+                    true,
+                    () => _postEddiPassiveFailed,
+                    TutorialPointerPlacement.Left,
+                    _pausePublisher,
+                    pauseSales: true),
+                new TutorialBlockingCalloutStep(
+                    "text_4",
+                    _ui,
+                    _overlay,
+                    _pausePublisher,
+                    () => _postEddiPassiveFailed,
+                    () => Text4,
+                    BottomPlacement,
+                    hideTextAfterTap: true,
+                    dimBackground: false,
+                    lockUi: false),
+                new TutorialHideWindowStep<ContentWidgetController>("hide_sale_chance_widget", _ui),
                 new TutorialAwaitWindowStep("wait_results_window", () => ResultsShown),
                 new TutorialBlockingCalloutStep(
                     "wrap_up",
@@ -161,7 +229,11 @@ namespace Game.Tutorial.Content
 
         private void OnSalesPassivePurchaseFailed(SalesPassivePurchaseFailed message)
         {
-            if (!IsEddi(message.CharacterId)) return;
+            if (!IsEddi(message.CharacterId))
+            {
+                _postEddiPassiveFailed = true;
+                return;
+            }
 
             _eddiFailed = true;
             _eddiFailedGenre = message.Genre;
@@ -181,6 +253,15 @@ namespace Game.Tutorial.Content
             _analytics?.TrackEvent(new AnalyticsEvent(EddiIncompleteEvent));
         }
 
+        private void ReportPassiveFailMissing()
+        {
+            Debug.LogError(
+                $"{LogPrefix} day 1 reached results without a non-Eddi passive purchase failure. " +
+                "Check day2_missed_sale and the day-1 wave setup.");
+
+            _analytics?.TrackEvent(new AnalyticsEvent(PassiveFailMissingEvent));
+        }
+
         private Func<bool> Until(Func<bool> fact)
             => () => fact() || ResultsShown;
 
@@ -198,6 +279,7 @@ namespace Game.Tutorial.Content
             _eddiSold = false;
             _eddiFailed = false;
             _eddiLeft = false;
+            _postEddiPassiveFailed = false;
             _eddiSoldGenre = null;
             _eddiFailedGenre = null;
         }
@@ -207,6 +289,20 @@ namespace Game.Tutorial.Content
             for (var i = 0; i < _subscriptions.Count; i++)
                 _subscriptions[i]?.Dispose();
             _subscriptions.Clear();
+        }
+
+        private void HideContentWidgetIfShown()
+        {
+            HideWindowIfShown<ContentWidgetController>();
+        }
+
+        private void HideWindowIfShown<TWindow>()
+            where TWindow : class, IWindowController
+        {
+            if (_ui == null || !_ui.IsWindowShown<TWindow>())
+                return;
+
+            _ui.HideAsync<TWindow>(forceClose: true).Forget();
         }
     }
 }

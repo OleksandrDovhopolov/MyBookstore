@@ -181,6 +181,45 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void DayOneScripts_PlaceEddiInSlotZero_AndMissNpcInSlotOne()
+        {
+            var configs = new FakeConfigsService();
+            configs.SetAll(new[]
+            {
+                Script("eddi_intro", dayIndex: null,
+                    activationQuestId: "q_intro_eddi", dialogueId: "eddy1", characterId: "eddi",
+                    attempts: EddiAttempts()),
+                Script("day2_missed_sale", dayIndex: 1)
+            });
+            configs.SetAll(new[] { SingleNodeDialogue("eddy1") });
+            configs.SetAll(new[] { SalesTestKit.Book("book_fact", "Fact"), SalesTestKit.Book("book_travel", "Travel") });
+            configs.SetAll(new[]
+            {
+                new CharacterConfig
+                {
+                    Id = "eddi",
+                    FavoriteGenres = new[] { "Fact", "Travel" }
+                }
+            });
+            var inner = new StubCustomerSpawner(new List<Customer>
+            {
+                Passive("inner_1"),
+                Passive("inner_2"),
+                Passive("inner_3"),
+                Passive("inner_4")
+            });
+            var quests = new FakeQuestsService(("q_intro_eddi", QuestState.Active));
+
+            var customers = Spawner(inner, configs, quests).BuildCustomers(DayOneSetup, Tuning, new FakeSalesRandom());
+
+            Assert.AreEqual(4, customers.Count);
+            Assert.AreEqual("script_eddi_intro", customers[0].Id);
+            Assert.AreEqual("eddi", customers[0].CharacterId);
+            Assert.AreEqual("script_day2_missed_sale", customers[1].Id);
+            Assert.IsNull(customers[1].CharacterId);
+        }
+
+        [Test]
         public void QuestScript_Skips_WhenDialogueAlreadyDelivered()
         {
             var configs = ConfigsWithEddi(Script("eddi_intro", dayIndex: null,

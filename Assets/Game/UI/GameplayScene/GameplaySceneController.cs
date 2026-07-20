@@ -26,9 +26,9 @@ namespace GameplayUI
     [Window("GameplaySceneController", WindowType.HUD)]
     public class GameplaySceneController : WindowController<GameplaySceneView>, IDataReadyWindow
     {
-        private const string TutorialDayTwoId = "tutorial_day_2";
-        private const string TutorialDayTwoClickGenreStepId = "click_genre_panel";
-        private const string TutorialDayTwoFinalTextStepId = "text_4";
+        private const string TutorialDayOneId = "tutorial_day_1";
+        private const string TutorialClickGenreStepId = "click_genre_panel";
+        private const string TutorialFinalTextStepId = "text_4";
 
         private IDayProgressService _dayProgress;
         private IMorningSessionService _session;
@@ -287,9 +287,9 @@ namespace GameplayUI
         private void OnTutorialStepChanged(TutorialStepChanged step)
         {
             _suppressSaleChanceWidgetAutoClose =
-                step.SequenceId == TutorialDayTwoId
-                && (step.StepId == TutorialDayTwoClickGenreStepId
-                    || step.StepId == TutorialDayTwoFinalTextStepId);
+                step.SequenceId == TutorialDayOneId
+                && (step.StepId == TutorialClickGenreStepId
+                    || step.StepId == TutorialFinalTextStepId);
         }
 
         private async UniTaskVoid StartGameAsync()

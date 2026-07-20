@@ -377,12 +377,12 @@ Resume посреди Day 1 — best-effort (`Restart`). При `_firstDayEntry 
 pointer/highlight для таргетов + динамическая регистрация таргетов из `PreparationGenreRowView` через
 фасад `TutorialTargets`. Text-only немодальный callout уже есть; привязка к таргетам — follow-up этапа 5.
 
-### 6.2 Day 2 — канонический флоу
+### 6.2 Day-1 wave 2 — канонический флоу
 
-**Это спека дня 2.** Зафиксировано 2026-07-18; **пересмотрено 2026-07-19** (модель «весь урок блокирует
-покупки» + добавлен `highlightClick`-шаг после реализации этапа 5). Секвенция `tutorial_day_2`
-(`TutorialDayTwo`, `Context = Location`, `Trigger = LocationLoaded`, `ResumePolicy = Restart`,
-`IsEligible → CurrentDay == 2`).
+**Это спека второй волны дня 1.** Зафиксировано 2026-07-18; **пересмотрено 2026-07-19** (модель «весь урок блокирует
+покупки» + добавлен `highlightClick`-шаг после реализации этапа 5). Флоу встроен в единую секвенцию
+`tutorial_day_1` (`TutorialDayOne`, `Context = Location`, `Trigger = LocationLoaded`, `ResumePolicy = Restart`,
+`IsEligible → CurrentDay == 1`).
 
 **Состав дня:** 3 покупателя, **все обычные NPC** (без Eddi/квест-персонажа). Количество настраивается в
 [days.json](../../Assets/Configs/days.json) (`DayConfig.CustomerCount` для дня 2). Только **пассивные** покупки
@@ -440,8 +440,8 @@ pointer/highlight для таргетов + динамическая регис�
 
 - **Гарантия провала — решено.** Детерминированный провал реализован через `day2_missed_sale` в
   [customer_scripts.json](../../Assets/Configs/customer_scripts.json) (обе копии — `Assets/Configs` и
-  `Assets/StreamingAssets/Configs`): `dayIndex:2`, `characterId:null`, `passiveAttempts:[{Travel, forceHit:false}]`.
-  `ScriptedCustomerSpawner` подменяет им первый слот дня 2 (`days.json`: `customerCount:3`, `activeRequestCount:0`) →
+  `Assets/StreamingAssets/Configs`): `dayIndex:1`, `characterId:null`, `passiveAttempts:[{Travel, forceHit:false}]`.
+  `ScriptedCustomerSpawner` подменяет им второй слот дня 1 (`days.json`: `customerCount:4`, `waveSizes:[1,3]`, `activeRequestCount:0`) →
   гарантированный `SalesPassivePurchaseFailed` у обычного NPC (тот же механизм, что Travel-miss у Eddi). Ожидание
   провала всё равно держит fallback `fail || ResultsShown`, чтобы не зависнуть, если гарантия не сработает.
   (Прим.: `DebugMinimumSaleChanceCalculator`, флорящий шанс на 50%, в текущем билде неактивен — реальные шансы
