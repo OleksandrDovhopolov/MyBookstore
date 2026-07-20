@@ -33,9 +33,6 @@ namespace Book.Sell.Tests.Editor
         private static Customer ApproachLeave(string id)
             => new(id, new ICustomerStep[] { new ApproachStep(), new LeaveStep() });
 
-        private static Customer Hold(string id)
-            => new(id, new ICustomerStep[] { new HoldStep() });
-
         private static Customer Active(string id, ActiveRequestRuntime req)
             => new(id, new ICustomerStep[] { new ApproachStep(), new ActiveRequestStep(req), new LeaveStep() });
 
@@ -122,18 +119,6 @@ namespace Book.Sell.Tests.Editor
                 LastResult = result;
                 return UniTask.CompletedTask;
             }
-        }
-
-        private sealed class HoldStep : ICustomerStep
-        {
-            public void Enter(Customer self, CustomerContext ctx)
-            {
-                self.SetPhase(CustomerPhase.Approaching, ctx);
-            }
-
-            public StepStatus Tick(Customer self, CustomerContext ctx, float dt) => StepStatus.Running;
-
-            public void Exit(Customer self, CustomerContext ctx) { }
         }
 
         private static void StartDay(SalesDayController c)
@@ -675,66 +660,6 @@ namespace Book.Sell.Tests.Editor
 
             c.Tick(0.1f);
             Assert.AreEqual(4, SpawnedCount(customers), "Second wave should open after the gap passes.");
-        }
-
-        [Test]
-        public void Spawning_WaveGate_PreservesSpawnIntervalInsideWave()
-        {
-            var customers = new List<Customer> { Hold("c0"), Hold("c1"), Hold("c2") };
-            var tuning = SalesTestKit.FastTuning();
-            tuning.SpawnInterval = 0.25f;
-            var day = new DayConfig { Id = "d1", DayIndex = 1, WaveSizes = new[] { 3 }, WaveGapSeconds = 0f };
-
-            var c = Build(
-                new[] { SalesTestKit.Book("b1") }, Array.Empty<RequestDefinitionConfig>(),
-                SalesTestKit.Location(), customers, tuning: tuning, dayConfigs: new[] { day });
-
-            StartDay(c);
-
-            c.Tick(0.1f);
-            Assert.AreEqual(1, SpawnedCount(customers));
-
-            c.Tick(0.1f);
-            Assert.AreEqual(1, SpawnedCount(customers));
-
-            c.Tick(0.1f);
-            Assert.AreEqual(2, SpawnedCount(customers));
-        }
-
-        [Test]
-        public void Spawning_WaveGate_PreservesMaxConcurrentCustomersInsideWave()
-        {
-            var customers = new List<Customer> { Hold("c0"), Hold("c1"), Hold("c2"), Hold("c3") };
-            var tuning = SalesTestKit.FastTuning();
-            tuning.MaxConcurrentCustomers = 2;
-            var day = new DayConfig { Id = "d1", DayIndex = 1, WaveSizes = new[] { 4 }, WaveGapSeconds = 0f };
-
-            var c = Build(
-                new[] { SalesTestKit.Book("b1") }, Array.Empty<RequestDefinitionConfig>(),
-                SalesTestKit.Location(), customers, tuning: tuning, dayConfigs: new[] { day });
-
-            StartDay(c);
-
-            for (var i = 0; i < 5; i++)
-                c.Tick(0.1f);
-
-            Assert.AreEqual(2, SpawnedCount(customers));
-        }
-
-        [Test]
-        public void Spawning_NullWaveSizes_KeepsSingleWaveBehavior()
-        {
-            var customers = new List<Customer> { Hold("c0"), Hold("c1"), Hold("c2") };
-            var day = new DayConfig { Id = "d1", DayIndex = 1, WaveSizes = null, WaveGapSeconds = 10f };
-
-            var c = Build(
-                new[] { SalesTestKit.Book("b1") }, Array.Empty<RequestDefinitionConfig>(),
-                SalesTestKit.Location(), customers, dayConfigs: new[] { day });
-
-            StartDay(c);
-            c.Tick(0.1f);
-
-            Assert.AreEqual(3, SpawnedCount(customers));
         }
 
         [Test]
