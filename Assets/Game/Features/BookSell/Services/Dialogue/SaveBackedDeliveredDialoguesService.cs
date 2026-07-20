@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Book.Sell.API;
 using Cysharp.Threading.Tasks;
 using Save;
 
@@ -35,6 +36,20 @@ namespace Book.Sell.Services
 
             var set = EnsureLoaded();
             if (!set.Add(dialogueId)) return;   // already delivered — no save churn
+
+            await _save.UpdateModuleAsync(
+                DialoguesSaveKeys.Delivered,
+                new DeliveredDialogues { Ids = new List<string>(set) },
+                DialoguesSaveKeys.DeliveredSchemaVersion,
+                ct);
+        }
+
+        public async UniTask ClearAsync(string dialogueId, CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(dialogueId)) return;
+
+            var set = EnsureLoaded();
+            if (!set.Remove(dialogueId)) return;
 
             await _save.UpdateModuleAsync(
                 DialoguesSaveKeys.Delivered,

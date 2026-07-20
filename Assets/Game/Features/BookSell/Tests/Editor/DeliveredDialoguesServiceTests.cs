@@ -38,11 +38,42 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void MarkDelivered_BlankId_IsNoOp()
         {
-            var service = new SaveBackedDeliveredDialoguesService(new FakeSaveService());
+            var save = new FakeSaveService();
+            var service = new SaveBackedDeliveredDialoguesService(save);
 
             Assert.DoesNotThrow(() =>
                 service.MarkDeliveredAsync("  ", CancellationToken.None).GetAwaiter().GetResult());
             Assert.IsFalse(service.IsDelivered("  "));
+            Assert.AreEqual(0, save.UpdateCalls);
+        }
+
+        [Test]
+        public void Clear_RemovesDeliveredId_AndPersists()
+        {
+            var save = new FakeSaveService();
+            var service = new SaveBackedDeliveredDialoguesService(save);
+            service.MarkDeliveredAsync("dlg", CancellationToken.None).GetAwaiter().GetResult();
+
+            service.ClearAsync("dlg", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.IsFalse(service.IsDelivered("dlg"));
+            var reloaded = new SaveBackedDeliveredDialoguesService(save);
+            Assert.IsFalse(reloaded.IsDelivered("dlg"));
+        }
+
+        [Test]
+        public void Clear_MissingOrBlankId_IsNoOpWithoutSaveChurn()
+        {
+            var save = new FakeSaveService();
+            var service = new SaveBackedDeliveredDialoguesService(save);
+            service.MarkDeliveredAsync("dlg", CancellationToken.None).GetAwaiter().GetResult();
+            var callsAfterMark = save.UpdateCalls;
+
+            service.ClearAsync("missing", CancellationToken.None).GetAwaiter().GetResult();
+            service.ClearAsync("  ", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(callsAfterMark, save.UpdateCalls);
+            Assert.IsTrue(service.IsDelivered("dlg"));
         }
     }
 }

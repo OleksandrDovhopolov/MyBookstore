@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Domain.Steps;
 using Book.Sell.Services;
@@ -394,6 +395,12 @@ namespace Book.Sell.Tests.Editor
             public UniTask MarkDeliveredAsync(string dialogueId, CancellationToken ct)
             {
                 _delivered.Add(dialogueId);
+                return UniTask.CompletedTask;
+            }
+
+            public UniTask ClearAsync(string dialogueId, CancellationToken ct)
+            {
+                _delivered.Remove(dialogueId);
                 return UniTask.CompletedTask;
             }
         }

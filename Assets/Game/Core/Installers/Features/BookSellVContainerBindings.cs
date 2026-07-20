@@ -22,12 +22,12 @@ namespace Game.Bootstrap
     // which reads the player's choice from the preparation.session save module.
     public static class BookSellVContainerBindings
     {
-        // Shared save-backed shelf-session state. Used in two scopes:
-        //   - hub (Preparation): preserves previous shelf survivors for continuity/restock;
-        //   - location (Sales): marks books sold during the current sales session for UI/day flow.
-        // Ownership truth lives in inventory; this service is registered globally so both scopes share one instance.
+        // Shared save-backed BookSell state. Registered globally so hub boot/preparation and location sales share it.
         public static void RegisterBookSellSharedState(this IContainerBuilder builder)
         {
+            // Fire-once memory for scripted dialogues (GAME-6). MainSceneBootstrap clears day-1 authored
+            // flags before direct entry; the location-scoped spawner filters and DialoguePresenter marks.
+            builder.Register<IDeliveredDialoguesService, SaveBackedDeliveredDialoguesService>(Lifetime.Singleton);
             builder.Register<ISalesShelfStateService, SalesShelfStateService>(Lifetime.Singleton);
             // TEMP DEBUG: keep economy/location/decor modifiers, but floor passive sale chance at 50%.
             // Restore EconomyBasedSaleChanceCalculator when sales-flow testing is done.
@@ -100,11 +100,6 @@ namespace Game.Bootstrap
                 Lifetime.Singleton);
             
             
-
-            // Fire-once memory for scripted dialogues (GAME-6). Save-backed; ISaveService resolves from the
-            // parent (global) scope. Used by the quest-scheduling spawner (filter) and DialoguePresenter (mark).
-            builder.Register<IDeliveredDialoguesService, SaveBackedDeliveredDialoguesService>(Lifetime.Singleton);
-
             // Customer traffic count (how many regular customers per day). Global knobs come from the
             // SalesTrafficConfig SO (or code defaults); per-day counts live in days.json (DayConfig).
             // Contributors are feature-owned: LocationTrafficContributor here, DecorTrafficContributor in

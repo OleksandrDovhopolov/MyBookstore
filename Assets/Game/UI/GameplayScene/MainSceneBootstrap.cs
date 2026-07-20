@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Book.Sell.API;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.Configs;
@@ -49,6 +50,7 @@ namespace GameplayUI
             IConfigsService configs = null,
             ILocationUnlockService locationUnlock = null,
             IPreparationInventoryProvider preparationInventory = null,
+            IDeliveredDialoguesService deliveredDialogues = null,
             ITutorialAutoStartGate tutorialAutoStartGate = null)
         {
             _uiManager = uiManager;
@@ -63,7 +65,13 @@ namespace GameplayUI
             if (morningSession != null && preparationSession != null && gameFlow != null && configs != null)
             {
                 _firstDayEntryFlow = new FirstDayEntryFlow(
-                    morningSession, preparationSession, gameFlow, configs, locationUnlock, preparationInventory);
+                    morningSession,
+                    preparationSession,
+                    gameFlow,
+                    configs,
+                    locationUnlock,
+                    preparationInventory,
+                    deliveredDialogues);
             }
         }
 
@@ -147,8 +155,8 @@ namespace GameplayUI
             return welcome == null || !welcome.Completed;
         }
 
-        // Day-1 "drop straight into the location" gate. True only on a fresh, not-yet-started day 1 when the
-        // product switch is set to Location and the orchestrator is available. Any miss → normal hub flow.
+        // Day-1 "drop straight into the location" gate. True for fresh or interrupted unfinished day 1 when
+        // the product switch is set to Location and the orchestrator is available. Any miss -> normal hub flow.
         private async UniTask<bool> ShouldEnterFirstDayLocationAsync(CancellationToken ct)
         {
             if (_firstDayEntrySettings?.Mode != FirstDayEntryMode.Location) return false;
@@ -157,8 +165,7 @@ namespace GameplayUI
             var state = await _dayProgress.LoadAsync(ct);
             return state != null
                    && state.CurrentDay == 1
-                   && state.CurrentPhase == DayPhase.Morning
-                   && !(state.CompletedDays?.Contains(state.CurrentDay) ?? false);
+                   && !(state.CompletedDays?.Contains(1) ?? false);
         }
 
         private async UniTask ShowWelcomeAndWaitAsync(CancellationToken ct)

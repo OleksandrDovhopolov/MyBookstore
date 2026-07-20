@@ -17,6 +17,7 @@
         "Game.Decor",
         "Game.Ftue",
         "Game.Tutorial.API",
+        "Book.Sell.API",
         "Save",
         "Game.GameplayUI.Signals"
     ],

@@ -10,6 +10,8 @@ namespace Book.Sell.Tests.Editor.Fakes
     {
         private readonly Dictionary<string, object> _modules = new();
 
+        public int UpdateCalls { get; private set; }
+
         public UniTask LoadAsync(CancellationToken ct) => UniTask.CompletedTask;
 
         public UniTask SaveAsync(CancellationToken ct, SaveMode mode = SaveMode.Regular) => UniTask.CompletedTask;
@@ -19,6 +21,7 @@ namespace Book.Sell.Tests.Editor.Fakes
 
         public UniTask UpdateModuleAsync<T>(string moduleKey, T value, int schemaVersion, CancellationToken ct)
         {
+            UpdateCalls++;
             _modules[moduleKey] = value;
             return UniTask.CompletedTask;
         }

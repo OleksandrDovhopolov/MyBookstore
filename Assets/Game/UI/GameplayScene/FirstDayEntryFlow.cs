@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Book.Sell.API;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.Configs;
@@ -33,6 +34,7 @@ namespace GameplayUI
         private readonly IGameFlowService _gameFlow;
         private readonly IConfigsService _configs;
         private readonly ILocationUnlockService _locationUnlock;
+        private readonly IDeliveredDialoguesService _delivered;
 
         private static readonly IReadOnlyList<string> FirstDayGenreOrder = new[]
         {
@@ -51,7 +53,8 @@ namespace GameplayUI
             IGameFlowService gameFlow,
             IConfigsService configs,
             ILocationUnlockService locationUnlock = null,
-            IPreparationInventoryProvider inventory = null)
+            IPreparationInventoryProvider inventory = null,
+            IDeliveredDialoguesService delivered = null)
         {
             _morning = morning ?? throw new ArgumentNullException(nameof(morning));
             _preparation = preparation ?? throw new ArgumentNullException(nameof(preparation));
@@ -59,6 +62,7 @@ namespace GameplayUI
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _inventory = inventory;
             _locationUnlock = locationUnlock; // optional-safe: null → treat all locations as unlocked
+            _delivered = delivered;
         }
 
         /// <summary>
@@ -83,6 +87,8 @@ namespace GameplayUI
                 return false;
             }
 
+            await ClearDayOneAuthoredDialoguesAsync(ct);
+
             // Auto-stock: seed the session for this location, fill the shelf from the seeded inventory, confirm.
             await _preparation.StartOrResumeAsync(ct, locationId);
             await _preparation.SetSelectedBookIdsAsync(BuildFirstDayShelfPreset(), ct);
@@ -99,6 +105,24 @@ namespace GameplayUI
 
             Debug.Log($"{LogPrefix} entered location '{locationId}' directly with an auto-stocked shelf.");
             return true;
+        }
+
+        private async UniTask ClearDayOneAuthoredDialoguesAsync(CancellationToken ct)
+        {
+            if (_delivered == null) return;
+
+            var cleared = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var script in _configs.GetAll<CustomerScriptConfig>())
+            {
+                var dialogueId = script?.DialogueId;
+                if (string.IsNullOrWhiteSpace(dialogueId)) continue;
+
+                var belongsToDayOne = script.DayIndex == 1 || !string.IsNullOrWhiteSpace(script.ActivationQuestId);
+                if (!belongsToDayOne) continue;
+                if (!cleared.Add(dialogueId)) continue;
+
+                await _delivered.ClearAsync(dialogueId, ct);
+            }
         }
 
         private IReadOnlyList<string> BuildFirstDayShelfPreset()
