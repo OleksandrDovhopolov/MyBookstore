@@ -206,10 +206,8 @@
   - **Туториал рисует overlay — квест меняет число.** У квестов `Reevaluate` зовётся синхронно внутри
     колбэка `_inventory.Changed`, и им это безразлично. Туториал в этот момент поднимет модальный blackout —
     возможно, посреди анимации окна магазина сразу после клика «купить». Нужен отложенный старт. Механизм
-    есть: `ITutorialAutoStartGate` + `_pendingAutoStartTrigger`
-    ([:222](../Assets/Game/Features/Tutorial/Services/TutorialService.cs)) + transition-guard
-    ([:231](../Assets/Game/Features/Tutorial/Services/TutorialService.cs)), но сейчас он хранит **один**
-    pending-триггер — переосмыслить как «пересчитать, когда станет безопасно».
+    есть: `ITutorialAutoStartGate` + `_rescanPending` + transition-guard; pending теперь означает
+    «пересчитать, когда станет безопасно», а не «переиграть последний trigger».
   - **`_running` guard теряет события — регресс.** `OnTrigger` early-return'ит на `_running`
     ([:220](../Assets/Game/Features/Tutorial/Services/TutorialService.cs)) и **ничего не запоминает**.
     У квестов состояние остаётся eligible и следующий `Reevaluate` подхватит; у туториала условие может
@@ -227,8 +225,9 @@
   Порядок работ (шаги разносить):
   1. ✅ **Строгий day-gate в `TutorialDayOne.IsEligible()`** — закрыт в рамках текущей trigger-модели,
      без re-evaluation loop и без `currentDayIs` condition-factory.
-  2. **Re-evaluation loop** — когда реально понадобится запуск от покупки/диалога. Тогда же:
-     pending-scan вместо pending-trigger и re-scan после завершения run'а.
+  2. 🟡 **Минимальный re-evaluation loop** — частично закрывается сейчас для `TutorialHub`:
+     trigger-agnostic scan, pending-scan вместо pending-trigger и re-scan после успешного завершения run'а.
+     Полный GAME-18 (подписки на inventory/decor/sales и новые condition-factory leaf'ы) остаётся отдельно.
 
   Зачем это нужно уже сейчас: со второй секвенцией (туториал дня 2) цена отсутствия day-gate меняется.
   Порядок сейчас держится не на номере дня, а на цепочке «day1 завершился → следующий по priority».

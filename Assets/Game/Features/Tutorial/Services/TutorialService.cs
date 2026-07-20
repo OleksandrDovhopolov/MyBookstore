@@ -53,7 +53,7 @@ namespace Game.Tutorial.Services
         private bool _running;
         private string _activeSequenceId;
         private CancellationTokenSource _runCts;
-        private PendingTrigger _pendingAutoStartTrigger;
+        private bool _rescanPending;
 
         public TutorialService(
             ISaveService save,
@@ -212,7 +212,7 @@ namespace Game.Tutorial.Services
 
             if (_autoStartGate?.IsBlocked == true)
             {
-                _pendingAutoStartTrigger = new PendingTrigger(trigger, param);
+                _rescanPending = true;
                 return;
             }
 
@@ -222,32 +222,47 @@ namespace Game.Tutorial.Services
             if (trigger != TutorialTrigger.LocationLoaded && _gameFlow?.IsTransitioning == true)
                 return;
 
+            TryStartEligible();
+        }
+
+        private bool TryStartEligible()
+        {
             foreach (var seq in _byPriority)
             {
-                if (seq.Trigger != trigger) continue;
-                if (!string.IsNullOrEmpty(seq.TriggerParam) &&
-                    !string.Equals(seq.TriggerParam, param, StringComparison.Ordinal)) continue;
                 if (!ContextAllows(seq)) continue;
                 if (!IsEligible(seq)) continue;
 
                 var steps = MaterializeSteps(seq);
                 BeginRun(seq, steps, startIndex: 0);
-                return; // one exclusive runner
+                return true; // one exclusive runner
             }
+
+            return false;
+        }
+
+        private void RequestRescan()
+        {
+            if (!_loaded || _running || !_autoStart) return;
+
+            if (_autoStartGate?.IsBlocked == true)
+            {
+                _rescanPending = true;
+                return;
+            }
+
+            if (_gameFlow?.IsTransitioning == true)
+                return;
+
+            TryStartEligible();
         }
 
         private void OnAutoStartGateReleased()
         {
-            if (!_pendingAutoStartTrigger.HasValue)
+            if (!_rescanPending)
                 return;
 
-            var trigger = _pendingAutoStartTrigger;
-            _pendingAutoStartTrigger = default;
-
-            if (!_loaded || _running || !_autoStart)
-                return;
-
-            OnTrigger(trigger.Trigger, trigger.Param);
+            _rescanPending = false;
+            RequestRescan();
         }
 
         private bool IsEligible(ITutorialSequence seq)
@@ -320,6 +335,7 @@ namespace Game.Tutorial.Services
             int startIndex,
             CancellationToken ct)
         {
+            var completed = false;
             try
             {
                 _startedPub?.Publish(new TutorialSequenceStarted(seq.Id));
@@ -346,6 +362,7 @@ namespace Game.Tutorial.Services
                 }
 
                 await CompleteAsync(seq, ct);
+                completed = true;
             }
             catch (OperationCanceledException)
             {
@@ -371,6 +388,9 @@ namespace Game.Tutorial.Services
                     _activeSequenceId = null;
                     _runCts?.Dispose();
                     _runCts = null;
+
+                    if (completed)
+                        RequestRescan();
                 }
             }
         }
@@ -416,18 +436,5 @@ namespace Game.Tutorial.Services
             _cts.Dispose();
         }
 
-        private readonly struct PendingTrigger
-        {
-            public PendingTrigger(TutorialTrigger trigger, string param)
-            {
-                Trigger = trigger;
-                Param = param;
-                HasValue = true;
-            }
-
-            public TutorialTrigger Trigger { get; }
-            public string Param { get; }
-            public bool HasValue { get; }
-        }
     }
 }

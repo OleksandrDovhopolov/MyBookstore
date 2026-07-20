@@ -111,5 +111,19 @@
         "options": [ { "text": "Start selling", "next": "end" } ]
       }
     ]
+  },
+  {
+    "id": "tutorial_hub_intro",
+    "nodes": [
+      {
+        "nodeId": "root",
+        "options": [],
+        "lines": [
+          { "speaker": "Eddy", "text": "[STUB] Back already? Good - before you run off, let me show you something." },
+          { "speaker": "Eddy", "text": "[STUB] Every shopkeeper keeps a journal: your tasks, the people you meet, what to do next." },
+          { "speaker": "Eddy", "text": "[STUB] Give it a tap when you're ready - it's right there on your screen." }
+        ]
+      }
+    ]
   }
 ]

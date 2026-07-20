@@ -64,6 +64,38 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
+        public async Task Release_RunsSingleScanAndStartsHighestPriorityEligibleSequence()
+        {
+            var gate = new TutorialAutoStartGate();
+            gate.Block();
+
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
+            var service = BuildService(
+                gate,
+                gameFlow,
+                autoStart: true,
+                sequences: new ITutorialSequence[]
+                {
+                    new FakeSequence { Id = "later", Priority = 20 },
+                    new FakeSequence { Id = "earlier", Priority = 10 }
+                });
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+                gameFlow.RaiseLocationLoaded(true);
+
+                gate.Release();
+
+                Assert.IsTrue(service.IsRunning);
+                Assert.AreEqual("earlier", service.ActiveSequenceId);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
         public async Task AutoStartFalse_DoesNotReplayDeferredTrigger()
         {
             var gate = new TutorialAutoStartGate();

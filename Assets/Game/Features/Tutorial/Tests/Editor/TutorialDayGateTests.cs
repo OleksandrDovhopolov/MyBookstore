@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
@@ -7,9 +8,11 @@ using Game.Bootstrap.Loading;
 using Game.DayCycle.Day;
 using Game.Tutorial.API;
 using Game.Tutorial.Services;
+using MessagePipe;
 using NUnit.Framework;
 using Save;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Game.Tutorial.Tests.Editor
 {
@@ -107,10 +110,149 @@ namespace Game.Tutorial.Tests.Editor
             }
         }
 
+        [Test]
+        public async Task EligibleHubSequence_StartsFromDifferentTrigger()
+        {
+            var dayProgress = new FakeDayProgress();
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = false };
+            var hub = new FakeSequence
+            {
+                Id = "tutorial_hub",
+                Priority = 30,
+                Context = TutorialContext.Hub,
+                Trigger = TutorialTrigger.HubReady,
+                Steps = new ITutorialStep[] { new BlockingStep("hold") }
+            };
+            var service = BuildService(dayProgress, gameFlow, sequences: new ITutorialSequence[] { hub });
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+
+                await dayProgress.SetPhaseAsync(DayPhase.Morning, CancellationToken.None);
+
+                Assert.IsTrue(service.IsRunning);
+                Assert.AreEqual("tutorial_hub", service.ActiveSequenceId);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task CompletedSequence_RescansAndStartsNextEligibleSequence()
+        {
+            var dayProgress = new FakeDayProgress();
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = false };
+            var bEligible = false;
+            var a = new FakeSequence
+            {
+                Id = "a",
+                Priority = 10,
+                Context = TutorialContext.Hub,
+                Steps = new ITutorialStep[] { new CallbackStep("finish_a", () => bEligible = true) }
+            };
+            var b = new FakeSequence
+            {
+                Id = "b",
+                Priority = 20,
+                Context = TutorialContext.Hub,
+                IsEligibleFunc = () => bEligible,
+                Steps = new ITutorialStep[] { new BlockingStep("hold_b") }
+            };
+            var service = BuildService(dayProgress, gameFlow, sequences: new ITutorialSequence[] { a, b });
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+                await dayProgress.SetPhaseAsync(DayPhase.Morning, CancellationToken.None);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                Assert.IsTrue(service.IsRunning);
+                Assert.AreEqual("b", service.ActiveSequenceId);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task FailedSequence_DoesNotImmediatelyRescanAndRestart()
+        {
+            var dayProgress = new FakeDayProgress();
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = false };
+            var started = new RecordingPublisher<TutorialSequenceStarted>();
+            var failing = new FakeSequence
+            {
+                Id = "failing",
+                Priority = 10,
+                Context = TutorialContext.Hub,
+                Steps = new ITutorialStep[] { new FailingStep("fail") }
+            };
+            var service = BuildService(
+                dayProgress,
+                gameFlow,
+                sequences: new ITutorialSequence[] { failing },
+                startedPub: started);
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+                LogAssert.Expect(LogType.Error, new Regex("\\[Tutorial\\] sequence 'failing' failed:.*boom"));
+                await dayProgress.SetPhaseAsync(DayPhase.Morning, CancellationToken.None);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                Assert.IsFalse(service.IsRunning);
+                Assert.AreEqual(1, started.Messages.Count);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task CompletedSequence_DoesNotStartAgainOnLaterTriggers()
+        {
+            var dayProgress = new FakeDayProgress();
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = false };
+            var started = new RecordingPublisher<TutorialSequenceStarted>();
+            var sequence = new FakeSequence
+            {
+                Id = "one_way",
+                Priority = 10,
+                Context = TutorialContext.Hub,
+                Steps = new ITutorialStep[] { new CallbackStep("done", null) }
+            };
+            var service = BuildService(
+                dayProgress,
+                gameFlow,
+                sequences: new ITutorialSequence[] { sequence },
+                startedPub: started);
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+                await dayProgress.SetPhaseAsync(DayPhase.Morning, CancellationToken.None);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                await dayProgress.SetPhaseAsync(DayPhase.Morning, CancellationToken.None);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                Assert.AreEqual(1, started.Messages.Count);
+                Assert.IsTrue(service.IsSequenceCompleted("one_way"));
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
         private static TutorialService BuildService(
             FakeDayProgress dayProgress,
             FakeGameFlow gameFlow,
-            FakeSaveService save = null)
+            FakeSaveService save = null,
+            IReadOnlyList<ITutorialSequence> sequences = null,
+            IPublisher<TutorialSequenceStarted> startedPub = null)
         {
             var dayOne = new FakeSequence
             {
@@ -120,9 +262,9 @@ namespace Game.Tutorial.Tests.Editor
             };
             return new TutorialService(
                 save ?? new FakeSaveService(),
-                new ITutorialSequence[] { dayOne },
+                sequences ?? new ITutorialSequence[] { dayOne },
                 hubReadySub: null,
-                startedPub: null,
+                startedPub: startedPub,
                 stepPub: null,
                 completedPub: null,
                 dayProgress: dayProgress,
@@ -157,6 +299,39 @@ namespace Game.Tutorial.Tests.Editor
                 while (true)
                     await UniTask.Yield(PlayerLoopTiming.Update, ct);
             }
+        }
+
+        private sealed class CallbackStep : ITutorialStep
+        {
+            private readonly Action _callback;
+
+            public CallbackStep(string id, Action callback)
+            {
+                Id = id;
+                _callback = callback;
+            }
+
+            public string Id { get; }
+
+            public UniTask ExecuteAsync(CancellationToken ct)
+            {
+                ct.ThrowIfCancellationRequested();
+                _callback?.Invoke();
+                return UniTask.CompletedTask;
+            }
+        }
+
+        private sealed class FailingStep : ITutorialStep
+        {
+            public FailingStep(string id) => Id = id;
+            public string Id { get; }
+            public UniTask ExecuteAsync(CancellationToken ct) => throw new InvalidOperationException("boom");
+        }
+
+        private sealed class RecordingPublisher<T> : IPublisher<T>
+        {
+            public List<T> Messages { get; } = new();
+            public void Publish(T message) => Messages.Add(message);
         }
 
         private sealed class FakeDayProgress : IDayProgressService

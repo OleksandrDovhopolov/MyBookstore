@@ -453,6 +453,61 @@ pointer/highlight для таргетов + динамическая регис�
   завершается сразу (без ожидания закрытия виджета/дня). Сквозная заморозка гарантирует, что до этого момента день
   не закончится сам (это и был баг per-step-модели, см. лог-разбор 2026-07-19).
 
+### 6.3 Hub-туториал (`TutorialHub`) — канонический флоу
+
+**Статус: спека, не реализовано.** Зафиксировано 2026-07-20. Вторая секвенция после дня 1: знакомит игрока с
+журналом в хабе. Секвенция `tutorial_hub` (`TutorialHub`, `Context = Hub`, `Priority = 30`,
+`ResumePolicy = Restart`).
+
+**Когда стартует:** **после закрытия окна наград (`ResultsWindow`) дня 1**. Это должно переживать релонч
+(кейс §1.1 из запроса): если игрок закрыл `ResultsWindow` (награда уже начислена — day 1 в `CompletedDays`),
+вышел и снова зашёл — туториал стартует точно так же. Значит гейт — **персистентное условие**, а не разовое
+событие «результаты только что закрылись»:
+
+- `IsEligible()` = «день 1 завершён» (`_dayProgress` содержит день 1 в `CompletedDays`, либо через
+  `tutorialCompleted("tutorial_day_1")`) **И** `tutorial_hub` не в `CompletedSequenceIds` **И** `ResultsWindow`
+  сейчас **не** показан (`!IsWindowShown<ResultsWindow>()` — чтобы не всплыть поверх ещё открытых наград).
+- **Триггер — открытый вопрос реализации.** Немедленный путь (закрыл `ResultsWindow` → advance в day-2 Morning →
+  возврат в хаб) и релонч-путь (буут в хаб) порождают разные события. Секвенция объявляет **один** `Trigger`, а
+  сканер стартует только на совпадении — это ровно кейс GAME-18 (одного триггера мало). Рекомендация:
+  `Trigger = HubReady` (буут/возврат в хаб) + **проверить, что `HubReady` публикуется при возврате в хаб после
+  Results** ([MainSceneBootstrap](../../Assets/Game/UI/GameplayScene/MainSceneBootstrap.cs) сейчас шлёт его
+  только в hub-флоу, не на direct-entry); если не публикуется — либо добить publish, либо это первый реальный
+  потребитель re-evaluation loop (**GAME-18**). Персистентный `IsEligible` делает оба пути корректными, как
+  только скан вызывается.
+
+#### Флоу
+
+| # | Событие в игре | Что делает туториал |
+|---|---|---|
+| 1 | Игрок закрыл `ResultsWindow` дня 1 (**или** зашёл в игру уже после этого) | секвенция активируется по `IsEligible` (день 1 завершён, hub-туториал нет, не в Results) |
+| 2 | — | **`TutorialDialogueStep`** (новый шаг): открывает `DialogWindow` с графом `tutorial_hub_intro` (3 фразы Eddi), ждёт закрытия окна |
+| 3 | Диалог закрыт | **`TutorialHighlightClickStep`**: подсветка кнопки журнала (target-id `hub.journal_button`), **стрелка-pointer**, всё затемнено кроме кнопки; блокирующий |
+| 4 | Клик по кнопке | стрелка/затемнение/текст убираются; **штатное** поведение кнопки открывает `JournalWindow` (туториал не открывает окно сам — клик проходит к кнопке) |
+| 5 | `JournalWindow` открылось | `TutorialAwaitWindowStep(() => IsWindowShown<JournalWindow>())` → **секвенция завершена** |
+
+#### Что нового / что переиспользуется
+
+- **Новый шаг `TutorialDialogueStep`** — открывает `DialogWindow` по id графа и ждёт закрытия. Сегодня диалоги
+  бывают **только** у покупателей в sales-дне (`DialogStep`); хаб-диалога нет — это новая возможность
+  (движок `DialogueEngine`/`DialogWindow` view-agnostic, GAME-6, так что переиспользуется, но точку входа
+  «показать standalone-диалог из туториала» нужно добавить). Взаимодействие с fire-once
+  `IDeliveredDialoguesService` продумать при реализации: `ResumePolicy = Restart` перезапускает диалог при
+  релонче до завершения — либо туториал показывает `DialogWindow` напрямую (не через delivered-гейт), либо hub-диалог
+  идёт через immediate-режим delivered (см. defer-commit план диалогов).
+- **`TutorialHighlightClickStep`** (готов, этап 5) — target `hub.journal_button`, `pointer=true` (стрелка),
+  blocking. **Тег на кнопку журнала добавляет владелец задачи вручную** (id `hub.journal_button`).
+- **`TutorialAwaitWindowStep`** (готов) — `IsWindowShown<JournalWindow>()` как терминатор.
+- **Stub-диалог** `tutorial_hub_intro` заведён в [dialogues.json](../../Assets/Configs/dialogues.json) (3 фразы,
+  speaker `Eddy`, `[STUB]`-плейсхолдер) — контент заменить при реализации; для билда синкнуть в StreamingAssets
+  (`Tools/Configs/Sync Bundled Defaults`).
+
+#### Открытые вопросы
+
+- Точный триггер немедленного пути (см. выше) — `HubReady` на возврате в хаб vs GAME-18 re-eval.
+- Fire-once диалога vs `Restart`-резюм (см. выше).
+- Подтвердить id кнопки/окна: `hub.journal_button` и `JournalWindow` (журнал из GAME-2).
+
 ## 7. Риски / открытые вопросы
 
 | Риск | Митигация |
