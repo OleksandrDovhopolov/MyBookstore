@@ -240,6 +240,7 @@ namespace Game.Tutorial.Presentation
             canvas.sortingOrder = _settings.SortingOrder;
 
             _blackout = CreateStretchedChild<TutorialBlackoutView>("Blackout");
+            _blackout.transform.localScale = Vector3.one * 2f;
             _blackout.Configure(_settings.BlackoutColor);
             _blackout.HideView();
 
