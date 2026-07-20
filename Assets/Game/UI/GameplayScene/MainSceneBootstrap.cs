@@ -1,6 +1,5 @@
 using System;
 using System.Threading;
-using Book.Sell.API;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.Configs;
@@ -50,7 +49,6 @@ namespace GameplayUI
             IConfigsService configs = null,
             ILocationUnlockService locationUnlock = null,
             IPreparationInventoryProvider preparationInventory = null,
-            IDeliveredDialoguesService deliveredDialogues = null,
             ITutorialAutoStartGate tutorialAutoStartGate = null)
         {
             _uiManager = uiManager;
@@ -70,8 +68,7 @@ namespace GameplayUI
                     gameFlow,
                     configs,
                     locationUnlock,
-                    preparationInventory,
-                    deliveredDialogues);
+                    preparationInventory);
             }
         }
 

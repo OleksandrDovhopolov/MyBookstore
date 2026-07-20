@@ -4,7 +4,6 @@
     "references": [
         "UniTask",
         "GameplayUI",
-        "Book.Sell.API",
         "Configs",
         "DayCycle",
         "Game.Preparation",

@@ -28,6 +28,7 @@ namespace Book.Sell.Services
         private readonly ISalesShelfBuilder _shelfBuilder;
         private readonly ISalesDayCommitService _commitService;
         private readonly ICustomerDirector _director;
+        private readonly IDeliveredDialoguesService _delivered;
 
         private SalesShelf _shelf = new();
         private SalesDayResult _result = new();
@@ -52,7 +53,8 @@ namespace Book.Sell.Services
             SalesTuning tuning,
             ISalesShelfBuilder shelfBuilder = null,
             ISalesDayCommitService commitService = null,
-            ICustomerDirector director = null)
+            ICustomerDirector director = null,
+            IDeliveredDialoguesService delivered = null)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _setupProvider = setupProvider ?? throw new ArgumentNullException(nameof(setupProvider));
@@ -65,6 +67,7 @@ namespace Book.Sell.Services
             _shelfBuilder = shelfBuilder ?? new SalesShelfBuilder(_configs);
             _commitService = commitService;   // optional in tests; in prod injected via DI
             _director = director;             // optional in existing tests
+            _delivered = delivered;
         }
 
         public int Day { get; private set; }
@@ -109,6 +112,7 @@ namespace Book.Sell.Services
             _result = new SalesDayResult { Day = setup.Day, LocationId = setup.LocationId };
             _ctx = new CustomerContext(_shelf, _lock, _random, _passiveResolver, _location, setup.DecorIds, this, _tuning);
 
+            _delivered?.DiscardDeferred();
             _customers = new List<Customer>(_spawner.BuildCustomers(setup, _tuning, _random));
             _spawnScheduler = new CustomerSpawnScheduler(_customers, setup.WaveSizes, setup.WaveGapSeconds, _tuning);
             _activeCustomer = null;

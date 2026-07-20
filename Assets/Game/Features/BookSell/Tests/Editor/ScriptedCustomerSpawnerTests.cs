@@ -398,11 +398,15 @@ namespace Book.Sell.Tests.Editor
                 return UniTask.CompletedTask;
             }
 
-            public UniTask ClearAsync(string dialogueId, CancellationToken ct)
+            public UniTask MarkDeliveredDeferredAsync(string dialogueId, CancellationToken ct)
             {
-                _delivered.Remove(dialogueId);
+                _delivered.Add(dialogueId);
                 return UniTask.CompletedTask;
             }
+
+            public UniTask CommitAsync(CancellationToken ct) => UniTask.CompletedTask;
+
+            public void DiscardDeferred() { }
         }
 
         private sealed class FakeQuestsService : IQuestsService

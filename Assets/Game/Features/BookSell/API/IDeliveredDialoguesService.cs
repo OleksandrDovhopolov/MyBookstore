@@ -12,10 +12,16 @@ namespace Book.Sell.API
         /// <summary>True if this dialogue has already been delivered (shown) to the player.</summary>
         bool IsDelivered(string dialogueId);
 
-        /// <summary>Marks the dialogue delivered and persists. Idempotent - a no-op (no save churn) if already set.</summary>
+        /// <summary>Marks the dialogue delivered and persists immediately. Used for non-day-scoped dialogues.</summary>
         UniTask MarkDeliveredAsync(string dialogueId, CancellationToken ct);
 
-        /// <summary>Clears a delivered flag and persists. Idempotent - a no-op (no save churn) if absent.</summary>
-        UniTask ClearAsync(string dialogueId, CancellationToken ct);
+        /// <summary>Marks the dialogue delivered in memory only. Flushed by the sales-day commit.</summary>
+        UniTask MarkDeliveredDeferredAsync(string dialogueId, CancellationToken ct);
+
+        /// <summary>Flushes all deferred dialogue ids into the committed save-backed set.</summary>
+        UniTask CommitAsync(CancellationToken ct);
+
+        /// <summary>Discards deferred dialogue ids that belong to an unfinished sales run.</summary>
+        void DiscardDeferred();
     }
 }

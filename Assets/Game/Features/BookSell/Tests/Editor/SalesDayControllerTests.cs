@@ -61,7 +61,8 @@ namespace Book.Sell.Tests.Editor
             SalesTuning tuning = null,
             ISalesDayCommitService commitService = null,
             IPassivePurchaseResolver passiveResolver = null,
-            DayConfig[] dayConfigs = null)
+            DayConfig[] dayConfigs = null,
+            IDeliveredDialoguesService delivered = null)
         {
             var configs = new FakeConfigsService();
             configs.SetAll(books);
@@ -81,7 +82,8 @@ namespace Book.Sell.Tests.Editor
                 new InteractionLock(),
                 tuning ?? SalesTestKit.FastTuning(),
                 shelfBuilder: shelfBuilder,
-                commitService: commitService);
+                commitService: commitService,
+                delivered: delivered);
         }
 
         private static ActiveRequestRuntime ConditionRequest(string id, string quality)
@@ -119,6 +121,16 @@ namespace Book.Sell.Tests.Editor
                 LastResult = result;
                 return UniTask.CompletedTask;
             }
+        }
+
+        private sealed class RecordingDeliveredDialogues : IDeliveredDialoguesService
+        {
+            public int DiscardCalls { get; private set; }
+            public bool IsDelivered(string dialogueId) => false;
+            public UniTask MarkDeliveredAsync(string dialogueId, CancellationToken ct) => UniTask.CompletedTask;
+            public UniTask MarkDeliveredDeferredAsync(string dialogueId, CancellationToken ct) => UniTask.CompletedTask;
+            public UniTask CommitAsync(CancellationToken ct) => UniTask.CompletedTask;
+            public void DiscardDeferred() => DiscardCalls++;
         }
 
         private static void StartDay(SalesDayController c)
@@ -317,6 +329,22 @@ namespace Book.Sell.Tests.Editor
         }
 
         // ----- tests -----
+
+        [Test]
+        public void StartDay_DiscardsDeferredDeliveredBeforeSpawning()
+        {
+            var delivered = new RecordingDeliveredDialogues();
+            var c = Build(
+                new[] { SalesTestKit.Book("b1") },
+                Array.Empty<RequestDefinitionConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer>(),
+                delivered: delivered);
+
+            StartDay(c);
+
+            Assert.AreEqual(1, delivered.DiscardCalls);
+        }
 
         [Test]
         public void Dialog_AcquiresLock_FiresDialogueStarted_PausesDay()

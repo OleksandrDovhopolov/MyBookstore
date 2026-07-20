@@ -25,8 +25,8 @@ namespace Game.Bootstrap
         // Shared save-backed BookSell state. Registered globally so hub boot/preparation and location sales share it.
         public static void RegisterBookSellSharedState(this IContainerBuilder builder)
         {
-            // Fire-once memory for scripted dialogues (GAME-6). MainSceneBootstrap clears day-1 authored
-            // flags before direct entry; the location-scoped spawner filters and DialoguePresenter marks.
+            // Fire-once memory for scripted dialogues (GAME-6). Location-scoped spawner filters committed
+            // and pending ids; DialoguePresenter defers day-scoped marks until the sales-day commit.
             builder.Register<IDeliveredDialoguesService, SaveBackedDeliveredDialoguesService>(Lifetime.Singleton);
             builder.Register<ISalesShelfStateService, SalesShelfStateService>(Lifetime.Singleton);
             // TEMP DEBUG: keep economy/location/decor modifiers, but floor passive sale chance at 50%.

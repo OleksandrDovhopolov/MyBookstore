@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Book.Sell.API;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.Configs;
@@ -23,33 +22,22 @@ namespace GameplayUI.Tests.Editor
     public sealed class FirstDayEntryFlowTests
     {
         [Test]
-        public async System.Threading.Tasks.Task EnterAsync_ClearsDayOneAuthoredDialogueBeforeEnteringLocation()
+        public async System.Threading.Tasks.Task EnterAsync_AutoStocksAndEntersLocation()
         {
             var events = new List<string>();
-            var configs = ConfigsWith(
-                locations: new[] { new LocationConfig { Id = "loc" } },
-                books: FirstDayBooks(),
-                scripts: new[]
-                {
-                    new CustomerScriptConfig { Id = "eddi_intro", ActivationQuestId = "q_intro_eddi", DialogueId = "eddy1" },
-                    new CustomerScriptConfig { Id = "future_day", DayIndex = 2, DialogueId = "future" },
-                    new CustomerScriptConfig { Id = "no_dialogue", DayIndex = 1 }
-                });
-            var delivered = new RecordingDeliveredDialogues(events);
-            var gameFlow = new RecordingGameFlow(events);
+            var preparation = new FakePreparation();
             var flow = new FirstDayEntryFlow(
                 new FakeMorning(),
-                new FakePreparation(),
-                gameFlow,
-                configs,
-                inventory: new FakeInventory(FirstDayBooks()),
-                delivered: delivered);
+                preparation,
+                new RecordingGameFlow(events),
+                ConfigsWith(new[] { new LocationConfig { Id = "loc" } }, FirstDayBooks(), Array.Empty<CustomerScriptConfig>()),
+                inventory: new FakeInventory(FirstDayBooks()));
 
             var entered = await flow.EnterAsync(CancellationToken.None);
 
             Assert.IsTrue(entered);
-            CollectionAssert.AreEqual(new[] { "eddy1" }, delivered.Cleared);
-            Assert.Less(events.IndexOf("clear:eddy1"), events.IndexOf("enter:loc"));
+            Assert.AreEqual(2, preparation.TotalSelected);
+            CollectionAssert.Contains(events, "enter:loc");
         }
 
         [Test]
@@ -202,22 +190,6 @@ namespace GameplayUI.Tests.Editor
             {
                 IsLocationLoaded = false;
                 LocationLoadedChanged?.Invoke(false);
-                return UniTask.CompletedTask;
-            }
-        }
-
-        private sealed class RecordingDeliveredDialogues : IDeliveredDialoguesService
-        {
-            private readonly List<string> _events;
-            public RecordingDeliveredDialogues(List<string> events) => _events = events;
-            public List<string> Cleared { get; } = new();
-            public bool IsDelivered(string dialogueId) => false;
-            public UniTask MarkDeliveredAsync(string dialogueId, CancellationToken ct) => UniTask.CompletedTask;
-
-            public UniTask ClearAsync(string dialogueId, CancellationToken ct)
-            {
-                Cleared.Add(dialogueId);
-                _events.Add($"clear:{dialogueId}");
                 return UniTask.CompletedTask;
             }
         }

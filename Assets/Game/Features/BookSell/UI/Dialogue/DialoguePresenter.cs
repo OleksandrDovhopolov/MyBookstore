@@ -88,7 +88,7 @@ namespace Book.Sell.UI
                 // return while its quest stays Active. CancellationToken.None on purpose — this progress write
                 // must NOT be tied to the presenter/scene lifetime (_cts), since Closed often fires at teardown.
                 window.Closed += _ =>
-                    _delivered?.MarkDeliveredAsync(payload.DialogueId, CancellationToken.None).Forget();
+                    _delivered?.MarkDeliveredDeferredAsync(payload.DialogueId, CancellationToken.None).Forget();
             }
             catch (OperationCanceledException)
             {
