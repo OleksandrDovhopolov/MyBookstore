@@ -166,8 +166,9 @@
     из GAME-10 §7; EditMode предпочтительнее editor-валидатора (падает в CI).
   - Связано с GAME-15 (пресет FTUE vs каталог книг) — чинить парно.
 
-- [ ] **GAME-18. Condition-driven запуск туториалов (re-evaluation loop в `TutorialService`).**
-  **Новых классов не нужно; отдельный сервис не заводить.** `TutorialService` уже и есть тот сервис,
+- [x] **GAME-18. Condition-driven запуск туториалов (re-evaluation loop в `TutorialService`).**
+  **Статус:** минимальная доменная re-eval петля закрыта через `ITutorialReevaluationGate` +
+  bootstrap bridge на sales/inventory/decor события. `TutorialService` остаётся единственным сервисом,
   который запускает туториалы, и у него уже есть activation-скан с проверкой `seq.IsEligible()`
   ([TutorialService.cs](../Assets/Game/Features/Tutorial/Services/TutorialService.cs)). После переезда с JSON
   условия живут внутри C#-секвенций; не хватает **входящих событий**, от которых скан запускается.
@@ -190,17 +191,13 @@
   `_dayProgress.PhaseChanged`), каждый зовёт `Reevaluate()` → автоактивация всех eligible по
   `IsActivationMet()`. Условие — единственная правда, событие — лишь повод пересчитать.
 
-  Что сделать:
-  - В `TutorialService.Subscribe()` ([:187](../Assets/Game/Features/Tutorial/Services/TutorialService.cs))
-    добавить подписки на источники изменений; каждая зовёт **существующий** `OnTrigger`-скан — он уже
-    проверяет `ContextAllows` + `IsEligible` + priority + эксклюзивность runner'а. Переписывать не надо,
-    надо чаще звать.
-  - `Trigger` в C#-секвенции становится **опциональным сужением**, а не обязательным условием старта;
-    `IsEligible()` — единственная правда. Существующий `tutorial_day_1` с
-    `Trigger = LocationLoaded` продолжает работать без изменений.
-  - Стоимость нового источника падает до «1 condition-factory + 1 подписка», без ссылок из `Game.Tutorial`
-    на фичи: factory регистрирует своя фича через `IConditionFactory` — как `TutorialCompletedConditionFactory`
-    регистрируется туториалом для квестов.
+  Реализовано:
+  - `ITutorialReevaluationGate.RequestReevaluation()` вызывает существующий trigger-agnostic scan.
+  - `TutorialReevaluationBridge` в bootstrap-слое слушает `_sales.Changed`, `_decor.PlacementChanged`,
+    `_inventory.Changed` и просит туториал пересканировать eligible sequences без ссылок
+    `Game.Tutorial` → feature-слои.
+  - `TutorialShopDecor` — проверочный stub на покупку decor через inventory-state; реальный overlay/content
+    остаётся отдельной задачей.
 
   Острые углы (продумать до реализации):
   - **Туториал рисует overlay — квест меняет число.** У квестов `Reevaluate` зовётся синхронно внутри
@@ -225,9 +222,10 @@
   Порядок работ (шаги разносить):
   1. ✅ **Строгий day-gate в `TutorialDayOne.IsEligible()`** — закрыт в рамках текущей trigger-модели,
      без re-evaluation loop и без `currentDayIs` condition-factory.
-  2. 🟡 **Минимальный re-evaluation loop** — частично закрывается сейчас для `TutorialHub`:
-     trigger-agnostic scan, pending-scan вместо pending-trigger и re-scan после успешного завершения run'а.
-     Полный GAME-18 (подписки на inventory/decor/sales и новые condition-factory leaf'ы) остаётся отдельно.
+  2. ✅ **Минимальный re-evaluation loop** — закрыт:
+     trigger-agnostic scan, pending-scan вместо pending-trigger, re-scan после успешного завершения run'а
+     и доменные re-scan события inventory/decor/sales через bootstrap bridge. Новые condition-factory leaf'ы
+     добавлять только под конкретный будущий tutorial-content.
 
   Зачем это нужно уже сейчас: со второй секвенцией (туториал дня 2) цена отсутствия day-gate меняется.
   Порядок сейчас держится не на номере дня, а на цепочке «day1 завершился → следующий по priority».

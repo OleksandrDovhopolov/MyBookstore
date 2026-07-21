@@ -19,7 +19,7 @@ namespace Game.Tutorial.Services
     /// exclusive sequence at a time. Tutorial content is provided by DI-registered C# sequences.
     /// One-way completion persisted in the <c>tutorial.state</c> save module.
     /// </summary>
-    public sealed class TutorialService : ITutorialService, ISaveHook, IDisposable
+    public sealed class TutorialService : ITutorialService, ITutorialReevaluationGate, ISaveHook, IDisposable
     {
         private const string LogPrefix = "[Tutorial]";
 
@@ -152,6 +152,10 @@ namespace Game.Tutorial.Services
             }
             if (changed) await PersistAsync(ct);
         }
+
+        // ----- ITutorialReevaluationGate -----
+
+        public void RequestReevaluation() => RequestRescan();
 
         // ----- Catalog / subscriptions -----
 

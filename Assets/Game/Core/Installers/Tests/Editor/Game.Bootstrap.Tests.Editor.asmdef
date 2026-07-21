@@ -1,23 +1,16 @@
 {
-    "name": "Game.Tutorial.Tests.Editor",
-    "rootNamespace": "Game.Tutorial.Tests.Editor",
+    "name": "Game.Bootstrap.Tests.Editor",
+    "rootNamespace": "Game.Bootstrap.Tests.Editor",
     "references": [
         "UniTask",
-        "MessagePipe",
-        "Save",
-        "Game.Bootstrap.Loading",
-        "Game.Tutorial",
+        "Game.Bootstrap",
         "Game.Tutorial.API",
-        "Game.Tutorial.Content",
-        "Game.GameplayUI.Signals",
+        "Game.SalesStats.API",
+        "Game.Inventory.API",
+        "Game.Decor.API",
+        "Configs",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner",
-        "DayCycle",
-        "Game.Quest.API",
-        "Game.Core.UI",
-        "Infrastructure",
-        "Analytics",
-        "Game.Inventory.API"
+        "UnityEditor.TestRunner"
     ],
     "includePlatforms": [
         "Editor"

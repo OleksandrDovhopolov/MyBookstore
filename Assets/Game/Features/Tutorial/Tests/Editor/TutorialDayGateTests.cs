@@ -140,6 +140,34 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
+        public async Task RequestReevaluation_StartsEligibleSequence()
+        {
+            var dayProgress = new FakeDayProgress();
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = false };
+            var sequence = new FakeSequence
+            {
+                Id = "domain_driven",
+                Priority = 10,
+                Context = TutorialContext.Hub,
+                Steps = new ITutorialStep[] { new BlockingStep("hold") }
+            };
+            var service = BuildService(dayProgress, gameFlow, sequences: new ITutorialSequence[] { sequence });
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+
+                ((ITutorialReevaluationGate)service).RequestReevaluation();
+
+                Assert.IsTrue(service.IsRunning);
+                Assert.AreEqual("domain_driven", service.ActiveSequenceId);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
         public async Task CompletedSequence_RescansAndStartsNextEligibleSequence()
         {
             var dayProgress = new FakeDayProgress();

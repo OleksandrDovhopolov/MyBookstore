@@ -7,6 +7,7 @@ using Game.Tutorial.Presentation;
 using Game.Tutorial.Services;
 using Infrastructure.TutorialUI;
 using VContainer;
+using VContainer.Unity;
 
 namespace Game.Bootstrap
 {
@@ -14,7 +15,7 @@ namespace Game.Bootstrap
     // is registered before SaveDataLoadOperation (Bootstrap.Construct force-constructs ITutorialService).
     // Resolves from the same scope: ISaveService, MessagePipe pub/sub, IUICanvasRoot, IUIManager,
     // registered ITutorialSequence content, and optional IDayProgressService, IGameFlowService,
-    // IQuestsService, IQuestReevaluationGate.
+    // IQuestsService, IQuestReevaluationGate, and domain sources observed by TutorialReevaluationBridge.
     public static class TutorialVContainerBindings
     {
         public static void RegisterTutorial(
@@ -31,11 +32,14 @@ namespace Game.Bootstrap
 
             builder.Register<TutorialDayOne>(Lifetime.Singleton).As<ITutorialSequence>();
             builder.Register<TutorialHub>(Lifetime.Singleton).As<ITutorialSequence>();
+            builder.Register<TutorialShopDecor>(Lifetime.Singleton).As<ITutorialSequence>();
+            builder.RegisterEntryPoint<TutorialReevaluationBridge>(Lifetime.Singleton);
 
             // TutorialService self-registers as ISaveHook in its constructor; AfterLoadAsync builds the
             // catalog from registered C# tutorial content, restores state, subscribes triggers.
             builder.Register<TutorialService>(Lifetime.Singleton)
                 .As<ITutorialService>()
+                .As<ITutorialReevaluationGate>()
                 .WithParameter("autoStart", autoStart);
 
             // "tutorialCompleted" leaf. The factory holds a lazy Func<ITutorialService> so building the

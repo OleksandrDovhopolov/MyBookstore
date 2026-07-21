@@ -10,7 +10,8 @@
         "MessagePipe",
         "Game.GameplayUI.Signals",
         "Analytics",
-        "Infrastructure"
+        "Infrastructure",
+        "Game.Inventory.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
