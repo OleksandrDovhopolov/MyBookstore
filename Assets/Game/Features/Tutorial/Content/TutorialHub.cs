@@ -6,12 +6,15 @@ using Game.Tutorial.API;
 using Game.Tutorial.Presentation;
 using Game.UI;
 using Infrastructure.TutorialUI;
+using UnityEngine;
 
 namespace Game.Tutorial.Content
 {
     public sealed class TutorialHub : ITutorialSequence
     {
         private const int JournalWindowTimeoutMs = 5000;
+
+        private static readonly Vector2 JournalPointerOffset = new(0f, 100f);
 
         private readonly IDayProgressService _dayProgress;
         private readonly IUIManager _ui;
@@ -58,7 +61,8 @@ namespace Game.Tutorial.Content
                     TutorialTexts.JournalHighlight,
                     TutorialContent.Placements.Bottom,
                     pointer: true,
-                    pointerPlacement: TutorialPointerPlacement.Top),
+                    pointerPlacement: TutorialPointerPlacement.Top,
+                    pointerOffset: JournalPointerOffset),
                 new TutorialAwaitWindowStep(
                     "wait_journal_window",
                     () => _ui != null && _ui.IsWindowShown<JournalWindow>(),

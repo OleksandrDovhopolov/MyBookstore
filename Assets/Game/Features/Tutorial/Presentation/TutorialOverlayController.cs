@@ -85,6 +85,7 @@ namespace Game.Tutorial.Presentation
                 placement,
                 pointer,
                 TutorialPointerPlacement.Top,
+                Vector2.zero,
                 ct);
 
         public async UniTask HighlightAndWaitClickAsync(
@@ -93,6 +94,7 @@ namespace Game.Tutorial.Presentation
             string placement,
             bool pointer,
             TutorialPointerPlacement pointerPlacement,
+            Vector2 pointerOffset,
             CancellationToken ct)
         {
             if (!EnsureRoot()) return;
@@ -105,7 +107,7 @@ namespace Game.Tutorial.Presentation
             _blackout.ShowWithHole(target, _settings.HolePadding);
             _hitArea?.HideView();
             _textPanel?.SetText(text, placement);
-            if (pointer) _pointer?.PointAt(target, pointerPlacement); else _pointer?.HideView();
+            if (pointer) _pointer?.PointAt(target, pointerPlacement, pointerOffset); else _pointer?.HideView();
 
             var button = target != null ? target.GetComponent<Button>() : null;
             if (button == null)
@@ -249,12 +251,7 @@ namespace Game.Tutorial.Presentation
             _hitArea = hitAreaGo.GetComponent<TutorialHitAreaView>();
             _hitArea.HideView();
 
-            var pointerGo = new GameObject("Pointer", typeof(RectTransform), typeof(Image), typeof(TutorialPointerView));
-            var prt = (RectTransform)pointerGo.transform;
-            prt.SetParent(_root, false);
-            prt.sizeDelta = new Vector2(64f, 64f);
-            _pointer = pointerGo.GetComponent<TutorialPointerView>();
-            _pointer.Configure(_settings.PointerSprite, _settings.PointerBounceAmplitude, _settings.PointerBounceSpeed);
+            _pointer = Object.Instantiate(_settings.PointerPrefab, _root);
             _pointer.HideView();
 
             if (_settings.TextPanelPrefab != null)

@@ -23,6 +23,7 @@ namespace Game.Tutorial.Content
         private readonly Func<bool> _gate;
         private readonly IPublisher<SalesPauseRequested> _pausePublisher;
         private readonly bool _pauseSales;
+        private readonly Vector2 _pointerOffset;
 
         public TutorialHighlightClickStep(
             string id,
@@ -35,7 +36,8 @@ namespace Game.Tutorial.Content
             Func<bool> gate = null,
             TutorialPointerPlacement pointerPlacement = TutorialPointerPlacement.Top,
             IPublisher<SalesPauseRequested> pausePublisher = null,
-            bool pauseSales = false)
+            bool pauseSales = false,
+            Vector2 pointerOffset = default)
             : this(
                 id,
                 overlay,
@@ -47,7 +49,8 @@ namespace Game.Tutorial.Content
                 gate,
                 pointerPlacement,
                 pausePublisher,
-                pauseSales)
+                pauseSales,
+                pointerOffset)
         {
         }
 
@@ -62,7 +65,8 @@ namespace Game.Tutorial.Content
             Func<bool> gate = null,
             TutorialPointerPlacement pointerPlacement = TutorialPointerPlacement.Top,
             IPublisher<SalesPauseRequested> pausePublisher = null,
-            bool pauseSales = false)
+            bool pauseSales = false,
+            Vector2 pointerOffset = default)
         {
             Id = id;
             _overlay = overlay;
@@ -75,6 +79,7 @@ namespace Game.Tutorial.Content
             _gate = gate;
             _pausePublisher = pausePublisher;
             _pauseSales = pauseSales;
+            _pointerOffset = pointerOffset;
         }
 
         public string Id { get; }
@@ -101,6 +106,7 @@ namespace Game.Tutorial.Content
                     _placement,
                     _pointer,
                     _pointerPlacement,
+                    _pointerOffset,
                     ct);
             }
             finally
