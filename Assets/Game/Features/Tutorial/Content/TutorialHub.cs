@@ -11,10 +11,6 @@ namespace Game.Tutorial.Content
 {
     public sealed class TutorialHub : ITutorialSequence
     {
-        private const string DialogueId = "tutorial_hub_intro";
-        private const string JournalTargetId = "hub.journal_button";
-        private const string JournalHighlightText = "Open the journal.";
-        private const string BottomPlacement = "bottom";
         private const int JournalWindowTimeoutMs = 5000;
 
         private readonly IDayProgressService _dayProgress;
@@ -53,14 +49,14 @@ namespace Game.Tutorial.Content
         public IReadOnlyList<ITutorialStep> GetSteps()
             => new ITutorialStep[]
             {
-                new TutorialDialogueStep("hub_dialogue", _ui, DialogueId),
+                new TutorialDialogueStep("hub_dialogue", _ui, TutorialContent.Dialogues.HubIntro),
                 new TutorialHighlightClickStep(
                     "click_journal_button",
                     _overlay,
                     _targets,
-                    JournalTargetId,
-                    JournalHighlightText,
-                    BottomPlacement,
+                    TutorialTargetIds.HubJournalButton,
+                    TutorialTexts.JournalHighlight,
+                    TutorialContent.Placements.Bottom,
                     pointer: true,
                     pointerPlacement: TutorialPointerPlacement.Top),
                 new TutorialAwaitWindowStep(

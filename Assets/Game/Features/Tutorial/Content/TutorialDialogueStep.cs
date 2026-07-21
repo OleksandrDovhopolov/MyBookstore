@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Dialogue;
+using Game.Tutorial;
 using Game.Tutorial.API;
 using Game.UI;
 using UnityEngine;
@@ -10,8 +11,6 @@ namespace Game.Tutorial.Content
 {
     public sealed class TutorialDialogueStep : ITutorialStep
     {
-        private const string LogPrefix = "[Tutorial]";
-
         private readonly IUIManager _ui;
         private readonly string _dialogueId;
 
@@ -30,13 +29,13 @@ namespace Game.Tutorial.Content
 
             if (_ui == null)
             {
-                Debug.LogWarning($"{LogPrefix} dialogue step '{Id}' skipped: IUIManager is missing.");
+                Debug.LogWarning($"{TutorialLog.Prefix} dialogue step '{Id}' skipped: IUIManager is missing.");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(_dialogueId))
             {
-                Debug.LogWarning($"{LogPrefix} dialogue step '{Id}' skipped: dialogue id is empty.");
+                Debug.LogWarning($"{TutorialLog.Prefix} dialogue step '{Id}' skipped: dialogue id is empty.");
                 return;
             }
 
@@ -53,13 +52,13 @@ namespace Game.Tutorial.Content
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"{LogPrefix} dialogue step '{Id}' skipped: failed to show dialogue '{_dialogueId}'. {e}");
+                Debug.LogWarning($"{TutorialLog.Prefix} dialogue step '{Id}' skipped: failed to show dialogue '{_dialogueId}'. {e}");
                 return;
             }
 
             if (window == null)
             {
-                Debug.LogWarning($"{LogPrefix} dialogue step '{Id}' skipped: dialogue window was not shown.");
+                Debug.LogWarning($"{TutorialLog.Prefix} dialogue step '{Id}' skipped: dialogue window was not shown.");
                 return;
             }
 

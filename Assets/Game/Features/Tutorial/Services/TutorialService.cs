@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.DayCycle.Day;
 using Game.Quest.API;
+using Game.Tutorial;
 using Game.Tutorial.API;
 using Game.UI;
 using MessagePipe;
@@ -21,8 +22,6 @@ namespace Game.Tutorial.Services
     /// </summary>
     public sealed class TutorialService : ITutorialService, ITutorialReevaluationGate, ISaveHook, IDisposable
     {
-        private const string LogPrefix = "[Tutorial]";
-
         private readonly ISaveService _save;
         private readonly IReadOnlyList<ITutorialSequence> _registeredSequences;
 
@@ -110,7 +109,7 @@ namespace Game.Tutorial.Services
             Subscribe();
             _loaded = true;
 
-            Debug.Log($"{LogPrefix} loaded: {_sequences.Count} sequences, " +
+            Debug.Log($"{TutorialLog.Prefix} loaded: {_sequences.Count} sequences, " +
                       $"{_state.CompletedSequenceIds.Count} completed. autoStart={_autoStart}.");
 
             ResumeActiveSequence();
@@ -181,7 +180,7 @@ namespace Game.Tutorial.Services
                 if (seq == null || string.IsNullOrEmpty(seq.Id)) continue;
                 if (_sequences.ContainsKey(seq.Id))
                 {
-                    Debug.LogError($"{LogPrefix} duplicate sequence id '{seq.Id}', ignoring the later one.");
+                    Debug.LogError($"{TutorialLog.Prefix} duplicate sequence id '{seq.Id}', ignoring the later one.");
                     continue;
                 }
                 _sequences[seq.Id] = seq;
@@ -375,7 +374,7 @@ namespace Game.Tutorial.Services
             try
             {
                 _startedPub?.Publish(new TutorialSequenceStarted(seq.Id));
-                Debug.Log($"{LogPrefix} sequence '{seq.Id}' started at step {startIndex}.");
+                Debug.Log($"{TutorialLog.Prefix} sequence '{seq.Id}' started at step {startIndex}.");
                 seq.OnRunStarted();
 
                 for (var i = startIndex; i < steps.Count; i++)
@@ -383,7 +382,7 @@ namespace Game.Tutorial.Services
                     var step = steps[i];
                     if (step == null)
                     {
-                        Debug.LogError($"{LogPrefix} null step in '{seq.Id}' (step {i}); skipping.");
+                        Debug.LogError($"{TutorialLog.Prefix} null step in '{seq.Id}' (step {i}); skipping.");
                         continue;
                     }
 
@@ -406,7 +405,7 @@ namespace Game.Tutorial.Services
             }
             catch (Exception e)
             {
-                Debug.LogError($"{LogPrefix} sequence '{seq.Id}' failed: {e}");
+                Debug.LogError($"{TutorialLog.Prefix} sequence '{seq.Id}' failed: {e}");
             }
             finally
             {
@@ -416,7 +415,7 @@ namespace Game.Tutorial.Services
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"{LogPrefix} sequence '{seq.Id}' teardown failed: {e}");
+                    Debug.LogError($"{TutorialLog.Prefix} sequence '{seq.Id}' teardown failed: {e}");
                 }
                 finally
                 {
@@ -441,7 +440,7 @@ namespace Game.Tutorial.Services
             await PersistAsync(ct);
 
             _completedPub?.Publish(new TutorialSequenceCompleted(seq.Id));
-            Debug.Log($"{LogPrefix} sequence '{seq.Id}' completed.");
+            Debug.Log($"{TutorialLog.Prefix} sequence '{seq.Id}' completed.");
 
             // Quests gating on "tutorialCompleted" are not driven by sales/decor/phase, so nudge a re-eval.
             _questReevaluation?.RequestReevaluation();

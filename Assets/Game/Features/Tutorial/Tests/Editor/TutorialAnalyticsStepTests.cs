@@ -15,8 +15,8 @@ namespace Game.Tutorial.Tests.Editor
                 "checkpoint_eddi_intro_start",
                 analytics,
                 "tutorial_day_1",
-                "eddi_intro",
-                "start");
+                TutorialContent.Analytics.EddiIntroStage,
+                TutorialContent.Analytics.StateStart);
 
             step.ExecuteAsync(default).GetAwaiter().GetResult();
 
@@ -24,9 +24,9 @@ namespace Game.Tutorial.Tests.Editor
             var evt = analytics.Events[0];
             Assert.AreEqual(AnalyticsEventNames.TutorialCheckpoint, evt.Name);
             Assert.AreEqual("tutorial_day_1", evt.Parameters[AnalyticsParameterNames.TutorialId]);
-            Assert.AreEqual("eddi_intro", evt.Parameters[AnalyticsParameterNames.TutorialStage]);
+            Assert.AreEqual(TutorialContent.Analytics.EddiIntroStage, evt.Parameters[AnalyticsParameterNames.TutorialStage]);
             Assert.AreEqual("checkpoint_eddi_intro_start", evt.Parameters[AnalyticsParameterNames.TutorialStepId]);
-            Assert.AreEqual("start", evt.Parameters[AnalyticsParameterNames.TutorialState]);
+            Assert.AreEqual(TutorialContent.Analytics.StateStart, evt.Parameters[AnalyticsParameterNames.TutorialState]);
         }
 
         private sealed class FakeAnalyticsService : IAnalyticsService

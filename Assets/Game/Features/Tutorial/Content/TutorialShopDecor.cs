@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Game.Inventory.API;
+using Game.Tutorial;
 using Game.Tutorial.API;
 
 namespace Game.Tutorial.Content
@@ -26,7 +27,9 @@ namespace Game.Tutorial.Content
         public IReadOnlyList<ITutorialStep> GetSteps()
             => new ITutorialStep[]
             {
-                new TutorialLogStep("shop_decor_log", "[Tutorial] Decor purchase detected (stub).")
+                new TutorialLogStep(
+                    "shop_decor_log",
+                    $"{TutorialLog.Prefix} {TutorialTexts.ShopDecorStubLog}")
             };
 
         public void OnRunStarted() { }

@@ -1,5 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Tutorial;
 using Game.UI;
 using Infrastructure.TutorialUI;
 using UnityEngine;
@@ -14,8 +15,6 @@ namespace Game.Tutorial.Presentation
     /// </summary>
     public sealed class TutorialOverlayController
     {
-        private const string LogPrefix = "[Tutorial]";
-
         private readonly IUICanvasRoot _canvasRoot;
         private readonly TutorialOverlaySettings _settings;
 
@@ -99,7 +98,7 @@ namespace Game.Tutorial.Presentation
             if (!EnsureRoot()) return;
             if (target == null)
             {
-                Debug.LogWarning($"{LogPrefix} highlight target is missing; auto-advancing.");
+                Debug.LogWarning($"{TutorialLog.Prefix} highlight target is missing; auto-advancing.");
                 return;
             }
 
@@ -128,7 +127,7 @@ namespace Game.Tutorial.Presentation
                 var winIndex = await UniTask.WhenAny(tcs.Task, lost);
                 ct.ThrowIfCancellationRequested();
                 if (winIndex == 1)
-                    Debug.LogWarning($"{LogPrefix} highlight target lost before click; auto-advancing.");
+                    Debug.LogWarning($"{TutorialLog.Prefix} highlight target lost before click; auto-advancing.");
             }
             finally
             {
@@ -152,7 +151,7 @@ namespace Game.Tutorial.Presentation
                 var winIndex = await UniTask.WhenAny(tcs.Task, lost);
                 ct.ThrowIfCancellationRequested();
                 if (winIndex == 1)
-                    Debug.LogWarning($"{LogPrefix} highlight target lost before click; auto-advancing.");
+                    Debug.LogWarning($"{TutorialLog.Prefix} highlight target lost before click; auto-advancing.");
             }
             finally
             {
@@ -224,7 +223,7 @@ namespace Game.Tutorial.Presentation
             var parent = _canvasRoot?.WindowsRoot != null ? _canvasRoot.WindowsRoot : _canvasRoot?.HudRoot;
             if (parent == null)
             {
-                Debug.LogWarning($"{LogPrefix} UI canvas root unavailable - overlay cannot be created.");
+                Debug.LogWarning($"{TutorialLog.Prefix} UI canvas root unavailable - overlay cannot be created.");
                 return false;
             }
 

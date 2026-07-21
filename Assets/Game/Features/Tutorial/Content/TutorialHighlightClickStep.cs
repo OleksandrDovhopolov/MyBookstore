@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.UI;
+using Game.Tutorial;
 using Game.Tutorial.API;
 using Game.Tutorial.Presentation;
 using Infrastructure.TutorialUI;
@@ -12,8 +13,6 @@ namespace Game.Tutorial.Content
 {
     public sealed class TutorialHighlightClickStep : ITutorialStep
     {
-        private const string LogPrefix = "[Tutorial]";
-
         private readonly TutorialOverlayController _overlay;
         private readonly ITutorialTargetRegistry _targets;
         private readonly string _targetId;
@@ -87,7 +86,7 @@ namespace Game.Tutorial.Content
 
             if (_targets == null || !_targets.TryGetTarget(_targetId, out var target))
             {
-                Debug.LogWarning($"{LogPrefix} highlight target '{_targetId}' not found; auto-advancing.");
+                Debug.LogWarning($"{TutorialLog.Prefix} highlight target '{_targetId}' not found; auto-advancing.");
                 return;
             }
 

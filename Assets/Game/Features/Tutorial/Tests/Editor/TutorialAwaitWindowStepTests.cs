@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Game.Tutorial;
 using Game.Tutorial.Content;
 using NUnit.Framework;
 using UnityEngine.TestTools;
@@ -19,7 +20,7 @@ namespace Game.Tutorial.Tests.Editor
 
             LogAssert.Expect(
                 UnityEngine.LogType.Warning,
-                "[Tutorial] await window step 'wait_missing_window' timed out after 1ms; auto-advancing.");
+                $"{TutorialLog.Prefix} await window step 'wait_missing_window' timed out after 1ms; auto-advancing.");
 
             await step.ExecuteAsync(CancellationToken.None);
         }

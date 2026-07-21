@@ -4,6 +4,7 @@ using Analytics;
 using Cysharp.Threading.Tasks;
 using Game.DayCycle.Day;
 using Game.DayCycle.Results.UI;
+using Game.Tutorial;
 using Game.Tutorial.API;
 using Game.Tutorial.Presentation;
 using Game.UI;
@@ -16,32 +17,6 @@ namespace Game.Tutorial.Content
 {
     public sealed class TutorialDayOne : ITutorialSequence
     {
-        private const string EddiCharacterId = "eddi";
-        private const string BrowsingPhase = "Browsing";
-        private const string DonePhase = "Done";
-        private const string EddiSearchText =
-            "The client selects books from genres of interest to him.";
-        private const string EddiSoldText =
-            "If the customer finds the book he needs, he continues shopping.";
-        private const string EddiFailedText =
-            "If not, then he leaves the store.";
-        private const string GenrePanelTargetId = "location.genre_book_count_panel";
-        private const string Text1 = "The presence of books in the genres themselves does not guarantee sales.";
-        private const string Text2 =
-            "The more books you have on your shelves in a particular genre, the higher your chance of selling them.";
-        private const string Text3 = "Click on a book to find out its chance of sale.";
-        private const string HighlightText = "Tap a genre to inspect sale chance.";
-        private const string Text4 =
-            "This is the chance a book of that genre will sell. Stock more of a genre to raise it.";
-        private const string WrapUpText =
-            "Day complete - nice work! From tomorrow you'll stock the shelf and choose where to trade yourself.";
-        private const string BottomPlacement = "bottom";
-        private const string LogPrefix = "[Tutorial]";
-        private const string EddiIncompleteEvent = "tutorial_day1_eddi_incomplete";
-        private const string PassiveFailMissingEvent = "tutorial_day1_wave2_passive_fail_missing";
-        private const string EddiIntroStage = "eddi_intro";
-        private const string SaleChanceStage = "sale_chance";
-
         private readonly TutorialOverlayController _overlay;
         private readonly IUIManager _ui;
         private readonly IDayProgressService _dayProgress;
@@ -118,8 +93,8 @@ namespace Game.Tutorial.Content
                     "checkpoint_eddi_intro_start",
                     _analytics,
                     Id,
-                    EddiIntroStage,
-                    "start"),
+                    TutorialContent.Analytics.EddiIntroStage,
+                    TutorialContent.Analytics.StateStart),
                 new TutorialAwaitFactStep("await_eddi_dialogue_complete", Until(() => _eddiBrowsing)),
                 new TutorialBlockingCalloutStep(
                     "callout_search",
@@ -127,8 +102,8 @@ namespace Game.Tutorial.Content
                     _overlay,
                     _pausePublisher,
                     () => _eddiBrowsing,
-                    () => EddiSearchText,
-                    BottomPlacement),
+                    () => TutorialTexts.EddiSearch,
+                    TutorialContent.Placements.Bottom),
                 new TutorialAwaitFactStep("await_eddi_sale", Until(() => _eddiSold)),
                 new TutorialBlockingCalloutStep(
                     "callout_sold",
@@ -136,8 +111,8 @@ namespace Game.Tutorial.Content
                     _overlay,
                     _pausePublisher,
                     () => _eddiSold,
-                    () => FormatGenreCallout(_eddiSold, _eddiSoldGenre, EddiSoldText),
-                    BottomPlacement,
+                    () => FormatGenreCallout(_eddiSold, _eddiSoldGenre, TutorialTexts.EddiSold),
+                    TutorialContent.Placements.Bottom,
                     hideTextAfterTap: true),
                 new TutorialAwaitFactStep("await_eddi_fail", Until(() => _eddiFailed)),
                 new TutorialBlockingCalloutStep(
@@ -146,16 +121,16 @@ namespace Game.Tutorial.Content
                     _overlay,
                     _pausePublisher,
                     () => _eddiFailed,
-                    () => FormatGenreCallout(_eddiFailed, _eddiFailedGenre, EddiFailedText),
-                    BottomPlacement),
+                    () => FormatGenreCallout(_eddiFailed, _eddiFailedGenre, TutorialTexts.EddiFailed),
+                    TutorialContent.Placements.Bottom),
                 new TutorialAwaitFactStep("await_eddi_left", Until(() => _eddiLeft)),
                 new TutorialHideCalloutStep("hide_eddi_callout", _overlay),
                 TutorialAnalyticsSteps.Checkpoint(
                     "checkpoint_eddi_intro_end",
                     _analytics,
                     Id,
-                    EddiIntroStage,
-                    "end"),
+                    TutorialContent.Analytics.EddiIntroStage,
+                    TutorialContent.Analytics.StateEnd),
                 // Eddi's scripted beats are the whole point of day 1. If the guaranteed sale never landed
                 // (Eddi absent, or Fact missing from the shelf — a content desync, see TODO GAME-17), the
                 // day still completes cleanly, but the lesson silently did not happen. Report it.
@@ -168,37 +143,37 @@ namespace Game.Tutorial.Content
                     _overlay,
                     _pausePublisher,
                     () => _postEddiPassiveFailed,
-                    () => Text1,
-                    BottomPlacement),
+                    () => TutorialTexts.DayOneLessonBooksDoNotGuaranteeSales,
+                    TutorialContent.Placements.Bottom),
                 new TutorialBlockingCalloutStep(
                     "text_2",
                     _ui,
                     _overlay,
                     _pausePublisher,
                     () => _postEddiPassiveFailed,
-                    () => Text2,
-                    BottomPlacement),
+                    () => TutorialTexts.DayOneLessonMoreBooksRaiseChance,
+                    TutorialContent.Placements.Bottom),
                 new TutorialBlockingCalloutStep(
                     "text_3",
                     _ui,
                     _overlay,
                     _pausePublisher,
                     () => _postEddiPassiveFailed,
-                    () => Text3,
-                    BottomPlacement),
+                    () => TutorialTexts.DayOnePromptInspectSaleChance,
+                    TutorialContent.Placements.Bottom),
                 TutorialAnalyticsSteps.Checkpoint(
                     "checkpoint_sale_chance_start",
                     _analytics,
                     Id,
-                    SaleChanceStage,
-                    "start"),
+                    TutorialContent.Analytics.SaleChanceStage,
+                    TutorialContent.Analytics.StateStart),
                 new TutorialHighlightClickStep(
                     "click_genre_panel",
                     _overlay,
                     _targets,
-                    GenrePanelTargetId,
-                    HighlightText,
-                    BottomPlacement,
+                    TutorialTargetIds.LocationGenreBookCountPanel,
+                    TutorialTexts.SaleChanceHighlight,
+                    TutorialContent.Placements.Bottom,
                     true,
                     () => _postEddiPassiveFailed,
                     TutorialPointerPlacement.Left,
@@ -210,8 +185,8 @@ namespace Game.Tutorial.Content
                     _overlay,
                     _pausePublisher,
                     () => _postEddiPassiveFailed,
-                    () => Text4,
-                    BottomPlacement,
+                    () => TutorialTexts.DayOneLessonSaleChance,
+                    TutorialContent.Placements.Bottom,
                     hideTextAfterTap: true,
                     dimBackground: false,
                     lockUi: false),
@@ -223,8 +198,8 @@ namespace Game.Tutorial.Content
                     _overlay,
                     _pausePublisher,
                     () => true,
-                    () => WrapUpText,
-                    BottomPlacement),
+                    () => TutorialTexts.DayOneWrapUp,
+                    TutorialContent.Placements.Bottom),
                 new TutorialAwaitWindowStep("wait_results_closed", () => !ResultsShown),
             };
 
@@ -233,9 +208,9 @@ namespace Game.Tutorial.Content
             if (!IsEddi(message.CharacterId)) return;
 
             // Browsing is the first passive sales phase after DialogStep is completed by the dialogue UI.
-            if (string.Equals(message.Phase, BrowsingPhase, StringComparison.Ordinal))
+            if (string.Equals(message.Phase, TutorialContent.SalesPhases.Browsing, StringComparison.Ordinal))
                 _eddiBrowsing = true;
-            if (string.Equals(message.Phase, DonePhase, StringComparison.Ordinal))
+            if (string.Equals(message.Phase, TutorialContent.SalesPhases.Done, StringComparison.Ordinal))
                 _eddiLeft = true;
         }
 
@@ -260,26 +235,26 @@ namespace Game.Tutorial.Content
         }
 
         private static bool IsEddi(string characterId)
-            => string.Equals(characterId, EddiCharacterId, StringComparison.Ordinal);
+            => string.Equals(characterId, TutorialContent.Characters.Eddi, StringComparison.Ordinal);
 
         // Invariant that should always hold on day 1; a violation is a content/spawn defect, not player input.
         private void ReportEddiIncomplete()
         {
             Debug.LogError(
-                $"{LogPrefix} day 1 completed without Eddi's scripted sale " +
+                $"{TutorialLog.Prefix} day 1 completed without Eddi's scripted sale " +
                 $"(browsed={_eddiBrowsing}, sold={_eddiSold}, failed={_eddiFailed}). " +
                 "Eddi did not participate — check q_intro_eddi spawn and the day-1 shelf preset (TODO GAME-17).");
 
-            _analytics?.TrackEvent(new AnalyticsEvent(EddiIncompleteEvent));
+            _analytics?.TrackEvent(new AnalyticsEvent(AnalyticsEventNames.TutorialDayOneEddiIncomplete));
         }
 
         private void ReportPassiveFailMissing()
         {
             Debug.LogError(
-                $"{LogPrefix} day 1 reached results without a non-Eddi passive purchase failure. " +
+                $"{TutorialLog.Prefix} day 1 reached results without a non-Eddi passive purchase failure. " +
                 "Check day2_missed_sale and the day-1 wave setup.");
 
-            _analytics?.TrackEvent(new AnalyticsEvent(PassiveFailMissingEvent));
+            _analytics?.TrackEvent(new AnalyticsEvent(AnalyticsEventNames.TutorialDayOnePassiveFailMissing));
         }
 
         private Func<bool> Until(Func<bool> fact)

@@ -27,6 +27,8 @@ namespace Analytics
         public const string TutorialStepCompleted = "tutorial_step_completed";
         public const string TutorialCheckpoint = "tutorial_checkpoint";
         public const string TutorialCompleted = "tutorial_completed";
+        public const string TutorialDayOneEddiIncomplete = "tutorial_day1_eddi_incomplete";
+        public const string TutorialDayOnePassiveFailMissing = "tutorial_day1_wave2_passive_fail_missing";
         public const string AdRequested = "ad_requested";
         public const string AdLoaded = "ad_loaded";
         public const string AdFailed = "ad_failed";
