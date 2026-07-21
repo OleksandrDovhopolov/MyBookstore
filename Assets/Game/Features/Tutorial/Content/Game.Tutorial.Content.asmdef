@@ -12,7 +12,8 @@
         "Analytics",
         "Infrastructure",
         "Game.Inventory.API",
-        "Dialogue"
+        "Dialogue",
+        "Game.Characters.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -207,6 +207,49 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
+        public async Task HubTutorial_PhaseMorningWhileResultsWindowOpen_StartsAfterWindowHidden()
+        {
+            var dayProgress = new FakeDayProgress();
+            dayProgress.Current.CompletedDays.Add(1);
+            dayProgress.Current.CurrentPhase = DayPhase.Results;
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = false };
+            var ui = new FakeUIManager { TopWindow = new FakeWindowController() };
+            var hub = new FakeSequence
+            {
+                Id = "tutorial_hub",
+                Priority = 30,
+                Context = TutorialContext.Hub,
+                Trigger = TutorialTrigger.HubReady,
+                IsEligibleFunc = () => dayProgress.Current.CompletedDays.Contains(1)
+                                     && dayProgress.Current.CurrentPhase == DayPhase.Morning,
+                Steps = new ITutorialStep[] { new BlockingStep("hold") }
+            };
+            var service = BuildService(
+                dayProgress,
+                gameFlow,
+                sequences: new ITutorialSequence[] { hub },
+                ui: ui);
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+
+                await dayProgress.SetPhaseAsync(DayPhase.Morning, CancellationToken.None);
+
+                Assert.IsFalse(service.IsRunning);
+
+                ui.TopWindow = null;
+                ui.RaiseWindowHidden();
+
+                Assert.IsTrue(service.IsRunning);
+                Assert.AreEqual("tutorial_hub", service.ActiveSequenceId);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
         public async Task Day1_LocationLoaded_StartsWhenOnlyHudIsPresent()
         {
             var dayProgress = new FakeDayProgress();
