@@ -25,6 +25,7 @@ namespace Analytics
         public const string QuestCompleted = "quest_completed";
         public const string TutorialStarted = "tutorial_started";
         public const string TutorialStepCompleted = "tutorial_step_completed";
+        public const string TutorialCheckpoint = "tutorial_checkpoint";
         public const string TutorialCompleted = "tutorial_completed";
         public const string AdRequested = "ad_requested";
         public const string AdLoaded = "ad_loaded";

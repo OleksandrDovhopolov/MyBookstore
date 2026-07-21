@@ -156,11 +156,14 @@ That logic can be forced into existing steps, but then `PassivePurchaseStep` bec
 - Introduce updated passive-failure semantics as an explicit behavior change: a passive failure should end further passive purchase attempts for that visit, but may still continue into later non-passive middle steps before completion and leave.
 - Keep active recommendations, passive sales, decor actions, comments, and quests as composable behaviors.
 
-Current passive-failure behavior, 2026-06-30:
+Passive-failure behavior — **updated, Candidate D shipped** (was: "skips everything", 2026-06-30):
 
-- `PassivePurchaseStep` returns `StepStatus.CompletedAndLeave` on passive failure.
-- `Customer.AbandonRemainingPurchasesAndClose` skips the rest of the middle and jumps to the first `IClosingStep`.
-- Therefore today's behavior is: passive failure skips both later passive steps and later non-passive middle steps. The updated "skip later passive only" behavior is a future change, not a baseline fact.
+- `PassivePurchaseStep` returns `StepStatus.CompletedAndEndPassiveChain` on passive failure (genre miss or
+  lost reserve race).
+- `Customer` calls `CustomerPlan.RemoveRemainingPassivePurchases()` and then advances normally.
+- Behavior is now the ADR-0003 rule: a passive failure drops **later passive steps only** — later
+  non-passive middle steps (`ActiveRequestStep`, `DialogStep`, `CommentStep`) still run, then the closing
+  tail. See "Candidate D" below for the shipped details.
 
 ## Non-goals
 
@@ -844,40 +847,45 @@ Minimum done:
 - Existing simple comments still work if no authored line is found.
 - Tests cover fallback behavior and deterministic selection with `ISalesRandom`.
 
-### Candidate D - Passive-failure semantic change
+### Candidate D - Passive-failure semantic change — ✅ DONE
 
-Goal:
+Goal (met): change passive miss behavior from "abort all remaining middle and skip to closing" to "block
+later passive purchase attempts, but allow non-passive middle steps to continue" — i.e. restore the rule
+ADR-0003 already specified.
 
-- Change passive miss behavior from "abort all remaining middle and skip to closing" to "block later passive purchase attempts, but allow non-passive middle steps to continue".
-
-Current behavior:
-
-```text
-Passive miss -> CompletedAndLeave -> SkipToClosing
-```
-
-Target behavior:
+Old behavior (the bug):
 
 ```text
-Passive miss -> no more passive purchase attempts this visit
-             -> allowed non-passive middle may still run
-             -> then CompletePurchaseStep / LeaveStep
+Passive miss -> CompletedAndLeave -> SkipToClosing   // swallowed ActiveRequestStep / DialogStep
 ```
 
-Implementation notes:
+Shipped behavior:
 
-- This is a behavior change, not a refactor. Keep it separate from builder/archetype/plan/director cleanup.
-- Add a distinct API from `SkipToClosing`, for example "skip later passive steps" or "mark passive purchases closed".
-- Define what counts as passive: likely `PassivePurchaseStep` only at first, not `CommentStep`, `DialogStep`, `ActiveRequestStep`, or decor steps.
-- Preserve true abort-to-closing for real closing aborts and missing-reservation edge cases if needed.
-- Revisit HUD ordering: passive failure bubble, completion bubble, comment/dialogue/decor bubble, and leaving bubble can compete.
+```text
+Passive miss -> CompletedAndEndPassiveChain
+             -> CustomerPlan.RemoveRemainingPassivePurchases()   // drops EVERY passive step ahead
+             -> Advance() onto the next non-passive step (active / dialogue / comment) or the closing tail
+```
 
-Minimum done:
+How it was done:
 
-- A passive miss skips later `PassivePurchaseStep`s.
-- A passive miss can continue into `ActiveRequestStep`, `CommentStep`, `DialogStep`, or decor step when already planned/inserted.
-- Real aborts still go to closing.
-- Tests explicitly compare old vs new semantics so the behavior change is visible.
+- New marker `IPassivePurchaseStep` (mirror of `IClosingStep`) on `PassivePurchaseStep`, so `CustomerPlan`
+  stays type-agnostic and test fakes can opt in.
+- `CustomerPlan.RemoveRemainingPassivePurchases()` **removes** rather than repositions: in
+  `PassiveActivePassiveArchetype` (`passive → active → passive`) the trailing passive sits AFTER the active
+  step, so "skip to the next non-passive" would have let it run after the minigame.
+- `StepStatus.CompletedAndLeave` → `CompletedAndEndPassiveChain`; `Customer.AbandonRemainingPurchasesAndClose`
+  and `CustomerPlan.SkipToClosing()` deleted (the abort was their only caller).
+- Reserve-race loss is treated exactly like a genre miss — both already funnelled through
+  `BeginFailedFeedback`.
+
+Impact that motivated it: with the request catalog no longer sizing the day (one active request/day), the
+minigame only opened if that customer's first passive roll happened to hit — roughly 15-25% of days.
+
+Not done (deliberately out of scope):
+
+- HUD ordering: passive-failure bubble, completion bubble, comment/dialogue bubble and leaving bubble can
+  still compete. Revisit when the bubbles are next touched.
 
 ### Candidate E - Data-driven archetypes / scripted sequences
 
@@ -910,9 +918,23 @@ Implementation notes:
 - Preserve code-first archetypes for tests and quick smoke scenarios.
 - Decide whether scripted sequences can receive director insertions, and add an explicit opt-out for FTUE/story sequences.
 
+**Entry trigger has fired.** GAME-16 introduced `CustomerScriptConfig` and moved both existing scripted
+encounters there:
+
+- `eddi_intro` is quest-activated by `q_intro_eddi`, opens `eddy1`, and carries the authored
+  `Fact forceHit:true -> Travel forceHit:false` passive sequence.
+- `day2_missed_sale` keeps its id but is now day-scheduled by `DayIndex = 1` for day-1 wave 2.
+- `QuestConfig` no longer carries encounter behavior (`DialogueId`, `CharacterId`,
+  `ScriptedPassivePurchases` were removed), and `ScriptedCustomerSpawner` is the single decorator over
+  `RegularCustomerSpawner`.
+
+Candidate E's remaining broader work is the full data-driven step vocabulary/factory beyond today's
+dialogue + passive-attempt shape.
+
 Minimum done:
 
 - A scripted customer can be authored without C# changes.
 - Invalid scripts fail validation early with actionable errors.
 - Existing code-first archetypes still work.
 - Tests cover exact authored order and factory validation.
+- `QuestConfig` no longer carries encounter behavior.

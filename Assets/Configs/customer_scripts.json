@@ -1,0 +1,20 @@
+[
+  {
+    "id": "eddi_intro",
+    "activationQuestId": "q_intro_eddi",
+    "characterId": "eddi",
+    "dialogueId": "eddy1",
+    "passiveAttempts": [
+      { "genre": "Fact", "forceHit": true },
+      { "genre": "Travel", "forceHit": false }
+    ]
+  },
+  {
+    "id": "day2_missed_sale",
+    "dayIndex": 1,
+    "characterId": null,
+    "passiveAttempts": [
+      { "genre": "Travel", "forceHit": false }
+    ]
+  }
+]

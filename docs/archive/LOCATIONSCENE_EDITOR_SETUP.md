@@ -37,11 +37,11 @@
 
 ## 3a. PreparationWindow (окно Подготовки) — гибрид «квоты по жанрам»
 Подготовка теперь — окно `WindowController` (как `ResultsWindow`). Игрок задаёт **кол-во книг по жанрам**
-(кнопки −/+), система авто-разворачивает квоты в конкретные книги (непроданные с прошлой полки → добор случайно).
+(кнопки −/+), система авто-разворачивает квоты в конкретные книги (непроданные с прошлой полки → добор из inventory).
 1. Создать префаб с компонентами `PreparationWindowView` (+ обязательные для `WindowView`: `RectTransform`/`CanvasGroup`/`Canvas`).
 2. Назначить во view: `_dayLabel`, `_locationLabel`, `_slotCountLabel`, `_validationLabel`,
    `_genreListContainer` (Transform под строки жанров), `_genreRowPrefab` (`PreparationGenreRowView`),
-   `_openShopButton`, `_randomBooksButton`.
+   `_openShopButton`.
 3. Префаб строки жанра: компонент `PreparationGenreRowView` с полями `_genreLabel`, `_countLabel` («q/available»),
    `_minusButton`, `_plusButton`.
 4. Завести окно в Addressables с адресом **`PreparationWindow`** (как в `[Window("PreparationWindow", WindowType.Page)]`).

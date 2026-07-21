@@ -43,5 +43,9 @@ namespace Analytics
         public const string Revenue = "revenue";
         public const string ErrorCode = "error_code";
         public const string ErrorMessage = "error_message";
+        public const string TutorialId = "tutorial_id";
+        public const string TutorialStage = "stage";
+        public const string TutorialStepId = "step_id";
+        public const string TutorialState = "state";
     }
 }

@@ -27,6 +27,10 @@ namespace Game.Bootstrap
             builder.RegisterMessageBroker<GameplayGenreBookCountsChanged>(options);
             builder.RegisterMessageBroker<GameplayGenreBookCountsRequested>(options);
             builder.RegisterMessageBroker<GameplaySalesGoldChanged>(options);
+            builder.RegisterMessageBroker<SalesCustomerPhaseChanged>(options);
+            builder.RegisterMessageBroker<SalesPassiveSaleHappened>(options);
+            builder.RegisterMessageBroker<SalesPassivePurchaseFailed>(options);
+            builder.RegisterMessageBroker<SalesPauseRequested>(options);
             builder.RegisterMessageBroker<ResourceCounterCountUpRequested>(options);
             builder.RegisterMessageBroker<GameplayHubReady>(options);
             builder.RegisterMessageBroker<TutorialSequenceStarted>(options);

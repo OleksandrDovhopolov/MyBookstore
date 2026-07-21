@@ -1,0 +1,27 @@
+{
+    "name": "Game.Tutorial.Content",
+    "rootNamespace": "Game.Tutorial.Content",
+    "references": [
+        "UniTask",
+        "Game.Tutorial",
+        "Game.Tutorial.API",
+        "Game.Core.UI",
+        "DayCycle",
+        "MessagePipe",
+        "Game.GameplayUI.Signals",
+        "Analytics",
+        "Infrastructure",
+        "Game.Inventory.API",
+        "Dialogue",
+        "Game.Characters.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

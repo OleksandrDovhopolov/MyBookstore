@@ -1,0 +1,30 @@
+{
+    "name": "Game.Bootstrap.Tests.Editor",
+    "rootNamespace": "Game.Bootstrap.Tests.Editor",
+    "references": [
+        "UniTask",
+        "Game.Bootstrap",
+        "Game.Tutorial.API",
+        "Game.SalesStats.API",
+        "Game.Inventory.API",
+        "Game.Decor.API",
+        "Configs",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

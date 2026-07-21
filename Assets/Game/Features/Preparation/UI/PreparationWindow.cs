@@ -6,7 +6,6 @@ using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.Configs.Models;
 using Game.LocationEntry.API;
-using Game.LocationVisits.API;
 using Game.Preparation.Domain;
 using Game.Preparation.Services;
 using Game.Resources.API;
@@ -26,13 +25,11 @@ namespace Game.Preparation.UI
         private IUiSpriteProvider _uiSprites;
         private ILocationEntryCostCalculator _entryCost;
         private IResourcesService _resources;
-        private ILocationVisitService _visits;
         private IPublisher<GameplayGenreBookCountsChanged> _genreCountsPublisher;
 
         private CancellationTokenSource _cts;
         private readonly Dictionary<string, PreparationGenreRowView> _rows = new();
         private IReadOnlyList<GenreSelectionItem> _items;
-        private bool _randomRunning;
         private bool _confirmRunning;
         private bool _subscribed;
 
@@ -45,7 +42,6 @@ namespace Game.Preparation.UI
             IUiSpriteProvider uiSprites,
             ILocationEntryCostCalculator entryCost = null,
             IResourcesService resources = null,
-            ILocationVisitService visits = null,
             IPublisher<GameplayGenreBookCountsChanged> genreCountsPublisher = null)
         {
             _session = session;
@@ -53,7 +49,6 @@ namespace Game.Preparation.UI
             _uiSprites = uiSprites;
             _entryCost = entryCost;
             _resources = resources;
-            _visits = visits;
             _genreCountsPublisher = genreCountsPublisher;
         }
 
@@ -63,9 +58,6 @@ namespace Game.Preparation.UI
 
             if (View.OpenShopButton != null)
                 View.OpenShopButton.onClick.AddListener(OnOpenShopClicked);
-
-            if (View.RandomBooksButton != null)
-                View.RandomBooksButton.onClick.AddListener(OnRandomBooksClicked);
         }
 
         protected override void OnShowStart()
@@ -96,8 +88,6 @@ namespace Game.Preparation.UI
             {
                 if (View.OpenShopButton != null)
                     View.OpenShopButton.onClick.RemoveListener(OnOpenShopClicked);
-                if (View.RandomBooksButton != null)
-                    View.RandomBooksButton.onClick.RemoveListener(OnRandomBooksClicked);
             }
 
             ClearRows();
@@ -124,12 +114,10 @@ namespace Game.Preparation.UI
         private async UniTaskVoid RefreshAsync(CancellationToken ct)
         {
             SetButtonInteractable(false);
-            SetRandomBooksButtonInteractable(false);
             var locationId = (Arguments as PreparationWindowArgs)?.LocationId;
             var items = await _session.StartOrResumeAsync(ct, locationId);
             Render(items);
             OnStateChanged(_session.CurrentState);
-            SetRandomBooksButtonInteractable(_rows.Count > 0);
             LoadGenreIconsAsync(ct).Forget();
         }
 
@@ -248,34 +236,10 @@ namespace Game.Preparation.UI
                 Debug.LogWarning($"Shelf is empty - clients will leave");
             }
 
-            SetButtonInteractable(validation.IsValid && !_randomRunning);
+            SetButtonInteractable(validation.IsValid);
         }
 
         private void OnOpenShopClicked() => ConfirmAsync(_cts.Token).Forget();
-
-        private void OnRandomBooksClicked() => RandomizeAsync(_cts.Token).Forget();
-
-        private async UniTaskVoid RandomizeAsync(CancellationToken ct)
-        {
-            if (_session == null || _rows.Count == 0 || _randomRunning) return;
-
-            _randomRunning = true;
-            SetRandomBooksButtonInteractable(false);
-            SetButtonInteractable(false);
-            try
-            {
-                await _session.RandomizeAsync(ct); // StateChanged обновит строки/счётчик
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            finally
-            {
-                _randomRunning = false;
-                SetRandomBooksButtonInteractable(true);
-                UpdateValidation();
-            }
-        }
 
         private async UniTaskVoid ConfirmAsync(CancellationToken ct)
         {
@@ -339,10 +303,7 @@ namespace Game.Preparation.UI
 
                 try
                 {
-                    await gameFlow.EnterLocationAsync(CancellationToken.None);
-                    // Entry succeeded → record the visit (persisted count + current location). On the
-                    // failure path below this is skipped, so a failed entry never counts as a visit.
-                    _visits?.RecordVisit(locationId);
+                    await gameFlow.EnterLocationAsync(locationId, CancellationToken.None);
                 }
                 catch (Exception e)
                 {
@@ -391,10 +352,5 @@ namespace Game.Preparation.UI
                 View.OpenShopButton.interactable = value;
         }
 
-        private void SetRandomBooksButtonInteractable(bool value)
-        {
-            if (View.RandomBooksButton != null)
-                View.RandomBooksButton.interactable = value;
-        }
     }
 }

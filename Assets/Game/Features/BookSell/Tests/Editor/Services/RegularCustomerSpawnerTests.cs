@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Book.Sell.Tests.Editor.Fakes;
-using Game.Configs.Models;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -13,8 +12,11 @@ using UnityEngine.TestTools;
 namespace Book.Sell.Tests.Editor.Services
 {
     /// <summary>
-    /// Tests for <see cref="RegularCustomerSpawner"/>: consumes the resolver's FinalCount, applies the
-    /// request-count floor on normal days, and skips the floor on hard-override days (exact count).
+    /// Tests for <see cref="RegularCustomerSpawner"/>: the customer count comes from
+    /// <see cref="ICustomerTrafficResolver"/> and the active-request count from
+    /// <see cref="IActiveRequestCountResolver"/>. The requests catalog is a POOL — it must never size the
+    /// day (the old request-count floor did exactly that) — and the requests are spread across random
+    /// customer slots rather than always landing on the first N.
     /// </summary>
     public sealed class RegularCustomerSpawnerTests
     {
@@ -25,6 +27,15 @@ namespace Book.Sell.Tests.Editor.Services
             public CustomerTrafficResult Resolve(SalesSessionSetup setup, SalesTuning tuning) => _result;
         }
 
+        private sealed class StubRequestCount : IActiveRequestCountResolver
+        {
+            private readonly int _count;
+            public StubRequestCount(int count) => _count = count;
+
+            public ActiveRequestCountResult Resolve(SalesSessionSetup setup, SalesTuning tuning)
+                => new(_count, _count, isHardOverride: false, breakdown: null);
+        }
+
         private sealed class StubActiveRequests : IActiveRequestRuntimeProvider
         {
             private readonly IReadOnlyList<ActiveRequestRuntime> _requests;
@@ -32,36 +43,33 @@ namespace Book.Sell.Tests.Editor.Services
             public IReadOnlyList<ActiveRequestRuntime> GetRequests() => _requests;
         }
 
+        private sealed class StubProfileProvider : ICustomerProfileProvider
+        {
+            public CustomerProfile Create(SalesSessionSetup setup, ISalesRandom random)
+                => new(new[] { "Fact", "Travel" });
+        }
+
         private static SalesSessionSetup Setup()
             => new SalesSessionSetup(1, "loc", Array.Empty<string>(), Array.Empty<string>());
 
-        private static FakeConfigsService ConfigsWithRequests(int requestCount)
+        private static IReadOnlyList<Customer> Build(
+            int customerCount,
+            int requestDemand,
+            int poolSize,
+            ICustomerProfileProvider profiles = null,
+            FakeSalesRandom random = null)
         {
-            var configs = new FakeConfigsService();
-            var requests = new List<RequestDefinitionConfig>(requestCount);
-            for (var i = 0; i < requestCount; i++) requests.Add(SalesTestKit.RequestDef($"r{i + 1}"));
-            configs.SetAll(requests);
-            return configs;
-        }
+            var pool = new ActiveRequestRuntime[poolSize];
+            for (var i = 0; i < poolSize; i++) pool[i] = SalesTestKit.ActiveRequest($"r{i + 1}");
 
-        private static int BuildCount(FakeConfigsService configs, CustomerTrafficResult result)
-        {
-            var spawner = new RegularCustomerSpawner(configs, new StubResolver(result));
-            return spawner.BuildCustomers(Setup(), SalesTestKit.FastTuning(), new FakeSalesRandom()).Count;
-        }
-
-        private static IReadOnlyList<Customer> BuildCustomers(
-            IReadOnlyList<ActiveRequestRuntime> requests,
-            CustomerTrafficResult result)
-        {
-            var configs = new FakeConfigsService();
             var spawner = new RegularCustomerSpawner(
-                configs,
-                new StubResolver(result),
-                new StubActiveRequests(requests));
+                new FakeConfigsService(),
+                new StubResolver(new CustomerTrafficResult(customerCount, customerCount, isHardOverride: false, breakdown: null)),
+                new StubActiveRequests(pool),
+                profiles,
+                new StubRequestCount(requestDemand));
 
-            var tuning = SalesTestKit.FastTuning();
-            return spawner.BuildCustomers(Setup(), tuning, new FakeSalesRandom());
+            return spawner.BuildCustomers(Setup(), SalesTestKit.FastTuning(), random ?? new FakeSalesRandom());
         }
 
         private static RecordingSink DriveAll(IReadOnlyList<Customer> customers)
@@ -86,67 +94,95 @@ namespace Book.Sell.Tests.Editor.Services
             return sink;
         }
 
+        /// <summary>Regression: a 49-entry catalog used to floor the day at 49 customers.</summary>
         [Test]
-        public void NonHardDay_RequestFloor_RaisesCount()
+        public void CatalogSize_DoesNotRaiseCustomerCount()
         {
-            LogAssert.Expect(LogType.Log, new Regex(@"\[Sales\.Traffic\] spawnerFloor day=1 resolvedRegular=2 requestCount=5 finalRegular=5 applied=true"));
-            var count = BuildCount(ConfigsWithRequests(5),
-                new CustomerTrafficResult(2, 2, isHardOverride: false, breakdown: null));
-            Assert.AreEqual(5, count); // floor(2, 5) = 5
+            var customers = Build(customerCount: 2, requestDemand: 1, poolSize: 49);
+            Assert.AreEqual(2, customers.Count);
         }
 
         [Test]
-        public void NonHardDay_ResolvedAboveRequests_KeepsResolvedCount()
+        public void ActiveCount_ComesFromResolver_NotCatalog()
         {
-            var count = BuildCount(ConfigsWithRequests(2),
-                new CustomerTrafficResult(8, 8, isHardOverride: false, breakdown: null));
-            Assert.AreEqual(8, count);
-        }
-
-        [Test]
-        public void HardOverrideDay_SkipsFloor_StaysExact()
-        {
-            LogAssert.Expect(LogType.Warning, new Regex(@"\[Sales\.Traffic\] warning day=1 hardOverride=true regularCount=3 requestFloor=5 applied=false"));
-            var count = BuildCount(ConfigsWithRequests(5),
-                new CustomerTrafficResult(3, 3, isHardOverride: true, breakdown: null));
-            Assert.AreEqual(3, count); // floor skipped despite 5 requests
-        }
-
-        [Test]
-        public void ConditionsMode_FirstNCustomersReceiveActiveRequests()
-        {
-            var requests = new[]
-            {
-                SalesTestKit.ActiveRequest("r1"),
-                SalesTestKit.ActiveRequest("r2")
-            };
-
-            var customers = BuildCustomers(
-                requests,
-                new CustomerTrafficResult(4, 4, isHardOverride: false, breakdown: null));
+            var customers = Build(customerCount: 4, requestDemand: 1, poolSize: 5);
             var sink = DriveAll(customers);
 
-            CollectionAssert.AreEqual(new[] { "cust_1", "cust_2" }, sink.ActiveStarted.Select(x => x.customer.Id).ToArray());
+            Assert.AreEqual(4, customers.Count);
+            Assert.AreEqual(1, sink.ActiveStarted.Count);
         }
 
         [Test]
-        public void HardOverrideBelowConditionRequests_DoesNotExceedExactCount()
+        public void RequestDemand_CappedByCustomerCount()
         {
-            var requests = new[]
-            {
-                SalesTestKit.ActiveRequest("r1"),
-                SalesTestKit.ActiveRequest("r2"),
-                SalesTestKit.ActiveRequest("r3")
-            };
+            LogAssert.Expect(LogType.Warning,
+                new Regex(@"\[Sales\.Traffic\] requestCap day=1 demand=5 customers=2 pool=5 final=2.*"));
 
-            LogAssert.Expect(LogType.Warning, new Regex(@"\[Sales\.Traffic\] warning day=1 hardOverride=true regularCount=2 requestFloor=3 applied=false"));
-            var customers = BuildCustomers(
-                requests,
-                new CustomerTrafficResult(2, 2, isHardOverride: true, breakdown: null));
+            var customers = Build(customerCount: 2, requestDemand: 5, poolSize: 5);
             var sink = DriveAll(customers);
 
             Assert.AreEqual(2, customers.Count);
-            CollectionAssert.AreEqual(new[] { "cust_1", "cust_2" }, sink.ActiveStarted.Select(x => x.customer.Id).ToArray());
+            Assert.AreEqual(2, sink.ActiveStarted.Count);
+        }
+
+        [Test]
+        public void RequestDemand_CappedByPoolSize()
+        {
+            LogAssert.Expect(LogType.Warning,
+                new Regex(@"\[Sales\.Traffic\] requestCap day=1 demand=5 customers=10 pool=2 final=2.*"));
+
+            var customers = Build(customerCount: 10, requestDemand: 5, poolSize: 2);
+            var sink = DriveAll(customers);
+
+            Assert.AreEqual(10, customers.Count);
+            Assert.AreEqual(2, sink.ActiveStarted.Count);
+        }
+
+        [Test]
+        public void ZeroDemand_LeavesEveryCustomerPassive()
+        {
+            var customers = Build(customerCount: 3, requestDemand: 0, poolSize: 5);
+            var sink = DriveAll(customers);
+
+            Assert.AreEqual(3, customers.Count);
+            Assert.AreEqual(0, sink.ActiveStarted.Count);
+        }
+
+        /// <summary>
+        /// Active customers are no longer hardcoded to the first N slots. The two pre-loop Range draws
+        /// pick slots 3 and 4 here (pool == demand, so the request selection draws nothing).
+        /// </summary>
+        [Test]
+        public void ActiveSlots_AreSpreadAcrossCustomers_NotAlwaysFirstN()
+        {
+            var random = new FakeSalesRandom().EnqueueRangeIndex(3, 1);
+            var customers = Build(customerCount: 4, requestDemand: 2, poolSize: 2, random: random);
+            var sink = DriveAll(customers);
+
+            CollectionAssert.AreEquivalent(
+                new[] { "cust_3", "cust_4" },
+                sink.ActiveStarted.Select(x => x.customer.Id).ToArray());
+        }
+
+        /// <summary>Empty draw queue → Range returns min → the legacy "first N slots" layout.</summary>
+        [Test]
+        public void ActiveSlots_DefaultDraw_FallsBackToFirstSlots()
+        {
+            var customers = Build(customerCount: 4, requestDemand: 2, poolSize: 2);
+            var sink = DriveAll(customers);
+
+            CollectionAssert.AreEquivalent(
+                new[] { "cust_1", "cust_2" },
+                sink.ActiveStarted.Select(x => x.customer.Id).ToArray());
+        }
+
+        [Test]
+        public void RegularCustomers_ReceiveProfileFromProvider()
+        {
+            var customers = Build(customerCount: 1, requestDemand: 0, poolSize: 0, profiles: new StubProfileProvider());
+
+            Assert.AreEqual(1, customers.Count);
+            CollectionAssert.AreEqual(new[] { "Fact", "Travel" }, customers[0].Profile.DesiredGenres);
         }
     }
 }

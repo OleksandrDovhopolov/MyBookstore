@@ -30,6 +30,7 @@ namespace Book.Sell.Services
         private readonly ISalesStatsRecorder _salesStats;
         private readonly IDayProgressService _dayProgress;
         private readonly IQuestReevaluationGate _questGate; // optional: batch quest reeval across the commit
+        private readonly IDeliveredDialoguesService _delivered;
 
         public SalesDayCommitService(
             ISaveService save,
@@ -38,7 +39,8 @@ namespace Book.Sell.Services
             ISalesShelfStateService shelfState,
             ISalesStatsRecorder salesStats,
             IDayProgressService dayProgress,
-            IQuestReevaluationGate questGate = null)
+            IQuestReevaluationGate questGate = null,
+            IDeliveredDialoguesService delivered = null)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _resources = resources ?? throw new ArgumentNullException(nameof(resources));
@@ -47,6 +49,7 @@ namespace Book.Sell.Services
             _salesStats = salesStats ?? throw new ArgumentNullException(nameof(salesStats));
             _dayProgress = dayProgress ?? throw new ArgumentNullException(nameof(dayProgress));
             _questGate = questGate;
+            _delivered = delivered;
         }
 
         public async UniTask CommitAsync(SalesDayResult result, CancellationToken ct)
@@ -92,6 +95,9 @@ namespace Book.Sell.Services
 
                 await _save.UpdateModuleAsync(SalesSaveKeys.LastDayResult, result,
                     SalesSaveKeys.LastDayResultSchemaVersion, ct);
+
+                if (_delivered != null)
+                    await _delivered.CommitAsync(ct);
 
                 // Persist completion for anti-replay/atomicity, but DO NOT fire the phase→Results
                 // transition here. That live UI routing is owned by the Results flow

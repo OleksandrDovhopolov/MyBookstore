@@ -16,7 +16,9 @@
         "DayCycle",
         "Game.Resources.API",
         "Game.SalesStats.API",
-        "Dialogue"
+        "Dialogue",
+        "MessagePipe",
+        "Game.GameplayUI.Signals"
     ],
     "includePlatforms": [
         "Editor"

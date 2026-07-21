@@ -12,7 +12,6 @@ using UnityEngine;
 
 namespace Book.Sell.Services
 {
-    //TODO does it became god object ?
     /// <inheritdoc cref="ISalesDayController"/>
     public sealed class SalesDayController : ISalesDayController, ISalesDaySink
     {
@@ -29,6 +28,7 @@ namespace Book.Sell.Services
         private readonly ISalesShelfBuilder _shelfBuilder;
         private readonly ISalesDayCommitService _commitService;
         private readonly ICustomerDirector _director;
+        private readonly IDeliveredDialoguesService _delivered;
 
         private SalesShelf _shelf = new();
         private SalesDayResult _result = new();
@@ -39,11 +39,8 @@ namespace Book.Sell.Services
         private Customer _activeCustomer;
         private ActiveRequestRuntime _activeRequest;
         private Customer _dialogueCustomer;
-
-        private float _spawnTimer;
-        private int _nextToSpawn;
+        private CustomerSpawnScheduler _spawnScheduler;
         private SalesDayPhase _phase = SalesDayPhase.Running;
-        private bool _spawningStopped;
 
         public SalesDayController(
             IConfigsService configs,
@@ -56,7 +53,8 @@ namespace Book.Sell.Services
             SalesTuning tuning,
             ISalesShelfBuilder shelfBuilder = null,
             ISalesDayCommitService commitService = null,
-            ICustomerDirector director = null)
+            ICustomerDirector director = null,
+            IDeliveredDialoguesService delivered = null)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _setupProvider = setupProvider ?? throw new ArgumentNullException(nameof(setupProvider));
@@ -69,6 +67,7 @@ namespace Book.Sell.Services
             _shelfBuilder = shelfBuilder ?? new SalesShelfBuilder(_configs);
             _commitService = commitService;   // optional in tests; in prod injected via DI
             _director = director;             // optional in existing tests
+            _delivered = delivered;
         }
 
         public int Day { get; private set; }
@@ -113,14 +112,13 @@ namespace Book.Sell.Services
             _result = new SalesDayResult { Day = setup.Day, LocationId = setup.LocationId };
             _ctx = new CustomerContext(_shelf, _lock, _random, _passiveResolver, _location, setup.DecorIds, this, _tuning);
 
+            _delivered?.DiscardDeferred();
             _customers = new List<Customer>(_spawner.BuildCustomers(setup, _tuning, _random));
-            _nextToSpawn = 0;
-            _spawnTimer = _tuning.SpawnInterval;   // spawn the first customer on the first tick
+            _spawnScheduler = new CustomerSpawnScheduler(_customers, setup.WaveSizes, setup.WaveGapSeconds, _tuning);
             _activeCustomer = null;
             _activeRequest = null;
             _dialogueCustomer = null;
             _phase = SalesDayPhase.Running;
-            _spawningStopped = false;
 
             if (_customers.Count == 0)
             {
@@ -138,10 +136,10 @@ namespace Book.Sell.Services
             if (_phase != SalesDayPhase.Running) return;
             if (_lock.IsHeld) return;   // domain pause: an active minigame / dialogue is open
 
-            SpawnDue(dt);
+            _spawnScheduler.Advance(dt);
 
             // Tick activated, not-done customers. Stop the moment someone opens a minigame (freeze the rest).
-            for (var i = 0; i < _nextToSpawn; i++)
+            for (var i = 0; i < _spawnScheduler.SpawnedCount; i++)
             {
                 var customer = _customers[i];
                 if (customer.IsDone) continue;
@@ -354,37 +352,6 @@ namespace Book.Sell.Services
 
         // ----- internals -----
 
-        private void SpawnDue(float dt)
-        {
-            if (_spawningStopped) return;   // shelf sold out — no new customers (in-flight ones still finish)
-            if (_nextToSpawn >= _customers.Count) return;
-            _spawnTimer += dt;
-            // Cap check inside the loop prevents bursts: one freed slot lets at most one new customer in.
-            while (_spawnTimer >= _tuning.SpawnInterval
-                   && _nextToSpawn < _customers.Count
-                   && !IsConcurrencyCapReached())
-            {
-                _spawnTimer -= _tuning.SpawnInterval;
-                _nextToSpawn++;   // include the next customer in the tick loop
-            }
-        }
-
-        private bool IsConcurrencyCapReached()
-        {
-            var cap = _tuning.MaxConcurrentCustomers;
-            if (cap <= 0) return false;   // no limit
-            return ActiveCustomerCount() >= cap;
-        }
-
-        // Customers present on the floor = spawned [0.._nextToSpawn) that are not yet Done.
-        private int ActiveCustomerCount()
-        {
-            var count = 0;
-            for (var i = 0; i < _nextToSpawn; i++)
-                if (!_customers[i].IsDone) count++;
-            return count;
-        }
-
         private void ResolveActive()
         {
             var customer = _activeCustomer;
@@ -415,11 +382,11 @@ namespace Book.Sell.Services
             // Sold out: no new customers — but the ones already on the floor must finish their plans
             // (CompletePurchase → Leave → Done) before the day is closable. This is the fix for the
             // "buyer of the last book freezes mid-plan" bug: AllSoldOut no longer ends the day.
-            if (_shelf.AllSoldOut()) _spawningStopped = true;
+            if (_shelf.AllSoldOut()) _spawnScheduler.StopSpawning();
 
-            var noMoreCustomers = _nextToSpawn >= _customers.Count || _spawningStopped;
+            var noMoreCustomers = _spawnScheduler.NoMoreToSpawn;
             var spawnedDone = true;
-            for (var i = 0; i < _nextToSpawn; i++)
+            for (var i = 0; i < _spawnScheduler.SpawnedCount; i++)
             {
                 if (!_customers[i].IsDone) { spawnedDone = false; break; }
             }

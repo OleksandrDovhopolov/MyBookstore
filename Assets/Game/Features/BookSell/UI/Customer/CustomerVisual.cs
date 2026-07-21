@@ -1,7 +1,6 @@
-using Book.Sell.Domain;
-using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Book.Sell.UI.Customer
@@ -9,17 +8,29 @@ namespace Book.Sell.UI.Customer
     public sealed class CustomerVisual : MonoBehaviour
     {
         [SerializeField] private SpriteRenderer _figure;
+        [SerializeField] private Sprite _fallbackSprite;
         [SerializeField] private Transform _bubbleAnchor;
 
-        public Book.Sell.Domain.Customer Customer { get; private set; }
+        public Domain.Customer Customer { get; private set; }
         public Transform BubbleAnchor => _bubbleAnchor != null ? _bubbleAnchor : transform;
 
         private CancellationTokenSource _moveCts;
 
-        public void Initialize(Book.Sell.Domain.Customer customer)
+        public void Initialize(Domain.Customer customer)
         {
             Customer = customer;
             gameObject.name = $"CustomerVisual({customer.Id})";
+        }
+
+        public void ApplyFigureSprite(Sprite sprite)
+        {
+            if (sprite == null || _figure == null)
+            {
+                _figure.sprite = _fallbackSprite;
+                return;
+            }
+
+            _figure.sprite = sprite;
         }
 
         public async UniTask MoveToAsync(Vector3 target, float duration, Func<bool> isPaused = null, CancellationToken ct = default)

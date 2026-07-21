@@ -2,7 +2,7 @@
 
 > Status: implemented baseline / follow-up backlog.
 > Date: 2026-07-10.
-> Last updated: 2026-07-14.
+> Last updated: 2026-07-18.
 > Scope: calculates how many **regular** customers should visit during a sales day. Quest/story customers are
 > scheduled by composition decorators on top of the regular count.
 
@@ -13,11 +13,11 @@ Customer traffic is no longer owned by individual scenario spawners. The impleme
 ```text
 SalesDayController.StartDayAsync
   -> ICustomerSpawner.BuildCustomers(setup, tuning, random)
-      -> QuestSchedulingCustomerSpawner
+      -> ScriptedCustomerSpawner
           -> RegularCustomerSpawner
               -> ICustomerTrafficResolver.Resolve(setup, tuning)
               -> build N regular customers
-          -> prepend quest dialogue customers
+          -> replace first slots with day/quest scripted customers
 ```
 
 The resolver owns **how many regular customers** should be built. The spawner owns **what those customers do**.
@@ -40,8 +40,8 @@ Implemented files:
   - `Game.Decor.Services.DecorTrafficContributor`
 - Production base spawner:
   - `RegularCustomerSpawner`
-- Quest/story composition decorator:
-  - `QuestSchedulingCustomerSpawner`
+- Scripted day/quest composition decorator:
+  - `ScriptedCustomerSpawner`
 - Boot validation:
   - `CustomerTrafficConfigValidator`
 
@@ -161,26 +161,28 @@ The active-request floor is skipped. If active requests exceed `count`, `Regular
 
 This is intentional: a scripted day such as day 1 can remain exactly `3` regular customers.
 
-## Quest And Story Customers
+## Scripted Customers
 
-Special customers are a composition layer, not part of regular traffic.
+Special customers are a composition layer on top of regular traffic.
 
 Current implementation:
 
 - `RegularCustomerSpawner` builds regular customers.
-- `QuestSchedulingCustomerSpawner` wraps it and prepends one quest dialogue customer per active quest with an
-  undelivered `DialogueId`.
+- `ScriptedCustomerSpawner` wraps it and replaces regular slots at the front with eligible scripts from
+  `customer_scripts.json`.
+- A script is eligible either by `DayIndex == setup.Day` or by active `ActivationQuestId`. Dialogue scripts
+  additionally use delivered-dialogue state as their fire-once guard.
 
 Therefore:
 
 ```text
 regularCount = traffic resolver result (+ active request floor on non-hard days)
-questCount   = quest scheduling decorator result
-totalShown   = regularCount + questCount
+scriptCount  = replacement count, capped by regular slots
+totalShown   = regularCount
 ```
 
-Open product question: if UI shows "visitors today", should it show regular-only or total visitors including
-quest/story customers? The resolver result is regular-only.
+The resolver result is still the total visible customer count because scripted customers replace regular slots
+instead of increasing the list.
 
 ## Contributor Ownership
 
@@ -224,16 +226,21 @@ Resolver logs:
 
 Spawner logs:
 
-- `spawnerFloor` when non-hard active-request floor raises the count;
-- warning when hard override skips the floor and active requests exceed the exact count.
+- `requestCap` warning when the day asks for more active requests than it can serve (capped at the
+  customer count / pool size).
+
+> **Removed:** the `spawnerFloor` / `requestFloor` lines. The spawner used to floor the customer count at
+> "number of enabled requests" (`Math.Max(count, requestCount)`), so a 49-entry `requests.json` forced a
+> 49-customer day. Active-request demand now comes from `IActiveRequestCountResolver` (day config), and the
+> catalog is only a pool to draw from — it can never raise traffic.
 
 Current parser-friendly examples:
 
 ```text
 [Sales.Traffic] resolved day=2 location=loc baselineSource=dayOverride baseline=10 applyModifiers=true hardOverride=false percentDelta=0.15 multiplier=1.00 flatDelta=0 raw=11.5 rounded=12 min=0 max=100 final=12 contributors=2
 [Sales.Traffic] contribution day=2 source=location id=loc percentDelta=0.2 multiplier=1.00 flatDelta=0 reason=location.loc
-[Sales.Traffic] spawnerFloor day=4 resolvedRegular=3 requestCount=5 finalRegular=5 applied=true
-[Sales.Traffic] warning day=1 hardOverride=true regularCount=3 requestFloor=5 applied=false
+[Sales.Requests] resolved day=2 location=loc baselineSource=dayOverride baseline=2 applyModifiers=true hardOverride=false percentDelta=0 raw=2 rounded=2 min=0 max=50 final=2 contributors=0
+[Sales.Traffic] requestCap day=1 demand=5 customers=2 pool=5 final=2 — the day asks for more active requests than it can serve.
 ```
 
 The log still includes `multiplier=1.00 flatDelta=0` for compatibility with the broader planned shape, even

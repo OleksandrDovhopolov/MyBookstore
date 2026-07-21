@@ -1,11 +1,20 @@
 # TUTORIAL_SYSTEM — архитектура туториала и статус
 
-Статус: 🚧 в работе. **Движок (Layer 2) и Day 1 v1 реализованы** (роадмап §6, этапы 1–6); Layer 1
-(tutorial-квесты) заведён. **Осталось**: §7 (cheat/валидатор/аналитика) и полировка (немодальный callout,
-строгий day-gate, локализация). Дата: 2026-07-06.
+Статус: 🚧 в работе. **Движок (Layer 2) и Day 1 v1 реализованы** (роадмап §6, этапы 1–6) — на JSON-авторинге;
+Layer 1 (tutorial-квесты) заведён. Дата: 2026-07-06.
+
+> ⚠️ **2026-07-17: принято решение о переезде авторинга с `tutorials.json` на C#-классы — план в §9.**
+> Переезд **ещё не выполнен**; на момент записи Day 1 v1 работает по-старому, из `tutorials.json`.
+> После §9-этапа 1 Day 1 переедет в `Game.Tutorial.Content/TutorialDay1`, а `tutorials.json` будет удалён.
+>
+> Что это означает для документа: §4.1–§4.3 (схема JSON, string-дискриминаторы шагов, window-id checker)
+> описывают **уходящее** состояние. §2 (двухслойная модель), §4.4–§4.5 (condition `tutorialCompleted`,
+> таргет-реестр) и §5 (runtime/жизненный цикл) — **остаются в силе**. Из §7 отменяется валидатор id-шников
+> (становится работой компилятора). §8 (NodeCanvas) — отложен, см. §9.
 
 Документ описывает архитектуру системы обучения и её текущее состояние. Разделы §1–§5 — как устроено
-(реализовано); §6 — роадмап со статусами; §6.1 — что вошло в Day 1 v1; §7–§8 — риски и платные опции.
+(реализовано); §6 — роадмап со статусами; §6.1 — что вошло в Day 1 v1; §7–§8 — риски и платные опции;
+§9 — план переезда на C#-секвенции (актуальная работа).
 
 > Связанные документы: [FTUE.md](../FTUE.md) (требования к движку и vision scripted Day 1),
 > [QUESTS.md](../QUESTS.md) + [ADR-0007](../adr/0007-quest-system.md) (квест-система),
@@ -65,24 +74,19 @@ Game.Tutorial.API   (autoReferenced: false; refs: UniTask)
     └── TutorialSignals.cs        — readonly structs: TutorialSequenceStarted / TutorialStepChanged /
                                      TutorialSequenceCompleted
 
-Game.Tutorial       (refs: UniTask, VContainer, MessagePipe, Save, Configs, Game.Conditions.API,
+Game.Tutorial       (refs: UniTask, VContainer, MessagePipe, Save, Game.Conditions.API,
     │                Game.Quest.API, Game.Core.UI, DayCycle, Game.Bootstrap.Loading, Game.Tutorial.API,
     │                Infrastructure, Unity.TextMeshPro)  — НЕ ссылается на Game.Preparation/Location
-    ├── Services/         TutorialService.cs, TutorialSaveState.cs, TutorialSaveKeys.cs, TutorialTriggers.cs
-    ├── Steps/            ITutorialStepHandler.cs, TutorialStepHandlerRegistry.cs, TutorialStepTypes.cs,
-    │                     ITutorialWindowChecker.cs + 6 handler-классов (§4.2)
+    ├── Services/         TutorialService.cs, TutorialSaveState.cs, TutorialSaveKeys.cs
     ├── Conditions/       TutorialCompletedCondition.cs, TutorialCompletedConditionFactory.cs
     └── Presentation/     TutorialOverlayController.cs (canvas @3600 в рантайме), TutorialOverlaySettings.cs
                           (ScriptableObject), TutorialTextPanelView.cs (TMP)
 
-Game.Bootstrap (Assets/Game/Core/Installers/Features/)
-    ├── TutorialVContainerBindings.cs  — регистрация сервиса/хендлеров/реестра/overlay/условия
-    └── TutorialWindowChecker.cs       — реализация ITutorialWindowChecker (знает окна: preparation/
-                                          location/results) — concrete-ссылки на окна живут ЗДЕСЬ
+Game.Tutorial.Content
+    └── TutorialDay1.cs + typed step classes — C#-источник forced-step контента Day 1
 
-Configs
-    └── Assets/Game/Features/Configs/Models/TutorialSequenceConfig.cs + TutorialStepConfig.cs
-        ([ConfigFile("tutorials")]) + Assets/Configs/tutorials.json
+Game.Bootstrap (Assets/Game/Core/Installers/Features/)
+    └── TutorialVContainerBindings.cs  — регистрация сервиса/реестра/overlay/условия/C#-контента
 ```
 
 Ключевые решения по размещению:
@@ -90,8 +94,8 @@ Configs
 - **TMP-текст-панель (`TutorialTextPanelView`) живёт в `Game.Tutorial`**, а не в Infrastructure —
   чтобы не добавлять `Unity.TextMeshPro` в `Infrastructure.asmdef`. В Infrastructure только
   blackout/pointer/targets/rect-utility.
-- **`TutorialSequenceConfig` не ссылается на `Game.Tutorial`**: тип шага — string-дискриминатор
-  (`"showText"`, `"highlightClick"`, …), маппинг на handler-классы — в registry внутри `Game.Tutorial`.
+- **Forced-step контент больше не грузится из `tutorials.json`**: секвенции реализуют `ITutorialSequence`,
+  шаги — `ITutorialStep`, триггеры/контекст/resume-policy заданы enum'ами в `Game.Tutorial.API`.
 - **Почему не расширение `Game.Ftue`**: Ftue — узкий bootstrap-модуль (сидирование + welcome-письмо),
   без ссылок на Quest/Conditions/MessagePipe/Infrastructure. Движок туториала — общая система
   (позже: туториал газеты, декора), Day 1 — лишь первый клиент.
@@ -105,7 +109,14 @@ Configs
 
 ## 4. Данные
 
-### 4.1 tutorials.json — схема секвенции
+### 4.1 C#-секвенции
+
+Актуальная модель: Day 1 описан классом `TutorialDay1 : ITutorialSequence` в `Game.Tutorial.Content`.
+Сервис получает `IReadOnlyList<ITutorialSequence>` из DI, материализует `GetSteps()` один раз на запуск и
+резюмится по `NextStepId` с fallback на старый `NextStepIndex`.
+
+Историческая JSON-схема ниже оставлена как reference для того, от какой формы уехал Layer 2; она больше не
+является runtime-источником контента.
 
 Схема (иллюстративно; реальная секвенция Day 1 — в §6.1):
 
@@ -134,9 +145,8 @@ Configs
 ```
 
 Текст — сырой ASCII/English (локализации в проекте нет), поле `textKey` зарезервировано для будущей
-миграции. **Условия `dayIs`/`currentDayIs` пока НЕ реализованы** (нет строгого day-gate — см. §6.1
-«известные ограничения»); `activationConditions` использует уже существующие leaf-условия
-(`Game.Conditions`) либо `tutorialCompleted` (§4.4).
+миграции. Строгий day-gate живёт в C#-секвенциях через `ITutorialSequence.IsEligible()`; отдельный
+condition-factory `currentDayIs` для этого не пишется.
 
 ### 4.2 Типы шагов — 6 штук (все реальные)
 
@@ -151,27 +161,17 @@ highlightClick/awaitPhase; Проход 3 — awaitWindow/awaitQuest/awaitLocati
 |---|---|---|
 | `showText` | Полное затемнение + `IUIManager.SetManualLock` | Любой тап |
 | `highlightClick` | Blackout-слайсы (дырка над `target`); **`SetManualLock` НЕ использовать** — глобальный blocker `LockMonitor` перехватил бы клик в дырку. Слайсы сами блокируют всё вне дырки, target получает реальный клик. Потеря таргета (destroy/`SetActive(false)`/`!interactable`) → warning + auto-advance | Клик по target через дырку |
-| `awaitWindow` | нет | `ITutorialWindowChecker.TryGetShown(id)` поллинг ~4 Гц; неизвестный id → auto-advance |
+| `awaitWindow` | нет | typed `Func<bool>`/`IUIManager.IsWindowShown<T>()` поллинг ~4 Гц; неизвестный тип окна → compile error |
 | `awaitQuest` | нет | initial-check + события `IQuestsService` (Started/TaskCompleted/Completed/Awarded) по `questId` (+опц. `TaskId`) |
 | `awaitPhase` | нет | initial-check + `IDayProgressService.PhaseChanged` |
 | `awaitLocation` | нет | initial-check + `IGameFlowService.LocationLoadedChanged` |
 
-### 4.3 Window-id checker
+### 4.3 Typed window checks
 
-`IUIManager` даёт только generic `IsWindowShown<T>()` — произвольные class-name-строки в JSON
-недопустимы. Чтобы движок не зависел от UI-фич, введён интерфейс **`ITutorialWindowChecker`
-(`bool TryGetShown(id, out shown)`)** в `Game.Tutorial`, а его реализация `TutorialWindowChecker`
-живёт в **bootstrap-слое** (`Game.Bootstrap`, где ссылки на окна уже есть):
-
-```csharp
-// TutorialWindowChecker (Game.Bootstrap): id → IsWindowShown<T>()
-{ "preparation", ui.IsWindowShown<PreparationWindow> },
-{ "location",    ui.IsWindowShown<LocationWindow> },
-{ "results",     ui.IsWindowShown<ResultsWindow> },
-// неизвестный id → TryGetShown возвращает false → handler делает auto-advance (+ валидатор §7)
-```
-
-Так `Game.Tutorial.asmdef` НЕ ссылается на `Game.Preparation`/`Game.Location`.
+`IUIManager` даёт generic `IsWindowShown<T>()`; C#-контент вызывает его типизированно. Старый
+`ITutorialWindowChecker`/string id мост удалён вместе с JSON-слоем. Так `Game.Tutorial.asmdef` НЕ
+ссылается на `Game.Preparation`/`Game.Location`; конкретные window refs живут в content-сборке только там,
+где реально нужны.
 
 ### 4.4 Связь с квестами: condition `tutorialCompleted`
 
@@ -192,7 +192,7 @@ bootstrap (`RegisterBuildCallback → TutorialTargets.Bind(...)`). Иденти�
   hub↔location обрабатывается автоматически. Стоимость нового таргета — один компонент + строка id.
 - Идентификаторы — `TutorialTargetIds` (`hub.start_day_button`, задел на decor/prep/hud); тот же словарь
   сверяет валидатор (§7).
-- DI-потребители (step-handler'ы) инжектят `ITutorialTargetRegistry` напрямую (фасад — только для тегов).
+- DI-потребители (C# content/steps) инжектят `ITutorialTargetRegistry` напрямую (фасад — только для тегов).
 - Если id не найден — handler `highlightClick` пишет warning и **auto-advance** (не soft-lock).
 - Rect таргета пересчитывается **каждый кадр** (`ScreenRectUtility`): таргеты едут на твинах
   `AnimatedShowHidePanel` и смещаются SafeArea.
@@ -282,33 +282,231 @@ condition `tutorialCompleted`; опц. мягкий pointer на журнал �
 | # | Этап | Содержание | Критерий проверки |
 |---|---|---|---|
 | 1 | **Infrastructure-примитивы** | `TutorialUI/`: blackout (4 слайса + дырка), pointer, `TutorialTargets` + `TutorialTargetTag`, `ScreenRectUtility`. Отдельная тест-сцена с кнопками и driver-скриптом | Затемнение закрывает экран, кликабельна только кнопка в дырке, pointer баунсит, дырка следит за движущейся кнопкой; портрет + SafeArea (Device Simulator). Игровые asmdef не подключены |
-| 2 | **Конфиг + скелет сервиса** | `TutorialSequenceConfig` + `tutorials.json` (одна dummy-секвенция); asmdef'ы API/impl; `TutorialService` (global scope, сейв, активация-скан, сигналы); шаги логируют и auto-advance | Fresh save → в консоли активация/шаги/завершение; `tutorial.state` в сейве; релонч не ретриггерит; удаление сейва — триггерит снова |
+| 2 | **Скелет сервиса** | asmdef'ы API/impl; `TutorialService` (global scope, сейв, активация-скан, сигналы); каталог из DI-registered `ITutorialSequence` | Fresh save → в консоли активация/шаги/завершение; `tutorial.state` в сейве; релонч не ретриггерит; удаление сейва — триггерит снова |
 | 3 | **Первый forced-шаг end-to-end** | `TutorialOverlayController` + `ShowTextStep` + `HighlightClickStep`; теги на StartDay/Decor кнопках; реальная 2-шаговая hub-секвенция | Welcome-текст блокирует всё, тап продвигает; дырка над Start Day, кликабельна только она; клик и продвигает туториал, и запускает день; completion персистится |
 | 4 | **Остальные шаги + устойчивость** | `awaitWindow` (реестр), `awaitQuest/Phase/Location`; context-loss на `IsTransitioning` и hub↔location; `SetManualLock` на gated-шагах; resume | Тест-секвенция hub→location проходит; quit посреди секвенции → чистый рестарт; back во время gated-шага не ломает |
 | 5 | **Квест-слой (Layer 1)** | 2–3 tutorial-квеста в `quests.json` (challenges-style, от персонажей); condition `tutorialCompleted`; опц.: мягкий pointer на журнал по `QuestStarted` | Квесты видны в журнале с Day 1, прогресс тикает от реальных продаж, награда выдаётся, **прогресс переживает релонч** (персистентность квестов уже есть) |
-| 6 | **Контент Day 1** | Полный упрощённый Day 1 в tutorials.json + quests.json по [FTUE.md](../FTUE.md), без диалогов: hub intro → stocking hint (highlight confirm) → location arrival text → первая продажа через `awaitQuest` → wrap-up. Финализировать `TutorialTargetIds`, теги в Preparation/Location views | Сквозной прогон fresh-save Day 1; Day 2 — без туториала |
-| 7 | **Debug/replay + polish** | Cheat-модуль в `Game.Cheat` (list/force-run/force-complete/reset одной или всех + сброс `ftue.*` = полный replay Day 1); editor-валидатор (target id: json ↔ `TutorialTargetIds` ↔ скан префабов на `TutorialTargetTag`; questIds ↔ quests.json; window id ↔ реестр; парс типов шагов); аналитика (`tutorial_seq_start`/`step_start` автоматом, `seq_complete` явно — heroes-конвенция) | Cheat-панель реиграет Day 1 на прогресснутом сейве; валидатор ловит намеренно сломанный id; события видны в debug-провайдере |
+| 6 | **Контент Day 1** | Полный упрощённый Day 1 в `TutorialDay1` C# content + quests.json по [FTUE.md](../FTUE.md), без диалогов: location arrival text → sale chance → results window → wrap-up | Сквозной прогон fresh-save Day 1; Day 2 — без туториала |
+| 7 | **Debug/replay + polish** | Cheat-модуль в `Game.Cheat` (list/force-run/force-complete/reset одной или всех + сброс `ftue.*` = полный replay Day 1); editor-валидатор (target id ↔ `TutorialTargetIds` ↔ скан префабов на `TutorialTargetTag`; questIds ↔ quests.json); аналитика (`tutorial_seq_start`/`step_start` автоматом, `seq_complete` явно — heroes-конвенция) | Cheat-панель реиграет Day 1 на прогресснутом сейве; валидатор ловит намеренно сломанный id; события видны в debug-провайдере |
 
-### 6.1 Day 1 v1 — что реализовано (упрощённо)
+### 6.1 Day 1 — канонический флоу
 
-Секвенция `day1_hub_intro` (tutorials.json, `resumePolicy:"restart"`): welcome → highlight `StartDay` →
-`awaitWindow("location")` → текст «pick location» → `awaitWindow("preparation")` → текст «stock + Open Shop»
-→ `awaitWindow("results")` → wrap-up. `awaitWindow("results")` требует `"results"` в `TutorialWindowChecker`.
+**Это спека дня 1. При расхождении кода с этим разделом прав раздел.** Зафиксировано 2026-07-17.
 
-**Форма продиктована модальным overlay** (single-hole): подсвечиваем только одиночную кнопку `StartDay`;
-на экранах свободного взаимодействия (Location/Preparation) — поясняющий `showText` (тап → свобода), день
-ведём пассивным `awaitWindow`. **`awaitQuest(конкретная продажа)` как блокирующий шаг НЕ используем**
-(вероятностная продажа → риск зависания). Layer-1 квесты (`tut_first_day`/`tut_first_sale`) — отдельно,
-журнальные.
+Day 1 входит **сразу в локацию** (авто-сток, см. [FTUE.md](../FTUE.md) «Day-1 direct entry»), поэтому
+хаб-секвенция `day1_hub_intro` ретайрнута; действует `tutorial_day_1` (`TutorialDayOne`,
+`Context = Location`, `Trigger = LocationLoaded`, `ResumePolicy = Restart`, `IsEligible → CurrentDay == 1`).
+Триггер поднимает `GameFlowService.EnterLocationAsync` (→ `LocationLoadedChanged`) — исключение из
+transition-guard, стартует прямо во время перехода. Требует `_tutorialAutoStart = 1` в `BootstrapInstaller`.
 
-**Известные ограничения v1:** нет строгого day-gate (one-way completion, играет один раз при первом hub);
-resume посреди Day 1 — best-effort (`restart` само-исцеляется только в hub); cancel-path (закрыл окно, не
-подтвердив) — секвенция ждёт действия, без принудительной блокировки закрытия окон.
+#### Флоу
+
+| # | Событие в игре | Что делает туториал |
+|---|---|---|
+| 1 | Приходит Eddi | ничего (секвенция уже запущена, ждёт) |
+| 2 | Eddi начинает диалог | ничего |
+| 3 | Диалог завершён → начинается первая пассивная продажа | **здесь начинается активная часть**: blocking search intro |
+| 4 | Eddi ищет книгу | fullscreen text `EddiSearchText`, sales simulation paused; после тапа blackout уходит, тот же текст остаётся callout'ом |
+| 5 | Пассивная покупка **успешна** | fullscreen text `EddiSoldText` (жанр из сигнала), после тапа остаётся callout'ом |
+| 6 | Вторая пассивная продажа **провалена** | fullscreen text `EddiFailedText` (жанр из сигнала), после тапа остаётся callout'ом до ухода Eddi, затем гаснет |
+| 7 | Eddi ушёл; день доигран; показан `ResultsWindow` | fullscreen final text **поверх** окна; после тапа остаётся callout'ом |
+| 8 | Игрок закрывает `ResultsWindow` | финальный callout гаснет, **секвенция завершена** |
+
+Каждый текстовый бит Day 1 начинается как blocking-intro: fullscreen blackout + tap-to-continue + pause sales
+simulation. После тапа blackout и pause снимаются, но та же текстовая панель остаётся видимой как callout до
+следующего текста, hide-step или конца run'а. Пауза не использует глобальный `Time.timeScale`: туториал
+публикует `SalesPauseRequested`, а listener в location scope держит `IInteractionLock`, тот же domain-lock,
+который останавливает день во время диалога/миниигры. `SetManualLock` в этом шаге нужен только как UI-защита
+от всплывающих окон; саму симуляцию продаж он не останавливает.
+
+Известная деталь — **микро-окно перед заморозкой**: `_eddiBrowsing` латчится в `PassivePurchaseStep.Enter`, а
+`SalesPauseRequested(true)` публикуется на кадр-два позже (завершение `awaitFact` → `PersistAsync` → старт
+blocking-шага). В этом окне (несколько кадров + save ~100 мс) симуляция ещё тикает, и Eddi чуть-чуть листает до
+заморозки. При `BrowseDuration ~3.5 с` это ~3%, продажу поймать невозможно — freeze стабильно застаёт Eddi в
+поиске, — но окно ненулевое. Benign; фиксируется здесь, чтобы не искать «почему покупатель дёрнулся под dim».
+
+#### Принятые решения (разбор спорных мест)
+
+- **Финальный текст (п.7) — callout, а не `TutorialShowTextStep`.** В исходной формулировке было
+  противоречие («TutorialShowTextStep (не блокирующий, без затемнения)») — `TutorialShowTextStep` по
+  устройству модальный и скрывает текст в конце шага. Победила новая гибридная форма: blocking-intro по
+  клику превращается в тот же callout и живёт до закрытия `ResultsWindow`.
+- **Конец (п.8) — показать → ждать закрытия `ResultsWindow` → завершиться.** `OnRunEnded()` гасит callout,
+  поэтому финальный текст живёт ровно столько, сколько игрок смотрит на результаты. Таймера нет.
+- **`EddiFailedText` (п.6) гаснет по событию ухода Eddi.** Берём фазу `Done`, а не фиксированную задержку:
+  если уход покупателей замедлится или ускорится, текст останется синхронизирован с тем же игровым битом.
+- **Blocking применяется ко всем Day 1 текстам.** `welcome` / `sale_chance` убраны намеренно: активная часть
+  начинается после Eddi-диалога, когда приходит `Browsing`. Каждый последующий факт (sale/fail/results)
+  возвращает blackout с новым текстом; по тапу текст остаётся callout'ом, а день продолжает идти.
+
+#### Реализация
+
+`TutorialDayOne` подписывается в `OnRunStarted()` на sales-сигналы (`SalesCustomerPhaseChanged`,
+`SalesPassiveSaleHappened`, `SalesPassivePurchaseFailed`) через **глобальный брокер MessagePipe**, латчит факты
+по `CharacterId == "eddi"`, отписывается и сбрасывает латч в `OnRunEnded()`. Латч (а не ожидание события)
+закрывает гонку: день стартует автоматически (`SalesScreenView.OnInit` → `StartDayAsync`), и факт может
+случиться раньше, чем до него дойдёт шаг.
+
+Шаги: `awaitFact(Browsing || ResultsShown)` → blocking search → `awaitFact(sale || ResultsShown)` →
+blocking sold → `awaitFact(fail || ResultsShown)` → blocking failed →
+`awaitFact(Eddi Done || ResultsShown)` → hide → `awaitWindow(ResultsShown)` → blocking wrap →
+`awaitWindow(!ResultsShown)` → конец.
+
+Day 1 не содержит ни одного таймера и не зависит от `SalesTuning`: изменение длительности browsing,
+commit-feedback или ухода покупателей только растягивает соответствующий игровой бит.
+
+Прямой ссылки `Game.Tutorial.Content → Book.Sell` **нет**: сигналы несут примитивы
+(`customerId`, `characterId`, `phase`/`genre`/`bookId`) и живут в leaf-сборке `Game.GameplayUI.Signals`.
+Публикует `SalesTutorialSignalsBridge` — entry point в scope локации; `SalesDayController` не тронут.
+Жанр берётся из `PassiveSaleEvent.ResolvedGenre` (собственная атрибуция резолвера), **не** из
+`MatchedGenres` — последнее означает спрос локации (`LocationConfig.DemandGenres`) и для сценарной покупки
+может быть пустым.
+
+**`highlightClick` в дне 1 не используется** (in-location контролы ещё без target-id — этап 5).
+**`awaitQuest(конкретная продажа)` как блокирующий шаг не используем** (вероятностная продажа → риск
+зависания). Layer-1 квесты (`tut_first_day` / `tut_first_sale`) — отдельно, журнальные.
+
+#### Известные ограничения
+
+Resume посреди Day 1 — best-effort (`Restart`). При `_firstDayEntry = Hub` day 1 идёт **без** скриптового
+туториала. Связка «FTUE-пресет ↔ полка дня 1 ↔ `customer_scripts.json` / `eddi_intro.passiveAttempts`»
+**не валидируется** — TODO GAME-17; перестановка жанров в `customer_scripts.json` ломает флоу (Candidate D
+выкидывает остаток пассивной цепочки после первого промаха).
 
 **Следующее для визуальной подсветки контролов** (Open Shop / список жанров / динамический «+»):
-немодальный callout-режим (pointer+текст **без** dim; тип шага `pointAt`/`callout`) + динамическая
-регистрация таргетов из `PreparationGenreRowView` через фасад `TutorialTargets`; строгий `currentDayIs`
-condition-factory для day-gate.
+pointer/highlight для таргетов + динамическая регистрация таргетов из `PreparationGenreRowView` через
+фасад `TutorialTargets`. Text-only немодальный callout уже есть; привязка к таргетам — follow-up этапа 5.
+
+### 6.2 Day-1 wave 2 — канонический флоу
+
+**Это спека второй волны дня 1.** Зафиксировано 2026-07-18; **пересмотрено 2026-07-19** (модель «весь урок блокирует
+покупки» + добавлен `highlightClick`-шаг после реализации этапа 5). Флоу встроен в единую секвенцию
+`tutorial_day_1` (`TutorialDayOne`, `Context = Location`, `Trigger = LocationLoaded`, `ResumePolicy = Restart`,
+`IsEligible → CurrentDay == 1`).
+
+**Состав дня:** 3 покупателя, **все обычные NPC** (без Eddi/квест-персонажа). Количество настраивается в
+[days.json](../../Assets/Configs/days.json) (`DayConfig.CustomerCount` для дня 2). Только **пассивные** покупки
+(активных запросов нет).
+
+**Цель обучения:** показать игроку, **как посмотреть % шанса продажи книги** (sale-chance виджет), оттолкнувшись
+от живого **провала** пассивной покупки.
+
+**Ключевое решение (2026-07-19): весь урок — единый блокирующий блок.** С момента первого провала и до тапа по
+финальному тексту **покупки всех NPC заморожены**; день физически не может закончиться посреди урока. Это не
+«пауза на каждый текст», а **одна удерживаемая пауза на всю цепочку** (обоснование — ниже, в открытых вопросах:
+день короткий, 3 пассивных покупателя ≈ 20–25 c, и per-step-пауза оставляла бы highlightClick-шаг без заморозки —
+день доигрывался сам, а шаг парковался, см. лог-разбор от 2026-07-19).
+
+#### Флоу
+
+| # | Событие в игре | Что делает туториал |
+|---|---|---|
+| 1 | Идёт день, покупатели совершают пассивные покупки | ждёт первый **провал** пассивной покупки у **любого** покупателя |
+| 2 | У кого-то пассивная покупка провалилась | **→ включается заморозка покупок на весь урок.** Blocking текст: *"The presence of books in the genres themselves does not guarantee sales."* |
+| 3 | Тап | Blocking текст: *"The more books you have on your shelves in a particular genre, the higher your chance of selling them."* |
+| 4 | Тап | Blocking текст: *"Click on a book to find out its chance of sale."* |
+| 5 | Тап | **Blocking `highlightClick`**: подсветка зоны жанровой панели (`_genreBookCountPool`, target-id `location.genre_book_count_panel`) дыркой в затемнении + pointer; ждём клик по жанру |
+| 6 | Клик по зоне жанра | Отрабатывает **штатное** поведение панели — `await UIManager.ShowAsync<ContentWidgetController>(args, ct)` открывает sale-chance виджет (клик проходит сквозь дырку к `Button` item'а). Поверх виджета — blocking текст: *"The chance of selling will decrease as people buy up the books."* |
+| 7 | Тап | **Заморозка снимается — все покупатели продолжают свои покупки.** Секвенция завершена |
+
+Все текстовые биты и highlightClick — blocking (dim + tap-to-continue). Отличие от дня 1: **пауза продаж
+удерживается сквозной**, а не переключается на каждом шаге (см. механизм ниже).
+
+**Отличие от дня 1 в подписке:** день 2 слушает `SalesPassivePurchaseFailed` **без фильтра по `CharacterId`** —
+ловит первый провал любого из трёх NPC (день 1 фильтровал по `"eddi"`).
+
+#### Механизм сквозной заморозки
+
+Пауза продаж идёт через `SalesPauseRequested` → location-scope `SalesInteractionPauseBridge` → `IInteractionLock`.
+Важно: `SalesInteractionPauseBridge` держит **булев** lock (один общий токен, `Resume` освобождает безусловно),
+**не refcount**. Поэтому нельзя оставить per-step пауз у `TutorialBlockingCalloutStep` — `Resume` одного шага снял
+бы удержание соседнего. Модель дня 2:
+
+- Секвенция публикует `SalesPauseRequested(true)` **один раз** при старте урока (сразу после латча первого провала,
+  шаг 2) и `SalesPauseRequested(false)` **один раз** после тапа по финальному тексту (шаг 7); плюс страховочный
+  `false` в `OnRunEnded()` (отмена run'а не должна оставить день замороженным).
+- Блокирующие тексты и `highlightClick` при этом дают **dim + tap-to-continue без собственного toggle паузы**
+  (иначе они сняли бы сквозное удержание). `highlightClick` `SetManualLock` не берёт (§4.2 — глобальный blocker
+  перехватил бы клик в дырку); дырка сама блокирует всё вне зоны.
+
+#### Тексты (сырой English; `textKey` — этап 7)
+
+- `text_1` = "The presence of books in the genres themselves does not guarantee sales."
+- `text_2` = "The more books you have on your shelves in a particular genre, the higher your chance of selling them."
+- `text_3` = "Click on a book to find out its chance of sale."
+- `text_4` = "The chance of selling will decrease as people buy up the books."
+
+#### Статус зависимостей (было «открытые вопросы»)
+
+- **Гарантия провала — решено.** Детерминированный провал реализован через `day2_missed_sale` в
+  [customer_scripts.json](../../Assets/Configs/customer_scripts.json) (обе копии — `Assets/Configs` и
+  `Assets/StreamingAssets/Configs`): `dayIndex:1`, `characterId:null`, `passiveAttempts:[{Travel, forceHit:false}]`.
+  `ScriptedCustomerSpawner` подменяет им второй слот дня 1 (`days.json`: `customerCount:4`, `waveSizes:[1,3]`, `activeRequestCount:0`) →
+  гарантированный `SalesPassivePurchaseFailed` у обычного NPC (тот же механизм, что Travel-miss у Eddi). Ожидание
+  провала всё равно держит fallback `fail || ResultsShown`, чтобы не зависнуть, если гарантия не сработает.
+  (Прим.: `DebugMinimumSaleChanceCalculator`, флорящий шанс на 50%, в текущем билде неактивен — реальные шансы
+  идут из экономики; на детерминированный провал `forceHit:false` это не влияет.)
+- **`highlightClick` — решено.** Реализован на этапе 5 (коммит `cd68bc13`): `TutorialHighlightClickStep` +
+  forwarding-hit-area для не-`Button` таргета. Зона панели помечена `TutorialTargetTag` с id
+  `location.genre_book_count_panel` на `BookGenreShelf` в `GameplaySceneController.prefab`.
+- **Конец секвенции — решено.** После тапа по `text_4`: снять сквозную паузу → покупатели продолжают → секвенция
+  завершается сразу (без ожидания закрытия виджета/дня). Сквозная заморозка гарантирует, что до этого момента день
+  не закончится сам (это и был баг per-step-модели, см. лог-разбор 2026-07-19).
+
+### 6.3 Hub-туториал (`TutorialHub`) — канонический флоу
+
+**Статус: спека, не реализовано.** Зафиксировано 2026-07-20. Вторая секвенция после дня 1: знакомит игрока с
+журналом в хабе. Секвенция `tutorial_hub` (`TutorialHub`, `Context = Hub`, `Priority = 30`,
+`ResumePolicy = Restart`).
+
+**Когда стартует:** **после закрытия окна наград (`ResultsWindow`) дня 1**. Это должно переживать релонч
+(кейс §1.1 из запроса): если игрок закрыл `ResultsWindow` (награда уже начислена — day 1 в `CompletedDays`),
+вышел и снова зашёл — туториал стартует точно так же. Значит гейт — **персистентное условие**, а не разовое
+событие «результаты только что закрылись»:
+
+- `IsEligible()` = «день 1 завершён» (`_dayProgress` содержит день 1 в `CompletedDays`, либо через
+  `tutorialCompleted("tutorial_day_1")`) **И** `tutorial_hub` не в `CompletedSequenceIds` **И** `ResultsWindow`
+  сейчас **не** показан (`!IsWindowShown<ResultsWindow>()` — чтобы не всплыть поверх ещё открытых наград).
+- **Триггер — открытый вопрос реализации.** Немедленный путь (закрыл `ResultsWindow` → advance в day-2 Morning →
+  возврат в хаб) и релонч-путь (буут в хаб) порождают разные события. Секвенция объявляет **один** `Trigger`, а
+  сканер стартует только на совпадении — это ровно кейс GAME-18 (одного триггера мало). Рекомендация:
+  `Trigger = HubReady` (буут/возврат в хаб) + **проверить, что `HubReady` публикуется при возврате в хаб после
+  Results** ([MainSceneBootstrap](../../Assets/Game/UI/GameplayScene/MainSceneBootstrap.cs) сейчас шлёт его
+  только в hub-флоу, не на direct-entry); если не публикуется — либо добить publish, либо это первый реальный
+  потребитель re-evaluation loop (**GAME-18**). Персистентный `IsEligible` делает оба пути корректными, как
+  только скан вызывается.
+
+#### Флоу
+
+| # | Событие в игре | Что делает туториал |
+|---|---|---|
+| 1 | Игрок закрыл `ResultsWindow` дня 1 (**или** зашёл в игру уже после этого) | секвенция активируется по `IsEligible` (день 1 завершён, hub-туториал нет, не в Results) |
+| 2 | — | **`TutorialDialogueStep`** (новый шаг): открывает `DialogWindow` с графом `tutorial_hub_intro` (3 фразы Eddi), ждёт закрытия окна |
+| 3 | Диалог закрыт | **`TutorialHighlightClickStep`**: подсветка кнопки журнала (target-id `hub.journal_button`), **стрелка-pointer**, всё затемнено кроме кнопки; блокирующий |
+| 4 | Клик по кнопке | стрелка/затемнение/текст убираются; **штатное** поведение кнопки открывает `JournalWindow` (туториал не открывает окно сам — клик проходит к кнопке) |
+| 5 | `JournalWindow` открылось | `TutorialAwaitWindowStep(() => IsWindowShown<JournalWindow>())` → **секвенция завершена** |
+
+#### Что нового / что переиспользуется
+
+- **Новый шаг `TutorialDialogueStep`** — открывает `DialogWindow` по id графа и ждёт закрытия. Сегодня диалоги
+  бывают **только** у покупателей в sales-дне (`DialogStep`); хаб-диалога нет — это новая возможность
+  (движок `DialogueEngine`/`DialogWindow` view-agnostic, GAME-6, так что переиспользуется, но точку входа
+  «показать standalone-диалог из туториала» нужно добавить). Взаимодействие с fire-once
+  `IDeliveredDialoguesService` продумать при реализации: `ResumePolicy = Restart` перезапускает диалог при
+  релонче до завершения — либо туториал показывает `DialogWindow` напрямую (не через delivered-гейт), либо hub-диалог
+  идёт через immediate-режим delivered (см. defer-commit план диалогов).
+- **`TutorialHighlightClickStep`** (готов, этап 5) — target `hub.journal_button`, `pointer=true` (стрелка),
+  blocking. **Тег на кнопку журнала добавляет владелец задачи вручную** (id `hub.journal_button`).
+- **`TutorialAwaitWindowStep`** (готов) — `IsWindowShown<JournalWindow>()` как терминатор.
+- **Stub-диалог** `tutorial_hub_intro` заведён в [dialogues.json](../../Assets/Configs/dialogues.json) (3 фразы,
+  speaker `Eddy`, `[STUB]`-плейсхолдер) — контент заменить при реализации; для билда синкнуть в StreamingAssets
+  (`Tools/Configs/Sync Bundled Defaults`).
+
+#### Открытые вопросы
+
+- Точный триггер немедленного пути (см. выше) — `HubReady` на возврате в хаб vs GAME-18 re-eval.
+- Fire-once диалога vs `Restart`-резюм (см. выше).
+- Подтвердить id кнопки/окна: `hub.journal_button` и `JournalWindow` (журнал из GAME-2).
 
 ## 7. Риски / открытые вопросы
 
@@ -320,7 +518,7 @@ condition-factory для day-gate.
 | Нет локализации | Сырой RU-текст + зарезервированный `textKey`; миграция механическая |
 | Дрейф string-id (таргеты/окна/квесты) | Валидатор §7 (⏳ не сделан), включая скан префабов на `TutorialTargetTag` |
 | Резолв таргета сделан DI-реестром `ITutorialTargetRegistry` + фасадом `TutorialTargets` (для тегов) | Реализовано (§4.5); purge null при lookup |
-| Resume/cancel-path Day 1 (§6.1) | Осознанные ограничения v1; строгий day-gate и recovery — позже |
+| Resume/cancel-path Day 1 (§6.1) | Осознанные ограничения v1; recovery — позже |
 
 ## 8. Платные решения (если появится бюджет)
 
@@ -342,9 +540,9 @@ NodeCanvas), так что интеграция не изобретается, �
 
 **Переиспользуется как есть (стоимость ≈ 0):**
 - Все примитивы `Infrastructure/TutorialUI` (blackout, pointer, `TutorialTargets`, `ScreenRectUtility`) —
-  чистый View-слой; NodeCanvas-нода дёргает их так же, как step-handler. В heroes ноды
+  чистый View-слой; NodeCanvas-нода дёргает их так же, как C# step/content. В heroes ноды
   `ShowTutorialPointer/Blackout` управляли ровно такими независимыми view-контроллерами.
-- `TutorialOverlayController` (runtime canvas), `TutorialTargetIds`, `ITutorialWindowChecker`.
+- `TutorialOverlayController` (runtime canvas), `TutorialTargetIds`, typed window checks.
 - Save-модель (`CompletedSequenceIds`, one-way completion) — концептуально та же.
 - Layer 1 целиком (квесты, `quests.json`, `tutorialCompleted`).
 
@@ -418,3 +616,144 @@ JSON-walker сейчас vs NodeCanvas DialogueTree потом), и этот в�
 диалоговый flow, которого нет, и AI/квест-графы — покупается не ради туториала одного). Пока
 секвенции линейные — свой тонкий движок дешевле в сумме владения; изоляция дизайна гарантирует, что
 переход не подорожает от того, что его отложили.
+
+> **2026-07-17: критерий сработал в пользу «не переходить».** Секвенции остались линейными, контент
+> правит один человек (он же программист) — визуальный редактор не покупает ничего, а интеграционная цена
+> из §8.1 платится независимо от прайса (в т.ч. у бесплатных xNode / Unity Behavior / GraphView). Вместо
+> графов выбран **C#-авторинг** (§9): он снимает ту же боль (словарь шагов), но без DI↔POCO-моста,
+> Addressables-латентности, vendor lock-in и деградации git-диффов. §8 остаётся актуальным как анализ на
+> случай, если ветвистость всё-таки появится; §8.1 («что переиспользуется / что переписывается») дословно
+> применим и к переезду на C#, минус перечисленные риски интеграции.
+
+---
+
+## 9. Переезд авторинга на C#-секвенции (2026-07-17)
+
+### 9.1 Почему
+
+Диагноз — **не «JSON слабый», а «словарь растёт 1:1 с контентом»**. Единственная секвенция на 4 шага
+(`tutorial_day_1`) уже потребовала четыре новых элемента словаря: немодальный callout, наблюдение за
+пассивной продажей, bespoke hit-area для не-Button таргета, condition `currentDayIs`. Когда словарь растёт
+вровень с контентом — словарь *и есть* контент, а индирекция становится чистым налогом, амортизируемым
+ровно по одному использованию.
+
+Сравнение внутри проекта решает спор: `books.json` / `quests.json` / `dialogues.json` — **много экземпляров
+одной формы** (добавить квест = строчка данных, ноль кода) → данные, JSON правилен. Туториальные дни —
+**уникальные сценарные последовательности с нулевым переиспользованием** между собой → код.
+
+Главный выигрыш — **растворяются слои косвенности, существующие только потому, что JSON-строка не умеет
+ссылаться на тип**:
+
+| Слой (§4.2–§4.3, §4.5) | Зачем существует | Судьба в C# |
+|---|---|---|
+| `ITutorialWindowChecker` + `TutorialWindowChecker` | строка `"results"` не ссылается на `ResultsWindow` | `_ui.IsWindowShown<ResultsWindow>()` |
+| condition-factories (`currentDayIs`, …) | `"type":"dayIs"` не вызывает `_dayProgress` | `() => _dayProgress.CurrentDay == 1` |
+| string-дискриминаторы + registry + 6 хендлеров | диспетчеризация по строке | шаг сам себя исполняет |
+| `TutorialTargetIds` + скан префабов в валидаторе | адресация таргета строкой | типизированный доступ (**реестр остаётся**, см. §9.2) |
+
+Побочно отпадает пункт §7 «editor-валидатор id-шников»: опечатка становится ошибкой компиляции, а не
+runtime-warning'ом с auto-advance. Для Day 1 с Eddi выигрыш конкретен: факты продаж приходят из
+`ISalesDayController` через `SalesTutorialSignalsBridge` → глобальный MessagePipe → leaf-сигналы
+`Game.GameplayUI.Signals`. Так `Game.Tutorial.Content` не зависит от location-scope `Book.Sell`.
+
+Референс формата — heroes (§2): `TutorialWhileWaiter(() => предикат)`, `TutorialSilentStepAction(() => эффект)`,
+`AddOpenDailyQuestSteps(steps)` — произвольный предикат, произвольный side-effect и подпрограмма; ровно те
+три вещи, которых у JSON нет.
+
+**Что переезд НЕ чинит** (не переоценивать): немодальный callout и non-Button hit-area — работа по View,
+нужна одинаково; re-evaluation loop (TODO GAME-18) живёт в `TutorialService` и нужен одинаково.
+
+### 9.2 Зафиксированные решения
+
+1. **Day-gate — строгий.** `IsEligible()` смотрит на `_dayProgress.Current.CurrentDay`, а не на историю секвенций.
+   Причина: контент приварен к состоянию мира дня (приход Eddi — fire-once через delivered-dialogues; день-1-туториал,
+   доигранный на дне 2, ждал бы продажу, которой не будет → тихий висяк). Догоняющий вариант («пропустил —
+   доиграй позже») отвергнут. Строгий гейт лечит **два живых бага**, которые старая модель «очередь по priority»
+   не лечит: (а) повторный вход в локацию в тот же день (подтверждено — возможен) после завершения day-1-секвенции
+   выдаёт скану туториал дня 2 **в первый день**; (б) релонч сбрасывает день, но `tutorial.state` переживает →
+   на перезапущенном дне 1 day-1 отсеян как completed, подхватывается day-2.
+   **Следствие: day-gate — не полировка, а условие существования второй секвенции.**
+2. **Таргет-реестр остаётся.** `ITutorialTargetRegistry` + `TutorialTargets` + `TutorialTargetTag` (§4.5) не трогаем —
+   они решают «MonoBehaviour в сцене ↔ POCO в DI», и эта проблема не зависит от формата авторинга. Уходит только
+   строковый id как *единственный* способ адресации + скан префабов из валидатора §7.
+3. **`GetSteps()` — чистый и пересобираемый.** Никакого состояния в полях секвенции между вызовами
+   (`resumePolicy: restart` пересоздаёт шаги с нуля). Подписки на события живут в run'е и снимаются в `finally`.
+4. **Движок не трогаем.** Активация-скан, эксклюзивный runner, сейв `tutorial.state`, one-way completion, resume,
+   transition-guard, `ITutorialAutoStartGate`, флаг `_autoStart` — остаются (§5 в силе). Меняется **только источник
+   шагов**: `TutorialSequenceConfig.Steps[]` → `ITutorialSequence.GetSteps()`.
+5. **Тексты не уносим в код.** Идут через `textKey` → INF-4 (этап 8). Это же снимает главный контраргумент
+   к переезду: `tutorials.json` сегодня бесплатно наследует конфиг-пайплайн (`ServerConfigSource`, `AdminApiClient`,
+   `ConfigEditorWindow`, `ConfigHistoryWindow`) — т.е. правится на сервере без билда. Но крутить там осмысленно
+   только **тексты**, а они уезжают в INF-4 в любом случае; после этого в конфиге остался бы чистый флоу —
+   ровно та часть, в которой JSON плох, и с нулевой live-ops-ценностью.
+
+### 9.3 Этапы
+
+Результаты, к которым идём: **(1)** день 1 с Eddi и blocking-intro текстами, которые после клика остаются
+callout'ами; **(2)** день 2 с NPC, блокирующими текстами и ожиданием клика.
+
+| # | Этап | Содержание | Критерий |
+|---|---|---|---|
+| 1 | **Каркас** | Новый asmdef `Game.Tutorial.Content` наверху графа (refs: `Game.Tutorial(.API)`, `Game.Core.UI`, `DayCycle`; **без** `VContainer` — POCO-ctor). Контракты `ITutorialSequence`/`ITutorialStep` + enum'ы `TutorialContext`/`TutorialResumePolicy`/`TutorialTrigger` в `Game.Tutorial.API`. `TutorialService`: ctor теряет `IConfigsService`/`IConditionParser`/`TutorialStepHandlerRegistry`, получает `IReadOnlyList<ITutorialSequence>`; каталог, `IsEligible`, шаг-луп переключаются. Порт `showText` + `awaitWindow` в step-классы, `TutorialDay1`. **Снос JSON-слоя**: обе `tutorials.json`, `TutorialSequenceConfig`/`TutorialStepConfig`, `TutorialStepTypes`, registry, `ITutorialStepHandler`, 6 хендлеров, `ITutorialWindowChecker`+`TutorialWindowChecker`, `TutorialTriggers`. Перегенерировать `manifest.json` через `Tools/Configs/Sync Bundled Defaults` | **Fresh save → день 1 играется бит-в-бит как сегодня**, но из класса. Старого пути не осталось. EditMode-тесты зелёные |
+| 2 | **Строгий day-gate** | `IsEligible() => _dayProgress.Current.CurrentDay == N` (решение §9.2-1). Condition-factory `currentDayIs` **не пишется никогда** — в C# это однострочник (отменяет шаг 1 из TODO GAME-18) | Две секвенции в каталоге, каждая играется в свой день; повторный вход в локацию и релонч не выдают чужой туториал |
+| 3 | **Немодальный callout** | Режим текста **без dim и без блокировки ввода** в `TutorialOverlayController`. Показ/обновление/скрытие — три отдельные операции (callout не ждёт тап), а не один await'ящий шаг. Гашение при отмене run'а — в `finally` секвенции | Текст висит, игра под ним живая и кликабельная |
+| 4 | **День 1 с Eddi** → **результат 1** | `SalesTutorialSignalsBridge` в `Book.Sell` публикует `CustomerPhaseChanged`/passive sale/fail как primitive MessagePipe-сигналы. `TutorialDayOne` подписывается в `OnRunStarted`, держит latch-факты Eddi, сначала ждёт завершения Eddi-диалога через переход в `Browsing`, затем показывает callout-биты до `awaitWindow(Results)`; sale/fail жанры берутся из сигналов лениво в момент показа текста. Сценарные покупки (`Fact forceHit:true` / `Travel forceHit:false`) уже в `quests.json` — не трогаем. `Game.Tutorial.Content` получает refs на `MessagePipe` + `Game.GameplayUI.Signals`, **без** ref на `Book.Sell` | Тексты привязаны к реальным моментам симуляции; гонка со стартом дня закрыта latch'ами; отписка на cancel гарантирована |
+| 5 | **Блокирующий клик по таргету** | Порт `highlightClick`. Закрыть дыру «не-Button таргет» (`TutorialOverlayController` — «empty hole catches no raycast»): bespoke hit-area, иначе панель `_genreBookCountPool` даёт warning + auto-advance | Дырка над панелью/item'ом, клик проходит и продвигает туториал |
+| 6 | **День 2 с NPC** → **результат 2** | `TutorialDay2`: `text_1..3` (блокирующие, advance по тапу) → подсветка `_genreBookCountPool` + клик → `ContentWidgetController` открывается сам от клика, поверх блокирующий `text_4` → конец. N случайных пассивных покупателей — существующий спавнер | Сквозной прогон дня 2 |
+| 7 | **Тексты → `textKey`/INF-4** | Решение §9.2-5. Можно параллельно этапам 4–6, но **форму принять на этапе 1**, иначе переписывать все биты | Сырых строк в контент-классах нет |
+| 8 | **Остаток §7 + полировка** | Cheat-модуль (list/force-run/force-complete/reset), аналитика. Валидатор id-шников **отменён** (§9.1). Re-evaluation loop (GAME-18 шаг 2) — только когда понадобится запуск от покупки предмета/диалога; `locationLoaded` пока достаточен | — |
+
+Этапы 1–2 — рефакторинг с проверяемым «ничего не изменилось», удобно катить отдельными коммитами.
+Этап 3 добавляет text-only немодальный callout; pointer/highlight остаются этапом 5.
+Этап 4 даёт первый продуктовый результат Day 1 с Eddi; прямой ref `Game.Tutorial.Content → Book.Sell` не используется.
+
+### 9.4 Подводные камни (найдены при review дизайна этапа 1)
+
+- **`GetSteps()` вызывался бы дважды с разными инстансами — живой баг.** `ResumeActiveSequence` клампит
+  `NextStepIndex` по `seq.Steps.Length`, затем `BeginRun` перечитывает `seq.Steps`. С фабричным `GetSteps()`
+  это два разных набора объектов. **Материализовать один раз** и прокинуть `IReadOnlyList<ITutorialStep>`
+  в `BeginRun`/`RunSequenceAsync`.
+- **`NextStepIndex` становится зависимостью от порядка в коде.** Позиционный индекс в C#-списке: перестановка
+  шагов в патче молча возобновит живых игроков не на том шаге. Резюмиться **по `step.Id`** с fallback на 0.
+  (У конфига был тот же изъян, но порядок шагов теперь едет вместе с кодом — радиус поражения больше.)
+- **`TutorialContext` default обязан быть `Any`** — сегодня `null`/`"any"` трактуется пермиссивно (`ContextAllows`).
+- **Base-class trap.** `TypeAnalyzer` использует `BindingFlags.DeclaredOnly`: абстрактный `TutorialSequenceBase`
+  с ctor-зависимостями + наследник без своего ctor → `VContainerException: Type does not found injectable
+  constructor`. Каждая секвенция объявляет **свой публичный ctor**, ровно один (несколько — не ошибка, VContainer
+  молча берёт с максимумом параметров, что хуже).
+- **Секвенции — только Global-scope зависимости.** Bootstrap форс-конструирует `ITutorialService` рано (до
+  `SaveDataLoadOperation`); зависимость из scene-скоупа `GameInstaller` уронит стартап. `IUIManager`,
+  `IDayProgressService`, `TutorialOverlayController` — Global, безопасны.
+- **Потеря опциональности.** `TutorialService` объявляет `IDayProgressService`/`IGameFlowService` как `= null`
+  (graceful degradation). Секвенции с *обязательным* `IDayProgressService` ломают эту опциональность осознанно:
+  контенту day-gate нужен всегда, а зависимость зарегистрирована в Global scope.
+- **Молчаливый ноль.** VContainer резолвит `IReadOnlyList<T>` даже при нуле регистраций (fallback → пустой
+  массив, без исключения) — забытая регистрация секвенции падает молча. **Лог количества в `AfterLoadAsync`
+  оставить.**
+- **Комментарий в `TutorialVContainerBindings` про «две Func-регистрации» — симптом, не причина.** VContainer
+  бьёт по любому дублю `ImplementationType` среди синглтонов. Регистрация N секвенций по конкретным типам
+  `.As<ITutorialSequence>()` безопасна — те же 6 хендлеров это уже доказывают. Сам `Func<ITutorialService>` +
+  `TutorialCompletedConditionFactory` **не трогать**: их потребитель — квесты (§4.4), не туториал.
+- **`Game.Tutorial.asmdef` может убрать `Configs`**, но **не** `Newtonsoft.Json.dll` / `overrideReferences` /
+  `Game.Conditions.API` — `TutorialCompletedConditionFactory` реализует `ICondition Create(JObject)`.
+- **`SectionValidator` / `ConfigEditorWindow` менять не нужно** (генерические / хардкодят другой список);
+  `ConfigsService` читает `[ConfigFile]` лениво, так что опубликованная на сервере секция `tutorials` просто
+  перестанет запрашиваться — серверная чистка опциональна.
+- **Гонка со стартом дня.** Sales simulation тикает независимо от `IUIManager.SetManualLock`, поэтому Eddi может
+  пройти нужные фазы до того, как linear runner дойдёт до соответствующего await-step. Day 1 решает это latch'ами:
+  подписка ставится в `OnRunStarted`, Eddi-шаги ждут уже запомненные факты без timeout, а `ResultsWindow`
+  служит терминатором degraded-пути, где Eddi уже не придёт.
+
+### 9.5 Цена решения
+
+`Game.Tutorial.Content` сможет дотянуться до всего в проекте — для контент-слоя это правильно (`Game.Bootstrap`
+уже так живёт, §3: «concrete-ссылки на окна живут ЗДЕСЬ»), но это **дверь в одну сторону**: обратно к «туториал
+не знает о фичах» возврата не будет. Правило слоёв ([ASMDEF_RULES.md](../ASMDEF_RULES.md)) не нарушается —
+`Infrastructure` и `Game.Tutorial` остаются чистыми, «всезнающим» становится только контент-сборка наверху графа.
+
+### 9.6 Статус реализации
+
+- Этап 1 «Каркас» реализован в коммите `5e09f52c`.
+- Этап 2 «Строгий day-gate» реализован в коммите `8a527db7`.
+- Этап 3 «Немодальный callout» реализован в коммите `d5a0b43b`.
+- Этап 4 «День 1 с Eddi» реализован в коммите `4b65dc81`.

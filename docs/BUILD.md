@@ -81,8 +81,10 @@ Android-таргета на месте конфиг Firebase (`google-services.j
 - **`_tutorialOverlaySettings` — назначен** (не `None`) — ассет настроек оверлея туториала (pointer +
   затемнение). Без него подсветки шагов туториала не отрисуются. (сейчас назначен.)
 - **`_tutorialAutoStart`** — под задачу билда: `1` — туториал стартует автоматически на первом заходе,
-  `0` — нет. (сейчас `0`.)
+  `0` — нет. (сейчас `1`; нужно `1`, иначе `tutorial_day_1` не запустится по `locationLoaded`.)
 - **`_startWelcomeWindow`** — показывать ли welcome-окно на старте. (сейчас `0`.)
+- **`_firstDayEntry`** — путь входа в день 1: `Location` (`1`) — сразу в локацию с авто-стоком полки
+  (продуктовый путь, см. [FTUE.md](FTUE.md)); `Hub` (`0`) — классический флоу через хаб. (сейчас `1`.)
 
 **FTUE.** FTUE — save-backed: сидирование (стартовые gold/книги, скриптовый день 1) выполняется, только если
 в сейве нет `ftue.applied` (см. [FTUE.md](FTUE.md)). Следствия для проверки билда:
@@ -113,6 +115,6 @@ Android-таргета на месте конфиг Firebase (`google-services.j
 - [ ] Собрать/включить Addressables.
 - [ ] Firebase Android-конфиг на месте.
 - [ ] Player Settings: IL2CPP + ARM64, API level, keystore, список сцен.
-- [ ] `BootstrapInstaller.asset`: `_useDebugFeatures=0`, `_skipFullLoading=0`, `_tutorialOverlaySettings` назначен, `_tutorialAutoStart`/`_startWelcomeWindow` — под задачу билда.
+- [ ] `BootstrapInstaller.asset`: `_useDebugFeatures=0`, `_skipFullLoading=0`, `_tutorialOverlaySettings` назначен, `_tutorialAutoStart`/`_startWelcomeWindow`/`_firstDayEntry` — под задачу билда.
 - [ ] FTUE проверять на чистой установке (сброшенные данные).
 - [ ] Собрать APK → smoke-проверка старта, конфигов, активного запроса, диалога, FTUE/туториала.

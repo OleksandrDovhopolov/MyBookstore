@@ -3,8 +3,14 @@ using UnityEngine.UI;
 
 namespace Infrastructure.TutorialUI
 {
+    public enum TutorialPointerPlacement
+    {
+        Top,
+        Left,
+    }
+
     /// <summary>
-    /// Animated pointer (hand/arrow) that hovers over a target with a vertical sine bounce. Non-interactive
+    /// Animated pointer (hand/arrow) that hovers near a target with a sine bounce. Non-interactive
     /// (raycastTarget off) so it never eats the click meant for the highlighted button. Positions itself in
     /// its parent (overlay) local space via <see cref="ScreenRectUtility"/> every frame.
     /// </summary>
@@ -17,6 +23,7 @@ namespace Infrastructure.TutorialUI
         private RectTransform _rt;
         private Image _image;
         private RectTransform _target;
+        private TutorialPointerPlacement _placement = TutorialPointerPlacement.Top;
 
         private RectTransform RectTransform => _rt != null ? _rt : _rt = (RectTransform)transform;
         private RectTransform ParentRect => transform.parent as RectTransform;
@@ -38,8 +45,12 @@ namespace Infrastructure.TutorialUI
         }
 
         public void PointAt(RectTransform target)
+            => PointAt(target, TutorialPointerPlacement.Top);
+
+        public void PointAt(RectTransform target, TutorialPointerPlacement placement)
         {
             _target = target;
+            _placement = placement;
             gameObject.SetActive(true);
         }
 
@@ -57,7 +68,18 @@ namespace Infrastructure.TutorialUI
             if (!ScreenRectUtility.TryGetLocalRect(_target, parent, out var rect)) return;
 
             var bounce = Mathf.Sin(Time.unscaledTime * _bounceSpeed) * _bounceAmplitude;
-            RectTransform.anchoredPosition = new Vector2(rect.center.x, rect.yMax + bounce);
+            RectTransform.anchoredPosition = _placement switch
+            {
+                TutorialPointerPlacement.Left => GetLeftPosition(rect, bounce),
+                _ => new Vector2(rect.center.x, rect.yMax + bounce),
+            };
+        }
+
+        private Vector2 GetLeftPosition(Rect rect, float bounce)
+        {
+            var pointerHalfWidth = RectTransform.rect.width * 0.5f;
+            var outwardBounce = _bounceAmplitude + bounce;
+            return new Vector2(rect.xMin - pointerHalfWidth - outwardBounce, rect.center.y);
         }
     }
 }

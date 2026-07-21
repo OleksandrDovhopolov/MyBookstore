@@ -148,6 +148,11 @@ namespace Game.Configs
                 return map;
             }
 
+            // Materialize the override table once per file, then it is an O(1) lookup per entry. Asking the
+            // source per id made it re-fetch and re-parse the whole RC key for every config in the file.
+            var hasOverrides = _overrides.TryGetOverrides(fileName, out var partialsById) && partialsById != null;
+            var appliedOverrides = 0;
+
             foreach (var token in array)
             {
                 if (token is not JObject obj)
@@ -160,12 +165,14 @@ namespace Game.Configs
                     continue;
                 }
 
-                if (_overrides.TryGetOverride(fileName, id, out var partial) && !string.IsNullOrWhiteSpace(partial))
+                if (hasOverrides
+                    && partialsById.TryGetValue(id, out var partial)
+                    && !string.IsNullOrWhiteSpace(partial))
                 {
                     try
                     {
                         obj.Merge(JObject.Parse(partial), MergeSettings);
-                        Debug.Log($"{LogPrefix} applied override for {fileName}/{id}.");
+                        appliedOverrides++;
                     }
                     catch (Exception ex)
                     {
@@ -183,6 +190,13 @@ namespace Game.Configs
                 {
                     Debug.LogError($"{LogPrefix} Failed to deserialize {typeof(T).Name} id='{id}': {ex.Message}");
                 }
+            }
+
+            // Summary instead of a line per config. "applied 0 of N" means the RC table targets ids that do
+            // not exist in this file — silent before, because a miss looked identical to "no override".
+            if (hasOverrides)
+            {
+                Debug.Log($"{LogPrefix} '{fileName}': applied {appliedOverrides} of {partialsById.Count} RC override(s).");
             }
 
             return map;

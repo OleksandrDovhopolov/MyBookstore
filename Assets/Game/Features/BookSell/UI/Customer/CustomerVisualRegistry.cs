@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Book.Sell.Domain;
 using Book.Sell.Domain.Steps;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
+using SpriteService;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -24,6 +26,7 @@ namespace Book.Sell.UI.Customer
         // Same pause source the day loop uses (SalesScreenView gates Tick on it): freezes customer
         // movement while the minigame window is open so visuals don't drift past the paused logic.
         private readonly Func<bool> _isPaused;
+        private readonly IUiSpriteProvider _uiSprites;
         private readonly CustomerVisual _visualPrefab;
         private readonly Transform _spawnRoot;
         private readonly Transform _entryLeft;
@@ -44,12 +47,14 @@ namespace Book.Sell.UI.Customer
             IObjectResolver resolver,
             SalesTuning tuning,
             CustomerVisualRegistryConfig config,
+            IUiSpriteProvider uiSprites = null,
             IRecommendationMinigamePresenter minigamePresenter = null)
         {
             _sales = sales;
             _resolver = resolver;
             _tuning = tuning;
             _isPaused = () => minigamePresenter?.IsWindowOpen ?? false;
+            _uiSprites = uiSprites;
             _visualPrefab = config.VisualPrefab;
             _spawnRoot = config.SpawnRoot;
             _entryLeft = config.EntryLeft;
@@ -71,6 +76,10 @@ namespace Book.Sell.UI.Customer
         public void Dispose()
         {
             _sales.CustomerPhaseChanged -= OnCustomerPhaseChanged;
+
+            foreach (var state in _byId.Values)
+                state.Dispose();
+            _byId.Clear();
         }
 
         private void OnCustomerPhaseChanged(Book.Sell.Domain.Customer customer)
@@ -113,8 +122,31 @@ namespace Book.Sell.UI.Customer
             var visual = _resolver.Instantiate(_visualPrefab, spawnPos, Quaternion.identity, _spawnRoot);
             visual.Initialize(customer);
 
-            _byId[customer.Id] = new VisualState(visual, lanePos);
+            var state = new VisualState(visual, lanePos);
+            _byId[customer.Id] = state;
+            LoadCharacterSpriteAsync(customer.CharacterId, state).Forget();
             CustomerVisualSpawned?.Invoke(visual);
+        }
+
+        private async UniTaskVoid LoadCharacterSpriteAsync(string characterId, VisualState state)
+        {
+            if (_uiSprites == null || string.IsNullOrWhiteSpace(characterId) || state == null)
+                return;
+
+            try
+            {
+                var token = state.SpriteToken;
+                var sprite = await _uiSprites.GetSpriteAsync(characterId, token);
+                if (sprite != null && !token.IsCancellationRequested && state.Visual != null)
+                    state.Visual.ApplyFigureSprite(sprite);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[CustomerVisualRegistry] Failed to load character sprite '{characterId}': {ex.Message}");
+            }
         }
 
         private async Cysharp.Threading.Tasks.UniTaskVoid MoveToExitAndDespawnAsync(string customerId, VisualState state, float exitDuration)
@@ -135,6 +167,7 @@ namespace Book.Sell.UI.Customer
         private void DespawnNow(string customerId)
         {
             if (!_byId.Remove(customerId, out var state)) return;
+            state.Dispose();
             var visual = state.Visual;
             CustomerVisualDespawned?.Invoke(visual);
             if (visual != null) UnityEngine.Object.Destroy(visual.gameObject);
@@ -192,14 +225,23 @@ namespace Book.Sell.UI.Customer
 
         private sealed class VisualState
         {
+            private readonly CancellationTokenSource _spriteCts = new();
+
             public CustomerVisual Visual { get; }
             public Vector3 LanePosition { get; }
             public bool DespawnStarted { get; set; }
+            public CancellationToken SpriteToken => _spriteCts.Token;
 
             public VisualState(CustomerVisual visual, Vector3 lanePosition)
             {
                 Visual = visual;
                 LanePosition = lanePosition;
+            }
+
+            public void Dispose()
+            {
+                _spriteCts.Cancel();
+                _spriteCts.Dispose();
             }
         }
     }

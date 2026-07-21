@@ -15,9 +15,6 @@ namespace Game.Quest.API
 
         string ChainId { get; }
 
-        /// <summary>Owning character; null until the characters feature exists.</summary>
-        string CharacterId { get; }
-
         QuestConfig Config { get; }
 
         IReadOnlyList<IQuestTask> Tasks { get; }

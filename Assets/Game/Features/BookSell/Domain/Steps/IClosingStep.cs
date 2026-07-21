@@ -1,9 +1,9 @@
 namespace Book.Sell.Domain.Steps
 {
     /// <summary>
-    /// Marker for steps that belong to a customer's closing sequence (e.g. CompletePurchase, Leave)
-    /// and must still run when the purchase cycle is abandoned early. On a passive-failure abort the
-    /// customer skips remaining purchase steps and resumes at the first <see cref="IClosingStep"/>.
+    /// Marker for steps that belong to a customer's closing sequence (e.g. CompletePurchase, Leave) and
+    /// must still run when the passive chain ends early. Used by <see cref="Book.Sell.Domain.CustomerPlan"/>
+    /// to keep runtime insertions (<c>InsertNext</c>/<c>InsertBeforeClosing</c>) out of the closing tail.
     /// </summary>
     public interface IClosingStep : ICustomerStep
     {

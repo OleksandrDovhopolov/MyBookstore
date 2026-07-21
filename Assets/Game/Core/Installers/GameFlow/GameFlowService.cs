@@ -51,10 +51,11 @@ namespace Game.Bootstrap
             _hubRoot = hubRoot;
         }
 
-        public async UniTask EnterLocationAsync(CancellationToken ct = default)
+        public async UniTask EnterLocationAsync(string locationId, CancellationToken ct = default)
         {
-            // TODO (отдельная задача — FTUE/обучение): здесь будет ветка «первый вход» —
-            // загрузить LocationScene и запустить tutorial. Сейчас всегда обычный путь.
+            // Day-1 «первый вход» оркеструется снаружи (GameplayUI.FirstDayEntryFlow через
+            // MainSceneBootstrap): авто-сток + этот же обычный путь. Отдельной ветки здесь не нужно —
+            // tutorial_day_1 стартует по LocationLoadedChanged ниже.
             if (!TryBeginTransition(nameof(EnterLocationAsync))) return;
 
             try
@@ -79,6 +80,7 @@ namespace Game.Bootstrap
                 RaiseLocationLoadedChanged();
 
                 await _animation.PlayRevealAsync(ct);
+                _locationVisits?.RecordVisit(locationId);
             }
             catch (OperationCanceledException)
             {

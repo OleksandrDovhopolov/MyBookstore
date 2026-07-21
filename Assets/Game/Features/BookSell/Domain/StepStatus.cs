@@ -14,7 +14,11 @@ namespace Book.Sell.Domain
         /// <summary>Step cannot progress right now (e.g. the shared interaction lock is held by someone else). Stay on it.</summary>
         Blocked = 2,
 
-        /// <summary>Step finished; the customer abandons the remaining plan and goes straight to Leave.</summary>
-        CompletedAndLeave = 3
+        /// <summary>
+        /// Step finished; the customer's passive chain ends — remaining passive steps are dropped from the
+        /// plan, but non-passive steps (active request, dialogue, comment) and the closing tail still run
+        /// (ADR-0003). Not "leave immediately": the customer may still ask for help or talk.
+        /// </summary>
+        CompletedAndEndPassiveChain = 3
     }
 }

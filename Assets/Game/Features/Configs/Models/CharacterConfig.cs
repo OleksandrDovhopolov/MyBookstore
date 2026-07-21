@@ -19,6 +19,12 @@ namespace Game.Configs.Models
         public string PortraitKey { get; set; }
 
         /// <summary>
+        /// Preferred book genres for this character. Used as the passive purchase desire profile for
+        /// quest/story customers; future active requests can reuse the same persona data.
+        /// </summary>
+        public string[] FavoriteGenres { get; set; }
+
+        /// <summary>
         /// Quests whose start (state != Pending) discovers this character — for intro/dialogue quests that
         /// have no memory. Optional; discovery also fires from any memory-linked quest. See §10/§7.
         /// </summary>

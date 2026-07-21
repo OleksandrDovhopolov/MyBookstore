@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Book.Sell.Domain;
 using Game.Configs;
@@ -26,11 +25,17 @@ namespace Book.Sell.Services
 
         public SalesSessionSetup BuildForDay(int day)
         {
+            var schedule = WaveScheduleResolver.Resolve(_configs, day);
             var locations = _configs.GetAll<LocationConfig>();
             if (locations.Count == 0)
             {
                 Debug.LogWarning($"{LogPrefix} LocationConfig is empty. Returning an empty setup.");
-                return new SalesSessionSetup(day, locationId: null, shelfBookIds: Array.Empty<string>());
+                return new SalesSessionSetup(
+                    day,
+                    locationId: null,
+                    shelfBookIds: Array.Empty<string>(),
+                    waveSizes: schedule.waveSizes,
+                    waveGapSeconds: schedule.gapSeconds);
             }
 
             var location = locations[0];
@@ -39,12 +44,22 @@ namespace Book.Sell.Services
             if (books.Count == 0)
             {
                 Debug.LogWarning($"{LogPrefix} BookConfig is empty. Shelf will be empty.");
-                return new SalesSessionSetup(day, location.Id, Array.Empty<string>());
+                return new SalesSessionSetup(
+                    day,
+                    location.Id,
+                    Array.Empty<string>(),
+                    waveSizes: schedule.waveSizes,
+                    waveGapSeconds: schedule.gapSeconds);
             }
 
             var shelfIds = books.Take(MaxShelfBooks).Select(b => b.Id).ToList();
             Debug.Log($"{LogPrefix} Day {day}: location={location.Id}, shelf size={shelfIds.Count}.");
-            return new SalesSessionSetup(day, location.Id, shelfIds);
+            return new SalesSessionSetup(
+                day,
+                location.Id,
+                shelfIds,
+                waveSizes: schedule.waveSizes,
+                waveGapSeconds: schedule.gapSeconds);
         }
     }
 }

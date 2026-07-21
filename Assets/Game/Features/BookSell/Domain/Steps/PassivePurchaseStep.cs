@@ -9,9 +9,10 @@ namespace Book.Sell.Domain.Steps
     /// <summary>
     /// One passive purchase attempt: the customer browses for a while, targets a demand-matching
     /// book (reserve-on-target), then commits the sale after a short delay. A miss (nothing matches)
-    /// holds failed-purchase feedback, then closes the customer's shopping cycle.
+    /// holds failed-purchase feedback, then ends the customer's passive chain: the remaining passive
+    /// steps are dropped, but non-passive steps (active request, dialogue, comment) still run (ADR-0003).
     /// </summary>
-    public sealed class PassivePurchaseStep : ICustomerStep
+    public sealed class PassivePurchaseStep : IPassivePurchaseStep
     {
         private const string LogPrefix = "[Sales.Passive]";
 
@@ -47,17 +48,18 @@ namespace Book.Sell.Domain.Steps
                 var result = ctx.PassiveResolver.Resolve(self, ctx, available);
                 _resolvedGenre = result.ResolvedGenre;
 
-                // Miss: the chosen genre didn't pass (or nothing eligible) → shopping cycle ends, customer leaves.
+                // Miss: the chosen genre didn't pass (or nothing eligible) → the passive chain ends. Any
+                // non-passive step still ahead (active request, dialogue) runs before the customer leaves.
                 if (!result.Success || result.Book == null)
                 {
-                    Debug.Log($"{LogPrefix} customer={self.Id} passive attempt MISSED (genre={_resolvedGenre}) → leaving");
+                    Debug.Log($"{LogPrefix} customer={self.Id} passive attempt MISSED (genre={_resolvedGenre}) → passive chain ends");
                     return BeginFailedFeedback(self, ctx);
                 }
 
-                // Reserve-on-target. If the reservation race is lost, the cycle ends, customer leaves.
+                // Reserve-on-target. Losing the reservation race is a fail: same passive-chain end as a miss.
                 if (!ctx.Shelf.Reserve(result.Book.BookId))
                 {
-                    Debug.Log($"{LogPrefix} customer={self.Id} lost the reserve race for book={result.Book.BookId} → leaving");
+                    Debug.Log($"{LogPrefix} customer={self.Id} lost the reserve race for book={result.Book.BookId} → passive chain ends");
                     return BeginFailedFeedback(self, ctx);
                 }
 
@@ -72,7 +74,7 @@ namespace Book.Sell.Domain.Steps
 
             if (_sub == Sub.FailedFeedback)
                 return _t >= ctx.Tuning.PassiveFailureFeedbackDuration
-                    ? StepStatus.CompletedAndLeave
+                    ? StepStatus.CompletedAndEndPassiveChain
                     : StepStatus.Running;
 
             // Sub.SaleFeedback: hold "bought book" so the HUD shows it before the next attempt's "Choosing".
@@ -88,7 +90,12 @@ namespace Book.Sell.Domain.Steps
             var gold = book != null ? BookConfig.FixedPriceGold : 0;
             ctx.Shelf.CommitSale(_targetId);
 
-            var saleEvent = new PassiveSaleEvent(_targetId, gold, _matchedGenres, _matchedQualities);
+            var saleEvent = new PassiveSaleEvent(
+                _targetId,
+                gold,
+                _matchedGenres,
+                _matchedQualities,
+                _resolvedGenre);
             ctx.Sink?.OnPassiveSale(self, saleEvent);
             self.RegisterPurchasedBook();
             Debug.Log($"{LogPrefix} customer={self.Id} BOUGHT book={_targetId} gold={gold} (books bought so far: {self.PurchasedBookCount})");
@@ -111,7 +118,7 @@ namespace Book.Sell.Domain.Steps
             ctx.Sink?.OnPassivePurchaseFailed(self, _resolvedGenre);
 
             if (ctx.Tuning.PassiveFailureFeedbackDuration <= 0f)
-                return StepStatus.CompletedAndLeave;
+                return StepStatus.CompletedAndEndPassiveChain;
 
             _sub = Sub.FailedFeedback;
             _t = 0f;

@@ -126,7 +126,7 @@
 | ⏳ [CUSTOMER_STEP_PIPELINE_REFACTOR.md](INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md) | [ADR-0003](adr/0003-customer-simulation.md), [SAVE_DAY_FLOW.md](SAVE_DAY_FLOW.md) |
 | ⏳ [ACTIVE_REQUEST_CONDITIONS.md](INPROGRESS/ACTIVE_REQUEST_CONDITIONS.md) | Пересмотр активной продажи: булевы условия (`all/any/none`, `type/operator/value`) вместо взвешенного скоринга; старая система сохраняется. **Указатель: оформить ADR-0009.** [ADR-0003](adr/0003-customer-simulation.md), [ADR-0006](adr/0006-passive-sales-requested-genre.md) |
 | ⏳ [CUSTOMER_TRAFFIC_COUNT_SYSTEM.md](INPROGRESS/CUSTOMER_TRAFFIC_COUNT_SYSTEM.md) | Количество обычных покупателей в день: day overrides, финальные scripted overrides без модификаторов, contributor pipeline для декора/локации/погоды/ивентов. [ADR-0003](adr/0003-customer-simulation.md), [CUSTOMER_STEP_PIPELINE_REFACTOR.md](INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md) |
-| ✅ [TUTORIAL_SYSTEM.md](INPROGRESS/TUTORIAL_SYSTEM.md) | Архитектура туториала: гибрид tutorial-квестов (`IQuestsService`) + тонкий forced-step-движок (`Game.Tutorial` + примитивы в `Infrastructure/TutorialUI`); tutorials.json, таргет-реестр, гейтинг, roadmap из 7 этапов. [FTUE.md](FTUE.md), [QUESTS.md](QUESTS.md), [ADR-0007](adr/0007-quest-system.md), [ASMDEF_RULES.md](ASMDEF_RULES.md) |
+| ✅ [TUTORIAL_SYSTEM.md](INPROGRESS/TUTORIAL_SYSTEM.md) | Архитектура туториала: гибрид tutorial-квестов (`IQuestsService`) + тонкий forced-step-движок (`Game.Tutorial` + C# content + примитивы в `Infrastructure/TutorialUI`); таргет-реестр, гейтинг, roadmap из 7 этапов. [FTUE.md](FTUE.md), [QUESTS.md](QUESTS.md), [ADR-0007](adr/0007-quest-system.md), [ASMDEF_RULES.md](ASMDEF_RULES.md) |
 | ⏳ [ART_BRIEF_PROMENADE_V1.md](INPROGRESS/ART_BRIEF_PROMENADE_V1.md) | — |
 
 ---

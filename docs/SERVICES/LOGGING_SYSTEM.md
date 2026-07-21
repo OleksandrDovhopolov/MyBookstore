@@ -163,9 +163,11 @@ Required stable tag:
 
 Required event names:
 
-- `resolved` - one summary per sales day traffic resolution;
-- `contribution` - one optional breakdown entry per non-neutral `ICustomerTrafficContributor`;
-- `spawnerFloor` - only when the production spawner changes the resolver result because of an active-request floor;
-- `warning` - invalid config, duplicate day overrides, missing referenced config, or hard-override conflicts.
+- `resolved` - one summary per sales day traffic resolution (`[Sales.Traffic]` for the customer count,
+  `[Sales.Requests]` for the active-request count — same field shape);
+- `contribution` - one optional breakdown entry per non-neutral contributor;
+- `requestCap` - only when the day asks for more active requests than it can serve (capped at customer
+  count / pool size). Replaces the removed `spawnerFloor`, which let the requests catalog raise traffic;
+- `warning` - invalid config, duplicate day overrides, or missing referenced config.
 
 Messages should use stable key-value fields (`key=value`) so a raw log file can explain how the final regular customer count was formed: baseline, modifiers, raw value, rounded value, clamp, final count, and contributor count.

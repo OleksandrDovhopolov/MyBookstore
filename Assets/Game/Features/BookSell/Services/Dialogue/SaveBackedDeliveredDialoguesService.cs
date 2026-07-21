@@ -1,24 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Book.Sell.API;
 using Cysharp.Threading.Tasks;
 using Save;
 
 namespace Book.Sell.Services
 {
     /// <summary>
-    /// <see cref="IDeliveredDialoguesService"/> backed by an <see cref="ISaveService"/> module
-    /// (<see cref="DialoguesSaveKeys.Delivered"/>). Mirrors <c>SaveBackedQuestsRepository</c>.
-    ///
-    /// The set is read lazily and cached in memory. The read is synchronous
-    /// (<c>GetModuleAsync(...).GetAwaiter().GetResult()</c>) — same assumption/hack as
-    /// <c>PreparationSalesSetupProvider</c>: after <c>ISaveService.LoadAsync</c> the modules are in memory,
-    /// and every caller here (day-start spawner, dialogue-close marker) runs well after load.
+    /// Save-backed fire-once memory for scripted dialogues.
+    /// Committed ids are persisted in save; deferred ids live only until the sales-day commit.
     /// </summary>
     public sealed class SaveBackedDeliveredDialoguesService : IDeliveredDialoguesService
     {
         private readonly ISaveService _save;
-        private HashSet<string> _cache;
+        private readonly HashSet<string> _pending = new();
+        private HashSet<string> _committed;
 
         public SaveBackedDeliveredDialoguesService(ISaveService save)
             => _save = save ?? throw new ArgumentNullException(nameof(save));
@@ -26,33 +23,67 @@ namespace Book.Sell.Services
         public bool IsDelivered(string dialogueId)
         {
             if (string.IsNullOrWhiteSpace(dialogueId)) return false;
-            return EnsureLoaded().Contains(dialogueId);
+            return EnsureLoaded().Contains(dialogueId) || _pending.Contains(dialogueId);
         }
 
         public async UniTask MarkDeliveredAsync(string dialogueId, CancellationToken ct)
         {
             if (string.IsNullOrWhiteSpace(dialogueId)) return;
 
-            var set = EnsureLoaded();
-            if (!set.Add(dialogueId)) return;   // already delivered — no save churn
+            var committed = EnsureLoaded();
+            if (!committed.Add(dialogueId)) return;
 
+            await PersistCommittedAsync(ct);
+        }
+
+        public UniTask MarkDeliveredDeferredAsync(string dialogueId, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!string.IsNullOrWhiteSpace(dialogueId))
+                _pending.Add(dialogueId);
+
+            return UniTask.CompletedTask;
+        }
+
+        public async UniTask CommitAsync(CancellationToken ct)
+        {
+            if (_pending.Count == 0) return;
+
+            var committed = EnsureLoaded();
+            var changed = false;
+            foreach (var dialogueId in _pending)
+                changed |= committed.Add(dialogueId);
+
+            if (changed)
+                await PersistCommittedAsync(ct);
+
+            _pending.Clear();
+        }
+
+        public void DiscardDeferred()
+        {
+            _pending.Clear();
+        }
+
+        private async UniTask PersistCommittedAsync(CancellationToken ct)
+        {
             await _save.UpdateModuleAsync(
                 DialoguesSaveKeys.Delivered,
-                new DeliveredDialogues { Ids = new List<string>(set) },
+                new DeliveredDialogues { Ids = new List<string>(EnsureLoaded()) },
                 DialoguesSaveKeys.DeliveredSchemaVersion,
                 ct);
         }
 
         private HashSet<string> EnsureLoaded()
         {
-            if (_cache != null) return _cache;
+            if (_committed != null) return _committed;
 
             var dto = _save
                 .GetModuleAsync<DeliveredDialogues>(DialoguesSaveKeys.Delivered, CancellationToken.None)
                 .GetAwaiter().GetResult();
 
-            _cache = dto?.Ids != null ? new HashSet<string>(dto.Ids) : new HashSet<string>();
-            return _cache;
+            _committed = dto?.Ids != null ? new HashSet<string>(dto.Ids) : new HashSet<string>();
+            return _committed;
         }
     }
 }

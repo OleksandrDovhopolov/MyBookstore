@@ -17,10 +17,8 @@ namespace Game.Preparation.UI
 
         [Header("Actions")]
         [SerializeField] private Button _openShopButton;
-        [SerializeField] private Button _randomBooksButton;
 
         public Button OpenShopButton => _openShopButton;
-        public Button RandomBooksButton => _randomBooksButton;
         public UIListPool<PreparationGenreRowView> GenreRowPool => _genreRowPool;
 
         public void SetLocation(string value) => Set(_locationLabel, value);

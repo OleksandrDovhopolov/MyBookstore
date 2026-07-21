@@ -1,4 +1,5 @@
 using Game.Bootstrap.Loading;
+using Game.Ftue.Services;
 using Game.Tutorial.Presentation;
 using Game.UI;
 using Infrastructure.ResourceAnimations;
@@ -43,6 +44,11 @@ namespace Game.Bootstrap
         [Tooltip("When off, the first-entry WelcomeWindow is not shown. The welcome_completed save flag is left unchanged.")]
         [SerializeField] private bool _startWelcomeWindow = true;
 
+        [Header("First Day Entry")]
+        [Tooltip("Day 1 entry path. Hub = classic flow (hub → Start Day → Location Window → Preparation). " +
+                 "Location = drop straight into the location with an auto-stocked shelf (see docs/FTUE.md).")]
+        [SerializeField] private FirstDayEntryMode _firstDayEntry = FirstDayEntryMode.Location;
+
 #if UNITY_EDITOR
         [Header("Debug Start (Editor only)")]
         [Tooltip("Master switch. When off, the debug flags below are ignored.")]
@@ -85,6 +91,7 @@ namespace Game.Bootstrap
             builder.RegisterTutorial(_tutorialOverlaySettings, _tutorialAutoStart); // forced-step tutorial engine + overlay + "tutorialCompleted" (ISaveHook init)
             builder.RegisterCharacters();          // read-side character/memory projection over quests (ISaveHook init)
             builder.RegisterFtue(_startWelcomeWindow);
+            builder.RegisterFirstDayEntry(_firstDayEntry);
             builder.RegisterBookSellSharedState(); // ISalesShelfStateService — общий для хаба и локации
             builder.RegisterPreparation();         // Preparation services (окно PreparationWindow инжектится глобально)
 

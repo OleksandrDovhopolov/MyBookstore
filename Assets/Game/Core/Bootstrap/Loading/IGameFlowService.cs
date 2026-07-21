@@ -27,7 +27,7 @@ namespace Game.Bootstrap.Loading
         void RegisterHubRoot(GameObject hubRoot);
 
         // Хаб → локация: cover → LoadAdditive(LocationScene, parent=Global) → выключить hub root → reveal.
-        UniTask EnterLocationAsync(CancellationToken ct = default);
+        UniTask EnterLocationAsync(string locationId, CancellationToken ct = default);
 
         // Локация → хаб: cover → Unload(LocationScene) → включить hub root → SetActive(хаб) → reveal.
         UniTask ReturnToHubAsync(CancellationToken ct = default);

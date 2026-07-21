@@ -28,10 +28,11 @@
   независимо от длины текста.
 
 **Ключевые расхождения с §3/§5 ниже (историческая спека):**
-1. **Спавн — не через `DayConfig.scheduledDialogueIds`, а через квест-состояние.** Диалог живёт на
-   [`QuestConfig.DialogueId`](../../Assets/Game/Features/Configs/Models/QuestConfig.cs); decorator
-   [`QuestSchedulingCustomerSpawner`](../../Assets/Game/Features/BookSell/Services/QuestSchedulingCustomerSpawner.cs)
-   читает `IQuestsService.GetActiveQuests()` и prepend'ит `QuestCharacterArchetype`-покупателя; fire-once —
+1. **Спавн — не через `DayConfig.scheduledDialogueIds`, а через script config.** Диалог живёт на
+   [`CustomerScriptConfig.DialogueId`](../../Assets/Game/Features/Configs/Models/CustomerScriptConfig.cs);
+   decorator [`ScriptedCustomerSpawner`](../../Assets/Game/Features/BookSell/Services/Spawning/Scenarios/ScriptedCustomerSpawner.cs)
+   читает `CustomerScriptConfig.ActivationQuestId` / quest-state и заменяет первые regular-слоты
+   `QuestCharacterArchetype`-покупателями; fire-once —
    save-backed [`IDeliveredDialoguesService`](../../Assets/Game/Features/BookSell/Services/Dialogue/IDeliveredDialoguesService.cs).
    `DayConfig.scheduledDialogueIds` и поле в `SalesSessionSetup` удалены — **день о диалогах не знает**.
 2. **Презентация — не «реплики + панель кнопок сверху», а лента-мессенджер.** Реплики и опции живут в

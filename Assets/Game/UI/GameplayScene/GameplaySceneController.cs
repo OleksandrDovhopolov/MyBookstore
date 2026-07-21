@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
+using Game.Characters.UI;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
@@ -12,6 +13,7 @@ using Game.Location.UI;
 using Game.LocationUnlock.API;
 using Game.Preparation.Services;
 using Game.Preparation.UI;
+using Game.Tutorial.API;
 using Game.UI;
 using Game.UI.ContentWidget;
 using MessagePipe;
@@ -25,6 +27,10 @@ namespace GameplayUI
     [Window("GameplaySceneController", WindowType.HUD)]
     public class GameplaySceneController : WindowController<GameplaySceneView>, IDataReadyWindow
     {
+        private const string TutorialDayOneId = "tutorial_day_1";
+        private const string TutorialClickGenreStepId = "click_genre_panel";
+        private const string TutorialFinalTextStepId = "text_4";
+
         private IDayProgressService _dayProgress;
         private IMorningSessionService _session;
         private IPreparationSessionService _preparationSession;
@@ -40,6 +46,7 @@ namespace GameplayUI
         private IDisposable _salesGoldSubscription;
         private IDisposable _genreBookCountsSubscription;
         private IDisposable _buttonsInteractableSubscription;
+        private IDisposable _tutorialStepSubscription;
 
         private readonly HashSet<IWindowController> _panelHideOwners = new();
 
@@ -47,6 +54,8 @@ namespace GameplayUI
         private ISubscriber<GameplayGenreBookCountsChanged> _genreBookCountsSubscriber;
         private IPublisher<GameplayGenreBookCountsRequested> _genreBookCountsRequestPublisher;
         private ISubscriber<GameplaySceneButtonsInteractableChanged> _buttonsInteractableSubscriber;
+        private ISubscriber<TutorialStepChanged> _tutorialStepSubscriber;
+        private bool _suppressSaleChanceWidgetAutoClose;
 
         [Inject]
         public void Construct(
@@ -61,7 +70,8 @@ namespace GameplayUI
             IGameFlowService gameFlow = null,
             ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
             ISubscriber<GameplaySalesGoldChanged> salesGoldSubscriber = null,
-            IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null)
+            IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null,
+            ISubscriber<TutorialStepChanged> tutorialStepSubscriber = null)
         {
             _uiSprites = uiSprites;
             _dayProgress = dayProgress;
@@ -75,6 +85,7 @@ namespace GameplayUI
             _genreBookCountsSubscriber = genreBookCountsSubscriber;
             _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
             _genreBookCountsRequestPublisher = genreBookCountsRequestPublisher;
+            _tutorialStepSubscriber = tutorialStepSubscriber;
         }
 
         protected override void OnInit()
@@ -84,6 +95,9 @@ namespace GameplayUI
 
             if (View.DecorButton != null)
                 View.DecorButton.onClick.AddListener(OnDecorButtonClicked);
+            
+            if (View.JournalButton != null)
+                View.JournalButton.onClick.AddListener(OnJournalButtonClicked);
 
             View.GenreItemClicked += OnGenreItemClicked;
 
@@ -94,6 +108,7 @@ namespace GameplayUI
                 View.SetGenreBookCounts(e.Counts, e.PurchasedCounts, e.ShowPurchasedCounts));
 
             _salesGoldSubscription = _salesGoldSubscriber?.Subscribe(OnSalesGoldChanged);
+            _tutorialStepSubscription = _tutorialStepSubscriber?.Subscribe(OnTutorialStepChanged);
 
             if (_dayProgress != null)
                 _dayProgress.PhaseChanged += OnDayPhaseChanged;
@@ -174,11 +189,17 @@ namespace GameplayUI
             _salesGoldSubscription?.Dispose();
             _salesGoldSubscription = null;
 
+            _tutorialStepSubscription?.Dispose();
+            _tutorialStepSubscription = null;
+
             if (View != null && View.StartDayButton != null)
                 View.StartDayButton.onClick.RemoveAllListeners();
 
             if (View != null && View.DecorButton != null)
                 View.DecorButton.onClick.RemoveListener(OnDecorButtonClicked);
+            
+            if (View != null && View.JournalButton != null)
+                View.DecorButton.onClick.RemoveAllListeners();
 
             if (View != null)
                 View.GenreItemClicked -= OnGenreItemClicked;
@@ -247,7 +268,11 @@ namespace GameplayUI
                 if (View == null || anchor == null || ct.IsCancellationRequested) return;
 
                 var data = new SaleChanceWidgetData(genre, percent, sprite);
-                var args = new ContentWidgetArgs(data, anchor, this);
+                var args = new ContentWidgetArgs(
+                    data,
+                    anchor,
+                    this,
+                    autoCloseEnabled: !_suppressSaleChanceWidgetAutoClose);
                 await UIManager.ShowAsync<ContentWidgetController>(args, ct);
             }
             catch (OperationCanceledException)
@@ -264,6 +289,14 @@ namespace GameplayUI
             if (UIManager == null || !UIManager.IsWindowShown<ContentWidgetController>()) return;
 
             UIManager.HideAsync<ContentWidgetController>(forceClose: true, ct: CancellationToken.None).Forget();
+        }
+
+        private void OnTutorialStepChanged(TutorialStepChanged step)
+        {
+            _suppressSaleChanceWidgetAutoClose =
+                step.SequenceId == TutorialDayOneId
+                && (step.StepId == TutorialClickGenreStepId
+                    || step.StepId == TutorialFinalTextStepId);
         }
 
         private async UniTaskVoid StartGameAsync()
@@ -357,6 +390,7 @@ namespace GameplayUI
         }
 
         private void OnDecorButtonClicked() => ShowWindowWithPanelsHiddenAsync<DecorPlacementWindow>().Forget();
+        private void OnJournalButtonClicked() => ShowWindowWithPanelsHiddenAsync<JournalWindow>().Forget();
 
         private async UniTaskVoid ShowWindowWithPanelsHiddenAsync<TWindow>(WindowArgs args = null)
             where TWindow : class, IWindowController, new()

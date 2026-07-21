@@ -4,14 +4,13 @@
 
 > Все `Character_NN`, `quest_NN`, `chain_NN`, `memory_NN` ниже — **примеры-плейсхолдеры**. Реальные id задаются в `characters.json` / `quests.json`.
 
-> **Статус:** `Game.Characters` реализован (Этап 1–3). `Game.Quest` про персонажей ничего не знает — связь идёт через пассивное поле `CharacterId` и обратный индекс на стороне `Characters`.
+> **Статус:** `Game.Characters` реализован (Этап 1–3). `Game.Quest` про персонажей ничего не знает — связь идёт через обратный индекс на стороне `Characters`.
 
 ---
 
 ## 1. Принцип связи
 
 - Прогресс истории персонажа = квесты в `Game.Quest`. Персонаж их **не владеет**, а проецирует.
-- `QuestConfig.CharacterId` / `IQuest.CharacterId` — пассивное nullable-поле (метаданные). `Game.Quest` его не интерпретирует.
 - Маршрутизация «квест → персонаж» живёт в `Game.Characters`: сервис строит обратный индекс `questId/chainId → characterId` из `CharacterConfig` (discovery-связи + memory-квесты) и читает только generic `IQuestsService.GetQuestState(id)` / `GetChain(id)` + события `QuestStarted`/`QuestAwarded`.
 - `Game.Quest` остаётся переносимым: никаких character-aware методов в его API.
 
@@ -38,7 +37,7 @@
 
 ## 4. Авторинг character-цепочки
 
-1. Завести квесты/цепочку в `quests.json`; проставить `CharacterId` (метка владельца) на квестах цепочки.
+1. Завести квесты/цепочку в `quests.json`.
 2. В `characters.json` у персонажа описать:
    - `DiscoveryQuestIds` / `DiscoveryQuestChainIds` — чем персонаж «открывается» (часто это intro-квест или первая цепочка);
    - `Memories[]` — какие milestones показывать, с привязкой к `QuestId` или `QuestChainId` и флагом `IsGolden`.
@@ -62,7 +61,7 @@
 
 ```text
 // quests.json (схематично)
-chain_01 = [ quest_01_a, quest_01_b, quest_01_finale ]   // у всех CharacterId = "character_01"
+chain_01 = [ quest_01_a, quest_01_b, quest_01_finale ]
 ```
 
 ---
@@ -95,7 +94,7 @@ chain_01 = [ quest_01_a, quest_01_b, quest_01_finale ]   // у всех Characte
 
 ## 7. Порядок развития
 
-1. ✅ `Game.Quest` остаётся character-agnostic (`CharacterId` — пассивные данные).
+1. ✅ `Game.Quest` остаётся character-agnostic.
 2. ✅ Фича `Characters` + `Characters.API`: профиль, discovery, memories поверх квестов.
 3. ✅ Journal-классы (секция Characters).
 4. ⏸ presence/modifiers (после дизайн-решения).

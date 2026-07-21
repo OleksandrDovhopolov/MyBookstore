@@ -22,6 +22,7 @@ namespace GameplayUI
 
         [SerializeField] private Button _startDayButton;
         [SerializeField] private Button _decorButton;
+        [SerializeField] private Button _journalButton;
 
         [Header("Genre book counts")] [SerializeField]
         private UIListPool<GameplayGenreBookCountItemView> _genreBookCountPool = new();
@@ -36,6 +37,7 @@ namespace GameplayUI
 
         public Button StartDayButton => _startDayButton;
         public Button DecorButton => _decorButton;
+        public Button JournalButton => _journalButton;
         public event Action<BookGenre, Sprite, RectTransform> GenreItemClicked;
 
         // Collected from the view hierarchy at runtime (including inactive) so any number of
@@ -115,6 +117,12 @@ namespace GameplayUI
             {
                 _decorButton.interactable = interactable;
                 _decorButton.gameObject.SetActive(interactable);
+            }
+
+            if (_journalButton != null)
+            {
+                _journalButton.interactable = interactable;
+                _journalButton.gameObject.SetActive(interactable);
             }
 
             SetStartButtonActive(interactable);

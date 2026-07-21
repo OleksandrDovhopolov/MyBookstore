@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
+using Game.Characters.API;
 using Game.Configs;
 using Game.Configs.Remote;
 using Game.Decor;
@@ -74,6 +75,7 @@ namespace Game.Bootstrap
         private ILocationUnlockService _locationUnlock;
         private IQuestsService _quests;
         private ITutorialService _tutorial;
+        private ICharactersService _characters;
         private IDecorPlacementService _decorPlacement;
         private ILocationVisitService _locationVisits;
         // ReSharper restore NotAccessedField.Local
@@ -102,6 +104,7 @@ namespace Game.Bootstrap
             ILocationUnlockService locationUnlock,
             IQuestsService quests,
             ITutorialService tutorial,
+            ICharactersService characters,
             IDecorPlacementService decorPlacement,
             ILocationVisitService locationVisits)
         {
@@ -120,6 +123,7 @@ namespace Game.Bootstrap
             _locationUnlock = locationUnlock;
             _quests = quests;
             _tutorial = tutorial;
+            _characters = characters;
             _decorPlacement = decorPlacement;
             _locationVisits = locationVisits;
         }

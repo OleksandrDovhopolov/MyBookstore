@@ -12,9 +12,8 @@ namespace Book.Sell.Services
     /// → shops". Deterministic: fixed <paramref name="passiveCount"/>, no random consumed (like
     /// <see cref="ActiveRequestArchetype"/>).
     ///
-    /// NOT wired into any production spawner yet (GAME-6 §Этап 4 boundary): <see cref="DialogStep"/> holds
-    /// the interaction lock until presentation calls <c>CompleteDialogue</c> (§Этап 5); spawning it before
-    /// that completer exists would hang the day. Used from tests only until §Этап 5.
+    /// Used by quest-aware production spawners. <see cref="DialogStep"/> holds the interaction lock until
+    /// presentation calls <c>CompleteDialogue</c>, then the passive shopping steps continue.
     /// </summary>
     public sealed class QuestCharacterArchetype : ICustomerArchetype
     {

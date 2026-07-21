@@ -8,7 +8,7 @@ namespace Game.Preparation.Services
 {
     /// <summary>
     /// Управляет фазой «Подготовка». Гибридная модель: игрок задаёт КВОТЫ по жанрам, сервис
-    /// авто-разворачивает их в конкретные SelectedBookIds (непроданные с прошлой полки → добор случайно).
+    /// авто-разворачивает их в конкретные SelectedBookIds (непроданные с прошлой полки → добор из inventory).
     /// Downstream (Sales/shelf/scoring) читает SelectedBookIds. См. docs/GameFlowLoop.md.
     /// </summary>
     public interface IPreparationSessionService
@@ -39,8 +39,11 @@ namespace Game.Preparation.Services
         /// <summary>Задаёт квоту жанра (клампится в [0, available] и под общий лимит DailyBookSlots).</summary>
         UniTask SetGenreQuantityAsync(string genre, int quantity, CancellationToken ct);
 
-        /// <summary>Случайно заполняет квоты до лимита (кнопка Random).</summary>
-        UniTask RandomizeAsync(CancellationToken ct);
+        /// <summary>
+        /// Sets the exact shelf book ids for authored flows. ConfirmAsync preserves these ids instead of
+        /// resolving the genre quotas again.
+        /// </summary>
+        UniTask SetSelectedBookIdsAsync(IReadOnlyList<string> bookIds, CancellationToken ct);
 
         PreparationValidationResult Validate();
 

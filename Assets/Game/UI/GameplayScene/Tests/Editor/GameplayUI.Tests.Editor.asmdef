@@ -1,0 +1,36 @@
+{
+    "name": "GameplayUI.Tests.Editor",
+    "rootNamespace": "GameplayUI.Tests.Editor",
+    "references": [
+        "UniTask",
+        "GameplayUI",
+        "Configs",
+        "DayCycle",
+        "Game.Preparation",
+        "Game.Bootstrap.Loading",
+        "Game.LocationUnlock.API",
+        "Game.Ftue",
+        "Game.Core.UI",
+        "Save",
+        "MessagePipe",
+        "Game.GameplayUI.Signals",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "Game.Tutorial.API"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

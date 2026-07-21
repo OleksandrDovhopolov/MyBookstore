@@ -56,6 +56,19 @@ namespace Game.Core.UI.Tests.Editor.ContentWidget
         }
 
         [UnityTest]
+        public IEnumerator ShowContentView_DoesNotAutoClose_WhenAutoCloseDisabledForThisShow()
+        {
+            using var fixture = ContentWidgetFixture.Create(autoCloseDelaySeconds: 0.01f);
+            var closed = false;
+            fixture.View.CloseClick += () => closed = true;
+
+            fixture.Show(new TestWidgetData(), autoCloseEnabled: false);
+            yield return new WaitForSeconds(0.05f);
+
+            Assert.IsFalse(closed);
+        }
+
+        [UnityTest]
         public IEnumerator HideContent_CancelsAutoCloseTimer()
         {
             using var fixture = ContentWidgetFixture.Create(autoCloseDelaySeconds: 0.01f);
@@ -151,8 +164,11 @@ namespace Game.Core.UI.Tests.Editor.ContentWidget
             }
 
             public void Show(TestWidgetData data)
+                => Show(data, autoCloseEnabled: true);
+
+            public void Show(TestWidgetData data, bool autoCloseEnabled)
             {
-                View.ShowContentView(data, Anchor);
+                View.ShowContentView(data, Anchor, autoCloseEnabled);
             }
 
             public void Dispose()

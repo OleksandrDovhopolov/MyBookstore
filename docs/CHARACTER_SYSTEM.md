@@ -25,6 +25,26 @@
 - `Game.Characters` хранит только то, что не выводится из квестов: persisted-флаг `Discovered` и леджер открытых memory (для одноразовости событий и устойчивости read-model).
 - `Game.Characters` **не** дублирует quest lifecycle, condition-parser, rewards или save-машину квестов.
 
+### 1.1. Черта vs действие — что можно класть в `CharacterConfig`
+
+Правило: **`CharacterConfig` хранит постоянные черты персонажа. Сценарные действия в нём не живут** —
+они принадлежат событию, которое их вызывает (квест). Это конкретизация строчки из самого конфига:
+*«A character is an index over story progression — the actions themselves live in Game.Quest»*.
+
+| Можно (черта — верна всегда) | Нельзя (действие — верно однократно/в контексте) |
+|---|---|
+| `FavoriteGenres` — Eddi любит Fact/Travel в любой сцене | `CustomerScriptConfig.PassiveAttempts` — «Fact hit, потом Travel miss» |
+| `PortraitKey`, `DisplayNameKey`, `RoleKey` | одноразовые реплики, форсированные исходы, beat-sheet визита |
+| `DiscoveryQuestIds` — связь, а не поведение | |
+
+Проверка: *«верно ли это про персонажа всегда, в любой сцене?»* Да → черта, сюда. Нет → это сценарий
+конкретной встречи, ему место в `CustomerScriptConfig`.
+
+Исторический пример: `PassiveAttempts` (форсированный `Fact hit → Travel miss` у Eddi для туториала дня 1)
+сначала пытались положить на персонажа — и он применялся бы к Eddi **навсегда, в любом квесте**, который
+его заспавнит. Теперь одноразовая встреча живёт в `customer_scripts.json` (`eddi_intro`), а `QuestConfig`
+остаётся только про quest-state.
+
 ---
 
 ## 2. Структура модуля
@@ -72,6 +92,7 @@ public sealed class CharacterConfig : IConfig
     public string RoleKey { get; set; }
     public string DescriptionKey { get; set; }
     public string PortraitKey { get; set; }                 // Addressables-ключ портрета (пусто → заглушка)
+    public string[] FavoriteGenres { get; set; }            // жанры персонажа для passive-профиля
 
     public string[] DiscoveryQuestIds { get; set; }         // явные discovery-связи (intro/dialogue-квесты без memory)
     public string[] DiscoveryQuestChainIds { get; set; }
@@ -90,6 +111,10 @@ public sealed class CharacterMemoryConfig
     public bool IsGolden { get; set; }                      // UI-флаг значимости (награды всё равно через Game.Quest)
 }
 ```
+
+> `DiscoveryQuestIds` / `DiscoveryQuestChainIds` открывают персонажа, когда связанный квест/цепочка **стартовали** (`state != Pending`), а не когда квест завершён или выдан (`Awarded`). Для открытия строго после завершения используйте memory-связь или отдельное quest-condition решение.
+
+> Скриптовые passive-действия (например authored hit/miss для intro-покупателя) живут в `CustomerScriptConfig`, а не на `CharacterConfig`. `FavoriteGenres` — стабильная черта персонажа; форсированные исходы продажи — действия конкретной встречи.
 
 Save (модуль-ключ `"characters"`, `StateSchemaVersion = 1`):
 

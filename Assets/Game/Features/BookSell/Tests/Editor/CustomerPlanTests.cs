@@ -8,10 +8,11 @@ using NUnit.Framework;
 namespace Book.Sell.Tests.Editor
 {
     /// <summary>
-    /// Этап 3: CustomerPlan (mutable traversal + safe insertion) and the Customer seams that delegate
-    /// to it. Pure-plan tests inspect Current/IsDone directly (CustomerPlan never calls Enter/Tick/Exit).
+    /// CustomerPlan (mutable traversal + safe insertion) and the Customer seams that delegate to it.
+    /// Pure-plan tests inspect Current/IsDone directly (CustomerPlan never calls Enter/Tick/Exit).
     /// Customer-level tests drive Tick to verify Exit semantics, insert-during-tick + Enter, and the
-    /// no-closing fallback. Existing Customer/controller tests stay green as the behavior-parity guard.
+    /// passive-chain end (ADR-0003): a passive miss drops the remaining PASSIVE steps only — non-passive
+    /// steps (active request, dialogue, comment) and the closing tail still run.
     /// </summary>
     public sealed class CustomerPlanTests
     {
@@ -34,6 +35,11 @@ namespace Book.Sell.Tests.Editor
         }
 
         private sealed class FakeClosingStep : FakeStep, IClosingStep
+        {
+        }
+
+        /// <summary>A passive purchase intent — dropped from the plan once the passive chain ends.</summary>
+        private sealed class FakePassiveStep : FakeStep, IPassivePurchaseStep
         {
         }
 
@@ -115,30 +121,44 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
-        public void SkipToClosing_SkipsInjectedAndAuthoredMiddle()
+        public void RemoveRemainingPassivePurchases_DropsPassiveOnly_KeepsCurrentAndNonPassive()
         {
-            var a = new FakeStep();
-            var passive = new FakeStep();
-            var complete = new FakeClosingStep();
-            var leave = new FakeClosingStep();
+            var current = new FakePassiveStep();
             var injected = new FakeStep();
-            var plan = new CustomerPlan(new ICustomerStep[] { a, passive, complete, leave });
+            var trailingPassive = new FakePassiveStep();
+            var complete = new FakeClosingStep();
+            var plan = new CustomerPlan(new ICustomerStep[] { current, trailingPassive, complete });
 
-            plan.InsertNext(injected);   // [a, injected, passive, complete, leave]
+            plan.InsertNext(injected);   // [current, injected, trailingPassive, complete]
 
-            Assert.IsTrue(plan.SkipToClosing());
-            Assert.AreSame(complete, plan.Current, "Skips both injected and authored middle steps.");
+            Assert.AreEqual(1, plan.RemoveRemainingPassivePurchases(), "Only the trailing passive is dropped.");
+            Assert.AreSame(current, plan.Current, "The current (passive) step is never removed under itself.");
+
+            plan.Advance();
+            Assert.AreSame(injected, plan.Current, "Non-passive injected step survives.");
+            plan.Advance();
+            Assert.AreSame(complete, plan.Current, "Trailing passive is gone; the closing tail is next.");
         }
 
         [Test]
-        public void SkipToClosing_NoClosing_ReturnsFalse_ThenFinishCompletes()
+        public void RemoveRemainingPassivePurchases_NoPassiveAhead_ChangesNothing()
         {
             var a = new FakeStep();
             var b = new FakeStep();
             var plan = new CustomerPlan(new ICustomerStep[] { a, b });
 
-            Assert.IsFalse(plan.SkipToClosing(), "No closing step ahead.");
+            Assert.AreEqual(0, plan.RemoveRemainingPassivePurchases());
+            plan.Advance();
+            Assert.AreSame(b, plan.Current);
+        }
+
+        [Test]
+        public void Finish_CompletesPlan()
+        {
+            var plan = new CustomerPlan(new ICustomerStep[] { new FakeStep(), new FakeStep() });
+
             plan.Finish();
+
             Assert.IsTrue(plan.IsDone);
         }
 
@@ -170,20 +190,43 @@ namespace Book.Sell.Tests.Editor
         // --- Customer seams ------------------------------------------------------------------
 
         [Test]
-        public void Abort_ExitsCurrentOnly_NotSkippedSteps()
+        public void EndPassiveChain_ExitsCurrentOnly_AndResumesAtNonPassiveStep()
         {
-            var a = new FakeStep { Status = StepStatus.CompletedAndLeave };
-            var skipped = new FakeStep();
+            var a = new FakePassiveStep { Status = StepStatus.CompletedAndEndPassiveChain };
+            var nonPassive = new FakeStep();
             var complete = new FakeClosingStep();
             var leave = new FakeClosingStep();
-            var customer = new Customer("c1", new ICustomerStep[] { a, skipped, complete, leave });
+            var customer = new Customer("c1", new ICustomerStep[] { a, nonPassive, complete, leave });
             var ctx = Ctx();
 
             customer.Tick(ctx, 1f);
 
-            Assert.IsTrue(a.Exited, "Current (entered) step is exited on abort.");
-            Assert.IsFalse(skipped.Exited, "Skipped (never-entered) step is not exited.");
-            Assert.AreSame(complete, customer.CurrentStep, "Resumes at the first closing step.");
+            Assert.IsTrue(a.Exited, "Current (entered) step is exited when the passive chain ends.");
+            Assert.IsFalse(nonPassive.Exited, "The next step is not entered yet, so it is not exited.");
+            Assert.AreSame(nonPassive, customer.CurrentStep,
+                "ADR-0003: a passive miss ends the passive chain, it does not skip non-passive steps.");
+        }
+
+        /// <summary>
+        /// Regression for the PassiveActivePassive shape: the trailing passive sits AFTER the non-passive
+        /// step, so "skip forward to the next non-passive" would leave it to run after the minigame.
+        /// </summary>
+        [Test]
+        public void EndPassiveChain_DropsPassiveStepsBehindANonPassiveStep()
+        {
+            var leading = new FakePassiveStep { Status = StepStatus.CompletedAndEndPassiveChain };
+            var active = new FakeStep();
+            var trailing = new FakePassiveStep();
+            var complete = new FakeClosingStep();
+            var customer = new Customer("c1", new ICustomerStep[] { leading, active, trailing, complete });
+            var ctx = Ctx();
+
+            customer.Tick(ctx, 1f);
+            Assert.AreSame(active, customer.CurrentStep, "The active step survives the passive-chain end.");
+
+            customer.Tick(ctx, 1f);   // active completes
+            Assert.AreSame(complete, customer.CurrentStep, "The trailing passive was dropped, not merely skipped.");
+            Assert.IsFalse(trailing.Entered, "No further passive intent runs after a miss.");
         }
 
         [Test]
@@ -205,16 +248,30 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
-        public void AbortWithoutClosing_FinishesCustomer()
+        public void EndPassiveChain_WithoutClosing_StillRunsTheRemainingNonPassiveStep()
         {
-            var a = new FakeStep { Status = StepStatus.CompletedAndLeave };
+            var a = new FakePassiveStep { Status = StepStatus.CompletedAndEndPassiveChain };
             var b = new FakeStep();
             var customer = new Customer("c1", new ICustomerStep[] { a, b });   // no IClosingStep
             var ctx = Ctx();
 
             customer.Tick(ctx, 1f);
 
-            Assert.IsTrue(customer.IsDone, "No closing step → customer finishes instead of looping on current.");
+            Assert.IsFalse(customer.IsDone, "A non-passive step is still ahead — the visit is not over.");
+            Assert.AreSame(b, customer.CurrentStep);
+        }
+
+        [Test]
+        public void EndPassiveChain_WithNothingLeft_FinishesCustomer()
+        {
+            var a = new FakePassiveStep { Status = StepStatus.CompletedAndEndPassiveChain };
+            var trailing = new FakePassiveStep();
+            var customer = new Customer("c1", new ICustomerStep[] { a, trailing });   // only passive steps
+            var ctx = Ctx();
+
+            customer.Tick(ctx, 1f);
+
+            Assert.IsTrue(customer.IsDone, "Trailing passive dropped and nothing else left → the plan ends.");
             Assert.AreEqual(CustomerPhase.Done, customer.Phase);
         }
     }
