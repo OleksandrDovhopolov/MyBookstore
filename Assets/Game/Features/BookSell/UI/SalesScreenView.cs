@@ -36,6 +36,13 @@ namespace Book.Sell.UI
         private IPublisher<GameplayGenreBookCountsChanged> _genreBookCountsPublisher;
         private IPublisher<GameplaySceneButtonsInteractableChanged> _gameplayButtonsPublisher;
         private Dictionary<string, int> _salesDayGenreBaseline;
+
+        /// <summary>
+        /// Cheat/debug access to the live day controller. It is registered in the gameplay scope and is
+        /// not resolvable from the global-scope cheat panel, so <c>SalesCheatModule</c> reaches it through
+        /// the active screen view in the scene (see CheatModuleView).
+        /// </summary>
+        public ISalesDayController Controller => _controller;
         
         [Inject]
         public void Construct(
