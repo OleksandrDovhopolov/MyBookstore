@@ -27,7 +27,6 @@ namespace GameplayUI
     [Window("GameplaySceneController", WindowType.HUD)]
     public class GameplaySceneController : WindowController<GameplaySceneView>, IDataReadyWindow
     {
-        private const string TutorialDayOneId = "tutorial_day_1";
         private const string TutorialClickGenreStepId = "click_genre_panel";
         private const string TutorialFinalTextStepId = "text_4";
 
@@ -294,7 +293,7 @@ namespace GameplayUI
         private void OnTutorialStepChanged(TutorialStepChanged step)
         {
             _suppressSaleChanceWidgetAutoClose =
-                step.SequenceId == TutorialDayOneId
+                step.SequenceId == TutorialSequenceIds.DayOne
                 && (step.StepId == TutorialClickGenreStepId
                     || step.StepId == TutorialFinalTextStepId);
         }

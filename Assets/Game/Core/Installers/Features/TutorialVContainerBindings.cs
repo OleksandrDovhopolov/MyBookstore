@@ -19,9 +19,13 @@ namespace Game.Bootstrap
     public static class TutorialVContainerBindings
     {
         public static void RegisterTutorial(
-            this IContainerBuilder builder, TutorialOverlaySettings overlaySettings, bool autoStart = true)
+            this IContainerBuilder builder,
+            TutorialOverlaySettings overlaySettings,
+            TutorialSettings tutorialSettings,
+            bool autoStart = true)
         {
             builder.RegisterInstance(overlaySettings != null ? overlaySettings : TutorialOverlaySettings.CreateDefault());
+            builder.RegisterInstance<ITutorialSettings>(tutorialSettings != null ? tutorialSettings : TutorialSettings.CreateDefault());
             builder.Register<ITutorialAutoStartGate, TutorialAutoStartGate>(Lifetime.Singleton);
             builder.Register<ITutorialTargetRegistry, TutorialTargetRegistry>(Lifetime.Singleton);
             builder.Register<TutorialOverlayController>(Lifetime.Singleton);

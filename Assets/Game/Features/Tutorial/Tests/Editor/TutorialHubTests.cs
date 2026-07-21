@@ -62,7 +62,7 @@ namespace Game.Tutorial.Tests.Editor
 
             var steps = sequence.GetSteps();
 
-            Assert.AreEqual("tutorial_hub", sequence.Id);
+            Assert.AreEqual(TutorialSequenceIds.Hub, sequence.Id);
             Assert.AreEqual(TutorialContext.Hub, sequence.Context);
             Assert.AreEqual(TutorialTrigger.HubReady, sequence.Trigger);
             Assert.AreEqual(3, steps.Count);

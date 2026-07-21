@@ -36,7 +36,7 @@ namespace Game.Tutorial.Tests.Editor
 
             var steps = sequence.GetSteps();
 
-            Assert.AreEqual("tutorial_shop_decor", sequence.Id);
+            Assert.AreEqual(TutorialSequenceIds.ShopDecor, sequence.Id);
             Assert.AreEqual(40, sequence.Priority);
             Assert.AreEqual(TutorialContext.Hub, sequence.Context);
             Assert.AreEqual(TutorialTrigger.HubReady, sequence.Trigger);

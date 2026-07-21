@@ -57,7 +57,7 @@ namespace Game.Tutorial.Content
             _analytics = analytics;
         }
 
-        public string Id => "tutorial_day_1";
+        public string Id => TutorialSequenceIds.DayOne;
         public int Priority => 10;
         public TutorialContext Context => TutorialContext.Location;
         public TutorialTrigger Trigger => TutorialTrigger.LocationLoaded;

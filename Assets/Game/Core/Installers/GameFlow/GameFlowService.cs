@@ -55,7 +55,7 @@ namespace Game.Bootstrap
         {
             // Day-1 «первый вход» оркеструется снаружи (GameplayUI.FirstDayEntryFlow через
             // MainSceneBootstrap): авто-сток + этот же обычный путь. Отдельной ветки здесь не нужно —
-            // tutorial_day_1 стартует по LocationLoadedChanged ниже.
+            // Day-one tutorial starts from LocationLoadedChanged below.
             if (!TryBeginTransition(nameof(EnterLocationAsync))) return;
 
             try

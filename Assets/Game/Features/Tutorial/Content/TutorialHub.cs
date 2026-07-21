@@ -30,7 +30,7 @@ namespace Game.Tutorial.Content
             _targets = targets;
         }
 
-        public string Id => "tutorial_hub";
+        public string Id => TutorialSequenceIds.Hub;
         public int Priority => 30;
         public TutorialContext Context => TutorialContext.Hub;
         public TutorialTrigger Trigger => TutorialTrigger.HubReady;

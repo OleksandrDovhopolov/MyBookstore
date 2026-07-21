@@ -55,7 +55,7 @@ namespace Game.Tutorial.Tests.Editor
                 gate.Release();
 
                 Assert.IsTrue(service.IsRunning);
-                Assert.AreEqual("tutorial_day_1", service.ActiveSequenceId);
+                Assert.AreEqual(TutorialSequenceIds.DayOne, service.ActiveSequenceId);
             }
             finally
             {
@@ -124,7 +124,7 @@ namespace Game.Tutorial.Tests.Editor
         {
             var save = new FakeSaveService(new TutorialSaveState
             {
-                ActiveSequenceId = "tutorial_day_1",
+                ActiveSequenceId = TutorialSequenceIds.DayOne,
                 NextStepId = "second",
                 NextStepIndex = 0,
                 CompletedSequenceIds = new List<string>()
@@ -185,7 +185,7 @@ namespace Game.Tutorial.Tests.Editor
 
         private sealed class FakeSequence : ITutorialSequence
         {
-            public string Id { get; set; } = "tutorial_day_1";
+            public string Id { get; set; } = TutorialSequenceIds.DayOne;
             public int Priority { get; set; } = 10;
             public TutorialContext Context { get; set; } = TutorialContext.Location;
             public TutorialTrigger Trigger { get; set; } = TutorialTrigger.LocationLoaded;

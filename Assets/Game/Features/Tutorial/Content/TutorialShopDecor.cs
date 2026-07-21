@@ -14,7 +14,7 @@ namespace Game.Tutorial.Content
             _inventory = inventory;
         }
 
-        public string Id => "tutorial_shop_decor";
+        public string Id => TutorialSequenceIds.ShopDecor;
         public int Priority => 40;
         public TutorialContext Context => TutorialContext.Hub;
         public TutorialTrigger Trigger => TutorialTrigger.HubReady;

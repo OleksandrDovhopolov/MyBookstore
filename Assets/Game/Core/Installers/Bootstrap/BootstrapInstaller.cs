@@ -36,6 +36,9 @@ namespace Game.Bootstrap
         [Tooltip("Overlay settings for the tutorial engine (blackout/pointer/text panel).")]
         [SerializeField] private TutorialOverlaySettings _tutorialOverlaySettings;
 
+        [Tooltip("Per-sequence tutorial enable/disable settings. Null means every registered sequence is enabled.")]
+        [SerializeField] private TutorialSettings _tutorialSettings;
+
         [Tooltip("When off, the tutorial engine still registers (overlay + 'tutorialCompleted' condition), " +
                  "but sequences never auto-start from triggers or resume on load. Explicit TryStartAsync still works.")]
         [SerializeField] private bool _tutorialAutoStart = true;
@@ -88,7 +91,7 @@ namespace Game.Bootstrap
             builder.RegisterLocationUnlock();      // location unlock states/purchase over the condition engine
             builder.RegisterLocationEntry();       // per-visit entry fee calculator (location base + decor delta)
             builder.RegisterQuest();               // in-memory quest lifecycle over the condition engine (ISaveHook init)
-            builder.RegisterTutorial(_tutorialOverlaySettings, _tutorialAutoStart); // forced-step tutorial engine + overlay + "tutorialCompleted" (ISaveHook init)
+            builder.RegisterTutorial(_tutorialOverlaySettings, _tutorialSettings, _tutorialAutoStart); // forced-step tutorial engine + overlay + "tutorialCompleted" (ISaveHook init)
             builder.RegisterCharacters();          // read-side character/memory projection over quests (ISaveHook init)
             builder.RegisterFtue(_startWelcomeWindow);
             builder.RegisterFirstDayEntry(_firstDayEntry);

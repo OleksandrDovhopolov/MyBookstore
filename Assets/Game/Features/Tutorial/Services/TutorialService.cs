@@ -7,6 +7,7 @@ using Game.DayCycle.Day;
 using Game.Quest.API;
 using Game.Tutorial;
 using Game.Tutorial.API;
+using Game.Tutorial.Presentation;
 using Game.UI;
 using MessagePipe;
 using Save;
@@ -24,6 +25,7 @@ namespace Game.Tutorial.Services
     {
         private readonly ISaveService _save;
         private readonly IReadOnlyList<ITutorialSequence> _registeredSequences;
+        private readonly ITutorialSettings _settings;
 
         // When false, sequences never auto-start from triggers or resume on load; explicit TryStartAsync still runs.
         private readonly bool _autoStart;
@@ -62,6 +64,7 @@ namespace Game.Tutorial.Services
             IPublisher<TutorialSequenceStarted> startedPub,
             IPublisher<TutorialStepChanged> stepPub,
             IPublisher<TutorialSequenceCompleted> completedPub,
+            ITutorialSettings settings = null,
             IDayProgressService dayProgress = null,
             IGameFlowService gameFlow = null,
             IQuestsService quests = null,
@@ -72,6 +75,7 @@ namespace Game.Tutorial.Services
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _registeredSequences = sequences ?? Array.Empty<ITutorialSequence>();
+            _settings = settings;
             _autoStart = autoStart;
             _hubReadySub = hubReadySub;
             _startedPub = startedPub;
@@ -175,9 +179,24 @@ namespace Game.Tutorial.Services
             _sequences.Clear();
             _byPriority.Clear();
 
+            var knownSequenceIds = new HashSet<string>(StringComparer.Ordinal);
             foreach (var seq in _registeredSequences)
             {
                 if (seq == null || string.IsNullOrEmpty(seq.Id)) continue;
+                knownSequenceIds.Add(seq.Id);
+            }
+
+            ValidateSettings(knownSequenceIds);
+
+            foreach (var seq in _registeredSequences)
+            {
+                if (seq == null || string.IsNullOrEmpty(seq.Id)) continue;
+                if (_settings?.IsEnabled(seq.Id) == false)
+                {
+                    Debug.Log($"{TutorialLog.Prefix} sequence '{seq.Id}' disabled by settings.");
+                    continue;
+                }
+
                 if (_sequences.ContainsKey(seq.Id))
                 {
                     Debug.LogError($"{TutorialLog.Prefix} duplicate sequence id '{seq.Id}', ignoring the later one.");
@@ -188,6 +207,35 @@ namespace Game.Tutorial.Services
             }
 
             _byPriority.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+        }
+
+        private void ValidateSettings(IReadOnlyCollection<string> knownSequenceIds)
+        {
+            if (_settings == null)
+                return;
+
+            if (_settings is TutorialSettings tutorialSettings)
+            {
+                tutorialSettings.ValidateAgainst(knownSequenceIds);
+                return;
+            }
+
+            var known = new HashSet<string>(knownSequenceIds ?? Array.Empty<string>(), StringComparer.Ordinal);
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var id in _settings.ConfiguredSequenceIds ?? Array.Empty<string>())
+            {
+                if (string.IsNullOrEmpty(id))
+                {
+                    Debug.LogWarning($"{TutorialLog.Prefix} tutorial settings contain an empty sequence id.");
+                    continue;
+                }
+
+                if (!known.Contains(id))
+                    Debug.LogWarning($"{TutorialLog.Prefix} tutorial settings contain unknown sequence id '{id}'.");
+
+                if (!seen.Add(id))
+                    Debug.LogWarning($"{TutorialLog.Prefix} tutorial settings contain duplicate sequence id '{id}'; first entry wins.");
+            }
         }
 
         private void Subscribe()
