@@ -4,7 +4,6 @@ using Cysharp.Threading.Tasks;
 using SpriteService;
 using TMPro;
 using UIShared;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,8 +17,10 @@ namespace Game.Characters.UI
     public sealed class JournalCharacterRowView : MonoBehaviour, ICleanup
     {
         [SerializeField] private Image _portraitImage;
+        [SerializeField] private Sprite _spriteFallback;
         [SerializeField] private GameObject _lockedPanel;
         [SerializeField] private TextMeshProUGUI _nameLabel;
+        [SerializeField] private TextMeshProUGUI _discoveryStatusLabel;
         [SerializeField] private TextMeshProUGUI _memoryCountLabel;
 
         private CancellationTokenSource _portraitCts;
@@ -27,12 +28,16 @@ namespace Game.Characters.UI
         public void Bind(JournalCharacterItemModel model, IUiSpriteProvider sprites)
         {
             if (_nameLabel != null) _nameLabel.text = model.DisplayNameKey;
+            if (_discoveryStatusLabel != null)
+                _discoveryStatusLabel.text = model.IsDiscovered
+                    ? "Персонаж разблокирован"
+                    : "Персонаж не разблокирован";
             if (_memoryCountLabel != null)
                 _memoryCountLabel.text = $"{model.UnlockedMemoryCount}/{model.TotalMemoryCount}";
             if (_lockedPanel != null) _lockedPanel.SetActive(model.Locked);
 
             CancelPortraitLoad();
-            if (_portraitImage != null) _portraitImage.enabled = false;
+            SetPortrait(_spriteFallback);
 
             // Locked → placeholder only, no portrait load.
             if (model.Locked || string.IsNullOrEmpty(model.PortraitKey) || sprites == null) return;
@@ -46,19 +51,31 @@ namespace Game.Characters.UI
             try
             {
                 var sprite = await sprites.GetSpriteAsync(portraitKey, ct);
+                Debug.LogWarning($"[Journal] loading with ID portraitKey {portraitKey}");
                 if (ct.IsCancellationRequested || _portraitImage == null) return;
-                _portraitImage.sprite = sprite;
-                _portraitImage.enabled = sprite != null;
+                SetPortrait(sprite != null ? sprite : _spriteFallback);
             }
             catch (OperationCanceledException)
             {
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[Journal] failed to load portrait '{portraitKey}': {e.Message}");
+                SetPortrait(_spriteFallback);
             }
         }
 
         public void Cleanup()
         {
             CancelPortraitLoad();
-            if (_portraitImage != null) _portraitImage.sprite = null;
+            SetPortrait(null);
+        }
+
+        private void SetPortrait(Sprite sprite)
+        {
+            if (_portraitImage == null) return;
+            _portraitImage.sprite = sprite;
+            _portraitImage.enabled = sprite != null;
         }
 
         private void CancelPortraitLoad()
