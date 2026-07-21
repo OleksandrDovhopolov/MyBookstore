@@ -265,6 +265,47 @@
     на действие, которое сам туториал только что разблокировал). У дня 1 таких нет — все три факта порождает
     параллельно идущая симуляция.
 
+- [ ] **GAME-21. Улучшения tutorial-движка (по мотивам `OnboardingFlowManager` из проекта bigmerge).**
+  **Статус:** i/iii/iv/v закрыты в движке; ii (`tutorial parts` / stable checkpoints) оставлен отдельной
+  будущей задачей, как и планировалось.
+  Источник — разбор `OnboardingFlowManager.md` из другого проекта. Берём **точечные механики** для нашего движка
+  (`TutorialService` / `ITutorialSequence` / `ITutorialStep`); их data-driven flow-слой (конфиги
+  `onboarding_flow`/`conditions`, `ConditionTriggerController`) **НЕ берём** — это индирекция, которую §9
+  ([INPROGRESS/TUTORIAL_SYSTEM.md](INPROGRESS/TUTORIAL_SYSTEM.md)) намеренно растворил; наш эквивалент — C#
+  `IsEligible` + GAME-18 re-eval.
+
+  1. ✅ **`CanStart` / гейт «верхнее окно — безопасное базовое, а не попап» (приоритет).**
+     Проблема подтверждена логом 2026-07-21: `tutorial_shop_decor` стартовал **поверх открытого
+     `NewspaperWindow`**, за ~16 мс до `RewardsWindow` — оверлей туториала конфликтует с активным попапом.
+     Сейчас гейтинг ad-hoc (`TutorialHub.IsEligible` вручную чекает `!IsWindowShown<ResultsWindow>`). Ввести
+     **дефолтный движковый гейт** «безопасно ли поднимать оверлей»: верхнее окно = HUD/база, стек UI не в
+     переходе/анимации (аналог `Tutorial.CanStart` + `TutorialWindowWaitHelper.IsWindowShowed` из bigmerge).
+     Место — рядом с `ContextAllows`/`TryStartEligible` в
+     [TutorialService.cs](../Assets/Game/Features/Tutorial/Services/TutorialService.cs); соотнести с
+     `ITutorialAutoStartGate` (сейчас ручной Block/Release) и transition-guard. Чинит overlay-collision
+     системно, а не по одному окну.
+  2. **Tutorial «parts» / стабильные чекпоинты (`CompleteTutorialPart` / `_completedTutorialParts`).**
+     У bigmerge внутри одного туториала есть именованные промежуточные чекпоинты → resume с последнего
+     **стабильного**, а не с нуля. У нас `ResumePolicy` = `Restart` | `FromStep` (по `NextStepId`), day-1 на
+     `Restart` (best-effort, §6.1). Ввести именованные parts, чтобы mid-run resume был точнее Restart и надёжнее
+     пер-шагового FromStep. Ложится в «stable checkpoint»-модель из [SAVE_DAY_FLOW.md](SAVE_DAY_FLOW.md). Не
+     срочно — брать под корректный mid-day-1 resume.
+  3. ✅ **`TutorialDialogueStep` через window-waiter (образец `TutorialWindowWaiter` / `TutorialWindowCloseWaiter<T>`
+     + `TutorialStaticWindow`).** Прямой референс для §6.3 `TutorialHub`: показать `DialogWindow`
+     дженерик-шагом (silent action) → ждать закрытия окна `WindowCloseWaiter`-шагом. Реализовать
+     `TutorialDialogueStep` (открыть окно по id графа `dialogues.json`, ждать закрытия) по этому паттерну;
+     переиспользует `IUIManager.IsWindowShown/Spawned`. Нужен для реального контента `TutorialHub` (сейчас там
+     stub-лог).
+  4. ✅ **Дженерик `TutorialActionStep(Action)` (аналог `TutorialSilentStepAction`).**
+     Сейчас узкие шаги: `TutorialLogStep` (только лог), `TutorialAssertStep` (чек+репорт). Добавить дженерик
+     «выполнить действие → сразу дальше» (publish сигнала / side-effect / аналитика) — это heroes-style
+     `TutorialSilentStepAction` из §9.1. Мелкий переиспользуемый примитив; основа для п.5.
+  5. ✅ **Аналитика как silent-шаги на под-чекпоинтах.**
+     Паттерн bigmerge: аналитика (`stage`/`step`/`state=start|end|skip`) эмитится дженерик-`SilentStepAction`'ами
+     на логических чекпоинтах внутри `GetSteps()`, а не только на старт/конец секвенции — гранулярная воронка по
+     под-шагам. Реализовать поверх п.4 (`TutorialActionStep` + `IAnalyticsService`). Смежно с аналитикой из
+     GAME-10 §7 (`seq_start`/`step_start`/`seq_complete`).
+
 ---
 
 ## 🛠️ Инфраструктура

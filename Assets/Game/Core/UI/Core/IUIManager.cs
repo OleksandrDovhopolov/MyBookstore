@@ -13,6 +13,13 @@ namespace Game.UI
         /// </summary>
         event Action<IWindowController> WindowShown;
 
+        /// <summary>
+        /// Raised after a window has actually been hidden and removed from the focus stack.
+        /// Handlers must NOT synchronously await back into the manager for the same reason as
+        /// <see cref="WindowShown"/>.
+        /// </summary>
+        event Action<IWindowController> WindowHidden;
+
         UniTask<T> ShowAsync<T>(WindowArgs args = null, CancellationToken ct = default)
             where T : class, IWindowController, new();
 

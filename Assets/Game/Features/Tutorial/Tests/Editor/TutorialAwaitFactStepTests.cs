@@ -453,6 +453,7 @@ namespace Game.Tutorial.Tests.Editor
             private readonly LockMonitor _locks = new();
 
             public event Action<IWindowController> WindowShown;
+            public event Action<IWindowController> WindowHidden;
             public bool HasManualLock => _locks.HasAnyLock;
 
             public UniTask<T> ShowAsync<T>(WindowArgs args = null, CancellationToken ct = default)

@@ -22,6 +22,7 @@ namespace Game.UI
         private readonly SemaphoreSlim _gate = new(1, 1);
 
         public event Action<IWindowController> WindowShown;
+        public event Action<IWindowController> WindowHidden;
 
         public UIManager(
             IUICanvasRoot canvasRoot,
@@ -190,6 +191,8 @@ namespace Game.UI
 
             _stack.Remove(controller);
             _sorting.Release(controller);
+
+            WindowHidden?.Invoke(controller);
 
             if (!controller.Attribute.KeepInCache)
             {

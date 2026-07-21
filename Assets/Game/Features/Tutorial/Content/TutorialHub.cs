@@ -1,20 +1,16 @@
 using System.Collections.Generic;
 using Game.DayCycle.Day;
-using Game.DayCycle.Results.UI;
 using Game.Tutorial.API;
-using Game.UI;
 
 namespace Game.Tutorial.Content
 {
     public sealed class TutorialHub : ITutorialSequence
     {
         private readonly IDayProgressService _dayProgress;
-        private readonly IUIManager _ui;
 
-        public TutorialHub(IDayProgressService dayProgress, IUIManager ui)
+        public TutorialHub(IDayProgressService dayProgress)
         {
             _dayProgress = dayProgress;
-            _ui = ui;
         }
 
         public string Id => "tutorial_hub";
@@ -29,8 +25,7 @@ namespace Game.Tutorial.Content
             var state = _dayProgress?.Current;
             return state?.CompletedDays != null
                    && state.CompletedDays.Contains(1)
-                   && state.CurrentPhase == DayPhase.Morning
-                   && !ResultsVisible;
+                   && state.CurrentPhase == DayPhase.Morning;
         }
 
         public IReadOnlyList<ITutorialStep> GetSteps()
@@ -41,8 +36,5 @@ namespace Game.Tutorial.Content
 
         public void OnRunStarted() { }
         public void OnRunEnded() { }
-
-        private bool ResultsVisible
-            => _ui != null && (_ui.IsWindowShown<ResultsWindow>() || _ui.IsWindowSpawned<ResultsWindow>());
     }
 }

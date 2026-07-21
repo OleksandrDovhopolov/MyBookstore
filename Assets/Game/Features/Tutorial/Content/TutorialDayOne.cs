@@ -39,6 +39,8 @@ namespace Game.Tutorial.Content
         private const string LogPrefix = "[Tutorial]";
         private const string EddiIncompleteEvent = "tutorial_day1_eddi_incomplete";
         private const string PassiveFailMissingEvent = "tutorial_day1_wave2_passive_fail_missing";
+        private const string EddiIntroStage = "eddi_intro";
+        private const string SaleChanceStage = "sale_chance";
 
         private readonly TutorialOverlayController _overlay;
         private readonly IUIManager _ui;
@@ -112,6 +114,12 @@ namespace Game.Tutorial.Content
         public IReadOnlyList<ITutorialStep> GetSteps()
             => new ITutorialStep[]
             {
+                TutorialAnalyticsSteps.Checkpoint(
+                    "checkpoint_eddi_intro_start",
+                    _analytics,
+                    Id,
+                    EddiIntroStage,
+                    "start"),
                 new TutorialAwaitFactStep("await_eddi_dialogue_complete", Until(() => _eddiBrowsing)),
                 new TutorialBlockingCalloutStep(
                     "callout_search",
@@ -142,6 +150,12 @@ namespace Game.Tutorial.Content
                     BottomPlacement),
                 new TutorialAwaitFactStep("await_eddi_left", Until(() => _eddiLeft)),
                 new TutorialHideCalloutStep("hide_eddi_callout", _overlay),
+                TutorialAnalyticsSteps.Checkpoint(
+                    "checkpoint_eddi_intro_end",
+                    _analytics,
+                    Id,
+                    EddiIntroStage,
+                    "end"),
                 // Eddi's scripted beats are the whole point of day 1. If the guaranteed sale never landed
                 // (Eddi absent, or Fact missing from the shelf — a content desync, see TODO GAME-17), the
                 // day still completes cleanly, but the lesson silently did not happen. Report it.
@@ -172,6 +186,12 @@ namespace Game.Tutorial.Content
                     () => _postEddiPassiveFailed,
                     () => Text3,
                     BottomPlacement),
+                TutorialAnalyticsSteps.Checkpoint(
+                    "checkpoint_sale_chance_start",
+                    _analytics,
+                    Id,
+                    SaleChanceStage,
+                    "start"),
                 new TutorialHighlightClickStep(
                     "click_genre_panel",
                     _overlay,

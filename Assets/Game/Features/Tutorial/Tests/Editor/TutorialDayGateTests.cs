@@ -8,6 +8,7 @@ using Game.Bootstrap.Loading;
 using Game.DayCycle.Day;
 using Game.Tutorial.API;
 using Game.Tutorial.Services;
+using Game.UI;
 using MessagePipe;
 using NUnit.Framework;
 using Save;
@@ -168,6 +169,66 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
+        public async Task Trigger_WhileFocusableWindowOpen_DoesNotStartUntilWindowHidden()
+        {
+            var dayProgress = new FakeDayProgress();
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = false };
+            var ui = new FakeUIManager { TopWindow = new FakeWindowController() };
+            var sequence = new FakeSequence
+            {
+                Id = "blocked_by_window",
+                Priority = 10,
+                Context = TutorialContext.Hub,
+                Steps = new ITutorialStep[] { new BlockingStep("hold") }
+            };
+            var service = BuildService(
+                dayProgress,
+                gameFlow,
+                sequences: new ITutorialSequence[] { sequence },
+                ui: ui);
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+
+                await dayProgress.SetPhaseAsync(DayPhase.Morning, CancellationToken.None);
+
+                Assert.IsFalse(service.IsRunning);
+
+                ui.TopWindow = null;
+                ui.RaiseWindowHidden();
+
+                Assert.IsTrue(service.IsRunning);
+                Assert.AreEqual("blocked_by_window", service.ActiveSequenceId);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task Day1_LocationLoaded_StartsWhenOnlyHudIsPresent()
+        {
+            var dayProgress = new FakeDayProgress();
+            dayProgress.Current.CurrentDay = 1;
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
+            var service = BuildService(dayProgress, gameFlow, ui: new FakeUIManager { TopWindow = null });
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+
+                gameFlow.RaiseLocationLoaded(true);
+
+                Assert.IsTrue(service.IsRunning);
+                Assert.AreEqual("tutorial_day_1", service.ActiveSequenceId);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
         public async Task CompletedSequence_RescansAndStartsNextEligibleSequence()
         {
             var dayProgress = new FakeDayProgress();
@@ -280,7 +341,8 @@ namespace Game.Tutorial.Tests.Editor
             FakeGameFlow gameFlow,
             FakeSaveService save = null,
             IReadOnlyList<ITutorialSequence> sequences = null,
-            IPublisher<TutorialSequenceStarted> startedPub = null)
+            IPublisher<TutorialSequenceStarted> startedPub = null,
+            IUIManager ui = null)
         {
             var dayOne = new FakeSequence
             {
@@ -296,7 +358,8 @@ namespace Game.Tutorial.Tests.Editor
                 stepPub: null,
                 completedPub: null,
                 dayProgress: dayProgress,
-                gameFlow: gameFlow);
+                gameFlow: gameFlow,
+                ui: ui);
         }
 
         private sealed class FakeSequence : ITutorialSequence
@@ -430,6 +493,52 @@ namespace Game.Tutorial.Tests.Editor
                 IsLocationLoaded = loaded;
                 LocationLoadedChanged?.Invoke(loaded);
             }
+        }
+
+        private sealed class FakeUIManager : IUIManager
+        {
+            private readonly LockMonitor _locks = new();
+
+            public event Action<IWindowController> WindowShown;
+            public event Action<IWindowController> WindowHidden;
+            public IWindowController TopWindow { get; set; }
+
+            public UniTask<T> ShowAsync<T>(WindowArgs args = null, CancellationToken ct = default)
+                where T : class, IWindowController, new()
+                => UniTask.FromResult<T>(null);
+
+            public UniTask HideAsync<T>(bool forceClose = false, CancellationToken ct = default)
+                where T : class, IWindowController
+                => UniTask.CompletedTask;
+
+            public UniTask HideAsync(IWindowController controller, bool forceClose = false, CancellationToken ct = default)
+                => UniTask.CompletedTask;
+
+            public UniTask HideTopAsync(WindowLayer? layer = null, CancellationToken ct = default)
+                => UniTask.CompletedTask;
+
+            public IWindowController GetTopWindow(WindowLayer? layer = null) => TopWindow;
+            public bool IsWindowShown<T>() where T : class, IWindowController => false;
+            public bool IsWindowSpawned<T>() where T : class, IWindowController => false;
+            public Game.UI.Lock SetManualLock(object owner) => _locks.Acquire(owner);
+
+            public void RaiseWindowHidden() => WindowHidden?.Invoke(new FakeWindowController());
+        }
+
+        private sealed class FakeWindowController : IWindowController
+        {
+            public WindowAttribute Attribute { get; } = new("Fake", WindowType.Popup);
+            public WindowArgs Arguments => null;
+            public IWindow View => null;
+            public bool IsShown => true;
+            public bool IsCloseBlocked => false;
+            public event Action<IWindowController> Closed;
+            public void Configure(WindowView view, WindowAttribute attribute) { }
+            public void ApplyArguments(WindowArgs args) { }
+            public UniTask ShowAsync(CancellationToken ct) => UniTask.CompletedTask;
+            public UniTask HideAsync(bool isClosed, CancellationToken ct) => UniTask.CompletedTask;
+            public void SetHudVisible(bool visible) { }
+            public void Dispose() { }
         }
     }
 }

@@ -17,7 +17,8 @@
         "Game.Core.UI",
         "Infrastructure",
         "Analytics",
-        "Game.Inventory.API"
+        "Game.Inventory.API",
+        "Dialogue"
     ],
     "includePlatforms": [
         "Editor"

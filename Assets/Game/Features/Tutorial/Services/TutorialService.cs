@@ -40,6 +40,7 @@ namespace Game.Tutorial.Services
         private readonly IQuestsService _quests;
         private readonly IQuestReevaluationGate _questReevaluation;
         private readonly ITutorialAutoStartGate _autoStartGate;
+        private readonly IUIManager _ui;
 
         private readonly Dictionary<string, ITutorialSequence> _sequences =
             new(StringComparer.Ordinal);
@@ -67,6 +68,7 @@ namespace Game.Tutorial.Services
             IQuestsService quests = null,
             IQuestReevaluationGate questReevaluation = null,
             ITutorialAutoStartGate autoStartGate = null,
+            IUIManager ui = null,
             bool autoStart = true)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
@@ -81,6 +83,7 @@ namespace Game.Tutorial.Services
             _quests = quests;
             _questReevaluation = questReevaluation;
             _autoStartGate = autoStartGate;
+            _ui = ui;
 
             if (_autoStartGate != null)
                 _autoStartGate.Released += OnAutoStartGateReleased;
@@ -122,8 +125,17 @@ namespace Game.Tutorial.Services
             if (_running || sequenceId == null || !_sequences.TryGetValue(sequenceId, out var seq))
                 return UniTask.FromResult(false);
 
-            if (!force && (!ContextAllows(seq) || !IsEligible(seq)))
-                return UniTask.FromResult(false);
+            if (!force)
+            {
+                if (!ContextAllows(seq) || !IsEligible(seq))
+                    return UniTask.FromResult(false);
+
+                if (!CanStartOverlay())
+                {
+                    _rescanPending = true;
+                    return UniTask.FromResult(false);
+                }
+            }
 
             var steps = MaterializeSteps(seq);
             BeginRun(seq, steps, startIndex: 0);
@@ -195,6 +207,9 @@ namespace Game.Tutorial.Services
                 _quests.QuestStarted += OnQuestStarted;
                 _quests.QuestCompleted += OnQuestCompleted;
             }
+
+            if (_ui != null)
+                _ui.WindowHidden += OnWindowHidden;
         }
 
         private void OnPhaseChanged(DayProgressState state)
@@ -207,6 +222,7 @@ namespace Game.Tutorial.Services
 
         private void OnQuestStarted(IQuest quest) => OnTrigger(TutorialTrigger.QuestStarted, quest?.Id);
         private void OnQuestCompleted(IQuest quest) => OnTrigger(TutorialTrigger.QuestCompleted, quest?.Id);
+        private void OnWindowHidden(IWindowController _) => TryConsumePendingRescan();
 
         // ----- Activation scan -----
 
@@ -225,6 +241,12 @@ namespace Game.Tutorial.Services
             // drop location sequences entirely.
             if (trigger != TutorialTrigger.LocationLoaded && _gameFlow?.IsTransitioning == true)
                 return;
+
+            if (!CanStartOverlay())
+            {
+                _rescanPending = true;
+                return;
+            }
 
             TryStartEligible();
         }
@@ -257,10 +279,18 @@ namespace Game.Tutorial.Services
             if (_gameFlow?.IsTransitioning == true)
                 return;
 
+            if (!CanStartOverlay())
+            {
+                _rescanPending = true;
+                return;
+            }
+
             TryStartEligible();
         }
 
-        private void OnAutoStartGateReleased()
+        private void OnAutoStartGateReleased() => TryConsumePendingRescan();
+
+        private void TryConsumePendingRescan()
         {
             if (!_rescanPending)
                 return;
@@ -287,6 +317,8 @@ namespace Game.Tutorial.Services
                 default: return true;
             }
         }
+
+        private bool CanStartOverlay() => _ui == null || _ui.GetTopWindow() == null;
 
         private void ResumeActiveSequence()
         {
@@ -435,6 +467,7 @@ namespace Game.Tutorial.Services
                 _quests.QuestCompleted -= OnQuestCompleted;
             }
             if (_autoStartGate != null) _autoStartGate.Released -= OnAutoStartGateReleased;
+            if (_ui != null) _ui.WindowHidden -= OnWindowHidden;
 
             if (!_cts.IsCancellationRequested) _cts.Cancel();
             _cts.Dispose();

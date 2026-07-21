@@ -26,7 +26,7 @@ namespace Game.Tutorial.Tests.Editor
             try
             {
                 h.Sequence.OnRunStarted();
-                var step = h.Sequence.GetSteps()[9];
+                var step = StepById(h.Sequence.GetSteps(), "await_passive_fail");
 
                 var run = step.ExecuteAsync(CancellationToken.None);
                 await UniTask.Yield(PlayerLoopTiming.Update);
@@ -50,7 +50,7 @@ namespace Game.Tutorial.Tests.Editor
             try
             {
                 h.Sequence.OnRunStarted();
-                var task = h.Sequence.GetSteps()[9].ExecuteAsync(cts.Token).AsTask();
+                var task = StepById(h.Sequence.GetSteps(), "await_passive_fail").ExecuteAsync(cts.Token).AsTask();
                 await UniTask.Yield(PlayerLoopTiming.Update);
 
                 h.FailSubscriber.Publish(new SalesPassivePurchaseFailed("eddi_customer", "eddi", "Travel"));
@@ -83,7 +83,7 @@ namespace Game.Tutorial.Tests.Editor
                 h.Sequence.OnRunStarted();
                 h.Ui.ResultsShown = true;
 
-                await h.Sequence.GetSteps()[9].ExecuteAsync(CancellationToken.None);
+                await StepById(h.Sequence.GetSteps(), "await_passive_fail").ExecuteAsync(CancellationToken.None);
 
                 Assert.Pass();
             }
@@ -148,6 +148,7 @@ namespace Game.Tutorial.Tests.Editor
                 CollectionAssert.AreEqual(
                     new[]
                     {
+                        "checkpoint_eddi_intro_start",
                         "await_eddi_dialogue_complete",
                         "callout_search",
                         "await_eddi_sale",
@@ -156,12 +157,14 @@ namespace Game.Tutorial.Tests.Editor
                         "callout_failed",
                         "await_eddi_left",
                         "hide_eddi_callout",
+                        "checkpoint_eddi_intro_end",
                         "verify_eddi_participated",
                         "await_passive_fail",
                         "verify_passive_fail",
                         "text_1",
                         "text_2",
                         "text_3",
+                        "checkpoint_sale_chance_start",
                         "click_genre_panel",
                         "text_4",
                         "hide_sale_chance_widget",
@@ -170,19 +173,23 @@ namespace Game.Tutorial.Tests.Editor
                         "wait_results_closed",
                     },
                     StepIds(steps));
-                Assert.IsInstanceOf<TutorialAwaitFactStep>(steps[9]);
-                Assert.IsInstanceOf<TutorialAssertStep>(steps[10]);
-                Assert.IsInstanceOf<TutorialBlockingCalloutStep>(steps[11]);
-                Assert.IsInstanceOf<TutorialHighlightClickStep>(steps[14]);
-                Assert.IsInstanceOf<TutorialBlockingCalloutStep>(steps[15]);
-                Assert.IsInstanceOf<TutorialHideWindowStep<ContentWidgetController>>(steps[16]);
+                Assert.IsInstanceOf<TutorialActionStep>(StepById(steps, "checkpoint_eddi_intro_start"));
+                Assert.IsInstanceOf<TutorialAwaitFactStep>(StepById(steps, "await_passive_fail"));
+                Assert.IsInstanceOf<TutorialAssertStep>(StepById(steps, "verify_passive_fail"));
+                Assert.IsInstanceOf<TutorialBlockingCalloutStep>(StepById(steps, "text_1"));
+                Assert.IsInstanceOf<TutorialActionStep>(StepById(steps, "checkpoint_sale_chance_start"));
+                Assert.IsInstanceOf<TutorialHighlightClickStep>(StepById(steps, "click_genre_panel"));
+                Assert.IsInstanceOf<TutorialBlockingCalloutStep>(StepById(steps, "text_4"));
+                Assert.IsInstanceOf<TutorialHideWindowStep<ContentWidgetController>>(StepById(steps, "hide_sale_chance_widget"));
+                var highlightStep = (TutorialHighlightClickStep)StepById(steps, "click_genre_panel");
+                var text4Step = (TutorialBlockingCalloutStep)StepById(steps, "text_4");
                 Assert.AreEqual(
                     TutorialPointerPlacement.Left,
-                    ReadPointerPlacement((TutorialHighlightClickStep)steps[14]));
-                Assert.IsTrue(ReadPauseSales((TutorialHighlightClickStep)steps[14]));
-                Assert.IsTrue(ReadHideTextAfterTap((TutorialBlockingCalloutStep)steps[15]));
-                Assert.IsFalse(ReadDimBackground((TutorialBlockingCalloutStep)steps[15]));
-                Assert.IsFalse(ReadLockUi((TutorialBlockingCalloutStep)steps[15]));
+                    ReadPointerPlacement(highlightStep));
+                Assert.IsTrue(ReadPauseSales(highlightStep));
+                Assert.IsTrue(ReadHideTextAfterTap(text4Step));
+                Assert.IsFalse(ReadDimBackground(text4Step));
+                Assert.IsFalse(ReadLockUi(text4Step));
             }
             finally
             {
@@ -197,7 +204,7 @@ namespace Game.Tutorial.Tests.Editor
             try
             {
                 h.Ui.ContentWidgetShown = true;
-                var step = h.Sequence.GetSteps()[16];
+                var step = StepById(h.Sequence.GetSteps(), "hide_sale_chance_widget");
 
                 await step.ExecuteAsync(CancellationToken.None);
 
@@ -233,6 +240,18 @@ namespace Game.Tutorial.Tests.Editor
             for (var i = 0; i < steps.Count; i++)
                 ids[i] = steps[i].Id;
             return ids;
+        }
+
+        private static ITutorialStep StepById(IReadOnlyList<ITutorialStep> steps, string id)
+        {
+            for (var i = 0; i < steps.Count; i++)
+            {
+                if (steps[i].Id == id)
+                    return steps[i];
+            }
+
+            Assert.Fail($"Step '{id}' not found.");
+            return null;
         }
 
         private static bool ReadHideTextAfterTap(TutorialBlockingCalloutStep step)
@@ -317,6 +336,7 @@ namespace Game.Tutorial.Tests.Editor
         private sealed class FakeUIManager : IUIManager
         {
             public event Action<IWindowController> WindowShown;
+            public event Action<IWindowController> WindowHidden;
             public bool ResultsShown { get; set; }
             public bool ContentWidgetShown { get; set; }
             public int HideContentWidgetCount { get; private set; }

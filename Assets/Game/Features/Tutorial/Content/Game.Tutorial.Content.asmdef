@@ -11,7 +11,8 @@
         "Game.GameplayUI.Signals",
         "Analytics",
         "Infrastructure",
-        "Game.Inventory.API"
+        "Game.Inventory.API",
+        "Dialogue"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
