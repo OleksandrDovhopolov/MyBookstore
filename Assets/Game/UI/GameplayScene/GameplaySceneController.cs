@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
+using Game.Characters.UI;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
@@ -94,6 +95,9 @@ namespace GameplayUI
 
             if (View.DecorButton != null)
                 View.DecorButton.onClick.AddListener(OnDecorButtonClicked);
+            
+            if (View.JournalButton != null)
+                View.JournalButton.onClick.AddListener(OnJournalButtonClicked);
 
             View.GenreItemClicked += OnGenreItemClicked;
 
@@ -193,6 +197,9 @@ namespace GameplayUI
 
             if (View != null && View.DecorButton != null)
                 View.DecorButton.onClick.RemoveListener(OnDecorButtonClicked);
+            
+            if (View != null && View.JournalButton != null)
+                View.DecorButton.onClick.RemoveAllListeners();
 
             if (View != null)
                 View.GenreItemClicked -= OnGenreItemClicked;
@@ -383,6 +390,7 @@ namespace GameplayUI
         }
 
         private void OnDecorButtonClicked() => ShowWindowWithPanelsHiddenAsync<DecorPlacementWindow>().Forget();
+        private void OnJournalButtonClicked() => ShowWindowWithPanelsHiddenAsync<JournalWindow>().Forget();
 
         private async UniTaskVoid ShowWindowWithPanelsHiddenAsync<TWindow>(WindowArgs args = null)
             where TWindow : class, IWindowController, new()

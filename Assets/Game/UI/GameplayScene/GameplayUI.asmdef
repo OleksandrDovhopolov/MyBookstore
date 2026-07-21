@@ -18,7 +18,8 @@
         "Game.Ftue",
         "Game.Tutorial.API",
         "Save",
-        "Game.GameplayUI.Signals"
+        "Game.GameplayUI.Signals",
+        "Game.Characters.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

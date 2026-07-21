@@ -105,6 +105,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c70814d0d5d4eae448cf543d98a94c62
+    m_Address: JournalWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d7a3de56b03c2fd46abc7d2c00950e65
     m_Address: ClassicShopWindow
     m_ReadOnly: 0

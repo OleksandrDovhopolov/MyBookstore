@@ -1,7 +1,6 @@
 using Game.Characters.API;
 using Game.UI;
 using SpriteService;
-using UnityEditor;
 using VContainer;
 
 namespace Game.Characters.UI
