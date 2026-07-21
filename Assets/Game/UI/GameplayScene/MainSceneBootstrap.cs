@@ -128,10 +128,30 @@ namespace GameplayUI
                 }
                 else
                 {
-                    if (showWelcomeWindow)
-                        hud.SetHudVisible(false);
+                    var gateHubReveal = _tutorialAutoStartGate != null;
+                    if (gateHubReveal)
+                        _tutorialAutoStartGate.Block();
 
-                    await _transition.PlayRevealAsync(ct);
+                    try
+                    {
+                        if (showWelcomeWindow)
+                            hud.SetHudVisible(false);
+
+                        await _transition.PlayRevealAsync(ct);
+
+                        if (showWelcomeWindow)
+                            await ShowWelcomeAndWaitAsync(ct);
+
+                        hud.SetHudVisible(true);
+                    }
+                    finally
+                    {
+                        if (gateHubReveal)
+                            _tutorialAutoStartGate.Release();
+                    }
+
+                    _hubReadyPublisher?.Publish(new GameplayHubReady(0));
+                    return;
                 }
 
                 if (showWelcomeWindow)

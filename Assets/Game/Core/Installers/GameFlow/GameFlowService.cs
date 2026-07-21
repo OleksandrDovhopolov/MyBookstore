@@ -3,6 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.LocationVisits.API;
+using Game.Tutorial.API;
 using UnityEngine;
 using VContainer.Unity;
 
@@ -23,6 +24,7 @@ namespace Game.Bootstrap
         private readonly ITransitionAnimationService _animation;
         private readonly GameFlowSettings _settings;
         private readonly ILocationVisitService _locationVisits;
+        private readonly ITutorialAutoStartGate _tutorialAutoStartGate;
 
         private GameObject _hubRoot;
         private LifetimeScope _globalScope;
@@ -33,12 +35,14 @@ namespace Game.Bootstrap
             ISceneTransitionService sceneTransition,
             ITransitionAnimationService animation,
             GameFlowSettings settings,
-            ILocationVisitService locationVisits)
+            ILocationVisitService locationVisits,
+            ITutorialAutoStartGate tutorialAutoStartGate = null)
         {
             _sceneTransition = sceneTransition ?? throw new ArgumentNullException(nameof(sceneTransition));
             _animation = animation ?? throw new ArgumentNullException(nameof(animation));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _locationVisits = locationVisits; // optional-safe: cleared best-effort on hub return
+            _tutorialAutoStartGate = tutorialAutoStartGate;
         }
 
         public bool IsTransitioning => _isTransitioning;
@@ -104,6 +108,12 @@ namespace Game.Bootstrap
         public async UniTask ReturnToHubAsync(CancellationToken ct = default)
         {
             if (!TryBeginTransition(nameof(ReturnToHubAsync))) return;
+            var gateBlocked = false;
+            if (_tutorialAutoStartGate != null)
+            {
+                _tutorialAutoStartGate.Block();
+                gateBlocked = true;
+            }
 
             try
             {
@@ -138,6 +148,8 @@ namespace Game.Bootstrap
             finally
             {
                 _isTransitioning = false;
+                if (gateBlocked)
+                    _tutorialAutoStartGate.Release();
             }
         }
 

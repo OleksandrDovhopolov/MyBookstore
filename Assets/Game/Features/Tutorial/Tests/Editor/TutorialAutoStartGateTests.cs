@@ -120,6 +120,45 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
+        public async Task Release_ReplaysDeferredHubTrigger()
+        {
+            var gate = new TutorialAutoStartGate();
+            gate.Block();
+
+            var dayProgress = new FakeDayProgress();
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = false };
+            var service = BuildService(
+                gate,
+                gameFlow,
+                autoStart: true,
+                dayProgress: dayProgress,
+                sequence: new FakeSequence
+                {
+                    Id = TutorialSequenceIds.Hub,
+                    Context = TutorialContext.Hub,
+                    Trigger = TutorialTrigger.PhaseChanged
+                });
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+
+                await dayProgress.SetPhaseAsync(DayPhase.Morning, CancellationToken.None);
+
+                Assert.IsFalse(service.IsRunning);
+                Assert.IsNull(service.ActiveSequenceId);
+
+                gate.Release();
+
+                Assert.IsTrue(service.IsRunning);
+                Assert.AreEqual(TutorialSequenceIds.Hub, service.ActiveSequenceId);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
         public async Task ResumeFromStep_UsesSavedStepIdBeforeIndex()
         {
             var save = new FakeSaveService(new TutorialSaveState
