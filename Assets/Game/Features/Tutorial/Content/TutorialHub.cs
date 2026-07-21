@@ -63,7 +63,16 @@ namespace Game.Tutorial.Content
                     "wait_journal_window",
                     () => _ui != null && _ui.IsWindowShown<JournalWindow>(),
                     JournalWindowTimeoutMs,
-                    failOpen: true)
+                    failOpen: true),
+                new TutorialHighlightClickStep(
+                    "click_journal_close_button",
+                    _overlay,
+                    _targets,
+                    TutorialTargetIds.JournalCloseButton,
+                    TutorialTexts.JournalCloseHighlight,
+                    TutorialContent.Placements.Bottom,
+                    pointer: true,
+                    pointerPlacement: TutorialPointerPlacement.Top)
             };
 
         public void OnRunStarted() { }

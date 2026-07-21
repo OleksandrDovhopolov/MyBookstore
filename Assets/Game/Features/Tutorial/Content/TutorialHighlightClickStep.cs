@@ -78,6 +78,8 @@ namespace Game.Tutorial.Content
         }
 
         public string Id { get; }
+        public string TargetId => _targetId;
+        public TutorialPointerPlacement PointerPlacement => _pointerPlacement;
 
         public async UniTask ExecuteAsync(CancellationToken ct)
         {

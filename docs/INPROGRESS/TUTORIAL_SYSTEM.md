@@ -455,7 +455,7 @@ pointer/highlight для таргетов + динамическая регис�
 
 ### 6.3 Hub-туториал (`TutorialHub`) — канонический флоу
 
-**Статус: спека, не реализовано.** Зафиксировано 2026-07-20. Вторая секвенция после дня 1: знакомит игрока с
+**Статус: реализовано в коде; prefab tag назначает владелец задачи.** Обновлено 2026-07-21. Вторая секвенция после дня 1: знакомит игрока с
 журналом в хабе. Секвенция `tutorial_hub` (`TutorialHub`, `Context = Hub`, `Priority = 30`,
 `ResumePolicy = Restart`).
 
@@ -484,7 +484,9 @@ pointer/highlight для таргетов + динамическая регис�
 | 2 | — | **`TutorialDialogueStep`** (новый шаг): открывает `DialogWindow` с графом `tutorial_hub_intro` (3 фразы Eddi), ждёт закрытия окна |
 | 3 | Диалог закрыт | **`TutorialHighlightClickStep`**: подсветка кнопки журнала (target-id `hub.journal_button`), **стрелка-pointer**, всё затемнено кроме кнопки; блокирующий |
 | 4 | Клик по кнопке | стрелка/затемнение/текст убираются; **штатное** поведение кнопки открывает `JournalWindow` (туториал не открывает окно сам — клик проходит к кнопке) |
-| 5 | `JournalWindow` открылось | `TutorialAwaitWindowStep(() => IsWindowShown<JournalWindow>())` → **секвенция завершена** |
+| 5 | `JournalWindow` открылось | `TutorialAwaitWindowStep(() => IsWindowShown<JournalWindow>())` работает как gate: ждёт, пока окно и его `TutorialTargetTag` станут доступны |
+| 6 | Внутренняя кнопка журнала зарегистрирована | **`TutorialHighlightClickStep`**: подсветка кнопки закрытия журнала (target-id `journal.close_button`), pointer сверху, blocking |
+| 7 | Клик по внутренней кнопке | Штатное поведение кнопки выполняется; после клика `tutorial_hub` завершается |
 
 #### Что нового / что переиспользуется
 
@@ -497,7 +499,8 @@ pointer/highlight для таргетов + динамическая регис�
   идёт через immediate-режим delivered (см. defer-commit план диалогов).
 - **`TutorialHighlightClickStep`** (готов, этап 5) — target `hub.journal_button`, `pointer=true` (стрелка),
   blocking. **Тег на кнопку журнала добавляет владелец задачи вручную** (id `hub.journal_button`).
-- **`TutorialAwaitWindowStep`** (готов) — `IsWindowShown<JournalWindow>()` как терминатор.
+- **`TutorialAwaitWindowStep`** (готов) — `IsWindowShown<JournalWindow>()` теперь gate перед подсветкой внутренней кнопки, а не терминатор.
+- **Второй `TutorialHighlightClickStep`** — terminal step на target `journal.close_button`; тег на выбранную кнопку внутри `JournalWindow` добавляет владелец задачи вручную.
 - **Stub-диалог** `tutorial_hub_intro` заведён в [dialogues.json](../../Assets/Configs/dialogues.json) (3 фразы,
   speaker `Eddy`, `[STUB]`-плейсхолдер) — контент заменить при реализации; для билда синкнуть в StreamingAssets
   (`Tools/Configs/Sync Bundled Defaults`).
@@ -506,7 +509,7 @@ pointer/highlight для таргетов + динамическая регис�
 
 - Точный триггер немедленного пути (см. выше) — `HubReady` на возврате в хаб vs GAME-18 re-eval.
 - Fire-once диалога vs `Restart`-резюм (см. выше).
-- Подтвердить id кнопки/окна: `hub.journal_button` и `JournalWindow` (журнал из GAME-2).
+- Подтвердить prefab wiring: `hub.journal_button` в хабе и `journal.close_button` внутри `JournalWindow`.
 
 ## 7. Риски / открытые вопросы
 

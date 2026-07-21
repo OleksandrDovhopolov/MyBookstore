@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _sequences:
   - _id: tutorial_day_1
-    _enabled: 1
-  - _id: tutorial_hub
     _enabled: 0
+  - _id: tutorial_hub
+    _enabled: 1

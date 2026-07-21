@@ -54,6 +54,8 @@ namespace Game.Tutorial.Content
             "Day complete - nice work! From tomorrow you'll stock the shelf and choose where to trade yourself.";
         public const string JournalHighlight =
             "Open the journal.";
+        public const string JournalCloseHighlight =
+            "Close the journal.";
         public const string ShopDecorStubLog =
             "Decor purchase detected (stub).";
     }
