@@ -78,15 +78,6 @@ namespace Game.Tutorial.Content
                     JournalWindowTimeoutMs,
                     failOpen: true),
                 new TutorialHighlightClickStep(
-                    "click_journal_close_button",
-                    _overlay,
-                    _targets,
-                    TutorialTargetIds.JournalCloseButton,
-                    TutorialTexts.JournalCloseHighlight,
-                    TutorialContent.Placements.Bottom,
-                    pointer: true,
-                    pointerPlacement: TutorialPointerPlacement.Top),
-                new TutorialHighlightClickStep(
                     "click_get_box",
                     _overlay,
                     _targets,
