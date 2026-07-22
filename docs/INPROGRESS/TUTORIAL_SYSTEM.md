@@ -523,6 +523,40 @@ pointer/highlight для таргетов + динамическая регис�
 | Резолв таргета сделан DI-реестром `ITutorialTargetRegistry` + фасадом `TutorialTargets` (для тегов) | Реализовано (§4.5); purge null при lookup |
 | Resume/cancel-path Day 1 (§6.1) | Осознанные ограничения v1; recovery — позже |
 
+### 7.1 Известный баг: авто-старт туториала во время загрузки (до презентации сцены)
+
+**Статус: открыт.** Зафиксировано по логу `mybookstore_20260721_143408`.
+
+**Симптом.** `TutorialHub` (диалог `hub_dialogue` → `DialogWindow`) поднимается **во время фазы бута
+`save_data_load`, за ~1.5 c до загрузки геймплейной сцены** и до старта `TransitionAnimationService`.
+По логу: `[Tutorial] sequence 'tutorial_hub' started at step 0` в `14:34:17.551` и `DialogWindow ShowAsync`
+в `14:34:17.570`, тогда как `scene_transition` стартует лишь в `14:34:18.669`, а
+`GameplaySceneController ShowAsync` — в `14:34:19.067`. Диалог рисуется поверх бут-лоадера — геймплейной
+сцены (и HUD, и transition-cover) в этот момент ещё нет.
+
+**Причина.** Это не `HubReady`-триггер (он публикуется в `MainSceneBootstrap` только после сцены/reveal), а
+**`TutorialService.ResumeActiveSequence()`**, вызываемый инлайн в `AfterLoadAsync` из персистнутого
+`tutorial.state.ActiveSequenceId`. Resume **обходит и transition-guard (`IGameFlowService.IsTransitioning`), и
+`ITutorialAutoStartGate`** — там только проверки `_autoStart`/`_running`/`ActiveSequenceId`. Поэтому гейтинг
+reveal-окна (коммит `acb8ddc3`, `GameFlowService`/`MainSceneBootstrap`) **не помогает**: resume срабатывает
+раньше, чем эти гейты вообще активируются в кадре. Корень — у движка нет понятия «мир презентован и
+безопасно показывать оверлей»: он действует в `AfterLoadAsync`, до сцены.
+
+**Выбранное направление фикса (Вариант A — единый presentation-gate).** Ввести один гейт «безопасно ли
+сейчас показывать туториал», который уважают **все** пути авто-старта (resume, activation-scan, trigger,
+return-to-hub):
+- Блокировать `ITutorialAutoStartGate` на весь бут (с начала загрузки, до `save_data_load`) и релизить,
+  когда хаб реально презентован (после reveal / на `GameplayHubReady`).
+- Заставить `ResumeActiveSequence` **уважать гейт**: при `IsBlocked` откладывать (`_resumePending`) и
+  запускать на `Released`, по образцу существующего `_rescanPending`/`OnAutoStartGateReleased`.
+- `AfterLoadAsync` оставляет за собой только `state + Subscribe`; фактический запуск секвенций — за гейтом.
+
+Открытый вопрос реализации: кто держит `Block()` на старте бута (`Bootstrap`/loader) и `Release()` на
+презентации (`MainSceneBootstrap`), чтобы `Block`/`Release` не рассинхронились между слоями. Более дешёвая
+альтернатива (Вариант B — не резюмить инлайн, а подхватывать персистнутую активную секвенцию обычным
+триггером `HubReady`/`LocationLoaded`; все секвенции сейчас `ResumePolicy.Restart`, позиция шага не теряется)
+рассмотрена и отклонена в пользу единой модели гейта.
+
 ## 8. Платные решения (если появится бюджет)
 
 Сейчас пишем своё: тонкий движок — ~5–6 небольших классов, что дешевле интеграции стороннего

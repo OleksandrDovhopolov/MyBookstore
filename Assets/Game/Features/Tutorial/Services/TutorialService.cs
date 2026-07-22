@@ -115,8 +115,6 @@ namespace Game.Tutorial.Services
 
             Debug.Log($"{TutorialLog.Prefix} loaded: {_sequences.Count} sequences, " +
                       $"{_state.CompletedSequenceIds.Count} completed. autoStart={_autoStart}.");
-
-            ResumeActiveSequence();
         }
 
         public UniTask BeforeSaveAsync(CancellationToken ct) => UniTask.CompletedTask;
@@ -295,13 +293,22 @@ namespace Game.Tutorial.Services
                 return;
             }
 
-            TryStartEligible();
+            TryStartEligible(trigger, param);
         }
 
-        private bool TryStartEligible()
+        private bool TryStartEligible(TutorialTrigger? trigger = null, string param = null)
         {
+            var savedActiveId = _state.ActiveSequenceId;
+            if (TryStartSavedActiveSequence(trigger, param))
+                return true;
+
             foreach (var seq in _byPriority)
             {
+                if (trigger.HasValue
+                    && string.Equals(seq.Id, savedActiveId, StringComparison.Ordinal)
+                    && !TriggerMatches(seq, trigger.Value, param))
+                    continue;
+
                 if (!ContextAllows(seq)) continue;
                 if (!IsEligible(seq)) continue;
 
@@ -367,21 +374,31 @@ namespace Game.Tutorial.Services
 
         private bool CanStartOverlay() => _ui == null || _ui.GetTopWindow() == null;
 
-        private void ResumeActiveSequence()
+        private bool TryStartSavedActiveSequence(TutorialTrigger? trigger, string param)
         {
-            if (!_autoStart) return; // auto-start disabled: don't revive a mid-run sequence from a prior save
-            if (_running) return; // a trigger may have already started a run during load
             var id = _state.ActiveSequenceId;
-            if (string.IsNullOrEmpty(id)) return;
-            if (!_sequences.TryGetValue(id, out var seq)) return;
-            if (_state.CompletedSequenceIds.Contains(id)) return;
+            if (string.IsNullOrEmpty(id)) return false;
+            if (!_sequences.TryGetValue(id, out var seq)) return false;
+            if (trigger.HasValue && !TriggerMatches(seq, trigger.Value, param)) return false;
+            if (!ContextAllows(seq)) return false;
+            if (!IsEligible(seq)) return false;
 
             var steps = MaterializeSteps(seq);
-            var fromStep = seq.ResumePolicy == TutorialResumePolicy.FromStep
+            var startIndex = seq.ResumePolicy == TutorialResumePolicy.FromStep
                 ? ResolveResumeIndex(steps)
                 : 0;
 
-            BeginRun(seq, steps, fromStep);
+            BeginRun(seq, steps, startIndex);
+            return true;
+        }
+
+        private static bool TriggerMatches(ITutorialSequence seq, TutorialTrigger trigger, string param)
+        {
+            if (seq.Trigger != trigger)
+                return false;
+
+            return string.IsNullOrEmpty(seq.TriggerParam)
+                   || string.Equals(seq.TriggerParam, param, StringComparison.Ordinal);
         }
 
         // ----- Runner -----

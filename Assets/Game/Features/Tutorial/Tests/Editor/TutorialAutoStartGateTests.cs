@@ -7,6 +7,7 @@ using Game.Bootstrap.Loading;
 using Game.DayCycle.Day;
 using Game.Tutorial.API;
 using Game.Tutorial.Services;
+using Game.UI;
 using MessagePipe;
 using NUnit.Framework;
 using Save;
@@ -191,9 +192,64 @@ namespace Game.Tutorial.Tests.Editor
                 await service.AfterLoadAsync(CancellationToken.None);
                 await UniTask.Yield(PlayerLoopTiming.Update);
 
+                Assert.IsFalse(service.IsRunning);
+                Assert.IsNull(service.ActiveSequenceId);
+                Assert.IsNull(stepPub.Last.StepId);
+
+                gameFlow.RaiseLocationLoaded(true);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
                 Assert.IsTrue(service.IsRunning);
                 Assert.AreEqual("second", stepPub.Last.StepId);
                 Assert.AreEqual(1, stepPub.Last.StepIndex);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task SavedHubSequence_WaitsForHubReadyTrigger()
+        {
+            var save = new FakeSaveService(new TutorialSaveState
+            {
+                ActiveSequenceId = TutorialSequenceIds.Hub,
+                CompletedSequenceIds = new List<string>()
+            });
+            var dayProgress = new FakeDayProgress();
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = false };
+            var hubReadySub = new RecordingSubscriber<GameplayHubReady>();
+            var service = BuildService(
+                gate: null,
+                gameFlow: gameFlow,
+                autoStart: true,
+                save: save,
+                dayProgress: dayProgress,
+                hubReadySub: hubReadySub,
+                sequence: new FakeSequence
+                {
+                    Id = TutorialSequenceIds.Hub,
+                    Context = TutorialContext.Hub,
+                    Trigger = TutorialTrigger.HubReady
+                });
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                Assert.IsFalse(service.IsRunning);
+                Assert.IsNull(service.ActiveSequenceId);
+
+                await dayProgress.SetPhaseAsync(DayPhase.Morning, CancellationToken.None);
+
+                Assert.IsFalse(service.IsRunning);
+                Assert.IsNull(service.ActiveSequenceId);
+
+                hubReadySub.Publish(new GameplayHubReady(0));
+
+                Assert.IsTrue(service.IsRunning);
+                Assert.AreEqual(TutorialSequenceIds.Hub, service.ActiveSequenceId);
             }
             finally
             {
@@ -209,11 +265,12 @@ namespace Game.Tutorial.Tests.Editor
             ITutorialSequence sequence = null,
             IReadOnlyList<ITutorialSequence> sequences = null,
             IDayProgressService dayProgress = null,
-            IPublisher<TutorialStepChanged> stepPub = null)
+            IPublisher<TutorialStepChanged> stepPub = null,
+            ISubscriber<GameplayHubReady> hubReadySub = null)
             => new(
                 save ?? new FakeSaveService(),
                 sequences ?? new[] { sequence ?? new FakeSequence() },
-                hubReadySub: null,
+                hubReadySub: hubReadySub,
                 startedPub: null,
                 stepPub: stepPub,
                 completedPub: null,
@@ -278,6 +335,43 @@ namespace Game.Tutorial.Tests.Editor
             public void Publish(T message)
             {
                 Last = message;
+            }
+        }
+
+        private sealed class RecordingSubscriber<T> : ISubscriber<T>
+        {
+            private readonly List<IMessageHandler<T>> _handlers = new();
+
+            public IDisposable Subscribe(IMessageHandler<T> handler, params MessageHandlerFilter<T>[] filters)
+            {
+                _handlers.Add(handler);
+                return new Subscription(_handlers, handler);
+            }
+
+            public void Publish(T message)
+            {
+                var snapshot = _handlers.ToArray();
+                for (var i = 0; i < snapshot.Length; i++)
+                    snapshot[i].Handle(message);
+            }
+
+            private sealed class Subscription : IDisposable
+            {
+                private readonly List<IMessageHandler<T>> _handlers;
+                private IMessageHandler<T> _handler;
+
+                public Subscription(List<IMessageHandler<T>> handlers, IMessageHandler<T> handler)
+                {
+                    _handlers = handlers;
+                    _handler = handler;
+                }
+
+                public void Dispose()
+                {
+                    if (_handler == null) return;
+                    _handlers.Remove(_handler);
+                    _handler = null;
+                }
             }
         }
 
