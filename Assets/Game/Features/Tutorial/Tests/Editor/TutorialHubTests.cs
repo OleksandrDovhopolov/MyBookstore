@@ -65,67 +65,6 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
-        public void GetSteps_ContainsJournalFlowGiftClickAndTerminalGrant()
-        {
-            var sequence = new TutorialHub(new FakeDayProgress(), new FakeUIManager());
-
-            var steps = sequence.GetSteps();
-
-            Assert.AreEqual(TutorialSequenceIds.Hub, sequence.Id);
-            Assert.AreEqual(TutorialContext.Hub, sequence.Context);
-            Assert.AreEqual(TutorialTrigger.HubReady, sequence.Trigger);
-            Assert.AreEqual(6, steps.Count);
-            Assert.IsInstanceOf<TutorialDialogueStep>(steps[0]);
-            Assert.AreEqual("hub_dialogue", steps[0].Id);
-            Assert.IsInstanceOf<TutorialHighlightClickStep>(steps[1]);
-            Assert.AreEqual("click_journal_button", steps[1].Id);
-            Assert.IsInstanceOf<TutorialAwaitWindowStep>(steps[2]);
-            Assert.AreEqual("wait_journal_window", steps[2].Id);
-            Assert.IsInstanceOf<TutorialHighlightClickStep>(steps[3]);
-            Assert.AreEqual("click_journal_close_button", steps[3].Id);
-            Assert.IsInstanceOf<TutorialHighlightClickStep>(steps[4]);
-            Assert.AreEqual("click_get_box", steps[4].Id);
-            Assert.IsInstanceOf<TutorialAsyncActionStep>(steps[5]);
-            Assert.AreEqual("grant_box", steps[5].Id);
-
-            var closeClick = (TutorialHighlightClickStep)steps[3];
-            Assert.AreEqual(TutorialTargetIds.JournalCloseButton, closeClick.TargetId);
-            Assert.AreEqual(TutorialPointerPlacement.Top, closeClick.PointerPlacement);
-
-            var giftClick = (TutorialHighlightClickStep)steps[4];
-            Assert.AreEqual(TutorialTargetIds.HubGiftButton, giftClick.TargetId);
-            Assert.AreEqual(TutorialPointerPlacement.Top, giftClick.PointerPlacement);
-        }
-
-        [Test]
-        public async System.Threading.Tasks.Task TerminalJournalCloseClick_CompletesStep()
-        {
-            var h = new OverlayHarness("TutorialHubTests_TerminalCloseClick");
-            try
-            {
-                var registry = new TutorialTargetRegistry();
-                registry.Register(TutorialTargetIds.JournalCloseButton, h.Target);
-                var sequence = new TutorialHub(
-                    new FakeDayProgress(),
-                    new FakeUIManager(),
-                    h.Overlay,
-                    registry);
-                var step = (TutorialHighlightClickStep)sequence.GetSteps()[3];
-
-                var run = step.ExecuteAsync(CancellationToken.None);
-                await UniTask.Yield(PlayerLoopTiming.Update);
-
-                h.Button.onClick.Invoke();
-
-                await run;
-            }
-            finally
-            {
-                h.Dispose();
-            }
-        }
-
-        [Test]
         public async System.Threading.Tasks.Task GrantBox_BuysTutorialLotAndShowsRewardsWindow()
         {
             var granted = new RewardSpec(

@@ -109,6 +109,7 @@ namespace Game.DayCycle.Results.UI
         private void OnSummaryReady(ResultsSummary summary)
         {
             _summary = summary;
+            View.SetDay(summary?.Day ?? 0);
             View.SetEarnedGold(summary?.GoldEarned ?? 0);
             View.SetSoldGenres(BuildSoldGenreRewards(summary));
             LoadSoldGenreIconsAsync(_cts.Token).Forget();
