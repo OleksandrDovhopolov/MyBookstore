@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 73bb696bcc0a48f42bbc14742403bb92
+guid: 0961f2124e8b68f41b7c86c6c49db819
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -9047094825479563842
-    second: ResourceBar_Bg_0
+      213: -4535257802186812037
+    second: dayFrame_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,23 +126,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ResourceBar_Bg_0
+      name: dayFrame_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 31
-        height: 64
+        x: 11
+        y: 15
+        width: 193
+        height: 217
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 9, y: 20, z: 9, w: 17}
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: eb514069033427280800000000000000
-      internalID: -9047094825479563842
+      spriteID: b7516d7ce078f01c0800000000000000
+      internalID: -4535257802186812037
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: a13c3cfaa406e304db6f1f47c4f9a3b6
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ResourceBar_Bg_0: -9047094825479563842
+      dayFrame_0: -4535257802186812037
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
