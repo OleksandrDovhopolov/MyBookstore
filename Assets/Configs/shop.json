@@ -63,6 +63,16 @@
     "rewardItems": [],
     "limit": { "mode": "Unlimited" }
   },
+  {
+    "id": "tutorial_book_box_heartfelt",
+    "storefrontId": "tutorial",
+    "displayName": "Tutorial Book Box",
+    "description": "A free book box from the tutorial",
+    "price": { "currency": "gold", "amount": 0 },
+    "rewardId": "book_box_genre_heartfelt_1",
+    "rewardItems": [],
+    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+  },
 
   {
     "id": "classic_book_005",

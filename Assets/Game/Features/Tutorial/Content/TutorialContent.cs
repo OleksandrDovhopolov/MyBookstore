@@ -56,6 +56,8 @@ namespace Game.Tutorial.Content
             "Open the journal.";
         public const string JournalCloseHighlight =
             "Close the journal.";
+        public const string HubGiftHighlight =
+            "Take your free book box.";
         public const string ShopDecorStubLog =
             "Decor purchase detected (stub).";
     }

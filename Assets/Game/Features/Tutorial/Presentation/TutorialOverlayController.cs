@@ -251,7 +251,7 @@ namespace Game.Tutorial.Presentation
             _hitArea = hitAreaGo.GetComponent<TutorialHitAreaView>();
             _hitArea.HideView();
 
-            _pointer = Object.Instantiate(_settings.PointerPrefab, _root);
+            _pointer = CreatePointer();
             _pointer.HideView();
 
             if (_settings.TextPanelPrefab != null)
@@ -261,6 +261,33 @@ namespace Game.Tutorial.Presentation
             }
 
             return true;
+        }
+
+        private TutorialPointerView CreatePointer()
+        {
+            if (_settings.PointerPrefab != null)
+                return Object.Instantiate(_settings.PointerPrefab, _root);
+
+            var go = new GameObject("Pointer", typeof(RectTransform), typeof(Image), typeof(TutorialPointerView));
+            var rt = (RectTransform)go.transform;
+            rt.SetParent(_root, false);
+            rt.sizeDelta = GetPointerSize(_settings.PointerSprite);
+
+            var pointer = go.GetComponent<TutorialPointerView>();
+            pointer.Configure(
+                _settings.PointerSprite,
+                _settings.PointerBounceAmplitude,
+                _settings.PointerBounceSpeed);
+            return pointer;
+        }
+
+        private static Vector2 GetPointerSize(Sprite sprite)
+        {
+            if (sprite == null)
+                return new Vector2(64f, 64f);
+
+            var rect = sprite.rect;
+            return new Vector2(rect.width, rect.height);
         }
 
         private T CreateStretchedChild<T>(string name) where T : Component

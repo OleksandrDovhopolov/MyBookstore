@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.DayCycle.Day;
 using Game.DayCycle.Results.UI;
+using Game.Rewards.API;
+using Game.Rewards.UI;
+using Game.Shop.API;
 using Game.Tutorial.API;
 using Game.Tutorial.Content;
 using Game.Tutorial.Presentation;
@@ -10,6 +14,7 @@ using Game.UI;
 using Infrastructure.TutorialUI;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using UnityEngine.UI;
 
 namespace Game.Tutorial.Tests.Editor
@@ -60,7 +65,7 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         [Test]
-        public void GetSteps_ContainsHubDialogueJournalClickJournalWaitAndTerminalCloseClick()
+        public void GetSteps_ContainsJournalFlowGiftClickAndTerminalGrant()
         {
             var sequence = new TutorialHub(new FakeDayProgress(), new FakeUIManager());
 
@@ -69,7 +74,7 @@ namespace Game.Tutorial.Tests.Editor
             Assert.AreEqual(TutorialSequenceIds.Hub, sequence.Id);
             Assert.AreEqual(TutorialContext.Hub, sequence.Context);
             Assert.AreEqual(TutorialTrigger.HubReady, sequence.Trigger);
-            Assert.AreEqual(4, steps.Count);
+            Assert.AreEqual(6, steps.Count);
             Assert.IsInstanceOf<TutorialDialogueStep>(steps[0]);
             Assert.AreEqual("hub_dialogue", steps[0].Id);
             Assert.IsInstanceOf<TutorialHighlightClickStep>(steps[1]);
@@ -78,10 +83,18 @@ namespace Game.Tutorial.Tests.Editor
             Assert.AreEqual("wait_journal_window", steps[2].Id);
             Assert.IsInstanceOf<TutorialHighlightClickStep>(steps[3]);
             Assert.AreEqual("click_journal_close_button", steps[3].Id);
+            Assert.IsInstanceOf<TutorialHighlightClickStep>(steps[4]);
+            Assert.AreEqual("click_get_box", steps[4].Id);
+            Assert.IsInstanceOf<TutorialAsyncActionStep>(steps[5]);
+            Assert.AreEqual("grant_box", steps[5].Id);
 
             var closeClick = (TutorialHighlightClickStep)steps[3];
             Assert.AreEqual(TutorialTargetIds.JournalCloseButton, closeClick.TargetId);
             Assert.AreEqual(TutorialPointerPlacement.Top, closeClick.PointerPlacement);
+
+            var giftClick = (TutorialHighlightClickStep)steps[4];
+            Assert.AreEqual(TutorialTargetIds.HubGiftButton, giftClick.TargetId);
+            Assert.AreEqual(TutorialPointerPlacement.Top, giftClick.PointerPlacement);
         }
 
         [Test]
@@ -112,6 +125,63 @@ namespace Game.Tutorial.Tests.Editor
             }
         }
 
+        [Test]
+        public async System.Threading.Tasks.Task GrantBox_BuysTutorialLotAndShowsRewardsWindow()
+        {
+            var granted = new RewardSpec(
+                "book_box_genre_heartfelt_1",
+                new[] { RewardItem.InventoryItem("book_001", "book", 1) });
+            var shop = new FakeShopService
+            {
+                Result = ShopPurchaseResult.Ok(TutorialLot(), granted)
+            };
+            var ui = new FakeUIManager();
+            var sequence = new TutorialHub(new FakeDayProgress(), ui, shop: shop);
+            var step = (TutorialAsyncActionStep)sequence.GetSteps()[5];
+
+            await step.ExecuteAsync(CancellationToken.None);
+
+            Assert.AreEqual("tutorial_book_box_heartfelt", shop.BoughtLotId);
+            Assert.AreEqual(1, shop.BuyCalls);
+            Assert.AreEqual(typeof(RewardsWindow), ui.LastShownWindowType);
+            Assert.IsInstanceOf<RewardsWindowArgs>(ui.LastShownArgs);
+
+            var args = (RewardsWindowArgs)ui.LastShownArgs;
+            Assert.AreSame(granted, args.Granted);
+            Assert.AreEqual("Your first book box!", args.Title);
+        }
+
+        [Test]
+        public async System.Threading.Tasks.Task GrantBox_NonSuccessCompletesWithoutShowingRewardsWindow()
+        {
+            var shop = new FakeShopService
+            {
+                Result = ShopPurchaseResult.Fail(ShopPurchaseStatus.LimitReached, TutorialLot())
+            };
+            var ui = new FakeUIManager();
+            var sequence = new TutorialHub(new FakeDayProgress(), ui, shop: shop);
+            var step = (TutorialAsyncActionStep)sequence.GetSteps()[5];
+
+            LogAssert.Expect(
+                LogType.Warning,
+                "[Tutorial] hub gift lot 'tutorial_book_box_heartfelt' failed: LimitReached.");
+
+            await step.ExecuteAsync(CancellationToken.None);
+
+            Assert.AreEqual("tutorial_book_box_heartfelt", shop.BoughtLotId);
+            Assert.AreEqual(1, shop.BuyCalls);
+            Assert.IsNull(ui.LastShownWindowType);
+            Assert.IsNull(ui.LastShownArgs);
+        }
+
+        private static ShopLot TutorialLot()
+            => new(
+                "tutorial_book_box_heartfelt",
+                "tutorial",
+                new ShopPrice("gold", 0),
+                "book_box_genre_heartfelt_1",
+                ShopLotLimit.Disposable(1));
+
         private sealed class FakeDayProgress : IDayProgressService
         {
             public event Action<DayProgressState> PhaseChanged;
@@ -136,10 +206,16 @@ namespace Game.Tutorial.Tests.Editor
             public event Action<IWindowController> WindowShown;
             public event Action<IWindowController> WindowHidden;
             public bool ResultsShown { get; set; }
+            public Type LastShownWindowType { get; private set; }
+            public WindowArgs LastShownArgs { get; private set; }
 
             public UniTask<T> ShowAsync<T>(WindowArgs args = null, CancellationToken ct = default)
                 where T : class, IWindowController, new()
-                => UniTask.FromResult<T>(null);
+            {
+                LastShownWindowType = typeof(T);
+                LastShownArgs = args;
+                return UniTask.FromResult<T>(null);
+            }
 
             public UniTask HideAsync<T>(bool forceClose = false, CancellationToken ct = default)
                 where T : class, IWindowController
@@ -158,6 +234,34 @@ namespace Game.Tutorial.Tests.Editor
 
             public bool IsWindowSpawned<T>() where T : class, IWindowController => false;
             public Game.UI.Lock SetManualLock(object owner) => _locks.Acquire(owner);
+        }
+
+        private sealed class FakeShopService : IShopService
+        {
+            public ShopPurchaseResult Result { get; set; } =
+                ShopPurchaseResult.Fail(ShopPurchaseStatus.InternalError);
+
+            public string BoughtLotId { get; private set; }
+            public int BuyCalls { get; private set; }
+
+            public event Action<ShopPurchaseEvent> LotPurchased;
+
+            public IReadOnlyList<ShopLot> GetLots(string storefrontId) => Array.Empty<ShopLot>();
+            public bool TryGetLot(string lotId, out ShopLot lot)
+            {
+                lot = null;
+                return false;
+            }
+
+            public int GetPurchaseCount(string lotId) => 0;
+            public bool IsAvailable(string lotId) => true;
+
+            public UniTask<ShopPurchaseResult> BuyAsync(string lotId, CancellationToken ct)
+            {
+                BoughtLotId = lotId;
+                BuyCalls++;
+                return UniTask.FromResult(Result);
+            }
         }
 
         private sealed class OverlayHarness : IDisposable
