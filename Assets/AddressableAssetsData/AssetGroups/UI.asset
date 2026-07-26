@@ -90,13 +90,13 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: aa9fdc7ac23d342798922793111065d0
-    m_Address: Assets/Game/UI/Fonts/LilitaOne-Regular Outline 40 SDF Atlas.png
+  - m_GUID: a02c528c40ee4c146a9dbb6ae75fe0b7
+    m_Address: RewardsWindow
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b29d91e3cb2876e4aa30f5e4801de68c
-    m_Address: RewardsWindow
+  - m_GUID: aa9fdc7ac23d342798922793111065d0
+    m_Address: Assets/Game/UI/Fonts/LilitaOne-Regular Outline 40 SDF Atlas.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
