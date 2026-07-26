@@ -1,8 +1,7 @@
-using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Inventory.API;
 using Game.UI;
+using SpriteService;
 using VContainer;
 
 namespace Game.Inventory.UI
@@ -11,33 +10,23 @@ namespace Game.Inventory.UI
     public sealed class InventoryWindowController : WindowController<InventoryWindowView>
     {
         private IInventoryService _inventory;
-        private IItemCategoryRegistry _categories;
-        private IInventoryUseRouter _useRouter;
-        private IReadOnlyList<IInventoryItemUseHandler> _handlers;
-        private IReadOnlyList<IInventoryItemInfoProvider> _infoProviders;
+        private IUiSpriteProvider _sprites;
         private IConfigsService _configs;
 
         [Inject]
         public void Construct(
             IInventoryService inventory,
-            IItemCategoryRegistry categories,
-            IInventoryUseRouter useRouter,
-            IReadOnlyList<IInventoryItemUseHandler> handlers,
-            IReadOnlyList<IInventoryItemInfoProvider> infoProviders,
+            IUiSpriteProvider sprites,
             IConfigsService configs)
         {
             _inventory = inventory;
-            _categories = categories;
-            _useRouter = useRouter;
-            _handlers = handlers;
-            _infoProviders = infoProviders;
+            _sprites = sprites;
             _configs = configs;
         }
 
         protected override void OnInit()
         {
-            View.Bind(_inventory, _categories, _useRouter, _handlers, _infoProviders, _configs);
-            View.CloseButton.onClick.AddListener(CloseWindow);
+            View.Bind(_inventory, _sprites, _configs);
         }
 
         protected override void OnShowStart() => View.Refresh();
@@ -45,10 +34,7 @@ namespace Game.Inventory.UI
         protected override void OnDispose()
         {
             if (View == null) return;
-            View.CloseButton.onClick.RemoveListener(CloseWindow);
             View.Teardown();
         }
-
-        private void CloseWindow() => UIManager.HideAsync<InventoryWindowController>().Forget();
     }
 }

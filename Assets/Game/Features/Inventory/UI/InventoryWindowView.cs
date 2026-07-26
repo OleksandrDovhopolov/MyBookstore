@@ -2,188 +2,126 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Inventory.API;
 using Game.UI;
-using TMPro;
+using SpriteService;
+using UIShared;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Game.Inventory.UI
 {
     public class InventoryWindowView : WindowView
     {
-        [Header("Tabs")]
-        [SerializeField] private Transform _tabContainer;
-        [SerializeField] private Button _tabButtonPrefab;
-
         [Header("List")]
-        [SerializeField] private Transform _rowContainer;
-        [SerializeField] private InventoryItemRowView _rowPrefab;
-
-        [Header("Header")]
-        [SerializeField] private TMP_Text _activeCategoryLabel;
-
-        [SerializeField] private Button _closeButton;
+        [SerializeField] private UIListPool<InventoryItemRowView> _rowPool = new();
 
         private IInventoryService _inventory;
-        private IItemCategoryRegistry _categories;
-        private IInventoryUseRouter _useRouter;
-        private IReadOnlyList<IInventoryItemUseHandler> _handlers;
+        private IUiSpriteProvider _sprites;
         private IConfigsService _configs;
 
-        private readonly List<Button> _tabButtons = new();
-        private readonly List<InventoryItemRowView> _rows = new();
-        private readonly HashSet<string> _categoriesWithHandlers = new();
-        private readonly Dictionary<string, IInventoryItemInfoProvider> _infoByCategoryId = new();
-        private string _activeCategoryId;
         private readonly CancellationTokenSource _cts = new();
+        private CancellationTokenSource _renderCts;
         private bool _isBound;
 
-        public Button CloseButton => _closeButton;
-
         /// <summary>
-        /// Called once by the controller in OnInit. Stores deps, builds tabs, subscribes to inventory
-        /// changes and selects the first category. Subsequent re-shows go through <see cref="Refresh"/>.
+        /// Called once by the controller in OnInit. Stores deps and subscribes to inventory
+        /// changes. Subsequent re-shows go through <see cref="Refresh"/>.
         /// </summary>
         public void Bind(
             IInventoryService inventory,
-            IItemCategoryRegistry categories,
-            IInventoryUseRouter useRouter,
-            IReadOnlyList<IInventoryItemUseHandler> handlers,
-            IReadOnlyList<IInventoryItemInfoProvider> infoProviders,
+            IUiSpriteProvider sprites,
             IConfigsService configs)
         {
             if (_isBound) return;
 
             _inventory = inventory;
-            _categories = categories;
-            _useRouter = useRouter;
-            _handlers = handlers;
+            _sprites = sprites;
             _configs = configs;
 
-            if (_inventory == null || _categories == null)
+            if (_inventory == null || _configs == null)
             {
                 Debug.LogWarning("[InventoryWindowView] dependencies missing — not registered in DI?");
                 return;
             }
 
-            for (var i = 0; _handlers != null && i < _handlers.Count; i++)
-                if (_handlers[i] != null) _categoriesWithHandlers.Add(_handlers[i].SupportedCategoryId);
-
-            if (infoProviders != null)
-            {
-                for (var i = 0; i < infoProviders.Count; i++)
-                {
-                    var p = infoProviders[i];
-                    if (p == null || string.IsNullOrEmpty(p.SupportedCategoryId)) continue;
-                    _infoByCategoryId[p.SupportedCategoryId] = p;
-                }
-            }
-
-            BuildTabs();
             _inventory.Changed += OnInventoryChanged;
-
-            var first = _categories.GetAll();
-            if (first.Count > 0) SelectCategory(first[0].Id);
-
             _isBound = true;
+            Render();
         }
 
         public void Refresh()
         {
-            if (!_isBound || string.IsNullOrEmpty(_activeCategoryId)) return;
+            if (!_isBound) return;
             Render();
         }
 
         public void Teardown()
         {
             if (_inventory != null) _inventory.Changed -= OnInventoryChanged;
+            CancelRender();
             if (!_cts.IsCancellationRequested) _cts.Cancel();
             _cts.Dispose();
             _isBound = false;
         }
 
-        private void BuildTabs()
-        {
-            if (_tabContainer == null || _tabButtonPrefab == null) return;
-
-            var all = _categories.GetAll();
-            for (var i = 0; i < all.Count; i++)
-            {
-                var category = all[i];
-                var button = Instantiate(_tabButtonPrefab, _tabContainer);
-                var label = button.GetComponentInChildren<TMP_Text>();
-                if (label != null) label.text = category.DisplayName;
-                var capturedId = category.Id;
-                button.onClick.AddListener(() => SelectCategory(capturedId));
-                _tabButtons.Add(button);
-            }
-        }
-
-        private void SelectCategory(string categoryId)
-        {
-            _activeCategoryId = categoryId;
-
-            if (_activeCategoryLabel != null && _categories.TryGet(categoryId, out var c))
-                _activeCategoryLabel.text = c.DisplayName;
-
-            Render();
-        }
-
         private void Render()
         {
             ClearRows();
-            if (_rowPrefab == null || _rowContainer == null || string.IsNullOrEmpty(_activeCategoryId)) return;
+            if (_rowPool == null) return;
 
-            var items = _inventory.GetByCategory(_activeCategoryId);
-            // Inventory storage is dictionary-backed (random iteration order). Sort by item id so
-            // zero-padded book ids (book_001 ... book_060) render in natural numeric order.
-            var sorted = items.OrderBy(it => it.ItemId, StringComparer.Ordinal).ToList();
+            _renderCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+            var countsByGenre = BuildBookGenreCounts();
+            var genres = Enum.GetValues(typeof(BookGenre)).Cast<BookGenre>().ToList();
 
-            var hasHandler = _categoriesWithHandlers.Contains(_activeCategoryId);
-            _infoByCategoryId.TryGetValue(_activeCategoryId, out var infoProvider);
-            var isBookCategory = _activeCategoryId == InventoryCategories.Book && _configs != null;
-
-            for (var i = 0; i < sorted.Count; i++)
+            for (var i = 0; i < genres.Count; i++)
             {
-                var item = sorted[i];
-                var row = Instantiate(_rowPrefab, _rowContainer);
-
-                if (isBookCategory && _configs.TryGet<BookConfig>(item.ItemId, out var book))
-                {
-                    row.BindBook(item, book, hasHandler, OnUseClicked, i + 1);
-                }
-                else
-                {
-                    var info = infoProvider?.GetInfoFor(item.ItemId);
-                    row.Bind(item, hasHandler, info, OnUseClicked, i + 1);
-                }
-
-                _rows.Add(row);
+                var genre = genres[i];
+                countsByGenre.TryGetValue(genre, out var count);
+                var row = _rowPool.GetNext();
+                row.Bind(genre, count, _sprites, _renderCts.Token);
             }
+
+            _rowPool.DisableNonActive();
+        }
+
+        private Dictionary<BookGenre, int> BuildBookGenreCounts()
+        {
+            var counts = new Dictionary<BookGenre, int>();
+            foreach (BookGenre genre in Enum.GetValues(typeof(BookGenre)))
+                counts[genre] = 0;
+
+            var items = _inventory.GetByCategory(InventoryCategories.Book);
+            for (var i = 0; i < items.Count; i++)
+            {
+                var item = items[i];
+                if (!_configs.TryGet<BookConfig>(item.ItemId, out var book) || book == null) continue;
+                if (!BookGenreExtensions.TryParseGenre(book.PrimaryGenre, out var genre)) continue;
+
+                counts[genre] += item.Count;
+            }
+
+            return counts;
         }
 
         private void ClearRows()
         {
-            for (var i = 0; i < _rows.Count; i++)
-                if (_rows[i] != null) Destroy(_rows[i].gameObject);
-            _rows.Clear();
+            CancelRender();
+            _rowPool?.DisableAll();
+        }
+
+        private void CancelRender()
+        {
+            if (_renderCts == null) return;
+            _renderCts.Cancel();
+            _renderCts.Dispose();
+            _renderCts = null;
         }
 
         private void OnInventoryChanged(InventoryChangeEvent _)
         {
-            if (_isBound && !string.IsNullOrEmpty(_activeCategoryId)) Render();
-        }
-
-        private void OnUseClicked(string itemId) => UseAsync(itemId, _cts.Token).Forget();
-
-        private async UniTaskVoid UseAsync(string itemId, CancellationToken ct)
-        {
-            var result = await _useRouter.UseAsync(itemId, ct);
-            Debug.Log($"[InventoryWindow] use {itemId}: success={result.Success}, consume={result.ConsumeAfterUse}, msg={result.Message}");
+            if (_isBound) Render();
         }
     }
 }

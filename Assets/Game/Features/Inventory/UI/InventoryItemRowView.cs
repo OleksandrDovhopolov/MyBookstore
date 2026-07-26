@@ -1,97 +1,53 @@
 using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
-using Game.Inventory.API;
+using SpriteService;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Game.Inventory.UI
 {
     public sealed class InventoryItemRowView : MonoBehaviour
     {
-        [SerializeField] private TMP_Text _idLabel;
-        [SerializeField] private TMP_Text _countLabel;
-        [SerializeField] private Button _useButton;
-        [SerializeField] private TextMeshProUGUI _index;
+        [SerializeField] private Image _image;
+        [SerializeField] private TextMeshProUGUI _amountText;
 
-        [Header("Book details (optional — only filled for book category)")]
-        [SerializeField] private TMP_Text _titleLabel;
-        [SerializeField] private TMP_Text _authorLabel;
-        [SerializeField] private TMP_Text _genreLabel;
-        [FormerlySerializedAs("_basePriceLabel")]
-        [SerializeField] private TMP_Text _priceLabel;
-        [SerializeField] private TMP_Text _rarityWeightLabel;
-        [SerializeField] private TMP_Text _tagsLabel;
-        [SerializeField] private TMP_Text _moodLabel;
-
-        private string _itemId;
-        private Action<string> _onUse;
-
-        private void Awake()
+        public void Bind(BookGenre genre, int count, IUiSpriteProvider sprites, CancellationToken ct)
         {
-            if (_useButton != null) _useButton.onClick.AddListener(OnUseClicked);
+            if (_amountText != null)
+                _amountText.text = count.ToString();
+
+            SetIcon(null);
+
+            var genreId = genre.ToConfigValue();
+            if (sprites == null || string.IsNullOrEmpty(genreId)) return;
+            LoadIconAsync(genreId, sprites, ct).Forget();
         }
 
-        public void Bind(InventoryItem item, bool hasUseHandler, string info, Action<string> onUse, int index)
+        private async UniTaskVoid LoadIconAsync(string genreId, IUiSpriteProvider sprites, CancellationToken ct)
         {
-            _itemId = item.ItemId;
-            _onUse = onUse;
-
-            if (_index != null) _index.text = $"×{index}";
-
-            if (_idLabel != null)
-                _idLabel.text = string.IsNullOrEmpty(info) ? item.ItemId : $"{item.ItemId} — {info}";
-            if (_countLabel != null)
+            try
             {
-                _countLabel.gameObject.SetActive(item.Count > 1);
-                _countLabel.text = $"×{item.Count}";
+                var sprite = await sprites.GetSpriteAsync(genreId, ct);
+                if (ct.IsCancellationRequested) return;
+                SetIcon(sprite);
             }
-
-            ClearBookDetailLabels();
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[InventoryItemRowView] Failed to load sprite '{genreId}': {e.Message}");
+            }
         }
 
-        /// <summary>
-        /// Bind with full <see cref="BookConfig"/> display. Falls back to <see cref="Bind"/> behavior
-        /// for the common fields, then fills the book-specific labels (any null SerializeField is
-        /// silently skipped — prefab decides which fields to show).
-        /// </summary>
-        public void BindBook(InventoryItem item, BookConfig book, bool hasUseHandler, Action<string> onUse, int index)
+        private void SetIcon(Sprite sprite)
         {
-            Bind(item, hasUseHandler, info: null, onUse, index);
-            if (book == null) return;
-
-            if (_titleLabel != null) _titleLabel.text = book.Title ?? string.Empty;
-            if (_authorLabel != null) _authorLabel.text = book.Author ?? string.Empty;
-            if (_genreLabel != null) _genreLabel.text = book.PrimaryGenre ?? string.Empty;
-            if (_priceLabel != null) _priceLabel.text = $"{BookConfig.FixedPriceGold} gold";
-            if (_rarityWeightLabel != null) _rarityWeightLabel.text = $"R: {book.RarityWeight:F2}";
-            if (_tagsLabel != null)
-                _tagsLabel.text = book.Qualities != null && book.Qualities.Length > 0
-                    ? string.Join(", ", book.Qualities)
-                    : string.Empty;
-            if (_moodLabel != null) _moodLabel.text = string.Empty;
-        }
-
-        private void ClearBookDetailLabels()
-        {
-            if (_titleLabel != null) _titleLabel.text = string.Empty;
-            if (_authorLabel != null) _authorLabel.text = string.Empty;
-            if (_genreLabel != null) _genreLabel.text = string.Empty;
-            if (_priceLabel != null) _priceLabel.text = string.Empty;
-            if (_rarityWeightLabel != null) _rarityWeightLabel.text = string.Empty;
-            if (_tagsLabel != null) _tagsLabel.text = string.Empty;
-            if (_moodLabel != null) _moodLabel.text = string.Empty;
-        }
-
-        private void OnUseClicked()
-        {
-            if (!string.IsNullOrEmpty(_itemId)) _onUse?.Invoke(_itemId);
-        }
-
-        private void OnDestroy()
-        {
-            if (_useButton != null) _useButton.onClick.RemoveListener(OnUseClicked);
+            if (_image == null) return;
+            _image.sprite = sprite;
+            _image.enabled = sprite != null;
         }
     }
 }
