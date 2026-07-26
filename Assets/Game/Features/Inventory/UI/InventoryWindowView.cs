@@ -20,6 +20,7 @@ namespace Game.Inventory.UI
         private IInventoryService _inventory;
         private IUiSpriteProvider _sprites;
         private IConfigsService _configs;
+        private Action<string> _onDecorInfo;
 
         private readonly CancellationTokenSource _cts = new();
         private CancellationTokenSource _renderCts;
@@ -32,13 +33,15 @@ namespace Game.Inventory.UI
         public void Bind(
             IInventoryService inventory,
             IUiSpriteProvider sprites,
-            IConfigsService configs)
+            IConfigsService configs,
+            Action<string> onDecorInfo)
         {
             if (_isBound) return;
 
             _inventory = inventory;
             _sprites = sprites;
             _configs = configs;
+            _onDecorInfo = onDecorInfo;
 
             if (_inventory == null || _configs == null)
             {
@@ -80,7 +83,19 @@ namespace Game.Inventory.UI
                 var genre = genres[i];
                 countsByGenre.TryGetValue(genre, out var count);
                 var row = _rowPool.GetNext();
-                row.Bind(genre, count, _sprites, _renderCts.Token);
+                row.BindGenre(genre, count, _sprites, _renderCts.Token);
+            }
+
+            var decorItems = _inventory.GetByCategory(InventoryCategories.Decor)
+                .OrderBy(it => it.ItemId, StringComparer.Ordinal)
+                .ToList();
+            for (var i = 0; i < decorItems.Count; i++)
+            {
+                var item = decorItems[i];
+                if (!_configs.TryGet<DecorConfig>(item.ItemId, out var decor) || decor == null) continue;
+
+                var row = _rowPool.GetNext();
+                row.BindDecor(decor, _sprites, _onDecorInfo, _renderCts.Token);
             }
 
             _rowPool.DisableNonActive();

@@ -10,7 +10,8 @@
         "Game.Conditions.API",
         "Unity.TextMeshPro",
         "Game.Core.UI",
-        "Infrastructure"
+        "Infrastructure",
+        "Game.Decor"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

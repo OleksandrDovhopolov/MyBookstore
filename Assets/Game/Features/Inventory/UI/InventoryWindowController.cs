@@ -1,4 +1,6 @@
+using Cysharp.Threading.Tasks;
 using Game.Configs;
+using Game.Decor.UI;
 using Game.Inventory.API;
 using Game.UI;
 using SpriteService;
@@ -26,7 +28,7 @@ namespace Game.Inventory.UI
 
         protected override void OnInit()
         {
-            View.Bind(_inventory, _sprites, _configs);
+            View.Bind(_inventory, _sprites, _configs, OnDecorInfoClicked);
         }
 
         protected override void OnShowStart() => View.Refresh();
@@ -35,6 +37,14 @@ namespace Game.Inventory.UI
         {
             if (View == null) return;
             View.Teardown();
+        }
+
+        private void OnDecorInfoClicked(string decorId)
+        {
+            if (string.IsNullOrEmpty(decorId)) return;
+            UIManager.ShowAsync<DecorInfoPopup>(
+                new DecorInfoPopupArgs(decorId),
+                View != null ? View.destroyCancellationToken : default).Forget();
         }
     }
 }
