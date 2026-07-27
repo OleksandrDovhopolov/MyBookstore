@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 579c0b15128c29e40b18717768ec462a
+guid: e7777812596839b4c9653824b44db4fa
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6974765089710819166
-    second: Eddi_0
+      213: -4695078478595397953
+    second: book_shelf_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Eddi_0
+      name: book_shelf_0
       rect:
         serializedVersion: 2
-        x: 68
-        y: 26
-        width: 271
-        height: 564
+        x: 2
+        y: 8
+        width: 1022
+        height: 1470
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e57420c25e75bc060800000000000000
-      internalID: 6974765089710819166
+      spriteID: fb66db2dffab7deb0800000000000000
+      internalID: -4695078478595397953
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Eddi_0: 6974765089710819166
+      book_shelf_0: -4695078478595397953
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

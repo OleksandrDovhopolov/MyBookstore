@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 6b2a85809b26f426cba2bdba01ac4bab
+guid: 1eaa3e0c06e452546891fd25ec358d87
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2970073484504309273
-    second: BackButton_0
+      213: 251224873665614429
+    second: WoodenLine_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -109,17 +109,30 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: BackButton_0
+      name: WoodenLine_0
       rect:
         serializedVersion: 2
-        x: 171
-        y: 152
-        width: 912
-        height: 972
+        x: 0
+        y: 32
+        width: 183
+        height: 12
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7e16057e6ed28c6d0800000000000000
-      internalID: -2970073484504309273
+      spriteID: d52d49901b78c7300800000000000000
+      internalID: 251224873665614429
       vertices: []
       indices: 
       edges: []
@@ -148,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      BackButton_0: -2970073484504309273
+      WoodenLine_0: 251224873665614429
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
