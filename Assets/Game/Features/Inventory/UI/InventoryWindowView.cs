@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Game.Configs;
 using Game.Configs.Models;
+using Game.Decor;
 using Game.Inventory.API;
 using Game.UI;
 using SpriteService;
@@ -20,6 +21,7 @@ namespace Game.Inventory.UI
         private IInventoryService _inventory;
         private IUiSpriteProvider _sprites;
         private IConfigsService _configs;
+        private IDecorPlacementService _decorPlacement;
         private Action<string> _onDecorInfo;
 
         private readonly CancellationTokenSource _cts = new();
@@ -34,6 +36,7 @@ namespace Game.Inventory.UI
             IInventoryService inventory,
             IUiSpriteProvider sprites,
             IConfigsService configs,
+            IDecorPlacementService decorPlacement,
             Action<string> onDecorInfo)
         {
             if (_isBound) return;
@@ -41,6 +44,7 @@ namespace Game.Inventory.UI
             _inventory = inventory;
             _sprites = sprites;
             _configs = configs;
+            _decorPlacement = decorPlacement;
             _onDecorInfo = onDecorInfo;
 
             if (_inventory == null || _configs == null)
@@ -50,6 +54,7 @@ namespace Game.Inventory.UI
             }
 
             _inventory.Changed += OnInventoryChanged;
+            if (_decorPlacement != null) _decorPlacement.PlacementChanged += OnDecorPlacementChanged;
             _isBound = true;
             Render();
         }
@@ -63,6 +68,7 @@ namespace Game.Inventory.UI
         public void Teardown()
         {
             if (_inventory != null) _inventory.Changed -= OnInventoryChanged;
+            if (_decorPlacement != null) _decorPlacement.PlacementChanged -= OnDecorPlacementChanged;
             CancelRender();
             if (!_cts.IsCancellationRequested) _cts.Cancel();
             _cts.Dispose();
@@ -95,10 +101,23 @@ namespace Game.Inventory.UI
                 if (!_configs.TryGet<DecorConfig>(item.ItemId, out var decor) || decor == null) continue;
 
                 var row = _rowPool.GetNext();
-                row.BindDecor(decor, _sprites, _onDecorInfo, _renderCts.Token);
+                row.BindDecor(decor, IsDecorPlaced(item.ItemId), _sprites, _onDecorInfo, _renderCts.Token);
             }
 
             _rowPool.DisableNonActive();
+        }
+
+        private bool IsDecorPlaced(string decorId)
+        {
+            if (_decorPlacement == null || string.IsNullOrEmpty(decorId)) return false;
+
+            foreach (var entry in _decorPlacement.GetAllPlacements())
+            {
+                if (entry != null && string.Equals(entry.DecorId, decorId, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return false;
         }
 
         private Dictionary<BookGenre, int> BuildBookGenreCounts()
@@ -135,6 +154,11 @@ namespace Game.Inventory.UI
         }
 
         private void OnInventoryChanged(InventoryChangeEvent _)
+        {
+            if (_isBound) Render();
+        }
+
+        private void OnDecorPlacementChanged()
         {
             if (_isBound) Render();
         }

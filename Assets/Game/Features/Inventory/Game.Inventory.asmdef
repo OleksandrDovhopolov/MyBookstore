@@ -11,7 +11,8 @@
         "Unity.TextMeshPro",
         "Game.Core.UI",
         "Infrastructure",
-        "Game.Decor"
+        "Game.Decor",
+        "Game.Decor.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
