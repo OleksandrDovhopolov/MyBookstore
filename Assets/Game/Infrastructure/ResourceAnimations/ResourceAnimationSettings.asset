@@ -67,5 +67,5 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  _fallbackSprite: {fileID: -4474103659835750028, guid: a2cb23a4d30833641ad5f7dfa250521d, type: 3}
+  _fallbackSprite: {fileID: -6301429047446442448, guid: 3b3cf1a94b73185489c26ac0ecaa4c50, type: 3}
   _sortingOrder: 3500
