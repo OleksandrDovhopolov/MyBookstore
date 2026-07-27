@@ -8,6 +8,7 @@
         "Game.Rewards.API",
         "Game.Inventory.API",
         "UnityEngine.TestRunner",
+        "Unity.TextMeshPro",
         "Game.Rewards",
         "Game.Shop.API"
     ],

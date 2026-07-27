@@ -21,6 +21,7 @@ namespace Game.Newspaper.UI
         private INewspaperOfferSource _offerSource;
         private IUiSpriteProvider _uiSprites;
         private CancellationTokenSource _cts;
+        private readonly Dictionary<string, NewspaperOfferCardView> _cardsByLotId = new(StringComparer.Ordinal);
 
         [Inject]
         public void InjectServices(
@@ -53,6 +54,7 @@ namespace Game.Newspaper.UI
             _cts = null;
 
             View?.CardsPool?.DisableAll();
+            _cardsByLotId.Clear();
         }
 
         private void RefreshOffers()
@@ -63,6 +65,7 @@ namespace Game.Newspaper.UI
             if (pool == null) return;
 
             pool.DisableAll();
+            _cardsByLotId.Clear();
             SpawnOffers(_offerSource.GetBookOffers(), pool);
             SpawnOffers(_offerSource.GetDecorOffers(), pool);
             pool.DisableNonActive();
@@ -82,6 +85,8 @@ namespace Game.Newspaper.UI
                 var card = pool.GetNext();
                 var capturedLotId = offer.LotId;
                 card.Bind(offer, () => TryBuyAsync(capturedLotId).Forget());
+                if (!string.IsNullOrEmpty(offer.LotId))
+                    _cardsByLotId[offer.LotId] = card;
             }
         }
 
@@ -106,7 +111,7 @@ namespace Game.Newspaper.UI
             if (pool == null) return;
 
             // Snapshot: ActiveElements() is a lazy iterator over the live pool; awaiting inside a
-            // foreach over it would break if the pool changes (e.g. RefreshOffers after a purchase).
+            // foreach over it would break if the window is closed while icons are loading.
             var cards = pool.ActiveElements().ToList();
             foreach (var card in cards)
             {
@@ -130,20 +135,61 @@ namespace Game.Newspaper.UI
 
             var result = await _shop.BuyAsync(lotId, _cts.Token);
 
-            if (result.Status == ShopPurchaseStatus.Success && result.Granted != null
-                && result.Granted.Items.Count > 0)
+            if (result.Status == ShopPurchaseStatus.Success)
             {
-                await UIManager.ShowAsync<RewardsWindow>(
-                    new RewardsWindowArgs(result.Granted, $"Received from {lot.RewardId}"),
-                    _cts.Token);
+                UpdatePurchasedCard(lotId);
+
+                if (result.Granted != null && result.Granted.Items.Count > 0)
+                {
+                    await UIManager.ShowAsync<RewardsWindow>(
+                        new RewardsWindowArgs(result.Granted, $"Received from {lot.RewardId}"),
+                        _cts.Token);
+                }
             }
             else if (result.Status != ShopPurchaseStatus.Success)
             {
                 Debug.Log($"[NewspaperWindow] Purchase '{lotId}' failed: {result.Status}.");
             }
+        }
 
-            RefreshOffers();
-            LoadOfferIconsAsync(_cts.Token).Forget();
+        private void UpdatePurchasedCard(string lotId)
+        {
+            if (string.IsNullOrEmpty(lotId) || !_cardsByLotId.TryGetValue(lotId, out var card) || card == null)
+            {
+                return;
+            }
+
+            if (TryGetCurrentOffer(lotId, out var offer))
+                card.UpdateOfferState(offer);
+        }
+
+        private bool TryGetCurrentOffer(string lotId, out NewspaperOffer offer)
+        {
+            offer = null;
+            if (_offerSource == null || string.IsNullOrEmpty(lotId)) return false;
+
+            return TryFindOffer(_offerSource.GetBookOffers(), lotId, out offer)
+                   || TryFindOffer(_offerSource.GetDecorOffers(), lotId, out offer);
+        }
+
+        private static bool TryFindOffer(
+            IReadOnlyList<NewspaperOffer> offers,
+            string lotId,
+            out NewspaperOffer offer)
+        {
+            offer = null;
+            if (offers == null) return false;
+
+            for (var i = 0; i < offers.Count; i++)
+            {
+                var candidate = offers[i];
+                if (candidate == null || !string.Equals(candidate.LotId, lotId, StringComparison.Ordinal)) continue;
+
+                offer = candidate;
+                return true;
+            }
+
+            return false;
         }
     }
 }

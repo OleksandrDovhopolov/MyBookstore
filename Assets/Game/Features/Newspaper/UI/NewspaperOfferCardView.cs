@@ -26,16 +26,25 @@ namespace Game.Newspaper.UI
             LotId = offer.LotId;
             IconId = offer.IconId;
             SetIcon(icon);
-            if (_priceLabel != null) _priceLabel.text = offer.PriceText;
-            SetSoldVisible(offer.IsDecor && !offer.IsAvailable);
+            UpdateOfferState(offer);
 
             _onBuyClicked = onBuyClicked;
             if (_buyButton != null)
             {
                 _buyButton.onClick.RemoveListener(OnBuyClickedInternal);
                 _buyButton.onClick.AddListener(OnBuyClickedInternal);
-                _buyButton.interactable = offer.IsAvailable;
             }
+        }
+
+        public void UpdateOfferState(NewspaperOffer offer)
+        {
+            if (offer == null) return;
+
+            if (_priceLabel != null) _priceLabel.text = offer.PriceText;
+            SetSoldVisible(offer.IsDecor && !offer.IsAvailable);
+
+            if (_buyButton != null)
+                _buyButton.interactable = offer.IsAvailable;
         }
 
         public void SetIcon(Sprite sprite)
