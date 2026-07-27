@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace Game.Newspaper.Tests.Editor
 {
-    public sealed class NewspaperOfferCardViewTests
+    public sealed class ShopItemViewTests
     {
         [Test]
         public void UpdateOfferState_DecorAvailable_ShowsPriceAndEnablesButton()
@@ -88,7 +88,7 @@ namespace Game.Newspaper.Tests.Editor
             }
         }
 
-        private static NewspaperOffer Offer(bool isDecor, bool isAvailable, string price) =>
+        private static ShopOffer Offer(bool isDecor, bool isAvailable, string price) =>
             new(
                 isDecor ? "decor_lot" : "book_lot",
                 isDecor ? "decor_icon" : "book_box",
@@ -102,7 +102,7 @@ namespace Game.Newspaper.Tests.Editor
         private static Harness Build()
         {
             var root = new GameObject("card");
-            var card = root.AddComponent<NewspaperOfferCardView>();
+            var card = root.AddComponent<ShopItemView>();
 
             var icon = new GameObject("icon").AddComponent<Image>();
             icon.transform.SetParent(root.transform);
@@ -139,7 +139,7 @@ namespace Game.Newspaper.Tests.Editor
         {
             public Harness(
                 GameObject root,
-                NewspaperOfferCardView card,
+                ShopItemView card,
                 Image icon,
                 TextMeshProUGUI priceLabel,
                 GameObject soldRoot,
@@ -156,7 +156,7 @@ namespace Game.Newspaper.Tests.Editor
             }
 
             public GameObject Root { get; }
-            public NewspaperOfferCardView Card { get; }
+            public ShopItemView Card { get; }
             public Image Icon { get; }
             public TextMeshProUGUI PriceLabel { get; }
             public GameObject SoldRoot { get; }

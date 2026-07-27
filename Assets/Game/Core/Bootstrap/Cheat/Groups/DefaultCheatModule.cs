@@ -34,7 +34,7 @@ namespace Game.Cheat
             cheatsContainer.AddItem<CheatButtonItem>(item =>
                 item.OnClick("Open Newspaper", () =>
                 {
-                    _uiManager.ShowAsync<NewspaperWindow>().Forget();
+                    _uiManager.ShowAsync<ShopWindow>().Forget();
                 }));
 
             cheatsContainer.AddItem<CheatButtonItem>(item =>

@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace Game.Newspaper.UI
 {
-    public sealed class NewspaperOfferCardView : MonoBehaviour, ICleanup
+    public sealed class ShopItemView : MonoBehaviour, ICleanup
     {
         [SerializeField] private Image _icon;
         [SerializeField] private TMP_Text _priceLabel;
@@ -19,7 +19,7 @@ namespace Game.Newspaper.UI
         public string LotId { get; private set; }
         public string IconId { get; private set; }
 
-        public void Bind(NewspaperOffer offer, Action onBuyClicked, Sprite icon = null)
+        public void Bind(ShopOffer offer, Action onBuyClicked, Sprite icon = null)
         {
             if (offer == null) return;
 
@@ -36,7 +36,7 @@ namespace Game.Newspaper.UI
             }
         }
 
-        public void UpdateOfferState(NewspaperOffer offer)
+        public void UpdateOfferState(ShopOffer offer)
         {
             if (offer == null) return;
 

@@ -7,7 +7,7 @@ namespace Game.Bootstrap
     {
         public static void RegisterNewspaper(this IContainerBuilder builder)
         {
-            builder.Register<INewspaperOfferSource, ShopBackedNewspaperOfferSource>(Lifetime.Singleton);
+            builder.Register<IShopOfferSource, ShopOfferSource>(Lifetime.Singleton);
         }
     }
 }

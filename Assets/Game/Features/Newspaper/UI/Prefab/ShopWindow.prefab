@@ -489,7 +489,7 @@ GameObject:
   - component: {fileID: -4927027694607511064}
   - component: {fileID: -7912917242110988464}
   m_Layer: 5
-  m_Name: NewspaperWindow
+  m_Name: ShopWindow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

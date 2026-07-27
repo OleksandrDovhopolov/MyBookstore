@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 namespace Game.Shop.Tests.Editor
 {
-    public sealed class NewspaperOfferSourceTests
+    public sealed class ShopOfferSourceTests
     {
         [Test]
         public void GetOffers_FiltersByStorefrontAndFormatsStateAndPrice()
@@ -49,7 +49,7 @@ namespace Game.Shop.Tests.Editor
                 ["decor_free"] = "vintage_globe",
                 ["decor_sold"] = "coffee_pot",
             });
-            var source = new ShopBackedNewspaperOfferSource(shop, configs);
+            var source = new ShopOfferSource(shop, configs);
 
             var books = source.GetBookOffers();
             var decor = source.GetDecorOffers();

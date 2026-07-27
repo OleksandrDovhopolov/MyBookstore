@@ -1,6 +1,6 @@
 namespace Game.Newspaper.UI
 {
-    public sealed class NewspaperOffer
+    public sealed class ShopOffer
     {
         public string LotId { get; }
 
@@ -17,7 +17,7 @@ namespace Game.Newspaper.UI
         public string StateText { get; }
         public bool IsDecor { get; }
 
-        public NewspaperOffer(
+        public ShopOffer(
             string lotId,
             string iconId,
             string displayName,

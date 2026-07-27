@@ -14,20 +14,20 @@ using VContainer;
 namespace Game.Newspaper.UI
 {
     [Window("NewspaperWindow", WindowType.Page, keepInCache: true)]
-    public sealed class NewspaperWindow : WindowController<NewspaperWindowView>
+    public sealed class ShopWindow : WindowController<ShopWindowView>
     {
         private IShopService _shop;
         private IShopConfirmationPolicy _confirmPolicy;
-        private INewspaperOfferSource _offerSource;
+        private IShopOfferSource _offerSource;
         private IUiSpriteProvider _uiSprites;
         private CancellationTokenSource _cts;
-        private readonly Dictionary<string, NewspaperOfferCardView> _cardsByLotId = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, ShopItemView> _cardsByLotId = new(StringComparer.Ordinal);
 
         [Inject]
         public void InjectServices(
             IShopService shop,
             IShopConfirmationPolicy confirmPolicy,
-            INewspaperOfferSource offerSource,
+            IShopOfferSource offerSource,
             IUiSpriteProvider uiSprites)
         {
             _shop = shop;
@@ -72,8 +72,8 @@ namespace Game.Newspaper.UI
         }
 
         private void SpawnOffers(
-            IReadOnlyList<NewspaperOffer> offers,
-            UIListPool<NewspaperOfferCardView> pool)
+            IReadOnlyList<ShopOffer> offers,
+            UIListPool<ShopItemView> pool)
         {
             if (offers == null || offers.Count == 0 || pool == null) return;
 
@@ -105,7 +105,7 @@ namespace Game.Newspaper.UI
         }
 
         private async UniTask LoadIconsForPoolAsync(
-            UIListPool<NewspaperOfferCardView> pool,
+            UIListPool<ShopItemView> pool,
             CancellationToken ct)
         {
             if (pool == null) return;
@@ -163,7 +163,7 @@ namespace Game.Newspaper.UI
                 card.UpdateOfferState(offer);
         }
 
-        private bool TryGetCurrentOffer(string lotId, out NewspaperOffer offer)
+        private bool TryGetCurrentOffer(string lotId, out ShopOffer offer)
         {
             offer = null;
             if (_offerSource == null || string.IsNullOrEmpty(lotId)) return false;
@@ -173,9 +173,9 @@ namespace Game.Newspaper.UI
         }
 
         private static bool TryFindOffer(
-            IReadOnlyList<NewspaperOffer> offers,
+            IReadOnlyList<ShopOffer> offers,
             string lotId,
-            out NewspaperOffer offer)
+            out ShopOffer offer)
         {
             offer = null;
             if (offers == null) return false;

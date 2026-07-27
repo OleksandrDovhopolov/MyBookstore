@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Game.Newspaper.UI
 {
-    public sealed class ShopBackedNewspaperOfferSource : INewspaperOfferSource
+    public sealed class ShopOfferSource : IShopOfferSource
     {
         // Shared sprite id for every book-box offer (book offers do not have a per-lot icon).
         private const string BookOfferIconId = "book_box";
@@ -20,24 +20,24 @@ namespace Game.Newspaper.UI
         private readonly IShopService _shop;
         private readonly IConfigsService _configs;
 
-        public ShopBackedNewspaperOfferSource(IShopService shop, IConfigsService configs)
+        public ShopOfferSource(IShopService shop, IConfigsService configs)
         {
             _shop = shop ?? throw new ArgumentNullException(nameof(shop));
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
         }
 
-        public IReadOnlyList<NewspaperOffer> GetBookOffers() =>
+        public IReadOnlyList<ShopOffer> GetBookOffers() =>
             BuildOffers(NewspaperShopLotIds.StorefrontBooks, isDecor: false);
 
-        public IReadOnlyList<NewspaperOffer> GetDecorOffers() =>
+        public IReadOnlyList<ShopOffer> GetDecorOffers() =>
             BuildOffers(NewspaperShopLotIds.StorefrontDecor, isDecor: true);
 
-        private IReadOnlyList<NewspaperOffer> BuildOffers(string storefrontId, bool isDecor)
+        private IReadOnlyList<ShopOffer> BuildOffers(string storefrontId, bool isDecor)
         {
             var lots = _shop.GetLots(storefrontId);
-            if (lots == null || lots.Count == 0) return Array.Empty<NewspaperOffer>();
+            if (lots == null || lots.Count == 0) return Array.Empty<ShopOffer>();
 
-            var offers = new List<NewspaperOffer>(lots.Count);
+            var offers = new List<ShopOffer>(lots.Count);
             for (var i = 0; i < lots.Count; i++)
             {
                 var lot = lots[i];
@@ -45,7 +45,7 @@ namespace Game.Newspaper.UI
 
                 var isAvailable = _shop.IsAvailable(lot.LotId);
                 var iconId = isDecor ? ResolveDecorIconId(lot.LotId) : BookOfferIconId;
-                offers.Add(new NewspaperOffer(
+                offers.Add(new ShopOffer(
                     lot.LotId,
                     iconId,
                     string.IsNullOrEmpty(lot.DisplayName) ? lot.RewardId : lot.DisplayName,
