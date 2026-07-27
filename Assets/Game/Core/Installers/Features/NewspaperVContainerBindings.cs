@@ -1,4 +1,4 @@
-using Game.Newspaper.UI;
+using Game.Shop.UI;
 using VContainer;
 
 namespace Game.Bootstrap

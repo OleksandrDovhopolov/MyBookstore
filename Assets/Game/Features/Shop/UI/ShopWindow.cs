@@ -11,7 +11,7 @@ using UIShared;
 using UnityEngine;
 using VContainer;
 
-namespace Game.Newspaper.UI
+namespace Game.Shop.UI
 {
     [Window("NewspaperWindow", WindowType.Page, keepInCache: true)]
     public sealed class ShopWindow : WindowController<ShopWindowView>

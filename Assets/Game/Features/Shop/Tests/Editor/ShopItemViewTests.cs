@@ -1,5 +1,5 @@
 using System.Reflection;
-using Game.Newspaper.UI;
+using Game.Shop.UI;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;

@@ -1,4 +1,4 @@
-namespace Game.Newspaper.UI
+namespace Game.Shop.UI
 {
     public sealed class ShopOffer
     {

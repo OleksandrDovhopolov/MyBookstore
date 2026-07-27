@@ -16,9 +16,9 @@
         "Book.Sell.API",
         "Game.Inventory",
         "Game.Decor",
-        "Game.Newspaper",
         "Game.Quest.UI",
-        "Dialogue"
+        "Dialogue",
+        "Game.Shop"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

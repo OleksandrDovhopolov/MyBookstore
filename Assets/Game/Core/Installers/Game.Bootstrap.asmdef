@@ -39,7 +39,6 @@
         "Game.Decor.API",
         "Game.Rewards",
         "Game.Rewards.API",
-        "Game.Newspaper",
         "Game.Shop",
         "Game.Shop.API",
         "Game.Quest",

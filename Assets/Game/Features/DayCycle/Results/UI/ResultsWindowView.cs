@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Game.Newspaper.UI;
 using Game.Rewards.UI;
 using Game.UI;
 using TMPro;

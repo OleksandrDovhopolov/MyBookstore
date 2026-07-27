@@ -6,7 +6,7 @@ using Game.Inventory.API;
 using Game.Shop.API;
 using UnityEngine;
 
-namespace Game.Newspaper.UI
+namespace Game.Shop.UI
 {
     public sealed class ShopOfferSource : IShopOfferSource
     {

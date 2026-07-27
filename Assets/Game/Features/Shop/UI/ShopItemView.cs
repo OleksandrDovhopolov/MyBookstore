@@ -4,7 +4,7 @@ using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Game.Newspaper.UI
+namespace Game.Shop.UI
 {
     public sealed class ShopItemView : MonoBehaviour, ICleanup
     {

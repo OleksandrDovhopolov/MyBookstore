@@ -5,8 +5,9 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
-using Game.Newspaper.UI;
+using Game.Rewards.API;
 using Game.Shop.API;
+using Game.Shop.UI;
 using NUnit.Framework;
 
 namespace Game.Shop.Tests.Editor
@@ -144,7 +145,7 @@ namespace Game.Shop.Tests.Editor
                                 Id = pair.Value,
                                 Category = "decor",
                                 Amount = 1,
-                                Kind = Rewards.API.RewardKind.InventoryItem,
+                                Kind = RewardKind.InventoryItem,
                             },
                         },
                     },

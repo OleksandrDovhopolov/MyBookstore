@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Game.Newspaper.UI
+namespace Game.Shop.UI
 {
     public interface IShopOfferSource
     {

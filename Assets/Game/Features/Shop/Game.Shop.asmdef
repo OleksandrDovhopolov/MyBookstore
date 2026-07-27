@@ -11,7 +11,11 @@
         "Game.Resources.API",
         "Game.Inventory.API",
         "Game.Decor.API",
-        "Analytics"
+        "Analytics",
+        "Infrastructure",
+        "Game.Core.UI",
+        "Unity.TextMeshPro",
+        "Game.Rewards"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
