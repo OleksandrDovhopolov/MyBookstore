@@ -3,8 +3,8 @@ guid: 0e61ca1099f61e44caa6bcfee751c127
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2226755788267270411
-    second: leftLeaf_0
+      213: -6167122365744911384
+    second: GreenLeaves_02_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,7 +126,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: leftLeaf_0
+      name: GreenLeaves_02_0
       rect:
         serializedVersion: 2
         x: 0
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5fec8ce8869f811e0800000000000000
-      internalID: -2226755788267270411
+      spriteID: 8eb686712eaf96aa0800000000000000
+      internalID: -6167122365744911384
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      leftLeaf_0: -2226755788267270411
+      GreenLeaves_02_0: -6167122365744911384
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

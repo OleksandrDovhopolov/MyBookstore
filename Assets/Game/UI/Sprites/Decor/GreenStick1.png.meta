@@ -3,8 +3,8 @@ guid: 51aa20ce3010ea344a088556200e201e
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7589306923234547384
-    second: leafDevider_0
+      213: -8091155261608064967
+    second: GreenStick_2_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,7 +126,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: leafDevider_0
+      name: GreenStick_2_0
       rect:
         serializedVersion: 2
         x: 45
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 849213d209d5da690800000000000000
-      internalID: -7589306923234547384
+      spriteID: 9388159882176bf80800000000000000
+      internalID: -8091155261608064967
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      leafDevider_0: -7589306923234547384
+      GreenStick_2_0: -8091155261608064967
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
