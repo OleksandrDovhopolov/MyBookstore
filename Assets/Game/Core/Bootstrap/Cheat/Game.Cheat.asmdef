@@ -16,7 +16,6 @@
         "Book.Sell.API",
         "Game.Inventory",
         "Game.Decor",
-        "Game.Shop.UI",
         "Game.Newspaper",
         "Game.Quest.UI",
         "Dialogue"

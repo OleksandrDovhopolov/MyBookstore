@@ -4,7 +4,6 @@ using Game.Decor.UI;
 using Game.Inventory.UI;
 using Game.Newspaper.UI;
 using Game.Quest.UI;
-using Game.Shop.UI;
 using Game.UI;
 
 namespace Game.Cheat
@@ -30,12 +29,6 @@ namespace Game.Cheat
                 item.OnClick("Open Decoration", () =>
                 {
                     _uiManager.ShowAsync<DecorPlacementWindow>().Forget();
-                }));
-
-            cheatsContainer.AddItem<CheatButtonItem>(item =>
-                item.OnClick("Open Shop", () =>
-                {
-                    _uiManager.ShowAsync<ClassicShopWindow>().Forget();
                 }));
 
             cheatsContainer.AddItem<CheatButtonItem>(item =>
