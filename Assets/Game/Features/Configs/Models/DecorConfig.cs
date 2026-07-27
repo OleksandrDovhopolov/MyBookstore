@@ -21,12 +21,11 @@ namespace Game.Configs.Models
 
         // Economy
         public int BasePrice { get; set; }
-        public DecorRarity Rarity { get; set; }
 
         /// <summary>
         /// Signed shift to a location's per-visit entry fee while this decor is active (gold).
-        /// Neutral = 0; negative discounts, positive raises. Distinct from <see cref="BasePrice"/>
-        /// (purchase price) and <see cref="DailyUpkeepCost"/>. See docs/SAVE_DAY_FLOW.md.
+        /// Neutral = 0; negative discounts, positive raises. Distinct from <see cref="BasePrice"/>.
+        /// See docs/SAVE_DAY_FLOW.md.
         /// </summary>
         public int VisitCostDelta { get; set; }
 
@@ -41,12 +40,6 @@ namespace Game.Configs.Models
         public float CustomerTrafficPercentDelta { get; set; }
 
         // Reserved (Phase 0: data-only)
-        public string[] Styles { get; set; }
         public string[] AtmosphereTags { get; set; }
-        public bool Paintable { get; set; }
-        public bool Electric { get; set; }
-        public bool Activatable { get; set; }
-        public bool Distracting { get; set; }
-        public int DailyUpkeepCost { get; set; }
     }
 }

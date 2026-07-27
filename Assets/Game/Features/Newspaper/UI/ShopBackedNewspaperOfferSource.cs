@@ -52,7 +52,8 @@ namespace Game.Newspaper.UI
                     lot.Description ?? string.Empty,
                     FormatPrice(lot.Price),
                     isAvailable,
-                    isAvailable ? NewState : SoldState));
+                    isAvailable ? NewState : SoldState,
+                    isDecor));
             }
 
             return offers;

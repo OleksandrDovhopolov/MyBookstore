@@ -13,7 +13,7 @@ using VContainer;
 
 namespace Game.Newspaper.UI
 {
-    [Window("NewspaperWindow", WindowType.Page)]
+    [Window("NewspaperWindow", WindowType.Page, keepInCache: true)]
     public sealed class NewspaperWindow : WindowController<NewspaperWindowView>
     {
         private IShopService _shop;
@@ -52,20 +52,20 @@ namespace Game.Newspaper.UI
             _cts?.Dispose();
             _cts = null;
 
-            View?.BookCardsPool?.DisableAll();
-            View?.DecorCardsPool?.DisableAll();
+            View?.CardsPool?.DisableAll();
         }
 
         private void RefreshOffers()
         {
             if (_offerSource == null || View == null) return;
 
-            View.BookCardsPool.DisableAll();
-            View.DecorCardsPool.DisableAll();
-            SpawnOffers(_offerSource.GetBookOffers(), View.BookCardsPool);
-            SpawnOffers(_offerSource.GetDecorOffers(), View.DecorCardsPool);
-            View.BookCardsPool.DisableNonActive();
-            View.DecorCardsPool.DisableNonActive();
+            var pool = View.CardsPool;
+            if (pool == null) return;
+
+            pool.DisableAll();
+            SpawnOffers(_offerSource.GetBookOffers(), pool);
+            SpawnOffers(_offerSource.GetDecorOffers(), pool);
+            pool.DisableNonActive();
         }
 
         private void SpawnOffers(
@@ -91,8 +91,7 @@ namespace Game.Newspaper.UI
 
             try
             {
-                await LoadIconsForPoolAsync(View.BookCardsPool, ct);
-                await LoadIconsForPoolAsync(View.DecorCardsPool, ct);
+                await LoadIconsForPoolAsync(View.CardsPool, ct);
             }
             catch (OperationCanceledException)
             {

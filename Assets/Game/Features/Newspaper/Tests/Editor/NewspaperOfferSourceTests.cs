@@ -61,6 +61,7 @@ namespace Game.Shop.Tests.Editor
             Assert.AreEqual("30", books[0].PriceText);
             Assert.AreEqual("NEW!", books[0].StateText);
             Assert.IsTrue(books[0].IsAvailable);
+            Assert.IsFalse(books[0].IsDecor);
 
             Assert.AreEqual(2, decor.Count);
             // Icon id comes from decors.json (the lot's decor reward item id), not the shop lot id.
@@ -68,10 +69,12 @@ namespace Game.Shop.Tests.Editor
             Assert.AreEqual("FREE", decor[0].PriceText);
             Assert.AreEqual("NEW!", decor[0].StateText);
             Assert.IsTrue(decor[0].IsAvailable);
+            Assert.IsTrue(decor[0].IsDecor);
             Assert.AreEqual("coffee_pot", decor[1].IconId);
             Assert.AreEqual("50", decor[1].PriceText);
             Assert.AreEqual("SOLD", decor[1].StateText);
             Assert.IsFalse(decor[1].IsAvailable);
+            Assert.IsTrue(decor[1].IsDecor);
         }
 
         private sealed class FakeShopService : IShopService

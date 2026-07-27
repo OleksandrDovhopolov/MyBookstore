@@ -31,7 +31,6 @@ namespace Game.Decor.Tests.Editor.Services
                         DisplayName = "Test",
                         PositionType = DecorPositionType.Standing,
                         Size = DecorSize.Small,
-                        Rarity = DecorRarity.Common,
                         GenreMultipliers = new[] { new DecorGenreModifier { Genre = "Fantasy", Multiplier = 1.5f } },
                     }
                 },

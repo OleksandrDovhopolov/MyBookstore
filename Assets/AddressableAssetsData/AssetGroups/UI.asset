@@ -100,11 +100,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: bc5c515f71dbfe2408eea4e5b93bd08d
-    m_Address: NewspaperWindow
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c70814d0d5d4eae448cf543d98a94c62
     m_Address: JournalWindow
     m_ReadOnly: 0
@@ -117,6 +112,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: eb7817be6dc738e43a517ac8a8a5db85
     m_Address: DecorPlacementWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f735762da0c0f6048a094505aafde0b2
+    m_Address: NewspaperWindow
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

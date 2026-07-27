@@ -1098,13 +1098,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _icon: {fileID: 4981406954138162094}
-  _titleLabel: {fileID: 5136487250877187981}
-  _descriptionLabel: {fileID: 0}
   _priceLabel: {fileID: 7119106785631863028}
-  _stateRoot: {fileID: 7653240805305777213}
-  _stateLabel: {fileID: 3330065802608144015}
-  _buyButton: {fileID: 8110256139389121271}
-  _canvasGroup: {fileID: 8856528453574110138}
+  _soldRoot: {fileID: 7653240805305777213}
 --- !u!225 &8856528453574110138
 CanvasGroup:
   m_ObjectHideFlags: 0

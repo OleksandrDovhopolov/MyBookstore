@@ -15,6 +15,7 @@ namespace Game.Newspaper.UI
         public string PriceText { get; }
         public bool IsAvailable { get; }
         public string StateText { get; }
+        public bool IsDecor { get; }
 
         public NewspaperOffer(
             string lotId,
@@ -23,7 +24,8 @@ namespace Game.Newspaper.UI
             string description,
             string priceText,
             bool isAvailable,
-            string stateText)
+            string stateText,
+            bool isDecor)
         {
             LotId = lotId;
             IconId = iconId;
@@ -32,6 +34,7 @@ namespace Game.Newspaper.UI
             PriceText = priceText;
             IsAvailable = isAvailable;
             StateText = stateText;
+            IsDecor = isDecor;
         }
     }
 }

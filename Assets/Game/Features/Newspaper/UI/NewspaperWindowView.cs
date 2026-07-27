@@ -1,16 +1,16 @@
 using Game.UI;
 using UIShared;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Game.Newspaper.UI
 {
     public sealed class NewspaperWindowView : WindowView
     {
         [Header("Offer prefabs")]
-        [SerializeField] private UIListPool<NewspaperOfferCardView> _bookCardsPool = new();
-        [SerializeField] private UIListPool<NewspaperOfferCardView> _decorCardsPool = new();
+        [FormerlySerializedAs("_bookCardsPool")]
+        [SerializeField] private UIListPool<NewspaperOfferCardView> _cardsPool = new();
 
-        public UIListPool<NewspaperOfferCardView> BookCardsPool => _bookCardsPool;
-        public UIListPool<NewspaperOfferCardView> DecorCardsPool => _decorCardsPool;
+        public UIListPool<NewspaperOfferCardView> CardsPool => _cardsPool;
     }
 }

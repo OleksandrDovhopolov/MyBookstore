@@ -86,9 +86,6 @@ namespace Game.Decor.Services
                 if (!Enum.IsDefined(typeof(DecorSize), decor.Size))
                     report.Errors.Add($"Decor '{decor.Id}' has invalid Size ({(int)decor.Size}).");
 
-                if (!Enum.IsDefined(typeof(DecorRarity), decor.Rarity))
-                    report.Warnings.Add($"Decor '{decor.Id}' has invalid Rarity, will default to Common.");
-
                 if (decor.BasePrice < 0)
                     report.Warnings.Add($"Decor '{decor.Id}' has negative BasePrice ({decor.BasePrice}).");
 
