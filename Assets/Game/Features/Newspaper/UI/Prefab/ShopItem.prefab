@@ -163,7 +163,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _duration: 0.18
-  _animationRoot: {fileID: 905178359396357529}
+  _animationRoot: {fileID: 0}
 --- !u!1 &1365961577589299635
 GameObject:
   m_ObjectHideFlags: 0
