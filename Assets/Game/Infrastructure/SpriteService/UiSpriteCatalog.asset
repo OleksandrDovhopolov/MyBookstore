@@ -27,3 +27,27 @@ MonoBehaviour:
     Address: Kids
   - Key: Travel
     Address: Travel
+  - Key: chinese_vase
+    Address: chinese_vase
+  - Key: coffee_pot
+    Address: coffee_pot
+  - Key: table_frame
+    Address: table_frame
+  - Key: pocket_clock
+    Address: pocket_clock
+  - Key: old_lamp
+    Address: old_lamp
+  - Key: maritime_painting
+    Address: maritime_painting
+  - Key: little_cactus
+    Address: little_cactus
+  - Key: lavender
+    Address: lavender
+  - Key: houseplant
+    Address: houseplant
+  - Key: green_menu
+    Address: green_menu
+  - Key: green_flower
+    Address: green_flower
+  - Key: gas_lighter
+    Address: gas_lighter

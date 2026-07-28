@@ -69,7 +69,7 @@ namespace Game.Shop.UI
             pool.DisableAll();
             _cardsByLotId.Clear();
             SpawnOffers(_offerSource.GetBookOffers(), pool);
-            SpawnOffers(_offerSource.GetDecorOffers(), pool);
+            SpawnOffers(GetDecorOffersForDisplay(_offerSource.GetDecorOffers()), pool);
             pool.DisableNonActive();
         }
 
@@ -185,6 +185,15 @@ namespace Game.Shop.UI
 
             if (TryGetCurrentOffer(lotId, out var offer))
                 card.UpdateOfferState(offer);
+        }
+
+        private static IReadOnlyList<ShopOffer> GetDecorOffersForDisplay(IReadOnlyList<ShopOffer> offers)
+        {
+            if (offers == null || offers.Count <= 1) return offers;
+
+            return offers
+                .OrderBy(offer => offer != null && offer.IsDecor && !offer.IsAvailable ? 1 : 0)
+                .ToList();
         }
 
         private bool TryGetCurrentOffer(string lotId, out ShopOffer offer)
