@@ -455,6 +455,34 @@ PrefabInstance:
       propertyPath: m_Name
       value: LoadingBar
       objectReference: {fileID: 0}
+    - target: {fileID: 2689546994308620935, guid: 0f4f167562f87e24386759bec46e9268, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: dfeedb9dd1c0b473886e97c2a0b71e70, type: 2}
+    - target: {fileID: 2689546994308620935, guid: 0f4f167562f87e24386759bec46e9268, type: 3}
+      propertyPath: m_fontColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2689546994308620935, guid: 0f4f167562f87e24386759bec46e9268, type: 3}
+      propertyPath: m_fontColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2689546994308620935, guid: 0f4f167562f87e24386759bec46e9268, type: 3}
+      propertyPath: m_fontColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2689546994308620935, guid: 0f4f167562f87e24386759bec46e9268, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2100000, guid: c10b326d93e9e774188d7473d302dd5f, type: 2}
+    - target: {fileID: 2689546994308620935, guid: 0f4f167562f87e24386759bec46e9268, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4294967295
+      objectReference: {fileID: 0}
+    - target: {fileID: 2689546994308620935, guid: 0f4f167562f87e24386759bec46e9268, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2689546994308620953, guid: 0f4f167562f87e24386759bec46e9268, type: 3}
       propertyPath: m_Name
       value: StatusText
