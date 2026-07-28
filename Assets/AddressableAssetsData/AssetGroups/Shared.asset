@@ -70,6 +70,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4c7060806bea6c04f9ce61a2b5111426
+    m_Address: milly_letter
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 57328bb3ebe2f3940adeb449d6633978
     m_Address: lavender
     m_ReadOnly: 0
