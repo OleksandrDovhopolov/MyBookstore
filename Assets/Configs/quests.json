@@ -34,5 +34,27 @@
       { "kind": "InventoryItem", "id": "fuel_canister", "category": "consumable", "amount": 2 }
     ],
     "worldEffects": []
+  },
+  {
+    "id": "q_intro_milly",
+    "type": "story",
+    "chainId": null,
+    "titleKey": "quest.q_intro_milly.title",
+    "descriptionKey": "quest.q_intro_milly.desc",
+    "nextQuestIds": [],
+    "activationConditions": { "type": "dayAtLeast", "min": 2 },
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "descriptionKey": "task.q_intro_milly_pick_science",
+        "completionConditions": { "type": "activePickGenre", "genre": "Fact", "min": 5 }
+      }
+    ],
+    "rewards": [
+      { "kind": "InventoryItem", "id": "milly_letter", "category": "quest_item", "amount": 1 },
+      { "kind": "InventoryItem", "id": "fuel_canister", "category": "consumable", "amount": 1 }
+    ],
+    "worldEffects": []
   }
 ]

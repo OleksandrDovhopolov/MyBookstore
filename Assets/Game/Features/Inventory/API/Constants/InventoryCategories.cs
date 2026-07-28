@@ -10,5 +10,6 @@ namespace Game.Inventory.API
         public const string Decor = "decor";
         public const string PuzzlePiece = "puzzle_piece";
         public const string Consumable = "consumable";
+        public const string QuestItem = "quest_item";
     }
 }

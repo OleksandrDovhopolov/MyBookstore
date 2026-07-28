@@ -16,13 +16,16 @@ namespace Game.Inventory.UI
         {
             None,
             Default,
-            Decor
+            Decor,
+            QuestItem
         }
 
         [SerializeField] private GameObject _defaultRoot;
         [SerializeField] private GameObject _decorRoot;
+        [SerializeField] private GameObject _questItemRoot;
         [SerializeField] private Image _defaultImage;
         [SerializeField] private Image _decorImage;
+        [SerializeField] private Image _questItemImage;
         [SerializeField] private GameObject _decorPlacedRoot;
         [SerializeField] private TextMeshProUGUI _amountText;
         [SerializeField] private Button _infoButton;
@@ -66,6 +69,21 @@ namespace Game.Inventory.UI
             SetInfoVisible(true);
 
             if (sprites == null || string.IsNullOrEmpty(config.Id)) return;
+            LoadIconAsync(config.Id, sprites, ct).Forget();
+        }
+
+        public void BindQuestItem(QuestItemConfig config, IUiSpriteProvider sprites, CancellationToken ct)
+        {
+            CancelIconLoad();
+            _decorId = null;
+            _onInfo = null;
+
+            SetVisualMode(VisualMode.QuestItem);
+            SetDecorPlacedVisible(false);
+            if (_amountText != null) _amountText.text = string.Empty;
+            SetInfoVisible(false);
+
+            if (sprites == null || string.IsNullOrEmpty(config?.Id)) return;
             LoadIconAsync(config.Id, sprites, ct).Forget();
         }
 
@@ -127,22 +145,21 @@ namespace Game.Inventory.UI
 
             var defaultImage = GetDefaultImage();
             var decorImage = GetDecorImage();
+            var questItemImage = GetQuestItemImage();
 
             SetImageSprite(defaultImage, null);
             if (decorImage != defaultImage) SetImageSprite(decorImage, null);
+            if (questItemImage != defaultImage && questItemImage != decorImage) SetImageSprite(questItemImage, null);
 
             var defaultRoot = GetDefaultRoot();
             var decorRoot = GetDecorRoot();
+            var questItemRoot = GetQuestItemRoot();
 
-            if (defaultRoot == decorRoot)
-            {
-                SetRootActive(defaultRoot, mode != VisualMode.None);
-            }
-            else
-            {
-                SetRootActive(defaultRoot, mode == VisualMode.Default);
-                SetRootActive(decorRoot, mode == VisualMode.Decor);
-            }
+            SetRootActive(defaultRoot, IsRootActive(defaultRoot, mode, defaultRoot, decorRoot, questItemRoot));
+            if (decorRoot != defaultRoot)
+                SetRootActive(decorRoot, IsRootActive(decorRoot, mode, defaultRoot, decorRoot, questItemRoot));
+            if (questItemRoot != defaultRoot && questItemRoot != decorRoot)
+                SetRootActive(questItemRoot, IsRootActive(questItemRoot, mode, defaultRoot, decorRoot, questItemRoot));
         }
 
         private Image GetActiveImage()
@@ -151,6 +168,7 @@ namespace Game.Inventory.UI
             {
                 VisualMode.Default => GetDefaultImage(),
                 VisualMode.Decor => GetDecorImage(),
+                VisualMode.QuestItem => GetQuestItemImage(),
                 _ => null
             };
         }
@@ -162,7 +180,12 @@ namespace Game.Inventory.UI
 
         private Image GetDecorImage()
         {
-            return _decorImage;
+            return _decorImage != null ? _decorImage : _defaultImage;
+        }
+
+        private Image GetQuestItemImage()
+        {
+            return _questItemImage != null ? _questItemImage : _defaultImage;
         }
 
         private GameObject GetDefaultRoot()
@@ -172,7 +195,12 @@ namespace Game.Inventory.UI
 
         private GameObject GetDecorRoot()
         {
-            return _decorRoot;
+            return _decorRoot != null ? _decorRoot : _defaultRoot;
+        }
+
+        private GameObject GetQuestItemRoot()
+        {
+            return _questItemRoot != null ? _questItemRoot : _defaultRoot;
         }
 
         private void SetImageSprite(Image image, Sprite sprite)
@@ -190,6 +218,23 @@ namespace Game.Inventory.UI
         {
             if (root == null || root == gameObject) return;
             root.SetActive(visible);
+        }
+
+        private static bool IsRootActive(
+            GameObject root,
+            VisualMode mode,
+            GameObject defaultRoot,
+            GameObject decorRoot,
+            GameObject questItemRoot)
+        {
+            if (root == null || mode == VisualMode.None) return false;
+            return mode switch
+            {
+                VisualMode.Default => root == defaultRoot,
+                VisualMode.Decor => root == decorRoot,
+                VisualMode.QuestItem => root == questItemRoot,
+                _ => false
+            };
         }
 
         private void SetDecorPlacedVisible(bool visible)

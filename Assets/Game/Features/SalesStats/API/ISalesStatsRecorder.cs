@@ -19,5 +19,11 @@ namespace Game.SalesStats.API
         /// per-location and per-day tallies. No-op for null/empty or unknown books.
         /// </summary>
         void RecordSold(string bookId, in SaleContext ctx);
+
+        /// <summary>
+        /// Counts one successful active recommendation toward the chosen book's genre. This does not count
+        /// as a sale and does not affect <see cref="ISalesStatsReader.TotalSold"/>.
+        /// </summary>
+        void RecordActivePick(string bookId, in SaleContext ctx);
     }
 }

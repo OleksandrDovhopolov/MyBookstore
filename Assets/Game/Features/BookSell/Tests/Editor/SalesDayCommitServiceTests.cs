@@ -50,16 +50,57 @@ namespace Book.Sell.Tests.Editor
             Assert.AreEqual(0, save.ForceWithSyncSaveCalls);
         }
 
+        [Test]
+        public void CommitAsync_RecordsOnlyExcellentRecommendationsAsActivePicks()
+        {
+            var save = new RecordingSaveService();
+            var delivered = new RecordingDeliveredDialogues(() => save.BlockDepth > 0);
+            var dayProgress = new FakeDayProgress { Current = { CurrentDay = 1 } };
+            var salesStats = new FakeSalesStatsRecorder();
+            var service = CreateService(save, dayProgress, delivered, salesStats);
+            var result = new SalesDayResult { Day = 1, LocationId = "loc" };
+            result.Recommendations.Add(Recommendation("book_fact", RecommendationTier.Excellent));
+            result.Recommendations.Add(Recommendation("book_drama", RecommendationTier.Normal));
+            result.Recommendations.Add(Recommendation("book_crime", RecommendationTier.Failed));
+            result.Recommendations.Add(RecommendationResult.Skipped("req_skip"));
+            result.Recommendations.Add(Recommendation(null, RecommendationTier.Excellent));
+
+            service.CommitAsync(result, CancellationToken.None).GetAwaiter().GetResult();
+
+            CollectionAssert.AreEqual(new[] { "book_fact" }, salesStats.ActivePicks);
+        }
+
+        [Test]
+        public void CommitAsync_AlreadyCompletedDay_DoesNotRecordActivePicks()
+        {
+            var save = new RecordingSaveService();
+            var delivered = new RecordingDeliveredDialogues(() => save.BlockDepth > 0);
+            var dayProgress = new FakeDayProgress { Current = { CurrentDay = 1 } };
+            dayProgress.Current.CompletedDays.Add(1);
+            var salesStats = new FakeSalesStatsRecorder();
+            var service = CreateService(save, dayProgress, delivered, salesStats);
+            var result = new SalesDayResult { Day = 1, LocationId = "loc" };
+            result.Recommendations.Add(Recommendation("book_fact", RecommendationTier.Excellent));
+
+            service.CommitAsync(result, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(0, salesStats.ActivePicks.Count);
+        }
+
+        private static RecommendationResult Recommendation(string bookId, RecommendationTier tier)
+            => new("req", bookId, tier, default, RecommendationReason.Empty, 0);
+
         private static SalesDayCommitService CreateService(
             RecordingSaveService save,
             IDayProgressService dayProgress,
-            IDeliveredDialoguesService delivered)
+            IDeliveredDialoguesService delivered,
+            FakeSalesStatsRecorder salesStats = null)
             => new(
                 save,
                 new FakeResourcesService(),
                 new FakeInventoryService(),
                 new FakeShelfStateService(),
-                new FakeSalesStatsRecorder(),
+                salesStats ?? new FakeSalesStatsRecorder(),
                 dayProgress,
                 new FakeQuestReevaluationGate(),
                 delivered);
@@ -182,8 +223,12 @@ namespace Book.Sell.Tests.Editor
 
         private sealed class FakeSalesStatsRecorder : ISalesStatsRecorder
         {
-            public void RecordSold(string bookId) { }
-            public void RecordSold(string bookId, in SaleContext ctx) { }
+            public readonly List<string> Sold = new();
+            public readonly List<string> ActivePicks = new();
+
+            public void RecordSold(string bookId) => Sold.Add(bookId);
+            public void RecordSold(string bookId, in SaleContext ctx) => Sold.Add(bookId);
+            public void RecordActivePick(string bookId, in SaleContext ctx) => ActivePicks.Add(bookId);
         }
 
         private sealed class FakeQuestReevaluationGate : IQuestReevaluationGate

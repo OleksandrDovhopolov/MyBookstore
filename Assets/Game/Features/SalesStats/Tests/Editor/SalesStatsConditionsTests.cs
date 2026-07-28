@@ -35,7 +35,8 @@ namespace Game.SalesStats.Tests.Editor
             var registry = new ConditionFactoryRegistry(new IConditionFactory[]
             {
                 new SoldGenreAtLocationConditionFactory(svc),
-                new SoldGenreInSingleDayConditionFactory(svc)
+                new SoldGenreInSingleDayConditionFactory(svc),
+                new ActivePickGenreConditionFactory(svc)
             });
             return (svc, new ConditionParser(registry));
         }
@@ -57,9 +58,22 @@ namespace Game.SalesStats.Tests.Editor
                 ["min"] = min
             };
 
+        private static JObject ActivePick(BookGenre genre, int min)
+            => new JObject
+            {
+                ["type"] = ActivePickGenreConditionFactory.TypeId,
+                ["genre"] = genre.ToConfigValue(),
+                ["min"] = min
+            };
+
         private static void Sell(SalesStatsService svc, string bookId, string locationId, int day, int times)
         {
             for (var i = 0; i < times; i++) svc.RecordSold(bookId, new SaleContext(locationId, day));
+        }
+
+        private static void Pick(SalesStatsService svc, string bookId, string locationId, int day, int times)
+        {
+            for (var i = 0; i < times; i++) svc.RecordActivePick(bookId, new SaleContext(locationId, day));
         }
 
         [Test]
@@ -118,6 +132,24 @@ namespace Game.SalesStats.Tests.Editor
 
             Sell(svc, FantasyBook, FarBeach, 7, 5);
             Assert.IsTrue(condition.Evaluate().IsMet, "5 Fantasy at Far Beach in one day satisfies both leaves.");
+        }
+
+        [Test]
+        public void ActivePickGenre_UsesExcellentPickCounter()
+        {
+            var (svc, parser) = Build();
+            var condition = parser.Parse(ActivePick(BookGenre.Fantasy, 2));
+
+            Sell(svc, FantasyBook, FarBeach, 1, 10);
+            Assert.IsFalse(condition.Evaluate().IsMet, "Sales do not count as active picks.");
+
+            Pick(svc, FantasyBook, FarBeach, 1, 2);
+            var result = condition.Evaluate();
+
+            Assert.IsTrue(result.IsMet);
+            Assert.AreEqual(2, result.Current);
+            Assert.AreEqual(2, result.Target);
+            Assert.AreEqual($"activePickGenre.{BookGenre.Fantasy}", result.ReasonKey);
         }
     }
 }

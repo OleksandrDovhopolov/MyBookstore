@@ -39,6 +39,9 @@ namespace Game.SalesStats.Services
         // game day (1-based) -> (genre config value -> count).
         private readonly Dictionary<int, Dictionary<string, int>> _soldByDayGenre = new();
 
+        // Excellent active recommendations keyed by chosen book genre. This is intentionally not a sale.
+        private readonly Dictionary<string, int> _excellentPicksByGenre = new(StringComparer.OrdinalIgnoreCase);
+
         private int _total;
         private bool _loaded;
         private bool _dirty;
@@ -90,6 +93,9 @@ namespace Game.SalesStats.Services
                     max = count;
             return max;
         }
+
+        public int GetExcellentPicks(BookGenre genre)
+            => _excellentPicksByGenre.TryGetValue(genre.ToConfigValue(), out var count) ? count : 0;
 
         // ----- ISalesStatsBaselineSource -----
 
@@ -148,6 +154,15 @@ namespace Game.SalesStats.Services
                 }
             }
 
+            if (plan.ExcellentPickGenres.Count > 0)
+            {
+                baseline.ExcellentPicksByGenre =
+                    new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                foreach (var genre in plan.ExcellentPickGenres)
+                    baseline.ExcellentPicksByGenre[genre] =
+                        _excellentPicksByGenre.TryGetValue(genre, out var count) ? count : 0;
+            }
+
             return baseline;
         }
 
@@ -163,6 +178,7 @@ namespace Game.SalesStats.Services
             _soldByGenre.Clear();
             _soldByLocationGenre.Clear();
             _soldByDayGenre.Clear();
+            _excellentPicksByGenre.Clear();
             _total = 0;
 
             // Normalize fills every known genre with 0 and drops unknown keys (BookGenreCounts).
@@ -189,9 +205,13 @@ namespace Game.SalesStats.Services
                         new Dictionary<string, int>(day.Value, StringComparer.OrdinalIgnoreCase);
                 }
 
+            // v2 saves omit this map (null); migrating up is just an empty fill.
+            foreach (var pair in BookGenreCounts.Normalize(dto?.ExcellentPicksByGenre))
+                _excellentPicksByGenre[pair.Key] = pair.Value;
+
             _loaded = true;
             _dirty = false;
-            Debug.Log($"{LogPrefix} loaded: total={_total}, locations={_soldByLocationGenre.Count}, days={_soldByDayGenre.Count}.");
+            Debug.Log($"{LogPrefix} loaded: total={_total}, locations={_soldByLocationGenre.Count}, days={_soldByDayGenre.Count}, excellentPicks={_excellentPicksByGenre.Count}.");
         }
 
         public UniTask BeforeSaveAsync(CancellationToken ct)
@@ -229,6 +249,25 @@ namespace Game.SalesStats.Services
                 Bump(GetOrAddInner(_soldByDayGenre, ctx.Day), key);
 
             // In-memory only; the real write is deferred to the next save cycle (BeforeSaveAsync).
+            _dirty = true;
+            _save.MarkDirty();
+
+            Changed?.Invoke(new SalesStatsChange(genre, newCount, _total, bookId));
+        }
+
+        public void RecordActivePick(string bookId, in SaleContext ctx)
+        {
+            if (string.IsNullOrEmpty(bookId)) return;
+            if (!_loaded)
+                Debug.LogWarning($"{LogPrefix} RecordActivePick before AfterLoadAsync; mutation will still apply.");
+
+            if (!TryResolveGenre(bookId, out var genre))
+                return;
+
+            var key = genre.ToConfigValue();
+            var newCount = (_excellentPicksByGenre.TryGetValue(key, out var current) ? current : 0) + 1;
+            _excellentPicksByGenre[key] = newCount;
+
             _dirty = true;
             _save.MarkDirty();
 
@@ -277,7 +316,9 @@ namespace Game.SalesStats.Services
             {
                 SoldByGenre = new Dictionary<string, int>(_soldByGenre, StringComparer.OrdinalIgnoreCase),
                 SoldByLocationGenre = CopyLocationGenre(_soldByLocationGenre),
-                SoldByDayGenre = CopyDayGenre(_soldByDayGenre)
+                SoldByDayGenre = CopyDayGenre(_soldByDayGenre),
+                ExcellentPicksByGenre =
+                    new Dictionary<string, int>(_excellentPicksByGenre, StringComparer.OrdinalIgnoreCase)
             };
         }
 
@@ -370,6 +411,10 @@ namespace Game.SalesStats.Services
                 }
                 return max;
             }
+
+            public int GetExcellentPicks(BookGenre genre)
+                => Math.Max(0, _live.GetExcellentPicks(genre) -
+                               BaseGenre(_baseline.ExcellentPicksByGenre, genre));
 
             private static int BaseGenre(Dictionary<string, int> dict, BookGenre genre)
                 => dict != null && dict.TryGetValue(genre.ToConfigValue(), out var v) ? v : 0;

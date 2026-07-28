@@ -527,13 +527,14 @@ namespace Game.Quest.Services
         /// factories are the global registered ones (so mixed trees keep normal non-sales conditions).</summary>
         private IConditionParser BuildScopedParser(ISalesStatsReader scopedReader)
         {
-            var factories = new List<IConditionFactory>(_allFactories.Count + 3);
+            var factories = new List<IConditionFactory>();
             foreach (var f in _allFactories)
                 if (f != null && !SalesConditionTypeIds.Contains(f.Type)) factories.Add(f);
 
             factories.Add(new SoldGenreConditionFactory(scopedReader));
             factories.Add(new SoldGenreAtLocationConditionFactory(scopedReader));
             factories.Add(new SoldGenreInSingleDayConditionFactory(scopedReader));
+            factories.Add(new ActivePickGenreConditionFactory(scopedReader));
 
             return new ConditionParser(new ConditionFactoryRegistry(factories));
         }

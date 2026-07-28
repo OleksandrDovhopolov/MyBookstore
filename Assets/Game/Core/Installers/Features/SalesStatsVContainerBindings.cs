@@ -29,6 +29,7 @@ namespace Game.Bootstrap
             builder.Register<IConditionFactory, SoldGenreConditionFactory>(Lifetime.Singleton);
             builder.Register<IConditionFactory, SoldGenreAtLocationConditionFactory>(Lifetime.Singleton);
             builder.Register<IConditionFactory, SoldGenreInSingleDayConditionFactory>(Lifetime.Singleton);
+            builder.Register<IConditionFactory, ActivePickGenreConditionFactory>(Lifetime.Singleton);
         }
     }
 }

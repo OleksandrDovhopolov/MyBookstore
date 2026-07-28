@@ -143,6 +143,26 @@ namespace Game.Quest.Tests.Editor
                 AssertEddiIntroQuest(root);
         }
 
+        [Test]
+        public void Content_MillyIntro_IsDayTwoActivePickQuestWithLetterAndFuelReward()
+        {
+            foreach (var root in ContentRoots)
+                AssertMillyIntroQuest(root);
+        }
+
+        [Test]
+        public void Content_MillyDiscovery_UsesIntroQuest()
+        {
+            foreach (var root in ContentRoots)
+            {
+                var characters = JsonConvert.DeserializeObject<CharacterConfig[]>(
+                    File.ReadAllText(Path.Combine(root, "characters.json")));
+                var milly = characters.Single(c => c.Id == "milly");
+
+                CollectionAssert.Contains(milly.DiscoveryQuestIds, "q_intro_milly");
+            }
+        }
+
         private static void AssertEddiIntroQuest(string root)
         {
             var quests = JsonConvert.DeserializeObject<QuestConfig[]>(
@@ -166,6 +186,37 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual("fuel_canister", quest.Rewards[0].Id);
             Assert.AreEqual("consumable", quest.Rewards[0].Category);
             Assert.AreEqual(2, quest.Rewards[0].Amount);
+        }
+
+        private static void AssertMillyIntroQuest(string root)
+        {
+            var quests = JsonConvert.DeserializeObject<QuestConfig[]>(
+                File.ReadAllText(Path.Combine(root, "quests.json")));
+
+            var quest = quests.Single(q => q.Id == "q_intro_milly");
+            Assert.AreEqual("story", quest.Type);
+            Assert.IsNotNull(quest.ActivationConditions);
+            Assert.AreEqual("dayAtLeast", quest.ActivationConditions["type"].ToString());
+            Assert.AreEqual(2, (int)quest.ActivationConditions["min"]);
+
+            Assert.AreEqual(1, quest.Tasks.Length);
+            var task = quest.Tasks[0];
+            Assert.AreEqual(1, task.Id);
+            Assert.IsNotNull(task.CompletionConditions);
+            Assert.AreEqual("activePickGenre", task.CompletionConditions["type"].ToString());
+            Assert.AreEqual("Fact", task.CompletionConditions["genre"].ToString());
+            Assert.AreEqual(5, (int)task.CompletionConditions["min"]);
+
+            Assert.AreEqual(2, quest.Rewards.Length);
+            var letter = quest.Rewards.Single(r => r.Id == "milly_letter");
+            Assert.AreEqual("InventoryItem", letter.Kind);
+            Assert.AreEqual("quest_item", letter.Category);
+            Assert.AreEqual(1, letter.Amount);
+
+            var fuel = quest.Rewards.Single(r => r.Id == "fuel_canister");
+            Assert.AreEqual("InventoryItem", fuel.Kind);
+            Assert.AreEqual("consumable", fuel.Category);
+            Assert.AreEqual(1, fuel.Amount);
         }
 
         private static void AssertSalesTask(QuestTaskConfig task, int id, string genre, int min)

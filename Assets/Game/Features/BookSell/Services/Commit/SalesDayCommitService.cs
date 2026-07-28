@@ -93,6 +93,20 @@ namespace Book.Sell.Services
                     }
                 }
 
+                if (result.Recommendations != null)
+                {
+                    foreach (var recommendation in result.Recommendations)
+                    {
+                        if (recommendation == null) continue;
+                        if (recommendation.Tier != RecommendationTier.Excellent) continue;
+                        if (string.IsNullOrEmpty(recommendation.BookId)) continue;
+
+                        _salesStats.RecordActivePick(
+                            recommendation.BookId,
+                            new SaleContext(result.LocationId, result.Day));
+                    }
+                }
+
                 await _save.UpdateModuleAsync(SalesSaveKeys.LastDayResult, result,
                     SalesSaveKeys.LastDayResultSchemaVersion, ct);
 

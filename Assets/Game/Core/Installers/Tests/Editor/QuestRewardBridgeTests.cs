@@ -69,6 +69,36 @@ namespace Game.Bootstrap.Tests.Editor
         }
 
         [Test]
+        public void AwardedQuest_GrantsMultipleInventoryRewardsAcrossCategoriesOnce()
+        {
+            var save = new FakeSaveService();
+            var rewards = new FakeRewards();
+            var quests = new FakeQuests().Set("q_intro_milly", QuestState.Awarded);
+            var configs = new FakeConfigs(Quest("q_intro_milly",
+                InventoryReward("milly_letter", "quest_item", 1),
+                InventoryReward("fuel_canister", "consumable", 1)));
+            var bridge = new QuestRewardBridge(save, configs, quests, rewards);
+
+            bridge.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            bridge.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
+            bridge.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, rewards.Calls.Count);
+            Assert.AreEqual("quest:q_intro_milly", rewards.Calls[0].Source);
+            Assert.AreEqual(2, rewards.Calls[0].Spec.Items.Count);
+
+            Assert.AreEqual("milly_letter", rewards.Calls[0].Spec.Items[0].Id);
+            Assert.AreEqual("quest_item", rewards.Calls[0].Spec.Items[0].Category);
+            Assert.AreEqual(1, rewards.Calls[0].Spec.Items[0].Amount);
+            Assert.AreEqual(RewardKind.InventoryItem, rewards.Calls[0].Spec.Items[0].Kind);
+
+            Assert.AreEqual("fuel_canister", rewards.Calls[0].Spec.Items[1].Id);
+            Assert.AreEqual("consumable", rewards.Calls[0].Spec.Items[1].Category);
+            Assert.AreEqual(1, rewards.Calls[0].Spec.Items[1].Amount);
+            Assert.AreEqual(RewardKind.InventoryItem, rewards.Calls[0].Spec.Items[1].Kind);
+        }
+
+        [Test]
         public void SavedLedger_PreventsGrantAfterReload()
         {
             var save = new FakeSaveService();

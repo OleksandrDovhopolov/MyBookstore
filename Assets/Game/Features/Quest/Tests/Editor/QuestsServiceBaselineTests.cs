@@ -64,6 +64,12 @@ namespace Game.Quest.Tests.Editor
                 for (var i = 0; i < times; i++)
                     Sales.RecordSold(FantasyBook, new Game.SalesStats.API.SaleContext(FarBeach, day));
             }
+
+            public void Pick(int day, int times)
+            {
+                for (var i = 0; i < times; i++)
+                    Sales.RecordActivePick(FantasyBook, new Game.SalesStats.API.SaleContext(FarBeach, day));
+            }
         }
 
         private static Harness Build(IConditionFactory extra, params QuestConfig[] quests)
@@ -82,6 +88,7 @@ namespace Game.Quest.Tests.Editor
                 new SoldGenreConditionFactory(sales),
                 new SoldGenreAtLocationConditionFactory(sales),
                 new SoldGenreInSingleDayConditionFactory(sales),
+                new ActivePickGenreConditionFactory(sales),
                 new DayAtLeastConditionFactory(dayProgress)
             };
             if (extra != null) factories.Add(extra);
@@ -139,6 +146,31 @@ namespace Game.Quest.Tests.Editor
 
             h.Sell(2, 1);
             Assert.AreEqual(QuestState.Awarded, State(quests, "q_intro_eddi"));
+        }
+
+        [Test]
+        public void ActivePickQuest_ActivatesOnDayTwo_AndIgnoresPicksBeforeActivation()
+        {
+            var quest = QuestCfg("q_intro_milly", Sales(SalesConditionTypeIds.ActivePickGenre, 5));
+            quest.ActivationConditions = new JObject { ["type"] = "dayAtLeast", ["min"] = 2 };
+
+            var h = Build(null, quest);
+            h.DayProgress.Current.CurrentDay = 1;
+            h.Pick(1, 5);
+
+            var quests = h.NewQuests();
+            quests.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            Assert.AreEqual(QuestState.Pending, State(quests, "q_intro_milly"));
+
+            h.DayProgress.Current.CurrentDay = 2;
+            h.DayProgress.SetPhaseAsync(DayPhase.Morning, CancellationToken.None).GetAwaiter().GetResult();
+            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_milly"));
+
+            h.Pick(2, 4);
+            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_milly"));
+
+            h.Pick(2, 1);
+            Assert.AreEqual(QuestState.Awarded, State(quests, "q_intro_milly"));
         }
 
         [Test]

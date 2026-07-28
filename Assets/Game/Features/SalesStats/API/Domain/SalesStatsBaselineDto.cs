@@ -17,6 +17,9 @@ namespace Game.SalesStats.API
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, SalesStatsSingleDayBaselineDto> SoldInSingleDayGenre { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public Dictionary<string, int> ExcellentPicksByGenre { get; set; }
     }
 
     public sealed class SalesStatsSingleDayBaselineDto

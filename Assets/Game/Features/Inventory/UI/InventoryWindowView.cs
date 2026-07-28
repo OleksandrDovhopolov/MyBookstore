@@ -104,6 +104,18 @@ namespace Game.Inventory.UI
                 row.BindDecor(decor, IsDecorPlaced(item.ItemId), _sprites, _onDecorInfo, _renderCts.Token);
             }
 
+            var questItems = _inventory.GetByCategory(InventoryCategories.QuestItem)
+                .OrderBy(it => it.ItemId, StringComparer.Ordinal)
+                .ToList();
+            for (var i = 0; i < questItems.Count; i++)
+            {
+                var item = questItems[i];
+                if (!_configs.TryGet<QuestItemConfig>(item.ItemId, out var questItem) || questItem == null) continue;
+
+                var row = _rowPool.GetNext();
+                row.BindQuestItem(questItem, _sprites, _renderCts.Token);
+            }
+
             _rowPool.DisableNonActive();
         }
 

@@ -10,7 +10,8 @@
     "id": "milly",
     "displayNameKey": "character.milly.name",
     "portraitKey": "milly",
-    "favoriteGenres": ["Drama", "Crime", "Classic"]
+    "favoriteGenres": ["Drama", "Crime", "Classic"],
+    "discoveryQuestIds": ["q_intro_milly"]
   },
   {
     "id": "tara",

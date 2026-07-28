@@ -21,9 +21,16 @@ namespace Game.SalesStats.Conditions
         public const string SoldGenre = SoldGenreConditionFactory.TypeId;
         public const string SoldGenreAtLocation = SoldGenreAtLocationConditionFactory.TypeId;
         public const string SoldGenreInSingleDay = SoldGenreInSingleDayConditionFactory.TypeId;
+        public const string ActivePickGenre = ActivePickGenreConditionFactory.TypeId;
 
         private static readonly HashSet<string> Set =
-            new(StringComparer.OrdinalIgnoreCase) { SoldGenre, SoldGenreAtLocation, SoldGenreInSingleDay };
+            new(StringComparer.OrdinalIgnoreCase)
+            {
+                SoldGenre,
+                SoldGenreAtLocation,
+                SoldGenreInSingleDay,
+                ActivePickGenre
+            };
 
         public static bool Contains(string type) => !string.IsNullOrEmpty(type) && Set.Contains(type);
     }
