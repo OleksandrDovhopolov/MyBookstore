@@ -192,5 +192,15 @@
       { "genre": "Drama", "multiplier": 1.2 }
     ],
     "atmosphereTags": ["fresh", "flowers"]
+  },
+  {
+    "id": "harper_castle_donation_box",
+    "displayName": "Harper Castle Donation Box",
+    "iconAddress": "Decor/HarperCastleDonationBox",
+    "positionType": "Standing",
+    "size": "Small",
+    "basePrice": 0,
+    "genreMultipliers": [],
+    "atmosphereTags": ["charity", "counter"]
   }
 ]

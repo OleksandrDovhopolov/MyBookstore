@@ -13,26 +13,42 @@ namespace Game.Shop.UI
         [SerializeField] private GameObject _soldRoot;
         [SerializeField] private GameObject _priceRoot;
         [SerializeField] private Button _buyButton;
+        [SerializeField] private Button _decorInfoButton;
 
         private Action _onBuyClicked;
+        private Action<string> _onDecorInfoClicked;
+        private bool _isDecor;
 
         public string LotId { get; private set; }
         public string IconId { get; private set; }
 
-        public void Bind(ShopOffer offer, Action onBuyClicked, Sprite icon = null)
+        public void Bind(
+            ShopOffer offer,
+            Action onBuyClicked,
+            Sprite icon = null,
+            Action<string> onDecorInfoClicked = null)
         {
             if (offer == null) return;
 
             LotId = offer.LotId;
             IconId = offer.IconId;
+            _isDecor = offer.IsDecor;
+            _onBuyClicked = onBuyClicked;
+            _onDecorInfoClicked = onDecorInfoClicked;
+
             SetIcon(icon);
             UpdateOfferState(offer);
 
-            _onBuyClicked = onBuyClicked;
             if (_buyButton != null)
             {
                 _buyButton.onClick.RemoveListener(OnBuyClickedInternal);
                 _buyButton.onClick.AddListener(OnBuyClickedInternal);
+            }
+
+            if (_decorInfoButton != null)
+            {
+                _decorInfoButton.onClick.RemoveListener(OnDecorInfoClickedInternal);
+                _decorInfoButton.onClick.AddListener(OnDecorInfoClickedInternal);
             }
         }
 
@@ -45,6 +61,9 @@ namespace Game.Shop.UI
 
             if (_buyButton != null)
                 _buyButton.interactable = offer.IsAvailable;
+
+            if (_decorInfoButton != null)
+                _decorInfoButton.interactable = offer.IsDecor && _onDecorInfoClicked != null;
         }
 
         public void SetIcon(Sprite sprite)
@@ -54,6 +73,12 @@ namespace Game.Shop.UI
         }
 
         private void OnBuyClickedInternal() => _onBuyClicked?.Invoke();
+
+        private void OnDecorInfoClickedInternal()
+        {
+            if (!_isDecor || string.IsNullOrEmpty(IconId)) return;
+            _onDecorInfoClicked?.Invoke(IconId);
+        }
 
         private void SetSoldVisible(bool visible)
         {
@@ -67,8 +92,15 @@ namespace Game.Shop.UI
         {
             if (_buyButton != null)
                 _buyButton.onClick.RemoveListener(OnBuyClickedInternal);
+            if (_decorInfoButton != null)
+            {
+                _decorInfoButton.onClick.RemoveListener(OnDecorInfoClickedInternal);
+                _decorInfoButton.interactable = false;
+            }
 
             _onBuyClicked = null;
+            _onDecorInfoClicked = null;
+            _isDecor = false;
             LotId = null;
             IconId = null;
             SetIcon(null);

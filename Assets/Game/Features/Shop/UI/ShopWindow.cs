@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Decor.UI;
 using Game.Rewards.UI;
 using Game.Shop.API;
 using Game.UI;
@@ -84,10 +85,22 @@ namespace Game.Shop.UI
 
                 var card = pool.GetNext();
                 var capturedLotId = offer.LotId;
-                card.Bind(offer, () => TryBuyAsync(capturedLotId).Forget());
+                card.Bind(
+                    offer,
+                    () => TryBuyAsync(capturedLotId).Forget(),
+                    onDecorInfoClicked: ShowDecorInfo);
                 if (!string.IsNullOrEmpty(offer.LotId))
                     _cardsByLotId[offer.LotId] = card;
             }
+        }
+
+        private void ShowDecorInfo(string decorId)
+        {
+            if (string.IsNullOrEmpty(decorId)) return;
+
+            UIManager.ShowAsync<DecorInfoPopup>(
+                new DecorInfoPopupArgs(decorId),
+                _cts != null ? _cts.Token : default).Forget();
         }
 
         private async UniTaskVoid LoadOfferIconsAsync(CancellationToken ct)

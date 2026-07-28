@@ -4,17 +4,19 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
+using Game.Inventory.API;
+using Game.Shop.API;
 using UnityEngine;
 using VContainer.Unity;
 
 namespace Game.Decor.Services
 {
     /// <summary>
-    /// Validates DecorConfig and BookShopConfig.DecorSlots at boot. Awaits <see cref="IConfigsService.WarmupAsync"/>
+    /// Validates DecorConfig, BookShopConfig.DecorSlots, and decor rewards at boot.
+    /// Awaits <see cref="IConfigsService.WarmupAsync"/>
     /// first so configs are guaranteed to be loaded regardless of entry-point registration order.
     /// In Editor, errors throw to block Play mode; in runtime builds, errors are logged and the
     /// affected entries get effectively ignored downstream.
-    /// See docs/INPROGRESS/Decor.md §11.5 for the rule list.
     /// </summary>
     public sealed class DecorConfigValidator : IAsyncStartable
     {
@@ -50,15 +52,21 @@ namespace Game.Decor.Services
         public ValidationReport Validate()
         {
             var report = new ValidationReport();
-            ValidateDecors(report);
+            var decorIds = ValidateDecors(report);
             ValidateBookShops(report);
+            var decorReferences = CollectDecorReferences();
+            var decorIdSet = new HashSet<string>(decorIds, StringComparer.OrdinalIgnoreCase);
+            ValidateDecorReferences(report, decorIdSet, decorReferences);
+            ValidateDecorStorefronts(report, decorReferences);
+            ValidateDecorReachability(report, decorIds, decorReferences);
             return report;
         }
 
-        private void ValidateDecors(ValidationReport report)
+        private List<string> ValidateDecors(ValidationReport report)
         {
             var decors = _configs.GetAll<DecorConfig>();
             var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var orderedIds = new List<string>(decors.Count);
 
             var knownGenres = CollectKnownGenres();
 
@@ -75,6 +83,10 @@ namespace Game.Decor.Services
                 if (!ids.Add(decor.Id))
                 {
                     report.Errors.Add($"Duplicate DecorConfig Id '{decor.Id}'.");
+                }
+                else
+                {
+                    orderedIds.Add(decor.Id);
                 }
 
                 if (string.IsNullOrEmpty(decor.DisplayName))
@@ -116,6 +128,8 @@ namespace Game.Decor.Services
                     }
                 }
             }
+
+            return orderedIds;
         }
 
         private void ValidateBookShops(ValidationReport report)
@@ -164,6 +178,131 @@ namespace Game.Decor.Services
                     set.Add(books[i].PrimaryGenre);
             }
             return set;
+        }
+
+        private List<DecorReference> CollectDecorReferences()
+        {
+            var references = new List<DecorReference>();
+            CollectShopDecorReferences(references);
+            CollectQuestDecorReferences(references);
+            return references;
+        }
+
+        private void CollectShopDecorReferences(List<DecorReference> references)
+        {
+            var lots = _configs.GetAll<ShopConfig>();
+            for (var i = 0; i < lots.Count; i++)
+            {
+                var lot = lots[i];
+                if (lot?.RewardItems == null) continue;
+
+                for (var j = 0; j < lot.RewardItems.Length; j++)
+                {
+                    var item = lot.RewardItems[j];
+                    if (!IsDecorReward(item?.Id, item?.Category)) continue;
+
+                    references.Add(new DecorReference(
+                        item.Id,
+                        $"Shop lot '{lot.Id}'",
+                        lot.Id,
+                        lot.StorefrontId,
+                        isShopLot: true));
+                }
+            }
+        }
+
+        private void CollectQuestDecorReferences(List<DecorReference> references)
+        {
+            var quests = _configs.GetAll<QuestConfig>();
+            for (var i = 0; i < quests.Count; i++)
+            {
+                var quest = quests[i];
+                if (quest?.Rewards == null) continue;
+
+                for (var j = 0; j < quest.Rewards.Length; j++)
+                {
+                    var reward = quest.Rewards[j];
+                    if (!IsDecorReward(reward?.Id, reward?.Category)) continue;
+
+                    references.Add(new DecorReference(
+                        reward.Id,
+                        $"Quest '{quest.Id}'",
+                        null,
+                        null,
+                        isShopLot: false));
+                }
+            }
+        }
+
+        private static bool IsDecorReward(string id, string category) =>
+            !string.IsNullOrEmpty(id)
+            && string.Equals(category, InventoryCategories.Decor, StringComparison.OrdinalIgnoreCase);
+
+        private static void ValidateDecorReferences(
+            ValidationReport report,
+            HashSet<string> decorIdSet,
+            List<DecorReference> references)
+        {
+            var reported = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < references.Count; i++)
+            {
+                var reference = references[i];
+                if (decorIdSet.Contains(reference.DecorId)) continue;
+
+                var key = $"{reference.Origin}|{reference.DecorId}";
+                if (reported.Add(key))
+                    report.Errors.Add($"{reference.Origin} grants decor '{reference.DecorId}' which has no DecorConfig — reward will be unusable.");
+            }
+        }
+
+        private static void ValidateDecorStorefronts(ValidationReport report, List<DecorReference> references)
+        {
+            var reportedLots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < references.Count; i++)
+            {
+                var reference = references[i];
+                if (!reference.IsShopLot) continue;
+                if (string.Equals(reference.StorefrontId, NewspaperShopLotIds.StorefrontDecor, StringComparison.OrdinalIgnoreCase)) continue;
+                if (!reportedLots.Add(reference.ShopLotId)) continue;
+
+                report.Warnings.Add(
+                    $"Shop lot '{reference.ShopLotId}' grants decor but sits in storefront '{reference.StorefrontId}' (expected '{NewspaperShopLotIds.StorefrontDecor}') — it will not appear in the shop.");
+            }
+        }
+
+        private static void ValidateDecorReachability(
+            ValidationReport report,
+            List<string> decorIds,
+            List<DecorReference> references)
+        {
+            var grantedDecorIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < references.Count; i++)
+                grantedDecorIds.Add(references[i].DecorId);
+
+            for (var i = 0; i < decorIds.Count; i++)
+            {
+                var decorId = decorIds[i];
+                if (!grantedDecorIds.Contains(decorId))
+                    report.Warnings.Add($"Decor '{decorId}' is not granted by any shop lot or quest reward — unreachable by the player.");
+            }
+        }
+
+        private readonly struct DecorReference
+        {
+            public readonly string DecorId;
+            public readonly string Origin;
+            public readonly string ShopLotId;
+            public readonly string StorefrontId;
+            public readonly bool IsShopLot;
+
+            public DecorReference(string decorId, string origin, string shopLotId, string storefrontId, bool isShopLot)
+            {
+                DecorId = decorId;
+                Origin = origin;
+                ShopLotId = shopLotId;
+                StorefrontId = storefrontId;
+                IsShopLot = isShopLot;
+            }
         }
     }
 }

@@ -88,6 +88,50 @@ namespace Game.Newspaper.Tests.Editor
             }
         }
 
+        [Test]
+        public void Bind_DecorOffer_EnablesDecorInfoButtonAndPassesDecorId()
+        {
+            var h = Build();
+            try
+            {
+                string clickedDecorId = null;
+
+                h.Card.Bind(
+                    Offer(isDecor: true, isAvailable: true, price: "50"),
+                    null,
+                    onDecorInfoClicked: id => clickedDecorId = id);
+
+                Assert.IsTrue(h.DecorInfoButton.interactable);
+
+                h.DecorInfoButton.onClick.Invoke();
+
+                Assert.AreEqual("decor_icon", clickedDecorId);
+            }
+            finally
+            {
+                Object.DestroyImmediate(h.Root);
+            }
+        }
+
+        [Test]
+        public void Bind_BookOffer_DisablesDecorInfoButton()
+        {
+            var h = Build();
+            try
+            {
+                h.Card.Bind(
+                    Offer(isDecor: false, isAvailable: true, price: "30"),
+                    null,
+                    onDecorInfoClicked: _ => { });
+
+                Assert.IsFalse(h.DecorInfoButton.interactable);
+            }
+            finally
+            {
+                Object.DestroyImmediate(h.Root);
+            }
+        }
+
         private static ShopOffer Offer(bool isDecor, bool isAvailable, string price) =>
             new(
                 isDecor ? "decor_lot" : "book_lot",
@@ -119,13 +163,17 @@ namespace Game.Newspaper.Tests.Editor
             var button = new GameObject("button").AddComponent<Button>();
             button.transform.SetParent(root.transform);
 
+            var decorInfoButton = new GameObject("decorInfoButton").AddComponent<Button>();
+            decorInfoButton.transform.SetParent(root.transform);
+
             SetField(card, "_icon", icon);
             SetField(card, "_priceLabel", priceLabel);
             SetField(card, "_soldRoot", soldRoot);
             SetField(card, "_priceRoot", priceRoot);
             SetField(card, "_buyButton", button);
+            SetField(card, "_decorInfoButton", decorInfoButton);
 
-            return new Harness(root, card, icon, priceLabel, soldRoot, priceRoot, button);
+            return new Harness(root, card, icon, priceLabel, soldRoot, priceRoot, button, decorInfoButton);
         }
 
         private static void SetField(object target, string name, object value)
@@ -144,7 +192,8 @@ namespace Game.Newspaper.Tests.Editor
                 TextMeshProUGUI priceLabel,
                 GameObject soldRoot,
                 GameObject priceRoot,
-                Button button)
+                Button button,
+                Button decorInfoButton)
             {
                 Root = root;
                 Card = card;
@@ -153,6 +202,7 @@ namespace Game.Newspaper.Tests.Editor
                 SoldRoot = soldRoot;
                 PriceRoot = priceRoot;
                 Button = button;
+                DecorInfoButton = decorInfoButton;
             }
 
             public GameObject Root { get; }
@@ -162,6 +212,7 @@ namespace Game.Newspaper.Tests.Editor
             public GameObject SoldRoot { get; }
             public GameObject PriceRoot { get; }
             public Button Button { get; }
+            public Button DecorInfoButton { get; }
         }
     }
 }
