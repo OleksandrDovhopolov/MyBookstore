@@ -30,7 +30,7 @@ namespace Game.Configs.Tests.Editor
   },
   {
     ""id"": ""eddi_intro"",
-    ""activationQuestId"": ""q_intro_eddi"",
+    ""dayIndex"": 1,
     ""characterId"": ""eddi"",
     ""dialogueId"": ""eddy1"",
     ""passiveAttempts"": [
@@ -60,8 +60,9 @@ namespace Game.Configs.Tests.Editor
             Assert.IsFalse(script.PassiveAttempts[0].ForceHit);
 
             var eddi = scripts[1];
-            Assert.IsFalse(eddi.DayIndex.HasValue);
-            Assert.AreEqual("q_intro_eddi", eddi.ActivationQuestId);
+            Assert.IsTrue(eddi.DayIndex.HasValue);
+            Assert.AreEqual(1, eddi.DayIndex.Value);
+            Assert.IsNull(eddi.ActivationQuestId);
             Assert.AreEqual("eddy1", eddi.DialogueId);
             Assert.AreEqual("eddi", eddi.CharacterId);
             Assert.AreEqual(2, eddi.PassiveAttempts.Length);
@@ -83,7 +84,9 @@ namespace Game.Configs.Tests.Editor
 
             var eddi = service.Get<CustomerScriptConfig>("eddi_intro");
             Assert.IsNotNull(eddi);
-            Assert.AreEqual("q_intro_eddi", eddi.ActivationQuestId);
+            Assert.IsTrue(eddi.DayIndex.HasValue);
+            Assert.AreEqual(1, eddi.DayIndex.Value);
+            Assert.IsNull(eddi.ActivationQuestId);
         }
 
         [Test]
@@ -201,8 +204,9 @@ namespace Game.Configs.Tests.Editor
                 File.ReadAllText(Path.Combine(root, "books.json")));
 
             var script = scripts.Single(s => s.Id == "eddi_intro");
-            Assert.IsFalse(script.DayIndex.HasValue);
-            Assert.AreEqual("q_intro_eddi", script.ActivationQuestId);
+            Assert.IsTrue(script.DayIndex.HasValue);
+            Assert.AreEqual(1, script.DayIndex.Value);
+            Assert.IsNull(script.ActivationQuestId);
             Assert.AreEqual("eddi", script.CharacterId);
             Assert.AreEqual("eddy1", script.DialogueId);
             Assert.AreEqual(2, script.PassiveAttempts.Length);

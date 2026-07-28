@@ -11,6 +11,7 @@ namespace Game.Inventory.Tests.Editor
     {
         private const string BookCategory = "book";
         private const string PuzzleCategory = "puzzle_piece";
+        private const string ConsumableCategory = "consumable";
 
         private static (InventoryService svc, FakeInventoryRepository repo, FakeSaveService save) Build()
         {
@@ -19,6 +20,7 @@ namespace Game.Inventory.Tests.Editor
             var registry = new ItemCategoryRegistry();
             registry.Register(new ItemCategory(BookCategory, ItemStackingMode.Unique, "Books"));
             registry.Register(new ItemCategory(PuzzleCategory, ItemStackingMode.Stack, "Puzzle Pieces"));
+            registry.Register(new ItemCategory(ConsumableCategory, ItemStackingMode.Stack, "Consumables"));
             var svc = new InventoryService(save, repo, registry);
             // Force AfterLoadAsync to populate cache from repo.
             svc.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
@@ -79,6 +81,17 @@ namespace Game.Inventory.Tests.Editor
             svc.AddAsync("p1", PuzzleCategory, 3, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(5, svc.GetCount("p1"));
+        }
+
+        [Test]
+        public void AddConsumable_FuelCanister_Stacks()
+        {
+            var (svc, _, _) = Build();
+            svc.AddAsync("fuel_canister", ConsumableCategory, 2, CancellationToken.None).GetAwaiter().GetResult();
+            svc.AddAsync("fuel_canister", ConsumableCategory, 2, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(4, svc.GetCount("fuel_canister"));
+            Assert.AreEqual(1, svc.GetByCategory(ConsumableCategory).Count);
         }
 
         [Test]

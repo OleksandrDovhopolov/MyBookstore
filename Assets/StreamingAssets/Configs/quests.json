@@ -6,20 +6,33 @@
     "titleKey": "quest.q_intro_eddi.title",
     "descriptionKey": "quest.q_intro_eddi.desc",
     "nextQuestIds": [],
-    "activationConditions": null,
+    "activationConditions": { "type": "dayAtLeast", "min": 2 },
     "failConditions": null,
     "tasks": [
       {
         "id": 1,
-        "descriptionKey": "task.q_intro_eddi_meet",
-        "completionConditions": {
-          "all": [
-            { "type": "visitLocation", "locationId": "loc_downtown", "min": 3 }
-          ]
-        }
+        "descriptionKey": "task.q_intro_eddi_sell_crime",
+        "completionConditions": { "type": "soldGenre", "genre": "Crime", "min": 10 }
+      },
+      {
+        "id": 2,
+        "descriptionKey": "task.q_intro_eddi_sell_drama",
+        "completionConditions": { "type": "soldGenre", "genre": "Drama", "min": 10 }
+      },
+      {
+        "id": 3,
+        "descriptionKey": "task.q_intro_eddi_sell_classic",
+        "completionConditions": { "type": "soldGenre", "genre": "Classic", "min": 10 }
+      },
+      {
+        "id": 4,
+        "descriptionKey": "task.q_intro_eddi_sell_fantasy",
+        "completionConditions": { "type": "soldGenre", "genre": "Fantasy", "min": 15 }
       }
     ],
-    "rewards": [],
+    "rewards": [
+      { "kind": "InventoryItem", "id": "fuel_canister", "category": "consumable", "amount": 2 }
+    ],
     "worldEffects": []
   }
 ]

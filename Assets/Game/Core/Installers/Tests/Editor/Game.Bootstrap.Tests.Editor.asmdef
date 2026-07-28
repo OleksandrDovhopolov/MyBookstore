@@ -8,7 +8,10 @@
         "Game.SalesStats.API",
         "Game.Inventory.API",
         "Game.Decor.API",
+        "Game.Quest.API",
+        "Game.Rewards.API",
         "Configs",
+        "Save",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

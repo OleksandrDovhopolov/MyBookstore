@@ -1,7 +1,7 @@
 [
   {
     "id": "eddi_intro",
-    "activationQuestId": "q_intro_eddi",
+    "dayIndex": 1,
     "characterId": "eddi",
     "dialogueId": "eddy1",
     "passiveAttempts": [

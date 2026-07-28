@@ -30,6 +30,7 @@ namespace Game.Bootstrap
             builder.Register<IConditionFactory>(
                 c => new WeatherIsConditionFactory(() => c.Resolve<ICurrentDayWeatherProvider>()),
                 Lifetime.Singleton);
+            builder.Register<IConditionFactory, DayAtLeastConditionFactory>(Lifetime.Singleton);
 
             builder.Register<IResultsReviewTextProvider, DefaultResultsReviewTextProvider>(Lifetime.Singleton);
             builder.Register<IResultsSummaryBuilder, ResultsSummaryBuilder>(Lifetime.Singleton);

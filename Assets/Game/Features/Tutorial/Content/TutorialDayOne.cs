@@ -243,7 +243,7 @@ namespace Game.Tutorial.Content
             Debug.LogError(
                 $"{TutorialLog.Prefix} day 1 completed without Eddi's scripted sale " +
                 $"(browsed={_eddiBrowsing}, sold={_eddiSold}, failed={_eddiFailed}). " +
-                "Eddi did not participate — check q_intro_eddi spawn and the day-1 shelf preset (TODO GAME-17).");
+                "Eddi did not participate — check eddi_intro day script and the day-1 shelf preset (TODO GAME-17).");
 
             _analytics?.TrackEvent(new AnalyticsEvent(AnalyticsEventNames.TutorialDayOneEddiIncomplete));
         }

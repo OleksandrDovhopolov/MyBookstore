@@ -23,6 +23,7 @@ namespace Game.Bootstrap
                 registry.Register(new ItemCategory(InventoryCategories.Book,        ItemStackingMode.Unique, "Books"));
                 registry.Register(new ItemCategory(InventoryCategories.Decor,       ItemStackingMode.Unique, "Decor"));
                 registry.Register(new ItemCategory(InventoryCategories.PuzzlePiece, ItemStackingMode.Stack,  "Puzzle Pieces"));
+                registry.Register(new ItemCategory(InventoryCategories.Consumable,  ItemStackingMode.Stack,  "Consumables"));
                 return registry;
             }, Lifetime.Singleton);
 

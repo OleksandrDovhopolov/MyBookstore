@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using Game.Conditions.API;
 using Game.Conditions.Services;
 using Game.Configs.Models;
+using Game.DayCycle.Conditions;
 using Game.DayCycle.Day;
 using Game.Quest.API;
 using Game.Quest.Services;
@@ -75,11 +76,13 @@ namespace Game.Quest.Tests.Editor
             var sales = new SalesStatsService(save, new SaveBackedSalesStatsRepository(save), configs);
             sales.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
 
+            var dayProgress = new FakeDayProgress();
             var factories = new List<IConditionFactory>
             {
                 new SoldGenreConditionFactory(sales),
                 new SoldGenreAtLocationConditionFactory(sales),
-                new SoldGenreInSingleDayConditionFactory(sales)
+                new SoldGenreInSingleDayConditionFactory(sales),
+                new DayAtLeastConditionFactory(dayProgress)
             };
             if (extra != null) factories.Add(extra);
 
@@ -90,7 +93,7 @@ namespace Game.Quest.Tests.Editor
                 Configs = configs,
                 Save = save,
                 Repo = new FakeQuestsRepository(),
-                DayProgress = new FakeDayProgress()
+                DayProgress = dayProgress
             };
         }
 
@@ -111,6 +114,31 @@ namespace Game.Quest.Tests.Editor
 
             h.Sell(1, 3); // AFTER activation → scoped 3 ≥ 3 (RecordSold fires Changed → reevaluate)
             Assert.AreEqual(QuestState.Awarded, State(quests, "q1"));
+        }
+
+        [Test]
+        public void DayAtLeastQuest_ActivatesOnDayTwo_AndIgnoresDayOneSales()
+        {
+            var quest = QuestCfg("q_intro_eddi", Sales(SalesConditionTypeIds.SoldGenre, 3));
+            quest.ActivationConditions = new JObject { ["type"] = "dayAtLeast", ["min"] = 2 };
+
+            var h = Build(null, quest);
+            h.DayProgress.Current.CurrentDay = 1;
+            h.Sell(1, 3);
+
+            var quests = h.NewQuests();
+            quests.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            Assert.AreEqual(QuestState.Pending, State(quests, "q_intro_eddi"));
+
+            h.DayProgress.Current.CurrentDay = 2;
+            h.DayProgress.SetPhaseAsync(DayPhase.Morning, CancellationToken.None).GetAwaiter().GetResult();
+            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_eddi"));
+
+            h.Sell(2, 2);
+            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_eddi"));
+
+            h.Sell(2, 1);
+            Assert.AreEqual(QuestState.Awarded, State(quests, "q_intro_eddi"));
         }
 
         [Test]

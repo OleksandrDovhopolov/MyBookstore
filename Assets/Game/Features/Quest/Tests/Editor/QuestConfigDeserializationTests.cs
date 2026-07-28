@@ -1,3 +1,5 @@
+using System.IO;
+using System.Linq;
 using Game.Configs.Models;
 using Game.Quest.API;
 using Newtonsoft.Json;
@@ -12,6 +14,12 @@ namespace Game.Quest.Tests.Editor
     /// </summary>
     public sealed class QuestConfigDeserializationTests
     {
+        private static readonly string[] ContentRoots =
+        {
+            Path.Combine("Assets", "Configs"),
+            Path.Combine("Assets", "StreamingAssets", "Configs")
+        };
+
         private const string Json = @"
 [
   {
@@ -126,6 +134,47 @@ namespace Game.Quest.Tests.Editor
             Assert.IsTrue(QuestTaskState.Failed.IsClosed());
             Assert.IsFalse(QuestTaskState.Active.IsClosed());
             Assert.IsFalse(QuestTaskState.Pending.IsClosed());
+        }
+
+        [Test]
+        public void Content_EddiIntro_IsDayTwoSalesQuestWithFuelReward()
+        {
+            foreach (var root in ContentRoots)
+                AssertEddiIntroQuest(root);
+        }
+
+        private static void AssertEddiIntroQuest(string root)
+        {
+            var quests = JsonConvert.DeserializeObject<QuestConfig[]>(
+                File.ReadAllText(Path.Combine(root, "quests.json")));
+
+            var quest = quests.Single(q => q.Id == "q_intro_eddi");
+            Assert.AreEqual("story", quest.Type);
+            Assert.IsNotNull(quest.ActivationConditions);
+            Assert.AreEqual("dayAtLeast", quest.ActivationConditions["type"].ToString());
+            Assert.AreEqual(2, (int)quest.ActivationConditions["min"]);
+
+            Assert.AreEqual(4, quest.Tasks.Length);
+            AssertSalesTask(quest.Tasks[0], 1, "Crime", 10);
+            AssertSalesTask(quest.Tasks[1], 2, "Drama", 10);
+            AssertSalesTask(quest.Tasks[2], 3, "Classic", 10);
+            AssertSalesTask(quest.Tasks[3], 4, "Fantasy", 15);
+            Assert.AreEqual(4, quest.Tasks.Select(t => t.Id).Distinct().Count());
+
+            Assert.AreEqual(1, quest.Rewards.Length);
+            Assert.AreEqual("InventoryItem", quest.Rewards[0].Kind);
+            Assert.AreEqual("fuel_canister", quest.Rewards[0].Id);
+            Assert.AreEqual("consumable", quest.Rewards[0].Category);
+            Assert.AreEqual(2, quest.Rewards[0].Amount);
+        }
+
+        private static void AssertSalesTask(QuestTaskConfig task, int id, string genre, int min)
+        {
+            Assert.AreEqual(id, task.Id);
+            Assert.IsNotNull(task.CompletionConditions);
+            Assert.AreEqual("soldGenre", task.CompletionConditions["type"].ToString());
+            Assert.AreEqual(genre, task.CompletionConditions["genre"].ToString());
+            Assert.AreEqual(min, (int)task.CompletionConditions["min"]);
         }
     }
 }

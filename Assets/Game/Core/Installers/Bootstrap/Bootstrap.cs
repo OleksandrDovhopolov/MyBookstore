@@ -78,6 +78,7 @@ namespace Game.Bootstrap
         private ICharactersService _characters;
         private IDecorPlacementService _decorPlacement;
         private ILocationVisitService _locationVisits;
+        private QuestRewardBridge _questRewardBridge;
         // ReSharper restore NotAccessedField.Local
 
         // NOT GetCancellationTokenOnDestroy(): the boot GameObject is destroyed during
@@ -106,7 +107,8 @@ namespace Game.Bootstrap
             ITutorialService tutorial,
             ICharactersService characters,
             IDecorPlacementService decorPlacement,
-            ILocationVisitService locationVisits)
+            ILocationVisitService locationVisits,
+            QuestRewardBridge questRewardBridge)
         {
             _orchestrator = orchestrator;
             _catalog = catalog;
@@ -126,6 +128,7 @@ namespace Game.Bootstrap
             _characters = characters;
             _decorPlacement = decorPlacement;
             _locationVisits = locationVisits;
+            _questRewardBridge = questRewardBridge;
         }
 
         private void Awake()

@@ -21,6 +21,8 @@ namespace Game.Bootstrap
             builder.Register<QuestsService>(Lifetime.Singleton)
                 .As<IQuestsService>()
                 .As<IQuestReevaluationGate>();
+
+            builder.Register<QuestRewardBridge>(Lifetime.Singleton);
         }
     }
 }
