@@ -20,17 +20,40 @@ namespace Book.Sell.UI.Customer
         {
             Customer = customer;
             gameObject.name = $"CustomerVisual({customer.Id})";
+
+            Debug.Log(
+                $"[CustomerVisual] Initialize customer='{customer.Id}', characterId='{customer.CharacterId}', " +
+                $"figure='{ObjectName(_figure)}', fallback='{ObjectName(_fallbackSprite)}', currentSprite='{ObjectName(CurrentFigureSprite())}'.");
         }
 
         public void ApplyFigureSprite(Sprite sprite)
         {
-            if (sprite == null || _figure == null)
+            if (_figure == null)
+            {
+                Debug.LogWarning(
+                    $"[CustomerVisual] Cannot apply NPC sprite for {DescribeCustomer()}: _figure is not assigned. " +
+                    $"requestedSprite='{ObjectName(sprite)}', fallback='{ObjectName(_fallbackSprite)}'.");
+                return;
+            }
+
+            if (sprite == null)
             {
                 _figure.sprite = _fallbackSprite;
+                Debug.LogWarning(
+                    $"[CustomerVisual] NPC sprite is null for {DescribeCustomer()}; applied fallback='{ObjectName(_fallbackSprite)}'. " +
+                    $"figure='{ObjectName(_figure)}', resultSprite='{ObjectName(_figure.sprite)}'.");
                 return;
             }
 
             _figure.sprite = sprite;
+            Debug.Log(
+                $"[CustomerVisual] Applied NPC sprite for {DescribeCustomer()}: sprite='{ObjectName(sprite)}', " +
+                $"figure='{ObjectName(_figure)}', resultSprite='{ObjectName(_figure.sprite)}'.");
+        }
+
+        public string DescribeFigureState()
+        {
+            return $"figure='{ObjectName(_figure)}', currentSprite='{ObjectName(CurrentFigureSprite())}', fallback='{ObjectName(_fallbackSprite)}'";
         }
 
         public async UniTask MoveToAsync(Vector3 target, float duration, Func<bool> isPaused = null, CancellationToken ct = default)
@@ -75,6 +98,23 @@ namespace Book.Sell.UI.Customer
         {
             _moveCts?.Cancel();
             _moveCts = null;
+        }
+
+        private string DescribeCustomer()
+        {
+            return Customer == null
+                ? "customer='<not initialized>'"
+                : $"customer='{Customer.Id}', characterId='{Customer.CharacterId}'";
+        }
+
+        private static string ObjectName(UnityEngine.Object target)
+        {
+            return target != null ? target.name : "<null>";
+        }
+
+        private Sprite CurrentFigureSprite()
+        {
+            return _figure != null ? _figure.sprite : null;
         }
     }
 }

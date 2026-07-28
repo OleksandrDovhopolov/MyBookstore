@@ -76,9 +76,9 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -2088486769
-  m_SortingLayer: 1
+  m_SortingLayer: 3
   m_SortingOrder: 50
-  m_Sprite: {fileID: 7152930139536384079, guid: c14349b49eba5aa45a0bc56c5b96c3e4, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -102,7 +102,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _figure: {fileID: 5518803971935560202}
-  _fallbackSprite: {fileID: 7152930139536384079, guid: bd34e31e55e9f744393757874d7f0fe6, type: 3}
+  _fallbackSprite: {fileID: 4538865358077604940, guid: f350e40f250ca12438012d8b7643a52a, type: 3}
   _bubbleAnchor: {fileID: 9181436580959938620}
 --- !u!1 &5645480424308229883
 GameObject:
