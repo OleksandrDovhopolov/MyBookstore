@@ -311,6 +311,7 @@ GameObject:
   - component: {fileID: 3868703427160153959}
   - component: {fileID: 7447890629822653789}
   - component: {fileID: 155080362850754368}
+  - component: {fileID: 2700751014648071908}
   m_Layer: 5
   m_Name: DecorImage
   m_TagString: Untagged
@@ -332,10 +333,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 4306158556476993313}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7447890629822653789
 CanvasRenderer:
@@ -365,7 +366,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 050ac53f83d914b418d4578bbe177569, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 5743b08665c557d4dbffb0d38fb13023, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -375,6 +376,20 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2700751014648071908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6788779474090988962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7459642ee13919e4ca05519bd164a387, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _frame: {fileID: 0}
+  _fillFactor: 1
 --- !u!1 &7159866280851410441
 GameObject:
   m_ObjectHideFlags: 0

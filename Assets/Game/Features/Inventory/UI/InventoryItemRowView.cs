@@ -180,6 +180,10 @@ namespace Game.Inventory.UI
             if (image == null) return;
             image.sprite = sprite;
             image.enabled = sprite != null;
+
+            // Source art has mixed sizes and aspects, so the rect has to be re-fitted per sprite.
+            if (sprite != null && image.TryGetComponent<InventoryIconFitter>(out var fitter))
+                fitter.Fit();
         }
 
         private void SetRootActive(GameObject root, bool visible)

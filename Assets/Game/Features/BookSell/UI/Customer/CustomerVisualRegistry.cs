@@ -124,9 +124,6 @@ namespace Book.Sell.UI.Customer
 
             var state = new VisualState(visual, lanePos);
             _byId[customer.Id] = state;
-            Debug.Log(
-                $"[CustomerVisualRegistry] Spawned visual for customer='{customer.Id}', characterId='{customer.CharacterId}', " +
-                $"spawnPos={spawnPos}, lanePos={lanePos}, visual='{visual.name}', {visual.DescribeFigureState()}.");
             LoadCharacterSpriteAsync(customer.CharacterId, state).Forget();
             CustomerVisualSpawned?.Invoke(visual);
         }
@@ -134,25 +131,16 @@ namespace Book.Sell.UI.Customer
         private async UniTaskVoid LoadCharacterSpriteAsync(string characterId, VisualState state)
         {
             if (state == null)
-            {
-                Debug.LogWarning("[CustomerVisualRegistry] Cannot load character sprite: visual state is null.");
                 return;
-            }
 
             if (_uiSprites == null)
             {
-                Debug.LogWarning(
-                    $"[CustomerVisualRegistry] Cannot load character sprite '{characterId}': IUiSpriteProvider is not injected. " +
-                    $"{DescribeVisualState(state.Visual)}.");
                 ApplyFallbackSprite(state.Visual);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(characterId))
             {
-                Debug.LogWarning(
-                    $"[CustomerVisualRegistry] Cannot load character sprite: characterId is empty. " +
-                    $"{DescribeVisualState(state.Visual)}.");
                 ApplyFallbackSprite(state.Visual);
                 return;
             }
@@ -160,37 +148,17 @@ namespace Book.Sell.UI.Customer
             try
             {
                 var token = state.SpriteToken;
-                Debug.Log(
-                    $"[CustomerVisualRegistry] Loading character sprite '{characterId}'. " +
-                    $"{DescribeVisualState(state.Visual)}.");
                 var sprite = await _uiSprites.GetSpriteAsync(characterId, token);
                 if (token.IsCancellationRequested)
-                {
-                    Debug.Log(
-                        $"[CustomerVisualRegistry] Character sprite load cancelled for '{characterId}'.");
                     return;
-                }
 
                 if (state.Visual == null)
-                {
-                    Debug.LogWarning(
-                        $"[CustomerVisualRegistry] Character sprite '{characterId}' loaded as '{ObjectName(sprite)}', " +
-                        "but visual was already destroyed.");
                     return;
-                }
-
-                if (sprite == null)
-                {
-                    Debug.LogWarning(
-                        $"[CustomerVisualRegistry] Character sprite provider returned null for '{characterId}'. " +
-                        $"{state.Visual.DescribeFigureState()}.");
-                }
 
                 state.Visual.ApplyFigureSprite(sprite);
             }
             catch (OperationCanceledException)
             {
-                Debug.Log($"[CustomerVisualRegistry] Character sprite load cancelled for '{characterId}'.");
             }
             catch (Exception ex)
             {
@@ -270,16 +238,6 @@ namespace Book.Sell.UI.Customer
             var halfWidth = halfHeight * camera.aspect;
             var x = (left ? -halfWidth : halfWidth) + (left ? -CameraFallbackHorizontalMargin : CameraFallbackHorizontalMargin);
             return new Vector3(x, camera.transform.position.y, 0f);
-        }
-
-        private static string ObjectName(UnityEngine.Object target)
-        {
-            return target != null ? target.name : "<null>";
-        }
-
-        private static string DescribeVisualState(CustomerVisual visual)
-        {
-            return visual != null ? visual.DescribeFigureState() : "visual='<null>'";
         }
 
         private static void ApplyFallbackSprite(CustomerVisual visual)
