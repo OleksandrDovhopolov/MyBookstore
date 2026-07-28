@@ -4,6 +4,7 @@
     "references": [
         "VContainer",
         "UniTask",
+        "MessagePipe",
         "CheatModule",
         "Game.Core.UI",
         "Infrastructure",

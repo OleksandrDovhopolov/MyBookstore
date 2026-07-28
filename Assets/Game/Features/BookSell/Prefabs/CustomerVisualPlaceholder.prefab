@@ -86,7 +86,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!114 &1018817699395988454
@@ -102,7 +102,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _figure: {fileID: 5518803971935560202}
-  _fallbackSprite: {fileID: 7152930139536384079, guid: c14349b49eba5aa45a0bc56c5b96c3e4, type: 3}
+  _fallbackSprite: {fileID: 7152930139536384079, guid: bd34e31e55e9f744393757874d7f0fe6, type: 3}
   _bubbleAnchor: {fileID: 9181436580959938620}
 --- !u!1 &5645480424308229883
 GameObject:
