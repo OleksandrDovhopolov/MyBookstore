@@ -5,12 +5,19 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
 namespace Game.Configs.Tests.Editor
 {
     public sealed class CustomerScriptConfigDeserializationTests
     {
+        private static readonly string[] ContentRoots =
+        {
+            Path.Combine("Assets", "Configs"),
+            Path.Combine("Assets", "StreamingAssets", "Configs")
+        };
+
         private const string Json = @"
 [
   {
@@ -105,8 +112,40 @@ namespace Game.Configs.Tests.Editor
         [Test]
         public void Content_DayOne_UsesTwoWavesForEddiThenMissNpc()
         {
+            foreach (var root in ContentRoots)
+                AssertDayOneUsesTwoWavesForEddiThenMissNpc(root);
+        }
+
+        [Test]
+        public void Content_BundledDefaults_MatchAuthoringConfigs()
+        {
+            var authoringRoot = Path.Combine("Assets", "Configs");
+            var bundledRoot = Path.Combine("Assets", "StreamingAssets", "Configs");
+
+            foreach (var sourcePath in Directory.GetFiles(authoringRoot, "*.json"))
+            {
+                var fileName = Path.GetFileName(sourcePath);
+                var bundledPath = Path.Combine(bundledRoot, fileName);
+
+                Assert.IsTrue(File.Exists(bundledPath), $"Bundled config '{fileName}' is missing.");
+                Assert.AreEqual(
+                    NormalizeJson(File.ReadAllText(sourcePath)),
+                    NormalizeJson(File.ReadAllText(bundledPath)),
+                    $"Bundled config '{fileName}' is out of sync with Assets/Configs. Run Tools/Configs/Sync Bundled Defaults to StreamingAssets before building.");
+            }
+        }
+
+        [Test]
+        public void Content_FirstDayStarterGenres_CoverScriptedPassiveAttempts()
+        {
+            foreach (var root in ContentRoots)
+                AssertFirstDayStarterGenresCoverScriptedPassiveAttempts(root);
+        }
+
+        private static void AssertDayOneUsesTwoWavesForEddiThenMissNpc(string root)
+        {
             var days = JsonConvert.DeserializeObject<DayConfig[]>(
-                File.ReadAllText(Path.Combine("Assets", "Configs", "days.json")));
+                File.ReadAllText(Path.Combine(root, "days.json")));
 
             var day1 = days.Single(d => d.DayIndex == 1);
             Assert.IsTrue(day1.CustomerCount.HasValue);
@@ -123,10 +162,16 @@ namespace Game.Configs.Tests.Editor
         [Test]
         public void Content_DayOneMissScript_UsesKnownTravelGenre()
         {
+            foreach (var root in ContentRoots)
+                AssertDayOneMissScriptUsesKnownTravelGenre(root);
+        }
+
+        private static void AssertDayOneMissScriptUsesKnownTravelGenre(string root)
+        {
             var scripts = JsonConvert.DeserializeObject<CustomerScriptConfig[]>(
-                File.ReadAllText(Path.Combine("Assets", "Configs", "customer_scripts.json")));
+                File.ReadAllText(Path.Combine(root, "customer_scripts.json")));
             var books = JsonConvert.DeserializeObject<BookConfig[]>(
-                File.ReadAllText(Path.Combine("Assets", "Configs", "books.json")));
+                File.ReadAllText(Path.Combine(root, "books.json")));
 
             var script = scripts.Single(s => s.Id == "day2_missed_sale");
             Assert.IsTrue(script.DayIndex.HasValue);
@@ -144,10 +189,16 @@ namespace Game.Configs.Tests.Editor
         [Test]
         public void Content_EddiScript_UsesQuestDialogueAndKnownGenres()
         {
+            foreach (var root in ContentRoots)
+                AssertEddiScriptUsesQuestDialogueAndKnownGenres(root);
+        }
+
+        private static void AssertEddiScriptUsesQuestDialogueAndKnownGenres(string root)
+        {
             var scripts = JsonConvert.DeserializeObject<CustomerScriptConfig[]>(
-                File.ReadAllText(Path.Combine("Assets", "Configs", "customer_scripts.json")));
+                File.ReadAllText(Path.Combine(root, "customer_scripts.json")));
             var books = JsonConvert.DeserializeObject<BookConfig[]>(
-                File.ReadAllText(Path.Combine("Assets", "Configs", "books.json")));
+                File.ReadAllText(Path.Combine(root, "books.json")));
 
             var script = scripts.Single(s => s.Id == "eddi_intro");
             Assert.IsFalse(script.DayIndex.HasValue);
@@ -169,6 +220,45 @@ namespace Game.Configs.Tests.Editor
                     $"The scripted Eddi genre '{attempt.Genre}' must exist in BookConfig.PrimaryGenre.");
             }
         }
+
+        private static void AssertFirstDayStarterGenresCoverScriptedPassiveAttempts(string root)
+        {
+            var scripts = JsonConvert.DeserializeObject<CustomerScriptConfig[]>(
+                File.ReadAllText(Path.Combine(root, "customer_scripts.json")));
+            var books = JsonConvert.DeserializeObject<BookConfig[]>(
+                File.ReadAllText(Path.Combine(root, "books.json")));
+
+            var genreCounts = books
+                .Where(b => !string.IsNullOrEmpty(b?.PrimaryGenre))
+                .GroupBy(b => b.PrimaryGenre, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
+
+            AssertGenreCount("Fantasy", 5);
+            AssertGenreCount("Fact", 3);
+            AssertGenreCount("Travel", 3);
+            AssertGenreCount("Kids", 2);
+
+            var scriptedDayOneAttempts = scripts
+                .Where(s => s.DayIndex == 1 || string.Equals(s.Id, "eddi_intro", StringComparison.Ordinal))
+                .SelectMany(s => s.PassiveAttempts ?? Array.Empty<ScriptedPassivePurchaseConfig>());
+
+            foreach (var attempt in scriptedDayOneAttempts.Where(a => a.ForceHit))
+            {
+                Assert.IsTrue(
+                    genreCounts.TryGetValue(attempt.Genre, out var count) && count > 0,
+                    $"Scripted forced hit genre '{attempt.Genre}' must have starter stock in {root}.");
+            }
+
+            void AssertGenreCount(string genre, int min)
+            {
+                Assert.IsTrue(
+                    genreCounts.TryGetValue(genre, out var count) && count >= min,
+                    $"{root}/books.json must include at least {min} primary '{genre}' book(s) for the FTUE starter preset.");
+            }
+        }
+
+        private static string NormalizeJson(string json)
+            => JToken.Parse(json).ToString(Formatting.None);
 
         private static ScriptedPassivePurchaseConfig AssertOneAttempt(CustomerScriptConfig script)
         {
