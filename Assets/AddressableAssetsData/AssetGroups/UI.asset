@@ -70,6 +70,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7f685dc587da3c24a9bad647c5835ccc
+    m_Address: InfoWidget
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 83d7f17632a85ff48be4f7456c053062
     m_Address: PreparationWindow
     m_ReadOnly: 0

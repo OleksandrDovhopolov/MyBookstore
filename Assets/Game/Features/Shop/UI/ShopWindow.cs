@@ -5,6 +5,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Decor.UI;
 using Game.Rewards.UI;
+using Game.Shop;
 using Game.Shop.API;
 using Game.UI;
 using SpriteService;
@@ -161,8 +162,18 @@ namespace Game.Shop.UI
             }
             else if (result.Status != ShopPurchaseStatus.Success)
             {
+                if (result.Status == ShopPurchaseStatus.NotEnoughCurrency)
+                    ShowInfoWidget(ShopUiTexts.NotEnoughGold);
+
                 Debug.Log($"[NewspaperWindow] Purchase '{lotId}' failed: {result.Status}.");
             }
+        }
+
+        private void ShowInfoWidget(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+
+            UIManager.ShowAsync<InfoWidgetController>(new InfoWidgetArg { Text = text }).Forget();
         }
 
         private void UpdatePurchasedCard(string lotId)
