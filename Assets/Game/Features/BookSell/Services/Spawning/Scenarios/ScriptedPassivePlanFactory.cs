@@ -7,7 +7,7 @@ namespace Book.Sell.Services
     public static class ScriptedPassivePlanFactory
     {
         public static int PassiveCountFor(ScriptedPassivePurchasePlan script)
-            => script is { Count: > 0 } ? script.Count : 1;
+            => script is { Count: > 0 } ? script.Count : 0;
 
         public static ScriptedPassivePurchasePlan Build(IReadOnlyList<ScriptedPassivePurchaseConfig> script)
         {

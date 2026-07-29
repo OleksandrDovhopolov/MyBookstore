@@ -37,6 +37,18 @@ namespace Game.Configs.Tests.Editor
       { ""genre"": ""Fact"", ""forceHit"": true },
       { ""genre"": ""Travel"", ""forceHit"": false }
     ]
+  },
+  {
+    ""id"": ""eddi_quest_intro"",
+    ""dayIndex"": 2,
+    ""characterId"": ""eddi"",
+    ""dialogueId"": ""eddy_quest_1""
+  },
+  {
+    ""id"": ""milly_intro"",
+    ""dayIndex"": 2,
+    ""characterId"": ""milly"",
+    ""dialogueId"": ""milly1""
   }
 ]";
 
@@ -46,7 +58,7 @@ namespace Game.Configs.Tests.Editor
             var scripts = JsonConvert.DeserializeObject<CustomerScriptConfig[]>(Json);
 
             Assert.IsNotNull(scripts);
-            Assert.AreEqual(2, scripts.Length);
+            Assert.AreEqual(4, scripts.Length);
 
             var script = scripts[0];
             Assert.AreEqual("day2_missed_sale", script.Id);
@@ -66,6 +78,20 @@ namespace Game.Configs.Tests.Editor
             Assert.AreEqual("eddy1", eddi.DialogueId);
             Assert.AreEqual("eddi", eddi.CharacterId);
             Assert.AreEqual(2, eddi.PassiveAttempts.Length);
+
+            var eddiQuest = scripts[2];
+            Assert.AreEqual("eddi_quest_intro", eddiQuest.Id);
+            Assert.AreEqual(2, eddiQuest.DayIndex.Value);
+            Assert.AreEqual("eddy_quest_1", eddiQuest.DialogueId);
+            Assert.AreEqual("eddi", eddiQuest.CharacterId);
+            Assert.IsNull(eddiQuest.PassiveAttempts);
+
+            var milly = scripts[3];
+            Assert.AreEqual("milly_intro", milly.Id);
+            Assert.AreEqual(2, milly.DayIndex.Value);
+            Assert.AreEqual("milly1", milly.DialogueId);
+            Assert.AreEqual("milly", milly.CharacterId);
+            Assert.IsNull(milly.PassiveAttempts);
         }
 
         [Test]
@@ -75,7 +101,7 @@ namespace Game.Configs.Tests.Editor
             service.WarmupAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             var all = service.GetAll<CustomerScriptConfig>();
-            Assert.AreEqual(2, all.Count);
+            Assert.AreEqual(4, all.Count);
 
             var script = service.Get<CustomerScriptConfig>("day2_missed_sale");
             Assert.IsNotNull(script, "Resolved by Id -> [ConfigFile] + lazy load + indexing all wired.");
@@ -87,6 +113,11 @@ namespace Game.Configs.Tests.Editor
             Assert.IsTrue(eddi.DayIndex.HasValue);
             Assert.AreEqual(1, eddi.DayIndex.Value);
             Assert.IsNull(eddi.ActivationQuestId);
+
+            var milly = service.Get<CustomerScriptConfig>("milly_intro");
+            Assert.IsNotNull(milly);
+            Assert.AreEqual(2, milly.DayIndex.Value);
+            Assert.AreEqual("milly1", milly.DialogueId);
         }
 
         [Test]
@@ -196,6 +227,13 @@ namespace Game.Configs.Tests.Editor
                 AssertEddiScriptUsesQuestDialogueAndKnownGenres(root);
         }
 
+        [Test]
+        public void Content_DayTwoQuestIntroScripts_UseDialoguesWithoutPassiveAttempts()
+        {
+            foreach (var root in ContentRoots)
+                AssertDayTwoQuestIntroScriptsUseDialoguesWithoutPassiveAttempts(root);
+        }
+
         private static void AssertEddiScriptUsesQuestDialogueAndKnownGenres(string root)
         {
             var scripts = JsonConvert.DeserializeObject<CustomerScriptConfig[]>(
@@ -223,6 +261,48 @@ namespace Game.Configs.Tests.Editor
                     books.Any(b => string.Equals(b.PrimaryGenre, attempt.Genre, StringComparison.OrdinalIgnoreCase)),
                     $"The scripted Eddi genre '{attempt.Genre}' must exist in BookConfig.PrimaryGenre.");
             }
+        }
+
+        private static void AssertDayTwoQuestIntroScriptsUseDialoguesWithoutPassiveAttempts(string root)
+        {
+            var scripts = JsonConvert.DeserializeObject<CustomerScriptConfig[]>(
+                File.ReadAllText(Path.Combine(root, "customer_scripts.json")));
+            var dialogues = JsonConvert.DeserializeObject<DialogueConfig[]>(
+                File.ReadAllText(Path.Combine(root, "dialogues.json")));
+
+            var day2QuestScripts = scripts
+                .Where(s => s.Id == "eddi_quest_intro" || s.Id == "milly_intro")
+                .ToArray();
+
+            Assert.AreEqual(2, day2QuestScripts.Length);
+
+            AssertQuestIntroScript(
+                day2QuestScripts.Single(s => s.Id == "eddi_quest_intro"),
+                "eddi",
+                "eddy_quest_1");
+            AssertQuestIntroScript(
+                day2QuestScripts.Single(s => s.Id == "milly_intro"),
+                "milly",
+                "milly1");
+
+            foreach (var script in day2QuestScripts)
+            {
+                Assert.IsTrue(dialogues.Any(d => d.Id == script.DialogueId));
+                Assert.IsTrue(script.PassiveAttempts == null || script.PassiveAttempts.Length == 0);
+            }
+        }
+
+        private static void AssertQuestIntroScript(
+            CustomerScriptConfig script,
+            string characterId,
+            string dialogueId)
+        {
+            Assert.IsTrue(script.DayIndex.HasValue);
+            Assert.AreEqual(2, script.DayIndex.Value);
+            Assert.IsNull(script.ActivationQuestId);
+            Assert.AreEqual(characterId, script.CharacterId);
+            Assert.AreEqual(dialogueId, script.DialogueId);
+            Assert.IsTrue(script.PassiveAttempts == null || script.PassiveAttempts.Length == 0);
         }
 
         private static void AssertFirstDayStarterGenresCoverScriptedPassiveAttempts(string root)

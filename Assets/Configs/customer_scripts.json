@@ -10,6 +10,18 @@
     ]
   },
   {
+    "id": "eddi_quest_intro",
+    "dayIndex": 2,
+    "characterId": "eddi",
+    "dialogueId": "eddy_quest_1"
+  },
+  {
+    "id": "milly_intro",
+    "dayIndex": 2,
+    "characterId": "milly",
+    "dialogueId": "milly1"
+  },
+  {
     "id": "day2_missed_sale",
     "dayIndex": 1,
     "characterId": null,

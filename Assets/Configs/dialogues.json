@@ -113,6 +113,34 @@
     ]
   },
   {
+    "id": "eddy_quest_1",
+    "activatesQuestId": "q_intro_eddi",
+    "nodes": [
+      {
+        "nodeId": "root",
+        "options": [],
+        "lines": [
+          { "speaker": "Eddy", "text": "[STUB] I had one more thought about this shop." },
+          { "speaker": "Eddy", "text": "[STUB] Keep an eye on what people ask for. Patterns matter." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "milly1",
+    "activatesQuestId": "q_intro_milly",
+    "nodes": [
+      {
+        "nodeId": "root",
+        "options": [],
+        "lines": [
+          { "speaker": "Milly", "text": "[STUB] Hi. I left a letter for you." },
+          { "speaker": "Milly", "text": "[STUB] If someone asks for facts, find them something exact." }
+        ]
+      }
+    ]
+  },
+  {
     "id": "tutorial_hub_intro",
     "nodes": [
       {

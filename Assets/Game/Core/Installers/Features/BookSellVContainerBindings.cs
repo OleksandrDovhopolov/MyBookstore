@@ -130,7 +130,8 @@ namespace Game.Bootstrap
             builder.RegisterEntryPoint<CustomerTrafficConfigValidator>(Lifetime.Singleton);
 
             // Base composition (concrete type) + scripted-customer decorator as ICustomerSpawner (GAME-16).
-            // The decorator replaces regular customer slots instead of increasing the total visitor count.
+            // The decorator replaces regular slots only for scripts with authored sales attempts; dialogue-only
+            // story visits are additive so they do not change the regular passive/active sales count.
             // NOTE: register the inner concretely —
             // resolving ICustomerSpawner inside the ICustomerSpawner factory would be a self-reference. Swap
             // the inner type here to change base composition. IQuestsService resolves from the global scope.
@@ -185,6 +186,7 @@ namespace Game.Bootstrap
             // Opens DialogWindow when a scripted dialogue starts (GAME-6 §Этап 5). Same wiring as the
             // minigame presenter: IUIManager from the parent scope, controller via WindowArgs. The window
             // owns completion (CompleteDialogue on end); the presenter is the safety-net if opening fails.
+            builder.Register<DialogueQuestActivator>(Lifetime.Singleton);
             builder.RegisterEntryPoint<DialoguePresenter>(Lifetime.Singleton);
 
             // Debug screen. Registered only if present in the scene, so the project runs before the UI

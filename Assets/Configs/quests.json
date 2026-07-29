@@ -6,7 +6,7 @@
     "titleKey": "quest.q_intro_eddi.title",
     "descriptionKey": "quest.q_intro_eddi.desc",
     "nextQuestIds": [],
-    "activationConditions": { "type": "dayAtLeast", "min": 2 },
+    "activationConditions": { "type": "manual" },
     "failConditions": null,
     "tasks": [
       {
@@ -42,7 +42,7 @@
     "titleKey": "quest.q_intro_milly.title",
     "descriptionKey": "quest.q_intro_milly.desc",
     "nextQuestIds": [],
-    "activationConditions": { "type": "dayAtLeast", "min": 2 },
+    "activationConditions": { "type": "manual" },
     "failConditions": null,
     "tasks": [
       {

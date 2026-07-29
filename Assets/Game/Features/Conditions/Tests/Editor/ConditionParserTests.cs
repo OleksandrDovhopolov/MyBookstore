@@ -40,6 +40,18 @@ namespace Game.Conditions.Tests.Editor
         }
 
         [Test]
+        public void ManualCondition_AlwaysNeverMetWithoutError()
+        {
+            var registry = new ConditionFactoryRegistry(new IConditionFactory[] { new ManualConditionFactory() });
+            var condition = new ConditionParser(registry).Parse(new JObject { ["type"] = ManualConditionFactory.TypeId });
+
+            var result = condition.Evaluate();
+
+            Assert.IsFalse(result.IsMet);
+            Assert.AreEqual("manual", result.ReasonKey);
+        }
+
+        [Test]
         public void AllOf_ParsedAndEvaluated()
         {
             var node = new JObject

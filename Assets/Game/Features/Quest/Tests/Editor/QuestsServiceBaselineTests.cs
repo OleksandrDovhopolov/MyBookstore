@@ -89,6 +89,7 @@ namespace Game.Quest.Tests.Editor
                 new SoldGenreAtLocationConditionFactory(sales),
                 new SoldGenreInSingleDayConditionFactory(sales),
                 new ActivePickGenreConditionFactory(sales),
+                new ManualConditionFactory(),
                 new DayAtLeastConditionFactory(dayProgress)
             };
             if (extra != null) factories.Add(extra);
@@ -124,52 +125,50 @@ namespace Game.Quest.Tests.Editor
         }
 
         [Test]
-        public void DayAtLeastQuest_ActivatesOnDayTwo_AndIgnoresDayOneSales()
+        public void ManualSalesQuest_IgnoresSalesBeforeTryActivate()
         {
             var quest = QuestCfg("q_intro_eddi", Sales(SalesConditionTypeIds.SoldGenre, 3));
-            quest.ActivationConditions = new JObject { ["type"] = "dayAtLeast", ["min"] = 2 };
+            quest.ActivationConditions = new JObject { ["type"] = ManualConditionFactory.TypeId };
 
             var h = Build(null, quest);
-            h.DayProgress.Current.CurrentDay = 1;
             h.Sell(1, 3);
 
             var quests = h.NewQuests();
             quests.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
             Assert.AreEqual(QuestState.Pending, State(quests, "q_intro_eddi"));
 
-            h.DayProgress.Current.CurrentDay = 2;
-            h.DayProgress.SetPhaseAsync(DayPhase.Morning, CancellationToken.None).GetAwaiter().GetResult();
+            Assert.IsTrue(quests.TryActivateAsync("q_intro_eddi", CancellationToken.None).GetAwaiter().GetResult());
+            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_eddi"));
+            Assert.IsFalse(quests.TryActivateAsync("q_intro_eddi", CancellationToken.None).GetAwaiter().GetResult());
+
+            h.Sell(1, 2);
             Assert.AreEqual(QuestState.Active, State(quests, "q_intro_eddi"));
 
-            h.Sell(2, 2);
-            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_eddi"));
-
-            h.Sell(2, 1);
+            h.Sell(1, 1);
             Assert.AreEqual(QuestState.Awarded, State(quests, "q_intro_eddi"));
         }
 
         [Test]
-        public void ActivePickQuest_ActivatesOnDayTwo_AndIgnoresPicksBeforeActivation()
+        public void ManualActivePickQuest_IgnoresPicksBeforeTryActivate()
         {
             var quest = QuestCfg("q_intro_milly", Sales(SalesConditionTypeIds.ActivePickGenre, 5));
-            quest.ActivationConditions = new JObject { ["type"] = "dayAtLeast", ["min"] = 2 };
+            quest.ActivationConditions = new JObject { ["type"] = ManualConditionFactory.TypeId };
 
             var h = Build(null, quest);
-            h.DayProgress.Current.CurrentDay = 1;
             h.Pick(1, 5);
 
             var quests = h.NewQuests();
             quests.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
             Assert.AreEqual(QuestState.Pending, State(quests, "q_intro_milly"));
 
-            h.DayProgress.Current.CurrentDay = 2;
-            h.DayProgress.SetPhaseAsync(DayPhase.Morning, CancellationToken.None).GetAwaiter().GetResult();
+            Assert.IsTrue(quests.TryActivateAsync("q_intro_milly", CancellationToken.None).GetAwaiter().GetResult());
+            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_milly"));
+            Assert.IsFalse(quests.TryActivateAsync("q_intro_milly", CancellationToken.None).GetAwaiter().GetResult());
+
+            h.Pick(1, 4);
             Assert.AreEqual(QuestState.Active, State(quests, "q_intro_milly"));
 
-            h.Pick(2, 4);
-            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_milly"));
-
-            h.Pick(2, 1);
+            h.Pick(1, 1);
             Assert.AreEqual(QuestState.Awarded, State(quests, "q_intro_milly"));
         }
 

@@ -137,14 +137,14 @@ namespace Game.Quest.Tests.Editor
         }
 
         [Test]
-        public void Content_EddiIntro_IsDayTwoSalesQuestWithFuelReward()
+        public void Content_EddiIntro_IsManualSalesQuestWithFuelReward()
         {
             foreach (var root in ContentRoots)
                 AssertEddiIntroQuest(root);
         }
 
         [Test]
-        public void Content_MillyIntro_IsDayTwoActivePickQuestWithLetterAndFuelReward()
+        public void Content_MillyIntro_IsManualActivePickQuestWithLetterAndFuelReward()
         {
             foreach (var root in ContentRoots)
                 AssertMillyIntroQuest(root);
@@ -171,8 +171,7 @@ namespace Game.Quest.Tests.Editor
             var quest = quests.Single(q => q.Id == "q_intro_eddi");
             Assert.AreEqual("story", quest.Type);
             Assert.IsNotNull(quest.ActivationConditions);
-            Assert.AreEqual("dayAtLeast", quest.ActivationConditions["type"].ToString());
-            Assert.AreEqual(2, (int)quest.ActivationConditions["min"]);
+            Assert.AreEqual("manual", quest.ActivationConditions["type"].ToString());
 
             Assert.AreEqual(4, quest.Tasks.Length);
             AssertSalesTask(quest.Tasks[0], 1, "Crime", 10);
@@ -196,8 +195,7 @@ namespace Game.Quest.Tests.Editor
             var quest = quests.Single(q => q.Id == "q_intro_milly");
             Assert.AreEqual("story", quest.Type);
             Assert.IsNotNull(quest.ActivationConditions);
-            Assert.AreEqual("dayAtLeast", quest.ActivationConditions["type"].ToString());
-            Assert.AreEqual(2, (int)quest.ActivationConditions["min"]);
+            Assert.AreEqual("manual", quest.ActivationConditions["type"].ToString());
 
             Assert.AreEqual(1, quest.Tasks.Length);
             var task = quest.Tasks[0];

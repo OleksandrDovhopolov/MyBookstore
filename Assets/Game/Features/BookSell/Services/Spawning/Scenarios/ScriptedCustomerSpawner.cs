@@ -11,7 +11,8 @@ using UnityEngine;
 namespace Book.Sell.Services
 {
     /// <summary>
-    /// Decorator that replaces regular customer slots with day- or quest-scripted customers.
+    /// Decorator that injects day- or quest-scripted customers. Scripts with authored passive attempts
+    /// replace regular customer slots; dialogue-only story visits are additive.
     /// </summary>
     public sealed class ScriptedCustomerSpawner : ICustomerSpawner
     {
@@ -43,36 +44,37 @@ namespace Book.Sell.Services
             if (baseCustomers.Count == 0)
                 return baseCustomers;
 
-            var scriptedCustomers = BuildScriptedCustomers(setup, tuning, random, baseCustomers.Count);
-            if (scriptedCustomers.Count == 0)
+            var scriptedVisits = BuildScriptedCustomers(setup, tuning, random, baseCustomers.Count);
+            if (scriptedVisits.Count == 0)
                 return baseCustomers;
 
-            var result = new List<Customer>(baseCustomers.Count);
-            result.AddRange(scriptedCustomers);
+            var replacedSlots = 0;
+            var result = new List<Customer>(baseCustomers.Count + scriptedVisits.Count);
+            for (var i = 0; i < scriptedVisits.Count; i++)
+            {
+                result.Add(scriptedVisits[i].Customer);
+                if (scriptedVisits[i].ReplacesRegularSlot)
+                    replacedSlots++;
+            }
 
-            for (var i = scriptedCustomers.Count; i < baseCustomers.Count; i++)
+            for (var i = replacedSlots; i < baseCustomers.Count; i++)
                 result.Add(baseCustomers[i]);
 
             return result;
         }
 
-        private List<Customer> BuildScriptedCustomers(
+        private List<ScriptedCustomerVisit> BuildScriptedCustomers(
             SalesSessionSetup setup,
             SalesTuning tuning,
             ISalesRandom random,
             int capacity)
         {
-            var scriptedCustomers = new List<Customer>(capacity);
+            var scriptedCustomers = new List<ScriptedCustomerVisit>();
+            var replacedSlots = 0;
             foreach (var script in _configs.GetAll<CustomerScriptConfig>())
             {
                 if (script == null) continue;
                 if (!IsEligible(script, setup)) continue;
-
-                if (scriptedCustomers.Count >= capacity)
-                {
-                    Debug.LogWarning($"{LogPrefix} replacement capacity exhausted for day={setup.Day}; extra customer scripts skipped.");
-                    break;
-                }
 
                 if (string.IsNullOrWhiteSpace(script.Id))
                 {
@@ -92,23 +94,39 @@ namespace Book.Sell.Services
                     }
                 }
 
+                var hasDialogue = !string.IsNullOrWhiteSpace(dialogueId);
                 var scriptedPlan = ScriptedPassivePlanFactory.Build(script.PassiveAttempts);
-                if (scriptedPlan == null || scriptedPlan.Count == 0)
+                var hasScriptedPassive = scriptedPlan != null && scriptedPlan.Count > 0;
+                if (!hasDialogue && !hasScriptedPassive)
                 {
                     Debug.LogWarning($"{LogPrefix} script '{script.Id}' has no passive attempts; skipped.");
                     continue;
                 }
 
+                var replacesRegularSlot = hasScriptedPassive || !hasDialogue;
+                if (replacesRegularSlot && replacedSlots >= capacity)
+                {
+                    Debug.LogWarning($"{LogPrefix} replacement capacity exhausted for day={setup.Day}; extra customer scripts skipped.");
+                    continue;
+                }
+
                 var passiveCount = ScriptedPassivePlanFactory.PassiveCountFor(scriptedPlan);
-                ICustomerArchetype archetype = !string.IsNullOrWhiteSpace(dialogueId)
-                    ? new QuestCharacterArchetype(new DialoguePayload(dialogueId), passiveCount)
+                ICustomerArchetype archetype = hasDialogue
+                    ? new QuestCharacterArchetype(
+                        new DialoguePayload(dialogueId),
+                        hasScriptedPassive
+                            ? new PassiveAttemptsArchetype(passiveCount, passiveCount)
+                            : null)
                     : new PassiveAttemptsArchetype(passiveCount, passiveCount);
-                scriptedCustomers.Add(CustomerPlanBuilder.Build(
-                    $"script_{script.Id}", tuning, random,
-                    buildMiddle: () => archetype.BuildMiddle(setup, tuning, random),
-                    buildProfile: () => BuildProfile(script, setup, random),
-                    characterId: script.CharacterId,
-                    scriptedPassivePlan: scriptedPlan));
+                var customer = CustomerPlanBuilder.Build(
+                        $"script_{script.Id}", tuning, random,
+                        buildMiddle: () => archetype.BuildMiddle(setup, tuning, random),
+                        buildProfile: () => BuildProfile(script, setup, random),
+                        characterId: script.CharacterId,
+                        scriptedPassivePlan: scriptedPlan);
+                scriptedCustomers.Add(new ScriptedCustomerVisit(customer, replacesRegularSlot));
+                if (replacesRegularSlot)
+                    replacedSlots++;
             }
 
             return scriptedCustomers;
@@ -166,6 +184,18 @@ namespace Book.Sell.Services
                 if (!string.IsNullOrEmpty(genre) && !known.Contains(genre))
                     Debug.LogWarning($"{LogPrefix} character '{characterId}' favorite genre '{genre}' is not present in BookConfig.PrimaryGenre.");
             }
+        }
+
+        private readonly struct ScriptedCustomerVisit
+        {
+            public ScriptedCustomerVisit(Customer customer, bool replacesRegularSlot)
+            {
+                Customer = customer;
+                ReplacesRegularSlot = replacesRegularSlot;
+            }
+
+            public Customer Customer { get; }
+            public bool ReplacesRegularSlot { get; }
         }
     }
 }

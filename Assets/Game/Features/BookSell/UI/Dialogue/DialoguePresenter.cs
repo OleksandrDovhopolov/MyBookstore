@@ -33,16 +33,19 @@ namespace Book.Sell.UI
         private readonly ISalesDayController _controller;
         private readonly IUIManager _uiManager;
         private readonly IDeliveredDialoguesService _delivered;
+        private readonly DialogueQuestActivator _questActivator;
         private readonly CancellationTokenSource _cts = new();
 
         public DialoguePresenter(
             ISalesDayController controller,
             IUIManager uiManager = null,
-            IDeliveredDialoguesService delivered = null)
+            IDeliveredDialoguesService delivered = null,
+            DialogueQuestActivator questActivator = null)
         {
             _controller = controller;
             _uiManager = uiManager;
             _delivered = delivered;
+            _questActivator = questActivator;
         }
 
         public void Start()
@@ -75,7 +78,10 @@ namespace Book.Sell.UI
             try
             {
                 var window = await _uiManager.ShowAsync<DialogWindow>(
-                    new DialogWindowArgs(payload, _controller.CompleteDialogue), _cts.Token);
+                    new DialogWindowArgs(
+                        payload,
+                        () => CompleteDialogueAfterQuestActivation(payload?.DialogueId).Forget()),
+                    _cts.Token);
 
                 if (window == null)
                 {
@@ -97,6 +103,23 @@ namespace Book.Sell.UI
             catch (Exception ex)
             {
                 Debug.LogError($"{LogPrefix} Failed to open the dialogue window: {ex}");
+                _controller?.CompleteDialogue();
+            }
+        }
+
+        private async UniTaskVoid CompleteDialogueAfterQuestActivation(string dialogueId)
+        {
+            try
+            {
+                if (_questActivator != null)
+                    await _questActivator.ActivateForDialogueAsync(dialogueId, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"{LogPrefix} Failed to activate quest for dialogue '{dialogueId}': {ex}");
+            }
+            finally
+            {
                 _controller?.CompleteDialogue();
             }
         }
