@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
+using Game.Inventory.API;
 using Game.LocationEntry.API;
 using Game.LocationUnlock.API;
 using Game.Resources.API;
@@ -19,22 +21,27 @@ namespace Game.Location.UI
         private ILocationUnlockService _unlock;
         private ILocationEntryCostCalculator _entryCost;
         private IResourcesService _resources;
+        private IInventoryService _inventory;
         private IUiSpriteProvider _uiSprites;
 
-        // Reused between renders so building the row list allocates nothing per update.
         private readonly List<LocationListItemModel> _models = new();
 
         public string Result { get; private set; }
 
         [Inject]
-        public void InjectServices(IConfigsService configs, ILocationUnlockService unlock,
-            ILocationEntryCostCalculator entryCost = null, IResourcesService resources = null,
+        public void InjectServices(
+            IConfigsService configs,
+            ILocationUnlockService unlock,
+            ILocationEntryCostCalculator entryCost = null,
+            IResourcesService resources = null,
+            IInventoryService inventory = null,
             IUiSpriteProvider uiSprites = null)
         {
             _configs = configs;
             _unlock = unlock;
             _entryCost = entryCost;
             _resources = resources;
+            _inventory = inventory;
             _uiSprites = uiSprites;
         }
 
@@ -52,8 +59,8 @@ namespace Game.Location.UI
                 _unlock.StatusChanged += OnUnlockChanged;
             }
 
-            // Balance change can flip affordability → re-enable/disable Start without reopening.
             if (_resources != null) _resources.Changed += OnResourcesChanged;
+            if (_inventory != null) _inventory.Changed += OnInventoryChanged;
 
             Render();
         }
@@ -67,14 +74,16 @@ namespace Game.Location.UI
             }
 
             if (_resources != null) _resources.Changed -= OnResourcesChanged;
+            if (_inventory != null) _inventory.Changed -= OnInventoryChanged;
         }
 
         protected override void OnDispose() => View.Clear();
 
-        //TODO check is this possible that location status could be changed during LocationWindow opened
         private void OnUnlockChanged(string _) => Render();
 
         private void OnResourcesChanged(ResourceChangeEvent _) => Render();
+
+        private void OnInventoryChanged(InventoryChangeEvent _) => Render();
 
         private void Render()
         {
@@ -96,16 +105,27 @@ namespace Game.Location.UI
                     ? _entryCost.Calculate(config.Id)
                     : new LocationEntryCost(ResourceIds.Gold, config.EntryCost, config.EntryCost, 0);
                 var canAfford = _resources == null || _resources.Has(cost.CurrencyId, cost.Total);
-                _models.Add(LocationListItemModel.From(config, status, cost, canAfford));
+                _models.Add(LocationListItemModel.From(config, status, cost, canAfford,
+                    _unlock?.GetCost(config.Id)));
             }
 
-            View.Render(_models, OnStartClicked, _uiSprites);
+            View.Render(_models, OnStartClicked, OnUnlockClicked, _uiSprites);
         }
 
         private void OnStartClicked(string locationId)
         {
             Result = locationId;
             CloseAsync().Forget();
+        }
+
+        private void OnUnlockClicked(string locationId)
+            => UnlockAsync(locationId).Forget();
+
+        private async UniTaskVoid UnlockAsync(string locationId)
+        {
+            if (_unlock == null || string.IsNullOrEmpty(locationId)) return;
+            await _unlock.TryUnlockAsync(locationId, default);
+            Render();
         }
     }
 }

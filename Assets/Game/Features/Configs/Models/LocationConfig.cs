@@ -14,6 +14,11 @@ namespace Game.Configs.Models
 
         public Newtonsoft.Json.Linq.JObject Unlock { get; set; }
 
+        /// <summary>
+        /// Items consumed by a manual unlock. Null/empty keeps the legacy automatic unlock behavior.
+        /// </summary>
+        public LocationUnlockCostConfig[] UnlockCost { get; set; }
+
         public string[] DemandGenres { get; set; }
 
         public string[] DemandQualities { get; set; }
@@ -24,5 +29,11 @@ namespace Game.Configs.Models
         /// (see docs/INPROGRESS/CUSTOMER_TRAFFIC_COUNT_SYSTEM.md).
         /// </summary>
         public float CustomerTrafficPercentDelta { get; set; }
+    }
+
+    public sealed class LocationUnlockCostConfig
+    {
+        public string ItemId { get; set; }
+        public int Amount { get; set; }
     }
 }

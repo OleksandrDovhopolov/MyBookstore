@@ -69,6 +69,7 @@ namespace Game.Shop.UI
             pool.DisableAll();
             _cardsByLotId.Clear();
             SpawnOffers(_offerSource.GetBookOffers(), pool);
+            SpawnOffers(_offerSource.GetConsumableOffers(), pool);
             SpawnOffers(GetDecorOffersForDisplay(_offerSource.GetDecorOffers()), pool);
             pool.DisableNonActive();
         }
@@ -202,6 +203,7 @@ namespace Game.Shop.UI
             if (_offerSource == null || string.IsNullOrEmpty(lotId)) return false;
 
             return TryFindOffer(_offerSource.GetBookOffers(), lotId, out offer)
+                   || TryFindOffer(_offerSource.GetConsumableOffers(), lotId, out offer)
                    || TryFindOffer(_offerSource.GetDecorOffers(), lotId, out offer);
         }
 

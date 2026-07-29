@@ -202,5 +202,15 @@
     "basePrice": 0,
     "genreMultipliers": [],
     "atmosphereTags": ["charity", "counter"]
+  },
+  {
+    "id": "ship",
+    "displayName": "Корабль",
+    "iconAddress": "Decor/Ship",
+    "positionType": "Standing",
+    "size": "Medium",
+    "basePrice": 0,
+    "genreMultipliers": [],
+    "atmosphereTags": ["sea", "travel"]
   }
 ]

@@ -27,6 +27,7 @@ namespace Game.Bootstrap
             // SalesStats ships its own condition adapters; the condition engine discovers them via the
             // IConditionFactory collection — no engine change needed for new condition types.
             builder.Register<IConditionFactory, SoldGenreConditionFactory>(Lifetime.Singleton);
+            builder.Register<IConditionFactory, SoldTotalConditionFactory>(Lifetime.Singleton);
             builder.Register<IConditionFactory, SoldGenreAtLocationConditionFactory>(Lifetime.Singleton);
             builder.Register<IConditionFactory, SoldGenreInSingleDayConditionFactory>(Lifetime.Singleton);
             builder.Register<IConditionFactory, ActivePickGenreConditionFactory>(Lifetime.Singleton);

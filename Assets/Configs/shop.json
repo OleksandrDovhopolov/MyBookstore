@@ -72,18 +72,6 @@
     "limit": { "mode": "Disposable", "maxPurchases": 1 }
   },
   {
-    "id": "newspaper_decor_lavender",
-    "storefrontId": "newspaper.decor",
-    "displayName": "Lavender Pot",
-    "description": "A decorative upgrade for the bookshop",
-    "price": { "currency": "gold", "amount": 55 },
-    "rewardId": "decor_lavender",
-    "rewardItems": [
-      { "id": "lavender", "category": "decor", "amount": 1, "kind": "InventoryItem" }
-    ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
-  },
-  {
     "id": "newspaper_decor_little_cactus",
     "storefrontId": "newspaper.decor",
     "displayName": "Little Cactus",
@@ -181,6 +169,18 @@
     "price": { "currency": "gold", "amount": 40 },
     "rewardId": "book_box_genre_heartfelt_1",
     "rewardItems": [],
+    "limit": { "mode": "Unlimited" }
+  },
+  {
+    "id": "newspaper_consumable_fuel_canister",
+    "storefrontId": "newspaper.consumables",
+    "displayName": "Fuel Canister",
+    "description": "A useful supply for opening new routes",
+    "price": { "currency": "gold", "amount": 20 },
+    "rewardId": "consumable_fuel_canister",
+    "rewardItems": [
+      { "id": "fuel_canister", "category": "consumable", "amount": 1, "kind": "InventoryItem" }
+    ],
     "limit": { "mode": "Unlimited" }
   },
   {

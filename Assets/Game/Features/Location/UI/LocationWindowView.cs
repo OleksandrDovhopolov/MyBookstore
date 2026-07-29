@@ -12,7 +12,7 @@ namespace Game.Location.UI
         [Header("List")]
         [SerializeField] private UIListPool<LocationRowView> _rowPool = new();
 
-        public void Render(IReadOnlyList<LocationListItemModel> models, Action<string> onStart,
+        public void Render(IReadOnlyList<LocationListItemModel> models, Action<string> onStart, Action<string> onUnlock,
             IUiSpriteProvider sprites)
         {
             _rowPool.DisableAll();
@@ -23,7 +23,7 @@ namespace Game.Location.UI
                 {
                     var model = models[i];
                     if (model == null) continue;
-                    _rowPool.GetNext().Bind(model, onStart, sprites);
+                    _rowPool.GetNext().Bind(model, onStart, onUnlock, sprites);
                 }
             }
 

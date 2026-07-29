@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.LocationUnlock.API;
 using SpriteService;
 using TMPro;
 using UIShared;
@@ -17,10 +18,13 @@ namespace Game.Location.UI
         [SerializeField] private TextMeshProUGUI _nameLabel;
         [SerializeField] private GameObject _lockedPanel;
         [SerializeField] private UIListPool<LocationConditionItemView> _conditionsPool = new();
+        [SerializeField] private UIListPool<LocationConditionItemView> _costsPool = new();
         [SerializeField] private TextMeshProUGUI _entryCostLabel;
         [SerializeField] private Button _startButton;
+        [SerializeField] private Button _unlockButton;
 
         private Action<string> _onStart;
+        private Action<string> _onUnlock;
         private string _locationId;
         private CancellationTokenSource _iconCts;
 
@@ -28,20 +32,33 @@ namespace Game.Location.UI
         {
             if (_startButton != null)
                 _startButton.onClick.AddListener(() => _onStart?.Invoke(_locationId));
+            if (_unlockButton != null)
+                _unlockButton.onClick.AddListener(() => _onUnlock?.Invoke(_locationId));
         }
 
-        public void Bind(LocationListItemModel model, Action<string> onStart, IUiSpriteProvider sprites)
+        public void Bind(
+            LocationListItemModel model,
+            Action<string> onStart,
+            Action<string> onUnlock,
+            IUiSpriteProvider sprites)
         {
             _onStart = onStart;
+            _onUnlock = onUnlock;
             _locationId = model.LocationId;
 
             if (_nameLabel != null) _nameLabel.text = model.DisplayName;
             if (_entryCostLabel != null) _entryCostLabel.text = $"{model.EntryCost} {model.EntryCurrencyId}";
 
             if (_startButton != null) _startButton.interactable = model.StartEnabled;
+            if (_unlockButton != null)
+            {
+                _unlockButton.gameObject.SetActive(!model.IsUnlocked && model.Costs.Count > 0);
+                _unlockButton.interactable = model.CanUnlock;
+            }
             if (_lockedPanel != null) _lockedPanel.SetActive(!model.IsUnlocked);
 
             RenderConditions(model.Conditions);
+            RenderCosts(model.Costs);
             LoadIcons(model.LocationId, sprites);
         }
 
@@ -58,8 +75,19 @@ namespace Game.Location.UI
             _conditionsPool.DisableNonActive();
         }
 
-        // Location art (by location id) and genre chip icons come from Addressables (async); pull them off
-        // the shared cache and push into the views under one cancellation token.
+        private void RenderCosts(IReadOnlyList<LocationUnlockCostProgress> costs)
+        {
+            _costsPool.DisableAll();
+
+            if (costs != null)
+            {
+                for (var i = 0; i < costs.Count; i++)
+                    _costsPool.GetNext().Bind(costs[i]);
+            }
+
+            _costsPool.DisableNonActive();
+        }
+
         private void LoadIcons(string locationId, IUiSpriteProvider sprites)
         {
             CancelIconLoad();
@@ -71,8 +99,9 @@ namespace Game.Location.UI
 
         private async UniTaskVoid LoadIconsAsync(string locationId, IUiSpriteProvider sprites, CancellationToken ct)
         {
-            // Snapshot active chips: the pool may be reused while we await.
-            var items = _conditionsPool.ActiveElements().ToList();
+            var items = _conditionsPool.ActiveElements()
+                .Concat(_costsPool.ActiveElements())
+                .ToList();
             try
             {
                 if (_locationImage != null && !string.IsNullOrEmpty(locationId))
@@ -98,10 +127,13 @@ namespace Game.Location.UI
         public void Cleanup()
         {
             _onStart = null;
+            _onUnlock = null;
             _locationId = null;
             CancelIconLoad();
             if (_locationImage != null) _locationImage.sprite = null;
             _conditionsPool.DisableAll();
+            _costsPool.DisableAll();
+            if (_unlockButton != null) _unlockButton.gameObject.SetActive(false);
         }
 
         private void CancelIconLoad()

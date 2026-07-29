@@ -6,5 +6,6 @@ namespace Game.Shop.UI
     {
         IReadOnlyList<ShopOffer> GetBookOffers();
         IReadOnlyList<ShopOffer> GetDecorOffers();
+        IReadOnlyList<ShopOffer> GetConsumableOffers();
     }
 }

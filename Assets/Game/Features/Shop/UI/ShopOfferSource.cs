@@ -10,7 +10,6 @@ namespace Game.Shop.UI
 {
     public sealed class ShopOfferSource : IShopOfferSource
     {
-        // Shared sprite id for every book-box offer (book offers do not have a per-lot icon).
         private const string BookOfferIconId = "book_box";
 
         private const string NewState = "NEW!";
@@ -30,9 +29,12 @@ namespace Game.Shop.UI
             BuildOffers(NewspaperShopLotIds.StorefrontBooks, isDecor: false);
 
         public IReadOnlyList<ShopOffer> GetDecorOffers() =>
-            BuildOffers(NewspaperShopLotIds.StorefrontDecor, isDecor: true);
+            BuildOffers(NewspaperShopLotIds.StorefrontDecor, isDecor: true, InventoryCategories.Decor);
 
-        private IReadOnlyList<ShopOffer> BuildOffers(string storefrontId, bool isDecor)
+        public IReadOnlyList<ShopOffer> GetConsumableOffers() =>
+            BuildOffers(NewspaperShopLotIds.StorefrontConsumables, isDecor: false, InventoryCategories.Consumable);
+
+        private IReadOnlyList<ShopOffer> BuildOffers(string storefrontId, bool isDecor, string rewardCategoryId = null)
         {
             var lots = _shop.GetLots(storefrontId);
             if (lots == null || lots.Count == 0) return Array.Empty<ShopOffer>();
@@ -44,7 +46,8 @@ namespace Game.Shop.UI
                 if (lot == null) continue;
 
                 var isAvailable = _shop.IsAvailable(lot.LotId);
-                var iconId = isDecor ? ResolveDecorIconId(lot.LotId) : BookOfferIconId;
+                var iconId = ResolveRewardItemIconId(lot.LotId, rewardCategoryId)
+                             ?? (isDecor ? lot.LotId : BookOfferIconId);
                 offers.Add(new ShopOffer(
                     lot.LotId,
                     iconId,
@@ -59,25 +62,25 @@ namespace Game.Shop.UI
             return offers;
         }
 
-        // Decor icons are addressed by the decors.json id (the lot's decor reward item id), the same
-        // id RewardsWindow uses — never the shop lot id (shop.json). Falls back to the lot id.
-        private string ResolveDecorIconId(string lotId)
+        private string ResolveRewardItemIconId(string lotId, string categoryId)
         {
+            if (string.IsNullOrEmpty(categoryId)) return null;
+
             if (_configs.TryGet<ShopConfig>(lotId, out var cfg) && cfg?.RewardItems != null)
             {
                 for (var i = 0; i < cfg.RewardItems.Length; i++)
                 {
                     var item = cfg.RewardItems[i];
                     if (item != null
-                        && string.Equals(item.Category, InventoryCategories.Decor, StringComparison.OrdinalIgnoreCase)
+                        && string.Equals(item.Category, categoryId, StringComparison.OrdinalIgnoreCase)
                         && !string.IsNullOrEmpty(item.Id))
                         return item.Id;
                 }
             }
 
             Debug.LogWarning(
-                $"[ShopBackedNewspaperOfferSource] No decor reward item for lot '{lotId}'. Falling back to lot id.");
-            return lotId;
+                $"[ShopBackedNewspaperOfferSource] No '{categoryId}' reward item for lot '{lotId}'.");
+            return null;
         }
 
         private static string FormatPrice(ShopPrice price)

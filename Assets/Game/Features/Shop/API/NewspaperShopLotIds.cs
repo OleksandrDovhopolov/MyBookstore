@@ -18,5 +18,6 @@ namespace Game.Shop.API
 
         public const string StorefrontDecor = "newspaper.decor";
         public const string StorefrontBooks = "newspaper.books";
+        public const string StorefrontConsumables = "newspaper.consumables";
     }
 }

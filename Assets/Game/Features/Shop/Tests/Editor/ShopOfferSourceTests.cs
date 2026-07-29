@@ -43,17 +43,27 @@ namespace Game.Shop.Tests.Editor
                     ShopLotLimit.Disposable(1),
                     "Coffee Machine",
                     "Paid decor"),
+                new ShopLot(
+                    "fuel_lot",
+                    NewspaperShopLotIds.StorefrontConsumables,
+                    new ShopPrice("gold", 20),
+                    "consumable_fuel_canister",
+                    ShopLotLimit.Unlimited(),
+                    "Fuel Canister",
+                    "Useful supply"),
             };
             var shop = new FakeShopService(lots, unavailableLotId: "decor_sold");
-            var configs = new FakeConfigsService(new Dictionary<string, string>
+            var configs = new FakeConfigsService(new Dictionary<string, RewardItemData>
             {
-                ["decor_free"] = "vintage_globe",
-                ["decor_sold"] = "coffee_pot",
+                ["decor_free"] = RewardItem("vintage_globe", "decor"),
+                ["decor_sold"] = RewardItem("coffee_pot", "decor"),
+                ["fuel_lot"] = RewardItem("fuel_canister", "consumable"),
             });
             var source = new ShopOfferSource(shop, configs);
 
             var books = source.GetBookOffers();
             var decor = source.GetDecorOffers();
+            var consumables = source.GetConsumableOffers();
 
             Assert.AreEqual(1, books.Count);
             Assert.AreEqual("book_a", books[0].LotId);
@@ -76,7 +86,23 @@ namespace Game.Shop.Tests.Editor
             Assert.AreEqual("SOLD", decor[1].StateText);
             Assert.IsFalse(decor[1].IsAvailable);
             Assert.IsTrue(decor[1].IsDecor);
+
+            Assert.AreEqual(1, consumables.Count);
+            Assert.AreEqual("fuel_lot", consumables[0].LotId);
+            Assert.AreEqual("fuel_canister", consumables[0].IconId);
+            Assert.AreEqual("20", consumables[0].PriceText);
+            Assert.IsTrue(consumables[0].IsAvailable);
+            Assert.IsFalse(consumables[0].IsDecor);
         }
+
+        private static RewardItemData RewardItem(string id, string category) =>
+            new RewardItemData
+            {
+                Id = id,
+                Category = category,
+                Amount = 1,
+                Kind = RewardKind.InventoryItem,
+            };
 
         private sealed class FakeShopService : IShopService
         {
@@ -131,22 +157,16 @@ namespace Game.Shop.Tests.Editor
         {
             private readonly Dictionary<string, ShopConfig> _shopConfigs;
 
-            public FakeConfigsService(IReadOnlyDictionary<string, string> decorIdByLotId)
+            public FakeConfigsService(IReadOnlyDictionary<string, RewardItemData> rewardByLotId)
             {
-                _shopConfigs = decorIdByLotId.ToDictionary(
+                _shopConfigs = rewardByLotId.ToDictionary(
                     pair => pair.Key,
                     pair => new ShopConfig
                     {
                         Id = pair.Key,
                         RewardItems = new[]
                         {
-                            new RewardItemData
-                            {
-                                Id = pair.Value,
-                                Category = "decor",
-                                Amount = 1,
-                                Kind = RewardKind.InventoryItem,
-                            },
+                            pair.Value,
                         },
                     },
                     StringComparer.Ordinal);

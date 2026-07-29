@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using Game.Conditions.API;
 using Game.Conditions.Services;
 using Game.Configs;
+using Game.Inventory.API;
 using Game.LocationUnlock.API;
 using Game.SalesStats.API;
 using Game.Configs.Models;
@@ -82,6 +83,72 @@ namespace Game.LocationUnlock.Tests.Editor.Fakes
     }
 
     /// <summary>Condition whose met-state can be flipped to drive Locked → Unlocked transitions.</summary>
+    public sealed class FakeInventoryService : IInventoryService
+    {
+        private readonly Dictionary<string, (string CategoryId, int Count)> _items = new(StringComparer.Ordinal);
+
+        public List<(string itemId, int amount)> RemoveCalls { get; } = new();
+
+        public event Action<InventoryChangeEvent> Changed;
+
+        public FakeInventoryService Seed(string itemId, string categoryId, int count)
+        {
+            _items[itemId] = (categoryId, count);
+            return this;
+        }
+
+        public IReadOnlyList<InventoryItem> GetAll()
+        {
+            var result = new List<InventoryItem>();
+            foreach (var pair in _items)
+                result.Add(new InventoryItem(pair.Key, pair.Value.CategoryId, pair.Value.Count));
+            return result;
+        }
+
+        public IReadOnlyList<InventoryItem> GetByCategory(string categoryId)
+        {
+            var result = new List<InventoryItem>();
+            foreach (var pair in _items)
+                if (string.Equals(pair.Value.CategoryId, categoryId, StringComparison.Ordinal))
+                    result.Add(new InventoryItem(pair.Key, pair.Value.CategoryId, pair.Value.Count));
+            return result;
+        }
+
+        public bool Has(string itemId) => GetCount(itemId) > 0;
+
+        public int GetCount(string itemId)
+            => !string.IsNullOrEmpty(itemId) && _items.TryGetValue(itemId, out var entry) ? entry.Count : 0;
+
+        public UniTask AddAsync(string itemId, string categoryId, int amount, CancellationToken ct)
+        {
+            var current = GetCount(itemId);
+            _items[itemId] = (categoryId, current + amount);
+            Changed?.Invoke(new InventoryChangeEvent(categoryId, itemId, InventoryChangeKind.Added, current + amount));
+            return UniTask.CompletedTask;
+        }
+
+        public UniTask AddBatchAsync(IEnumerable<InventoryItem> items, CancellationToken ct)
+        {
+            if (items != null)
+                foreach (var item in items)
+                    AddAsync(item.ItemId, item.CategoryId, item.Count, ct).GetAwaiter().GetResult();
+            return UniTask.CompletedTask;
+        }
+
+        public UniTask<bool> RemoveAsync(string itemId, int amount, CancellationToken ct)
+        {
+            RemoveCalls.Add((itemId, amount));
+            if (string.IsNullOrEmpty(itemId) || amount <= 0) return UniTask.FromResult(false);
+            if (!_items.TryGetValue(itemId, out var entry) || entry.Count < amount) return UniTask.FromResult(false);
+
+            var next = entry.Count - amount;
+            if (next <= 0) _items.Remove(itemId);
+            else _items[itemId] = (entry.CategoryId, next);
+            Changed?.Invoke(new InventoryChangeEvent(entry.CategoryId, itemId, InventoryChangeKind.Updated, next));
+            return UniTask.FromResult(true);
+        }
+    }
+
     public sealed class MutableCondition : ICondition
     {
         public bool Met;

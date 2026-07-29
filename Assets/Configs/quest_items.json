@@ -3,5 +3,20 @@
     "id": "milly_letter",
     "displayName": "Milly Letter",
     "descriptionKey": "questItem.milly_letter.desc"
+  },
+  {
+    "id": "port_trade_permit",
+    "displayName": "Разрешение на торговлю",
+    "descriptionKey": "questItem.port_trade_permit.desc"
+  },
+  {
+    "id": "captain_recommendation",
+    "displayName": "Рекомендация Капитана",
+    "descriptionKey": "questItem.captain_recommendation.desc"
+  },
+  {
+    "id": "map",
+    "displayName": "Карта",
+    "descriptionKey": "questItem.map.desc"
   }
 ]

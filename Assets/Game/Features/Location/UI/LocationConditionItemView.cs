@@ -1,4 +1,5 @@
 using TMPro;
+using Game.LocationUnlock.API;
 using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,6 +18,12 @@ namespace Game.Location.UI
         {
             _genre = progress.Genre;
             if (_countLabel != null) _countLabel.text = $"{progress.Current}/{progress.Target}";
+        }
+
+        public void Bind(LocationUnlockCostProgress progress)
+        {
+            _genre = progress.ItemId;
+            if (_countLabel != null) _countLabel.text = $"{progress.Have}/{progress.Need}";
         }
 
         public void SetIcon(Sprite sprite)

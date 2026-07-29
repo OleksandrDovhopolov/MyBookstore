@@ -309,6 +309,41 @@ namespace Game.Shop.Tests.Editor
         }
 
         [Test]
+        public void Buy_StackConsumableAlreadyOwned_ProceedsNormally()
+        {
+            var lot = new ShopConfig
+            {
+                Id = "fuel_lot",
+                StorefrontId = Storefront,
+                Price = new ShopPriceData { Currency = Gold, Amount = 20 },
+                RewardId = "consumable_fuel_canister",
+                RewardItems = new[]
+                {
+                    new RewardItemData
+                    {
+                        Id = "fuel_canister",
+                        Category = "consumable",
+                        Amount = 1,
+                        Kind = RewardKind.InventoryItem
+                    }
+                },
+                Limit = new ShopLotLimitData { Mode = ShopLimitMode.Unlimited }
+            };
+            var h = Build(new[] { lot });
+            h.Resources.Seed(Gold, 100);
+            h.Inventory.Seed("fuel_canister", "consumable", 2);
+
+            var first = h.Svc.BuyAsync("fuel_lot", CancellationToken.None).GetAwaiter().GetResult();
+            var second = h.Svc.BuyAsync("fuel_lot", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(ShopPurchaseStatus.Success, first.Status);
+            Assert.AreEqual(ShopPurchaseStatus.Success, second.Status);
+            Assert.IsTrue(h.Svc.IsAvailable("fuel_lot"));
+            Assert.AreEqual(60, h.Resources.GetAmount(Gold));
+            Assert.AreEqual(2, h.Rewards.GrantCalls.Count);
+        }
+
+        [Test]
         public void Buy_EmptyRewardItems_NotBlockedByInventoryCheck()
         {
             // Book-box style: empty rewardItems (expander fills at grant time). Inventory of the same
