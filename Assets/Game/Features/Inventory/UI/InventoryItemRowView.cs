@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Game.Configs.Models;
+using Game.Inventory.API;
 using SpriteService;
 using TMPro;
 using UIShared;
@@ -31,7 +31,7 @@ namespace Game.Inventory.UI
         [SerializeField] private Button _infoButton;
 
         private Action<string> _onInfo;
-        private string _decorId;
+        private string _itemId;
         private CancellationTokenSource _iconCts;
         private VisualMode _visualMode;
 
@@ -40,58 +40,31 @@ namespace Game.Inventory.UI
             if (_infoButton != null) _infoButton.onClick.AddListener(OnInfoClicked);
         }
 
-        public void BindGenre(BookGenre genre, int count, IUiSpriteProvider sprites, CancellationToken ct)
+        public void Bind(
+            InventoryRowModel model,
+            IUiSpriteProvider sprites,
+            Action<string> onInfo,
+            CancellationToken ct)
         {
             CancelIconLoad();
-            _onInfo = null;
-            _decorId = null;
+            _itemId = model.ItemId;
+            _onInfo = !string.IsNullOrEmpty(_itemId) ? onInfo : null;
 
-            SetVisualMode(VisualMode.Default);
-            SetDecorPlacedVisible(false);
+            SetVisualMode(ToVisualMode(model.Style));
+            SetDecorPlacedVisible(model.IsHighlighted);
             if (_amountText != null)
-                _amountText.text = count.ToString();
-            SetInfoVisible(false);
+                _amountText.text = model.Count > 0 ? model.Count.ToString() : string.Empty;
+            SetInfoVisible(!string.IsNullOrEmpty(_itemId));
 
-            var genreId = genre.ToConfigValue();
-            if (sprites == null || string.IsNullOrEmpty(genreId)) return;
-            LoadIconAsync(genreId, sprites, ct).Forget();
-        }
-
-        public void BindDecor(DecorConfig config, bool isPlaced, IUiSpriteProvider sprites, Action<string> onInfo, CancellationToken ct)
-        {
-            CancelIconLoad();
-            _decorId = config.Id;
-            _onInfo = onInfo;
-
-            SetVisualMode(VisualMode.Decor);
-            SetDecorPlacedVisible(isPlaced);
-            if (_amountText != null) _amountText.text = string.Empty;
-            SetInfoVisible(true);
-
-            if (sprites == null || string.IsNullOrEmpty(config.Id)) return;
-            LoadIconAsync(config.Id, sprites, ct).Forget();
-        }
-
-        public void BindQuestItem(QuestItemConfig config, IUiSpriteProvider sprites, CancellationToken ct)
-        {
-            CancelIconLoad();
-            _decorId = null;
-            _onInfo = null;
-
-            SetVisualMode(VisualMode.QuestItem);
-            SetDecorPlacedVisible(false);
-            if (_amountText != null) _amountText.text = string.Empty;
-            SetInfoVisible(false);
-
-            if (sprites == null || string.IsNullOrEmpty(config?.Id)) return;
-            LoadIconAsync(config.Id, sprites, ct).Forget();
+            if (sprites == null || string.IsNullOrEmpty(model.SpriteId)) return;
+            LoadIconAsync(model.SpriteId, sprites, ct).Forget();
         }
 
         public void Cleanup()
         {
             CancelIconLoad();
             _onInfo = null;
-            _decorId = null;
+            _itemId = null;
             if (_amountText != null) _amountText.text = string.Empty;
             SetInfoVisible(false);
             SetVisualMode(VisualMode.None);
@@ -121,7 +94,17 @@ namespace Game.Inventory.UI
 
         private void OnInfoClicked()
         {
-            if (!string.IsNullOrEmpty(_decorId)) _onInfo?.Invoke(_decorId);
+            if (!string.IsNullOrEmpty(_itemId)) _onInfo?.Invoke(_itemId);
+        }
+
+        private static VisualMode ToVisualMode(InventoryRowStyle style)
+        {
+            return style switch
+            {
+                InventoryRowStyle.Decor => VisualMode.Decor,
+                InventoryRowStyle.QuestItem => VisualMode.QuestItem,
+                _ => VisualMode.Default
+            };
         }
 
         private void SetInfoVisible(bool visible)

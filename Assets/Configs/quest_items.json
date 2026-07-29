@@ -6,17 +6,17 @@
   },
   {
     "id": "port_trade_permit",
-    "displayName": "Разрешение на торговлю",
+    "displayName": "Trade",
     "descriptionKey": "questItem.port_trade_permit.desc"
   },
   {
     "id": "captain_recommendation",
-    "displayName": "Рекомендация Капитана",
+    "displayName": "Captain",
     "descriptionKey": "questItem.captain_recommendation.desc"
   },
   {
     "id": "map",
-    "displayName": "Карта",
+    "displayName": "Map",
     "descriptionKey": "questItem.map.desc"
   }
 ]

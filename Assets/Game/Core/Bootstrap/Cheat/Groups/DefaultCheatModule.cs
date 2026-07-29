@@ -20,18 +20,6 @@ namespace Game.Cheat
         public void Initialize(ICheatsContainer cheatsContainer)
         {
             cheatsContainer.AddItem<CheatButtonItem>(item =>
-                item.OnClick("Open Inventory", () =>
-                {
-                    _uiManager.ShowAsync<InventoryWindowController>().Forget();
-                }));
-
-            cheatsContainer.AddItem<CheatButtonItem>(item =>
-                item.OnClick("Open Decoration", () =>
-                {
-                    _uiManager.ShowAsync<DecorPlacementWindow>().Forget();
-                }));
-
-            cheatsContainer.AddItem<CheatButtonItem>(item =>
                 item.OnClick("Open Shop", () =>
                 {
                     _uiManager.ShowAsync<ShopWindow>().Forget();

@@ -37,7 +37,7 @@ namespace Game.Bootstrap
             // type; the traffic resolver (location scope) composes it explicitly — see RegisterBookSell.
             builder.Register<DecorTrafficContributor>(Lifetime.Singleton);
             builder.Register<IInventoryItemUseHandler, DecorActivationUseHandler>(Lifetime.Singleton);
-            builder.Register<IInventoryItemInfoProvider, DecorPlacementInfoProvider>(Lifetime.Singleton);
+            builder.Register<IInventoryRowSource, DecorRowSource>(Lifetime.Singleton);
 
             // Config validation runs at boot. In Editor errors throw to block Play mode.
             builder.RegisterEntryPoint<DecorConfigValidator>(Lifetime.Singleton);

@@ -12,7 +12,8 @@
         "Game.Core.UI",
         "Infrastructure",
         "Game.Decor",
-        "Game.Decor.API"
+        "Game.Decor.API",
+        "Game.Rewards.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

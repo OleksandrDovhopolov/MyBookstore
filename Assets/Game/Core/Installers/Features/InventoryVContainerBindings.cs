@@ -39,9 +39,16 @@ namespace Game.Bootstrap
             builder.Register<IInventoryItemUseHandler, PuzzleAssembleUseHandler>(Lifetime.Singleton);
 
             builder.Register<IInventoryUseRouter, InventoryUseRouter>(Lifetime.Singleton);
+            builder.Register<IInventoryRowSource, BookGenreRowSource>(Lifetime.Singleton);
+            builder.Register<IInventoryRowSource, QuestItemRowSource>(Lifetime.Singleton);
+            builder.Register<IInventoryRowSource, ConsumableRowSource>(Lifetime.Singleton);
 
             // Quest/unlock condition adapter ("haveItem"); discovered via the IConditionFactory collection.
             builder.Register<IConditionFactory, HaveItemConditionFactory>(Lifetime.Singleton);
+
+            // Cross-config item reference validation runs at boot, same as DecorConfigValidator.
+            // In Editor errors throw to block Play mode.
+            builder.RegisterEntryPoint<ItemReferenceValidator>(Lifetime.Singleton);
 
             /*// Debug UI is registered only when present in the scene (same guard as other feature views).
             if (Object.FindAnyObjectByType<InventoryScreenView>(FindObjectsInactive.Include) != null)

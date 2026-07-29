@@ -9,6 +9,7 @@ using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
 using Game.Decor.UI;
+using Game.Inventory.UI;
 using Game.Location.UI;
 using Game.LocationUnlock.API;
 using Game.Preparation.Services;
@@ -97,6 +98,9 @@ namespace GameplayUI
             
             if (View.JournalButton != null)
                 View.JournalButton.onClick.AddListener(OnJournalButtonClicked);
+            
+            if (View.InventoryButton != null)
+                View.InventoryButton.onClick.AddListener(OnInventoryButtonClicked);
 
             View.GenreItemClicked += OnGenreItemClicked;
 
@@ -198,7 +202,10 @@ namespace GameplayUI
                 View.DecorButton.onClick.RemoveListener(OnDecorButtonClicked);
             
             if (View != null && View.JournalButton != null)
-                View.DecorButton.onClick.RemoveAllListeners();
+                View.JournalButton.onClick.RemoveAllListeners();
+            
+            if (View != null && View.InventoryButton != null)
+                View.InventoryButton.onClick.RemoveAllListeners();
 
             if (View != null)
                 View.GenreItemClicked -= OnGenreItemClicked;
@@ -390,6 +397,7 @@ namespace GameplayUI
 
         private void OnDecorButtonClicked() => ShowWindowWithPanelsHiddenAsync<DecorPlacementWindow>().Forget();
         private void OnJournalButtonClicked() => ShowWindowWithPanelsHiddenAsync<JournalWindow>().Forget();
+        private void OnInventoryButtonClicked() => ShowWindowWithPanelsHiddenAsync<InventoryWindowController>().Forget();
 
         private async UniTaskVoid ShowWindowWithPanelsHiddenAsync<TWindow>(WindowArgs args = null)
             where TWindow : class, IWindowController, new()

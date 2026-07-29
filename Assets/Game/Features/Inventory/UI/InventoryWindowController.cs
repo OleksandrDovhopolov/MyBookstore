@@ -1,5 +1,5 @@
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using Game.Configs;
 using Game.Decor;
 using Game.Decor.UI;
 using Game.Inventory.API;
@@ -14,25 +14,25 @@ namespace Game.Inventory.UI
     {
         private IInventoryService _inventory;
         private IUiSpriteProvider _sprites;
-        private IConfigsService _configs;
+        private IReadOnlyList<IInventoryRowSource> _rowSources;
         private IDecorPlacementService _decorPlacement;
 
         [Inject]
         public void Construct(
             IInventoryService inventory,
             IUiSpriteProvider sprites,
-            IConfigsService configs,
+            IReadOnlyList<IInventoryRowSource> rowSources,
             IDecorPlacementService decorPlacement)
         {
             _inventory = inventory;
             _sprites = sprites;
-            _configs = configs;
+            _rowSources = rowSources;
             _decorPlacement = decorPlacement;
         }
 
         protected override void OnInit()
         {
-            View.Bind(_inventory, _sprites, _configs, _decorPlacement, OnDecorInfoClicked);
+            View.Bind(_inventory, _sprites, _rowSources, _decorPlacement, OnDecorInfoClicked);
         }
 
         protected override void OnShowStart() => View.Refresh();
