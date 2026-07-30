@@ -1,0 +1,20 @@
+{
+    "name": "Book.Sell.Editor",
+    "rootNamespace": "Book.Sell.Editor",
+    "references": [
+        "Book.Sell",
+        "Book.Sell.API",
+        "Configs"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

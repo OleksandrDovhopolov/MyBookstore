@@ -251,7 +251,6 @@ namespace Book.Sell.UI
         private static string EmotionFor(RecommendationTier tier) => tier switch
         {
             RecommendationTier.Excellent => "Perfect, that's exactly what I needed!",
-            RecommendationTier.Normal => "Thanks, I'll take it!",
             RecommendationTier.Failed => "Hmm, that's not what I wanted...",
             RecommendationTier.Skipped => "Maybe next time.",
             _ => string.Empty

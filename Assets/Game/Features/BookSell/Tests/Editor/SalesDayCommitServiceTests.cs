@@ -60,7 +60,6 @@ namespace Book.Sell.Tests.Editor
             var service = CreateService(save, dayProgress, delivered, salesStats);
             var result = new SalesDayResult { Day = 1, LocationId = "loc" };
             result.Recommendations.Add(Recommendation("book_fact", RecommendationTier.Excellent));
-            result.Recommendations.Add(Recommendation("book_drama", RecommendationTier.Normal));
             result.Recommendations.Add(Recommendation("book_crime", RecommendationTier.Failed));
             result.Recommendations.Add(RecommendationResult.Skipped("req_skip"));
             result.Recommendations.Add(Recommendation(null, RecommendationTier.Excellent));

@@ -173,7 +173,7 @@ namespace Book.Sell.Services
             var request = _activeRequest;
             var result = _scoring.Score(shelfBook.Config, request, _location);
 
-            if (result.Tier == RecommendationTier.Normal || result.Tier == RecommendationTier.Excellent)
+            if (result.Tier == RecommendationTier.Excellent)
             {
                 _shelf.CommitSale(bookId);
 
@@ -369,7 +369,6 @@ namespace Book.Sell.Services
             switch (tier)
             {
                 case RecommendationTier.Excellent: _result.ExcellentCount++; break;
-                case RecommendationTier.Normal: _result.NormalCount++; break;
                 case RecommendationTier.Failed: _result.FailedCount++; break;
                 case RecommendationTier.Skipped: _result.SkippedCount++; break;
             }

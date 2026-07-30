@@ -28,7 +28,6 @@ namespace Game.DayCycle.Results.Services
                 SalesCount = sales.SalesCount,
                 GoldEarned = sales.GoldEarned,
                 ExcellentCount = sales.ExcellentCount,
-                NormalCount = sales.NormalCount,
                 FailedCount = sales.FailedCount,
                 SkippedCount = sales.SkippedCount,
                 SoldByGenre = BuildSoldByGenre(sales),

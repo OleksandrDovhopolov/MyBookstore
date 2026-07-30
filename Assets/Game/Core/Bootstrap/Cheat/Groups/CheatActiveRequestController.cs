@@ -71,7 +71,7 @@ namespace Game.Cheat
             }
 
             var result = _scoring.Score(shelfBook.Config, _request, location: null);
-            if (result.Tier == RecommendationTier.Excellent || result.Tier == RecommendationTier.Normal)
+            if (result.Tier == RecommendationTier.Excellent)
                 _shelf.CommitSale(bookId);   // cosmetic: grey out the picked card if the window stays open
 
             Debug.Log($"{LogPrefix} request='{_request.Id}' book='{bookId}' tier={result.Tier} gold={result.GoldEarned}");

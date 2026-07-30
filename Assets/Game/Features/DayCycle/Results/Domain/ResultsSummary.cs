@@ -15,7 +15,6 @@ namespace Game.DayCycle.Results.Domain
         public int SalesCount { get; set; }
         public int GoldEarned { get; set; }
         public int ExcellentCount { get; set; }
-        public int NormalCount { get; set; }
         public int FailedCount { get; set; }
         public int SkippedCount { get; set; }
         public Dictionary<string, int> SoldByGenre { get; set; } = new();

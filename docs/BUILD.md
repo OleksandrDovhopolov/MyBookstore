@@ -1,11 +1,41 @@
 # Сборка билда (APK) — что сделать перед сборкой
 
-Чеклист подготовки к player-сборке (Android/APK). Пункт 1 — **обязательный и проектный** (молча ломает
-контент, если пропустить); остальное — стандартные Unity/Android проверки.
+Чеклист подготовки к player-сборке (Android/APK). Синхронизация конфигов (§1) и решаемость активных
+запросов **проверяются автоматически** (см. §0) — они молча ломают контент, поэтому вынесены из «не забыть»
+в «не соберётся». Остальное — стандартные Unity/Android проверки, которые остаются на человеке.
 
 > Связано: [SERVICES/CONFIG_CACHE_SYSTEM.md](SERVICES/CONFIG_CACHE_SYSTEM.md) (загрузка конфигов),
 > [SERVICES/ADDRESSABLES.md](SERVICES/ADDRESSABLES.md), [SERVICES/FIREBASE_INTEGRATION.md](SERVICES/FIREBASE_INTEGRATION.md),
-> [SERVICES/SECRETS.md](SERVICES/SECRETS.md), [BOOTSTRAP_AND_LOADING.md](BOOTSTRAP_AND_LOADING.md).
+> [SERVICES/SECRETS.md](SERVICES/SECRETS.md), [BOOTSTRAP_AND_LOADING.md](BOOTSTRAP_AND_LOADING.md),
+> [ACTIVE_REQUEST_CONDITIONS.md](ACTIVE_REQUEST_CONDITIONS.md).
+
+---
+
+## 0. Автоматический гейт — `PreBuildValidationGate`
+
+Файл: `Assets/Game/Core/Build/Editor/PreBuildValidationGate.cs` (`IPreprocessBuildWithReport`,
+`callbackOrder = 0` — раньше Addressables).
+
+Запускается **сам на каждой player-сборке** и **валит билд** (`BuildFailedException`) при любой из проблем:
+
+- **Рассинхрон конфигов** — файл есть в `Assets/Configs`, но не в StreamingAssets; лежит в StreamingAssets,
+  но удалён из `Assets/Configs`; содержимое одноимённых файлов различается; файл забыт в `manifest.json`
+  (в плеере `Directory.GetFiles` недоступен — не перечисленный файл невидим, даже если физически попал в APK).
+- **Нерешаемые активные запросы** — запрос из `hard_requests.json`, который не может удовлетворить ни одна
+  книга из `books.json`, либо жанр, ни одна книга которого не способна получить `Excellent` (тогда квест с
+  `activePickGenre <жанр>` непроходим). Проверку делает `ActiveRequestValidator`, переиспользуя рантаймовый
+  `BookConditionRequestEvaluator` — вердикт не может разойтись с игрой.
+
+**Прогнать заранее, не запуская билд:** `Tools → Configs → Run Pre-Build Validation`.
+Только запросы, без конфигов: `Tools → Configs → Validate Active Requests`.
+
+Гейт **не** проверяет: Addressables, Firebase, Player Settings, флаги `BootstrapInstaller.asset` — это
+пункты 2–5 ниже, они остаются ручными.
+
+**Известный пробел.** Ссылки на предметы (награды квестов, лоты магазина, `unlockCost`, условия `haveItem`)
+валидирует `ItemReferenceValidator`, но он рантаймовый: в редакторе бросает и блокирует Play mode, а в билде
+только пишет `LogError`. В гейт он не встроен, потому что требует `IConfigsService`, которого вне Play нет.
+Пока это ловится входом в Play mode перед сборкой.
 
 ---
 
@@ -111,7 +141,8 @@ Android-таргета на месте конфиг Firebase (`google-services.j
 
 - [ ] Удалить `Assets/Configs/sample_requests.json` (если ещё лежит).
 - [ ] `Tools → Configs → Sync Bundled Defaults to StreamingAssets`.
-- [ ] Проверить `manifest.json` + отсутствие расхождений StreamingAssets ↔ Assets/Configs.
+- [ ] `Tools → Configs → Run Pre-Build Validation` — зелёный (иначе билд всё равно упадёт, см. §0).
+- [ ] Войти в Play mode хотя бы раз — так отработают рантаймовые валидаторы (`ItemReferenceValidator`, `DecorConfigValidator`), которых нет в гейте.
 - [ ] Собрать/включить Addressables.
 - [ ] Firebase Android-конфиг на месте.
 - [ ] Player Settings: IL2CPP + ARM64, API level, keystore, список сцен.

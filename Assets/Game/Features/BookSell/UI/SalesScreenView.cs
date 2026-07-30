@@ -151,7 +151,7 @@ namespace Book.Sell.UI
 
             Debug.Log($"[SalesScreenView] DayCompleted: day={result.Day}, customers={result.CustomersServed}, " +
                       $"sales={result.SalesCount}, gold={result.GoldEarned}, " +
-                      $"excellent={result.ExcellentCount}, normal={result.NormalCount}, " +
+                      $"excellent={result.ExcellentCount}, " +
                       $"failed={result.FailedCount}, skipped={result.SkippedCount}");
 
             if (_gameFlow != null)
