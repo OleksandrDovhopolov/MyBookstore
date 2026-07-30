@@ -38,19 +38,20 @@ namespace Game.Quest.UI
             _onClaim = onClaim;
             _questId = model?.Id;
 
-            if (_completeBadge != null) _completeBadge.SetActive(model?.IsComplete == true);
+            if (_completeBadge != null) _completeBadge.SetActive(model?.IsRewardClaimed == true);
 
             var hasPortrait = !string.IsNullOrEmpty(model?.CharacterId);
             if (_portraitRoot != null) _portraitRoot.SetActive(hasPortrait);
             if (_portraitImage != null) _portraitImage.sprite = _spriteFallback;
 
-            var hasRewards = model?.Rewards != null && model.Rewards.Count > 0;
+            var hasRewards = model?.IsRewardClaimed != true && model?.Rewards != null && model.Rewards.Count > 0;
             if (_rewardRoot != null) _rewardRoot.SetActive(hasRewards);
             if (_claimButton != null) _claimButton.gameObject.SetActive(model?.CanClaim == true);
-            if (_claimedRoot != null) _claimedRoot.SetActive(model?.IsRewardClaimed == true);
+            var claimedRoot = GetClaimedRoot();
+            if (claimedRoot != null) claimedRoot.SetActive(model?.IsRewardClaimed == true);
 
             RenderTasks(model?.Tasks);
-            RenderRewards(model?.Rewards);
+            RenderRewards(hasRewards ? model?.Rewards : null);
             LoadSprites(model, sprites);
         }
 
@@ -65,10 +66,16 @@ namespace Game.Quest.UI
             if (_completeBadge != null) _completeBadge.SetActive(false);
             if (_rewardRoot != null) _rewardRoot.SetActive(false);
             if (_claimButton != null) _claimButton.gameObject.SetActive(false);
-            if (_claimedRoot != null) _claimedRoot.SetActive(false);
+            var claimedRoot = GetClaimedRoot();
+            if (claimedRoot != null) claimedRoot.SetActive(false);
             _taskPool.DisableAll();
             _rewardPool.DisableAll();
         }
+
+        private GameObject GetClaimedRoot()
+            => _claimedRoot != null && (_claimButton == null || _claimedRoot != _claimButton.gameObject)
+                ? _claimedRoot
+                : null;
 
         private void RenderTasks(System.Collections.Generic.IReadOnlyList<QuestTaskItemModel> tasks)
         {

@@ -49,7 +49,11 @@ namespace Game.Location.UI
             if (_nameLabel != null) _nameLabel.text = model.DisplayName;
             if (_entryCostLabel != null) _entryCostLabel.text = $"{model.EntryCost} {model.EntryCurrencyId}";
 
-            if (_startButton != null) _startButton.interactable = model.StartEnabled;
+            if (_startButton != null)
+            {
+                _startButton.gameObject.SetActive(model.IsUnlocked);
+                _startButton.interactable = model.StartEnabled;
+            }
             if (_unlockButton != null)
             {
                 _unlockButton.gameObject.SetActive(!model.IsUnlocked && model.Costs.Count > 0);
@@ -134,6 +138,7 @@ namespace Game.Location.UI
             if (_locationImage != null) _locationImage.sprite = null;
             _conditionsPool.DisableAll();
             _costsPool.DisableAll();
+            if (_startButton != null) _startButton.gameObject.SetActive(false);
             if (_unlockButton != null) _unlockButton.gameObject.SetActive(false);
         }
 

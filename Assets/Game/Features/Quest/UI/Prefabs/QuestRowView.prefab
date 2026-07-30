@@ -244,7 +244,7 @@ MonoBehaviour:
     prefab: {fileID: 7159866281013524648, guid: 07d8f4dac600b7046b2c619b3e845d6f, type: 3}
     parent: {fileID: 2634312211917728854}
   _claimButton: {fileID: 844495702083323976}
-  _claimedRoot: {fileID: 5171902255561054964}
+  _claimedRoot: {fileID: 0}
 --- !u!114 &3691638651859931179
 MonoBehaviour:
   m_ObjectHideFlags: 0

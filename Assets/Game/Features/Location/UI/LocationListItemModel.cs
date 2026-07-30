@@ -43,7 +43,7 @@ namespace Game.Location.UI
         {
             var unlocked = status != null && status.State == LocationUnlockState.Unlocked;
             var conditionsMet = status != null && status.Progress.IsMet;
-            var costsMet = costs == null || costs.Count == 0;
+            var costsMet = true;
             if (costs != null)
             {
                 for (var i = 0; i < costs.Count; i++)
