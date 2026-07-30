@@ -54,6 +54,7 @@
   },
   {
     "id": "eddy1",
+    "activatesQuestId": "q_intro_eddi",
     "nodes": [
       {
         "nodeId": "root",
@@ -114,7 +115,6 @@
   },
   {
     "id": "eddy_quest_1",
-    "activatesQuestId": "q_intro_eddi",
     "nodes": [
       {
         "nodeId": "root",
@@ -136,6 +136,33 @@
         "lines": [
           { "speaker": "Milly", "text": "[STUB] Hi. I left a letter for you." },
           { "speaker": "Milly", "text": "[STUB] If someone asks for facts, find them something exact." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tara_quest_1",
+    "activatesQuestId": "q_tara_kids",
+    "nodes": [
+      {
+        "nodeId": "root",
+        "options": [],
+        "lines": [
+          { "speaker": "Tara", "text": "[STUB] The children keep asking me for stories and I never know what to pick." },
+          { "speaker": "Tara", "text": "[STUB] Find the right one for five of them and I'll get you a berth at the port." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "captain_quest_1",
+    "nodes": [
+      {
+        "nodeId": "root",
+        "options": [],
+        "lines": [
+          { "speaker": "Captain", "text": "[STUB] Every port I dock at, I mean to send a card home. Never do." },
+          { "speaker": "Captain", "text": "[STUB] Bring me ten of them and I'll put a word in for you at the market." }
         ]
       }
     ]

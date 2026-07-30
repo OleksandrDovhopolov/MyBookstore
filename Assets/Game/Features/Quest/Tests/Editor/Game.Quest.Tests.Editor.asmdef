@@ -14,6 +14,7 @@
         "Game.Decor.API",
         "Game.Inventory.API",
         "DayCycle",
+        "Game.Rewards.API",
         "UnityEngine.TestRunner"
     ],
     "includePlatforms": [

@@ -62,10 +62,68 @@ namespace Game.Newspaper.Tests.Editor
             var rewards = RewardsWindowRewardBuilder.Build(spec, configs);
 
             Assert.AreEqual(1, rewards.Count);
-            Assert.AreEqual("Decor/VintageGlobe", rewards[0].ResourceId);
+            Assert.AreEqual("vintage_globe", rewards[0].ResourceId);
             Assert.AreEqual("Vintage Globe", rewards[0].DisplayName);
             Assert.AreEqual(InventoryCategories.Decor, rewards[0].Category);
             Assert.AreEqual(1, rewards[0].Amount);
+        }
+
+        [Test]
+        public void Build_ConsumableRewards_UseConsumableDisplayName()
+        {
+            var configs = new FakeConfigsService(
+                consumables: new[] { new ConsumableConfig { Id = "fuel_canister", DisplayName = "Fuel Canister" } });
+            var spec = new RewardSpec("quest_reward", new[]
+            {
+                RewardItem.InventoryItem("fuel_canister", InventoryCategories.Consumable, 2),
+                RewardItem.InventoryItem("fuel_canister", InventoryCategories.Consumable, 1)
+            });
+
+            var rewards = RewardsWindowRewardBuilder.Build(spec, configs);
+
+            Assert.AreEqual(1, rewards.Count);
+            Assert.AreEqual("fuel_canister", rewards[0].ResourceId);
+            Assert.AreEqual("Fuel Canister", rewards[0].DisplayName);
+            Assert.AreEqual(InventoryCategories.Consumable, rewards[0].Category);
+            Assert.AreEqual(3, rewards[0].Amount);
+        }
+
+        [Test]
+        public void Build_QuestItemRewards_UseQuestItemDisplayName()
+        {
+            var configs = new FakeConfigsService(
+                questItems: new[] { new QuestItemConfig { Id = "milly_letter", DisplayName = "Milly Letter" } });
+            var spec = new RewardSpec("quest_reward", new[]
+            {
+                RewardItem.InventoryItem("milly_letter", InventoryCategories.QuestItem, 1)
+            });
+
+            var rewards = RewardsWindowRewardBuilder.Build(spec, configs);
+
+            Assert.AreEqual(1, rewards.Count);
+            Assert.AreEqual("milly_letter", rewards[0].ResourceId);
+            Assert.AreEqual("Milly Letter", rewards[0].DisplayName);
+            Assert.AreEqual(InventoryCategories.QuestItem, rewards[0].Category);
+        }
+
+        [Test]
+        public void Build_MixedDecorAndQuestItem_EmitsCardsForBoth()
+        {
+            var configs = new FakeConfigsService(
+                decors: new[] { Decor("lavender", "Lavender", "lavender") },
+                questItems: new[] { new QuestItemConfig { Id = "port_trade_permit", DisplayName = "Trade Permit" } });
+            var spec = new RewardSpec("quest_reward", new[]
+            {
+                RewardItem.InventoryItem("lavender", InventoryCategories.Decor, 1),
+                RewardItem.InventoryItem("port_trade_permit", InventoryCategories.QuestItem, 1)
+            });
+
+            var rewards = RewardsWindowRewardBuilder.Build(spec, configs);
+
+            CollectionAssert.AreEqual(new[] { "lavender", "port_trade_permit" },
+                rewards.Select(r => r.ResourceId).ToArray());
+            CollectionAssert.AreEqual(new[] { InventoryCategories.Decor, InventoryCategories.QuestItem },
+                rewards.Select(r => r.Category).ToArray());
         }
 
         [Test]
@@ -112,8 +170,14 @@ namespace Game.Newspaper.Tests.Editor
         {
             private readonly Dictionary<string, BookConfig> _books;
             private readonly Dictionary<string, DecorConfig> _decors;
+            private readonly Dictionary<string, ConsumableConfig> _consumables;
+            private readonly Dictionary<string, QuestItemConfig> _questItems;
 
-            public FakeConfigsService(BookConfig[] books = null, DecorConfig[] decors = null)
+            public FakeConfigsService(
+                BookConfig[] books = null,
+                DecorConfig[] decors = null,
+                ConsumableConfig[] consumables = null,
+                QuestItemConfig[] questItems = null)
             {
                 _books = (books ?? Array.Empty<BookConfig>())
                     .Where(b => b != null && !string.IsNullOrEmpty(b.Id))
@@ -121,6 +185,12 @@ namespace Game.Newspaper.Tests.Editor
                 _decors = (decors ?? Array.Empty<DecorConfig>())
                     .Where(d => d != null && !string.IsNullOrEmpty(d.Id))
                     .ToDictionary(d => d.Id, StringComparer.Ordinal);
+                _consumables = (consumables ?? Array.Empty<ConsumableConfig>())
+                    .Where(c => c != null && !string.IsNullOrEmpty(c.Id))
+                    .ToDictionary(c => c.Id, StringComparer.Ordinal);
+                _questItems = (questItems ?? Array.Empty<QuestItemConfig>())
+                    .Where(q => q != null && !string.IsNullOrEmpty(q.Id))
+                    .ToDictionary(q => q.Id, StringComparer.Ordinal);
             }
 
             public UniTask WarmupAsync(CancellationToken ct) => UniTask.CompletedTask;
@@ -131,6 +201,10 @@ namespace Game.Newspaper.Tests.Editor
                     return _books.Values.Cast<T>().ToList();
                 if (typeof(T) == typeof(DecorConfig))
                     return _decors.Values.Cast<T>().ToList();
+                if (typeof(T) == typeof(ConsumableConfig))
+                    return _consumables.Values.Cast<T>().ToList();
+                if (typeof(T) == typeof(QuestItemConfig))
+                    return _questItems.Values.Cast<T>().ToList();
                 return Array.Empty<T>();
             }
 
@@ -153,6 +227,18 @@ namespace Game.Newspaper.Tests.Editor
                     if (typeof(T) == typeof(DecorConfig) && _decors.TryGetValue(id, out var decor))
                     {
                         config = decor as T;
+                        return true;
+                    }
+
+                    if (typeof(T) == typeof(ConsumableConfig) && _consumables.TryGetValue(id, out var consumable))
+                    {
+                        config = consumable as T;
+                        return true;
+                    }
+
+                    if (typeof(T) == typeof(QuestItemConfig) && _questItems.TryGetValue(id, out var questItem))
+                    {
+                        config = questItem as T;
                         return true;
                     }
                 }

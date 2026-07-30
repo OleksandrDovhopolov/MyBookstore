@@ -70,7 +70,7 @@ namespace Game.Quest.Tests.Editor
         }
 
         [Test]
-        public void Completion_AutoAwards_InEventOrder()
+        public void Completion_StopsAtReadyToAward_UntilExplicitAward()
         {
             var h = Build(QuestCfg("q1", new[] { Task(1, Tag("c1")) }));
             var c1 = h.Parser.Register("c1", false);
@@ -79,11 +79,14 @@ namespace Game.Quest.Tests.Editor
             c1.Met = true;
             h.Sales.RaiseChanged();
 
-            Assert.AreEqual(QuestState.Awarded, h.Service.GetQuestState("q1"));
+            Assert.AreEqual(QuestState.ReadyToAward, h.Service.GetQuestState("q1"));
             var iCompleted = h.Events.IndexOf("completed:q1");
-            var iAwarded = h.Events.IndexOf("awarded:q1");
             Assert.Greater(iCompleted, -1);
-            Assert.Greater(iAwarded, iCompleted, "QuestCompleted must precede QuestAwarded");
+            CollectionAssert.DoesNotContain(h.Events, "awarded:q1");
+
+            Assert.IsTrue(h.Service.TryAwardAsync("q1", CancellationToken.None).GetAwaiter().GetResult());
+            Assert.AreEqual(QuestState.Awarded, h.Service.GetQuestState("q1"));
+            Assert.Greater(h.Events.IndexOf("awarded:q1"), iCompleted, "QuestCompleted must precede QuestAwarded");
         }
 
         [Test]
@@ -91,7 +94,7 @@ namespace Game.Quest.Tests.Editor
         {
             var h = Build(QuestCfg("q1", new[] { Task(1, completion: null) }));
             h.Load();
-            Assert.AreEqual(QuestState.Awarded, h.Service.GetQuestState("q1"));
+            Assert.AreEqual(QuestState.ReadyToAward, h.Service.GetQuestState("q1"));
         }
 
         [Test]
@@ -111,6 +114,10 @@ namespace Game.Quest.Tests.Editor
             ca.Met = true;
             h.Sales.RaiseChanged();
 
+            Assert.AreEqual(QuestState.ReadyToAward, h.Service.GetQuestState("a"));
+            Assert.AreEqual(QuestState.Pending, h.Service.GetQuestState("b"), "chain link waits for manual claim");
+
+            Assert.IsTrue(h.Service.TryAwardAsync("a", CancellationToken.None).GetAwaiter().GetResult());
             Assert.AreEqual(QuestState.Awarded, h.Service.GetQuestState("a"));
             Assert.AreEqual(QuestState.Active, h.Service.GetQuestState("b"), "chain link is a hard transition");
         }
@@ -131,9 +138,11 @@ namespace Game.Quest.Tests.Editor
         [Test]
         public void TryAward_And_TryActivate_AreIdempotent()
         {
-            var h = Build(QuestCfg("q1", new[] { Task(1, completion: null) })); // auto-awards on load
+            var h = Build(QuestCfg("q1", new[] { Task(1, completion: null) }));
             h.Load();
 
+            Assert.AreEqual(QuestState.ReadyToAward, h.Service.GetQuestState("q1"));
+            Assert.IsTrue(h.Service.TryAwardAsync("q1", CancellationToken.None).GetAwaiter().GetResult());
             Assert.AreEqual(QuestState.Awarded, h.Service.GetQuestState("q1"));
             Assert.IsFalse(h.Service.TryAwardAsync("q1", CancellationToken.None).GetAwaiter().GetResult());
             Assert.IsFalse(h.Service.TryActivateAsync("q1", CancellationToken.None).GetAwaiter().GetResult());
@@ -212,7 +221,27 @@ namespace Game.Quest.Tests.Editor
             c1.Met = true;
             h.Sales.RaiseChanged();
 
-            Assert.AreEqual(1, h.Events.Count(e => e == "awarded:q1"));
+            Assert.AreEqual(1, h.Events.Count(e => e == "completed:q1"));
+            Assert.AreEqual(0, h.Events.Count(e => e == "awarded:q1"));
+        }
+
+        [Test]
+        public void GetAllQuests_ReturnsEveryQuest_InConfigOrder_IncludingPending()
+        {
+            var first = QuestCfg("first", new[] { Task(1, Tag("c1")) });
+            var second = QuestCfg("second", new[] { Task(1, Tag("c2")) }, activation: Tag("act2"));
+            var third = QuestCfg("third", new[] { Task(1, Tag("c3")) }, activation: Tag("act3"));
+            var h = Build(first, second, third);
+            h.Parser.Register("c1", false);
+            h.Parser.Register("c2", false);
+            h.Parser.Register("c3", false);
+            h.Parser.Register("act2", false);
+            h.Parser.Register("act3", false);
+            h.Load();
+
+            CollectionAssert.AreEqual(new[] { "first", "second", "third" },
+                h.Service.GetAllQuests().Select(q => q.Id).ToList());
+            Assert.AreEqual(QuestState.Pending, h.Service.GetAllQuests()[1].State);
         }
 
         [Test]

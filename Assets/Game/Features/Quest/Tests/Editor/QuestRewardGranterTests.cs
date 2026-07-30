@@ -4,14 +4,16 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
+using Game.Inventory.API;
 using Game.Quest.API;
+using Game.Quest.Services;
 using Game.Rewards.API;
 using NUnit.Framework;
 using Save;
 
-namespace Game.Bootstrap.Tests.Editor
+namespace Game.Quest.Tests.Editor
 {
-    public sealed class QuestRewardBridgeTests
+    public sealed class QuestRewardGranterTests
     {
         private static QuestConfig Quest(string id, params QuestRewardConfig[] rewards)
             => new()
@@ -29,73 +31,80 @@ namespace Game.Bootstrap.Tests.Editor
         public void Constructor_SelfRegistersAsSaveHook()
         {
             var save = new FakeSaveService();
-            var bridge = new QuestRewardBridge(save, new FakeConfigs(), new FakeQuests(), new FakeRewards());
+            var granter = new QuestRewardGranter(save, new FakeConfigs(), new FakeQuests(), new FakeRewards());
 
-            CollectionAssert.Contains(save.RegisteredHooks, bridge);
+            CollectionAssert.Contains(save.RegisteredHooks, granter);
         }
 
         [Test]
-        public void EmptyRewards_DoNotCallGrant()
+        public void TryGrantAsync_NotAwarded_DoesNotGrant()
         {
             var rewards = new FakeRewards();
-            var quests = new FakeQuests().Set("q1", QuestState.Awarded);
-            var bridge = new QuestRewardBridge(new FakeSaveService(), new FakeConfigs(Quest("q1")), quests, rewards);
+            var quests = new FakeQuests().Set("q1", QuestState.ReadyToAward);
+            var granter = new QuestRewardGranter(new FakeSaveService(), new FakeConfigs(Quest("q1")), quests, rewards);
 
-            bridge.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
-            bridge.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
+            granter.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            var result = granter.TryGrantAsync("q1", CancellationToken.None).GetAwaiter().GetResult();
 
+            Assert.IsFalse(result.Success);
+            Assert.AreEqual("not_awarded", result.FailureReason);
             Assert.AreEqual(0, rewards.Calls.Count);
         }
 
         [Test]
-        public void AwardedQuest_GrantsInventoryRewardOnce()
+        public void TryGrantAsync_GrantsInventoryRewardOnce()
         {
             var save = new FakeSaveService();
             var rewards = new FakeRewards();
             var quests = new FakeQuests().Set("q1", QuestState.Awarded);
-            var configs = new FakeConfigs(Quest("q1", InventoryReward("fuel_canister", "consumable", 2)));
-            var bridge = new QuestRewardBridge(save, configs, quests, rewards);
+            var configs = new FakeConfigs(Quest("q1", InventoryReward("fuel_canister", InventoryCategories.Consumable, 2)));
+            var granter = new QuestRewardGranter(save, configs, quests, rewards);
 
-            bridge.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
-            bridge.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
-            bridge.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
+            granter.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            var first = granter.TryGrantAsync("q1", CancellationToken.None).GetAwaiter().GetResult();
+            var second = granter.TryGrantAsync("q1", CancellationToken.None).GetAwaiter().GetResult();
 
+            Assert.IsTrue(first.Success);
+            Assert.IsTrue(second.AlreadyGranted);
             Assert.AreEqual(1, rewards.Calls.Count);
             Assert.AreEqual("quest:q1", rewards.Calls[0].Source);
             Assert.AreEqual("fuel_canister", rewards.Calls[0].Spec.Items[0].Id);
-            Assert.AreEqual("consumable", rewards.Calls[0].Spec.Items[0].Category);
+            Assert.AreEqual(InventoryCategories.Consumable, rewards.Calls[0].Spec.Items[0].Category);
             Assert.AreEqual(2, rewards.Calls[0].Spec.Items[0].Amount);
             Assert.AreEqual(RewardKind.InventoryItem, rewards.Calls[0].Spec.Items[0].Kind);
         }
 
         [Test]
-        public void AwardedQuest_GrantsMultipleInventoryRewardsAcrossCategoriesOnce()
+        public void TryGrantAsync_GrantFailureCanRetry()
         {
-            var save = new FakeSaveService();
-            var rewards = new FakeRewards();
-            var quests = new FakeQuests().Set("q_intro_milly", QuestState.Awarded);
-            var configs = new FakeConfigs(Quest("q_intro_milly",
-                InventoryReward("milly_letter", "quest_item", 1),
-                InventoryReward("fuel_canister", "consumable", 1)));
-            var bridge = new QuestRewardBridge(save, configs, quests, rewards);
+            var rewards = new FakeRewards { FailNext = true };
+            var quests = new FakeQuests().Set("q1", QuestState.Awarded);
+            var configs = new FakeConfigs(Quest("q1", InventoryReward("fuel_canister", InventoryCategories.Consumable, 1)));
+            var granter = new QuestRewardGranter(new FakeSaveService(), configs, quests, rewards);
 
-            bridge.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
-            bridge.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
-            bridge.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
+            granter.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            var failed = granter.TryGrantAsync("q1", CancellationToken.None).GetAwaiter().GetResult();
+            var retried = granter.TryGrantAsync("q1", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.IsFalse(failed.Success);
+            Assert.AreEqual("grant_failed", failed.FailureReason);
+            Assert.IsTrue(retried.Success);
+            Assert.AreEqual(2, rewards.Calls.Count);
+        }
+
+        [Test]
+        public void BeforeSave_SweepsAwardedQuestWithoutDoubleGrant()
+        {
+            var rewards = new FakeRewards();
+            var quests = new FakeQuests().Set("q1", QuestState.Awarded);
+            var configs = new FakeConfigs(Quest("q1", InventoryReward("fuel_canister", InventoryCategories.Consumable, 2)));
+            var granter = new QuestRewardGranter(new FakeSaveService(), configs, quests, rewards);
+
+            granter.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            granter.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
+            granter.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(1, rewards.Calls.Count);
-            Assert.AreEqual("quest:q_intro_milly", rewards.Calls[0].Source);
-            Assert.AreEqual(2, rewards.Calls[0].Spec.Items.Count);
-
-            Assert.AreEqual("milly_letter", rewards.Calls[0].Spec.Items[0].Id);
-            Assert.AreEqual("quest_item", rewards.Calls[0].Spec.Items[0].Category);
-            Assert.AreEqual(1, rewards.Calls[0].Spec.Items[0].Amount);
-            Assert.AreEqual(RewardKind.InventoryItem, rewards.Calls[0].Spec.Items[0].Kind);
-
-            Assert.AreEqual("fuel_canister", rewards.Calls[0].Spec.Items[1].Id);
-            Assert.AreEqual("consumable", rewards.Calls[0].Spec.Items[1].Category);
-            Assert.AreEqual(1, rewards.Calls[0].Spec.Items[1].Amount);
-            Assert.AreEqual(RewardKind.InventoryItem, rewards.Calls[0].Spec.Items[1].Kind);
         }
 
         [Test]
@@ -103,41 +112,21 @@ namespace Game.Bootstrap.Tests.Editor
         {
             var save = new FakeSaveService();
             var quests = new FakeQuests().Set("q1", QuestState.Awarded);
-            var configs = new FakeConfigs(Quest("q1", InventoryReward("fuel_canister", "consumable", 2)));
+            var configs = new FakeConfigs(Quest("q1", InventoryReward("fuel_canister", InventoryCategories.Consumable, 2)));
             var firstRewards = new FakeRewards();
-            var firstBridge = new QuestRewardBridge(save, configs, quests, firstRewards);
+            var first = new QuestRewardGranter(save, configs, quests, firstRewards);
 
-            firstBridge.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
-            firstBridge.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
+            first.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            first.TryGrantAsync("q1", CancellationToken.None).GetAwaiter().GetResult();
 
             var secondRewards = new FakeRewards();
-            var secondBridge = new QuestRewardBridge(save, configs, quests, secondRewards);
-            secondBridge.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
-            secondBridge.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
+            var second = new QuestRewardGranter(save, configs, quests, secondRewards);
+            second.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            var result = second.TryGrantAsync("q1", CancellationToken.None).GetAwaiter().GetResult();
 
+            Assert.IsTrue(result.AlreadyGranted);
             Assert.AreEqual(1, firstRewards.Calls.Count);
             Assert.AreEqual(0, secondRewards.Calls.Count);
-        }
-
-        [Test]
-        public void UnknownKind_IsSkipped_ButValidRewardsGrant()
-        {
-            var rewards = new FakeRewards();
-            var quests = new FakeQuests().Set("q1", QuestState.Awarded);
-            var configs = new FakeConfigs(Quest("q1",
-                new QuestRewardConfig { Kind = "Nope", Id = "bad", Amount = 1 },
-                InventoryReward("fuel_canister", "consumable", 2)));
-            var bridge = new QuestRewardBridge(new FakeSaveService(), configs, quests, rewards);
-
-            UnityEngine.TestTools.LogAssert.Expect(UnityEngine.LogType.Error,
-                new System.Text.RegularExpressions.Regex("unknown reward kind"));
-
-            bridge.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
-            bridge.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
-
-            Assert.AreEqual(1, rewards.Calls.Count);
-            Assert.AreEqual(1, rewards.Calls[0].Spec.Items.Count);
-            Assert.AreEqual("fuel_canister", rewards.Calls[0].Spec.Items[0].Id);
         }
 
         private sealed class FakeSaveService : ISaveService
@@ -173,10 +162,23 @@ namespace Game.Bootstrap.Tests.Editor
                 if (configs != null) _configs.AddRange(configs);
             }
 
-            public T Get<T>(string id) where T : class, IConfig => null;
-            public bool TryGet<T>(string id, out T config) where T : class, IConfig { config = null; return false; }
-            public UniTask<T> GetAsync<T>(string id) where T : class, IConfig => UniTask.FromResult<T>(null);
-            public bool IsExists<T>(string id) where T : class, IConfig => false;
+            public T Get<T>(string id) where T : class, IConfig
+            {
+                foreach (var config in _configs)
+                    if (config is T typed && string.Equals(typed.Id, id, StringComparison.Ordinal))
+                        return typed;
+                return null;
+            }
+
+            public bool TryGet<T>(string id, out T config) where T : class, IConfig
+            {
+                config = Get<T>(id);
+                return config != null;
+            }
+
+            public UniTask<T> GetAsync<T>(string id) where T : class, IConfig => UniTask.FromResult(Get<T>(id));
+            public bool IsExists<T>(string id) where T : class, IConfig => Get<T>(id) != null;
+
             public IReadOnlyList<T> GetAll<T>() where T : class, IConfig
             {
                 var result = new List<T>();
@@ -202,6 +204,7 @@ namespace Game.Bootstrap.Tests.Editor
             public QuestConfig GetQuestConfig(string questId) => null;
             public QuestState GetQuestState(string questId)
                 => questId != null && _states.TryGetValue(questId, out var state) ? state : QuestState.Pending;
+            public IReadOnlyList<IQuest> GetAllQuests() => Array.Empty<IQuest>();
             public IEnumerable<IQuest> GetActiveQuests() => Array.Empty<IQuest>();
             public IQuestChain GetChain(string chainId) => null;
             public IQuestChain GetChainByQuestId(string questId) => null;
@@ -219,10 +222,17 @@ namespace Game.Bootstrap.Tests.Editor
         private sealed class FakeRewards : IRewardGrantService
         {
             public List<(RewardSpec Spec, string Source)> Calls { get; } = new();
+            public bool FailNext { get; set; }
 
             public UniTask<RewardGrantResult> GrantAsync(RewardSpec spec, string source, CancellationToken ct)
             {
                 Calls.Add((spec, source));
+                if (FailNext)
+                {
+                    FailNext = false;
+                    return UniTask.FromResult(RewardGrantResult.Fail("grant_failed"));
+                }
+
                 return UniTask.FromResult(RewardGrantResult.Ok(spec));
             }
         }

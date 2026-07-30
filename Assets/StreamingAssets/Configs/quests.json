@@ -3,6 +3,7 @@
     "id": "q_intro_eddi",
     "type": "story",
     "chainId": null,
+    "characterId": "eddi",
     "titleKey": "quest.q_intro_eddi.title",
     "descriptionKey": "quest.q_intro_eddi.desc",
     "nextQuestIds": [],
@@ -39,6 +40,7 @@
     "id": "q_intro_milly",
     "type": "story",
     "chainId": null,
+    "characterId": "milly",
     "titleKey": "quest.q_intro_milly.title",
     "descriptionKey": "quest.q_intro_milly.desc",
     "nextQuestIds": [],
@@ -54,6 +56,52 @@
     "rewards": [
       { "kind": "InventoryItem", "id": "milly_letter", "category": "quest_item", "amount": 1 },
       { "kind": "InventoryItem", "id": "fuel_canister", "category": "consumable", "amount": 1 }
+    ],
+    "worldEffects": []
+  },
+  {
+    "id": "q_tara_kids",
+    "type": "story",
+    "chainId": null,
+    "characterId": "tara",
+    "titleKey": "quest.q_tara_kids.title",
+    "descriptionKey": "quest.q_tara_kids.desc",
+    "nextQuestIds": [],
+    "activationConditions": { "type": "manual" },
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "descriptionKey": "task.q_tara_kids_pick_kids",
+        "completionConditions": { "type": "activePickGenre", "genre": "Kids", "min": 5 }
+      }
+    ],
+    "rewards": [
+      { "kind": "InventoryItem", "id": "port_trade_permit", "category": "quest_item", "amount": 1 },
+      { "kind": "InventoryItem", "id": "lavender", "category": "decor", "amount": 1 }
+    ],
+    "worldEffects": []
+  },
+  {
+    "id": "q_captain_postcards",
+    "type": "story",
+    "chainId": null,
+    "characterId": "captain",
+    "titleKey": "quest.q_captain_postcards.title",
+    "descriptionKey": "quest.q_captain_postcards.desc",
+    "nextQuestIds": [],
+    "activationConditions": { "type": "visitLocation", "locationId": "loc_port", "min": 1 },
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "descriptionKey": "task.q_captain_postcards_collect",
+        "completionConditions": { "type": "haveItem", "itemId": "postcard", "min": 10 }
+      }
+    ],
+    "rewards": [
+      { "kind": "InventoryItem", "id": "captain_recommendation", "category": "quest_item", "amount": 1 },
+      { "kind": "InventoryItem", "id": "ship", "category": "decor", "amount": 1 }
     ],
     "worldEffects": []
   }

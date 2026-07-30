@@ -54,6 +54,7 @@
   },
   {
     "id": "eddy1",
+    "activatesQuestId": "q_intro_eddi",
     "nodes": [
       {
         "nodeId": "root",
@@ -114,7 +115,6 @@
   },
   {
     "id": "eddy_quest_1",
-    "activatesQuestId": "q_intro_eddi",
     "nodes": [
       {
         "nodeId": "root",

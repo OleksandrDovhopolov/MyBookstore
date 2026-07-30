@@ -121,7 +121,7 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual(QuestState.Active, State(quests, "q1"), "pre-existing sales must not satisfy the task");
 
             h.Sell(1, 3); // AFTER activation → scoped 3 ≥ 3 (RecordSold fires Changed → reevaluate)
-            Assert.AreEqual(QuestState.Awarded, State(quests, "q1"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "q1"));
         }
 
         [Test]
@@ -145,7 +145,7 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual(QuestState.Active, State(quests, "q_intro_eddi"));
 
             h.Sell(1, 1);
-            Assert.AreEqual(QuestState.Awarded, State(quests, "q_intro_eddi"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "q_intro_eddi"));
         }
 
         [Test]
@@ -169,7 +169,7 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual(QuestState.Active, State(quests, "q_intro_milly"));
 
             h.Pick(1, 1);
-            Assert.AreEqual(QuestState.Awarded, State(quests, "q_intro_milly"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "q_intro_milly"));
         }
 
         [Test]
@@ -183,7 +183,7 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual(QuestState.Active, State(quests, "q1"));
 
             h.Sell(2, 5); // a full day AFTER activation
-            Assert.AreEqual(QuestState.Awarded, State(quests, "q1"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "q1"));
         }
 
         [Test]
@@ -204,7 +204,7 @@ namespace Game.Quest.Tests.Editor
 
             flag.Met = true;
             h.Sell(1, 1);                       // any sale fires Changed → reevaluate; soldGenre stays met (3 >= 2)
-            Assert.AreEqual(QuestState.Awarded, State(quests, "q1"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "q1"));
         }
 
         [Test]
@@ -224,7 +224,7 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual(QuestState.Active, State(q2, "q1"));
 
             h.Sell(1, 1);                        // scoped 3 → award
-            Assert.AreEqual(QuestState.Awarded, State(q2, "q1"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(q2, "q1"));
         }
 
         [Test]
@@ -292,7 +292,7 @@ namespace Game.Quest.Tests.Editor
 
             h.DayProgress.Current.CurrentDay = 3;
             h.Sell(3, 3);
-            Assert.AreEqual(QuestState.Awarded, State(q2, "q1"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(q2, "q1"));
         }
 
         [Test]
@@ -321,11 +321,14 @@ namespace Game.Quest.Tests.Editor
 
             // One reeval on dispose: head completes → q_sales activates → its baseline is captured NOW, so it
             // includes the 3 sales recorded during the suspension → those sales do NOT count toward q_sales.
-            Assert.AreEqual(QuestState.Awarded, State(quests, "head"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "head"));
+            Assert.AreEqual(QuestState.Pending, State(quests, "q_sales"));
+
+            Assert.IsTrue(quests.TryAwardAsync("head", CancellationToken.None).GetAwaiter().GetResult());
             Assert.AreEqual(QuestState.Active, State(quests, "q_sales"));
 
             h.Sell(2, 3); // only sales AFTER activation count → now it awards
-            Assert.AreEqual(QuestState.Awarded, State(quests, "q_sales"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "q_sales"));
         }
 
         private sealed class FlagFactory : IConditionFactory

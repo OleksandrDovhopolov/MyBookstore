@@ -16,6 +16,13 @@ namespace Game.Configs.Models
         public string Type { get; set; }
 
         public string ChainId { get; set; }
+
+        /// <summary>
+        /// Character associated with this quest (CharacterConfig.Id). Empty/null means anonymous quest:
+        /// journal UI hides the portrait block.
+        /// </summary>
+        public string CharacterId { get; set; }
+
         public string TitleKey { get; set; }
         public string DescriptionKey { get; set; }
 

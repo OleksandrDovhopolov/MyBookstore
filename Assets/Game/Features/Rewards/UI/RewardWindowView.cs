@@ -23,14 +23,14 @@ namespace Game.Rewards.UI
             ResetView();
             if (rewardSpecResources == null) return;
 
-            var decorReward = GetFirstDecorReward(rewardSpecResources);
+            var decorReward = GetSingleDecorReward(rewardSpecResources);
             if (decorReward != null)
             {
                 SetDecorReward(decorReward);
                 return;
             }
 
-            SetBookRewards(rewardSpecResources);
+            SetCardRewards(rewardSpecResources);
         }
 
         public RewardSpecResource GetDecorReward()
@@ -45,7 +45,7 @@ namespace Game.Rewards.UI
             _decorImage.sprite = sprite;
         }
 
-        private void SetBookRewards(IReadOnlyList<RewardSpecResource> rewardSpecResources)
+        private void SetCardRewards(IReadOnlyList<RewardSpecResource> rewardSpecResources)
         {
             SetMode(isDecor: false);
             if (_cardGroupsPool == null) return;
@@ -53,7 +53,7 @@ namespace Game.Rewards.UI
             for (var i = 0; i < rewardSpecResources.Count; i++)
             {
                 var rewardSpecResource = rewardSpecResources[i];
-                if (!IsBookReward(rewardSpecResource)) continue;
+                if (rewardSpecResource == null) continue;
 
                 var rewardItemView = _cardGroupsPool.GetNext();
                 rewardItemView.SetResourceData(rewardSpecResource);
@@ -97,19 +97,19 @@ namespace Game.Rewards.UI
             SetActive(_decorRoot, isDecor);
         }
 
-        private static RewardSpecResource GetFirstDecorReward(IReadOnlyList<RewardSpecResource> rewardSpecResources)
+        private static RewardSpecResource GetSingleDecorReward(IReadOnlyList<RewardSpecResource> rewardSpecResources)
         {
+            if (rewardSpecResources == null || rewardSpecResources.Count == 0) return null;
+            RewardSpecResource decor = null;
             for (var i = 0; i < rewardSpecResources.Count; i++)
             {
                 var rewardSpecResource = rewardSpecResources[i];
-                if (IsDecorReward(rewardSpecResource)) return rewardSpecResource;
+                if (!IsDecorReward(rewardSpecResource)) return null;
+                decor = rewardSpecResource;
             }
 
-            return null;
+            return decor;
         }
-
-        private static bool IsBookReward(RewardSpecResource rewardSpecResource) =>
-            IsCategory(rewardSpecResource, InventoryCategories.Book);
 
         private static bool IsDecorReward(RewardSpecResource rewardSpecResource) =>
             IsCategory(rewardSpecResource, InventoryCategories.Decor);

@@ -468,6 +468,7 @@ namespace Book.Sell.Tests.Editor
 
             public QuestConfig GetQuestConfig(string questId) => TryGetQuest(questId)?.Config;
             public QuestState GetQuestState(string questId) => _states.TryGetValue(questId, out var state) ? state : QuestState.Pending;
+            public IReadOnlyList<IQuest> GetAllQuests() => Array.Empty<IQuest>();
             public IEnumerable<IQuest> GetActiveQuests() => Array.Empty<IQuest>();
             public IQuestChain GetChain(string chainId) => null;
             public IQuestChain GetChainByQuestId(string questId) => null;

@@ -14,6 +14,7 @@ using Game.Location.UI;
 using Game.LocationUnlock.API;
 using Game.Preparation.Services;
 using Game.Preparation.UI;
+using Game.Quest.UI;
 using Game.Tutorial.API;
 using Game.UI;
 using Game.UI.ContentWidget;
@@ -101,6 +102,9 @@ namespace GameplayUI
             
             if (View.InventoryButton != null)
                 View.InventoryButton.onClick.AddListener(OnInventoryButtonClicked);
+            
+            if (View.QuestButton != null)
+                View.QuestButton.onClick.AddListener(OnQuestButtonClicked);
 
             View.GenreItemClicked += OnGenreItemClicked;
 
@@ -206,6 +210,9 @@ namespace GameplayUI
             
             if (View != null && View.InventoryButton != null)
                 View.InventoryButton.onClick.RemoveAllListeners();
+            
+            if (View != null && View.QuestButton != null)
+                View.QuestButton.onClick.RemoveAllListeners();
 
             if (View != null)
                 View.GenreItemClicked -= OnGenreItemClicked;
@@ -398,6 +405,7 @@ namespace GameplayUI
         private void OnDecorButtonClicked() => ShowWindowWithPanelsHiddenAsync<DecorPlacementWindow>().Forget();
         private void OnJournalButtonClicked() => ShowWindowWithPanelsHiddenAsync<JournalWindow>().Forget();
         private void OnInventoryButtonClicked() => ShowWindowWithPanelsHiddenAsync<InventoryWindowController>().Forget();
+        private void OnQuestButtonClicked() => ShowWindowWithPanelsHiddenAsync<QuestWindow>().Forget();
 
         private async UniTaskVoid ShowWindowWithPanelsHiddenAsync<TWindow>(WindowArgs args = null)
             where TWindow : class, IWindowController, new()

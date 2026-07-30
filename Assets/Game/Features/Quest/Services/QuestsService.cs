@@ -47,6 +47,7 @@ namespace Game.Quest.Services
         private readonly bool _baselineEnabled;
 
         private readonly Dictionary<string, Quest> _quests = new(StringComparer.Ordinal);
+        private readonly List<Quest> _ordered = new();
         private readonly HashSet<string> _successors = new(StringComparer.Ordinal);
 
         private bool _loaded;
@@ -123,9 +124,11 @@ namespace Game.Quest.Services
         public QuestState GetQuestState(string questId)
             => TryGetQuest(questId)?.State ?? QuestState.Pending;
 
+        public IReadOnlyList<IQuest> GetAllQuests() => _ordered;
+
         public IEnumerable<IQuest> GetActiveQuests()
         {
-            foreach (var q in _quests.Values)
+            foreach (var q in _ordered)
                 if (q.State == QuestState.Active) yield return q;
         }
 
@@ -204,6 +207,7 @@ namespace Game.Quest.Services
         private void BuildCatalog()
         {
             _quests.Clear();
+            _ordered.Clear();
             _successors.Clear();
 
             foreach (var config in _configs.GetAll<QuestConfig>())
@@ -236,7 +240,9 @@ namespace Game.Quest.Services
                 var fail = HasValues(config.FailConditions) ? _parser.Parse(config.FailConditions) : null;
                 var next = NormalizeNext(config);
 
-                _quests[config.Id] = new Quest(config, type, activation, fail, tasks, next);
+                var quest = new Quest(config, type, activation, fail, tasks, next);
+                _quests[config.Id] = quest;
+                _ordered.Add(quest);
             }
 
             // Successor set (only links to known quests) + validation.
@@ -424,7 +430,6 @@ namespace Game.Quest.Services
                 if (AllTasksCompleted(quest))
                 {
                     Complete(quest);
-                    Award(quest); // auto-award (MVP)
                     changed = true;
                 }
             }
@@ -652,7 +657,7 @@ namespace Game.Quest.Services
                     if (_quests.TryGetValue(pair.Key, out var q)) RestoreActive(q, pair.Value);
 
             // Safety: a partial save could leave an awarded quest's successor Pending — relink silently.
-            foreach (var quest in _quests.Values)
+            foreach (var quest in _ordered)
             {
                 if (quest.State != QuestState.Awarded) continue;
                 foreach (var nextId in quest.NextQuestIds)
@@ -728,7 +733,7 @@ namespace Game.Quest.Services
                 Failed = new List<string>()
             };
 
-            foreach (var quest in _quests.Values)
+            foreach (var quest in _ordered)
             {
                 switch (quest.State)
                 {

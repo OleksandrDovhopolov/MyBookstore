@@ -12,10 +12,6 @@ using NUnit.Framework;
 
 namespace Game.Quest.Tests.Editor
 {
-    /// <summary>
-    /// Persistence (Этап 5): state survives a restart via <see cref="FakeQuestsRepository"/>, terminals are
-    /// not replayed, and non-monotonic task completion is not lost.
-    /// </summary>
     public sealed class QuestsServiceSaveTests
     {
         private static JObject Tag(string tag) => new JObject { ["tag"] = tag };
@@ -27,8 +23,13 @@ namespace Game.Quest.Tests.Editor
             JObject fail = null, string[] next = null, string chainId = null)
             => new QuestConfig
             {
-                Id = id, Type = "story", ChainId = chainId, NextQuestIds = next,
-                Tasks = tasks, ActivationConditions = activation, FailConditions = fail
+                Id = id,
+                Type = "story",
+                ChainId = chainId,
+                NextQuestIds = next,
+                Tasks = tasks,
+                ActivationConditions = activation,
+                FailConditions = fail
             };
 
         private sealed class Session
@@ -55,6 +56,33 @@ namespace Game.Quest.Tests.Editor
         }
 
         [Test]
+        public void ReadyToAward_SurvivesRestart_AndCanBeAwardedAfterRestart()
+        {
+            var repo = new FakeQuestsRepository();
+            var cfg = QuestCfg("q1", new[] { Task(1, Tag("c1")) });
+
+            var s1 = NewSession(repo, cfg);
+            var c1 = s1.Parser.Register("c1", false);
+            s1.Load();
+            c1.Met = true;
+            s1.Sales.RaiseChanged();
+            s1.Save();
+            Assert.AreEqual(QuestState.ReadyToAward, repo.Stored.Active["q1"].State);
+
+            var s2 = NewSession(repo, cfg);
+            s2.Parser.Register("c1", false);
+            s2.Load();
+
+            Assert.AreEqual(QuestState.ReadyToAward, s2.Service.GetQuestState("q1"));
+            CollectionAssert.DoesNotContain(s2.Events, "awarded:q1");
+
+            Assert.IsTrue(s2.Service.TryAwardAsync("q1", CancellationToken.None).GetAwaiter().GetResult());
+            s2.Save();
+            Assert.AreEqual(QuestState.Awarded, s2.Service.GetQuestState("q1"));
+            Assert.Contains("q1", repo.Stored.Awarded);
+        }
+
+        [Test]
         public void Awarded_SurvivesRestart_AndIsNotReAwarded()
         {
             var repo = new FakeQuestsRepository();
@@ -64,16 +92,17 @@ namespace Game.Quest.Tests.Editor
             var c1 = s1.Parser.Register("c1", false);
             s1.Load();
             c1.Met = true;
-            s1.Sales.RaiseChanged();          // → Awarded
+            s1.Sales.RaiseChanged();
+            Assert.IsTrue(s1.Service.TryAwardAsync("q1", CancellationToken.None).GetAwaiter().GetResult());
             s1.Save();
             Assert.Contains("q1", repo.Stored.Awarded);
 
             var s2 = NewSession(repo, cfg);
-            s2.Parser.Register("c1", false);  // condition irrelevant — quest is terminal
+            s2.Parser.Register("c1", false);
             s2.Load();
 
             Assert.AreEqual(QuestState.Awarded, s2.Service.GetQuestState("q1"));
-            CollectionAssert.DoesNotContain(s2.Events, "awarded:q1"); // no re-award on load
+            CollectionAssert.DoesNotContain(s2.Events, "awarded:q1");
         }
 
         [Test]
@@ -85,7 +114,7 @@ namespace Game.Quest.Tests.Editor
             var s1 = NewSession(repo, cfg);
             s1.Parser.Register("c", false);
             s1.Parser.Register("f", true);
-            s1.Load();                        // head active → fail wins → Failed
+            s1.Load();
             s1.Save();
             Assert.Contains("q1", repo.Stored.Failed);
 
@@ -102,18 +131,17 @@ namespace Game.Quest.Tests.Editor
         public void NonMonotonicTask_StaysCompleted_AfterConditionReverts()
         {
             var repo = new FakeQuestsRepository();
-            // Two tasks: t1 completes, t2 keeps the quest Active so it isn't awarded.
             var cfg = QuestCfg("q1", new[] { Task(1, Tag("c1")), Task(2, Tag("c2")) });
 
             var s1 = NewSession(repo, cfg);
-            s1.Parser.Register("c1", true);   // completed now
-            s1.Parser.Register("c2", false);  // keeps quest Active
+            s1.Parser.Register("c1", true);
+            s1.Parser.Register("c2", false);
             s1.Load();
             s1.Save();
             Assert.AreEqual(QuestState.Active, s1.Service.GetQuestState("q1"));
 
             var s2 = NewSession(repo, cfg);
-            s2.Parser.Register("c1", false);  // reverted!
+            s2.Parser.Register("c1", false);
             s2.Parser.Register("c2", false);
             s2.Load();
 
@@ -126,11 +154,11 @@ namespace Game.Quest.Tests.Editor
         public void PendingQuest_NotPersisted()
         {
             var repo = new FakeQuestsRepository();
-            var pending = QuestCfg("pending", new[] { Task(1, Tag("c")) }, activation: Tag("act")); // head, gated
-            var active = QuestCfg("active", new[] { Task(1, Tag("c2")) });                            // head, auto
+            var pending = QuestCfg("pending", new[] { Task(1, Tag("c")) }, activation: Tag("act"));
+            var active = QuestCfg("active", new[] { Task(1, Tag("c2")) });
 
             var s = NewSession(repo, pending, active);
-            s.Parser.Register("act", false); // pending stays Pending
+            s.Parser.Register("act", false);
             s.Parser.Register("c", false);
             s.Parser.Register("c2", false);
             s.Load();
@@ -148,16 +176,16 @@ namespace Game.Quest.Tests.Editor
 
             var s1 = NewSession(repo, cfg);
             s1.Parser.Register("c1", false);
-            s1.Load();                        // Active, not complete
+            s1.Load();
             s1.Save();
             Assert.AreEqual(QuestState.Active, repo.Stored.Active["q1"].State);
 
             var s2 = NewSession(repo, cfg);
-            s2.Parser.Register("c1", true);   // progressed while away
+            s2.Parser.Register("c1", true);
             s2.Load();
 
-            Assert.AreEqual(QuestState.Awarded, s2.Service.GetQuestState("q1"));
-            Assert.AreEqual(1, s2.Events.Count(e => e == "awarded:q1"));
+            Assert.AreEqual(QuestState.ReadyToAward, s2.Service.GetQuestState("q1"));
+            Assert.AreEqual(0, s2.Events.Count(e => e == "awarded:q1"));
         }
 
         [Test]
@@ -168,11 +196,11 @@ namespace Game.Quest.Tests.Editor
 
             var s = NewSession(repo, cfg);
             s.Parser.Register("c1", false);
-            s.Load();                         // head activation marks dirty
+            s.Load();
 
             s.Save();
             Assert.AreEqual(1, repo.SaveCallCount);
-            s.Save();                         // nothing changed
+            s.Save();
             Assert.AreEqual(1, repo.SaveCallCount, "clean state must not re-persist");
         }
 
@@ -183,7 +211,7 @@ namespace Game.Quest.Tests.Editor
             var cfg = QuestCfg("q1", new[] { Task(1, Tag("c")) }, activation: Tag("act"));
 
             var s = NewSession(repo, cfg);
-            s.Parser.Register("act", false);  // stays Pending → no transition → not dirty
+            s.Parser.Register("act", false);
             s.Parser.Register("c", false);
             s.Load();
 

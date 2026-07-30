@@ -4,7 +4,8 @@
     "references": [
         "UniTask",
         "Configs",
-        "Game.Conditions.API"
+        "Game.Conditions.API",
+        "Game.Rewards.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

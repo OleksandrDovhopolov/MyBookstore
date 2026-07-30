@@ -1,32 +1,52 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
+using Game.Configs;
 using Game.Quest.API;
+using Game.Rewards.UI;
 using Game.UI;
+using SpriteService;
+using UnityEngine;
 using VContainer;
 
 namespace Game.Quest.UI
 {
     /// <summary>
-    /// Quest journal page: lists the player's active quests (title / description / primary-task progress /
-    /// state) via a pooled row view, live-refreshing on quest and task events. Mirrors
-    /// <c>Game.Characters.UI.JournalWindow</c>. Opened via <c>uiManager.ShowAsync&lt;QuestWindow&gt;()</c>;
-    /// needs a prefab at address "QuestWindow".
+    /// In-game quest journal: shows non-pending quests and lets the player claim completed rewards.
     /// </summary>
     [Window("QuestWindow", WindowType.Page)]
     public sealed class QuestWindow : WindowController<QuestWindowView>
     {
-        private readonly QuestViewModelBuilder _builder = new();
+        private readonly HashSet<string> _claiming = new(StringComparer.Ordinal);
 
+        private QuestViewModelBuilder _builder;
         private IQuestsService _quests;
+        private IQuestRewardGranter _granter;
+        private IConfigsService _configs;
+        private IUiSpriteProvider _sprites;
+        private CancellationTokenSource _cts;
+        private Action<string> _onClaim;
+        private bool _suppressRender;
 
         [Inject]
-        public void InjectServices(IQuestsService quests)
+        public void InjectServices(
+            IQuestsService quests,
+            IQuestRewardGranter granter,
+            IConfigsService configs,
+            IUiSpriteProvider sprites = null)
         {
             _quests = quests;
+            _granter = granter;
+            _configs = configs;
+            _sprites = sprites;
         }
 
         protected override void OnInit()
         {
+            _builder = new QuestViewModelBuilder(_configs);
+            _onClaim = questId => ClaimAsync(questId).Forget();
+            _cts = new CancellationTokenSource();
         }
 
         protected override void OnShowStart()
@@ -57,50 +77,68 @@ namespace Game.Quest.UI
             }
         }
 
-        protected override void OnDispose() => View.Clear();
+        protected override void OnDispose()
+        {
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
+            View.Clear();
+        }
 
         private void OnQuestChanged(IQuest _) => Render();
         private void OnTaskChanged(IQuestTask _) => Render();
 
         private void Render()
         {
-            if (_quests == null)
+            if (_suppressRender) return;
+
+            if (_quests == null || _builder == null)
             {
                 View.Clear();
                 return;
             }
 
-            View.Render(_builder.Build(CollectChainQuests()));
+            View.Render(_builder.Build(_quests.GetAllQuests()), _onClaim, _sprites);
         }
 
-        // Expand each active quest into its FULL chain (all quests, all states, ordered) so the window
-        // shows the whole chain — not just in-progress quests. Deduped by chain + quest id; chain-less
-        // quests are shown standalone. A chain with no active member can't be reached (no get-all API) —
-        // documented MVP limitation.
-        private IReadOnlyList<IQuest> CollectChainQuests()
+        private async UniTaskVoid ClaimAsync(string questId)
         {
-            var result = new List<IQuest>();
-            var seenQuests = new HashSet<string>(StringComparer.Ordinal);
-            var seenChains = new HashSet<string>(StringComparer.Ordinal);
+            if (string.IsNullOrEmpty(questId) || _quests == null || _granter == null) return;
+            if (!_claiming.Add(questId)) return;
 
-            foreach (var active in _quests.GetActiveQuests())
+            _suppressRender = true;
+            try
             {
-                if (active == null) continue;
+                var token = _cts?.Token ?? CancellationToken.None;
+                if (!await _quests.TryAwardAsync(questId, token))
+                    return;
 
-                var chain = string.IsNullOrEmpty(active.ChainId) ? null : _quests.GetChainByQuestId(active.Id);
-                if (chain != null)
+                var result = await _granter.TryGrantAsync(questId, token);
+                if (!result.Success)
                 {
-                    if (!seenChains.Add(chain.Id)) continue; // chain already expanded
-                    foreach (var q in chain.Quests)
-                        if (q != null && seenQuests.Add(q.Id)) result.Add(q);
+                    Debug.LogError($"[QuestWindow] Failed to grant reward for quest '{questId}': {result.FailureReason}");
+                    return;
                 }
-                else if (seenQuests.Add(active.Id))
+
+                _suppressRender = false;
+                Render();
+
+                if (result.Granted?.Items != null && result.Granted.Items.Count > 0)
                 {
-                    result.Add(active);
+                    await UIManager.ShowAsync<RewardsWindow>(
+                        new RewardsWindowArgs(result.Granted, "Quest reward"),
+                        token);
                 }
             }
-
-            return result;
+            catch (OperationCanceledException)
+            {
+            }
+            finally
+            {
+                _claiming.Remove(questId);
+                _suppressRender = false;
+                Render();
+            }
         }
     }
 }

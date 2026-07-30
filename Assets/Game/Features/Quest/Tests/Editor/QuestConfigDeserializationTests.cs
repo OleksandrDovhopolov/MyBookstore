@@ -26,6 +26,7 @@ namespace Game.Quest.Tests.Editor
     ""id"": ""far_beach_intro"",
     ""type"": ""story"",
     ""chainId"": ""far_beach_sand_empire"",
+    ""characterId"": ""eddi"",
     ""titleKey"": ""quest.far_beach_intro.title"",
     ""descriptionKey"": ""quest.far_beach_intro.desc"",
     ""nextQuestIds"": [""sand_inspiration""],
@@ -69,6 +70,7 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual("far_beach_intro", intro.Id);
             Assert.AreEqual("story", intro.Type);
             Assert.AreEqual("far_beach_sand_empire", intro.ChainId);
+            Assert.AreEqual("eddi", intro.CharacterId);
             Assert.AreEqual(new[] { "sand_inspiration" }, intro.NextQuestIds);
             Assert.IsNull(intro.ActivationConditions);
             Assert.AreEqual(1, intro.Tasks.Length);
@@ -163,6 +165,30 @@ namespace Game.Quest.Tests.Editor
             }
         }
 
+        [Test]
+        public void Content_QuestCatalog_HasFourCharacterLinkedQuests_InBothRoots()
+        {
+            foreach (var root in ContentRoots)
+            {
+                var quests = JsonConvert.DeserializeObject<QuestConfig[]>(
+                    File.ReadAllText(Path.Combine(root, "quests.json")));
+                var characters = JsonConvert.DeserializeObject<CharacterConfig[]>(
+                    File.ReadAllText(Path.Combine(root, "characters.json")));
+
+                Assert.AreEqual(4, quests.Length, root);
+
+                foreach (var quest in quests)
+                {
+                    Assert.IsFalse(string.IsNullOrEmpty(quest.CharacterId), quest.Id);
+                    Assert.IsTrue(characters.Any(c => c.Id == quest.CharacterId),
+                        $"{quest.Id} characterId '{quest.CharacterId}' must resolve in characters.json");
+                    Assert.IsTrue(characters.Any(c => c.DiscoveryQuestIds != null
+                        && c.DiscoveryQuestIds.Contains(quest.Id)),
+                        $"{quest.Id} must be referenced by a character discoveryQuestIds entry");
+                }
+            }
+        }
+
         private static void AssertEddiIntroQuest(string root)
         {
             var quests = JsonConvert.DeserializeObject<QuestConfig[]>(
@@ -170,6 +196,7 @@ namespace Game.Quest.Tests.Editor
 
             var quest = quests.Single(q => q.Id == "q_intro_eddi");
             Assert.AreEqual("story", quest.Type);
+            Assert.AreEqual("eddi", quest.CharacterId);
             Assert.IsNotNull(quest.ActivationConditions);
             Assert.AreEqual("manual", quest.ActivationConditions["type"].ToString());
 
@@ -194,6 +221,7 @@ namespace Game.Quest.Tests.Editor
 
             var quest = quests.Single(q => q.Id == "q_intro_milly");
             Assert.AreEqual("story", quest.Type);
+            Assert.AreEqual("milly", quest.CharacterId);
             Assert.IsNotNull(quest.ActivationConditions);
             Assert.AreEqual("manual", quest.ActivationConditions["type"].ToString());
 

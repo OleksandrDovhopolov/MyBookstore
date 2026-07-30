@@ -9,13 +9,9 @@ using Game.Rewards.API;
 using Save;
 using UnityEngine;
 
-namespace Game.Bootstrap
+namespace Game.Quest.Services
 {
-    /// <summary>
-    /// Grants authored quest rewards once a quest reaches Awarded, using a save-backed ledger so stack
-    /// rewards are not granted again on later saves or reloads.
-    /// </summary>
-    public sealed class QuestRewardBridge : ISaveHook
+    public sealed class QuestRewardGranter : IQuestRewardGranter, ISaveHook
     {
         private const string LogPrefix = "[QuestRewards]";
         private const string ModuleKey = "quest_rewards.granted";
@@ -26,8 +22,9 @@ namespace Game.Bootstrap
         private readonly IQuestsService _quests;
         private readonly IRewardGrantService _rewards;
         private readonly HashSet<string> _granted = new(StringComparer.Ordinal);
+        private readonly HashSet<string> _inFlight = new(StringComparer.Ordinal);
 
-        public QuestRewardBridge(
+        public QuestRewardGranter(
             ISaveService save,
             IConfigsService configs,
             IQuestsService quests,
@@ -41,11 +38,14 @@ namespace Game.Bootstrap
             _save.RegisterHook(this);
         }
 
+        public bool IsGranted(string questId)
+            => !string.IsNullOrEmpty(questId) && _granted.Contains(questId);
+
         public async UniTask AfterLoadAsync(CancellationToken ct)
         {
             _granted.Clear();
 
-            var state = await _save.GetModuleAsync<QuestRewardBridgeState>(ModuleKey, ct);
+            var state = await _save.GetModuleAsync<QuestRewardGranterState>(ModuleKey, ct);
             if (state?.GrantedQuestIds == null) return;
 
             for (var i = 0; i < state.GrantedQuestIds.Count; i++)
@@ -58,34 +58,59 @@ namespace Game.Bootstrap
 
         public async UniTask BeforeSaveAsync(CancellationToken ct)
         {
-            var changed = false;
             foreach (var quest in _configs.GetAll<QuestConfig>())
             {
                 if (quest == null || string.IsNullOrEmpty(quest.Id)) continue;
-                if (_granted.Contains(quest.Id)) continue;
                 if (_quests.GetQuestState(quest.Id) != QuestState.Awarded) continue;
 
-                if (!TryBuildSpec(quest, out var spec)) continue;
+                var result = await TryGrantAsync(quest.Id, ct);
+                if (!result.Success)
+                    Debug.LogError($"{LogPrefix} sweep failed for quest '{quest.Id}': {result.FailureReason}");
+            }
+        }
+
+        public async UniTask<QuestRewardGrantResult> TryGrantAsync(string questId, CancellationToken ct)
+        {
+            if (string.IsNullOrEmpty(questId))
+                return QuestRewardGrantResult.Fail("empty_quest_id");
+
+            if (_granted.Contains(questId))
+                return QuestRewardGrantResult.Duplicate();
+
+            if (!_inFlight.Add(questId))
+                return QuestRewardGrantResult.Fail("in_flight");
+
+            try
+            {
+                if (_quests.GetQuestState(questId) != QuestState.Awarded)
+                    return QuestRewardGrantResult.Fail("not_awarded");
+
+                var quest = _configs.Get<QuestConfig>(questId);
+                if (quest == null)
+                    return QuestRewardGrantResult.Fail("missing_config");
+
+                if (!TryBuildSpec(quest, out var spec))
+                    return QuestRewardGrantResult.Fail("invalid_spec");
+
                 if (spec.Items.Count == 0)
                 {
-                    _granted.Add(quest.Id);
-                    changed = true;
-                    continue;
+                    _granted.Add(questId);
+                    await SaveLedgerAsync(ct);
+                    return QuestRewardGrantResult.Ok(spec);
                 }
 
-                var result = await _rewards.GrantAsync(spec, spec.Id, ct);
+                var result = await _rewards.GrantAsync(spec, Source(questId), ct);
                 if (!result.Success)
-                {
-                    Debug.LogError($"{LogPrefix} grant failed for quest '{quest.Id}': {result.FailureReason}");
-                    continue;
-                }
+                    return QuestRewardGrantResult.Fail(result.FailureReason);
 
-                _granted.Add(quest.Id);
-                changed = true;
-            }
-
-            if (changed)
+                _granted.Add(questId);
                 await SaveLedgerAsync(ct);
+                return QuestRewardGrantResult.Ok(result.Granted);
+            }
+            finally
+            {
+                _inFlight.Remove(questId);
+            }
         }
 
         private bool TryBuildSpec(QuestConfig quest, out RewardSpec spec)
@@ -138,12 +163,12 @@ namespace Game.Bootstrap
         {
             var ids = new List<string>(_granted);
             ids.Sort(StringComparer.Ordinal);
-            return _save.UpdateModuleAsync(ModuleKey, new QuestRewardBridgeState { GrantedQuestIds = ids }, SchemaVersion, ct);
+            return _save.UpdateModuleAsync(ModuleKey, new QuestRewardGranterState { GrantedQuestIds = ids }, SchemaVersion, ct);
         }
 
         private static string Source(string questId) => $"quest:{questId}";
 
-        public sealed class QuestRewardBridgeState
+        public sealed class QuestRewardGranterState
         {
             public List<string> GrantedQuestIds { get; set; } = new();
         }

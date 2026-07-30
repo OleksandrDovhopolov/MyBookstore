@@ -2,10 +2,13 @@
     "name": "Game.Quest.UI.Tests.Editor",
     "rootNamespace": "Game.Quest.UI.Tests.Editor",
     "references": [
+        "UniTask",
         "Game.Quest.API",
         "Game.Quest.UI",
         "Game.Conditions.API",
         "Configs",
+        "Game.Inventory.API",
+        "Game.Rewards.API",
         "UnityEngine.TestRunner"
     ],
     "includePlatforms": [

@@ -20,7 +20,8 @@
         "Save",
         "Game.GameplayUI.Signals",
         "Game.Characters.UI",
-        "Game.Inventory"
+        "Game.Inventory",
+        "Game.Quest.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

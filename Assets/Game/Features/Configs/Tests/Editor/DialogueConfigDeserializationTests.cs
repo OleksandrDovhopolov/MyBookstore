@@ -119,10 +119,10 @@ namespace Game.Configs.Tests.Editor
                 var dialogues = JsonConvert.DeserializeObject<DialogueConfig[]>(
                     File.ReadAllText(Path.Combine(root, "dialogues.json")));
 
-                Assert.IsNull(dialogues.Single(d => d.Id == "eddy1").ActivatesQuestId);
                 Assert.AreEqual(
                     "q_intro_eddi",
-                    dialogues.Single(d => d.Id == "eddy_quest_1").ActivatesQuestId);
+                    dialogues.Single(d => d.Id == "eddy1").ActivatesQuestId);
+                Assert.IsNull(dialogues.Single(d => d.Id == "eddy_quest_1").ActivatesQuestId);
                 Assert.AreEqual(
                     "q_intro_milly",
                     dialogues.Single(d => d.Id == "milly1").ActivatesQuestId);
