@@ -606,8 +606,8 @@ MonoBehaviour:
     prefab: {fileID: 1526634463642212735, guid: 17b7a40fabc0dc040a5738bb7d3aad7a, type: 3}
     parent: {fileID: 8568096125377426215}
   _costsPool:
-    prefab: {fileID: 0}
-    parent: {fileID: 0}
+    prefab: {fileID: 1526634463642212735, guid: 17b7a40fabc0dc040a5738bb7d3aad7a, type: 3}
+    parent: {fileID: 8568096125377426215}
   _entryCostLabel: {fileID: 6042465462028819812}
   _startButton: {fileID: 8970228731539583102}
   _unlockButton: {fileID: 2200923110122082420}

@@ -76,15 +76,37 @@ namespace Game.Location.UI
                 return;
             }
 
+            if (IsNoRequirement(node.ReasonKey))
+                return;
+
+            var labelKey = ExtractLastSegment(node.ReasonKey);
             result.Add(new LocationConditionProgress(
-                ExtractGenre(node.ReasonKey), node.Current, node.Target, node.IsMet));
+                labelKey, node.Current, node.Target, node.IsMet, ResolveSpriteId(node.ReasonKey, labelKey)));
         }
 
-        private static string ExtractGenre(string reasonKey)
+        private static bool IsNoRequirement(string reasonKey)
+            => string.Equals(reasonKey, "always", System.StringComparison.Ordinal);
+
+        private static string ExtractLastSegment(string reasonKey)
         {
             if (string.IsNullOrEmpty(reasonKey)) return reasonKey;
             var dot = reasonKey.LastIndexOf('.');
             return dot >= 0 && dot < reasonKey.Length - 1 ? reasonKey.Substring(dot + 1) : reasonKey;
+        }
+
+        private static string ResolveSpriteId(string reasonKey, string labelKey)
+        {
+            if (string.IsNullOrEmpty(labelKey))
+                return null;
+
+            if (BookGenreExtensions.TryParseGenre(labelKey, out var genre))
+                return genre.ToConfigValue();
+
+            if (reasonKey != null
+                && reasonKey.StartsWith("visitLocation.", System.StringComparison.Ordinal))
+                return labelKey;
+
+            return null;
         }
     }
 }

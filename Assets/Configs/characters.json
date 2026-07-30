@@ -17,12 +17,14 @@
     "id": "tara",
     "displayNameKey": "character.tara.name",
     "portraitKey": "tara",
-    "favoriteGenres": ["Fantasy", "Kids"]
+    "favoriteGenres": ["Fantasy", "Kids"],
+    "discoveryQuestIds": ["q_tara_kids"]
   },
   {
     "id": "captain",
     "displayNameKey": "character.captain.name",
     "portraitKey": "captain",
-    "favoriteGenres": ["Crime", "Travel"]
+    "favoriteGenres": ["Crime", "Travel"],
+    "discoveryQuestIds": ["q_captain_postcards"]
   }
 ]

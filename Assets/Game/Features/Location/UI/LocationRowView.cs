@@ -114,7 +114,8 @@ namespace Game.Location.UI
                 foreach (var item in items)
                 {
                     if (item == null) continue;
-                    var sprite = await sprites.GetSpriteAsync(item.Genre, ct);
+                    if (string.IsNullOrEmpty(item.SpriteId)) continue;
+                    var sprite = await sprites.GetSpriteAsync(item.SpriteId, ct);
                     if (ct.IsCancellationRequested) return;
                     if (item != null) item.SetIcon(sprite);
                 }

@@ -21,7 +21,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 051d0f9ee2fd4104f8fdf6781c78f41e
-    m_Address: loc_train_station
+    m_Address: loc_village
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -46,12 +46,12 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1425550bb6b95cb46a25da040d808684
-    m_Address: loc_downtown
+    m_Address: loc_park
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 143c5db1bda88e04cbb356c988f2f87a
-    m_Address: loc_mall
+    m_Address: loc_campus
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -96,7 +96,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7405d3beb7b1e3947a94fe1abbb50846
-    m_Address: loc_riverside_park
+    m_Address: loc_market
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -141,7 +141,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ab8811f57efe48241b6671e7edca91db
-    m_Address: loc_old_town
+    m_Address: loc_port
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
