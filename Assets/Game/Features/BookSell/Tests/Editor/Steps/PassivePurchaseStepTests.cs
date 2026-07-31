@@ -119,7 +119,7 @@ namespace Book.Sell.Tests.Editor.Steps
             var shelf = SalesTestKit.Shelf(SalesTestKit.Book("b1", genre: "sci-fi", qualities: new[] { "space", "survival" }));
             var ctx = SalesTestKit.Context(
                 shelf,
-                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }, demandQualities: new[] { "space" }),
+                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
                 sink,
                 tuning: Tuning(),
                 passiveSelector: SalesTestKit.AlwaysHitPassiveSelector());

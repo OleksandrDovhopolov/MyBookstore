@@ -186,6 +186,11 @@ namespace Book.Sell.Services
                 Debug.Log($"{LogPrefix} active sale: book={bookId}, tier={result.Tier}, " +
                           $"gold={result.GoldEarned}, request={request.Id}");
             }
+            else if (result.Tier == RecommendationTier.Failed)
+            {
+                Debug.Log($"{LogPrefix} active recommendation failed: book={bookId}, " +
+                          $"tier={result.Tier}, gold={result.GoldEarned}, request={request.Id}");
+            }
 
             _result.GoldEarned += result.GoldEarned;
             _result.ManualRequests++;
@@ -236,6 +241,7 @@ namespace Book.Sell.Services
 
             var request = _activeRequest;
             var result = RecommendationResult.Skipped(request.Id);
+            Debug.Log($"{LogPrefix} active request skipped: request={request.Id}");
 
             _result.ManualRequests++;
             CountTier(RecommendationTier.Skipped);

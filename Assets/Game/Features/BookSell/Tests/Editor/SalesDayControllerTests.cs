@@ -1292,7 +1292,7 @@ namespace Book.Sell.Tests.Editor
                     SalesTestKit.Book("b2", genre: "romance", qualities: new[] { "summer" })
                 },
                 Array.Empty<RequestDefinitionConfig>(),
-                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }, demandQualities: new[] { "space" }),
+                SalesTestKit.Location(demandGenres: new[] { "sci-fi" }),
                 new List<Customer> { Passive("c1"), Passive("c2") });
 
             var soldIds = new List<string>();

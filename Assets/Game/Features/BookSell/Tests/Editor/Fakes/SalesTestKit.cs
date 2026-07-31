@@ -40,12 +40,11 @@ namespace Book.Sell.Tests.Editor.Fakes
         public static ActiveRequestRuntime ActiveRequest(string id, string quality = "space")
             => ActiveRequestRuntime.FromCondition(RequestDef(id, quality), $"ALL: qualities contains {quality}");
 
-        public static LocationConfig Location(string id = "loc", string[] demandGenres = null, string[] demandQualities = null)
+        public static LocationConfig Location(string id = "loc", string[] demandGenres = null)
             => new()
             {
                 Id = id, DisplayName = id,
-                DemandGenres = demandGenres ?? new[] { "sci-fi" },
-                DemandQualities = demandQualities ?? new[] { "space" }
+                DemandGenres = demandGenres ?? new[] { "sci-fi" }
             };
 
         public static SalesShelf Shelf(params BookConfig[] books)

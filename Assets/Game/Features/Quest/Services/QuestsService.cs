@@ -414,14 +414,14 @@ namespace Game.Quest.Services
                     {
                         if (task.RefreshProgress())
                         {
-                            Debug.LogWarning($"{LogPrefix} task progress '{task.QuestId}.{task.Id}': {task.GetProgress()}/{task.GetGoal()}.");
+                            Debug.Log($"{LogPrefix} task progress '{task.QuestId}.{task.Id}': {task.GetProgress()}/{task.GetGoal()}.");
                             TaskProgressChanged?.Invoke(task);
                         }
                         if (task.IsCompletionMet)
                         {
                             task.SetState(QuestTaskState.Completed);
                             MarkDirty();
-                            Debug.LogWarning($"{LogPrefix} task completed '{task.QuestId}.{task.Id}'.");
+                            Debug.Log($"{LogPrefix} task completed '{task.QuestId}.{task.Id}'.");
                             TaskCompleted?.Invoke(task);
                             changed = true;
                         }
@@ -464,7 +464,7 @@ namespace Game.Quest.Services
         {
             quest.SetState(QuestState.ReadyToAward);
             MarkDirty();
-            Debug.LogWarning($"{LogPrefix} quest completed '{quest.Id}'.");
+            Debug.Log($"{LogPrefix} quest completed '{quest.Id}'.");
             QuestCompleted?.Invoke(quest);
         }
 

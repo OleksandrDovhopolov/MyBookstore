@@ -8,12 +8,7 @@
       "Kids",
       "Classic"
     ],
-    "customerTrafficPercentDelta": 0,
-    "demandQualities": [
-      "family",
-      "summer",
-      "adventure"
-    ]
+    "customerTrafficPercentDelta": 0
   },
   {
     "id": "loc_campus",
@@ -28,12 +23,7 @@
       "Fact",
       "Classic"
     ],
-    "customerTrafficPercentDelta": 0.2,
-    "demandQualities": [
-      "study",
-      "short",
-      "science"
-    ]
+    "customerTrafficPercentDelta": 0.2
   },
   {
     "id": "loc_port",
@@ -47,12 +37,7 @@
       "Travel",
       "Crime"
     ],
-    "customerTrafficPercentDelta": 0,
-    "demandQualities": [
-      "short",
-      "road",
-      "mystery"
-    ]
+    "customerTrafficPercentDelta": 0
   },
   {
     "id": "loc_market",
@@ -74,12 +59,7 @@
       "Crime",
       "Classic"
     ],
-    "customerTrafficPercentDelta": 0,
-    "demandQualities": [
-      "cozy",
-      "summer",
-      "letters"
-    ]
+    "customerTrafficPercentDelta": 0
   },
   {
     "id": "loc_village",
@@ -107,11 +87,6 @@
       "Fantasy",
       "Travel"
     ],
-    "customerTrafficPercentDelta": 0,
-    "demandQualities": [
-      "history",
-      "letters",
-      "quiet"
-    ]
+    "customerTrafficPercentDelta": 0
   }
 ]
