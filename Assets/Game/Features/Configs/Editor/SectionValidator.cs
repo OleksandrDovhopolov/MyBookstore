@@ -70,7 +70,7 @@ namespace Game.Configs.Editor
                         issues.Add(new ValidationIssue(id, "'rarityWeight' must be >= 0."));
                 }
 
-                if (section == "hard_requests")
+                if (section == "sample_requests")
                 {
                     ValidateHardRequest(id, obj, issues);
                 }
@@ -81,10 +81,6 @@ namespace Game.Configs.Editor
 
         private static void ValidateHardRequest(string id, JObject obj, List<ValidationIssue> issues)
         {
-            var description = obj["description"]?.Value<string>();
-            if (string.IsNullOrWhiteSpace(description))
-                issues.Add(new ValidationIssue(id, "'description' is missing or empty."));
-
             if (obj["enabled"] == null)
                 issues.Add(new ValidationIssue(id, "'enabled' is missing."));
 

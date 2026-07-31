@@ -98,6 +98,21 @@ namespace Book.Sell.Tests.Editor.Services
         }
 
         [Test]
+        public void DayWithoutCustomerCount_UsesCodeDefaultOfFive()
+        {
+            var configs = ConfigsWith(new DayConfig { Id = "d", DayIndex = 1 });
+            var resolver = new CustomerTrafficResolver(
+                new SalesTrafficSettings { MinCustomerCount = 0, MaxCustomerCount = 100 },
+                configs,
+                Array.Empty<ICustomerTrafficContributor>());
+
+            var result = resolver.Resolve(Setup(1), new SalesTuning());
+
+            Assert.AreEqual(5, result.FinalCount);
+            Assert.AreEqual(5, result.Baseline);
+        }
+
+        [Test]
         public void AbsentApplyModifiers_DefaultsToModifiersOn()
         {
             var configs = ConfigsWith(new DayConfig { Id = "d", DayIndex = 1, CustomerCount = 10 }); // ApplyModifiers null

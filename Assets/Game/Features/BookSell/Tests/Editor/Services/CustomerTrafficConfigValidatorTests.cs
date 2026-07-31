@@ -22,7 +22,7 @@ namespace Book.Sell.Tests.Editor.Services
             return configs;
         }
 
-        private static SalesTrafficSettings Settings(int defaultCustomers = 10, int defaultRequests = 1)
+        private static SalesTrafficSettings Settings(int defaultCustomers = 5, int defaultRequests = 1)
             => new() { DefaultCustomerCount = defaultCustomers, DefaultActiveRequestCount = defaultRequests };
 
         [Test]

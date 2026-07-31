@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Book.Sell.Editor;
+using Game.Rewards.Editor;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -76,12 +77,51 @@ namespace Game.Build.Editor
                 "OK");
         }
 
+        /// <summary>
+        /// The registry of everything the gate enforces. Adding a check means adding one row here and
+        /// nothing else — the runner, the message prefix, the menu and the failure path are shared.
+        /// <para>
+        /// Keep this list in sync with the table in <c>docs/BUILD.md §0</c>; that table is the human-facing
+        /// copy and drifts if a check is added here only.
+        /// </para>
+        /// <para>
+        /// A check belongs here when it (a) reads content that only breaks at runtime, and (b) can run
+        /// outside Play mode — i.e. off raw JSON, without <c>IConfigsService</c>. Checks needing a live
+        /// container (e.g. <c>ItemReferenceValidator</c>) cannot join until they are refactored to load
+        /// files directly; see the "Known gap" note in docs/BUILD.md.
+        /// </para>
+        /// </summary>
+        private static readonly (string Name, Action<List<string>> Run)[] Validators =
+        {
+            ("Bundled configs", CollectBundledConfigErrors),
+            ("Active requests", CollectActiveRequestErrors),
+            ("Dialogue delivered conditions", CollectDialogueDeliveredReferenceErrors),
+            ("Book box pools", CollectBookBoxPoolErrors),
+        };
+
         private static List<string> Collect()
         {
             var errors = new List<string>();
-            CollectBundledConfigErrors(errors);
-            CollectActiveRequestErrors(errors);
-            CollectDialogueDeliveredReferenceErrors(errors);
+            foreach (var validator in Validators)
+            {
+                var before = errors.Count;
+                try
+                {
+                    validator.Run(errors);
+                }
+                catch (Exception ex)
+                {
+                    // A validator that throws must not mask the checks after it, and must not let a build
+                    // through on the strength of "no errors collected".
+                    errors.Add($"{validator.Name}: validator itself failed ({ex.GetType().Name}): {ex.Message}");
+                    continue;
+                }
+
+                // Prefix here rather than in each collector, so every check reads the same way in the log.
+                for (var i = before; i < errors.Count; i++)
+                    errors[i] = $"{validator.Name}: {errors[i]}";
+            }
+
             return errors;
         }
 
@@ -144,22 +184,18 @@ namespace Game.Build.Editor
         }
 
         private static void CollectActiveRequestErrors(List<string> errors)
-        {
-            var report = ActiveRequestValidator.Validate();
-            if (!report.HasErrors) return;
-
-            foreach (var error in report.Errors)
-                errors.Add($"Active requests: {error}");
-        }
+            => errors.AddRange(ActiveRequestValidator.Validate().Errors);
 
         private static void CollectDialogueDeliveredReferenceErrors(List<string> errors)
-        {
-            var report = DialogueDeliveredConditionReferenceValidator.Validate();
-            if (!report.HasErrors) return;
+            => errors.AddRange(DialogueDeliveredConditionReferenceValidator.Validate().Errors);
 
-            foreach (var error in report.Errors)
-                errors.Add($"Dialogue delivered conditions: {error}");
-        }
+        /// <summary>
+        /// A book-box shop lot whose pool matches no book takes the player's gold and returns nothing. The
+        /// pool predicates read <c>BookConfig</c> fields directly, so a catalog missing a field leaves every
+        /// book on its C# default and silently empties a box — no parse error, no missing reference.
+        /// </summary>
+        private static void CollectBookBoxPoolErrors(List<string> errors)
+            => errors.AddRange(BookBoxPoolValidator.Validate().Errors);
 
         private static List<string> FileNames(string dir)
             => Directory.GetFiles(dir, "*.json")

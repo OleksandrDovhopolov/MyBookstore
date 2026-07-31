@@ -1,9 +1,10 @@
 {
-    "name": "Game.Build.Editor",
-    "rootNamespace": "Game.Build.Editor",
+    "name": "Game.Rewards.Editor",
+    "rootNamespace": "Game.Rewards.Editor",
     "references": [
-        "Book.Sell.Editor",
-        "Game.Rewards.Editor"
+        "Game.Rewards",
+        "Game.Rewards.API",
+        "Configs"
     ],
     "includePlatforms": [
         "Editor"

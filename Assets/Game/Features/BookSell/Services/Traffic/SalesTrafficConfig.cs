@@ -14,7 +14,7 @@ namespace Book.Sell.Services
     {
         [Header("Baseline")]
         [Tooltip("Кол-во покупателей для дня, у которого нет своего customerCount в days.json.")]
-        [SerializeField] private int _defaultCustomerCount = 10;
+        [SerializeField] private int _defaultCustomerCount = 5;
 
         [Header("Clamp (non-hard-override days)")]
         [SerializeField] private int _minCustomerCount = 0;

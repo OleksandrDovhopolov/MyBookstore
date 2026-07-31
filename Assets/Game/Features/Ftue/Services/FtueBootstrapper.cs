@@ -70,7 +70,7 @@ namespace Game.Ftue.Services
             }
 
             // Clean first launch. Сначала резолвим стартовые книги — если каталог пуст (конфиги не
-            // прогрелись / пустой books.json), НЕ помечаем applied и НЕ сеем ничего: иначе пустой
+            // прогрелись / пустой book catalog), НЕ помечаем applied и НЕ сеем ничего: иначе пустой
             // инвентарь «прилипнет» навсегда (applied=true). Повторим на следующем запуске.
             var presetIds = BuildPresetBookIds();
             if (presetIds.Count == 0)

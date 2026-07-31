@@ -18,6 +18,8 @@ namespace Game.Configs.Tests.Editor
             Path.Combine("Assets", "StreamingAssets", "Configs")
         };
 
+        private const string BooksFileName = "books_converted.json";
+
         private const string Json = @"
 [
   {
@@ -205,7 +207,7 @@ namespace Game.Configs.Tests.Editor
             var scripts = JsonConvert.DeserializeObject<CustomerScriptConfig[]>(
                 File.ReadAllText(Path.Combine(root, "customer_scripts.json")));
             var books = JsonConvert.DeserializeObject<BookConfig[]>(
-                File.ReadAllText(Path.Combine(root, "books.json")));
+                File.ReadAllText(Path.Combine(root, BooksFileName)));
 
             var script = scripts.Single(s => s.Id == "day2_missed_sale");
             Assert.IsTrue(script.DayIndex.HasValue);
@@ -239,7 +241,7 @@ namespace Game.Configs.Tests.Editor
             var scripts = JsonConvert.DeserializeObject<CustomerScriptConfig[]>(
                 File.ReadAllText(Path.Combine(root, "customer_scripts.json")));
             var books = JsonConvert.DeserializeObject<BookConfig[]>(
-                File.ReadAllText(Path.Combine(root, "books.json")));
+                File.ReadAllText(Path.Combine(root, BooksFileName)));
 
             var script = scripts.Single(s => s.Id == "eddi_intro");
             Assert.IsTrue(script.DayIndex.HasValue);
@@ -310,7 +312,7 @@ namespace Game.Configs.Tests.Editor
             var scripts = JsonConvert.DeserializeObject<CustomerScriptConfig[]>(
                 File.ReadAllText(Path.Combine(root, "customer_scripts.json")));
             var books = JsonConvert.DeserializeObject<BookConfig[]>(
-                File.ReadAllText(Path.Combine(root, "books.json")));
+                File.ReadAllText(Path.Combine(root, BooksFileName)));
 
             var genreCounts = books
                 .Where(b => !string.IsNullOrEmpty(b?.PrimaryGenre))
@@ -337,7 +339,7 @@ namespace Game.Configs.Tests.Editor
             {
                 Assert.IsTrue(
                     genreCounts.TryGetValue(genre, out var count) && count >= min,
-                    $"{root}/books.json must include at least {min} primary '{genre}' book(s) for the FTUE starter preset.");
+                    $"{root}/{BooksFileName} must include at least {min} primary '{genre}' book(s) for the FTUE starter preset.");
             }
         }
 

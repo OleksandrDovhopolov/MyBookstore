@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a401f5e236e6d5a448125f02bafbd3fc, type: 3}
   m_Name: SalesTraffic
   m_EditorClassIdentifier: 
-  _defaultCustomerCount: 10
+  _defaultCustomerCount: 5
   _minCustomerCount: 1
   _maxCustomerCount: 50
   _rounding: 2

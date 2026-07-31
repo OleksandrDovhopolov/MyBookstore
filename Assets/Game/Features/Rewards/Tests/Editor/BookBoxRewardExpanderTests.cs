@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Game.Configs.Models;
 using Game.Inventory.API;
@@ -7,6 +8,8 @@ using Game.Rewards.API;
 using Game.Rewards.Services;
 using Game.Rewards.Tests.Editor.Fakes;
 using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Game.Rewards.Tests.Editor
 {
@@ -171,6 +174,12 @@ namespace Game.Rewards.Tests.Editor
             var (svc, _, _, _) = Build(pool);
             var spec = new RewardSpec("book_box_rare_8", new RewardItem[0]);
 
+            // An empty pool means the player paid and got nothing, so it logs an error, not a warning.
+            // The message must name the "no book matches the rule" cause — that is the content bug the
+            // build gate (BookBoxPoolValidator) exists to catch, and it needs a different fix than the
+            // "everything already owned" case below.
+            LogAssert.Expect(LogType.Error, new Regex("no book in the catalog matches the rule"));
+
             var result = svc.ExpandAsync(spec, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(0, result.Items.Count);
@@ -222,6 +231,11 @@ namespace Game.Rewards.Tests.Editor
                    .GetAwaiter().GetResult();
 
             var spec = new RewardSpec("book_box_rare_8", new RewardItem[0]);
+
+            // Same empty result, different cause: the rule does match books, the player just owns them all.
+            // This one is a legitimate end-state (Unique books, collection complete), not a data bug.
+            LogAssert.Expect(LogType.Error, new Regex("already owns all of them"));
+
             var result = svc.ExpandAsync(spec, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(spec.Id, result.Id, "Granted spec id matches request even when empty.");

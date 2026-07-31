@@ -18,7 +18,7 @@ namespace Game.Inventory.Services
     /// Item ids are plain strings shared by four config files, so a typo in any of them fails silently at
     /// runtime; this catches it up front instead.
     /// <para>
-    /// Catalog = quest_items.json + consumables.json + decors.json + books.json. References are collected
+    /// Catalog = quest_items.json + consumables.json + decors.json + books_converted.json. References are collected
     /// from quest rewards, shop lots, <see cref="LocationConfig.UnlockCost"/>, and every
     /// <c>haveItem</c> node inside a condition tree. Awaits <see cref="IConfigsService.WarmupAsync"/> first
     /// so configs are loaded regardless of entry-point registration order. In Editor errors throw to block
@@ -29,7 +29,7 @@ namespace Game.Inventory.Services
     {
         private const string LogTag = "[ItemValidator]";
         private const string CatalogFiles =
-            "quest_items.json, consumables.json, decors.json or books.json";
+            "quest_items.json, consumables.json, decors.json or books_converted.json";
 
         private readonly IConfigsService _configs;
 
@@ -77,7 +77,7 @@ namespace Game.Inventory.Services
             AddCatalogEntries<QuestItemConfig>(catalog, report, InventoryCategories.QuestItem, "quest_items.json");
             AddCatalogEntries<ConsumableConfig>(catalog, report, InventoryCategories.Consumable, "consumables.json");
             AddCatalogEntries<DecorConfig>(catalog, report, InventoryCategories.Decor, "decors.json");
-            AddCatalogEntries<BookConfig>(catalog, report, InventoryCategories.Book, "books.json");
+            AddCatalogEntries<BookConfig>(catalog, report, InventoryCategories.Book, "books_converted.json");
             return catalog;
         }
 

@@ -1,8 +1,9 @@
 # Сборка билда (APK) — что сделать перед сборкой
 
-Чеклист подготовки к player-сборке (Android/APK). Синхронизация конфигов (§1) и решаемость активных
-запросов **проверяются автоматически** (см. §0) — они молча ломают контент, поэтому вынесены из «не забыть»
-в «не соберётся». Остальное — стандартные Unity/Android проверки, которые остаются на человеке.
+Чеклист подготовки к player-сборке (Android/APK). Часть проверок **автоматические** — их полный список в
+§0. Туда вынесено всё, что молча ломает контент (APK стартует, содержимое просто неверное), поэтому из
+«не забыть» это переехало в «не соберётся». Остальное — стандартные Unity/Android проверки, которые
+остаются на человеке.
 
 > Связано: [SERVICES/CONFIG_CACHE_SYSTEM.md](SERVICES/CONFIG_CACHE_SYSTEM.md) (загрузка конфигов),
 > [SERVICES/ADDRESSABLES.md](SERVICES/ADDRESSABLES.md), [SERVICES/FIREBASE_INTEGRATION.md](SERVICES/FIREBASE_INTEGRATION.md),
@@ -16,18 +17,34 @@
 Файл: `Assets/Game/Core/Build/Editor/PreBuildValidationGate.cs` (`IPreprocessBuildWithReport`,
 `callbackOrder = 0` — раньше Addressables).
 
-Запускается **сам на каждой player-сборке** и **валит билд** (`BuildFailedException`) при любой из проблем:
+Запускается **сам на каждой player-сборке** и **валит билд** (`BuildFailedException`), если хоть один
+валидатор из списка вернул ошибку.
 
-- **Рассинхрон конфигов** — файл есть в `Assets/Configs`, но не в StreamingAssets; лежит в StreamingAssets,
-  но удалён из `Assets/Configs`; содержимое одноимённых файлов различается; файл забыт в `manifest.json`
-  (в плеере `Directory.GetFiles` недоступен — не перечисленный файл невидим, даже если физически попал в APK).
-- **Нерешаемые активные запросы** — запрос из `hard_requests.json`, который не может удовлетворить ни одна
-  книга из `books.json`, либо жанр, ни одна книга которого не способна получить `Excellent` (тогда квест с
-  `activePickGenre <жанр>` непроходим). Проверку делает `ActiveRequestValidator`, переиспользуя рантаймовый
-  `BookConditionRequestEvaluator` — вердикт не может разойтись с игрой.
+### Список валидаторов в гейте
 
-**Прогнать заранее, не запуская билд:** `Tools → Configs → Run Pre-Build Validation`.
-Только запросы, без конфигов: `Tools → Configs → Validate Active Requests`.
+Источник правды — массив `PreBuildValidationGate.Validators`. Эта таблица — его человекочитаемая копия;
+**при добавлении валидатора обновлять оба места.**
+
+| Валидатор | Что ловит | Почему это не видно иначе |
+|---|---|---|
+| `CollectBundledConfigErrors` (внутри гейта) | Файл есть в `Assets/Configs`, но не в StreamingAssets; лежит в StreamingAssets, но удалён из источника; содержимое одноимённых файлов различается; файл забыт в `manifest.json` | В плеере `Directory.GetFiles` недоступен — не перечисленный в манифесте файл невидим, даже если физически попал в APK |
+| `ActiveRequestValidator` | Активный запрос, который не может удовлетворить ни одна книга каталога; жанр, ни одна книга которого не способна получить `Excellent` (тогда квест с `activePickGenre <жанр>` непроходим) | Синтаксически корректный запрос спавнится и просто никогда не решается |
+| `DialogueDeliveredConditionReferenceValidator` | Условие `dialogueDelivered` в квесте ссылается на несуществующий `dialogueId` (или не указывает его) | Условие fail-closed → квест молча никогда не стартует |
+| `BookBoxPoolValidator` | Лот-книжная коробка, чей пул не матчит ни одной книги (или матчит меньше, чем `rolls`); лот с `rewardId` вида `book_box_*`, для которого нет правила | Правила пула читают поля `BookConfig` напрямую: если в каталоге поля нет, книга садится на C#-дефолт, пул пустеет — ни ошибки парсинга, ни битой ссылки. Так `book_box_rare_8` (`RarityWeight >= 0.6`) сломался при замене каталога на тот, где нет `rarityWeight`: все книги получили дефолтные `0.5`, и лот начал брать золото, не выдавая ничего |
+
+Правила общие для всех: валидаторы **чистые** (ничего не логируют и не показывают — решает вызывающий),
+читают JSON напрямую (без `IConfigsService`, которого вне Play mode нет) и переиспользуют рантаймовый код,
+чтобы вердикт не мог разойтись с игрой (`ActiveRequestValidator` → `BookConditionRequestEvaluator`,
+`BookBoxPoolValidator` → `BookBoxPoolRules`). Исключение валидатора из списка не должно требовать правок в
+самом гейте — прогон, префикс сообщения и обработка падения общие.
+
+### Прогнать заранее, не запуская билд
+
+| Меню | Что запускает |
+|---|---|
+| `Tools → Configs → Run Pre-Build Validation` | весь список выше |
+| `Tools → Configs → Validate Active Requests` | только `ActiveRequestValidator` |
+| `Tools → Configs → Validate Book Box Pools` | только `BookBoxPoolValidator` |
 
 Гейт **не** проверяет: Addressables, Firebase, Player Settings, флаги `BootstrapInstaller.asset` — это
 пункты 2–5 ниже, они остаются ручными.
@@ -35,7 +52,8 @@
 **Известный пробел.** Ссылки на предметы (награды квестов, лоты магазина, `unlockCost`, условия `haveItem`)
 валидирует `ItemReferenceValidator`, но он рантаймовый: в редакторе бросает и блокирует Play mode, а в билде
 только пишет `LogError`. В гейт он не встроен, потому что требует `IConfigsService`, которого вне Play нет.
-Пока это ловится входом в Play mode перед сборкой.
+Пока это ловится входом в Play mode перед сборкой. Чтобы встроить — его надо переписать на чтение JSON
+напрямую, как остальные из таблицы.
 
 ---
 
@@ -44,14 +62,16 @@
 **Почему.** В плеер-сборке конфиги грузятся из `Assets/StreamingAssets/Configs/` по `manifest.json`
 (`StreamingAssetsConfigSource`), а **не** из `Assets/Configs/` — та папка читается только в Editor
 (`LocalFolderConfigSource`, `TopDirectoryOnly`). Если не пересинхронизировать, APK уедет со **старыми**
-конфигами: активные запросы не сматчатся (`hard_requests.json` со старыми типами `genres`/`qualities`),
-диалоги/тексты будут устаревшими и т.п.
+конфигами: активные запросы не сматчатся с каталогом книг, диалоги/тексты будут устаревшими и т.п.
 
 **Что сделать:**
 
-1. (Рекомендуется) Удалить мёртвый `sample_requests.json` из `Assets/Configs/` (+`.meta`) — он больше не
-   используется (заменён `hard_requests.json`, ни к какому `[ConfigFile]` не привязан). Иначе Sync
-   перекладывает его в StreamingAssets и в манифест как «мёртвый» файл. См. `TODO.md → GAME-14`.
+1. (Рекомендуется) Удалить из `Assets/Configs/` (+`.meta`) конфиги, не привязанные ни к одному
+   `[ConfigFile]` — Sync перекладывает их в StreamingAssets и в манифест как мёртвый груз, а гейт потом
+   сверяет их побайтово. Сейчас в эту категорию попадают **`hard_requests.json`** (`RequestDefinitionConfig`
+   переключён на `sample_requests`) и **`books.json`** (`BookConfig` переключён на `books_converted`).
+   Проверять так: файл живой, если его имя встречается в `[ConfigFile("…")]` у какого-нибудь DTO в
+   `Assets/Game/Features/Configs/Models/`. См. `TODO.md → GAME-14`.
 2. Запустить меню **`Tools → Configs → Sync Bundled Defaults to StreamingAssets`**. Оно:
    - копирует все `Assets/Configs/*.json` → `Assets/StreamingAssets/Configs/`;
    - перегенерирует `manifest.json` из списка файлов.
