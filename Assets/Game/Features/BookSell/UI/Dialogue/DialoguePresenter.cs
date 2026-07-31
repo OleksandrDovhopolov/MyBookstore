@@ -5,7 +5,6 @@ using Book.Sell.Domain;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
 using Dialogue;
-using Game.Quest.API;
 using Game.UI;
 using UnityEngine;
 using VContainer.Unity;
@@ -34,19 +33,16 @@ namespace Book.Sell.UI
         private readonly ISalesDayController _controller;
         private readonly IUIManager _uiManager;
         private readonly IDeliveredDialoguesService _delivered;
-        private readonly IQuestReevaluationGate _questReevaluationGate;
         private readonly CancellationTokenSource _cts = new();
 
         public DialoguePresenter(
             ISalesDayController controller,
             IUIManager uiManager = null,
-            IDeliveredDialoguesService delivered = null,
-            IQuestReevaluationGate questReevaluationGate = null)
+            IDeliveredDialoguesService delivered = null)
         {
             _controller = controller;
             _uiManager = uiManager;
             _delivered = delivered;
-            _questReevaluationGate = questReevaluationGate;
         }
 
         public void Start()
@@ -114,8 +110,6 @@ namespace Book.Sell.UI
             {
                 if (_delivered != null && !string.IsNullOrWhiteSpace(dialogueId))
                     await _delivered.MarkDeliveredDeferredAsync(dialogueId, CancellationToken.None);
-
-                _questReevaluationGate?.RequestReevaluation();
             }
             catch (Exception ex)
             {

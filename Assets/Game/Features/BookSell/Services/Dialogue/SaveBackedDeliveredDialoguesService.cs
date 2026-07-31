@@ -20,6 +20,8 @@ namespace Book.Sell.Services
         public SaveBackedDeliveredDialoguesService(ISaveService save)
             => _save = save ?? throw new ArgumentNullException(nameof(save));
 
+        public event Action Changed;
+
         public bool IsDelivered(string dialogueId)
         {
             if (string.IsNullOrWhiteSpace(dialogueId)) return false;
@@ -34,13 +36,14 @@ namespace Book.Sell.Services
             if (!committed.Add(dialogueId)) return;
 
             await PersistCommittedAsync(ct);
+            Changed?.Invoke();
         }
 
         public UniTask MarkDeliveredDeferredAsync(string dialogueId, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
-            if (!string.IsNullOrWhiteSpace(dialogueId))
-                _pending.Add(dialogueId);
+            if (!string.IsNullOrWhiteSpace(dialogueId) && _pending.Add(dialogueId))
+                Changed?.Invoke();
 
             return UniTask.CompletedTask;
         }
@@ -58,11 +61,16 @@ namespace Book.Sell.Services
                 await PersistCommittedAsync(ct);
 
             _pending.Clear();
+            if (changed)
+                Changed?.Invoke();
         }
 
         public void DiscardDeferred()
         {
+            var changed = _pending.Count > 0;
             _pending.Clear();
+            if (changed)
+                Changed?.Invoke();
         }
 
         private async UniTask PersistCommittedAsync(CancellationToken ct)

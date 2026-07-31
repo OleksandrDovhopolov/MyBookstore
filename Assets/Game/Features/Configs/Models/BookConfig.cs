@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 
 namespace Game.Configs.Models
 {
@@ -20,9 +21,11 @@ namespace Game.Configs.Models
         /// <summary>Жанры книги. Текущие legacy-системы используют первый жанр как основной.</summary>
         public string[] Genres { get; set; }
 
-        public float RarityWeight { get; set; }
+        public float RarityWeight { get; set; } = 0.5f;
         public int Published { get; set; }
         public int Pages { get; set; }
+        [JsonProperty("fakeOrReal")]
+        public string FakeOrReal { get; set; }
 
         /// <summary>Уникальные качества книги. Временно содержит legacy-значения из старого поля tags.</summary>
         public string[] Qualities { get; set; }

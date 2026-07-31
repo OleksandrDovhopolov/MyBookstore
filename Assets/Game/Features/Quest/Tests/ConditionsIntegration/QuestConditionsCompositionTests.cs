@@ -119,6 +119,7 @@ namespace Game.Quest.Tests.ConditionsIntegration
         private sealed class FakeDelivered : IDeliveredDialoguesService
         {
             public readonly HashSet<string> Delivered = new(StringComparer.Ordinal);
+            public event Action Changed;
             public bool IsDelivered(string dialogueId) => dialogueId != null && Delivered.Contains(dialogueId);
             public UniTask MarkDeliveredAsync(string dialogueId, CancellationToken ct) => UniTask.CompletedTask;
             public UniTask MarkDeliveredDeferredAsync(string dialogueId, CancellationToken ct) => UniTask.CompletedTask;

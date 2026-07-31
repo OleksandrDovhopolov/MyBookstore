@@ -113,6 +113,7 @@ namespace Book.Sell.Tests.Editor
 
             public int CommitCalls { get; private set; }
             public bool WasCommittedInsideAutosaveBlock { get; private set; }
+            public event Action Changed;
             public bool IsDelivered(string dialogueId) => false;
             public UniTask MarkDeliveredAsync(string dialogueId, CancellationToken ct) => UniTask.CompletedTask;
             public UniTask MarkDeliveredDeferredAsync(string dialogueId, CancellationToken ct) => UniTask.CompletedTask;

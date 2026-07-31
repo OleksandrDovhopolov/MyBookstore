@@ -55,6 +55,33 @@ namespace Game.LocationVisits.Tests.Editor
         }
 
         [Test]
+        public void RecordVisit_RaisesChanged()
+        {
+            var (svc, _) = Build();
+            var changed = 0;
+            svc.Changed += () => changed++;
+
+            svc.RecordVisit("far_beach");
+
+            Assert.AreEqual(1, changed);
+        }
+
+        [Test]
+        public void ClearCurrentLocation_RaisesChangedOnlyWhenCurrentWasSet()
+        {
+            var (svc, _) = Build();
+            var changed = 0;
+            svc.Changed += () => changed++;
+
+            svc.ClearCurrentLocation();
+            svc.RecordVisit("far_beach");
+            svc.ClearCurrentLocation();
+            svc.ClearCurrentLocation();
+
+            Assert.AreEqual(2, changed, "one visit + one real clear");
+        }
+
+        [Test]
         public void SaveLoad_Roundtrip_PreservesCounts_CurrentIsRuntimeOnly()
         {
             var (svc, save) = Build();

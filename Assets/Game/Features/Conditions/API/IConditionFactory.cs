@@ -6,7 +6,8 @@ namespace Game.Conditions.API
     /// Builds one leaf <see cref="ICondition"/> from its data-driven JSON node. This is the
     /// extensibility seam: a new feature (e.g. fishing) ships its own factory + data reader and
     /// registers it in DI — the engine and the location-unlock service stay untouched. The factory
-    /// holds the injected read-only provider its conditions evaluate against.
+    /// holds the injected read-only provider its conditions evaluate against. If that provider changes during
+    /// a runtime session, the factory should also implement <see cref="IConditionChangeSource"/>.
     /// </summary>
     public interface IConditionFactory
     {

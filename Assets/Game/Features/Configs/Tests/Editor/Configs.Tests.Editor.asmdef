@@ -4,6 +4,7 @@
     "references": [
         "UniTask",
         "Configs",
+        "Configs.Editor",
         "UnityEngine.TestRunner"
     ],
     "includePlatforms": [

@@ -49,6 +49,7 @@ namespace Game.Quest.Services
         private readonly Dictionary<string, Quest> _quests = new(StringComparer.Ordinal);
         private readonly List<Quest> _ordered = new();
         private readonly HashSet<string> _successors = new(StringComparer.Ordinal);
+        private readonly List<IConditionChangeSource> _subscribedConditionSources = new();
 
         private bool _loaded;
         private bool _subscribed;
@@ -616,6 +617,7 @@ namespace Game.Quest.Services
             if (_decor != null) _decor.PlacementChanged += OnPlacementChanged;
             if (_inventory != null) _inventory.Changed += OnInventoryChanged;
             if (_dayProgress != null) _dayProgress.PhaseChanged += OnPhaseChanged;
+            SubscribeConditionChangeSources();
             _subscribed = true;
         }
 
@@ -626,13 +628,37 @@ namespace Game.Quest.Services
             if (_decor != null) _decor.PlacementChanged -= OnPlacementChanged;
             if (_inventory != null) _inventory.Changed -= OnInventoryChanged;
             if (_dayProgress != null) _dayProgress.PhaseChanged -= OnPhaseChanged;
+            UnsubscribeConditionChangeSources();
             _subscribed = false;
+        }
+
+        private void SubscribeConditionChangeSources()
+        {
+            if (_allFactories == null) return;
+
+            foreach (var factory in _allFactories)
+            {
+                if (factory is not IConditionChangeSource source) continue;
+                if (_subscribedConditionSources.Contains(source)) continue;
+
+                source.Changed += OnConditionSourceChanged;
+                _subscribedConditionSources.Add(source);
+            }
+        }
+
+        private void UnsubscribeConditionChangeSources()
+        {
+            for (var i = 0; i < _subscribedConditionSources.Count; i++)
+                _subscribedConditionSources[i].Changed -= OnConditionSourceChanged;
+
+            _subscribedConditionSources.Clear();
         }
 
         private void OnSalesChanged(SalesStatsChange _) => Reevaluate();
         private void OnPlacementChanged() => Reevaluate();
         private void OnInventoryChanged(InventoryChangeEvent _) => Reevaluate();
         private void OnPhaseChanged(DayProgressState _) => Reevaluate();
+        private void OnConditionSourceChanged() => Reevaluate();
 
         public void Dispose() => Unsubscribe();
 

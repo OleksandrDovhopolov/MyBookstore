@@ -81,10 +81,25 @@ namespace Book.Sell.Tests.Editor
             Assert.AreEqual("invalid.dialogueDelivered", result.ReasonKey);
         }
 
+        [Test]
+        public void Factory_ForwardsDeliveredChangeSource()
+        {
+            var delivered = new FakeDeliveredDialogues();
+            var factory = new DialogueDeliveredConditionFactory(delivered);
+            var changed = 0;
+
+            ((IConditionChangeSource)factory).Changed += () => changed++;
+            delivered.MarkDeliveredDeferredAsync("eddy1", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, changed);
+        }
+
         private sealed class FakeDeliveredDialogues : IDeliveredDialoguesService
         {
             private readonly HashSet<string> _committed = new(StringComparer.Ordinal);
             private readonly HashSet<string> _pending = new(StringComparer.Ordinal);
+
+            public event Action Changed;
 
             public bool IsDelivered(string dialogueId)
                 => dialogueId != null && (_committed.Contains(dialogueId) || _pending.Contains(dialogueId));
@@ -92,7 +107,10 @@ namespace Book.Sell.Tests.Editor
             public UniTask MarkDeliveredAsync(string dialogueId, CancellationToken ct)
             {
                 if (!string.IsNullOrWhiteSpace(dialogueId))
+                {
                     _committed.Add(dialogueId);
+                    Changed?.Invoke();
+                }
 
                 return UniTask.CompletedTask;
             }
@@ -100,7 +118,10 @@ namespace Book.Sell.Tests.Editor
             public UniTask MarkDeliveredDeferredAsync(string dialogueId, CancellationToken ct)
             {
                 if (!string.IsNullOrWhiteSpace(dialogueId))
+                {
                     _pending.Add(dialogueId);
+                    Changed?.Invoke();
+                }
 
                 return UniTask.CompletedTask;
             }
@@ -111,10 +132,15 @@ namespace Book.Sell.Tests.Editor
                     _committed.Add(id);
 
                 _pending.Clear();
+                Changed?.Invoke();
                 return UniTask.CompletedTask;
             }
 
-            public void DiscardDeferred() => _pending.Clear();
+            public void DiscardDeferred()
+            {
+                _pending.Clear();
+                Changed?.Invoke();
+            }
         }
     }
 }

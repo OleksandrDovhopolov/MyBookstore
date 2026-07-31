@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
@@ -9,6 +10,9 @@ namespace Book.Sell.API
     /// </summary>
     public interface IDeliveredDialoguesService
     {
+        /// <summary>Raised when the visible delivered-dialogue set changes.</summary>
+        event Action Changed;
+
         /// <summary>True if this dialogue has already been delivered (shown) to the player.</summary>
         bool IsDelivered(string dialogueId);
 

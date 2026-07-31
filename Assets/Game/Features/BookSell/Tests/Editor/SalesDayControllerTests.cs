@@ -125,6 +125,7 @@ namespace Book.Sell.Tests.Editor
 
         private sealed class RecordingDeliveredDialogues : IDeliveredDialoguesService
         {
+            public event Action Changed;
             public int DiscardCalls { get; private set; }
             public bool IsDelivered(string dialogueId) => false;
             public UniTask MarkDeliveredAsync(string dialogueId, CancellationToken ct) => UniTask.CompletedTask;

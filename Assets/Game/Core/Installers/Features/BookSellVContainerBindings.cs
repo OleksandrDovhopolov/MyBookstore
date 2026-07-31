@@ -30,6 +30,7 @@ namespace Game.Bootstrap
             // Fire-once memory for scripted dialogues (GAME-6). Location-scoped spawner filters committed
             // and pending ids; DialoguePresenter defers day-scoped marks until the sales-day commit.
             builder.Register<IDeliveredDialoguesService, SaveBackedDeliveredDialoguesService>(Lifetime.Singleton);
+            builder.Register<IConditionFactory, DialogueDeliveredConditionFactory>(Lifetime.Singleton);
             builder.Register<ISalesShelfStateService, SalesShelfStateService>(Lifetime.Singleton);
             // TEMP DEBUG: keep economy/location/decor modifiers, but floor passive sale chance at 50%.
             // Restore EconomyBasedSaleChanceCalculator when sales-flow testing is done.
@@ -188,7 +189,6 @@ namespace Game.Bootstrap
             // Opens DialogWindow when a scripted dialogue starts (GAME-6 §Этап 5). Same wiring as the
             // minigame presenter: IUIManager from the parent scope, controller via WindowArgs. The window
             // owns completion (CompleteDialogue on end); the presenter is the safety-net if opening fails.
-            builder.Register<IConditionFactory, DialogueDeliveredConditionFactory>(Lifetime.Singleton);
             builder.RegisterEntryPoint<DialoguePresenter>(Lifetime.Singleton);
 
             // Debug screen. Registered only if present in the scene, so the project runs before the UI

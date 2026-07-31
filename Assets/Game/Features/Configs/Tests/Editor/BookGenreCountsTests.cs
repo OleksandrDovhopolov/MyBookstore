@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Game.Configs.Models;
 using Newtonsoft.Json;
@@ -116,6 +117,58 @@ namespace Game.Configs.Tests.Editor
             Assert.AreEqual("Drama", book.PrimaryGenre);
             Assert.IsTrue(book.IsFemaleAuthor);
             Assert.AreEqual(10, BookConfig.FixedPriceGold);
+        }
+
+        [Test]
+        public void BookConfig_DeserializeWithoutRarityWeight_UsesDefault()
+        {
+            const string json = @"{
+  ""id"": ""book01"",
+  ""title"": ""Sea Winter"",
+  ""author"": ""Ada Reed"",
+  ""description"": ""[description_book_001]"",
+  ""genres"": [""Drama""],
+  ""published"": 1893,
+  ""pages"": 189,
+  ""qualities"": [""Female Author""]
+}";
+
+            var book = JsonConvert.DeserializeObject<BookConfig>(json);
+
+            Assert.IsNotNull(book);
+            Assert.AreEqual(0.5f, book.RarityWeight);
+        }
+
+        [Test]
+        public void BookConfig_DeserializeFakeOrReal_PopulatesFutureField()
+        {
+            const string json = @"{
+  ""id"": ""book01"",
+  ""title"": ""Sea Winter"",
+  ""author"": ""Ada Reed"",
+  ""description"": ""[description_book_001]"",
+  ""genres"": [""Drama""],
+  ""published"": 1893,
+  ""pages"": 189,
+  ""qualities"": [""Female Author""],
+  ""fakeOrReal"": ""Fake""
+}";
+
+            var book = JsonConvert.DeserializeObject<BookConfig>(json);
+
+            Assert.IsNotNull(book);
+            Assert.AreEqual("Fake", book.FakeOrReal);
+        }
+
+        [TestCase("Assets/Configs/books.json")]
+        [TestCase("Assets/StreamingAssets/Configs/books.json")]
+        public void BookConfig_LegacyBooksJson_StillDeserializes(string path)
+        {
+            var books = JsonConvert.DeserializeObject<BookConfig[]>(File.ReadAllText(path));
+
+            Assert.IsNotNull(books);
+            Assert.Greater(books.Length, 0);
+            Assert.IsTrue(books.All(book => !string.IsNullOrWhiteSpace(book.Id)));
         }
     }
 }

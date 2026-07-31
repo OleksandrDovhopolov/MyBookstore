@@ -434,6 +434,8 @@ namespace Book.Sell.Tests.Editor
             private readonly HashSet<string> _delivered;
             public StubDeliveredDialogues(params string[] delivered) => _delivered = new HashSet<string>(delivered);
 
+            public event Action Changed;
+
             public bool IsDelivered(string dialogueId) => _delivered.Contains(dialogueId);
 
             public UniTask MarkDeliveredAsync(string dialogueId, CancellationToken ct)

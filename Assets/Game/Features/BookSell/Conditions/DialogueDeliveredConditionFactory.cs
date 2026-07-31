@@ -9,7 +9,7 @@ namespace Book.Sell.Conditions
     /// Builds <see cref="DialogueDeliveredCondition"/> from
     /// <c>{ "type": "dialogueDelivered", "dialogueId": "eddy1" }</c>.
     /// </summary>
-    public sealed class DialogueDeliveredConditionFactory : IConditionFactory
+    public sealed class DialogueDeliveredConditionFactory : IConditionFactory, IConditionChangeSource
     {
         public const string TypeId = "dialogueDelivered";
 
@@ -19,6 +19,12 @@ namespace Book.Sell.Conditions
             => _delivered = delivered ?? throw new ArgumentNullException(nameof(delivered));
 
         public string Type => TypeId;
+
+        public event Action Changed
+        {
+            add => _delivered.Changed += value;
+            remove => _delivered.Changed -= value;
+        }
 
         public ICondition Create(JObject node)
         {
