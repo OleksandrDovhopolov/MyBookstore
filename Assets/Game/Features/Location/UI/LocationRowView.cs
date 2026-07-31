@@ -22,9 +22,11 @@ namespace Game.Location.UI
         [SerializeField] private TextMeshProUGUI _entryCostLabel;
         [SerializeField] private Button _startButton;
         [SerializeField] private Button _unlockButton;
+        [SerializeField] private Button _demandInfoButton;
 
         private Action<string> _onStart;
         private Action<string> _onUnlock;
+        private Action<string, RectTransform> _onDemandInfo;
         private string _locationId;
         private CancellationTokenSource _iconCts;
 
@@ -34,16 +36,23 @@ namespace Game.Location.UI
                 _startButton.onClick.AddListener(() => _onStart?.Invoke(_locationId));
             if (_unlockButton != null)
                 _unlockButton.onClick.AddListener(() => _onUnlock?.Invoke(_locationId));
+            if (_demandInfoButton != null)
+            {
+                _demandInfoButton.onClick.AddListener(() =>
+                    _onDemandInfo?.Invoke(_locationId, _demandInfoButton.transform as RectTransform));
+            }
         }
 
         public void Bind(
             LocationListItemModel model,
             Action<string> onStart,
             Action<string> onUnlock,
+            Action<string, RectTransform> onDemandInfo,
             IUiSpriteProvider sprites)
         {
             _onStart = onStart;
             _onUnlock = onUnlock;
+            _onDemandInfo = onDemandInfo;
             _locationId = model.LocationId;
 
             if (_nameLabel != null) _nameLabel.text = model.DisplayName;
@@ -133,6 +142,7 @@ namespace Game.Location.UI
         {
             _onStart = null;
             _onUnlock = null;
+            _onDemandInfo = null;
             _locationId = null;
             CancelIconLoad();
             if (_locationImage != null) _locationImage.sprite = null;

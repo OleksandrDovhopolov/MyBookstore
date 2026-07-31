@@ -1,5 +1,6 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
@@ -8,6 +9,7 @@ using Game.LocationEntry.API;
 using Game.LocationUnlock.API;
 using Game.Resources.API;
 using Game.UI;
+using Game.UI.ContentWidget;
 using SpriteService;
 using UnityEngine;
 using VContainer;
@@ -109,7 +111,7 @@ namespace Game.Location.UI
                     _unlock?.GetCost(config.Id)));
             }
 
-            View.Render(_models, OnStartClicked, OnUnlockClicked, _uiSprites);
+            View.Render(_models, OnStartClicked, OnUnlockClicked, OnDemandInfoClicked, _uiSprites);
         }
 
         private void OnStartClicked(string locationId)
@@ -120,6 +122,50 @@ namespace Game.Location.UI
 
         private void OnUnlockClicked(string locationId)
             => UnlockAsync(locationId).Forget();
+
+        private void OnDemandInfoClicked(string locationId, RectTransform anchor)
+            => ShowDemandWidgetAsync(locationId, anchor).Forget();
+
+        private async UniTaskVoid ShowDemandWidgetAsync(string locationId, RectTransform anchor)
+        {
+            if (anchor == null || string.IsNullOrEmpty(locationId) || _configs == null)
+                return;
+
+            try
+            {
+                var ct = View != null ? View.destroyCancellationToken : CancellationToken.None;
+                if (!_configs.TryGet<LocationConfig>(locationId, out var config) || config == null)
+                    return;
+
+                var genres = new List<LocationDemandGenre>();
+                var rawGenres = config.DemandGenres ?? Array.Empty<string>();
+                for (var i = 0; i < rawGenres.Length; i++)
+                {
+                    if (!BookGenreExtensions.TryParseGenre(rawGenres[i], out var genre))
+                        continue;
+
+                    Sprite icon = null;
+                    if (_uiSprites != null)
+                        icon = await _uiSprites.GetSpriteAsync(genre.ToConfigValue(), ct);
+
+                    if (ct.IsCancellationRequested || anchor == null)
+                        return;
+
+                    genres.Add(new LocationDemandGenre(genre, icon));
+                }
+
+                if (genres.Count == 0)
+                    return;
+
+                var data = new LocationDemandWidgetData(config.DisplayName, genres);
+                await UIManager.ShowAsync<ContentWidgetController>(
+                    new ContentWidgetArgs(data, anchor, this),
+                    ct);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
 
         private async UniTaskVoid UnlockAsync(string locationId)
         {

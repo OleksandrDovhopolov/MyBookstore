@@ -1,7 +1,7 @@
 [
   {
     "id": "loc_park",
-    "displayName": "Парк",
+    "displayName": "Park",
     "entryCost": 0,
     "demandGenres": [
       "Drama",
@@ -12,7 +12,7 @@
   },
   {
     "id": "loc_campus",
-    "displayName": "Кампус",
+    "displayName": "Campus",
     "entryCost": 0,
     "unlockCost": [
       { "itemId": "milly_letter", "amount": 1 },
@@ -27,7 +27,7 @@
   },
   {
     "id": "loc_port",
-    "displayName": "Порт",
+    "displayName": "Port",
     "entryCost": 0,
     "unlockCost": [
       { "itemId": "port_trade_permit", "amount": 1 },
@@ -41,7 +41,7 @@
   },
   {
     "id": "loc_market",
-    "displayName": "Рынок",
+    "displayName": "Market",
     "entryCost": 0,
     "unlock": {
       "all": [
@@ -63,7 +63,7 @@
   },
   {
     "id": "loc_village",
-    "displayName": "Деревня",
+    "displayName": "Village",
     "entryCost": 0,
     "unlock": {
       "all": [
