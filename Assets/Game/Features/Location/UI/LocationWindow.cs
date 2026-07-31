@@ -27,6 +27,7 @@ namespace Game.Location.UI
         private IUiSpriteProvider _uiSprites;
 
         private readonly List<LocationListItemModel> _models = new();
+        private int _scrollVersion;
 
         public string Result { get; private set; }
 
@@ -111,7 +112,7 @@ namespace Game.Location.UI
                     _unlock?.GetCost(config.Id)));
             }
 
-            View.Render(_models, OnStartClicked, OnUnlockClicked, OnDemandInfoClicked, _uiSprites);
+            View.Render(_models, OnStartClicked, OnUnlockClicked, OnDemandInfoClicked, OnLocationsScrolled, _uiSprites);
         }
 
         private void OnStartClicked(string locationId)
@@ -126,6 +127,16 @@ namespace Game.Location.UI
         private void OnDemandInfoClicked(string locationId, RectTransform anchor)
             => ShowDemandWidgetAsync(locationId, anchor).Forget();
 
+        private void OnLocationsScrolled()
+        {
+            _scrollVersion++;
+
+            if (UIManager == null || !UIManager.IsWindowShown<ContentWidgetController>())
+                return;
+
+            UIManager.HideAsync<ContentWidgetController>(forceClose: true, ct: CancellationToken.None).Forget();
+        }
+
         private async UniTaskVoid ShowDemandWidgetAsync(string locationId, RectTransform anchor)
         {
             if (anchor == null || string.IsNullOrEmpty(locationId) || _configs == null)
@@ -133,6 +144,7 @@ namespace Game.Location.UI
 
             try
             {
+                var scrollVersion = _scrollVersion;
                 var ct = View != null ? View.destroyCancellationToken : CancellationToken.None;
                 if (!_configs.TryGet<LocationConfig>(locationId, out var config) || config == null)
                     return;
@@ -157,9 +169,16 @@ namespace Game.Location.UI
                 if (genres.Count == 0)
                     return;
 
+                if (scrollVersion != _scrollVersion)
+                    return;
+
                 var data = new LocationDemandWidgetData(config.DisplayName, genres);
                 await UIManager.ShowAsync<ContentWidgetController>(
-                    new ContentWidgetArgs(data, anchor, this),
+                    new ContentWidgetArgs(
+                        data,
+                        anchor,
+                        this,
+                        placementMode: ContentWidgetPlacementMode.HorizontalOnly),
                     ct);
             }
             catch (OperationCanceledException)

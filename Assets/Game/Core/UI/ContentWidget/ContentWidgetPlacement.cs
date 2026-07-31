@@ -10,6 +10,12 @@ namespace Game.UI.ContentWidget
         Right
     }
 
+    public enum ContentWidgetPlacementMode
+    {
+        Auto,
+        HorizontalOnly
+    }
+
     public readonly struct ContentWidgetPlacementResult
     {
         public ContentWidgetPlacementResult(Vector2 position, ContentWidgetPlacementSide side)
@@ -32,7 +38,8 @@ namespace Game.UI.ContentWidget
             float horizontalOffset,
             float padding,
             float verticalZoneRatio,
-            Vector2 pivot)
+            Vector2 pivot,
+            ContentWidgetPlacementMode mode = ContentWidgetPlacementMode.Auto)
         {
             var safeMinX = parentRect.xMin + padding;
             var safeMaxX = parentRect.xMax - padding;
@@ -61,7 +68,11 @@ namespace Game.UI.ContentWidget
                 parentRect,
                 verticalZoneRatio,
                 preferredSide,
-                oppositeSide);
+                oppositeSide,
+                mode);
+            var resolvedHorizontalOffset = mode == ContentWidgetPlacementMode.HorizontalOnly
+                ? Mathf.Max(0f, horizontalOffset)
+                : horizontalOffset;
 
             for (var i = 0; i < priority.Length; i++)
             {
@@ -74,7 +85,7 @@ namespace Game.UI.ContentWidget
                     clampedSize,
                     pivot,
                     verticalOffset,
-                    horizontalOffset);
+                    resolvedHorizontalOffset);
 
                 if (!FitsPrimaryAxis(candidateSide, candidate, clampedSize, pivot, safeMinX, safeMaxX, safeMinY, safeMaxY))
                     continue;
@@ -93,7 +104,7 @@ namespace Game.UI.ContentWidget
                 clampedSize,
                 pivot,
                 verticalOffset,
-                horizontalOffset);
+                resolvedHorizontalOffset);
 
             return new ContentWidgetPlacementResult(
                 ClampPosition(fallback, minPositionX, maxPositionX, minPositionY, maxPositionY),
@@ -105,8 +116,18 @@ namespace Game.UI.ContentWidget
             Rect parentRect,
             float verticalZoneRatio,
             ContentWidgetPlacementSide preferredSide,
-            ContentWidgetPlacementSide oppositeSide)
+            ContentWidgetPlacementSide oppositeSide,
+            ContentWidgetPlacementMode mode)
         {
+            if (mode == ContentWidgetPlacementMode.HorizontalOnly)
+            {
+                return new[]
+                {
+                    preferredSide,
+                    oppositeSide
+                };
+            }
+
             var clampedZoneRatio = Mathf.Clamp(verticalZoneRatio, 0f, 0.5f);
             var verticalPosition = parentRect.height > 0f
                 ? Mathf.Clamp01((anchorCenterY - parentRect.yMin) / parentRect.height)
