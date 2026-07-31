@@ -3,6 +3,8 @@
     "rootNamespace": "Game.Quest.Tests.ConditionsIntegration",
     "references": [
         "UniTask",
+        "Book.Sell",
+        "Book.Sell.API",
         "Game.Conditions.API",
         "Game.Conditions",
         "Game.Decor",

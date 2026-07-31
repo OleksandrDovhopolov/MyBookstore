@@ -139,17 +139,24 @@ namespace Game.Quest.Tests.Editor
         }
 
         [Test]
-        public void Content_EddiIntro_IsManualSalesQuestWithFuelReward()
+        public void Content_EddiIntro_IsDialogueDeliveredSalesQuestWithFuelReward()
         {
             foreach (var root in ContentRoots)
                 AssertEddiIntroQuest(root);
         }
 
         [Test]
-        public void Content_MillyIntro_IsManualActivePickQuestWithLetterAndFuelReward()
+        public void Content_MillyIntro_IsDialogueDeliveredActivePickQuestWithLetterAndFuelReward()
         {
             foreach (var root in ContentRoots)
                 AssertMillyIntroQuest(root);
+        }
+
+        [Test]
+        public void Content_TaraIntro_IsDialogueDeliveredActivePickQuestWithPortReward()
+        {
+            foreach (var root in ContentRoots)
+                AssertTaraIntroQuest(root);
         }
 
         [Test]
@@ -197,8 +204,7 @@ namespace Game.Quest.Tests.Editor
             var quest = quests.Single(q => q.Id == "q_intro_eddi");
             Assert.AreEqual("story", quest.Type);
             Assert.AreEqual("eddi", quest.CharacterId);
-            Assert.IsNotNull(quest.ActivationConditions);
-            Assert.AreEqual("manual", quest.ActivationConditions["type"].ToString());
+            AssertDialogueDeliveredActivation(quest, "eddy1");
 
             Assert.AreEqual(4, quest.Tasks.Length);
             AssertSalesTask(quest.Tasks[0], 1, "Crime", 10);
@@ -222,8 +228,7 @@ namespace Game.Quest.Tests.Editor
             var quest = quests.Single(q => q.Id == "q_intro_milly");
             Assert.AreEqual("story", quest.Type);
             Assert.AreEqual("milly", quest.CharacterId);
-            Assert.IsNotNull(quest.ActivationConditions);
-            Assert.AreEqual("manual", quest.ActivationConditions["type"].ToString());
+            AssertDialogueDeliveredActivation(quest, "milly1");
 
             Assert.AreEqual(1, quest.Tasks.Length);
             var task = quest.Tasks[0];
@@ -243,6 +248,37 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual("InventoryItem", fuel.Kind);
             Assert.AreEqual("consumable", fuel.Category);
             Assert.AreEqual(1, fuel.Amount);
+        }
+
+        private static void AssertTaraIntroQuest(string root)
+        {
+            var quests = JsonConvert.DeserializeObject<QuestConfig[]>(
+                File.ReadAllText(Path.Combine(root, "quests.json")));
+
+            var quest = quests.Single(q => q.Id == "q_tara_kids");
+            Assert.AreEqual("story", quest.Type);
+            Assert.AreEqual("tara", quest.CharacterId);
+            AssertDialogueDeliveredActivation(quest, "tara_quest_1");
+
+            Assert.AreEqual(1, quest.Tasks.Length);
+            var task = quest.Tasks[0];
+            Assert.AreEqual(1, task.Id);
+            Assert.IsNotNull(task.CompletionConditions);
+            Assert.AreEqual("activePickGenre", task.CompletionConditions["type"].ToString());
+            Assert.AreEqual("Kids", task.CompletionConditions["genre"].ToString());
+            Assert.AreEqual(5, (int)task.CompletionConditions["min"]);
+
+            var permit = quest.Rewards.Single(r => r.Id == "port_trade_permit");
+            Assert.AreEqual("InventoryItem", permit.Kind);
+            Assert.AreEqual("quest_item", permit.Category);
+            Assert.AreEqual(1, permit.Amount);
+        }
+
+        private static void AssertDialogueDeliveredActivation(QuestConfig quest, string dialogueId)
+        {
+            Assert.IsNotNull(quest.ActivationConditions);
+            Assert.AreEqual("dialogueDelivered", quest.ActivationConditions["type"].ToString());
+            Assert.AreEqual(dialogueId, quest.ActivationConditions["dialogueId"].ToString());
         }
 
         private static void AssertSalesTask(QuestTaskConfig task, int id, string genre, int min)

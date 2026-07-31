@@ -81,6 +81,7 @@ namespace Game.Build.Editor
             var errors = new List<string>();
             CollectBundledConfigErrors(errors);
             CollectActiveRequestErrors(errors);
+            CollectDialogueDeliveredReferenceErrors(errors);
             return errors;
         }
 
@@ -149,6 +150,15 @@ namespace Game.Build.Editor
 
             foreach (var error in report.Errors)
                 errors.Add($"Active requests: {error}");
+        }
+
+        private static void CollectDialogueDeliveredReferenceErrors(List<string> errors)
+        {
+            var report = DialogueDeliveredConditionReferenceValidator.Validate();
+            if (!report.HasErrors) return;
+
+            foreach (var error in report.Errors)
+                errors.Add($"Dialogue delivered conditions: {error}");
         }
 
         private static List<string> FileNames(string dir)

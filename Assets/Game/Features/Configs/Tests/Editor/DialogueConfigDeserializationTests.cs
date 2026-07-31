@@ -1,5 +1,4 @@
 using System.IO;
-using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
@@ -37,7 +36,6 @@ namespace Game.Configs.Tests.Editor
   },
   {
     ""id"": ""dlg_quest_01"",
-    ""activatesQuestId"": ""q_intro_test"",
     ""nodes"": [
       { ""nodeId"": ""root"", ""lines"": [ { ""speaker"": ""Гость"", ""text"": ""Мне нужна одна книга. Поможете?"" } ],
         ""options"": [ { ""text"": ""Конечно"", ""next"": ""end"" }, { ""text"": ""Позже"", ""next"": ""end"" } ] }
@@ -55,7 +53,6 @@ namespace Game.Configs.Tests.Editor
 
             var intro = dialogues[0];
             Assert.AreEqual("dlg_intro_tilde", intro.Id);
-            Assert.IsNull(intro.ActivatesQuestId);
             Assert.AreEqual(3, intro.Nodes.Length);
 
             // Entry node = Nodes[0]. Lines are speaker-tagged objects (GAME-6).
@@ -83,7 +80,6 @@ namespace Game.Configs.Tests.Editor
             var quest = dialogues[1];
 
             Assert.AreEqual("dlg_quest_01", quest.Id);
-            Assert.AreEqual("q_intro_test", quest.ActivatesQuestId);
             Assert.AreEqual(1, quest.Nodes.Length);
             Assert.AreEqual(2, quest.Nodes[0].Options.Length);
             Assert.AreEqual("end", quest.Nodes[0].Options[0].Next);
@@ -108,24 +104,19 @@ namespace Game.Configs.Tests.Editor
 
             var quest = service.Get<DialogueConfig>("dlg_quest_01");
             Assert.IsNotNull(quest);
-            Assert.AreEqual("q_intro_test", quest.ActivatesQuestId);
+            Assert.AreEqual("root", quest.Nodes[0].NodeId);
         }
 
         [Test]
-        public void Content_IntroQuestDialogues_DeclareQuestActivation()
+        public void Content_Dialogues_DoNotDeclareQuestActivation()
         {
             foreach (var root in ContentRoots)
             {
-                var dialogues = JsonConvert.DeserializeObject<DialogueConfig[]>(
-                    File.ReadAllText(Path.Combine(root, "dialogues.json")));
+                var raw = File.ReadAllText(Path.Combine(root, "dialogues.json"));
 
-                Assert.AreEqual(
-                    "q_intro_eddi",
-                    dialogues.Single(d => d.Id == "eddy1").ActivatesQuestId);
-                Assert.IsNull(dialogues.Single(d => d.Id == "eddy_quest_1").ActivatesQuestId);
-                Assert.AreEqual(
-                    "q_intro_milly",
-                    dialogues.Single(d => d.Id == "milly1").ActivatesQuestId);
+                Assert.IsFalse(
+                    raw.Contains("activatesQuestId"),
+                    $"{root}/dialogues.json must not declare quest activation; quests own activationConditions.");
             }
         }
 

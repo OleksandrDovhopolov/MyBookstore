@@ -1,4 +1,5 @@
 using System;
+using Book.Sell.Conditions;
 using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
@@ -6,6 +7,7 @@ using Book.Sell.Services.Director;
 using Book.Sell.UI;
 using Book.Sell.UI.Customer;
 using Game.Configs;
+using Game.Conditions.API;
 using Game.Decor.Services;
 using Game.Quest.API;
 using UnityEngine;
@@ -186,7 +188,7 @@ namespace Game.Bootstrap
             // Opens DialogWindow when a scripted dialogue starts (GAME-6 §Этап 5). Same wiring as the
             // minigame presenter: IUIManager from the parent scope, controller via WindowArgs. The window
             // owns completion (CompleteDialogue on end); the presenter is the safety-net if opening fails.
-            builder.Register<DialogueQuestActivator>(Lifetime.Singleton);
+            builder.Register<IConditionFactory, DialogueDeliveredConditionFactory>(Lifetime.Singleton);
             builder.RegisterEntryPoint<DialoguePresenter>(Lifetime.Singleton);
 
             // Debug screen. Registered only if present in the scene, so the project runs before the UI

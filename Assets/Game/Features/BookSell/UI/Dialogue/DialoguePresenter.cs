@@ -5,6 +5,7 @@ using Book.Sell.Domain;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
 using Dialogue;
+using Game.Quest.API;
 using Game.UI;
 using UnityEngine;
 using VContainer.Unity;
@@ -33,19 +34,19 @@ namespace Book.Sell.UI
         private readonly ISalesDayController _controller;
         private readonly IUIManager _uiManager;
         private readonly IDeliveredDialoguesService _delivered;
-        private readonly DialogueQuestActivator _questActivator;
+        private readonly IQuestReevaluationGate _questReevaluationGate;
         private readonly CancellationTokenSource _cts = new();
 
         public DialoguePresenter(
             ISalesDayController controller,
             IUIManager uiManager = null,
             IDeliveredDialoguesService delivered = null,
-            DialogueQuestActivator questActivator = null)
+            IQuestReevaluationGate questReevaluationGate = null)
         {
             _controller = controller;
             _uiManager = uiManager;
             _delivered = delivered;
-            _questActivator = questActivator;
+            _questReevaluationGate = questReevaluationGate;
         }
 
         public void Start()
@@ -80,7 +81,7 @@ namespace Book.Sell.UI
                 var window = await _uiManager.ShowAsync<DialogWindow>(
                     new DialogWindowArgs(
                         payload,
-                        () => CompleteDialogueAfterQuestActivation(payload?.DialogueId).Forget()),
+                        () => CompleteDialogueAfterDelivery(payload?.DialogueId).Forget()),
                     _cts.Token);
 
                 if (window == null)
@@ -107,16 +108,18 @@ namespace Book.Sell.UI
             }
         }
 
-        private async UniTaskVoid CompleteDialogueAfterQuestActivation(string dialogueId)
+        private async UniTaskVoid CompleteDialogueAfterDelivery(string dialogueId)
         {
             try
             {
-                if (_questActivator != null)
-                    await _questActivator.ActivateForDialogueAsync(dialogueId, CancellationToken.None);
+                if (_delivered != null && !string.IsNullOrWhiteSpace(dialogueId))
+                    await _delivered.MarkDeliveredDeferredAsync(dialogueId, CancellationToken.None);
+
+                _questReevaluationGate?.RequestReevaluation();
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{LogPrefix} Failed to activate quest for dialogue '{dialogueId}': {ex}");
+                Debug.LogError($"{LogPrefix} Failed to complete dialogue delivery '{dialogueId}': {ex}");
             }
             finally
             {

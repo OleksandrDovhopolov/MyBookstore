@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Book.Sell.API;
+using Book.Sell.Conditions;
 using Cysharp.Threading.Tasks;
 using Game.Conditions.API;
 using Game.Conditions.Services;
@@ -24,6 +26,7 @@ namespace Game.Quest.Tests.ConditionsIntegration
     {
         private const string Knife = "knife";
         private const string KnifeWall = "knife_wall";
+        private const string Dialogue = "eddy1";
 
         private static readonly JObject Tree = new JObject
         {
@@ -31,42 +34,48 @@ namespace Game.Quest.Tests.ConditionsIntegration
             {
                 new JObject { ["type"] = HaveItemConditionFactory.TypeId, ["itemId"] = Knife, ["min"] = 1 },
                 new JObject { ["type"] = DecorEquippedConditionFactory.TypeId, ["decorId"] = KnifeWall },
-                new JObject { ["type"] = WeatherIsConditionFactory.TypeId, ["weatherId"] = "snow" }
+                new JObject { ["type"] = WeatherIsConditionFactory.TypeId, ["weatherId"] = "snow" },
+                new JObject { ["type"] = DialogueDeliveredConditionFactory.TypeId, ["dialogueId"] = Dialogue }
             }
         };
 
-        private static ICondition Build(FakeInventory inv, FakeDecor decor, FakeWeather weather)
+        private static ICondition Build(FakeInventory inv, FakeDecor decor, FakeWeather weather, FakeDelivered delivered)
         {
             var registry = new ConditionFactoryRegistry(new IConditionFactory[]
             {
                 new HaveItemConditionFactory(inv),
                 new DecorEquippedConditionFactory(decor),
-                new WeatherIsConditionFactory(() => weather)
+                new WeatherIsConditionFactory(() => weather),
+                new DialogueDeliveredConditionFactory(delivered)
             });
             return new ConditionParser(registry).Parse(Tree);
         }
 
         [Test]
-        public void AllThree_MustHold_ForCompositeToBeMet()
+        public void AllLeafConditions_MustHold_ForCompositeToBeMet()
         {
             var inv = new FakeInventory();
             var decor = new FakeDecor();
             var weather = new FakeWeather { WeatherId = "clear" };
-            var condition = Build(inv, decor, weather);
+            var delivered = new FakeDelivered();
+            var condition = Build(inv, decor, weather, delivered);
 
             Assert.IsFalse(condition.Evaluate().IsMet, "nothing satisfied");
 
             inv.Counts[Knife] = 1;
-            Assert.IsFalse(condition.Evaluate().IsMet, "decor + weather still missing");
+            Assert.IsFalse(condition.Evaluate().IsMet, "decor + weather + dialogue still missing");
 
             decor.Active.Add(KnifeWall);
-            Assert.IsFalse(condition.Evaluate().IsMet, "weather still wrong");
+            Assert.IsFalse(condition.Evaluate().IsMet, "weather + dialogue still missing");
 
             weather.WeatherId = "snow";
+            Assert.IsFalse(condition.Evaluate().IsMet, "dialogue still missing");
+
+            delivered.Delivered.Add(Dialogue);
             var result = condition.Evaluate();
-            Assert.IsTrue(result.IsMet, "all three satisfied");
-            Assert.AreEqual(3, result.Current, "composite reports met-children count");
-            Assert.AreEqual(3, result.Target);
+            Assert.IsTrue(result.IsMet, "all leaf conditions satisfied");
+            Assert.AreEqual(4, result.Current, "composite reports met-children count");
+            Assert.AreEqual(4, result.Target);
         }
 
         // ----- fakes (each seam minimal) -----
@@ -105,6 +114,16 @@ namespace Game.Quest.Tests.ConditionsIntegration
         {
             public string WeatherId = string.Empty;
             public string GetCurrentWeatherId() => WeatherId;
+        }
+
+        private sealed class FakeDelivered : IDeliveredDialoguesService
+        {
+            public readonly HashSet<string> Delivered = new(StringComparer.Ordinal);
+            public bool IsDelivered(string dialogueId) => dialogueId != null && Delivered.Contains(dialogueId);
+            public UniTask MarkDeliveredAsync(string dialogueId, CancellationToken ct) => UniTask.CompletedTask;
+            public UniTask MarkDeliveredDeferredAsync(string dialogueId, CancellationToken ct) => UniTask.CompletedTask;
+            public UniTask CommitAsync(CancellationToken ct) => UniTask.CompletedTask;
+            public void DiscardDeferred() { }
         }
     }
 }

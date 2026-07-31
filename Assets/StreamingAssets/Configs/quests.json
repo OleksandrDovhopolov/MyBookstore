@@ -7,7 +7,7 @@
     "titleKey": "quest.q_intro_eddi.title",
     "descriptionKey": "quest.q_intro_eddi.desc",
     "nextQuestIds": [],
-    "activationConditions": { "type": "manual" },
+    "activationConditions": { "type": "dialogueDelivered", "dialogueId": "eddy1" },
     "failConditions": null,
     "tasks": [
       {
@@ -44,7 +44,7 @@
     "titleKey": "quest.q_intro_milly.title",
     "descriptionKey": "quest.q_intro_milly.desc",
     "nextQuestIds": [],
-    "activationConditions": { "type": "manual" },
+    "activationConditions": { "type": "dialogueDelivered", "dialogueId": "milly1" },
     "failConditions": null,
     "tasks": [
       {
@@ -67,7 +67,7 @@
     "titleKey": "quest.q_tara_kids.title",
     "descriptionKey": "quest.q_tara_kids.desc",
     "nextQuestIds": [],
-    "activationConditions": { "type": "manual" },
+    "activationConditions": { "type": "dialogueDelivered", "dialogueId": "tara_quest_1" },
     "failConditions": null,
     "tasks": [
       {

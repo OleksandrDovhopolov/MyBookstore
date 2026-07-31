@@ -54,7 +54,6 @@
   },
   {
     "id": "eddy1",
-    "activatesQuestId": "q_intro_eddi",
     "nodes": [
       {
         "nodeId": "root",
@@ -128,7 +127,6 @@
   },
   {
     "id": "milly1",
-    "activatesQuestId": "q_intro_milly",
     "nodes": [
       {
         "nodeId": "root",
@@ -142,7 +140,6 @@
   },
   {
     "id": "tara_quest_1",
-    "activatesQuestId": "q_tara_kids",
     "nodes": [
       {
         "nodeId": "root",

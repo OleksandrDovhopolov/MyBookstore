@@ -17,6 +17,7 @@
         "Game.Inventory.API",
         "Game.Resources.API",
         "Game.SalesStats.API",
+        "Game.Conditions.API",
         "Game.Quest.API",
         "Game.GameplayUI.Signals",
         "Dialogue"

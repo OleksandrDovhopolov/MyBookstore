@@ -25,8 +25,8 @@ CustomerScriptConfig            ScriptedCustomerSpawner отбирает скр�
 QuestCharacterArchetype  ──▶  DialogStep (держит interaction lock)
         │
         ▼
-DialogueConfig.ActivatesQuestId ──▶ DialogueQuestActivator ──▶ IQuestsService.TryActivateAsync
-        │                            (только для activationConditions = "manual")
+IDeliveredDialoguesService.IsDelivered(dialogueId) ──▶ activationConditions: dialogueDelivered
+        │                            (DialoguePresenter marks delivered, then requests quest re-evaluation)
         ▼
 QuestsService: Pending ─▶ Active ─▶ (все задачи Completed) ─▶ ReadyToAward ─▶ Awarded (auto)
         │
@@ -56,7 +56,7 @@ QuestRewardBridge (ISaveHook.BeforeSaveAsync) ──▶ IRewardGrantService
 | | |
 |---|---|
 | **Вызов** | `customer_scripts.json` → `eddi_quest_intro`, `dayIndex: 2`, персонаж `eddi` |
-| **Активация** | диалог `eddy_quest_1` → `activatesQuestId`; `activationConditions: manual` |
+| **Активация** | `activationConditions: { type: dialogueDelivered, dialogueId: eddy1 }` |
 | **Задачи** | `soldGenre` Crime 10 · Drama 10 · Classic 10 · Fantasy 15 |
 | **Награда** | `fuel_canister` ×2 (consumable) |
 | **Дальше** | канистры идут в `unlockCost` любой локации |
@@ -76,7 +76,7 @@ QuestRewardBridge (ISaveHook.BeforeSaveAsync) ──▶ IRewardGrantService
 | | |
 |---|---|
 | **Вызов** | `milly_intro`, `dayIndex: 2`, персонаж `milly` |
-| **Активация** | диалог `milly1` → `activatesQuestId`; `manual` |
+| **Активация** | `activationConditions: { type: dialogueDelivered, dialogueId: milly1 }` |
 | **Задача** | `activePickGenre` Fact 5 — пять **отличных** активных рекомендаций Fact-книгой |
 | **Награда** | `milly_letter` (quest_item) + `fuel_canister` ×1 |
 | **Дальше** | `milly_letter` ×1 + `fuel_canister` ×2 → **Кампус** |
@@ -101,7 +101,7 @@ QuestRewardBridge (ISaveHook.BeforeSaveAsync) ──▶ IRewardGrantService
 | | |
 |---|---|
 | **Вызов** | `tara_quest_intro`, `dayIndex: 5`, персонаж `tara` |
-| **Активация** | диалог `tara_quest_1` → `activatesQuestId`; `manual` |
+| **Активация** | `activationConditions: { type: dialogueDelivered, dialogueId: tara_quest_1 }` |
 | **Задача** | `activePickGenre` Kids 5 |
 | **Награда** | `port_trade_permit` (quest_item) + `lavender` (decor) |
 | **Дальше** | `port_trade_permit` ×1 + `fuel_canister` ×2 → **Порт** |

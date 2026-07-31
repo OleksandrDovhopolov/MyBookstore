@@ -14,9 +14,6 @@ namespace Game.Configs.Models
     {
         public string Id { get; set; }
 
-        /// <summary>Quest activated once this dialogue completes. Optional; null/empty = no quest.</summary>
-        public string ActivatesQuestId { get; set; }
-
         /// <summary>Dialogue nodes. The first element is the entry node.</summary>
         public DialogueNodeConfig[] Nodes { get; set; }
     }
