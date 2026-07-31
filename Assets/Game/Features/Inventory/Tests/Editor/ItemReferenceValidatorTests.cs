@@ -221,6 +221,32 @@ namespace Game.Inventory.Tests.Editor
         }
 
         [Test]
+        public void EconomyDayRewardCountsAsAGrant()
+        {
+            var configs = new FakeConfigsService()
+                .Set(new ConsumableConfig { Id = "postcard" })
+                .Set(new EconomyConfig
+                {
+                    Id = EconomyConfig.SingletonId,
+                    DayCompletionRewards = new[]
+                    {
+                        new RewardItemData
+                        {
+                            Id = "postcard",
+                            Category = InventoryCategories.Consumable,
+                            Amount = 1,
+                            Kind = RewardKind.InventoryItem
+                        }
+                    }
+                });
+
+            var report = new ItemReferenceValidator(configs).Validate();
+
+            CollectionAssert.IsEmpty(report.Errors);
+            CollectionAssert.IsEmpty(report.Warnings);
+        }
+
+        [Test]
         public void NoReachabilityWarning_ForBooksAndDecor()
         {
             // Books are seeded at runtime and decor reachability is DecorConfigValidator's job.

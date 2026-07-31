@@ -5,6 +5,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
+using Game.Inventory.API;
 using Game.Rewards.API;
 using Game.Shop.API;
 using Game.Shop.UI;
@@ -93,6 +94,30 @@ namespace Game.Shop.Tests.Editor
             Assert.AreEqual("20", consumables[0].PriceText);
             Assert.IsTrue(consumables[0].IsAvailable);
             Assert.IsFalse(consumables[0].IsDecor);
+        }
+
+        [Test]
+        public void GetConsumableOffers_UsesInventoryRewardIcon_WhenRewardCategoryDiffersFromStorefront()
+        {
+            var lot = new ShopLot(
+                "newspaper_quest_item_map",
+                NewspaperShopLotIds.StorefrontConsumables,
+                new ShopPrice("gold", 200),
+                "quest_item_map",
+                ShopLotLimit.Disposable(1),
+                "Map",
+                "Route to the village");
+            var shop = new FakeShopService(new[] { lot }, unavailableLotId: null);
+            var configs = new FakeConfigsService(new Dictionary<string, RewardItemData>
+            {
+                ["newspaper_quest_item_map"] = RewardItem("map", InventoryCategories.QuestItem),
+            });
+            var source = new ShopOfferSource(shop, configs);
+
+            var offers = source.GetConsumableOffers();
+
+            Assert.AreEqual(1, offers.Count);
+            Assert.AreEqual("map", offers[0].IconId);
         }
 
         private static RewardItemData RewardItem(string id, string category) =>

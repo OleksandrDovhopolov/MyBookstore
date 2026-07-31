@@ -14,6 +14,7 @@
         "Game.Conditions",
         "Game.Quest.API",
         "Game.Inventory.API",
+        "Game.Rewards.API",
         "Game.Preparation",
         "Game.Decor.API",
         "DayCycle",

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Results.Domain;
 using Game.DayCycle.Results.Services;
@@ -24,6 +25,7 @@ namespace Game.DayCycle.Results.UI
     public sealed class ResultsWindow : WindowController<ResultsWindowView>
     {
         private IResultsSessionService _service;
+        private IConfigsService _configs;
         private IUiSpriteProvider _uiSprites;
         private IResourceAnimationService _resourceAnimations;
         private IPublisher<ResourceCounterCountUpRequested> _countUpPublisher;
@@ -34,11 +36,13 @@ namespace Game.DayCycle.Results.UI
         [Inject]
         public void InjectServices(
             IResultsSessionService service,
+            IConfigsService configs = null,
             IUiSpriteProvider uiSprites = null,
             IResourceAnimationService resourceAnimations = null,
             IPublisher<ResourceCounterCountUpRequested> countUpPublisher = null)
         {
             _service = service;
+            _configs = configs;
             _uiSprites = uiSprites;
             _resourceAnimations = resourceAnimations;
             _countUpPublisher = countUpPublisher;
@@ -111,7 +115,9 @@ namespace Game.DayCycle.Results.UI
             _summary = summary;
             View.SetDay(summary?.Day ?? 0);
             View.SetEarnedGold(summary?.GoldEarned ?? 0);
-            View.SetSoldGenres(BuildSoldGenreRewards(summary));
+            var rewards = BuildSoldGenreRewards(summary);
+            rewards.AddRange(BuildDayCompletionRewards());
+            View.SetSoldGenres(rewards);
             LoadSoldGenreIconsAsync(_cts.Token).Forget();
 
             if (View.NextDayButton != null) View.NextDayButton.interactable = true;
@@ -188,6 +194,28 @@ namespace Game.DayCycle.Results.UI
             }
 
             return rewards;
+        }
+
+        private List<RewardSpecResource> BuildDayCompletionRewards()
+        {
+            var rewards = _configs?.Get<EconomyConfig>(EconomyConfig.SingletonId)?.DayCompletionRewards;
+            if (rewards == null || rewards.Length == 0) return new List<RewardSpecResource>();
+
+            var items = new List<RewardItem>(rewards.Length);
+            for (var i = 0; i < rewards.Length; i++)
+            {
+                var reward = rewards[i];
+                if (reward == null) continue;
+                if (string.IsNullOrWhiteSpace(reward.Id)) continue;
+                if (reward.Amount <= 0) continue;
+                if (reward.Kind != RewardKind.InventoryItem) continue;
+
+                items.Add(RewardItem.InventoryItem(reward.Id, reward.Category, reward.Amount));
+            }
+
+            return items.Count == 0
+                ? new List<RewardSpecResource>()
+                : RewardsWindowRewardBuilder.Build(new RewardSpec("day_completion_rewards", items), _configs);
         }
 
         private async UniTaskVoid LoadSoldGenreIconsAsync(CancellationToken ct)

@@ -19,7 +19,7 @@ namespace Game.Inventory.Services
     /// runtime; this catches it up front instead.
     /// <para>
     /// Catalog = quest_items.json + consumables.json + decors.json + books_converted.json. References are collected
-    /// from quest rewards, shop lots, <see cref="LocationConfig.UnlockCost"/>, and every
+    /// from quest rewards, shop lots, economy day-completion rewards, <see cref="LocationConfig.UnlockCost"/>, and every
     /// <c>haveItem</c> node inside a condition tree. Awaits <see cref="IConfigsService.WarmupAsync"/> first
     /// so configs are loaded regardless of entry-point registration order. In Editor errors throw to block
     /// Play mode; in runtime builds they are logged and the broken reference stays broken downstream.
@@ -122,6 +122,7 @@ namespace Game.Inventory.Services
             var references = new List<ItemReference>();
             CollectQuestReferences(references, report);
             CollectShopReferences(references);
+            CollectEconomyReferences(references);
             CollectLocationReferences(references, report);
             return references;
         }
@@ -192,6 +193,23 @@ namespace Game.Inventory.Services
 
                     references.Add(ItemReference.Grant(item.Id, item.Category, $"Shop lot '{lot.Id}'"));
                 }
+            }
+        }
+
+        private void CollectEconomyReferences(List<ItemReference> references)
+        {
+            var rewards = _configs.Get<EconomyConfig>(EconomyConfig.SingletonId)?.DayCompletionRewards;
+            if (rewards == null) return;
+
+            for (var i = 0; i < rewards.Length; i++)
+            {
+                var item = rewards[i];
+                if (item == null || item.Kind != RewardKind.InventoryItem) continue;
+
+                references.Add(ItemReference.Grant(
+                    item.Id,
+                    item.Category,
+                    "Economy day-completion reward"));
             }
         }
 
@@ -315,8 +333,8 @@ namespace Game.Inventory.Services
         }
 
         /// <summary>
-        /// Quest items and consumables reach the player only through quest rewards and shop lots, so one that
-        /// is declared but never granted is dead content. Books are seeded/expanded at runtime and decor
+        /// Quest items and consumables reach the player only through quest rewards, shop lots, and economy
+        /// day-completion rewards, so one that is declared but never granted is dead content. Books are seeded/expanded at runtime and decor
         /// reachability is already covered by <c>DecorConfigValidator</c> — both are skipped here.
         /// </summary>
         private static void ValidateReachability(
@@ -338,7 +356,7 @@ namespace Game.Inventory.Services
                 if (!IsReachabilityTracked(pair.Value)) continue;
                 if (granted.Contains(pair.Key)) continue;
                 unreachable.Add($"Item '{pair.Key}' ({pair.Value}) is not granted by any quest reward or " +
-                                "shop lot — unreachable by the player.");
+                                "shop lot or day-completion reward - unreachable by the player.");
             }
 
             // Dictionary order is unspecified; sort so the console output is stable between runs.

@@ -184,6 +184,18 @@
     "limit": { "mode": "Unlimited" }
   },
   {
+    "id": "newspaper_quest_item_map",
+    "storefrontId": "newspaper.consumables",
+    "displayName": "Map",
+    "description": "Route to the village. You cannot get there without it.",
+    "price": { "currency": "gold", "amount": 200 },
+    "rewardId": "quest_item_map",
+    "rewardItems": [
+      { "id": "map", "category": "quest_item", "amount": 1, "kind": "InventoryItem" }
+    ],
+    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+  },
+  {
     "id": "tutorial_book_box_heartfelt",
     "storefrontId": "tutorial",
     "displayName": "Tutorial Book Box",

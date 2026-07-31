@@ -136,6 +136,7 @@ namespace Game.Cheat
                 new DecorationCheatModule(_uiManager, _inventory, _configs, destroyCt),
                 new QuestItemCheatModule(_inventory, _configs, destroyCt),
                 new ConsumableCheatModule(_inventory, _configs, destroyCt),
+                new StoryItemCheatModule(_inventory, destroyCt),
                 new ResourcesCheatModule(_resources, _resourceAnimations, _countUpPublisher, destroyCt),
                 new SalesStatsCheatModule(_salesStatsRecorder, _salesStatsReader, _configs, _save, destroyCt),
                 new DialogueCheatModule(_uiManager, _configs),

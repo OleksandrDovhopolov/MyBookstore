@@ -4,6 +4,9 @@
     "baseSaleChance": 0.05,
     "perCopyChance": 0.05,
     "capChance": 0.50,
-    "locationDemandMultiplier": 1.5
+    "locationDemandMultiplier": 1.5,
+    "dayCompletionRewards": [
+      { "id": "postcard", "category": "consumable", "amount": 1, "kind": "InventoryItem" }
+    ]
   }
 ]

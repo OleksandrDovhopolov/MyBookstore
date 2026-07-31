@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Inventory.API;
+using Game.Rewards.API;
 using Game.Shop.API;
 using UnityEngine;
 
@@ -68,18 +69,28 @@ namespace Game.Shop.UI
 
             if (_configs.TryGet<ShopConfig>(lotId, out var cfg) && cfg?.RewardItems != null)
             {
+                string firstInventoryItemId = null;
+
                 for (var i = 0; i < cfg.RewardItems.Length; i++)
                 {
                     var item = cfg.RewardItems[i];
-                    if (item != null
-                        && string.Equals(item.Category, categoryId, StringComparison.OrdinalIgnoreCase)
-                        && !string.IsNullOrEmpty(item.Id))
+                    if (item == null
+                        || item.Kind != RewardKind.InventoryItem
+                        || string.IsNullOrEmpty(item.Id))
+                        continue;
+
+                    firstInventoryItemId ??= item.Id;
+
+                    if (string.Equals(item.Category, categoryId, StringComparison.OrdinalIgnoreCase))
                         return item.Id;
                 }
+
+                if (!string.IsNullOrEmpty(firstInventoryItemId))
+                    return firstInventoryItemId;
             }
 
             Debug.LogWarning(
-                $"[ShopBackedNewspaperOfferSource] No '{categoryId}' reward item for lot '{lotId}'.");
+                $"[ShopBackedNewspaperOfferSource] No inventory reward item for lot '{lotId}'.");
             return null;
         }
 
