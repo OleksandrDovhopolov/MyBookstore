@@ -1,16 +1,12 @@
 {
-    "name": "Game.Bootstrap.Loading.Tests.Editor",
-    "rootNamespace": "Game.Bootstrap.Loading.Tests.Editor",
+    "name": "Game.Location.Tests.Editor",
+    "rootNamespace": "Game.Location.Tests.Editor",
     "references": [
         "UniTask",
-        "VContainer",
-        "Game.Bootstrap",
-        "Game.Bootstrap.Loading",
-        "Game.LocationVisits.API",
+        "Configs",
         "Game.Location.API",
-        "Game.Tutorial.API",
-        "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "Game.Location",
+        "UnityEngine.TestRunner"
     ],
     "includePlatforms": [
         "Editor"
@@ -19,7 +15,8 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "nunit.framework.dll"
+        "nunit.framework.dll",
+        "Newtonsoft.Json.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [

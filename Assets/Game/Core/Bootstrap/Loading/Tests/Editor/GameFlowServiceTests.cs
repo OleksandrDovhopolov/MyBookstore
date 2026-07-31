@@ -6,6 +6,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap;
 using Game.Bootstrap.Loading;
+using Game.Location.API;
 using Game.LocationVisits.API;
 using Game.Tutorial.API;
 using NUnit.Framework;
@@ -87,6 +88,37 @@ namespace Game.Bootstrap.Loading.Tests.Editor
 
             Assert.That(harness.TutorialGate.BlockCount, Is.EqualTo(0));
             Assert.That(harness.TutorialGate.ReleaseCount, Is.EqualTo(0));
+        }
+
+        [UnityTest]
+        public IEnumerator EnterLocationAsync_PreloadsAfterCoverBeforeSceneLoad()
+        {
+            using var harness = new Harness();
+            harness.LocationPrefabs.OnPreload = () =>
+            {
+                Assert.That(harness.Animation.CoverCount, Is.EqualTo(1));
+                Assert.That(harness.SceneTransition.AdditiveLoadCount, Is.EqualTo(0));
+            };
+
+            yield return ToCoroutine(harness.Flow.EnterLocationAsync("loc_downtown", CancellationToken.None));
+
+            Assert.That(harness.LocationPrefabs.PreloadedLocationIds, Is.EqualTo(new[] { "loc_downtown" }));
+            Assert.That(harness.SceneTransition.AdditiveLoadCount, Is.EqualTo(1));
+        }
+
+        [UnityTest]
+        public IEnumerator EnterLocationAsync_PropagatesPreloadCancellation()
+        {
+            using var harness = new Harness();
+            harness.LocationPrefabs.CancelOnPreload = true;
+
+            var task = harness.Flow.EnterLocationAsync("loc_downtown", CancellationToken.None).AsTask();
+            while (!task.IsCompleted)
+                yield return null;
+
+            Assert.That(IsOperationCanceled(task), Is.True);
+            Assert.That(harness.SceneTransition.AdditiveLoadCount, Is.EqualTo(0));
+            Assert.That(harness.Visits.RecordedLocationIds, Is.Empty);
         }
 
         [UnityTest]
@@ -173,9 +205,10 @@ namespace Game.Bootstrap.Loading.Tests.Editor
                 Animation = new FakeTransitionAnimationService();
                 Visits = new FakeLocationVisitService();
                 TutorialGate = new FakeTutorialAutoStartGate();
+                LocationPrefabs = new FakeLocationPrefabProvider();
                 _settings = ScriptableObject.CreateInstance<GameFlowSettings>();
 
-                Flow = new GameFlowService(SceneTransition, Animation, _settings, Visits, TutorialGate);
+                Flow = new GameFlowService(SceneTransition, Animation, _settings, Visits, TutorialGate, LocationPrefabs);
 
                 var scope = LifetimeScope.Create(_ => { }, "Test LifetimeScope");
                 _scopeRoot = scope.gameObject;
@@ -195,6 +228,7 @@ namespace Game.Bootstrap.Loading.Tests.Editor
             public FakeTransitionAnimationService Animation { get; }
             public FakeLocationVisitService Visits { get; }
             public FakeTutorialAutoStartGate TutorialGate { get; }
+            public FakeLocationPrefabProvider LocationPrefabs { get; }
 
             public void SetLocationLoaded(bool loaded)
             {
@@ -244,11 +278,16 @@ namespace Game.Bootstrap.Loading.Tests.Editor
 
         private sealed class FakeTransitionAnimationService : ITransitionAnimationService
         {
+            public int CoverCount { get; private set; }
             public int RevealCount { get; private set; }
             public bool CancelOnReveal { get; set; }
             public Action OnRevealStarted { get; set; }
 
-            public UniTask PlayCoverAsync(CancellationToken ct) => UniTask.CompletedTask;
+            public UniTask PlayCoverAsync(CancellationToken ct)
+            {
+                CoverCount++;
+                return UniTask.CompletedTask;
+            }
 
             public async UniTask PlayRevealAsync(CancellationToken ct)
             {
@@ -259,6 +298,28 @@ namespace Game.Bootstrap.Loading.Tests.Editor
 
                 await UniTask.CompletedTask;
             }
+        }
+
+        private sealed class FakeLocationPrefabProvider : ILocationPrefabProvider
+        {
+            public List<string> PreloadedLocationIds { get; } = new();
+            public Action OnPreload { get; set; }
+            public bool CancelOnPreload { get; set; }
+            public string LastPreloadedLocationId { get; private set; }
+
+            public UniTask<GameObject> PreloadAsync(string locationId, CancellationToken ct)
+            {
+                OnPreload?.Invoke();
+                if (CancelOnPreload)
+                    throw new OperationCanceledException(ct);
+
+                LastPreloadedLocationId = locationId;
+                PreloadedLocationIds.Add(locationId);
+                return UniTask.FromResult<GameObject>(null);
+            }
+
+            public GameObject GetPreloaded(string locationId) => null;
+            public bool IsPreloaded(string locationId) => false;
         }
 
         private sealed class FakeLocationVisitService : ILocationVisitService

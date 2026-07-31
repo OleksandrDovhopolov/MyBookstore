@@ -20,6 +20,7 @@
         "DayCycle",
         "Game.Resources.API",
         "Game.SalesStats.API",
+        "Game.Location.API",
         "Dialogue",
         "MessagePipe",
         "Game.GameplayUI.Signals"

@@ -9,6 +9,7 @@ using Book.Sell.UI.Customer;
 using Game.Configs;
 using Game.Conditions.API;
 using Game.Decor.Services;
+using Game.Location.API;
 using Game.Quest.API;
 using UnityEngine;
 using VContainer;
@@ -65,13 +66,7 @@ namespace Game.Bootstrap
         public static void RegisterBookSell(
             this IContainerBuilder builder,
             CustomerVisual customerVisualPrefab,
-            Transform customerSpawnRoot,
-            Transform customerEntryLeft = null,
-            Transform customerEntryRight = null,
-            Transform customerShopApproach = null,
-            Transform[] customerLaneAnchors = null,
-            Transform customerExitLeft = null,
-            Transform customerExitRight = null,
+            ILocationContext locationContext,
             SalesTuningConfig salesTuningConfig = null,
             SalesTrafficConfig salesTrafficConfig = null)
         {
@@ -164,15 +159,8 @@ namespace Game.Bootstrap
             builder.Register<ISalesDayController, SalesDayController>(Lifetime.Singleton);
 
             // Customer visualization + world-space thought bubbles (Phase 0 of World HUD).
-            builder.RegisterInstance(new CustomerVisualRegistryConfig(
-                customerVisualPrefab,
-                customerSpawnRoot,
-                customerEntryLeft,
-                customerEntryRight,
-                customerShopApproach,
-                customerLaneAnchors,
-                customerExitLeft,
-                customerExitRight));
+            builder.RegisterInstance(locationContext).As<ILocationContext>();
+            builder.RegisterInstance(new CustomerVisualRegistryConfig(customerVisualPrefab, locationContext));
             builder.Register<CustomerVisualRegistry>(Lifetime.Singleton)
                 .AsImplementedInterfaces() // exposes ICustomerVisualRegistry, IStartable, IDisposable
                 .AsSelf();

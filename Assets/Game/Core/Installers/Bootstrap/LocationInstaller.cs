@@ -1,8 +1,12 @@
 using Book.Sell.Services;
 using Book.Sell.UI.Customer;
+using Game.Location.API;
+using Game.Location.Runtime;
 using Game.Preparation.Services;
+using Infrastructure;
 using UnityEngine;
 using VContainer;
+using VContainer.Unity;
 
 namespace Game.Bootstrap
 {
@@ -23,6 +27,8 @@ namespace Game.Bootstrap
         [SerializeField] private Transform[] _customerLaneAnchors;
         [SerializeField] private Transform _customerExitLeft;
         [SerializeField] private Transform _customerExitRight;
+        [Tooltip("Parent under LocationRoot where the preloaded location prefab is mounted.")]
+        [SerializeField] private Transform _locationVisualRoot;
 
         [Header("BookSell — Tuning")]
         [Tooltip("Sales timing/pacing asset. Leave empty to use code defaults.")]
@@ -38,17 +44,69 @@ namespace Game.Bootstrap
             // т.к. единственный потребитель — SalesDayController (BookSell), который тоже здесь.
             builder.Register<ISalesSetupProvider, PreparationSalesSetupProvider>(Lifetime.Singleton);
 
-            builder.RegisterBookSell(
-                _customerVisualPrefab,
+            var locationContext = new LocationContextBinder(new SceneLocationContext(
                 _customerSpawnRoot,
                 _customerEntryLeft,
                 _customerEntryRight,
                 _customerShopApproach,
                 _customerLaneAnchors,
                 _customerExitLeft,
-                _customerExitRight,
+                _customerExitRight));
+
+            builder.RegisterInstance(locationContext).AsSelf();
+            builder.RegisterBuildCallback(resolver => MountLocationPrefab(resolver, locationContext));
+
+            builder.RegisterBookSell(
+                _customerVisualPrefab,
+                locationContext,
                 _salesTuningConfig,
                 _salesTrafficConfig);
+        }
+
+        private void MountLocationPrefab(IObjectResolver resolver, LocationContextBinder context)
+        {
+            if (_locationVisualRoot == null)
+            {
+                Debug.LogWarning("[LocationPrefab] Location visual root is not assigned. Using scene fallback anchors.");
+                return;
+            }
+
+            var provider = resolver.ResolveOrDefault<ILocationPrefabProvider>();
+            var locationId = provider?.LastPreloadedLocationId;
+            var prefab = provider?.GetPreloaded(locationId);
+
+#if UNITY_EDITOR
+            if (prefab == null)
+            {
+                try
+                {
+                    prefab = ProdAddressablesWrapper.LoadSync<GameObject>("location/park");
+                    locationId = "loc_park";
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogWarning($"[LocationPrefab] Editor fallback load failed: {ex.Message}. Using scene fallback anchors.");
+                }
+            }
+#endif
+
+            if (prefab == null)
+            {
+                Debug.LogWarning("[LocationPrefab] No preloaded location prefab. Using scene fallback anchors.");
+                return;
+            }
+
+            var instance = resolver.Instantiate(prefab, _locationVisualRoot, false);
+            instance.name = prefab.name;
+
+            var controller = instance.GetComponent<LocationController>();
+            if (controller == null)
+            {
+                Debug.LogWarning($"[LocationPrefab] Mounted '{prefab.name}' for '{locationId}', but it has no LocationController. Using scene fallback anchors.");
+                return;
+            }
+
+            context.Bind(controller);
         }
     }
 }

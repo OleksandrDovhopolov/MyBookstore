@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
+using Game.Location.API;
 using Game.LocationVisits.API;
 using Game.Tutorial.API;
 using UnityEngine;
@@ -25,6 +26,7 @@ namespace Game.Bootstrap
         private readonly GameFlowSettings _settings;
         private readonly ILocationVisitService _locationVisits;
         private readonly ITutorialAutoStartGate _tutorialAutoStartGate;
+        private readonly ILocationPrefabProvider _locationPrefabs;
 
         private GameObject _hubRoot;
         private LifetimeScope _globalScope;
@@ -36,13 +38,15 @@ namespace Game.Bootstrap
             ITransitionAnimationService animation,
             GameFlowSettings settings,
             ILocationVisitService locationVisits,
-            ITutorialAutoStartGate tutorialAutoStartGate = null)
+            ITutorialAutoStartGate tutorialAutoStartGate = null,
+            ILocationPrefabProvider locationPrefabs = null)
         {
             _sceneTransition = sceneTransition ?? throw new ArgumentNullException(nameof(sceneTransition));
             _animation = animation ?? throw new ArgumentNullException(nameof(animation));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _locationVisits = locationVisits; // optional-safe: cleared best-effort on hub return
             _tutorialAutoStartGate = tutorialAutoStartGate;
+            _locationPrefabs = locationPrefabs;
         }
 
         public bool IsTransitioning => _isTransitioning;
@@ -71,6 +75,8 @@ namespace Game.Bootstrap
                 }
 
                 await _animation.PlayCoverAsync(ct);
+                if (_locationPrefabs != null)
+                    await _locationPrefabs.PreloadAsync(locationId, ct);
 
                 var global = ResolveGlobalScope();
                 using (LifetimeScope.EnqueueParent(global))

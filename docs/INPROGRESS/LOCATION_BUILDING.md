@@ -67,7 +67,7 @@ Post-process (paper grain + vignette) накладывается **после** 
 
 ## 4. Структура префаба локации
 
-Каждая локация — **один Addressable префаб**, адрес лежит в `LocationConfig.PrefabAddress` (см. [Configs.Models.LocationConfig](../../Assets/Game/Features/Configs/Models/LocationConfig.cs)).
+Каждая локация — **один Addressable префаб**, адрес лежит в `LocationConfig.LocationAddress` (см. [Configs.Models.LocationConfig](../../Assets/Game/Features/Configs/Models/LocationConfig.cs)).
 
 Шаблон иерархии:
 

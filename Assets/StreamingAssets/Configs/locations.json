@@ -3,6 +3,7 @@
     "id": "loc_park",
     "displayName": "Park",
     "entryCost": 0,
+    "locationAddress": "location/park",
     "demandGenres": [
       "Drama",
       "Kids",

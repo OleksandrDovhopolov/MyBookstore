@@ -88,6 +88,7 @@ namespace Game.Bootstrap
             builder.RegisterConditions();          // domain-agnostic condition engine (registry + parser)
             builder.RegisterSalesStats();          // persistent per-genre sold counters + "soldGenre" condition factory
             builder.RegisterLocationVisits();      // persistent per-location visit counts + "visitLocation"/"locationIs" factories
+            builder.RegisterLocationPrefabs();     // long-lived Addressables prefab cache for LocationScene visuals/anchors
             builder.RegisterLocationUnlock();      // location unlock states/purchase over the condition engine
             builder.RegisterLocationEntry();       // per-visit entry fee calculator (location base + decor delta)
             builder.RegisterQuest();               // in-memory quest lifecycle over the condition engine (ISaveHook init)

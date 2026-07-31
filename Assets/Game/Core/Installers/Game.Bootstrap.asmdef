@@ -16,6 +16,7 @@
         "Book.Sell.API",
         "Game.Preparation",
         "Game.Location",
+        "Game.Location.API",
         "Game.Ftue",
         "Game.Inventory",
         "Game.Inventory.API",
