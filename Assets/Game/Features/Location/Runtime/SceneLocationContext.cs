@@ -8,6 +8,7 @@ namespace Game.Location.Runtime
     public sealed class SceneLocationContext : ILocationContext
     {
         private readonly Transform[] _laneAnchors;
+        private readonly Transform[] _bubbleSlots;
 
         public SceneLocationContext(
             Transform customerSpawnRoot,
@@ -16,7 +17,8 @@ namespace Game.Location.Runtime
             Transform shopApproach,
             Transform[] laneAnchors,
             Transform exitLeft,
-            Transform exitRight)
+            Transform exitRight,
+            Transform[] bubbleSlots)
         {
             CustomerSpawnRoot = customerSpawnRoot;
             EntryLeft = entryLeft;
@@ -25,6 +27,7 @@ namespace Game.Location.Runtime
             _laneAnchors = laneAnchors ?? Array.Empty<Transform>();
             ExitLeft = exitLeft;
             ExitRight = exitRight;
+            _bubbleSlots = bubbleSlots ?? Array.Empty<Transform>();
         }
 
         public bool IsBound => false;
@@ -36,5 +39,6 @@ namespace Game.Location.Runtime
         public Transform ExitRight { get; }
         public Transform ShopApproach { get; }
         public IReadOnlyList<Transform> LaneAnchors => _laneAnchors;
+        public IReadOnlyList<Transform> BubbleSlots => _bubbleSlots;
     }
 }

@@ -25,6 +25,7 @@ namespace Game.Bootstrap
         [SerializeField] private Transform _customerEntryRight;
         [SerializeField] private Transform _customerShopApproach;
         [SerializeField] private Transform[] _customerLaneAnchors;
+        [SerializeField] private Transform[] _customerBubbleSlots;
         [SerializeField] private Transform _customerExitLeft;
         [SerializeField] private Transform _customerExitRight;
         [Tooltip("Parent under LocationRoot where the preloaded location prefab is mounted.")]
@@ -51,7 +52,8 @@ namespace Game.Bootstrap
                 _customerShopApproach,
                 _customerLaneAnchors,
                 _customerExitLeft,
-                _customerExitRight));
+                _customerExitRight,
+                _customerBubbleSlots));
 
             builder.RegisterInstance(locationContext).AsSelf().As<ILocationContext>();
             builder.RegisterBuildCallback(resolver => MountLocationPrefab(resolver, locationContext));

@@ -159,8 +159,8 @@ namespace Game.Bootstrap
             builder.Register<ISalesDayController, SalesDayController>(Lifetime.Singleton);
 
             // Customer visualization + world-space thought bubbles (Phase 0 of World HUD).
-            builder.RegisterInstance(locationContext).As<ILocationContext>();
             builder.RegisterInstance(new CustomerVisualRegistryConfig(customerVisualPrefab, locationContext));
+            builder.Register<IBubbleSlotAllocator, BubbleSlotAllocator>(Lifetime.Singleton);
             builder.Register<CustomerVisualRegistry>(Lifetime.Singleton)
                 .AsImplementedInterfaces() // exposes ICustomerVisualRegistry, IStartable, IDisposable
                 .AsSelf();

@@ -328,6 +328,7 @@ MonoBehaviour:
   - {fileID: 6807606777139708516}
   - {fileID: 4272266020111558026}
   - {fileID: 4969297234839146698}
+  _customerBubbleSlots: []
   _customerExitLeft: {fileID: 1700739940821763620}
   _customerExitRight: {fileID: 1164600821759508459}
   _locationVisualRoot: {fileID: 6826233637963808991}

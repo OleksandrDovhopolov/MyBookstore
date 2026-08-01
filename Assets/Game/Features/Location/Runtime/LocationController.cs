@@ -16,6 +16,7 @@ namespace Game.Location.Runtime
         [SerializeField] private Transform _exitRight;
         [SerializeField] private Transform _shopApproach;
         [SerializeField] private Transform[] _laneAnchors;
+        [SerializeField] private BubbleSlotArc _bubbleSlotArc;
 
         public bool IsBound => true;
         public string LocationId => _locationId;
@@ -26,5 +27,6 @@ namespace Game.Location.Runtime
         public Transform ExitRight => _exitRight;
         public Transform ShopApproach => _shopApproach;
         public IReadOnlyList<Transform> LaneAnchors => _laneAnchors ?? Array.Empty<Transform>();
+        public IReadOnlyList<Transform> BubbleSlots => _bubbleSlotArc != null ? _bubbleSlotArc.Slots : Array.Empty<Transform>();
     }
 }

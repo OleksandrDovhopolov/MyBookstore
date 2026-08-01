@@ -29,6 +29,7 @@ namespace Game.Location.Runtime
         public Transform ExitRight => Pick(_primary?.ExitRight, _fallback.ExitRight);
         public Transform ShopApproach => Pick(_primary?.ShopApproach, _fallback.ShopApproach);
         public IReadOnlyList<Transform> LaneAnchors => Pick(_primary?.LaneAnchors, _fallback.LaneAnchors);
+        public IReadOnlyList<Transform> BubbleSlots => Pick(_primary?.BubbleSlots, _fallback.BubbleSlots);
 
         private static Transform Pick(Transform primary, Transform fallback) => primary != null ? primary : fallback;
 

@@ -84,6 +84,46 @@ namespace Game.Location.Tests.Editor
             }
         }
 
+        [Test]
+        public void EmptyPrimaryBubbleSlots_UsesFallbackBubbleSlots()
+        {
+            var fallbackSlot = new GameObject("fallback bubble slot");
+            try
+            {
+                var fallback = new TestContext(bubbleSlots: new[] { fallbackSlot.transform });
+                var binder = new LocationContextBinder(fallback);
+                binder.Bind(new TestContext(isBound: true, bubbleSlots: Array.Empty<Transform>()));
+
+                Assert.That(binder.BubbleSlots, Has.Count.EqualTo(1));
+                Assert.That(binder.BubbleSlots[0], Is.SameAs(fallbackSlot.transform));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(fallbackSlot);
+            }
+        }
+
+        [Test]
+        public void PrimaryBubbleSlots_OverrideFallbackBubbleSlots()
+        {
+            var fallbackSlot = new GameObject("fallback bubble slot");
+            var primarySlot = new GameObject("primary bubble slot");
+            try
+            {
+                var fallback = new TestContext(bubbleSlots: new[] { fallbackSlot.transform });
+                var binder = new LocationContextBinder(fallback);
+                binder.Bind(new TestContext(isBound: true, bubbleSlots: new[] { primarySlot.transform }));
+
+                Assert.That(binder.BubbleSlots, Has.Count.EqualTo(1));
+                Assert.That(binder.BubbleSlots[0], Is.SameAs(primarySlot.transform));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(fallbackSlot);
+                UnityEngine.Object.DestroyImmediate(primarySlot);
+            }
+        }
+
         private sealed class TestContext : ILocationContext
         {
             public TestContext(
@@ -95,7 +135,8 @@ namespace Game.Location.Tests.Editor
                 Transform exitLeft = null,
                 Transform exitRight = null,
                 Transform shopApproach = null,
-                IReadOnlyList<Transform> laneAnchors = null)
+                IReadOnlyList<Transform> laneAnchors = null,
+                IReadOnlyList<Transform> bubbleSlots = null)
             {
                 IsBound = isBound;
                 LocationId = locationId;
@@ -106,6 +147,7 @@ namespace Game.Location.Tests.Editor
                 ExitRight = exitRight;
                 ShopApproach = shopApproach;
                 LaneAnchors = laneAnchors ?? Array.Empty<Transform>();
+                BubbleSlots = bubbleSlots ?? Array.Empty<Transform>();
             }
 
             public bool IsBound { get; }
@@ -117,6 +159,7 @@ namespace Game.Location.Tests.Editor
             public Transform ExitRight { get; }
             public Transform ShopApproach { get; }
             public IReadOnlyList<Transform> LaneAnchors { get; }
+            public IReadOnlyList<Transform> BubbleSlots { get; }
         }
     }
 }

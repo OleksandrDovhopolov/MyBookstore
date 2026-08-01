@@ -15,5 +15,6 @@ namespace Game.Location.API
         Transform ExitRight { get; }
         Transform ShopApproach { get; }
         IReadOnlyList<Transform> LaneAnchors { get; }
+        IReadOnlyList<Transform> BubbleSlots { get; }
     }
 }
