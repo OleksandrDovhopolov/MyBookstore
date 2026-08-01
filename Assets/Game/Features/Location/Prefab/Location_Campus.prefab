@@ -657,7 +657,7 @@ GameObject:
   - component: {fileID: 4985568851738109302}
   - component: {fileID: 1286306199932230442}
   m_Layer: 0
-  m_Name: "Location_\u0421ampus"
+  m_Name: Location_Campus
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

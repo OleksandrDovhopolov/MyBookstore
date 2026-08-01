@@ -53,7 +53,7 @@ namespace Game.Bootstrap
                 _customerExitLeft,
                 _customerExitRight));
 
-            builder.RegisterInstance(locationContext).AsSelf();
+            builder.RegisterInstance(locationContext).AsSelf().As<ILocationContext>();
             builder.RegisterBuildCallback(resolver => MountLocationPrefab(resolver, locationContext));
 
             builder.RegisterBookSell(

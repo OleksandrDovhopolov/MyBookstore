@@ -17,12 +17,23 @@ namespace Game.Location.Services
         private const string LogPrefix = "[LocationPrefab]";
 
         private readonly IConfigsService _configs;
+        private readonly Func<string, CancellationToken, UniTask<GameObject>> _loadAsync;
         private readonly Dictionary<string, GameObject> _byLocationId = new();
         private readonly Dictionary<string, GameObject> _byAddress = new();
+        private readonly HashSet<string> _fallbackWarnedLocationIds = new();
+        private GameObject _lastPreloadedPrefab;
 
         public LocationPrefabProvider(IConfigsService configs)
+            : this(configs, (address, ct) => ProdAddressablesWrapper.LoadAsync<GameObject>(address, ct))
+        {
+        }
+
+        internal LocationPrefabProvider(
+            IConfigsService configs,
+            Func<string, CancellationToken, UniTask<GameObject>> loadAsync)
         {
             _configs = configs;
+            _loadAsync = loadAsync ?? throw new ArgumentNullException(nameof(loadAsync));
         }
 
         public string LastPreloadedLocationId { get; private set; }
@@ -34,33 +45,47 @@ namespace Game.Location.Services
             if (TryGetCachedByLocation(id, out var cached))
             {
                 LastPreloadedLocationId = id;
+                _lastPreloadedPrefab = cached;
                 return cached;
             }
 
             var address = ResolveAddress(id);
             var prefab = await TryLoadAsync(address, ct);
+            var loadedOwnPrefab = prefab != null;
 
             if (prefab == null && !string.Equals(id, DefaultLocationId, StringComparison.Ordinal))
             {
-                Debug.LogWarning($"{LogPrefix} Failed to preload '{id}' at '{address}'. Falling back to '{DefaultLocationId}'.");
-                prefab = await TryLoadAsync(ResolveAddress(DefaultLocationId), ct);
+                LogFallbackOnce(id, address);
+                var defaultAddress = ResolveAddress(DefaultLocationId);
+                prefab = await TryLoadAsync(defaultAddress, ct);
+                if (prefab != null)
+                    _byLocationId[DefaultLocationId] = prefab;
             }
 
             if (prefab == null)
             {
                 Debug.LogError($"{LogPrefix} Failed to preload default location prefab '{DefaultLocationId}'. Scene fallback will be used.");
+                _lastPreloadedPrefab = null;
                 return null;
             }
 
-            _byLocationId[id] = prefab;
+            if (loadedOwnPrefab)
+                _byLocationId[id] = prefab;
+
             LastPreloadedLocationId = id;
+            _lastPreloadedPrefab = prefab;
             return prefab;
         }
 
         public GameObject GetPreloaded(string locationId)
         {
             var id = NormalizeLocationId(locationId);
-            return TryGetCachedByLocation(id, out var prefab) ? prefab : null;
+            if (TryGetCachedByLocation(id, out var prefab))
+                return prefab;
+
+            return string.Equals(id, LastPreloadedLocationId, StringComparison.Ordinal)
+                ? _lastPreloadedPrefab
+                : null;
         }
 
         public bool IsPreloaded(string locationId)
@@ -108,7 +133,7 @@ namespace Game.Location.Services
 
             try
             {
-                var prefab = await ProdAddressablesWrapper.LoadAsync<GameObject>(address, ct);
+                var prefab = await _loadAsync(address, ct);
                 if (prefab != null)
                     _byAddress[address] = prefab;
                 return prefab;
@@ -128,5 +153,13 @@ namespace Game.Location.Services
             => locationId.StartsWith("loc_", StringComparison.Ordinal)
                 ? locationId.Substring("loc_".Length)
                 : locationId;
+
+        private void LogFallbackOnce(string locationId, string address)
+        {
+            if (!_fallbackWarnedLocationIds.Add(locationId))
+                return;
+
+            Debug.LogWarning($"{LogPrefix} Failed to preload '{locationId}' at '{address}'. Falling back to '{DefaultLocationId}'.");
+        }
     }
 }

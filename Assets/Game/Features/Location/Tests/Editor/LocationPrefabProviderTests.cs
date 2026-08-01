@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Location.Services;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Game.Location.Tests.Editor
 {
@@ -35,6 +37,48 @@ namespace Game.Location.Tests.Editor
         {
             Assert.That(LocationPrefabProvider.NormalizeLocationId(null), Is.EqualTo(LocationPrefabProvider.DefaultLocationId));
             Assert.That(LocationPrefabProvider.NormalizeLocationId(" "), Is.EqualTo(LocationPrefabProvider.DefaultLocationId));
+        }
+
+        [Test]
+        public async Task PreloadAsync_FallbackDoesNotCacheUnderRequestedLocationId()
+        {
+            var parkPrefab = new GameObject("park prefab");
+            var campusPrefab = new GameObject("campus prefab");
+            var campusLoadCount = 0;
+
+            try
+            {
+                var provider = new LocationPrefabProvider(
+                    new FakeConfigsService(),
+                    (address, _) =>
+                    {
+                        if (address == "location/campus")
+                        {
+                            campusLoadCount++;
+                            return UniTask.FromResult(campusLoadCount == 1 ? null : campusPrefab);
+                        }
+
+                        return UniTask.FromResult(address == "location/park" ? parkPrefab : null);
+                    });
+
+                var first = await provider.PreloadAsync("loc_campus", CancellationToken.None);
+
+                Assert.That(first, Is.SameAs(parkPrefab));
+                Assert.That(provider.GetPreloaded("loc_campus"), Is.SameAs(parkPrefab));
+                Assert.That(provider.IsPreloaded("loc_campus"), Is.False);
+                Assert.That(provider.IsPreloaded("loc_park"), Is.True);
+
+                var second = await provider.PreloadAsync("loc_campus", CancellationToken.None);
+
+                Assert.That(second, Is.SameAs(campusPrefab));
+                Assert.That(provider.GetPreloaded("loc_campus"), Is.SameAs(campusPrefab));
+                Assert.That(campusLoadCount, Is.EqualTo(2));
+            }
+            finally
+            {
+                Object.DestroyImmediate(parkPrefab);
+                Object.DestroyImmediate(campusPrefab);
+            }
         }
 
         private sealed class FakeConfigsService : IConfigsService
