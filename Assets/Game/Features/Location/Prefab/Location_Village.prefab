@@ -478,7 +478,7 @@ SpriteRenderer:
   m_SortingLayerID: -523033287
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: 5895876336032187321, guid: dd1e48f19c2190146afe658d94a25121, type: 3}
+  m_Sprite: {fileID: 2299623787266881128, guid: 9dddbe02167b3f44483f69a6f97fb12e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -657,7 +657,7 @@ GameObject:
   - component: {fileID: 4985568851738109302}
   - component: {fileID: 1286306199932230442}
   m_Layer: 0
-  m_Name: Location_Park
+  m_Name: Location_Village
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -693,7 +693,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1820884b6b24ef1884b18c223d448e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _locationId: loc_park
+  _locationId: loc_village
   _customerSpawnRoot: {fileID: 6659719299787041678}
   _entryLeft: {fileID: 2317939969286681382}
   _entryRight: {fileID: 8702037197869571716}
