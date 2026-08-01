@@ -54,7 +54,7 @@ namespace Book.Sell.Domain
 
         /// <summary>Maximum customers present on the floor at once (spawned and not yet Done).
         /// Spawning is gated until a slot frees. <c>&lt;= 0</c> means no limit.</summary>
-        public int MaxConcurrentCustomers { get; set; } = 3;
+        public int MaxConcurrentCustomers { get; set; } = 9;
 
         /// <summary>Minimum passive purchase attempts a regular customer makes per visit.</summary>
         public int MinPassiveAttempts { get; set; } = 1;

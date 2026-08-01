@@ -19,7 +19,7 @@ namespace Game.Ftue.Services
     {
         private const string LogPrefix = "[FTUE]";
 
-        // MVP: starter preset is hardcoded. Tiny Bookshop reference: 60 gold + 27 books across genres.
+        // MVP: starter preset is hardcoded. Tiny Bookshop reference: 60 gold + 54 books across genres.
         // Migration to economy.json / ftue.json is a separate task (paired with the DailyBookSlots refactor).
         // Tracked in docs/INPROGRESS/CORE_LOOP_STATUS.md under "Known limitations".
         private const int StartingGold = 60;
@@ -27,13 +27,13 @@ namespace Game.Ftue.Services
         // Genre order is fixed so the resulting inventory seeding order is stable across runs (good for tests).
         private static readonly IReadOnlyList<KeyValuePair<string, int>> PresetCounts = new[]
         {
-            new KeyValuePair<string, int>("Fantasy", 5),
-            new KeyValuePair<string, int>("Crime",   5),
-            new KeyValuePair<string, int>("Drama",   6),
-            new KeyValuePair<string, int>("Classic", 3),
-            new KeyValuePair<string, int>("Fact",    3),
-            new KeyValuePair<string, int>("Travel",  3),
-            new KeyValuePair<string, int>("Kids",    2)
+            new KeyValuePair<string, int>("Fantasy", 10),
+            new KeyValuePair<string, int>("Crime",   10),
+            new KeyValuePair<string, int>("Drama",   12),
+            new KeyValuePair<string, int>("Classic", 6),
+            new KeyValuePair<string, int>("Fact",    6),
+            new KeyValuePair<string, int>("Travel",  6),
+            new KeyValuePair<string, int>("Kids",    4)
         };
 
         private readonly ISaveService _save;

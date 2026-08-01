@@ -25,4 +25,4 @@ MonoBehaviour:
   _maxLeaveDuration: 1.5
   _spawnInterval: 2
   _baseCustomers: 5
-  _maxConcurrentCustomers: 3
+  _maxConcurrentCustomers: 9

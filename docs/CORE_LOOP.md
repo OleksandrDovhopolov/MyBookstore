@@ -77,7 +77,7 @@ configured value and grows through shop upgrades.
 
 | Knob                | Baseline (MVP)   | Notes                                             |
 |---------------------|------------------|---------------------------------------------------|
-| `DailyBookSlots`    | 12 (range 12–20) | Grows via shop upgrades; lives on player state.   |
+| `DailyBookSlots`    | 30 (MVP constant) | Grows via shop upgrades; lives on player state.  |
 | `MinDailyBooks`     | 1                | Prevents starting Sales with an empty shelf.      |
 | `DailyDecorSlots`   | 1–2              | Same shape as books; modifier-bearing items.      |
 

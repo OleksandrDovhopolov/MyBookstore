@@ -114,19 +114,11 @@
   - Уточнить формат `published` в конфиге (год или дата) и централизовать парсинг/валидацию.
   - Покрыть boundary-тестами границы веков.
 
-- [ ] **GAME-15. Согласовать стартовый пресет FTUE с каталогом книг.**
-  Хардкод-пресет в [FtueBootstrapper.cs:28-37](../Assets/Game/Features/Ftue/Services/FtueBootstrapper.cs)
-  просит 27 книг по 7 жанрам (`Fantasy 5, Crime 5, Drama 6, Classic 3, Fact 3, Travel 3, Kids 2`), но текущий
-  `books.json` покрывает только 4 жанра (`Crime 20, Classic 20, Drama 20, Fantasy 3`) — в логе сыплются
-  warning'и `genre '…' missing from catalog` (Fact/Travel/Kids) и `Fantasy: catalog has 3, requested 5`
-  ([строки 114 и 125](../Assets/Game/Features/Ftue/Services/FtueBootstrapper.cs)). FTUE не падает, но сеет 17
-  книг вместо 27. Что сделать (выбрать направление):
-  - **Контент:** завезти книги жанров `Fact`/`Travel`/`Kids` и добить `Fantasy` до нужного числа в
-    `books.json` → Sync в StreamingAssets + Publish на сервер.
-  - **или Код:** привести `PresetCounts` к реально существующим жанрам/числам, чтобы лог был чистым.
-  - Заодно вынести пресет из хардкода в `ftue.json` (уже помечено как MVP-заглушка в
-    [комментарии:22-24](../Assets/Game/Features/Ftue/Services/FtueBootstrapper.cs)), парно с рефактором
-    `DailyBookSlots`.
+- [x] **GAME-15. Согласовать стартовый пресет FTUE с каталогом книг.**
+  Закрыто: runtime читает `books_converted.json`, где хватает всех 7 стартовых жанров. Хардкод-пресет в
+  [FtueBootstrapper.cs:28-37](../Assets/Game/Features/Ftue/Services/FtueBootstrapper.cs) теперь сеет 54 книги:
+  `Fantasy 10, Crime 10, Drama 12, Classic 6, Fact 6, Travel 6, Kids 4`.
+  Вынести пресет из хардкода в `ftue.json` всё ещё отдельная задача, парная с рефактором `DailyBookSlots`.
 
 - [x] **GAME-16. `CustomerScriptConfig` (Candidate E) — один дом для сценарных покупателей.**
   Закрыто: `QuestConfig` больше не несёт поведение встречи; Eddi и day-2 forced miss живут в

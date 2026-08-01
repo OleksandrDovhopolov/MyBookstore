@@ -319,10 +319,10 @@ namespace Game.Configs.Tests.Editor
                 .GroupBy(b => b.PrimaryGenre, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
 
-            AssertGenreCount("Fantasy", 5);
-            AssertGenreCount("Fact", 3);
-            AssertGenreCount("Travel", 3);
-            AssertGenreCount("Kids", 2);
+            AssertGenreCount("Fantasy", 10);
+            AssertGenreCount("Fact", 6);
+            AssertGenreCount("Travel", 6);
+            AssertGenreCount("Kids", 4);
 
             var scriptedDayOneAttempts = scripts
                 .Where(s => s.DayIndex == 1 || string.Equals(s.Id, "eddi_intro", StringComparison.Ordinal))

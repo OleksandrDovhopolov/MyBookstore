@@ -20,7 +20,7 @@ namespace Game.Preparation.Services
 
         // MVP: capacity захардкожена временно (см. CORE_LOOP_STATUS «Известные ограничения»).
         private const int DefaultMinDailyBooks = 0;
-        private const int DefaultDailyBookSlots = 12;
+        private const int DefaultDailyBookSlots = 30;
 
         // Fallback only: the location is normally chosen by the player (Location Window → Start) and
         // passed into StartOrResumeAsync. Used when no selection is supplied (e.g. resume of a session
