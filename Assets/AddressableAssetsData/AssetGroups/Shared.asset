@@ -105,13 +105,13 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 71eabe4c4720cf64093f4c905a60bc5d
-    m_Address: fuel_canister
+  - m_GUID: 7405d3beb7b1e3947a94fe1abbb50846
+    m_Address: loc_market
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 7405d3beb7b1e3947a94fe1abbb50846
-    m_Address: loc_market
+  - m_GUID: 75e0907dad91f6e4f89d370758495607
+    m_Address: fuel_canister
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
