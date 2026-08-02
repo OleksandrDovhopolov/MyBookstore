@@ -14,7 +14,7 @@ namespace Game.Journal.UI
     /// Journal window with Memories, Places, Objects, People, and Quests tabs.
     /// Opened via <c>uiManager.ShowAsync&lt;JournalWindow&gt;()</c>; needs a prefab at address "JournalWindow".
     /// </summary>
-    [Window("JournalWindow", WindowType.Page)]
+    [Window("JournalWindow", WindowType.Page, true)]
     public sealed class JournalWindow : WindowController<JournalWindowView>
     {
         private readonly JournalCharactersViewModelBuilder _peopleBuilder = new();
