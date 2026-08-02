@@ -7,7 +7,7 @@ namespace Game.Tutorial.Conditions
 {
     /// <summary>
     /// Builds <see cref="TutorialCompletedCondition"/> from
-    /// <c>{ "type": "tutorialCompleted", "sequenceId": "tutorial_day_1" }</c>. Registered lazily (holds a
+    /// <c>{ "type": "tutorialCompleted", "sequenceId": "..." }</c>. Registered lazily (holds a
     /// <see cref="Func{ITutorialService}"/>, not the service) — see the WeatherIsConditionFactory pattern in
     /// DayCycleVContainerBindings — so it never forms a DI cycle with IConditionParser.
     /// </summary>

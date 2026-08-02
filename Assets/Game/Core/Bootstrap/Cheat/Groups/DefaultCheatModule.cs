@@ -2,7 +2,6 @@ using cheatModule;
 using Cysharp.Threading.Tasks;
 using Game.Decor.UI;
 using Game.Inventory.UI;
-using Game.Newspaper.UI;
 using Game.Quest.UI;
 using Game.Shop.UI;
 using Game.UI;
@@ -21,27 +20,9 @@ namespace Game.Cheat
         public void Initialize(ICheatsContainer cheatsContainer)
         {
             cheatsContainer.AddItem<CheatButtonItem>(item =>
-                item.OnClick("Open Inventory", () =>
-                {
-                    _uiManager.ShowAsync<InventoryWindowController>().Forget();
-                }));
-
-            cheatsContainer.AddItem<CheatButtonItem>(item =>
-                item.OnClick("Open Decoration", () =>
-                {
-                    _uiManager.ShowAsync<DecorPlacementWindow>().Forget();
-                }));
-
-            cheatsContainer.AddItem<CheatButtonItem>(item =>
                 item.OnClick("Open Shop", () =>
                 {
-                    _uiManager.ShowAsync<ClassicShopWindow>().Forget();
-                }));
-
-            cheatsContainer.AddItem<CheatButtonItem>(item =>
-                item.OnClick("Open Newspaper", () =>
-                {
-                    _uiManager.ShowAsync<NewspaperWindow>().Forget();
+                    _uiManager.ShowAsync<ShopWindow>().Forget();
                 }));
 
             cheatsContainer.AddItem<CheatButtonItem>(item =>

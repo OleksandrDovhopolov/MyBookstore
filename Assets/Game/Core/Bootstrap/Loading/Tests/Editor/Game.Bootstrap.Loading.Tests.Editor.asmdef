@@ -7,8 +7,11 @@
         "Game.Bootstrap",
         "Game.Bootstrap.Loading",
         "Game.LocationVisits.API",
+        "Game.Location.API",
+        "Game.Tutorial.API",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "Game.Core.UI"
     ],
     "includePlatforms": [
         "Editor"

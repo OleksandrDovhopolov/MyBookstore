@@ -21,7 +21,12 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 051d0f9ee2fd4104f8fdf6781c78f41e
-    m_Address: loc_train_station
+    m_Address: loc_village
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 05efb59efdcbb8c438e48183e4df286e
+    m_Address: map
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -41,17 +46,27 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1425550bb6b95cb46a25da040d808684
-    m_Address: loc_downtown
+    m_Address: loc_park
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 143c5db1bda88e04cbb356c988f2f87a
-    m_Address: loc_mall
+    m_Address: loc_campus
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 206f074573da1684b8291e0cdb337cce
     m_Address: Fact
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 236b8ef8fb25c724eaa7e5eee19a4083
+    m_Address: captain
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3380f17461742e745a919c50b5913256
+    m_Address: pocket_clock
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -65,13 +80,58 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 579c0b15128c29e40b18717768ec462a
-    m_Address: eddi
+  - m_GUID: 501db7976e397614e93236b4c463b029
+    m_Address: postcard
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 57328bb3ebe2f3940adeb449d6633978
+    m_Address: lavender
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5743b08665c557d4dbffb0d38fb13023
+    m_Address: little_cactus
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 57c2f99d03555a34fa9cd645d6841edd
+    m_Address: milly
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6046e1a31fd48ec4d8db68b56931bed1
+    m_Address: tifany_lamp
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 71eabe4c4720cf64093f4c905a60bc5d
+    m_Address: fuel_canister
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7405d3beb7b1e3947a94fe1abbb50846
-    m_Address: loc_riverside_park
+    m_Address: loc_market
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7e5baa58fbf975c4db3fc19f9e366b59
+    m_Address: eddi
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 816dd68f30dbcaa4c8a7ad2daea363bd
+    m_Address: green_menu
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8a96f26027d247e438b9c6a7ce51f482
+    m_Address: chinese_vase
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8c03afe373aab47408779f3f4c08e844
+    m_Address: milly_letter
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -90,8 +150,13 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a2ec366c8b2c3ae4fbbfa07d1e9e800b
+    m_Address: captain_recommendation
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ab8811f57efe48241b6671e7edca91db
-    m_Address: loc_old_town
+    m_Address: loc_port
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -100,13 +165,43 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b4c929229c6b7784ab5acd9d64189219
+    m_Address: gas_lighter
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: baa6909a30a15ea4daeae7720b21a8ce
     m_Address: Travel
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bc2f5c1ec8872bc428e73000b2447e2e
+    m_Address: wite_flower
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ce5c12c00e88a154ab25f58b569dda27
     m_Address: Crime
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d2e7c76782a04594eaa82c8b245a5270
+    m_Address: tara
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e5870de896be30d439d086e058a9f31a
+    m_Address: green_flower
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ef742898a12cf814facc5f58c83430af
+    m_Address: port_trade_permit
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ffab3e9795522a64c9cfda68b7cc80c0
+    m_Address: table_frame
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

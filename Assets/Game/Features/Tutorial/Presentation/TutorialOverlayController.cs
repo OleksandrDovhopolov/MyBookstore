@@ -1,5 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Tutorial;
 using Game.UI;
 using Infrastructure.TutorialUI;
 using UnityEngine;
@@ -14,8 +15,6 @@ namespace Game.Tutorial.Presentation
     /// </summary>
     public sealed class TutorialOverlayController
     {
-        private const string LogPrefix = "[Tutorial]";
-
         private readonly IUICanvasRoot _canvasRoot;
         private readonly TutorialOverlaySettings _settings;
 
@@ -86,6 +85,7 @@ namespace Game.Tutorial.Presentation
                 placement,
                 pointer,
                 TutorialPointerPlacement.Top,
+                Vector2.zero,
                 ct);
 
         public async UniTask HighlightAndWaitClickAsync(
@@ -94,19 +94,20 @@ namespace Game.Tutorial.Presentation
             string placement,
             bool pointer,
             TutorialPointerPlacement pointerPlacement,
+            Vector2 pointerOffset,
             CancellationToken ct)
         {
             if (!EnsureRoot()) return;
             if (target == null)
             {
-                Debug.LogWarning($"{LogPrefix} highlight target is missing; auto-advancing.");
+                Debug.LogWarning($"{TutorialLog.Prefix} highlight target is missing; auto-advancing.");
                 return;
             }
 
             _blackout.ShowWithHole(target, _settings.HolePadding);
             _hitArea?.HideView();
             _textPanel?.SetText(text, placement);
-            if (pointer) _pointer?.PointAt(target, pointerPlacement); else _pointer?.HideView();
+            if (pointer) _pointer?.PointAt(target, pointerPlacement, pointerOffset); else _pointer?.HideView();
 
             var button = target != null ? target.GetComponent<Button>() : null;
             if (button == null)
@@ -128,7 +129,7 @@ namespace Game.Tutorial.Presentation
                 var winIndex = await UniTask.WhenAny(tcs.Task, lost);
                 ct.ThrowIfCancellationRequested();
                 if (winIndex == 1)
-                    Debug.LogWarning($"{LogPrefix} highlight target lost before click; auto-advancing.");
+                    Debug.LogWarning($"{TutorialLog.Prefix} highlight target lost before click; auto-advancing.");
             }
             finally
             {
@@ -152,7 +153,7 @@ namespace Game.Tutorial.Presentation
                 var winIndex = await UniTask.WhenAny(tcs.Task, lost);
                 ct.ThrowIfCancellationRequested();
                 if (winIndex == 1)
-                    Debug.LogWarning($"{LogPrefix} highlight target lost before click; auto-advancing.");
+                    Debug.LogWarning($"{TutorialLog.Prefix} highlight target lost before click; auto-advancing.");
             }
             finally
             {
@@ -224,7 +225,7 @@ namespace Game.Tutorial.Presentation
             var parent = _canvasRoot?.WindowsRoot != null ? _canvasRoot.WindowsRoot : _canvasRoot?.HudRoot;
             if (parent == null)
             {
-                Debug.LogWarning($"{LogPrefix} UI canvas root unavailable - overlay cannot be created.");
+                Debug.LogWarning($"{TutorialLog.Prefix} UI canvas root unavailable - overlay cannot be created.");
                 return false;
             }
 
@@ -250,12 +251,7 @@ namespace Game.Tutorial.Presentation
             _hitArea = hitAreaGo.GetComponent<TutorialHitAreaView>();
             _hitArea.HideView();
 
-            var pointerGo = new GameObject("Pointer", typeof(RectTransform), typeof(Image), typeof(TutorialPointerView));
-            var prt = (RectTransform)pointerGo.transform;
-            prt.SetParent(_root, false);
-            prt.sizeDelta = new Vector2(64f, 64f);
-            _pointer = pointerGo.GetComponent<TutorialPointerView>();
-            _pointer.Configure(_settings.PointerSprite, _settings.PointerBounceAmplitude, _settings.PointerBounceSpeed);
+            _pointer = CreatePointer();
             _pointer.HideView();
 
             if (_settings.TextPanelPrefab != null)
@@ -265,6 +261,33 @@ namespace Game.Tutorial.Presentation
             }
 
             return true;
+        }
+
+        private TutorialPointerView CreatePointer()
+        {
+            if (_settings.PointerPrefab != null)
+                return Object.Instantiate(_settings.PointerPrefab, _root);
+
+            var go = new GameObject("Pointer", typeof(RectTransform), typeof(Image), typeof(TutorialPointerView));
+            var rt = (RectTransform)go.transform;
+            rt.SetParent(_root, false);
+            rt.sizeDelta = GetPointerSize(_settings.PointerSprite);
+
+            var pointer = go.GetComponent<TutorialPointerView>();
+            pointer.Configure(
+                _settings.PointerSprite,
+                _settings.PointerBounceAmplitude,
+                _settings.PointerBounceSpeed);
+            return pointer;
+        }
+
+        private static Vector2 GetPointerSize(Sprite sprite)
+        {
+            if (sprite == null)
+                return new Vector2(64f, 64f);
+
+            var rect = sprite.rect;
+            return new Vector2(rect.width, rect.height);
         }
 
         private T CreateStretchedChild<T>(string name) where T : Component

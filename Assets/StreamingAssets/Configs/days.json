@@ -8,7 +8,7 @@
     "customerCount": 4,
     "activeRequestCount": 0,
     "waveSizes": [1, 3],
-    "waveGapSeconds": 3,
+    "waveGapSeconds": 2,
     "applyModifiers": false
   },
   {

@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Tutorial;
 using Game.Tutorial.API;
 using UnityEngine;
 
@@ -8,7 +9,6 @@ namespace Game.Tutorial.Content
 {
     public sealed class TutorialAwaitWindowStep : ITutorialStep
     {
-        private const string LogPrefix = "[Tutorial]";
         private const int PollMs = 250;
 
         private readonly Func<bool> _predicate;
@@ -47,12 +47,12 @@ namespace Game.Tutorial.Content
                     if (_failOpen)
                     {
                         Debug.LogWarning(
-                            $"{LogPrefix} await window step '{Id}' timed out after {_timeoutMs}ms; auto-advancing.");
+                            $"{TutorialLog.Prefix} await window step '{Id}' timed out after {_timeoutMs}ms; auto-advancing.");
                         return;
                     }
 
                     throw new TimeoutException(
-                        $"{LogPrefix} await window step '{Id}' timed out after {_timeoutMs}ms.");
+                        $"{TutorialLog.Prefix} await window step '{Id}' timed out after {_timeoutMs}ms.");
                 }
 
                 await UniTask.Delay(PollMs, cancellationToken: ct);

@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
@@ -13,6 +14,12 @@ namespace Game.Configs.Tests.Editor
     /// </summary>
     public sealed class DialogueConfigDeserializationTests
     {
+        private static readonly string[] ContentRoots =
+        {
+            Path.Combine("Assets", "Configs"),
+            Path.Combine("Assets", "StreamingAssets", "Configs")
+        };
+
         private const string Json = @"
 [
   {
@@ -94,6 +101,23 @@ namespace Game.Configs.Tests.Editor
             var intro = service.Get<DialogueConfig>("dlg_intro_tilde");
             Assert.IsNotNull(intro, "Resolved by Id → [ConfigFile] + lazy load + indexing all wired.");
             Assert.AreEqual("root", intro.Nodes[0].NodeId);
+
+            var quest = service.Get<DialogueConfig>("dlg_quest_01");
+            Assert.IsNotNull(quest);
+            Assert.AreEqual("root", quest.Nodes[0].NodeId);
+        }
+
+        [Test]
+        public void Content_Dialogues_DoNotDeclareQuestActivation()
+        {
+            foreach (var root in ContentRoots)
+            {
+                var raw = File.ReadAllText(Path.Combine(root, "dialogues.json"));
+
+                Assert.IsFalse(
+                    raw.Contains("activatesQuestId"),
+                    $"{root}/dialogues.json must not declare quest activation; quests own activationConditions.");
+            }
         }
 
         private sealed class FakeConfigSource : IConfigSource

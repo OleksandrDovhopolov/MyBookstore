@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Game.Configs.Models;
 using Newtonsoft.Json;
@@ -116,6 +117,116 @@ namespace Game.Configs.Tests.Editor
             Assert.AreEqual("Drama", book.PrimaryGenre);
             Assert.IsTrue(book.IsFemaleAuthor);
             Assert.AreEqual(10, BookConfig.FixedPriceGold);
+        }
+
+        [Test]
+        public void BookConfig_DeserializeWithoutRarityWeight_UsesDefault()
+        {
+            const string json = @"{
+  ""id"": ""book01"",
+  ""title"": ""Sea Winter"",
+  ""author"": ""Ada Reed"",
+  ""description"": ""[description_book_001]"",
+  ""genres"": [""Drama""],
+  ""published"": 1893,
+  ""pages"": 189,
+  ""qualities"": [""Female Author""]
+}";
+
+            var book = JsonConvert.DeserializeObject<BookConfig>(json);
+
+            Assert.IsNotNull(book);
+            Assert.AreEqual(0.5f, book.RarityWeight);
+        }
+
+        [Test]
+        public void BookConfig_DeserializeFakeOrReal_PopulatesFutureField()
+        {
+            const string json = @"{
+  ""id"": ""book01"",
+  ""title"": ""Sea Winter"",
+  ""author"": ""Ada Reed"",
+  ""description"": ""[description_book_001]"",
+  ""genres"": [""Drama""],
+  ""published"": 1893,
+  ""pages"": 189,
+  ""qualities"": [""Female Author""],
+  ""fakeOrReal"": ""Fake""
+}";
+
+            var book = JsonConvert.DeserializeObject<BookConfig>(json);
+
+            Assert.IsNotNull(book);
+            Assert.AreEqual("Fake", book.FakeOrReal);
+        }
+
+        [TestCase("Assets/Configs/books.json")]
+        [TestCase("Assets/StreamingAssets/Configs/books.json")]
+        public void BookConfig_LegacyBooksJson_StillDeserializes(string path)
+        {
+            var books = JsonConvert.DeserializeObject<BookConfig[]>(File.ReadAllText(path));
+
+            Assert.IsNotNull(books);
+            Assert.Greater(books.Length, 0);
+            Assert.IsTrue(books.All(book => !string.IsNullOrWhiteSpace(book.Id)));
+        }
+
+        [Test]
+        public void ConfigsService_LoadsBookConfigFromConvertedCatalog()
+        {
+            var source = new FakeConfigSource
+            {
+                ConvertedBooks = @"[
+  {
+    ""id"": ""book01"",
+    ""title"": ""Converted"",
+    ""author"": ""Ada Reed"",
+    ""description"": ""Generated catalog"",
+    ""genres"": [""Travel""],
+    ""published"": 2001,
+    ""pages"": 123,
+    ""qualities"": [""Nature""],
+    ""fakeOrReal"": ""Real""
+  }
+]",
+                LegacyBooks = @"[
+  {
+    ""id"": ""Book1"",
+    ""title"": ""Legacy"",
+    ""author"": ""Old"",
+    ""description"": ""Legacy catalog"",
+    ""genres"": [""Crime""],
+    ""rarityWeight"": 0.1,
+    ""published"": 1999,
+    ""pages"": 321,
+    ""qualities"": [""Detective""]
+  }
+]"
+            };
+            var service = new ConfigsService(source, overrides: null);
+            service.WarmupAsync(System.Threading.CancellationToken.None).GetAwaiter().GetResult();
+
+            var books = service.GetAll<BookConfig>();
+
+            Assert.AreEqual(1, books.Count);
+            Assert.AreEqual("book01", books[0].Id);
+            Assert.AreEqual("Converted", books[0].Title);
+        }
+
+        private sealed class FakeConfigSource : IConfigSource
+        {
+            public string ConvertedBooks;
+            public string LegacyBooks;
+
+            public Cysharp.Threading.Tasks.UniTask WarmupAsync(System.Threading.CancellationToken ct)
+                => Cysharp.Threading.Tasks.UniTask.CompletedTask;
+
+            public string GetRaw(string fileName)
+            {
+                if (fileName == "books_converted") return ConvertedBooks;
+                if (fileName == "books") return LegacyBooks;
+                return null;
+            }
         }
     }
 }

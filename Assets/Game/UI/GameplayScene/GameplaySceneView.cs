@@ -23,6 +23,8 @@ namespace GameplayUI
         [SerializeField] private Button _startDayButton;
         [SerializeField] private Button _decorButton;
         [SerializeField] private Button _journalButton;
+        [SerializeField] private Button _inventoryButton;
+        [SerializeField] private Button _questButton;
 
         [Header("Genre book counts")] [SerializeField]
         private UIListPool<GameplayGenreBookCountItemView> _genreBookCountPool = new();
@@ -38,6 +40,8 @@ namespace GameplayUI
         public Button StartDayButton => _startDayButton;
         public Button DecorButton => _decorButton;
         public Button JournalButton => _journalButton;
+        public Button InventoryButton => _inventoryButton;
+        public Button QuestButton => _questButton;
         public event Action<BookGenre, Sprite, RectTransform> GenreItemClicked;
 
         // Collected from the view hierarchy at runtime (including inactive) so any number of

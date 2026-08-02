@@ -2,7 +2,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Game.Conditions.API;
+using Game.Conditions.Services;
 using Game.Configs.Models;
+using Game.LocationVisits.Conditions;
+using Game.LocationVisits.Services;
 using Game.Quest.API;
 using Game.Quest.Services;
 using Game.Quest.Tests.Editor.Fakes;
@@ -42,11 +46,15 @@ namespace Game.Quest.Tests.Editor
         }
 
         private static Harness Build(params QuestConfig[] quests)
+            => BuildWithFactories(null, quests);
+
+        private static Harness BuildWithFactories(IReadOnlyList<IConditionFactory> allFactories, params QuestConfig[] quests)
         {
             var h = new Harness { Parser = new FakeConditionParser(), Sales = new FakeSalesStatsService() };
             var configs = new FakeConfigsService();
             foreach (var q in quests) configs.Add(q);
-            h.Service = new QuestsService(new FakeSaveService(), configs, h.Parser, sales: h.Sales);
+            h.Service = new QuestsService(new FakeSaveService(), configs, h.Parser, sales: h.Sales,
+                allFactories: allFactories);
             h.Service.QuestStarted += q => h.Events.Add($"started:{q.Id}");
             h.Service.QuestCompleted += q => h.Events.Add($"completed:{q.Id}");
             h.Service.QuestAwarded += q => h.Events.Add($"awarded:{q.Id}");
@@ -70,7 +78,7 @@ namespace Game.Quest.Tests.Editor
         }
 
         [Test]
-        public void Completion_AutoAwards_InEventOrder()
+        public void Completion_StopsAtReadyToAward_UntilExplicitAward()
         {
             var h = Build(QuestCfg("q1", new[] { Task(1, Tag("c1")) }));
             var c1 = h.Parser.Register("c1", false);
@@ -79,11 +87,14 @@ namespace Game.Quest.Tests.Editor
             c1.Met = true;
             h.Sales.RaiseChanged();
 
-            Assert.AreEqual(QuestState.Awarded, h.Service.GetQuestState("q1"));
+            Assert.AreEqual(QuestState.ReadyToAward, h.Service.GetQuestState("q1"));
             var iCompleted = h.Events.IndexOf("completed:q1");
-            var iAwarded = h.Events.IndexOf("awarded:q1");
             Assert.Greater(iCompleted, -1);
-            Assert.Greater(iAwarded, iCompleted, "QuestCompleted must precede QuestAwarded");
+            CollectionAssert.DoesNotContain(h.Events, "awarded:q1");
+
+            Assert.IsTrue(h.Service.TryAwardAsync("q1", CancellationToken.None).GetAwaiter().GetResult());
+            Assert.AreEqual(QuestState.Awarded, h.Service.GetQuestState("q1"));
+            Assert.Greater(h.Events.IndexOf("awarded:q1"), iCompleted, "QuestCompleted must precede QuestAwarded");
         }
 
         [Test]
@@ -91,7 +102,7 @@ namespace Game.Quest.Tests.Editor
         {
             var h = Build(QuestCfg("q1", new[] { Task(1, completion: null) }));
             h.Load();
-            Assert.AreEqual(QuestState.Awarded, h.Service.GetQuestState("q1"));
+            Assert.AreEqual(QuestState.ReadyToAward, h.Service.GetQuestState("q1"));
         }
 
         [Test]
@@ -111,6 +122,10 @@ namespace Game.Quest.Tests.Editor
             ca.Met = true;
             h.Sales.RaiseChanged();
 
+            Assert.AreEqual(QuestState.ReadyToAward, h.Service.GetQuestState("a"));
+            Assert.AreEqual(QuestState.Pending, h.Service.GetQuestState("b"), "chain link waits for manual claim");
+
+            Assert.IsTrue(h.Service.TryAwardAsync("a", CancellationToken.None).GetAwaiter().GetResult());
             Assert.AreEqual(QuestState.Awarded, h.Service.GetQuestState("a"));
             Assert.AreEqual(QuestState.Active, h.Service.GetQuestState("b"), "chain link is a hard transition");
         }
@@ -131,9 +146,11 @@ namespace Game.Quest.Tests.Editor
         [Test]
         public void TryAward_And_TryActivate_AreIdempotent()
         {
-            var h = Build(QuestCfg("q1", new[] { Task(1, completion: null) })); // auto-awards on load
+            var h = Build(QuestCfg("q1", new[] { Task(1, completion: null) }));
             h.Load();
 
+            Assert.AreEqual(QuestState.ReadyToAward, h.Service.GetQuestState("q1"));
+            Assert.IsTrue(h.Service.TryAwardAsync("q1", CancellationToken.None).GetAwaiter().GetResult());
             Assert.AreEqual(QuestState.Awarded, h.Service.GetQuestState("q1"));
             Assert.IsFalse(h.Service.TryAwardAsync("q1", CancellationToken.None).GetAwaiter().GetResult());
             Assert.IsFalse(h.Service.TryActivateAsync("q1", CancellationToken.None).GetAwaiter().GetResult());
@@ -212,7 +229,78 @@ namespace Game.Quest.Tests.Editor
             c1.Met = true;
             h.Sales.RaiseChanged();
 
-            Assert.AreEqual(1, h.Events.Count(e => e == "awarded:q1"));
+            Assert.AreEqual(1, h.Events.Count(e => e == "completed:q1"));
+            Assert.AreEqual(0, h.Events.Count(e => e == "awarded:q1"));
+        }
+
+        [Test]
+        public void ConditionChangeSource_ReevaluatesPendingQuest()
+        {
+            var source = new FakeConditionSource();
+            var h = BuildWithFactories(
+                new IConditionFactory[] { source },
+                QuestCfg("q1", new[] { Task(1, Tag("c1")) }, activation: Tag("act")));
+            var activation = h.Parser.Register("act", false);
+            h.Parser.Register("c1", false);
+            h.Load();
+
+            Assert.AreEqual(QuestState.Pending, h.Service.GetQuestState("q1"));
+
+            activation.Met = true;
+            source.RaiseChanged();
+
+            Assert.AreEqual(QuestState.Active, h.Service.GetQuestState("q1"));
+            Assert.AreEqual(1, h.Events.Count(e => e == "started:q1"));
+        }
+
+        [Test]
+        public void VisitLocationChangeSource_ActivatesQuestWithoutLegacyDomainEvent()
+        {
+            var save = new FakeSaveService();
+            var visits = new LocationVisitService(save, new SaveBackedLocationVisitsRepository(save));
+            visits.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            var visitFactory = new VisitLocationConditionFactory(visits, visits);
+            var manualFactory = new ManualConditionFactory();
+            var factories = new IConditionFactory[] { visitFactory, manualFactory };
+            var parser = new ConditionParser(new ConditionFactoryRegistry(factories));
+            var configs = new FakeConfigsService()
+                .Add(QuestCfg(
+                    "q_port",
+                    new[] { Task(1, new JObject { ["type"] = ManualConditionFactory.TypeId }) },
+                    activation: new JObject
+                    {
+                        ["type"] = VisitLocationConditionFactory.TypeId,
+                        ["locationId"] = "loc_port",
+                        ["min"] = 1
+                    }));
+            var service = new QuestsService(save, configs, parser, allFactories: factories);
+            service.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(QuestState.Pending, service.GetQuestState("q_port"));
+
+            visits.RecordVisit("loc_port");
+
+            Assert.AreEqual(QuestState.Active, service.GetQuestState("q_port"));
+        }
+
+        [Test]
+        public void GetAllQuests_ReturnsEveryQuest_InConfigOrder_IncludingPending()
+        {
+            var first = QuestCfg("first", new[] { Task(1, Tag("c1")) });
+            var second = QuestCfg("second", new[] { Task(1, Tag("c2")) }, activation: Tag("act2"));
+            var third = QuestCfg("third", new[] { Task(1, Tag("c3")) }, activation: Tag("act3"));
+            var h = Build(first, second, third);
+            h.Parser.Register("c1", false);
+            h.Parser.Register("c2", false);
+            h.Parser.Register("c3", false);
+            h.Parser.Register("act2", false);
+            h.Parser.Register("act3", false);
+            h.Load();
+
+            CollectionAssert.AreEqual(new[] { "first", "second", "third" },
+                h.Service.GetAllQuests().Select(q => q.Id).ToList());
+            Assert.AreEqual(QuestState.Pending, h.Service.GetAllQuests()[1].State);
         }
 
         [Test]
@@ -224,6 +312,14 @@ namespace Game.Quest.Tests.Editor
             h.Load();
 
             Assert.IsNull(h.Service.TryGetQuest("q1"));
+        }
+
+        private sealed class FakeConditionSource : IConditionFactory, IConditionChangeSource
+        {
+            public string Type => "fakeConditionSource";
+            public event System.Action Changed;
+            public ICondition Create(JObject node) => null;
+            public void RaiseChanged() => Changed?.Invoke();
         }
     }
 }

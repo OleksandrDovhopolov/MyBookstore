@@ -122,6 +122,7 @@ namespace Game.Characters.Tests.Editor.Fakes
         // ----- Unused by the read-side factory: benign stubs -----
         public IQuest TryGetQuest(string questId) => null;
         public QuestConfig GetQuestConfig(string questId) => null;
+        public IReadOnlyList<IQuest> GetAllQuests() => Array.Empty<IQuest>();
         public IEnumerable<IQuest> GetActiveQuests() => Array.Empty<IQuest>();
         public IQuestChain GetChainByQuestId(string questId) => null;
         public UniTask<bool> TryActivateAsync(string questId, CancellationToken ct) => UniTask.FromResult(false);

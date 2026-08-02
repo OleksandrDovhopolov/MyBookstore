@@ -455,7 +455,7 @@ pointer/highlight для таргетов + динамическая регис�
 
 ### 6.3 Hub-туториал (`TutorialHub`) — канонический флоу
 
-**Статус: спека, не реализовано.** Зафиксировано 2026-07-20. Вторая секвенция после дня 1: знакомит игрока с
+**Статус: реализовано в коде; prefab tag назначает владелец задачи.** Обновлено 2026-07-21. Вторая секвенция после дня 1: знакомит игрока с
 журналом в хабе. Секвенция `tutorial_hub` (`TutorialHub`, `Context = Hub`, `Priority = 30`,
 `ResumePolicy = Restart`).
 
@@ -484,7 +484,9 @@ pointer/highlight для таргетов + динамическая регис�
 | 2 | — | **`TutorialDialogueStep`** (новый шаг): открывает `DialogWindow` с графом `tutorial_hub_intro` (3 фразы Eddi), ждёт закрытия окна |
 | 3 | Диалог закрыт | **`TutorialHighlightClickStep`**: подсветка кнопки журнала (target-id `hub.journal_button`), **стрелка-pointer**, всё затемнено кроме кнопки; блокирующий |
 | 4 | Клик по кнопке | стрелка/затемнение/текст убираются; **штатное** поведение кнопки открывает `JournalWindow` (туториал не открывает окно сам — клик проходит к кнопке) |
-| 5 | `JournalWindow` открылось | `TutorialAwaitWindowStep(() => IsWindowShown<JournalWindow>())` → **секвенция завершена** |
+| 5 | `JournalWindow` открылось | `TutorialAwaitWindowStep(() => IsWindowShown<JournalWindow>())` работает как gate: ждёт, пока окно и его `TutorialTargetTag` станут доступны |
+| 6 | Внутренняя кнопка журнала зарегистрирована | **`TutorialHighlightClickStep`**: подсветка кнопки закрытия журнала (target-id `journal.close_button`), pointer сверху, blocking |
+| 7 | Клик по внутренней кнопке | Штатное поведение кнопки выполняется; после клика `tutorial_hub` завершается |
 
 #### Что нового / что переиспользуется
 
@@ -497,7 +499,8 @@ pointer/highlight для таргетов + динамическая регис�
   идёт через immediate-режим delivered (см. defer-commit план диалогов).
 - **`TutorialHighlightClickStep`** (готов, этап 5) — target `hub.journal_button`, `pointer=true` (стрелка),
   blocking. **Тег на кнопку журнала добавляет владелец задачи вручную** (id `hub.journal_button`).
-- **`TutorialAwaitWindowStep`** (готов) — `IsWindowShown<JournalWindow>()` как терминатор.
+- **`TutorialAwaitWindowStep`** (готов) — `IsWindowShown<JournalWindow>()` теперь gate перед подсветкой внутренней кнопки, а не терминатор.
+- **Второй `TutorialHighlightClickStep`** — terminal step на target `journal.close_button`; тег на выбранную кнопку внутри `JournalWindow` добавляет владелец задачи вручную.
 - **Stub-диалог** `tutorial_hub_intro` заведён в [dialogues.json](../../Assets/Configs/dialogues.json) (3 фразы,
   speaker `Eddy`, `[STUB]`-плейсхолдер) — контент заменить при реализации; для билда синкнуть в StreamingAssets
   (`Tools/Configs/Sync Bundled Defaults`).
@@ -506,7 +509,7 @@ pointer/highlight для таргетов + динамическая регис�
 
 - Точный триггер немедленного пути (см. выше) — `HubReady` на возврате в хаб vs GAME-18 re-eval.
 - Fire-once диалога vs `Restart`-резюм (см. выше).
-- Подтвердить id кнопки/окна: `hub.journal_button` и `JournalWindow` (журнал из GAME-2).
+- Подтвердить prefab wiring: `hub.journal_button` в хабе и `journal.close_button` внутри `JournalWindow`.
 
 ## 7. Риски / открытые вопросы
 
@@ -519,6 +522,40 @@ pointer/highlight для таргетов + динамическая регис�
 | Дрейф string-id (таргеты/окна/квесты) | Валидатор §7 (⏳ не сделан), включая скан префабов на `TutorialTargetTag` |
 | Резолв таргета сделан DI-реестром `ITutorialTargetRegistry` + фасадом `TutorialTargets` (для тегов) | Реализовано (§4.5); purge null при lookup |
 | Resume/cancel-path Day 1 (§6.1) | Осознанные ограничения v1; recovery — позже |
+
+### 7.1 Известный баг: авто-старт туториала во время загрузки (до презентации сцены)
+
+**Статус: открыт.** Зафиксировано по логу `mybookstore_20260721_143408`.
+
+**Симптом.** `TutorialHub` (диалог `hub_dialogue` → `DialogWindow`) поднимается **во время фазы бута
+`save_data_load`, за ~1.5 c до загрузки геймплейной сцены** и до старта `TransitionAnimationService`.
+По логу: `[Tutorial] sequence 'tutorial_hub' started at step 0` в `14:34:17.551` и `DialogWindow ShowAsync`
+в `14:34:17.570`, тогда как `scene_transition` стартует лишь в `14:34:18.669`, а
+`GameplaySceneController ShowAsync` — в `14:34:19.067`. Диалог рисуется поверх бут-лоадера — геймплейной
+сцены (и HUD, и transition-cover) в этот момент ещё нет.
+
+**Причина.** Это не `HubReady`-триггер (он публикуется в `MainSceneBootstrap` только после сцены/reveal), а
+**`TutorialService.ResumeActiveSequence()`**, вызываемый инлайн в `AfterLoadAsync` из персистнутого
+`tutorial.state.ActiveSequenceId`. Resume **обходит и transition-guard (`IGameFlowService.IsTransitioning`), и
+`ITutorialAutoStartGate`** — там только проверки `_autoStart`/`_running`/`ActiveSequenceId`. Поэтому гейтинг
+reveal-окна (коммит `acb8ddc3`, `GameFlowService`/`MainSceneBootstrap`) **не помогает**: resume срабатывает
+раньше, чем эти гейты вообще активируются в кадре. Корень — у движка нет понятия «мир презентован и
+безопасно показывать оверлей»: он действует в `AfterLoadAsync`, до сцены.
+
+**Выбранное направление фикса (Вариант A — единый presentation-gate).** Ввести один гейт «безопасно ли
+сейчас показывать туториал», который уважают **все** пути авто-старта (resume, activation-scan, trigger,
+return-to-hub):
+- Блокировать `ITutorialAutoStartGate` на весь бут (с начала загрузки, до `save_data_load`) и релизить,
+  когда хаб реально презентован (после reveal / на `GameplayHubReady`).
+- Заставить `ResumeActiveSequence` **уважать гейт**: при `IsBlocked` откладывать (`_resumePending`) и
+  запускать на `Released`, по образцу существующего `_rescanPending`/`OnAutoStartGateReleased`.
+- `AfterLoadAsync` оставляет за собой только `state + Subscribe`; фактический запуск секвенций — за гейтом.
+
+Открытый вопрос реализации: кто держит `Block()` на старте бута (`Bootstrap`/loader) и `Release()` на
+презентации (`MainSceneBootstrap`), чтобы `Block`/`Release` не рассинхронились между слоями. Более дешёвая
+альтернатива (Вариант B — не резюмить инлайн, а подхватывать персистнутую активную секвенцию обычным
+триггером `HubReady`/`LocationLoaded`; все секвенции сейчас `ResumePolicy.Restart`, позиция шага не теряется)
+рассмотрена и отклонена в пользу единой модели гейта.
 
 ## 8. Платные решения (если появится бюджет)
 

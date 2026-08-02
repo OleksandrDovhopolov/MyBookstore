@@ -12,6 +12,7 @@ namespace Infrastructure.TutorialUI
     public sealed class TutorialTargetTag : MonoBehaviour
     {
         [Tooltip("Target id (see TutorialTargetIds), e.g. \"hub.start_day_button\".")]
+        [TutorialTargetId]
         [SerializeField] private string _targetId;
 
         private RectTransform _rt;

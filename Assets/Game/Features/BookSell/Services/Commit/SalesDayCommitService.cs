@@ -2,9 +2,12 @@ using System;
 using System.Threading;
 using Book.Sell.API;
 using Cysharp.Threading.Tasks;
+using Game.Configs;
+using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.Inventory.API;
 using Game.Quest.API;
+using Game.Rewards.API;
 using Game.Resources.API;
 using Game.SalesStats.API;
 using Save;
@@ -31,6 +34,7 @@ namespace Book.Sell.Services
         private readonly IDayProgressService _dayProgress;
         private readonly IQuestReevaluationGate _questGate; // optional: batch quest reeval across the commit
         private readonly IDeliveredDialoguesService _delivered;
+        private readonly IConfigsService _configs;
 
         public SalesDayCommitService(
             ISaveService save,
@@ -40,7 +44,8 @@ namespace Book.Sell.Services
             ISalesStatsRecorder salesStats,
             IDayProgressService dayProgress,
             IQuestReevaluationGate questGate = null,
-            IDeliveredDialoguesService delivered = null)
+            IDeliveredDialoguesService delivered = null,
+            IConfigsService configs = null)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _resources = resources ?? throw new ArgumentNullException(nameof(resources));
@@ -50,6 +55,7 @@ namespace Book.Sell.Services
             _dayProgress = dayProgress ?? throw new ArgumentNullException(nameof(dayProgress));
             _questGate = questGate;
             _delivered = delivered;
+            _configs = configs;
         }
 
         public async UniTask CommitAsync(SalesDayResult result, CancellationToken ct)
@@ -78,6 +84,8 @@ namespace Book.Sell.Services
                 if (result.GoldEarned > 0)
                     await _resources.AddAsync(ResourceIds.Gold, result.GoldEarned, reason, ct);
 
+                await GrantDayCompletionRewardsAsync(ct);
+
                 if (result.SoldBookIds != null)
                 {
                     foreach (var bookId in result.SoldBookIds)
@@ -90,6 +98,20 @@ namespace Book.Sell.Services
 
                         await _shelfState.MarkSoldAsync(bookId, ct);
                         _salesStats.RecordSold(bookId, new SaleContext(result.LocationId, result.Day));
+                    }
+                }
+
+                if (result.Recommendations != null)
+                {
+                    foreach (var recommendation in result.Recommendations)
+                    {
+                        if (recommendation == null) continue;
+                        if (recommendation.Tier != RecommendationTier.Excellent) continue;
+                        if (string.IsNullOrEmpty(recommendation.BookId)) continue;
+
+                        _salesStats.RecordActivePick(
+                            recommendation.BookId,
+                            new SaleContext(result.LocationId, result.Day));
                     }
                 }
 
@@ -117,6 +139,29 @@ namespace Book.Sell.Services
 
             Debug.Log($"{LogPrefix} committed day {result.Day}: gold={result.GoldEarned}, " +
                       $"books={result.SoldBookIds?.Count ?? 0}.");
+        }
+
+        private async UniTask GrantDayCompletionRewardsAsync(CancellationToken ct)
+        {
+            var rewards = _configs?.Get<EconomyConfig>(EconomyConfig.SingletonId)?.DayCompletionRewards;
+            if (rewards == null || rewards.Length == 0) return;
+
+            for (var i = 0; i < rewards.Length; i++)
+            {
+                var reward = rewards[i];
+                if (reward == null) continue;
+                if (string.IsNullOrWhiteSpace(reward.Id)) continue;
+                if (reward.Amount <= 0) continue;
+
+                if (reward.Kind != RewardKind.InventoryItem)
+                {
+                    if (reward.Kind == RewardKind.Resource)
+                        Debug.LogError($"{LogPrefix} day-completion reward '{reward.Id}' is Resource; resources are not granted through this channel.");
+                    continue;
+                }
+
+                await _inventory.AddAsync(reward.Id, reward.Category, reward.Amount, ct);
+            }
         }
     }
 }

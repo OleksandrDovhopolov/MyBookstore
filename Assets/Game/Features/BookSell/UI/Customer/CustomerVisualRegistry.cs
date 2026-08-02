@@ -5,6 +5,7 @@ using Book.Sell.Domain;
 using Book.Sell.Domain.Steps;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
+using Game.Location.API;
 using SpriteService;
 using UnityEngine;
 using VContainer;
@@ -28,13 +29,7 @@ namespace Book.Sell.UI.Customer
         private readonly Func<bool> _isPaused;
         private readonly IUiSpriteProvider _uiSprites;
         private readonly CustomerVisual _visualPrefab;
-        private readonly Transform _spawnRoot;
-        private readonly Transform _entryLeft;
-        private readonly Transform _entryRight;
-        private readonly Transform _shopApproach;
-        private readonly Transform[] _laneAnchors;
-        private readonly Transform _exitLeft;
-        private readonly Transform _exitRight;
+        private readonly ILocationContext _location;
 
         private readonly Dictionary<string, VisualState> _byId = new();
         private int _spawnedCount;
@@ -55,14 +50,8 @@ namespace Book.Sell.UI.Customer
             _tuning = tuning;
             _isPaused = () => minigamePresenter?.IsWindowOpen ?? false;
             _uiSprites = uiSprites;
-            _visualPrefab = config.VisualPrefab;
-            _spawnRoot = config.SpawnRoot;
-            _entryLeft = config.EntryLeft;
-            _entryRight = config.EntryRight;
-            _shopApproach = config.ShopApproach;
-            _laneAnchors = config.LaneAnchors ?? Array.Empty<Transform>();
-            _exitLeft = config.ExitLeft;
-            _exitRight = config.ExitRight;
+            _visualPrefab = config?.VisualPrefab;
+            _location = config?.Location;
         }
 
         public CustomerVisual GetById(string customerId)
@@ -119,7 +108,7 @@ namespace Book.Sell.UI.Customer
             var lanePos = ResolveLanePosition(_spawnedCount);
             _spawnedCount++;
 
-            var visual = _resolver.Instantiate(_visualPrefab, spawnPos, Quaternion.identity, _spawnRoot);
+            var visual = _resolver.Instantiate(_visualPrefab, spawnPos, Quaternion.identity, _location?.CustomerSpawnRoot);
             visual.Initialize(customer);
 
             var state = new VisualState(visual, lanePos);
@@ -130,15 +119,32 @@ namespace Book.Sell.UI.Customer
 
         private async UniTaskVoid LoadCharacterSpriteAsync(string characterId, VisualState state)
         {
-            if (_uiSprites == null || string.IsNullOrWhiteSpace(characterId) || state == null)
+            if (state == null)
                 return;
+
+            if (_uiSprites == null)
+            {
+                ApplyFallbackSprite(state.Visual);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(characterId))
+            {
+                ApplyFallbackSprite(state.Visual);
+                return;
+            }
 
             try
             {
                 var token = state.SpriteToken;
                 var sprite = await _uiSprites.GetSpriteAsync(characterId, token);
-                if (sprite != null && !token.IsCancellationRequested && state.Visual != null)
-                    state.Visual.ApplyFigureSprite(sprite);
+                if (token.IsCancellationRequested)
+                    return;
+
+                if (state.Visual == null)
+                    return;
+
+                state.Visual.ApplyFigureSprite(sprite);
             }
             catch (OperationCanceledException)
             {
@@ -176,7 +182,7 @@ namespace Book.Sell.UI.Customer
         private Vector3 ResolveEntryPosition()
         {
             var useLeft = UnityEngine.Random.value < 0.5f;
-            var anchor = useLeft ? _entryLeft : _entryRight;
+            var anchor = useLeft ? _location?.EntryLeft : _location?.EntryRight;
             if (anchor != null) return anchor.position;
             return ResolveCameraEdgePosition(useLeft);
         }
@@ -184,20 +190,22 @@ namespace Book.Sell.UI.Customer
         private Vector3 ResolveExitPosition()
         {
             var useLeft = UnityEngine.Random.value < 0.5f;
-            var anchor = useLeft ? _exitLeft : _exitRight;
+            var anchor = useLeft ? _location?.ExitLeft : _location?.ExitRight;
             if (anchor != null) return anchor.position;
             return ResolveCameraEdgePosition(useLeft);
         }
 
         private Vector3 ResolveLanePosition(int customerIndex)
         {
-            if (_laneAnchors.Length > 0)
+            var laneAnchors = _location?.LaneAnchors;
+            if (laneAnchors is { Count: > 0 })
             {
-                var lane = _laneAnchors[customerIndex % _laneAnchors.Length];
+                var lane = laneAnchors[customerIndex % laneAnchors.Count];
                 if (lane != null) return lane.position;
             }
 
-            if (_shopApproach != null) return _shopApproach.position;
+            var shopApproach = _location?.ShopApproach;
+            if (shopApproach != null) return shopApproach.position;
             return Vector3.zero;
         }
 
@@ -221,6 +229,12 @@ namespace Book.Sell.UI.Customer
             var halfWidth = halfHeight * camera.aspect;
             var x = (left ? -halfWidth : halfWidth) + (left ? -CameraFallbackHorizontalMargin : CameraFallbackHorizontalMargin);
             return new Vector3(x, camera.transform.position.y, 0f);
+        }
+
+        private static void ApplyFallbackSprite(CustomerVisual visual)
+        {
+            if (visual != null)
+                visual.ApplyFigureSprite(null);
         }
 
         private sealed class VisualState
@@ -251,32 +265,14 @@ namespace Book.Sell.UI.Customer
     public sealed class CustomerVisualRegistryConfig
     {
         public CustomerVisual VisualPrefab { get; }
-        public Transform SpawnRoot { get; }
-        public Transform EntryLeft { get; }
-        public Transform EntryRight { get; }
-        public Transform ShopApproach { get; }
-        public Transform[] LaneAnchors { get; }
-        public Transform ExitLeft { get; }
-        public Transform ExitRight { get; }
+        public ILocationContext Location { get; }
 
         public CustomerVisualRegistryConfig(
             CustomerVisual visualPrefab,
-            Transform spawnRoot = null,
-            Transform entryLeft = null,
-            Transform entryRight = null,
-            Transform shopApproach = null,
-            Transform[] laneAnchors = null,
-            Transform exitLeft = null,
-            Transform exitRight = null)
+            ILocationContext location = null)
         {
             VisualPrefab = visualPrefab;
-            SpawnRoot = spawnRoot;
-            EntryLeft = entryLeft;
-            EntryRight = entryRight;
-            ShopApproach = shopApproach;
-            LaneAnchors = laneAnchors;
-            ExitLeft = exitLeft;
-            ExitRight = exitRight;
+            Location = location;
         }
     }
 }

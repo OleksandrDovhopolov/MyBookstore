@@ -10,7 +10,8 @@ namespace Game.LocationUnlock.Services
     /// <item><c>Unlock</c> absent → no requirements (always-met); this is how the starting location
     /// stays open.</item>
     /// </list>
-    /// Unlock is free and automatic (no cost, no player-level gate), so there is no legacy shortcut here.
+    /// Unlock cost is handled separately by LocationUnlockService; this builder only parses pure
+    /// predicate requirements.
     /// </summary>
     public sealed class LocationUnlockConditionBuilder
     {

@@ -149,6 +149,26 @@ namespace Game.SalesStats.Tests.Editor
             Assert.AreEqual(3, svc2.TotalSold);
         }
 
+        [Test]
+        public void RecordActivePick_IncrementsExcellentPicksOnly()
+        {
+            var (svc, _, _) = Build();
+            SalesStatsChange captured = null;
+            svc.Changed += e => captured = e;
+
+            svc.RecordActivePick(CrimeBook, new SaleContext(FarBeach, 1));
+
+            Assert.AreEqual(1, svc.GetExcellentPicks(BookGenre.Crime));
+            Assert.AreEqual(0, svc.GetSold(BookGenre.Crime));
+            Assert.AreEqual(0, svc.GetSold(BookGenre.Crime, FarBeach));
+            Assert.AreEqual(0, svc.TotalSold);
+            Assert.IsNotNull(captured);
+            Assert.AreEqual(BookGenre.Crime, captured.Genre);
+            Assert.AreEqual(1, captured.NewCount);
+            Assert.AreEqual(0, captured.TotalSold);
+            Assert.AreEqual(CrimeBook, captured.BookId);
+        }
+
         // ----- per-location -----
 
         [Test]
@@ -236,6 +256,21 @@ namespace Game.SalesStats.Tests.Editor
         }
 
         [Test]
+        public void Roundtrip_PreservesExcellentPicks()
+        {
+            var (svc, repo, _) = Build();
+            svc.RecordActivePick(CrimeBook, new SaleContext(FarBeach, 1));
+            svc.RecordActivePick(CrimeBook, new SaleContext(FarBeach, 1));
+            svc.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            var svc2 = new SalesStatsService(new FakeSaveService(), repo, new FakeConfigsService());
+            svc2.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(2, svc2.GetExcellentPicks(BookGenre.Crime));
+            Assert.AreEqual(0, svc2.TotalSold);
+        }
+
+        [Test]
         public void AfterLoad_V1Save_WithoutNewMaps_LoadsCleanly()
         {
             // Simulate a v1 save: only SoldByGenre present, new maps null.
@@ -257,6 +292,7 @@ namespace Game.SalesStats.Tests.Editor
             Assert.AreEqual(0, svc.GetSold(BookGenre.Crime, FarBeach));
             Assert.AreEqual(0, svc.GetSoldOnDay(1));
             Assert.AreEqual(0, svc.GetMaxSoldInSingleDay(BookGenre.Crime));
+            Assert.AreEqual(0, svc.GetExcellentPicks(BookGenre.Crime));
         }
     }
 }

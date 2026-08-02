@@ -5,10 +5,12 @@
         "VContainer",
         "UniTask",
         "Configs",
+        "Game.Location.API",
         "Game.LocationUnlock.API",
         "Game.LocationEntry.API",
         "Game.Conditions.API",
         "Game.Resources.API",
+        "Game.Inventory.API",
         "Game.Core.UI",
         "Infrastructure",
         "Unity.TextMeshPro"

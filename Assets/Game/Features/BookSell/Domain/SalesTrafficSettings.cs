@@ -19,7 +19,7 @@ namespace Book.Sell.Domain
     public sealed class SalesTrafficSettings
     {
         /// <summary>Baseline count for a day with no explicit <c>DayConfig.CustomerCount</c>.</summary>
-        public int DefaultCustomerCount { get; set; } = 10;
+        public int DefaultCustomerCount { get; set; } = 5;
 
         /// <summary>Final lower clamp (non-hard-override days).</summary>
         public int MinCustomerCount { get; set; } = 0;

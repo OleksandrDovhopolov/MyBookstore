@@ -114,19 +114,11 @@
   - Уточнить формат `published` в конфиге (год или дата) и централизовать парсинг/валидацию.
   - Покрыть boundary-тестами границы веков.
 
-- [ ] **GAME-15. Согласовать стартовый пресет FTUE с каталогом книг.**
-  Хардкод-пресет в [FtueBootstrapper.cs:28-37](../Assets/Game/Features/Ftue/Services/FtueBootstrapper.cs)
-  просит 27 книг по 7 жанрам (`Fantasy 5, Crime 5, Drama 6, Classic 3, Fact 3, Travel 3, Kids 2`), но текущий
-  `books.json` покрывает только 4 жанра (`Crime 20, Classic 20, Drama 20, Fantasy 3`) — в логе сыплются
-  warning'и `genre '…' missing from catalog` (Fact/Travel/Kids) и `Fantasy: catalog has 3, requested 5`
-  ([строки 114 и 125](../Assets/Game/Features/Ftue/Services/FtueBootstrapper.cs)). FTUE не падает, но сеет 17
-  книг вместо 27. Что сделать (выбрать направление):
-  - **Контент:** завезти книги жанров `Fact`/`Travel`/`Kids` и добить `Fantasy` до нужного числа в
-    `books.json` → Sync в StreamingAssets + Publish на сервер.
-  - **или Код:** привести `PresetCounts` к реально существующим жанрам/числам, чтобы лог был чистым.
-  - Заодно вынести пресет из хардкода в `ftue.json` (уже помечено как MVP-заглушка в
-    [комментарии:22-24](../Assets/Game/Features/Ftue/Services/FtueBootstrapper.cs)), парно с рефактором
-    `DailyBookSlots`.
+- [x] **GAME-15. Согласовать стартовый пресет FTUE с каталогом книг.**
+  Закрыто: runtime читает `books_converted.json`, где хватает всех 7 стартовых жанров. Хардкод-пресет в
+  [FtueBootstrapper.cs:28-37](../Assets/Game/Features/Ftue/Services/FtueBootstrapper.cs) теперь сеет 54 книги:
+  `Fantasy 10, Crime 10, Drama 12, Classic 6, Fact 6, Travel 6, Kids 4`.
+  Вынести пресет из хардкода в `ftue.json` всё ещё отдельная задача, парная с рефактором `DailyBookSlots`.
 
 - [x] **GAME-16. `CustomerScriptConfig` (Candidate E) — один дом для сценарных покупателей.**
   Закрыто: `QuestConfig` больше не несёт поведение встречи; Eddi и day-2 forced miss живут в
@@ -306,6 +298,39 @@
      под-шагам. Реализовать поверх п.4 (`TutorialActionStep` + `IAnalyticsService`). Смежно с аналитикой из
      GAME-10 §7 (`seq_start`/`step_start`/`seq_complete`).
 
+- [ ] **GAME-22. Зафиксировать контракт «главный жанр» — `genres[0]` vs весь массив `genres`.**
+  Сейчас две подсистемы читают `BookConfig.Genres` по-разному, и это разъедется на первой же книге с
+  двумя жанрами.
+  - **Весь массив** читает только условие активного запроса: `BookConditionRequestEvaluator.GetList`
+    возвращает `book.Genres`, и `genres contains "Fact"` матчится по любому элементу.
+  - **Только `genres[0]`** (через `BookConfig.PrimaryGenre`) читают все остальные: статистика и квесты
+    (`SalesStatsService.TryResolveGenre` → `activePickGenre` / `soldGenre`), пассивные продажи
+    (`GenreShelfPicker`, `WeightedPassiveSaleSelector`), спрос локации (`LocationDemandProfileProvider`),
+    любимые жанры персонажей (`ScriptedCustomerSpawner`), итоги дня (`ResultsSummaryBuilder.SoldByGenre`),
+    жанровые строки инвентаря (`BookGenreRowSource`) и **визуал** — ярлык и иконка жанра в
+    `BookCardView` (`_genreLabel`, `LoadGenreIcon`) и спрайт в баббле покупателя (`CustomerBubbleBinder`).
+
+  **Следствие расхождения.** Книга `["Classic","Fact"]` пройдёт Fact-запрос и получит `Excellent`, но
+  в `activePickGenre Fact` не попадёт — уйдёт в счётчик `Classic`. То есть квест Милли будет визуально
+  выполняться и не завершаться.
+
+  **Почему это ещё не всплыло.** У всех 100 книг в `books.json` ровно один жанр — проверено.
+
+  **Направление решения.** `genres[0]` — уже де-факто «основной тип книги», он определяет её визуал, и это
+  осознанное решение; отдельная сущность-«главный жанр» не нужна. Значит выбор не 50/50: выбивается
+  evaluator. Варианты:
+  1. Оставить как есть, но **явно задокументировать** в [ACTIVE_REQUEST_CONDITIONS.md](ACTIVE_REQUEST_CONDITIONS.md),
+     что `genres contains` — это «есть среди жанров», а зачёт квеста — по основному. Дешевле всего, но
+     расхождение остаётся ловушкой для контентщика.
+  2. Свести evaluator к основному жанру (`genres[0]`) — самое согласованное поведение, но теряется
+     возможность «книга подходит и как Classic, и как Fact».
+  3. Добавить отдельный тип условия (`primaryGenre` рядом с `genres`), чтобы автор запроса выбирал сам.
+
+  **Что сделать:** выбрать вариант, зафиксировать в
+  [ACTIVE_REQUEST_CONDITIONS.md](ACTIVE_REQUEST_CONDITIONS.md) и в XML-доке `BookConfig.PrimaryGenre`,
+  покрыть тестом на двужанровой книге. Брать **до** того, как в `books.json` появится первая книга с
+  несколькими жанрами. Смежно: GAME-12 (модель условий запроса).
+
 ---
 
 ## 🛠️ Инфраструктура
@@ -365,6 +390,31 @@
   - либо **не персистить вовсе**: данные живут ровно один переход Sales→Results и восстановимы из
     `sales_stats` (v2, 244B).
   Смотреть парно с INF-6 (версионирование сейва).
+
+- [ ] **INF-12. Валидаторы контента: окно вместо пунктов меню + подтянуть рантаймовые в build-гейт.**
+  Сейчас проверки запускаются тремя разными способами: агрегат `Tools → Configs → Run Pre-Build
+  Validation` (гоняет реестр `PreBuildValidationGate.Validators`), два индивидуальных пункта меню
+  (`Validate Active Requests`, `Validate Book Box Pools`), и отдельно рантаймовые валидаторы — только при
+  входе в Play mode. «Прогнать все проверки проекта» одной кнопкой сейчас нельзя в принципе.
+  Что решено **не** делать: подменю `Tools/Validation/*`. `[MenuItem]` требует константу времени
+  компиляции, поэтому меню невозможно сгенерировать из реестра — оно всегда будет ручным параллельным
+  списком. При четырёх валидаторах это добавит третий список для синхронизации (реестр, таблица в
+  [BUILD.md](BUILD.md) §0, меню) и ничего не даст.
+  Что сделать, когда валидаторов станет ~6 или прогонять их понадобится чаще, чем перед билдом:
+  - Окно `Tools/Validation/Dashboard` в `Game.Build.Editor` — единственной сборке, которая уже видит все
+    валидаторы. В `Game.Configs.Editor` (к `ConfigEditorWindow`) не класть: его asmdef пришлось бы
+    подписать на `Book.Sell.Editor` и `Game.Rewards.Editor`, а это инверсия слоёв (фичи зависят от
+    `Configs`, не наоборот).
+  - Окно итерирует `PreBuildValidationGate.Validators` — снять `private`, добавить в кортеж описание.
+    Тогда реестр становится единственным источником правды и новый валидатор появляется в UI сам.
+  - Индивидуальные пункты меню валидаторов при этом удалить — окно их заменяет, дубликат исчезает.
+  Отдельно и независимо (даёт больше, чем любая перестановка меню):
+  - Переписать `ItemReferenceValidator` и `DecorConfigValidator` на чтение JSON напрямую и внести их в
+    реестр гейта. Сейчас они требуют `IConfigsService`, поэтому живут только в Play mode: в редакторе
+    бросают и блокируют вход, в билде пишут `LogError` и пропускают сборку.
+  - Именно они ловят предметы без источника (кейсы `postcard` и `map`) — то есть самый ценный класс
+    контентных ошибок сейчас не защищён build-гейтом.
+  Зафиксировано как «известный пробел» в [BUILD.md](BUILD.md) §0.
 
 ---
 

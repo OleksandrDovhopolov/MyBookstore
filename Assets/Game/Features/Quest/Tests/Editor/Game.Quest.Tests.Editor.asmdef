@@ -11,9 +11,12 @@
         "Save",
         "Game.SalesStats.API",
         "Game.SalesStats",
+        "Game.LocationVisits",
+        "Game.LocationVisits.API",
         "Game.Decor.API",
         "Game.Inventory.API",
         "DayCycle",
+        "Game.Rewards.API",
         "UnityEngine.TestRunner"
     ],
     "includePlatforms": [

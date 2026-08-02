@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using Game.Configs;
+using Game.Decor;
+using Game.Decor.UI;
 using Game.Inventory.API;
 using Game.UI;
+using SpriteService;
 using VContainer;
 
 namespace Game.Inventory.UI
@@ -11,33 +13,26 @@ namespace Game.Inventory.UI
     public sealed class InventoryWindowController : WindowController<InventoryWindowView>
     {
         private IInventoryService _inventory;
-        private IItemCategoryRegistry _categories;
-        private IInventoryUseRouter _useRouter;
-        private IReadOnlyList<IInventoryItemUseHandler> _handlers;
-        private IReadOnlyList<IInventoryItemInfoProvider> _infoProviders;
-        private IConfigsService _configs;
+        private IUiSpriteProvider _sprites;
+        private IReadOnlyList<IInventoryRowSource> _rowSources;
+        private IDecorPlacementService _decorPlacement;
 
         [Inject]
         public void Construct(
             IInventoryService inventory,
-            IItemCategoryRegistry categories,
-            IInventoryUseRouter useRouter,
-            IReadOnlyList<IInventoryItemUseHandler> handlers,
-            IReadOnlyList<IInventoryItemInfoProvider> infoProviders,
-            IConfigsService configs)
+            IUiSpriteProvider sprites,
+            IReadOnlyList<IInventoryRowSource> rowSources,
+            IDecorPlacementService decorPlacement)
         {
             _inventory = inventory;
-            _categories = categories;
-            _useRouter = useRouter;
-            _handlers = handlers;
-            _infoProviders = infoProviders;
-            _configs = configs;
+            _sprites = sprites;
+            _rowSources = rowSources;
+            _decorPlacement = decorPlacement;
         }
 
         protected override void OnInit()
         {
-            View.Bind(_inventory, _categories, _useRouter, _handlers, _infoProviders, _configs);
-            View.CloseButton.onClick.AddListener(CloseWindow);
+            View.Bind(_inventory, _sprites, _rowSources, _decorPlacement, OnDecorInfoClicked);
         }
 
         protected override void OnShowStart() => View.Refresh();
@@ -45,10 +40,15 @@ namespace Game.Inventory.UI
         protected override void OnDispose()
         {
             if (View == null) return;
-            View.CloseButton.onClick.RemoveListener(CloseWindow);
             View.Teardown();
         }
 
-        private void CloseWindow() => UIManager.HideAsync<InventoryWindowController>().Forget();
+        private void OnDecorInfoClicked(string decorId)
+        {
+            if (string.IsNullOrEmpty(decorId)) return;
+            UIManager.ShowAsync<DecorInfoPopup>(
+                new DecorInfoPopupArgs(decorId),
+                View != null ? View.destroyCancellationToken : default).Forget();
+        }
     }
 }

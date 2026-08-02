@@ -48,10 +48,10 @@ namespace Game.Rewards.Services
                 return UniTask.FromResult(new RewardSpec(spec.Id, Array.Empty<RewardItem>()));
             }
 
-            var pool = BuildPool(rule.Filter);
+            var pool = BuildPool(rule.Filter, out var diagnostics);
             if (pool.Count == 0)
             {
-                Debug.LogWarning($"{LogPrefix} Empty pool for '{spec.Id}' (all candidates owned or filter matches nothing). Player paid but received nothing.");
+                Debug.LogError($"{LogPrefix} {DescribeEmptyPool(spec.Id, rule, diagnostics)}");
                 return UniTask.FromResult(new RewardSpec(spec.Id, Array.Empty<RewardItem>()));
             }
 
@@ -70,23 +70,87 @@ namespace Game.Rewards.Services
             }
 
             if (rolls < rule.Rolls)
-                Debug.LogWarning($"{LogPrefix} Underfilled box '{spec.Id}': delivered {rolls}/{rule.Rolls} books (collection nearly complete).");
+                Debug.LogWarning(
+                    $"{LogPrefix} Underfilled box '{spec.Id}': delivered {rolls}/{rule.Rolls} books. " +
+                    $"Catalog has {diagnostics.Total} book(s), {diagnostics.MatchedFilter} match the box rule " +
+                    $"({rule.FilterDescription}), and {diagnostics.OwnedSkipped} of those are already owned " +
+                    $"(books are Unique, so owned ids are never rolled twice).");
 
             return UniTask.FromResult(new RewardSpec(spec.Id, items));
         }
 
-        private List<BookConfig> BuildPool(Predicate<BookConfig> filter)
+        /// <summary>Counts behind a pool, kept so an empty/underfilled box can say *why* it is empty.</summary>
+        private readonly struct PoolDiagnostics
+        {
+            public int Total { get; }           // books in the catalog
+            public int Invalid { get; }         // null / no id
+            public int MatchedFilter { get; }   // passed the box rule, before the ownership cut
+            public int OwnedSkipped { get; }    // matched the rule but the player already owns them
+
+            public PoolDiagnostics(int total, int invalid, int matchedFilter, int ownedSkipped)
+            {
+                Total = total;
+                Invalid = invalid;
+                MatchedFilter = matchedFilter;
+                OwnedSkipped = ownedSkipped;
+            }
+        }
+
+        /// <summary>
+        /// Spells out an empty pool: the two causes need opposite fixes. "No book matches the rule" is a
+        /// content bug that ships broken (e.g. a catalog with no <c>rarityWeight</c> leaves every book at the
+        /// 0.5 default, so a <c>RarityWeight &gt;= 0.6</c> box can never fill) and is caught before the build
+        /// by <c>BookBoxPoolValidator</c>. "All matching books already owned" is a legitimate end-state of a
+        /// nearly complete collection and needs a shop/limit change, not a data fix.
+        /// </summary>
+        private static string DescribeEmptyPool(string boxId, BookBoxPoolRules.Rule rule, PoolDiagnostics d)
+        {
+            var head =
+                $"Box '{boxId}' rolled nothing — the player paid and received no books. " +
+                $"Rule: {rule.FilterDescription}; rolls {rule.Rolls}. " +
+                $"Catalog: {d.Total} book(s)" + (d.Invalid > 0 ? $" ({d.Invalid} skipped as null/no-id)" : "") + ".";
+
+            if (d.MatchedFilter == 0)
+                return head +
+                       " CAUSE: no book in the catalog matches the rule, so this box can never fill — " +
+                       "a content bug, not a play state. Check that the fields the rule reads are actually " +
+                       "present in the books config (a missing field silently falls back to its C# default).";
+
+            return head +
+                   $" CAUSE: {d.MatchedFilter} book(s) match the rule but the player already owns all of them " +
+                   "(books are Unique and are never rolled twice). The pool is exhausted, not misconfigured.";
+        }
+
+        private List<BookConfig> BuildPool(Predicate<BookConfig> filter, out PoolDiagnostics diagnostics)
         {
             var all = _configs.GetAll<BookConfig>();
             var pool = new List<BookConfig>(all.Count);
+            var invalid = 0;
+            var matchedFilter = 0;
+            var ownedSkipped = 0;
+
             for (var i = 0; i < all.Count; i++)
             {
                 var book = all[i];
-                if (book == null || string.IsNullOrEmpty(book.Id)) continue;
+                if (book == null || string.IsNullOrEmpty(book.Id))
+                {
+                    invalid++;
+                    continue;
+                }
+
                 if (!filter(book)) continue;
-                if (_inventory.Has(book.Id)) continue;   // PR5: skip books player already owns (book category is Unique).
+                matchedFilter++;
+
+                if (_inventory.Has(book.Id))   // PR5: skip books player already owns (book category is Unique).
+                {
+                    ownedSkipped++;
+                    continue;
+                }
+
                 pool.Add(book);
             }
+
+            diagnostics = new PoolDiagnostics(all.Count, invalid, matchedFilter, ownedSkipped);
             return pool;
         }
 

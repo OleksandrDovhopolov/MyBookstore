@@ -30,12 +30,23 @@ namespace Game.SalesStats.Tests.Editor
             for (var i = 0; i < times; i++) svc.RecordSold(FantasyBook, new SaleContext(location, day));
         }
 
-        private static SalesStatsBaselineCapturePlan Plan(bool genre = false, bool location = false, bool singleDay = false, int activationDay = 0)
+        private static void Pick(SalesStatsService svc, string location, int day, int times)
+        {
+            for (var i = 0; i < times; i++) svc.RecordActivePick(FantasyBook, new SaleContext(location, day));
+        }
+
+        private static SalesStatsBaselineCapturePlan Plan(
+            bool genre = false,
+            bool location = false,
+            bool singleDay = false,
+            bool excellentPick = false,
+            int activationDay = 0)
         {
             var plan = new SalesStatsBaselineCapturePlan { ActivationDay = activationDay };
             if (genre) plan.AddGenre(BookGenre.Fantasy);
             if (location) plan.AddLocationGenre(FarBeach, BookGenre.Fantasy);
             if (singleDay) plan.AddSingleDayGenre(BookGenre.Fantasy);
+            if (excellentPick) plan.AddExcellentPickGenre(BookGenre.Fantasy);
             return plan;
         }
 
@@ -73,6 +84,21 @@ namespace Game.SalesStats.Tests.Editor
             Assert.AreEqual(4, scoped.GetMaxSoldInSingleDay(BookGenre.Fantasy));
             // lifetime: day1 = 4, day2 = 4 → best = 4.
             Assert.AreEqual(4, svc.GetMaxSoldInSingleDay(BookGenre.Fantasy));
+        }
+
+        [Test]
+        public void ScopedReader_SubtractsExcellentPickBaseline()
+        {
+            var svc = Build();
+            Pick(svc, FarBeach, 1, 3);
+
+            var baseline = ((ISalesStatsBaselineSource)svc).CaptureBaseline(
+                Plan(excellentPick: true));
+            Pick(svc, FarBeach, 1, 2);
+
+            var scoped = ((ISalesStatsBaselineSource)svc).CreateScopedReader(baseline);
+            Assert.AreEqual(2, scoped.GetExcellentPicks(BookGenre.Fantasy));
+            Assert.AreEqual(5, svc.GetExcellentPicks(BookGenre.Fantasy));
         }
 
         [Test]

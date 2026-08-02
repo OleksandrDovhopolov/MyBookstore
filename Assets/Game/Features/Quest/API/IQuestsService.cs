@@ -22,6 +22,9 @@ namespace Game.Quest.API
         /// <summary>Current state; Pending for unknown/never-started quests.</summary>
         QuestState GetQuestState(string questId);
 
+        /// <summary>All known quests in config order, across every state. Consumers filter as needed.</summary>
+        IReadOnlyList<IQuest> GetAllQuests();
+
         IEnumerable<IQuest> GetActiveQuests();
 
         /// <summary>Chain by its <c>QuestConfig.ChainId</c>, or null if none.</summary>

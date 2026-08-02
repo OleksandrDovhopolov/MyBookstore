@@ -4,14 +4,20 @@ using System.Threading;
 using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
+using Book.Sell.Tests.Editor.Fakes;
 using Cysharp.Threading.Tasks;
+using Game.Configs;
+using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.Inventory.API;
 using Game.Quest.API;
+using Game.Rewards.API;
 using Game.Resources.API;
 using Game.SalesStats.API;
 using NUnit.Framework;
 using Save;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Book.Sell.Tests.Editor
 {
@@ -50,19 +56,172 @@ namespace Book.Sell.Tests.Editor
             Assert.AreEqual(0, save.ForceWithSyncSaveCalls);
         }
 
+        [Test]
+        public void CommitAsync_GrantsDayCompletionRewards_Once()
+        {
+            var save = new RecordingSaveService();
+            var delivered = new RecordingDeliveredDialogues(() => save.BlockDepth > 0);
+            var dayProgress = new FakeDayProgress { Current = { CurrentDay = 1 } };
+            var inventory = new FakeInventoryService();
+            var service = CreateService(
+                save,
+                dayProgress,
+                delivered,
+                inventory: inventory,
+                configs: ConfigsWithDayRewards(Reward("postcard", InventoryCategories.Consumable, 1)));
+            var result = new SalesDayResult { Day = 1, LocationId = "loc" };
+
+            service.CommitAsync(result, CancellationToken.None).GetAwaiter().GetResult();
+            service.CommitAsync(result, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, inventory.Added.Count);
+            Assert.AreEqual("postcard", inventory.Added[0].ItemId);
+            Assert.AreEqual(InventoryCategories.Consumable, inventory.Added[0].CategoryId);
+            Assert.AreEqual(1, inventory.Added[0].Count);
+        }
+
+        [Test]
+        public void CommitAsync_AlreadyCompletedDay_DoesNotGrantDayRewards()
+        {
+            var save = new RecordingSaveService();
+            var delivered = new RecordingDeliveredDialogues(() => save.BlockDepth > 0);
+            var dayProgress = new FakeDayProgress { Current = { CurrentDay = 1 } };
+            dayProgress.Current.CompletedDays.Add(1);
+            var inventory = new FakeInventoryService();
+            var service = CreateService(
+                save,
+                dayProgress,
+                delivered,
+                inventory: inventory,
+                configs: ConfigsWithDayRewards(Reward("postcard", InventoryCategories.Consumable, 1)));
+
+            service.CommitAsync(new SalesDayResult { Day = 1, LocationId = "loc" }, CancellationToken.None)
+                .GetAwaiter().GetResult();
+
+            Assert.AreEqual(0, inventory.Added.Count);
+        }
+
+        [Test]
+        public void CommitAsync_WithoutConfigs_DoesNotThrow()
+        {
+            var save = new RecordingSaveService();
+            var delivered = new RecordingDeliveredDialogues(() => save.BlockDepth > 0);
+            var dayProgress = new FakeDayProgress { Current = { CurrentDay = 1 } };
+            var service = CreateService(save, dayProgress, delivered);
+
+            Assert.DoesNotThrow(() => service
+                .CommitAsync(new SalesDayResult { Day = 1, LocationId = "loc" }, CancellationToken.None)
+                .GetAwaiter().GetResult());
+        }
+
+        [Test]
+        public void CommitAsync_IgnoresInvalidDayRewardEntries()
+        {
+            var save = new RecordingSaveService();
+            var delivered = new RecordingDeliveredDialogues(() => save.BlockDepth > 0);
+            var dayProgress = new FakeDayProgress { Current = { CurrentDay = 1 } };
+            var inventory = new FakeInventoryService();
+            var service = CreateService(
+                save,
+                dayProgress,
+                delivered,
+                inventory: inventory,
+                configs: ConfigsWithDayRewards(
+                    Reward(null, InventoryCategories.Consumable, 1),
+                    Reward("empty_amount", InventoryCategories.Consumable, 0),
+                    new RewardItemData { Id = ResourceIds.Gold, Amount = 10, Kind = RewardKind.Resource },
+                    Reward("postcard", InventoryCategories.Consumable, 1)));
+
+            LogAssert.Expect(
+                LogType.Error,
+                "[Sales.Commit] day-completion reward 'gold' is Resource; resources are not granted through this channel.");
+
+            service.CommitAsync(new SalesDayResult { Day = 1, LocationId = "loc" }, CancellationToken.None)
+                .GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, inventory.Added.Count);
+            Assert.AreEqual("postcard", inventory.Added[0].ItemId);
+        }
+
+        [Test]
+        public void CommitAsync_RecordsOnlyExcellentRecommendationsAsActivePicks()
+        {
+            var save = new RecordingSaveService();
+            var delivered = new RecordingDeliveredDialogues(() => save.BlockDepth > 0);
+            var dayProgress = new FakeDayProgress { Current = { CurrentDay = 1 } };
+            var salesStats = new FakeSalesStatsRecorder();
+            var service = CreateService(save, dayProgress, delivered, salesStats);
+            var result = new SalesDayResult { Day = 1, LocationId = "loc" };
+            result.Recommendations.Add(Recommendation("book_fact", RecommendationTier.Excellent));
+            result.Recommendations.Add(Recommendation("book_crime", RecommendationTier.Failed));
+            result.Recommendations.Add(RecommendationResult.Skipped("req_skip"));
+            result.Recommendations.Add(Recommendation(null, RecommendationTier.Excellent));
+
+            service.CommitAsync(result, CancellationToken.None).GetAwaiter().GetResult();
+
+            CollectionAssert.AreEqual(new[] { "book_fact" }, salesStats.ActivePicks);
+        }
+
+        [Test]
+        public void CommitAsync_AlreadyCompletedDay_DoesNotRecordActivePicks()
+        {
+            var save = new RecordingSaveService();
+            var delivered = new RecordingDeliveredDialogues(() => save.BlockDepth > 0);
+            var dayProgress = new FakeDayProgress { Current = { CurrentDay = 1 } };
+            dayProgress.Current.CompletedDays.Add(1);
+            var salesStats = new FakeSalesStatsRecorder();
+            var service = CreateService(save, dayProgress, delivered, salesStats);
+            var result = new SalesDayResult { Day = 1, LocationId = "loc" };
+            result.Recommendations.Add(Recommendation("book_fact", RecommendationTier.Excellent));
+
+            service.CommitAsync(result, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(0, salesStats.ActivePicks.Count);
+        }
+
+        private static RecommendationResult Recommendation(string bookId, RecommendationTier tier)
+            => new("req", bookId, tier, default, RecommendationReason.Empty, 0);
+
+        private static FakeConfigsService ConfigsWithDayRewards(params RewardItemData[] rewards)
+        {
+            var configs = new FakeConfigsService();
+            configs.SetAll(new[]
+            {
+                new EconomyConfig
+                {
+                    Id = EconomyConfig.SingletonId,
+                    DayCompletionRewards = rewards
+                }
+            });
+            return configs;
+        }
+
+        private static RewardItemData Reward(string id, string category, int amount) =>
+            new()
+            {
+                Id = id,
+                Category = category,
+                Amount = amount,
+                Kind = RewardKind.InventoryItem
+            };
+
         private static SalesDayCommitService CreateService(
             RecordingSaveService save,
             IDayProgressService dayProgress,
-            IDeliveredDialoguesService delivered)
+            IDeliveredDialoguesService delivered,
+            FakeSalesStatsRecorder salesStats = null,
+            FakeInventoryService inventory = null,
+            IConfigsService configs = null)
             => new(
                 save,
                 new FakeResourcesService(),
-                new FakeInventoryService(),
+                inventory ?? new FakeInventoryService(),
                 new FakeShelfStateService(),
-                new FakeSalesStatsRecorder(),
+                salesStats ?? new FakeSalesStatsRecorder(),
                 dayProgress,
                 new FakeQuestReevaluationGate(),
-                delivered);
+                delivered,
+                configs);
 
         private sealed class RecordingDeliveredDialogues : IDeliveredDialoguesService
         {
@@ -73,6 +232,7 @@ namespace Book.Sell.Tests.Editor
 
             public int CommitCalls { get; private set; }
             public bool WasCommittedInsideAutosaveBlock { get; private set; }
+            public event Action Changed;
             public bool IsDelivered(string dialogueId) => false;
             public UniTask MarkDeliveredAsync(string dialogueId, CancellationToken ct) => UniTask.CompletedTask;
             public UniTask MarkDeliveredDeferredAsync(string dialogueId, CancellationToken ct) => UniTask.CompletedTask;
@@ -161,12 +321,20 @@ namespace Book.Sell.Tests.Editor
 
         private sealed class FakeInventoryService : IInventoryService
         {
+            public readonly List<InventoryItem> Added = new();
+
             public event Action<InventoryChangeEvent> Changed { add { } remove { } }
             public IReadOnlyList<InventoryItem> GetAll() => Array.Empty<InventoryItem>();
             public IReadOnlyList<InventoryItem> GetByCategory(string categoryId) => Array.Empty<InventoryItem>();
             public bool Has(string itemId) => false;
             public int GetCount(string itemId) => 0;
-            public UniTask AddAsync(string itemId, string categoryId, int amount, CancellationToken ct) => UniTask.CompletedTask;
+
+            public UniTask AddAsync(string itemId, string categoryId, int amount, CancellationToken ct)
+            {
+                Added.Add(new InventoryItem(itemId, categoryId, amount));
+                return UniTask.CompletedTask;
+            }
+
             public UniTask AddBatchAsync(IEnumerable<InventoryItem> items, CancellationToken ct) => UniTask.CompletedTask;
             public UniTask<bool> RemoveAsync(string itemId, int amount, CancellationToken ct) => UniTask.FromResult(false);
         }
@@ -182,8 +350,12 @@ namespace Book.Sell.Tests.Editor
 
         private sealed class FakeSalesStatsRecorder : ISalesStatsRecorder
         {
-            public void RecordSold(string bookId) { }
-            public void RecordSold(string bookId, in SaleContext ctx) { }
+            public readonly List<string> Sold = new();
+            public readonly List<string> ActivePicks = new();
+
+            public void RecordSold(string bookId) => Sold.Add(bookId);
+            public void RecordSold(string bookId, in SaleContext ctx) => Sold.Add(bookId);
+            public void RecordActivePick(string bookId, in SaleContext ctx) => ActivePicks.Add(bookId);
         }
 
         private sealed class FakeQuestReevaluationGate : IQuestReevaluationGate

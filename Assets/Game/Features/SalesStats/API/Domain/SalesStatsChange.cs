@@ -3,8 +3,8 @@ using Game.Configs.Models;
 namespace Game.SalesStats.API
 {
     /// <summary>
-    /// Notification published after a successful <see cref="ISalesStatsRecorder.RecordSold"/>.
-    /// Carries the affected genre, its new running count, and the new grand total.
+    /// Notification published after a successful sales-stat mutation.
+    /// Carries the affected genre, its new running count for that stat, and the current sold total.
     /// </summary>
     public sealed class SalesStatsChange
     {

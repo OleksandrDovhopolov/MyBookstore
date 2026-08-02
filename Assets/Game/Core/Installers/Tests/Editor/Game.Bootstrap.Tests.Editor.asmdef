@@ -8,9 +8,13 @@
         "Game.SalesStats.API",
         "Game.Inventory.API",
         "Game.Decor.API",
+        "Game.Quest.API",
+        "Game.Rewards.API",
         "Configs",
+        "Save",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "Game.Conditions.API"
     ],
     "includePlatforms": [
         "Editor"
@@ -19,7 +23,8 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "nunit.framework.dll"
+        "nunit.framework.dll",
+        "Newtonsoft.Json.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [

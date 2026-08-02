@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Dialogue;
+using Game.Tutorial;
 using Game.Tutorial.Content;
 using Game.UI;
 using NUnit.Framework;
@@ -19,14 +20,14 @@ namespace Game.Tutorial.Tests.Editor
             var ui = new FakeUIManager();
             var window = CreateShownDialogWindow();
             ui.WindowToReturn = window;
-            var step = new TutorialDialogueStep("dialogue", ui, "tutorial_hub_intro");
+            var step = new TutorialDialogueStep("dialogue", ui, TutorialContent.Dialogues.HubIntro);
 
             var task = step.ExecuteAsync(CancellationToken.None).AsTask();
             await UniTask.Yield();
 
             Assert.IsFalse(task.IsCompleted);
             Assert.IsInstanceOf<DialogWindowArgs>(ui.LastArgs);
-            Assert.AreEqual("tutorial_hub_intro", ((DialogWindowArgs)ui.LastArgs).Payload.DialogueId);
+            Assert.AreEqual(TutorialContent.Dialogues.HubIntro, ((DialogWindowArgs)ui.LastArgs).Payload.DialogueId);
 
             RaiseClosed(window);
             await task;
@@ -35,9 +36,11 @@ namespace Game.Tutorial.Tests.Editor
         [Test]
         public void ExecuteAsync_NullUi_FailOpens()
         {
-            var step = new TutorialDialogueStep("dialogue", null, "tutorial_hub_intro");
+            var step = new TutorialDialogueStep("dialogue", null, TutorialContent.Dialogues.HubIntro);
 
-            LogAssert.Expect(UnityEngine.LogType.Warning, "[Tutorial] dialogue step 'dialogue' skipped: IUIManager is missing.");
+            LogAssert.Expect(
+                UnityEngine.LogType.Warning,
+                $"{TutorialLog.Prefix} dialogue step 'dialogue' skipped: IUIManager is missing.");
 
             step.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
         }
@@ -47,7 +50,9 @@ namespace Game.Tutorial.Tests.Editor
         {
             var step = new TutorialDialogueStep("dialogue", new FakeUIManager(), "");
 
-            LogAssert.Expect(UnityEngine.LogType.Warning, "[Tutorial] dialogue step 'dialogue' skipped: dialogue id is empty.");
+            LogAssert.Expect(
+                UnityEngine.LogType.Warning,
+                $"{TutorialLog.Prefix} dialogue step 'dialogue' skipped: dialogue id is empty.");
 
             step.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
         }
@@ -55,9 +60,11 @@ namespace Game.Tutorial.Tests.Editor
         [Test]
         public void ExecuteAsync_NullWindow_FailOpens()
         {
-            var step = new TutorialDialogueStep("dialogue", new FakeUIManager(), "tutorial_hub_intro");
+            var step = new TutorialDialogueStep("dialogue", new FakeUIManager(), TutorialContent.Dialogues.HubIntro);
 
-            LogAssert.Expect(UnityEngine.LogType.Warning, "[Tutorial] dialogue step 'dialogue' skipped: dialogue window was not shown.");
+            LogAssert.Expect(
+                UnityEngine.LogType.Warning,
+                $"{TutorialLog.Prefix} dialogue step 'dialogue' skipped: dialogue window was not shown.");
 
             step.ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
         }
@@ -66,7 +73,7 @@ namespace Game.Tutorial.Tests.Editor
         public async Task ExecuteAsync_CancellationWhileWaiting_Propagates()
         {
             var ui = new FakeUIManager { WindowToReturn = CreateShownDialogWindow() };
-            var step = new TutorialDialogueStep("dialogue", ui, "tutorial_hub_intro");
+            var step = new TutorialDialogueStep("dialogue", ui, TutorialContent.Dialogues.HubIntro);
             using var cts = new CancellationTokenSource();
 
             var task = step.ExecuteAsync(cts.Token).AsTask();

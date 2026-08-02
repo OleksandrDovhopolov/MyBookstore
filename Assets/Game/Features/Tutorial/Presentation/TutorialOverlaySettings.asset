@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _sortingOrder: 3600
   _blackoutColor: {r: 0, g: 0, b: 0, a: 0.7}
+  _pointerPrefab: {fileID: 2307160397732073684, guid: 9bad1369e65561440b56378a37e54276, type: 3}
   _pointerSprite: {fileID: -7704901851012329166, guid: 1927080f8bb586d4ea98287d2de96e26, type: 3}
   _pointerBounceAmplitude: 10
   _pointerBounceSpeed: 4

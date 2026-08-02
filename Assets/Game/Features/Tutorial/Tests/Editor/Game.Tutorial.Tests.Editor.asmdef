@@ -18,6 +18,9 @@
         "Infrastructure",
         "Analytics",
         "Game.Inventory.API",
+        "Game.Shop.API",
+        "Game.Rewards",
+        "Game.Rewards.API",
         "Dialogue",
         "Game.Characters.UI"
     ],

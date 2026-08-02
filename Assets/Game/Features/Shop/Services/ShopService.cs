@@ -170,11 +170,18 @@ namespace Game.Shop.Services
             for (var i = 0; i < spec.Items.Count; i++)
             {
                 var item = spec.Items[i];
-                if (item.Kind == RewardKind.InventoryItem && _inventory.Has(item.Id))
+                if (item.Kind == RewardKind.InventoryItem
+                    && IsDuplicateGuardedCategory(item.Category)
+                    && _inventory.Has(item.Id))
                     return true;
             }
             return false;
         }
+
+        private static bool IsDuplicateGuardedCategory(string categoryId)
+            => string.Equals(categoryId, InventoryCategories.Book, StringComparison.Ordinal)
+               || string.Equals(categoryId, InventoryCategories.Decor, StringComparison.Ordinal)
+               || string.Equals(categoryId, InventoryCategories.QuestItem, StringComparison.Ordinal);
 
         // ----- async write -----
 

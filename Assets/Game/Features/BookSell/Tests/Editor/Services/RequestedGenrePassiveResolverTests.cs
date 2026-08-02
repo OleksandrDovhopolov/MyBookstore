@@ -62,6 +62,23 @@ namespace Book.Sell.Tests.Editor.Services
         }
 
         [Test]
+        public void UnstockedRequestedGenreInProfile_CanBeChosenAndMisses()
+        {
+            var resolver = new RequestedGenrePassiveResolver(new FakeBaseSaleChanceCalculator(1.0));
+            var shelf = SalesTestKit.Shelf(SalesTestKit.Book("b1", genre: "sci-fi"));
+            var self = CustomerWith("sci-fi", "romance");
+
+            var result = resolver.Resolve(
+                self,
+                Ctx(shelf, new FakeSalesRandom().EnqueueRangeIndex(1)),
+                shelf.AvailableForSelection());
+
+            Assert.IsFalse(result.Success);
+            Assert.AreEqual("romance", result.ResolvedGenre);
+            Assert.IsNull(result.Book);
+        }
+
+        [Test]
         public void EmptyProfile_MissesWithNullGenre()
         {
             var resolver = new RequestedGenrePassiveResolver(new FakeBaseSaleChanceCalculator(1.0));

@@ -33,7 +33,102 @@ namespace Game.Tutorial.Tests.Editor
                 gameFlow.RaiseLocationLoaded(true);
 
                 Assert.IsTrue(service.IsRunning);
-                Assert.AreEqual("tutorial_day_1", service.ActiveSequenceId);
+                Assert.AreEqual(TutorialSequenceIds.DayOne, service.ActiveSequenceId);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task DisabledSequence_DoesNotStartFromTrigger()
+        {
+            var dayProgress = new FakeDayProgress();
+            dayProgress.Current.CurrentDay = 1;
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
+            var settings = new FakeTutorialSettings(disabledIds: new[] { TutorialSequenceIds.DayOne });
+            var service = BuildService(dayProgress, gameFlow, settings: settings);
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+
+                gameFlow.RaiseLocationLoaded(true);
+
+                Assert.IsFalse(service.IsRunning);
+                Assert.IsNull(service.ActiveSequenceId);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task DisabledSequence_DoesNotStartWhenForced()
+        {
+            var dayProgress = new FakeDayProgress();
+            dayProgress.Current.CurrentDay = 1;
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
+            var settings = new FakeTutorialSettings(disabledIds: new[] { TutorialSequenceIds.DayOne });
+            var service = BuildService(dayProgress, gameFlow, settings: settings);
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+
+                Assert.IsFalse(await service.TryStartAsync(TutorialSequenceIds.DayOne, true, CancellationToken.None));
+                Assert.IsFalse(service.IsRunning);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task DisabledSavedActiveSequence_DoesNotResume()
+        {
+            var dayProgress = new FakeDayProgress();
+            dayProgress.Current.CurrentDay = 1;
+            var save = new FakeSaveService(new TutorialSaveState
+            {
+                ActiveSequenceId = TutorialSequenceIds.DayOne,
+                CompletedSequenceIds = new List<string>()
+            });
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
+            var settings = new FakeTutorialSettings(disabledIds: new[] { TutorialSequenceIds.DayOne });
+            var service = BuildService(dayProgress, gameFlow, save, settings: settings);
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                Assert.IsFalse(service.IsRunning);
+                Assert.IsNull(service.ActiveSequenceId);
+            }
+            finally
+            {
+                service.Dispose();
+            }
+        }
+
+        [Test]
+        public async Task AutoStartFalse_ForcedStartStillWorksWhenEnabled()
+        {
+            var dayProgress = new FakeDayProgress();
+            dayProgress.Current.CurrentDay = 1;
+            var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
+            var service = BuildService(dayProgress, gameFlow, autoStart: false);
+            try
+            {
+                await service.AfterLoadAsync(CancellationToken.None);
+
+                gameFlow.RaiseLocationLoaded(true);
+
+                Assert.IsFalse(service.IsRunning);
+                Assert.IsTrue(await service.TryStartAsync(TutorialSequenceIds.DayOne, true, CancellationToken.None));
+                Assert.IsTrue(service.IsRunning);
+                Assert.AreEqual(TutorialSequenceIds.DayOne, service.ActiveSequenceId);
             }
             finally
             {
@@ -48,7 +143,7 @@ namespace Game.Tutorial.Tests.Editor
             dayProgress.Current.CurrentDay = 1;
             var save = new FakeSaveService(new TutorialSaveState
             {
-                CompletedSequenceIds = new List<string> { "tutorial_day_1" }
+                CompletedSequenceIds = new List<string> { TutorialSequenceIds.DayOne }
             });
             var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
             var service = BuildService(dayProgress, gameFlow, save);
@@ -118,7 +213,7 @@ namespace Game.Tutorial.Tests.Editor
             var gameFlow = new FakeGameFlow { IsLocationLoaded = false };
             var hub = new FakeSequence
             {
-                Id = "tutorial_hub",
+                Id = TutorialSequenceIds.Hub,
                 Priority = 30,
                 Context = TutorialContext.Hub,
                 Trigger = TutorialTrigger.HubReady,
@@ -132,7 +227,7 @@ namespace Game.Tutorial.Tests.Editor
                 await dayProgress.SetPhaseAsync(DayPhase.Morning, CancellationToken.None);
 
                 Assert.IsTrue(service.IsRunning);
-                Assert.AreEqual("tutorial_hub", service.ActiveSequenceId);
+                Assert.AreEqual(TutorialSequenceIds.Hub, service.ActiveSequenceId);
             }
             finally
             {
@@ -216,7 +311,7 @@ namespace Game.Tutorial.Tests.Editor
             var ui = new FakeUIManager { TopWindow = new FakeWindowController() };
             var hub = new FakeSequence
             {
-                Id = "tutorial_hub",
+                Id = TutorialSequenceIds.Hub,
                 Priority = 30,
                 Context = TutorialContext.Hub,
                 Trigger = TutorialTrigger.HubReady,
@@ -241,7 +336,7 @@ namespace Game.Tutorial.Tests.Editor
                 ui.RaiseWindowHidden();
 
                 Assert.IsTrue(service.IsRunning);
-                Assert.AreEqual("tutorial_hub", service.ActiveSequenceId);
+                Assert.AreEqual(TutorialSequenceIds.Hub, service.ActiveSequenceId);
             }
             finally
             {
@@ -263,7 +358,7 @@ namespace Game.Tutorial.Tests.Editor
                 gameFlow.RaiseLocationLoaded(true);
 
                 Assert.IsTrue(service.IsRunning);
-                Assert.AreEqual("tutorial_day_1", service.ActiveSequenceId);
+                Assert.AreEqual(TutorialSequenceIds.DayOne, service.ActiveSequenceId);
             }
             finally
             {
@@ -385,11 +480,13 @@ namespace Game.Tutorial.Tests.Editor
             FakeSaveService save = null,
             IReadOnlyList<ITutorialSequence> sequences = null,
             IPublisher<TutorialSequenceStarted> startedPub = null,
-            IUIManager ui = null)
+            IUIManager ui = null,
+            ITutorialSettings settings = null,
+            bool autoStart = true)
         {
             var dayOne = new FakeSequence
             {
-                Id = "tutorial_day_1",
+                Id = TutorialSequenceIds.DayOne,
                 Priority = 10,
                 IsEligibleFunc = () => dayProgress.Current.CurrentDay == 1
             };
@@ -400,9 +497,25 @@ namespace Game.Tutorial.Tests.Editor
                 startedPub: startedPub,
                 stepPub: null,
                 completedPub: null,
+                settings: settings,
                 dayProgress: dayProgress,
                 gameFlow: gameFlow,
-                ui: ui);
+                ui: ui,
+                autoStart: autoStart);
+        }
+
+        private sealed class FakeTutorialSettings : ITutorialSettings
+        {
+            private readonly HashSet<string> _disabledIds;
+
+            public FakeTutorialSettings(IEnumerable<string> disabledIds = null, IEnumerable<string> configuredIds = null)
+            {
+                _disabledIds = new HashSet<string>(disabledIds ?? Array.Empty<string>(), StringComparer.Ordinal);
+                ConfiguredSequenceIds = configuredIds ?? disabledIds ?? Array.Empty<string>();
+            }
+
+            public IEnumerable<string> ConfiguredSequenceIds { get; }
+            public bool IsEnabled(string sequenceId) => !_disabledIds.Contains(sequenceId);
         }
 
         private sealed class FakeSequence : ITutorialSequence

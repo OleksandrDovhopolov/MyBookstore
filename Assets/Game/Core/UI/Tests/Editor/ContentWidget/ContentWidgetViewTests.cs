@@ -69,6 +69,31 @@ namespace Game.Core.UI.Tests.Editor.ContentWidget
         }
 
         [UnityTest]
+        public IEnumerator ShowContentView_AcceptsHorizontalOnlyPlacementMode()
+        {
+            using var fixture = ContentWidgetFixture.Create(autoCloseDelaySeconds: 0f);
+            var closed = false;
+            fixture.View.CloseClick += () => closed = true;
+
+            fixture.Show(new TestWidgetData(), ContentWidgetPlacementMode.HorizontalOnly);
+            yield return null;
+
+            Assert.IsFalse(closed);
+        }
+
+        [UnityTest]
+        public IEnumerator ShowContentView_UsesActiveViewSize_ForPlacement()
+        {
+            using var fixture = ContentWidgetFixture.Create(autoCloseDelaySeconds: 0f);
+            fixture.Anchor.anchoredPosition = Vector2.zero;
+
+            fixture.Show(new TestWidgetData(), ContentWidgetPlacementMode.HorizontalOnly);
+            yield return null;
+
+            Assert.That(fixture.Container.anchoredPosition.x, Is.EqualTo(-52f).Within(0.001f));
+        }
+
+        [UnityTest]
         public IEnumerator HideContent_CancelsAutoCloseTimer()
         {
             using var fixture = ContentWidgetFixture.Create(autoCloseDelaySeconds: 0.01f);
@@ -110,15 +135,18 @@ namespace Game.Core.UI.Tests.Editor.ContentWidget
                 GameObject root,
                 GameObject prefab,
                 ContentWidgetView view,
+                RectTransform container,
                 RectTransform anchor)
             {
                 _root = root;
                 _prefab = prefab;
                 View = view;
+                Container = container;
                 Anchor = anchor;
             }
 
             public ContentWidgetView View { get; }
+            public RectTransform Container { get; }
             public RectTransform Anchor { get; }
 
             public static ContentWidgetFixture Create(float autoCloseDelaySeconds)
@@ -157,10 +185,11 @@ namespace Game.Core.UI.Tests.Editor.ContentWidget
                 SetSerializedField(view, "_edgePadding", 0f);
                 SetSerializedField(view, "_verticalZoneRatio", 0.33f);
 
-                var prefab = new GameObject("TestWidgetPrefab", typeof(TestWidgetView));
+                var prefab = new GameObject("TestWidgetPrefab", typeof(RectTransform), typeof(TestWidgetView));
+                prefab.GetComponent<RectTransform>().sizeDelta = new Vector2(40f, 30f);
                 WidgetRegistry.Register<TestWidgetData>(prefab.GetComponent<TestWidgetView>());
 
-                return new ContentWidgetFixture(root, prefab, view, anchor);
+                return new ContentWidgetFixture(root, prefab, view, container, anchor);
             }
 
             public void Show(TestWidgetData data)
@@ -169,6 +198,11 @@ namespace Game.Core.UI.Tests.Editor.ContentWidget
             public void Show(TestWidgetData data, bool autoCloseEnabled)
             {
                 View.ShowContentView(data, Anchor, autoCloseEnabled);
+            }
+
+            public void Show(TestWidgetData data, ContentWidgetPlacementMode placementMode)
+            {
+                View.ShowContentView(data, Anchor, autoCloseEnabled: true, placementMode: placementMode);
             }
 
             public void Dispose()

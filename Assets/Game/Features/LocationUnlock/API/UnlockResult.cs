@@ -6,7 +6,7 @@ namespace Game.LocationUnlock.API
         Ok,
         AlreadyUnlocked,
         ConditionsNotMet,
-        NotEnoughCurrency,
+        NotEnoughItems,
         UnknownLocation
     }
 }

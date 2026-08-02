@@ -15,4 +15,7 @@ MonoBehaviour:
   _defaultCustomerCount: 10
   _minCustomerCount: 1
   _maxCustomerCount: 50
+  _defaultActiveRequestCount: 1
+  _minActiveRequestCount: 0
+  _maxActiveRequestCount: 50
   _rounding: 2

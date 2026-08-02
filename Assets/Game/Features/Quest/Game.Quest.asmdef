@@ -12,7 +12,8 @@
         "Game.SalesStats",
         "Game.Decor.API",
         "Game.Inventory.API",
-        "DayCycle"
+        "DayCycle",
+        "Game.Rewards.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

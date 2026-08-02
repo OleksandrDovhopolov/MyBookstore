@@ -9,7 +9,10 @@
         "Infrastructure",
         "VContainer",
         "UniTask",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Game.Rewards.API",
+        "Game.Rewards",
+        "Game.Inventory.API"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

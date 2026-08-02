@@ -24,6 +24,7 @@ namespace Game.Configs.Editor
             DrawFloat(item, "rarityWeight", "Rarity Weight");
             DrawInt(item, "published", "Published");
             DrawInt(item, "pages", "Pages");
+            DrawString(item, "fakeOrReal", "Fake or Real");
             EditorGUILayout.Space(8);
             DrawStringArray(item, "qualities", "Qualities");
         }
@@ -46,7 +47,7 @@ namespace Game.Configs.Editor
         private static void DrawFloat(JObject obj, string field, string label)
         {
             var current = obj[field]?.Type is JTokenType.Float or JTokenType.Integer
-                ? obj[field].Value<float>() : 0f;
+                ? obj[field].Value<float>() : 0.5f;
             var next = EditorGUILayout.FloatField(label, current);
             if (!Mathf.Approximately(next, current)) obj[field] = next;
         }

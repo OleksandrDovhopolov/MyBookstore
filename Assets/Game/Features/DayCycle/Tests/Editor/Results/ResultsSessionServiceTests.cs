@@ -199,7 +199,6 @@ namespace Game.DayCycle.Tests.Editor.Results
         {
             var sales = Sales(gold: 77, exc: 4, fail: 1);
             sales.SalesCount = 5;
-            sales.NormalCount = 0;
             sales.SkippedCount = 0;
 
             var h = new Harness(sales);

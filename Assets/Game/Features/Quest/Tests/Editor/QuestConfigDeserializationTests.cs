@@ -1,3 +1,5 @@
+using System.IO;
+using System.Linq;
 using Game.Configs.Models;
 using Game.Quest.API;
 using Newtonsoft.Json;
@@ -12,12 +14,19 @@ namespace Game.Quest.Tests.Editor
     /// </summary>
     public sealed class QuestConfigDeserializationTests
     {
+        private static readonly string[] ContentRoots =
+        {
+            Path.Combine("Assets", "Configs"),
+            Path.Combine("Assets", "StreamingAssets", "Configs")
+        };
+
         private const string Json = @"
 [
   {
     ""id"": ""far_beach_intro"",
     ""type"": ""story"",
     ""chainId"": ""far_beach_sand_empire"",
+    ""characterId"": ""eddi"",
     ""titleKey"": ""quest.far_beach_intro.title"",
     ""descriptionKey"": ""quest.far_beach_intro.desc"",
     ""nextQuestIds"": [""sand_inspiration""],
@@ -61,6 +70,7 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual("far_beach_intro", intro.Id);
             Assert.AreEqual("story", intro.Type);
             Assert.AreEqual("far_beach_sand_empire", intro.ChainId);
+            Assert.AreEqual("eddi", intro.CharacterId);
             Assert.AreEqual(new[] { "sand_inspiration" }, intro.NextQuestIds);
             Assert.IsNull(intro.ActivationConditions);
             Assert.AreEqual(1, intro.Tasks.Length);
@@ -126,6 +136,158 @@ namespace Game.Quest.Tests.Editor
             Assert.IsTrue(QuestTaskState.Failed.IsClosed());
             Assert.IsFalse(QuestTaskState.Active.IsClosed());
             Assert.IsFalse(QuestTaskState.Pending.IsClosed());
+        }
+
+        [Test]
+        public void Content_EddiIntro_IsDialogueDeliveredSalesQuestWithFuelReward()
+        {
+            foreach (var root in ContentRoots)
+                AssertEddiIntroQuest(root);
+        }
+
+        [Test]
+        public void Content_MillyIntro_IsDialogueDeliveredActivePickQuestWithLetterAndFuelReward()
+        {
+            foreach (var root in ContentRoots)
+                AssertMillyIntroQuest(root);
+        }
+
+        [Test]
+        public void Content_TaraIntro_IsDialogueDeliveredActivePickQuestWithPortReward()
+        {
+            foreach (var root in ContentRoots)
+                AssertTaraIntroQuest(root);
+        }
+
+        [Test]
+        public void Content_MillyDiscovery_UsesIntroQuest()
+        {
+            foreach (var root in ContentRoots)
+            {
+                var characters = JsonConvert.DeserializeObject<CharacterConfig[]>(
+                    File.ReadAllText(Path.Combine(root, "characters.json")));
+                var milly = characters.Single(c => c.Id == "milly");
+
+                CollectionAssert.Contains(milly.DiscoveryQuestIds, "q_intro_milly");
+            }
+        }
+
+        [Test]
+        public void Content_QuestCatalog_HasFourCharacterLinkedQuests_InBothRoots()
+        {
+            foreach (var root in ContentRoots)
+            {
+                var quests = JsonConvert.DeserializeObject<QuestConfig[]>(
+                    File.ReadAllText(Path.Combine(root, "quests.json")));
+                var characters = JsonConvert.DeserializeObject<CharacterConfig[]>(
+                    File.ReadAllText(Path.Combine(root, "characters.json")));
+
+                Assert.AreEqual(4, quests.Length, root);
+
+                foreach (var quest in quests)
+                {
+                    Assert.IsFalse(string.IsNullOrEmpty(quest.CharacterId), quest.Id);
+                    Assert.IsTrue(characters.Any(c => c.Id == quest.CharacterId),
+                        $"{quest.Id} characterId '{quest.CharacterId}' must resolve in characters.json");
+                    Assert.IsTrue(characters.Any(c => c.DiscoveryQuestIds != null
+                        && c.DiscoveryQuestIds.Contains(quest.Id)),
+                        $"{quest.Id} must be referenced by a character discoveryQuestIds entry");
+                }
+            }
+        }
+
+        private static void AssertEddiIntroQuest(string root)
+        {
+            var quests = JsonConvert.DeserializeObject<QuestConfig[]>(
+                File.ReadAllText(Path.Combine(root, "quests.json")));
+
+            var quest = quests.Single(q => q.Id == "q_intro_eddi");
+            Assert.AreEqual("story", quest.Type);
+            Assert.AreEqual("eddi", quest.CharacterId);
+            AssertDialogueDeliveredActivation(quest, "eddy1");
+
+            Assert.AreEqual(4, quest.Tasks.Length);
+            AssertSalesTask(quest.Tasks[0], 1, "Crime", 10);
+            AssertSalesTask(quest.Tasks[1], 2, "Drama", 10);
+            AssertSalesTask(quest.Tasks[2], 3, "Classic", 10);
+            AssertSalesTask(quest.Tasks[3], 4, "Fantasy", 15);
+            Assert.AreEqual(4, quest.Tasks.Select(t => t.Id).Distinct().Count());
+
+            Assert.AreEqual(1, quest.Rewards.Length);
+            Assert.AreEqual("InventoryItem", quest.Rewards[0].Kind);
+            Assert.AreEqual("fuel_canister", quest.Rewards[0].Id);
+            Assert.AreEqual("consumable", quest.Rewards[0].Category);
+            Assert.AreEqual(2, quest.Rewards[0].Amount);
+        }
+
+        private static void AssertMillyIntroQuest(string root)
+        {
+            var quests = JsonConvert.DeserializeObject<QuestConfig[]>(
+                File.ReadAllText(Path.Combine(root, "quests.json")));
+
+            var quest = quests.Single(q => q.Id == "q_intro_milly");
+            Assert.AreEqual("story", quest.Type);
+            Assert.AreEqual("milly", quest.CharacterId);
+            AssertDialogueDeliveredActivation(quest, "milly1");
+
+            Assert.AreEqual(1, quest.Tasks.Length);
+            var task = quest.Tasks[0];
+            Assert.AreEqual(1, task.Id);
+            Assert.IsNotNull(task.CompletionConditions);
+            Assert.AreEqual("activePickGenre", task.CompletionConditions["type"].ToString());
+            Assert.AreEqual("Fact", task.CompletionConditions["genre"].ToString());
+            Assert.AreEqual(5, (int)task.CompletionConditions["min"]);
+
+            Assert.AreEqual(2, quest.Rewards.Length);
+            var letter = quest.Rewards.Single(r => r.Id == "milly_letter");
+            Assert.AreEqual("InventoryItem", letter.Kind);
+            Assert.AreEqual("quest_item", letter.Category);
+            Assert.AreEqual(1, letter.Amount);
+
+            var fuel = quest.Rewards.Single(r => r.Id == "fuel_canister");
+            Assert.AreEqual("InventoryItem", fuel.Kind);
+            Assert.AreEqual("consumable", fuel.Category);
+            Assert.AreEqual(1, fuel.Amount);
+        }
+
+        private static void AssertTaraIntroQuest(string root)
+        {
+            var quests = JsonConvert.DeserializeObject<QuestConfig[]>(
+                File.ReadAllText(Path.Combine(root, "quests.json")));
+
+            var quest = quests.Single(q => q.Id == "q_tara_kids");
+            Assert.AreEqual("story", quest.Type);
+            Assert.AreEqual("tara", quest.CharacterId);
+            AssertDialogueDeliveredActivation(quest, "tara_quest_1");
+
+            Assert.AreEqual(1, quest.Tasks.Length);
+            var task = quest.Tasks[0];
+            Assert.AreEqual(1, task.Id);
+            Assert.IsNotNull(task.CompletionConditions);
+            Assert.AreEqual("activePickGenre", task.CompletionConditions["type"].ToString());
+            Assert.AreEqual("Kids", task.CompletionConditions["genre"].ToString());
+            Assert.AreEqual(5, (int)task.CompletionConditions["min"]);
+
+            var permit = quest.Rewards.Single(r => r.Id == "port_trade_permit");
+            Assert.AreEqual("InventoryItem", permit.Kind);
+            Assert.AreEqual("quest_item", permit.Category);
+            Assert.AreEqual(1, permit.Amount);
+        }
+
+        private static void AssertDialogueDeliveredActivation(QuestConfig quest, string dialogueId)
+        {
+            Assert.IsNotNull(quest.ActivationConditions);
+            Assert.AreEqual("dialogueDelivered", quest.ActivationConditions["type"].ToString());
+            Assert.AreEqual(dialogueId, quest.ActivationConditions["dialogueId"].ToString());
+        }
+
+        private static void AssertSalesTask(QuestTaskConfig task, int id, string genre, int min)
+        {
+            Assert.AreEqual(id, task.Id);
+            Assert.IsNotNull(task.CompletionConditions);
+            Assert.AreEqual("soldGenre", task.CompletionConditions["type"].ToString());
+            Assert.AreEqual(genre, task.CompletionConditions["genre"].ToString());
+            Assert.AreEqual(min, (int)task.CompletionConditions["min"]);
         }
     }
 }

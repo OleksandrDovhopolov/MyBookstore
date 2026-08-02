@@ -7,12 +7,13 @@
         "Configs",
         "Game.Shop.API",
         "Game.Shop",
-        "Game.Newspaper",
         "Game.Rewards.API",
         "Game.Resources.API",
         "Game.Inventory.API",
         "Game.Decor.API",
-        "UnityEngine.TestRunner"
+        "UnityEngine.TestRunner",
+        "Unity.TextMeshPro",
+        "Game.Rewards"
     ],
     "includePlatforms": [
         "Editor"

@@ -126,20 +126,95 @@ namespace Game.Core.UI.Tests.Editor.ContentWidget
             Assert.That(result.Position.y, Is.EqualTo(Parent.center.y).Within(0.001f));
         }
 
+        [Test]
+        public void Resolve_HorizontalOnly_PlacesSide_WhenAnchorIsInTopZone()
+        {
+            var anchor = Rect.MinMaxRect(-40f, 220f, 40f, 260f);
+
+            var result = Resolve(anchor, mode: ContentWidgetPlacementMode.HorizontalOnly);
+
+            Assert.That(result.Side, Is.EqualTo(ContentWidgetPlacementSide.Right));
+        }
+
+        [Test]
+        public void Resolve_HorizontalOnly_PlacesSide_WhenAnchorIsInBottomZone()
+        {
+            var anchor = Rect.MinMaxRect(40f, -260f, 80f, -220f);
+
+            var result = Resolve(anchor, mode: ContentWidgetPlacementMode.HorizontalOnly);
+
+            Assert.That(result.Side, Is.EqualTo(ContentWidgetPlacementSide.Left));
+        }
+
+        [Test]
+        public void Resolve_HorizontalOnly_ClampsNegativeHorizontalOffset_ToAvoidAnchorOverlap()
+        {
+            var anchor = Rect.MinMaxRect(-370f, -20f, -330f, 20f);
+
+            var result = Resolve(
+                anchor,
+                horizontalOffset: -100f,
+                mode: ContentWidgetPlacementMode.HorizontalOnly);
+            var rect = RectOf(result.Position);
+
+            Assert.That(result.Side, Is.EqualTo(ContentWidgetPlacementSide.Right));
+            Assert.That(rect.xMin, Is.GreaterThanOrEqualTo(anchor.xMax));
+        }
+
+        [Test]
+        public void Resolve_HorizontalOnly_PicksLeft_WhenAnchorIsOnRightHalf()
+        {
+            var anchor = Rect.MinMaxRect(330f, -20f, 370f, 20f);
+
+            var result = Resolve(anchor, mode: ContentWidgetPlacementMode.HorizontalOnly);
+
+            Assert.That(result.Side, Is.EqualTo(ContentWidgetPlacementSide.Left));
+        }
+
+        [Test]
+        public void Resolve_HorizontalOnly_PicksRight_WhenAnchorIsOnLeftHalf()
+        {
+            var anchor = Rect.MinMaxRect(-370f, -20f, -330f, 20f);
+
+            var result = Resolve(anchor, mode: ContentWidgetPlacementMode.HorizontalOnly);
+
+            Assert.That(result.Side, Is.EqualTo(ContentWidgetPlacementSide.Right));
+        }
+
+        [Test]
+        public void Resolve_HorizontalOnly_ClampsIntoSafeArea_WhenNeitherSideFits()
+        {
+            var anchor = Rect.MinMaxRect(-40f, 220f, 0f, 260f);
+            var oversizedForSide = new Vector2(760f, 100f);
+
+            var result = Resolve(
+                anchor,
+                oversizedForSide,
+                mode: ContentWidgetPlacementMode.HorizontalOnly);
+            var rect = RectOf(result.Position, oversizedForSide);
+
+            Assert.That(result.Side, Is.EqualTo(ContentWidgetPlacementSide.Right));
+            Assert.That(rect.xMin, Is.GreaterThanOrEqualTo(Parent.xMin + Padding));
+            Assert.That(rect.xMax, Is.LessThanOrEqualTo(Parent.xMax - Padding));
+        }
+
         private static ContentWidgetPlacementResult Resolve(
             Rect anchor,
             Vector2? widgetSize = null,
-            Vector2? pivot = null)
+            Vector2? pivot = null,
+            float? horizontalOffset = null,
+            ContentWidgetPlacementMode mode = ContentWidgetPlacementMode.Auto)
         {
             return ContentWidgetPlacement.Resolve(
                 anchor,
                 widgetSize ?? WidgetSize,
                 Parent,
                 VerticalOffset,
-                HorizontalOffset,
+                horizontalOffset ?? HorizontalOffset,
                 Padding,
                 VerticalZoneRatio,
-                pivot ?? Pivot);
+                pivot ?? Pivot,
+                mode);
         }
 
         private static Rect RectOf(Vector2 position)

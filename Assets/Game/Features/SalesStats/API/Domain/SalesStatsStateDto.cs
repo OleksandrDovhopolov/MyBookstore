@@ -19,5 +19,8 @@ namespace Game.SalesStats.API
         /// <summary>Sold count per game day (1-based), then per genre config value. Feeds the monthly calendar
         /// (sum across genres) and the "sold N of a genre in a single day" quest condition. Unbounded in MVP.</summary>
         public Dictionary<int, Dictionary<string, int>> SoldByDayGenre { get; set; }
+
+        /// <summary>Excellent active recommendations by chosen book genre. Does not affect sales totals.</summary>
+        public Dictionary<string, int> ExcellentPicksByGenre { get; set; }
     }
 }

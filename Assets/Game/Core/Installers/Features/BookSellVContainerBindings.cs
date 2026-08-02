@@ -1,4 +1,5 @@
 using System;
+using Book.Sell.Conditions;
 using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
@@ -6,7 +7,9 @@ using Book.Sell.Services.Director;
 using Book.Sell.UI;
 using Book.Sell.UI.Customer;
 using Game.Configs;
+using Game.Conditions.API;
 using Game.Decor.Services;
+using Game.Location.API;
 using Game.Quest.API;
 using UnityEngine;
 using VContainer;
@@ -28,6 +31,7 @@ namespace Game.Bootstrap
             // Fire-once memory for scripted dialogues (GAME-6). Location-scoped spawner filters committed
             // and pending ids; DialoguePresenter defers day-scoped marks until the sales-day commit.
             builder.Register<IDeliveredDialoguesService, SaveBackedDeliveredDialoguesService>(Lifetime.Singleton);
+            builder.Register<IConditionFactory, DialogueDeliveredConditionFactory>(Lifetime.Singleton);
             builder.Register<ISalesShelfStateService, SalesShelfStateService>(Lifetime.Singleton);
             // TEMP DEBUG: keep economy/location/decor modifiers, but floor passive sale chance at 50%.
             // Restore EconomyBasedSaleChanceCalculator when sales-flow testing is done.
@@ -62,13 +66,7 @@ namespace Game.Bootstrap
         public static void RegisterBookSell(
             this IContainerBuilder builder,
             CustomerVisual customerVisualPrefab,
-            Transform customerSpawnRoot,
-            Transform customerEntryLeft = null,
-            Transform customerEntryRight = null,
-            Transform customerShopApproach = null,
-            Transform[] customerLaneAnchors = null,
-            Transform customerExitLeft = null,
-            Transform customerExitRight = null,
+            ILocationContext locationContext,
             SalesTuningConfig salesTuningConfig = null,
             SalesTrafficConfig salesTrafficConfig = null)
         {
@@ -84,7 +82,6 @@ namespace Game.Bootstrap
             // Passive sale chance gate (ADR-0004) resolves from the global scope so HUD previews and
             // sales use the same calculator instance.
             // Per-customer desire profile — used by the spawner in both passive models.
-            builder.Register<IDemandGenreWeightProvider, SalesTuningDemandGenreWeightProvider>(Lifetime.Singleton);
             builder.Register<ICustomerProfileProvider, LocationDemandProfileProvider>(Lifetime.Singleton);
             // Passive model behind the IPassivePurchaseResolver seam. Default = scripted story attempts
             // over requested-genre (v2). To roll back to pure v2, call RegisterRequestedGenrePassiveSales.
@@ -128,9 +125,11 @@ namespace Game.Bootstrap
 
             // Warns once per process if a day asks for more active requests than it has customers.
             builder.RegisterEntryPoint<CustomerTrafficConfigValidator>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<LocationDemandConfigValidator>(Lifetime.Singleton);
 
             // Base composition (concrete type) + scripted-customer decorator as ICustomerSpawner (GAME-16).
-            // The decorator replaces regular customer slots instead of increasing the total visitor count.
+            // The decorator replaces regular slots only for scripts with authored sales attempts; dialogue-only
+            // story visits are additive so they do not change the regular passive/active sales count.
             // NOTE: register the inner concretely —
             // resolving ICustomerSpawner inside the ICustomerSpawner factory would be a self-reference. Swap
             // the inner type here to change base composition. IQuestsService resolves from the global scope.
@@ -160,15 +159,8 @@ namespace Game.Bootstrap
             builder.Register<ISalesDayController, SalesDayController>(Lifetime.Singleton);
 
             // Customer visualization + world-space thought bubbles (Phase 0 of World HUD).
-            builder.RegisterInstance(new CustomerVisualRegistryConfig(
-                customerVisualPrefab,
-                customerSpawnRoot,
-                customerEntryLeft,
-                customerEntryRight,
-                customerShopApproach,
-                customerLaneAnchors,
-                customerExitLeft,
-                customerExitRight));
+            builder.RegisterInstance(new CustomerVisualRegistryConfig(customerVisualPrefab, locationContext));
+            builder.Register<IBubbleSlotAllocator, BubbleSlotAllocator>(Lifetime.Singleton);
             builder.Register<CustomerVisualRegistry>(Lifetime.Singleton)
                 .AsImplementedInterfaces() // exposes ICustomerVisualRegistry, IStartable, IDisposable
                 .AsSelf();

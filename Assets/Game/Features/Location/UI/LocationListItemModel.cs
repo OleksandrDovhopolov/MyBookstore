@@ -16,10 +16,14 @@ namespace Game.Location.UI
         public bool CanAffordEntry { get; }
         public bool StartEnabled { get; }
         public IReadOnlyList<LocationConditionProgress> Conditions { get; }
+        public IReadOnlyList<LocationUnlockCostProgress> Costs { get; }
+        public bool CanUnlock { get; }
 
         public LocationListItemModel(string locationId, string displayName, bool isUnlocked,
             int entryCost, string entryCurrencyId, bool canAffordEntry,
-            IReadOnlyList<LocationConditionProgress> conditions)
+            IReadOnlyList<LocationConditionProgress> conditions,
+            IReadOnlyList<LocationUnlockCostProgress> costs,
+            bool canUnlock)
         {
             LocationId = locationId;
             DisplayName = displayName;
@@ -29,12 +33,26 @@ namespace Game.Location.UI
             CanAffordEntry = canAffordEntry;
             StartEnabled = isUnlocked && canAffordEntry;
             Conditions = conditions ?? System.Array.Empty<LocationConditionProgress>();
+            Costs = costs ?? System.Array.Empty<LocationUnlockCostProgress>();
+            CanUnlock = canUnlock;
         }
 
         public static LocationListItemModel From(
-            LocationConfig config, LocationUnlockStatus status, LocationEntryCost entryCost, bool canAffordEntry)
+            LocationConfig config, LocationUnlockStatus status, LocationEntryCost entryCost, bool canAffordEntry,
+            IReadOnlyList<LocationUnlockCostProgress> costs)
         {
             var unlocked = status != null && status.State == LocationUnlockState.Unlocked;
+            var conditionsMet = status != null && status.Progress.IsMet;
+            var costsMet = true;
+            if (costs != null)
+            {
+                for (var i = 0; i < costs.Count; i++)
+                {
+                    if (costs[i].IsMet) continue;
+                    costsMet = false;
+                    break;
+                }
+            }
 
             List<LocationConditionProgress> conditions = null;
             if (!unlocked && status != null)
@@ -45,7 +63,8 @@ namespace Game.Location.UI
 
             return new LocationListItemModel(
                 config.Id, config.DisplayName, unlocked,
-                entryCost.Total, entryCost.CurrencyId, canAffordEntry, conditions);
+                entryCost.Total, entryCost.CurrencyId, canAffordEntry, conditions, costs,
+                !unlocked && costs != null && costs.Count > 0 && conditionsMet && costsMet);
         }
 
         private static void CollectLeaves(ConditionResult node, List<LocationConditionProgress> result)
@@ -57,15 +76,37 @@ namespace Game.Location.UI
                 return;
             }
 
+            if (IsNoRequirement(node.ReasonKey))
+                return;
+
+            var labelKey = ExtractLastSegment(node.ReasonKey);
             result.Add(new LocationConditionProgress(
-                ExtractGenre(node.ReasonKey), node.Current, node.Target, node.IsMet));
+                labelKey, node.Current, node.Target, node.IsMet, ResolveSpriteId(node.ReasonKey, labelKey)));
         }
 
-        private static string ExtractGenre(string reasonKey)
+        private static bool IsNoRequirement(string reasonKey)
+            => string.Equals(reasonKey, "always", System.StringComparison.Ordinal);
+
+        private static string ExtractLastSegment(string reasonKey)
         {
             if (string.IsNullOrEmpty(reasonKey)) return reasonKey;
             var dot = reasonKey.LastIndexOf('.');
             return dot >= 0 && dot < reasonKey.Length - 1 ? reasonKey.Substring(dot + 1) : reasonKey;
+        }
+
+        private static string ResolveSpriteId(string reasonKey, string labelKey)
+        {
+            if (string.IsNullOrEmpty(labelKey))
+                return null;
+
+            if (BookGenreExtensions.TryParseGenre(labelKey, out var genre))
+                return genre.ToConfigValue();
+
+            if (reasonKey != null
+                && reasonKey.StartsWith("visitLocation.", System.StringComparison.Ordinal))
+                return labelKey;
+
+            return null;
         }
     }
 }

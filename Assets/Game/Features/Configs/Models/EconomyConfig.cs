@@ -23,5 +23,8 @@ namespace Game.Configs.Models
 
         /// <summary>Multiplier applied when the genre is listed in LocationConfig.DemandGenres.</summary>
         public double LocationDemandMultiplier { get; set; }
+
+        /// <summary>Inventory rewards granted once for each committed sales day. Null/empty = no rewards.</summary>
+        public RewardItemData[] DayCompletionRewards { get; set; }
     }
 }

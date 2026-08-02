@@ -47,7 +47,9 @@ namespace Game.Quest.Services
         private readonly bool _baselineEnabled;
 
         private readonly Dictionary<string, Quest> _quests = new(StringComparer.Ordinal);
+        private readonly List<Quest> _ordered = new();
         private readonly HashSet<string> _successors = new(StringComparer.Ordinal);
+        private readonly List<IConditionChangeSource> _subscribedConditionSources = new();
 
         private bool _loaded;
         private bool _subscribed;
@@ -123,9 +125,11 @@ namespace Game.Quest.Services
         public QuestState GetQuestState(string questId)
             => TryGetQuest(questId)?.State ?? QuestState.Pending;
 
+        public IReadOnlyList<IQuest> GetAllQuests() => _ordered;
+
         public IEnumerable<IQuest> GetActiveQuests()
         {
-            foreach (var q in _quests.Values)
+            foreach (var q in _ordered)
                 if (q.State == QuestState.Active) yield return q;
         }
 
@@ -204,6 +208,7 @@ namespace Game.Quest.Services
         private void BuildCatalog()
         {
             _quests.Clear();
+            _ordered.Clear();
             _successors.Clear();
 
             foreach (var config in _configs.GetAll<QuestConfig>())
@@ -236,7 +241,9 @@ namespace Game.Quest.Services
                 var fail = HasValues(config.FailConditions) ? _parser.Parse(config.FailConditions) : null;
                 var next = NormalizeNext(config);
 
-                _quests[config.Id] = new Quest(config, type, activation, fail, tasks, next);
+                var quest = new Quest(config, type, activation, fail, tasks, next);
+                _quests[config.Id] = quest;
+                _ordered.Add(quest);
             }
 
             // Successor set (only links to known quests) + validation.
@@ -407,14 +414,14 @@ namespace Game.Quest.Services
                     {
                         if (task.RefreshProgress())
                         {
-                            Debug.LogWarning($"{LogPrefix} task progress '{task.QuestId}.{task.Id}': {task.GetProgress()}/{task.GetGoal()}.");
+                            Debug.Log($"{LogPrefix} task progress '{task.QuestId}.{task.Id}': {task.GetProgress()}/{task.GetGoal()}.");
                             TaskProgressChanged?.Invoke(task);
                         }
                         if (task.IsCompletionMet)
                         {
                             task.SetState(QuestTaskState.Completed);
                             MarkDirty();
-                            Debug.LogWarning($"{LogPrefix} task completed '{task.QuestId}.{task.Id}'.");
+                            Debug.Log($"{LogPrefix} task completed '{task.QuestId}.{task.Id}'.");
                             TaskCompleted?.Invoke(task);
                             changed = true;
                         }
@@ -424,7 +431,6 @@ namespace Game.Quest.Services
                 if (AllTasksCompleted(quest))
                 {
                     Complete(quest);
-                    Award(quest); // auto-award (MVP)
                     changed = true;
                 }
             }
@@ -458,7 +464,7 @@ namespace Game.Quest.Services
         {
             quest.SetState(QuestState.ReadyToAward);
             MarkDirty();
-            Debug.LogWarning($"{LogPrefix} quest completed '{quest.Id}'.");
+            Debug.Log($"{LogPrefix} quest completed '{quest.Id}'.");
             QuestCompleted?.Invoke(quest);
         }
 
@@ -527,13 +533,14 @@ namespace Game.Quest.Services
         /// factories are the global registered ones (so mixed trees keep normal non-sales conditions).</summary>
         private IConditionParser BuildScopedParser(ISalesStatsReader scopedReader)
         {
-            var factories = new List<IConditionFactory>(_allFactories.Count + 3);
+            var factories = new List<IConditionFactory>();
             foreach (var f in _allFactories)
                 if (f != null && !SalesConditionTypeIds.Contains(f.Type)) factories.Add(f);
 
             factories.Add(new SoldGenreConditionFactory(scopedReader));
             factories.Add(new SoldGenreAtLocationConditionFactory(scopedReader));
             factories.Add(new SoldGenreInSingleDayConditionFactory(scopedReader));
+            factories.Add(new ActivePickGenreConditionFactory(scopedReader));
 
             return new ConditionParser(new ConditionFactoryRegistry(factories));
         }
@@ -610,6 +617,7 @@ namespace Game.Quest.Services
             if (_decor != null) _decor.PlacementChanged += OnPlacementChanged;
             if (_inventory != null) _inventory.Changed += OnInventoryChanged;
             if (_dayProgress != null) _dayProgress.PhaseChanged += OnPhaseChanged;
+            SubscribeConditionChangeSources();
             _subscribed = true;
         }
 
@@ -620,13 +628,37 @@ namespace Game.Quest.Services
             if (_decor != null) _decor.PlacementChanged -= OnPlacementChanged;
             if (_inventory != null) _inventory.Changed -= OnInventoryChanged;
             if (_dayProgress != null) _dayProgress.PhaseChanged -= OnPhaseChanged;
+            UnsubscribeConditionChangeSources();
             _subscribed = false;
+        }
+
+        private void SubscribeConditionChangeSources()
+        {
+            if (_allFactories == null) return;
+
+            foreach (var factory in _allFactories)
+            {
+                if (factory is not IConditionChangeSource source) continue;
+                if (_subscribedConditionSources.Contains(source)) continue;
+
+                source.Changed += OnConditionSourceChanged;
+                _subscribedConditionSources.Add(source);
+            }
+        }
+
+        private void UnsubscribeConditionChangeSources()
+        {
+            for (var i = 0; i < _subscribedConditionSources.Count; i++)
+                _subscribedConditionSources[i].Changed -= OnConditionSourceChanged;
+
+            _subscribedConditionSources.Clear();
         }
 
         private void OnSalesChanged(SalesStatsChange _) => Reevaluate();
         private void OnPlacementChanged() => Reevaluate();
         private void OnInventoryChanged(InventoryChangeEvent _) => Reevaluate();
         private void OnPhaseChanged(DayProgressState _) => Reevaluate();
+        private void OnConditionSourceChanged() => Reevaluate();
 
         public void Dispose() => Unsubscribe();
 
@@ -651,7 +683,7 @@ namespace Game.Quest.Services
                     if (_quests.TryGetValue(pair.Key, out var q)) RestoreActive(q, pair.Value);
 
             // Safety: a partial save could leave an awarded quest's successor Pending — relink silently.
-            foreach (var quest in _quests.Values)
+            foreach (var quest in _ordered)
             {
                 if (quest.State != QuestState.Awarded) continue;
                 foreach (var nextId in quest.NextQuestIds)
@@ -727,7 +759,7 @@ namespace Game.Quest.Services
                 Failed = new List<string>()
             };
 
-            foreach (var quest in _quests.Values)
+            foreach (var quest in _ordered)
             {
                 switch (quest.State)
                 {

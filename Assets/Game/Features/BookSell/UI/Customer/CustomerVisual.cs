@@ -24,7 +24,10 @@ namespace Book.Sell.UI.Customer
 
         public void ApplyFigureSprite(Sprite sprite)
         {
-            if (sprite == null || _figure == null)
+            if (_figure == null)
+                return;
+
+            if (sprite == null)
             {
                 _figure.sprite = _fallbackSprite;
                 return;

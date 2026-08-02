@@ -75,7 +75,10 @@ namespace Book.Sell.UI
             try
             {
                 var window = await _uiManager.ShowAsync<DialogWindow>(
-                    new DialogWindowArgs(payload, _controller.CompleteDialogue), _cts.Token);
+                    new DialogWindowArgs(
+                        payload,
+                        () => CompleteDialogueAfterDelivery(payload?.DialogueId).Forget()),
+                    _cts.Token);
 
                 if (window == null)
                 {
@@ -97,6 +100,23 @@ namespace Book.Sell.UI
             catch (Exception ex)
             {
                 Debug.LogError($"{LogPrefix} Failed to open the dialogue window: {ex}");
+                _controller?.CompleteDialogue();
+            }
+        }
+
+        private async UniTaskVoid CompleteDialogueAfterDelivery(string dialogueId)
+        {
+            try
+            {
+                if (_delivered != null && !string.IsNullOrWhiteSpace(dialogueId))
+                    await _delivered.MarkDeliveredDeferredAsync(dialogueId, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"{LogPrefix} Failed to complete dialogue delivery '{dialogueId}': {ex}");
+            }
+            finally
+            {
                 _controller?.CompleteDialogue();
             }
         }

@@ -10,13 +10,19 @@ namespace Game.SalesStats.API
         private readonly HashSet<string> _genres = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, HashSet<string>> _locationGenres = new(StringComparer.Ordinal);
         private readonly HashSet<string> _singleDayGenres = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _excellentPickGenres = new(StringComparer.OrdinalIgnoreCase);
 
         public IReadOnlyCollection<string> Genres => _genres;
         public IReadOnlyDictionary<string, HashSet<string>> LocationGenres => _locationGenres;
         public IReadOnlyCollection<string> SingleDayGenres => _singleDayGenres;
+        public IReadOnlyCollection<string> ExcellentPickGenres => _excellentPickGenres;
         public int ActivationDay { get; set; }
         public bool RequiresCurrentDay => _singleDayGenres.Count > 0;
-        public bool IsEmpty => _genres.Count == 0 && _locationGenres.Count == 0 && _singleDayGenres.Count == 0;
+        public bool IsEmpty =>
+            _genres.Count == 0 &&
+            _locationGenres.Count == 0 &&
+            _singleDayGenres.Count == 0 &&
+            _excellentPickGenres.Count == 0;
 
         public void AddGenre(BookGenre genre) => _genres.Add(genre.ToConfigValue());
 
@@ -33,5 +39,7 @@ namespace Game.SalesStats.API
         }
 
         public void AddSingleDayGenre(BookGenre genre) => _singleDayGenres.Add(genre.ToConfigValue());
+
+        public void AddExcellentPickGenre(BookGenre genre) => _excellentPickGenres.Add(genre.ToConfigValue());
     }
 }

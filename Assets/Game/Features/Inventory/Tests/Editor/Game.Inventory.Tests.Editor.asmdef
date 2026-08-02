@@ -4,10 +4,12 @@
     "references": [
         "UniTask",
         "Save",
+        "Configs",
         "Game.Inventory.API",
         "Game.Inventory",
         "Game.Conditions.API",
         "Game.Conditions",
+        "Game.Rewards.API",
         "UnityEngine.TestRunner"
     ],
     "includePlatforms": [

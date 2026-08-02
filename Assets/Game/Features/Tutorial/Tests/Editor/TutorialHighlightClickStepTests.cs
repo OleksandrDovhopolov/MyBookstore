@@ -195,6 +195,7 @@ namespace Game.Tutorial.Tests.Editor
                     "bottom",
                     true,
                     TutorialPointerPlacement.Left,
+                    Vector2.zero,
                     CancellationToken.None);
                 await UniTask.Yield(PlayerLoopTiming.Update);
 

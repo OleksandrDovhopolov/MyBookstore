@@ -173,7 +173,7 @@ namespace Book.Sell.Services
             var request = _activeRequest;
             var result = _scoring.Score(shelfBook.Config, request, _location);
 
-            if (result.Tier == RecommendationTier.Normal || result.Tier == RecommendationTier.Excellent)
+            if (result.Tier == RecommendationTier.Excellent)
             {
                 _shelf.CommitSale(bookId);
 
@@ -185,6 +185,11 @@ namespace Book.Sell.Services
                 ShelfChanged?.Invoke();
                 Debug.Log($"{LogPrefix} active sale: book={bookId}, tier={result.Tier}, " +
                           $"gold={result.GoldEarned}, request={request.Id}");
+            }
+            else if (result.Tier == RecommendationTier.Failed)
+            {
+                Debug.Log($"{LogPrefix} active recommendation failed: book={bookId}, " +
+                          $"tier={result.Tier}, gold={result.GoldEarned}, request={request.Id}");
             }
 
             _result.GoldEarned += result.GoldEarned;
@@ -236,6 +241,7 @@ namespace Book.Sell.Services
 
             var request = _activeRequest;
             var result = RecommendationResult.Skipped(request.Id);
+            Debug.Log($"{LogPrefix} active request skipped: request={request.Id}");
 
             _result.ManualRequests++;
             CountTier(RecommendationTier.Skipped);
@@ -369,7 +375,6 @@ namespace Book.Sell.Services
             switch (tier)
             {
                 case RecommendationTier.Excellent: _result.ExcellentCount++; break;
-                case RecommendationTier.Normal: _result.NormalCount++; break;
                 case RecommendationTier.Failed: _result.FailedCount++; break;
                 case RecommendationTier.Skipped: _result.SkippedCount++; break;
             }

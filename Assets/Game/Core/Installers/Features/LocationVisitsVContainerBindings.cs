@@ -21,6 +21,7 @@ namespace Game.Bootstrap
             builder.Register<LocationVisitService>(Lifetime.Singleton)
                 .As<ILocationVisitsReader>()
                 .As<ICurrentLocationProvider>()
+                .As<ILocationVisitChangeSource>()
                 .As<ILocationVisitService>();
 
             // Condition adapters discovered by the engine via the IConditionFactory collection.

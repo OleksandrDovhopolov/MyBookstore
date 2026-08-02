@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Tutorial;
 using Game.Tutorial.API;
 using UnityEngine;
 
@@ -8,8 +9,6 @@ namespace Game.Tutorial.Content
 {
     public sealed class TutorialAwaitFactStep : ITutorialStep
     {
-        private const string LogPrefix = "[Tutorial]";
-
         private readonly Func<bool> _fact;
         private readonly TimeSpan? _timeout;
 
@@ -37,7 +36,7 @@ namespace Game.Tutorial.Content
             var timeout = UniTask.Delay(_timeout.Value, cancellationToken: ct);
             var winner = await UniTask.WhenAny(waitFact, timeout);
             if (winner == 1)
-                Debug.LogWarning($"{LogPrefix} await fact step '{Id}' timed out; auto-advancing.");
+                Debug.LogWarning($"{TutorialLog.Prefix} await fact step '{Id}' timed out; auto-advancing.");
         }
     }
 }

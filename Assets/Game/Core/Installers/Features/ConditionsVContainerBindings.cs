@@ -14,6 +14,7 @@ namespace Game.Bootstrap
         {
             builder.Register<IConditionFactoryRegistry, ConditionFactoryRegistry>(Lifetime.Singleton);
             builder.Register<IConditionParser, ConditionParser>(Lifetime.Singleton);
+            builder.Register<IConditionFactory, ManualConditionFactory>(Lifetime.Singleton);
         }
     }
 }

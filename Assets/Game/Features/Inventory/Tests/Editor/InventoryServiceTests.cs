@@ -11,6 +11,8 @@ namespace Game.Inventory.Tests.Editor
     {
         private const string BookCategory = "book";
         private const string PuzzleCategory = "puzzle_piece";
+        private const string ConsumableCategory = "consumable";
+        private const string QuestItemCategory = "quest_item";
 
         private static (InventoryService svc, FakeInventoryRepository repo, FakeSaveService save) Build()
         {
@@ -19,6 +21,8 @@ namespace Game.Inventory.Tests.Editor
             var registry = new ItemCategoryRegistry();
             registry.Register(new ItemCategory(BookCategory, ItemStackingMode.Unique, "Books"));
             registry.Register(new ItemCategory(PuzzleCategory, ItemStackingMode.Stack, "Puzzle Pieces"));
+            registry.Register(new ItemCategory(ConsumableCategory, ItemStackingMode.Stack, "Consumables"));
+            registry.Register(new ItemCategory(QuestItemCategory, ItemStackingMode.Unique, "Quest Items"));
             var svc = new InventoryService(save, repo, registry);
             // Force AfterLoadAsync to populate cache from repo.
             svc.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
@@ -79,6 +83,44 @@ namespace Game.Inventory.Tests.Editor
             svc.AddAsync("p1", PuzzleCategory, 3, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(5, svc.GetCount("p1"));
+        }
+
+        [Test]
+        public void AddConsumable_FuelCanister_Stacks()
+        {
+            var (svc, _, _) = Build();
+            svc.AddAsync("fuel_canister", ConsumableCategory, 2, CancellationToken.None).GetAwaiter().GetResult();
+            svc.AddAsync("fuel_canister", ConsumableCategory, 2, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(4, svc.GetCount("fuel_canister"));
+            Assert.AreEqual(1, svc.GetByCategory(ConsumableCategory).Count);
+        }
+
+        [Test]
+        public void AddQuestItem_MillyLetter_IsUnique()
+        {
+            var (svc, repo, _) = Build();
+            svc.AddAsync("milly_letter", QuestItemCategory, 1, CancellationToken.None).GetAwaiter().GetResult();
+            var savesBefore = repo.SaveCallCount;
+
+            svc.AddAsync("milly_letter", QuestItemCategory, 1, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, svc.GetCount("milly_letter"));
+            Assert.AreEqual(1, svc.GetByCategory(QuestItemCategory).Count);
+            Assert.AreEqual(savesBefore, repo.SaveCallCount);
+        }
+
+        [Test]
+        public void RemoveQuestItem_PartialAmount_FailsNoChange()
+        {
+            var (svc, _, _) = Build();
+            svc.AddAsync("milly_letter", QuestItemCategory, 1, CancellationToken.None).GetAwaiter().GetResult();
+
+            var ok = svc.RemoveAsync("milly_letter", 2, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.IsFalse(ok);
+            Assert.AreEqual(1, svc.GetCount("milly_letter"));
+            Assert.IsTrue(svc.Has("milly_letter"));
         }
 
         [Test]

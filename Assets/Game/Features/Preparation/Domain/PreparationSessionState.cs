@@ -16,7 +16,7 @@ namespace Game.Preparation.Domain
         /// Выбранная игроком локация (Location Window → Start). Дефолт — fallback-локация на случай
         /// state, созданного до выбора; в норме перезаписывается выбором игрока.
         /// </summary>
-        public string LocationId { get; set; } = "loc_downtown";
+        public string LocationId { get; set; } = "loc_park";
 
         /// <summary>
         /// Намерение игрока: сколько книг каждого жанра выставить на полку (genre → count).

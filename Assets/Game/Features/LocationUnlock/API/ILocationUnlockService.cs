@@ -1,27 +1,28 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
 namespace Game.LocationUnlock.API
 {
     /// <summary>
-    /// Domain layer over the Conditions engine: owns "is location X open?" and the reason/progress for
-    /// the location UI. Unlock conditions come from <c>LocationConfig.Unlock</c> (parsed once via
-    /// <c>IConditionParser</c>); the opened fact is persisted separately. Unlocking is free and
-    /// automatic when conditions are met — <see cref="TryUnlockAsync"/> is just the explicit trigger.
+    /// Domain layer over the Conditions engine: owns opened location ids, condition progress, and
+    /// optional item costs for manual unlocks.
     /// </summary>
     public interface ILocationUnlockService
     {
-        /// <summary>True only when the location has been purchased/opened (persisted).</summary>
+        /// <summary>True only when the location has been opened and persisted.</summary>
         bool IsUnlocked(string locationId);
 
-        /// <summary>Full status: state + condition progress tree. Never null (unknown id → Locked).</summary>
+        /// <summary>Full status: state + condition progress tree. Never null (unknown id returns Locked).</summary>
         LocationUnlockStatus GetStatus(string locationId);
 
+        /// <summary>Item cost progress for a manual unlock. Empty when the location has no unlock cost.</summary>
+        IReadOnlyList<LocationUnlockCostProgress> GetCost(string locationId);
+
         /// <summary>
-        /// Explicitly opens the location if its conditions are met: persists the opened fact and raises
-        /// <see cref="Unlocked"/>. Free — there is no cost. Normally unlocking happens automatically when
-        /// conditions are satisfied; this is the manual trigger for the same effect.
+        /// Explicitly opens the location if its conditions and item cost are met: consumes cost items,
+        /// persists the opened fact, and raises <see cref="Unlocked"/>.
         /// </summary>
         UniTask<UnlockResult> TryUnlockAsync(string locationId, CancellationToken ct);
 
@@ -30,8 +31,7 @@ namespace Game.LocationUnlock.API
 
         /// <summary>
         /// Fired for a still-locked location when its underlying condition data moved, so its progress
-        /// ("Crime 3/10") may have changed. For reactive UI refresh; locations that cross the threshold
-        /// raise <see cref="Unlocked"/> instead.
+        /// may have changed. Locations that cross the threshold raise <see cref="Unlocked"/> instead.
         /// </summary>
         event Action<string> StatusChanged;
     }

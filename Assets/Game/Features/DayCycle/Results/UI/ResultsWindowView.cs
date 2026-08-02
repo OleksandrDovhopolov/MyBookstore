@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Game.Newspaper.UI;
 using Game.Rewards.UI;
 using Game.UI;
 using TMPro;
@@ -13,6 +12,7 @@ namespace Game.DayCycle.Results.UI
     {
         [Header("Results")]
         [SerializeField] private TMP_Text _earnedGoldLabel;
+        [SerializeField] private TextMeshProUGUI _dayText;
         [SerializeField] private RectTransform _coinFlightSource;
 
         [Header("Sold genres")]
@@ -29,6 +29,14 @@ namespace Game.DayCycle.Results.UI
         {
             if (_earnedGoldLabel != null)
                 _earnedGoldLabel.text = Mathf.Max(0, amount).ToString();
+        }
+
+        public void SetDay(int day)
+        {
+            if (_dayText == null)
+                return;
+
+            _dayText.text = day > 0 ? $"Day {day}" : string.Empty;
         }
 
         public void SetSoldGenres(IReadOnlyList<RewardSpecResource> soldGenres)
@@ -55,6 +63,7 @@ namespace Game.DayCycle.Results.UI
         public void ResetView()
         {
             SetEarnedGold(0);
+            SetDay(0);
             ResetSoldGenres();
         }
 

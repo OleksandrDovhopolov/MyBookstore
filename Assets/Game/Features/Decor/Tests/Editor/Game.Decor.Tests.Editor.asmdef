@@ -9,6 +9,8 @@
         "Save",
         "Game.Inventory.API",
         "Game.Resources.API",
+        "Game.Shop.API",
+        "Game.Rewards.API",
         "Book.Sell.API",
         "Game.Conditions.API",
         "Game.Conditions",

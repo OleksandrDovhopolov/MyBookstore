@@ -19,10 +19,13 @@ MonoBehaviour:
   _passiveCommitDelay: 1
   _passiveFailureFeedbackDuration: 1.5
   _passiveSaleFeedbackDuration: 1.5
+  _passiveDemandRequestShare: 0.7
+  _passiveDemandRequestShareNarrow: 0.5
+  _narrowDemandGenreThreshold: 3
   _completePurchaseDuration: 1.5
   _leaveDuration: 0.5
   _minLeaveDuration: 0.5
   _maxLeaveDuration: 1.5
   _spawnInterval: 2
   _baseCustomers: 5
-  _maxConcurrentCustomers: 3
+  _maxConcurrentCustomers: 9

@@ -149,6 +149,50 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void DialogueScriptWithoutPassiveAttempts_StillSpawns_AndDoesNotReplaceRegularSlot()
+        {
+            var configs = new FakeConfigsService();
+            configs.SetAll(new[]
+            {
+                new CustomerScriptConfig
+                {
+                    Id = "milly_intro",
+                    DayIndex = 2,
+                    CharacterId = "milly",
+                    DialogueId = "milly1"
+                }
+            });
+            configs.SetAll(new[] { SingleNodeDialogue("milly1") });
+            configs.SetAll(new[] { SalesTestKit.Book("book_drama", "Drama") });
+            configs.SetAll(new[]
+            {
+                new CharacterConfig
+                {
+                    Id = "milly",
+                    FavoriteGenres = new[] { "Drama" }
+                }
+            });
+            var inner = new StubCustomerSpawner(new List<Customer> { Passive("inner_1") });
+            var tuning = SalesTestKit.FastTuning();
+
+            var customers = Spawner(inner, configs).BuildCustomers(DayTwoSetup, tuning, new FakeSalesRandom());
+            var customer = customers[0];
+            var ctx = SalesTestKit.Context(SalesTestKit.Shelf(), SalesTestKit.Location(), new RecordingSink());
+
+            Assert.AreEqual(2, customers.Count, "Dialogue-only story visits do not consume regular sales slots.");
+            Assert.AreEqual("script_milly_intro", customer.Id);
+            Assert.AreEqual("inner_1", customers[1].Id);
+            Assert.AreEqual("milly", customer.CharacterId);
+            Assert.IsNull(customer.ScriptedPassivePlan);
+
+            customer.Tick(ctx, 1f); // Approach -> Dialog
+            customer.Tick(ctx, 1f); // Dialog acquires lock
+            customer.ForceCompleteCurrentStep(ctx);
+
+            Assert.IsInstanceOf<CompletePurchaseStep>(customer.CurrentStep);
+        }
+
+        [Test]
         public void MoreScriptsThanSlots_WarnsAndSkipsOverflow()
         {
             var configs = new FakeConfigsService();
@@ -390,6 +434,8 @@ namespace Book.Sell.Tests.Editor
             private readonly HashSet<string> _delivered;
             public StubDeliveredDialogues(params string[] delivered) => _delivered = new HashSet<string>(delivered);
 
+            public event Action Changed;
+
             public bool IsDelivered(string dialogueId) => _delivered.Contains(dialogueId);
 
             public UniTask MarkDeliveredAsync(string dialogueId, CancellationToken ct)
@@ -424,6 +470,7 @@ namespace Book.Sell.Tests.Editor
 
             public QuestConfig GetQuestConfig(string questId) => TryGetQuest(questId)?.Config;
             public QuestState GetQuestState(string questId) => _states.TryGetValue(questId, out var state) ? state : QuestState.Pending;
+            public IReadOnlyList<IQuest> GetAllQuests() => Array.Empty<IQuest>();
             public IEnumerable<IQuest> GetActiveQuests() => Array.Empty<IQuest>();
             public IQuestChain GetChain(string chainId) => null;
             public IQuestChain GetChainByQuestId(string questId) => null;

@@ -11,16 +11,28 @@ namespace Game.LocationVisits.Conditions
     /// Registered in DI so the condition engine discovers it via the <see cref="IConditionFactory"/> collection.
     /// <c>min</c> defaults to 1 (a bare node means "visited at least once", never always-true).
     /// </summary>
-    public sealed class VisitLocationConditionFactory : IConditionFactory
+    public sealed class VisitLocationConditionFactory : IConditionFactory, IConditionChangeSource
     {
         public const string TypeId = "visitLocation";
 
         private readonly ILocationVisitsReader _reader;
+        private readonly ILocationVisitChangeSource _changes;
 
-        public VisitLocationConditionFactory(ILocationVisitsReader reader)
-            => _reader = reader ?? throw new ArgumentNullException(nameof(reader));
+        public VisitLocationConditionFactory(
+            ILocationVisitsReader reader,
+            ILocationVisitChangeSource changes = null)
+        {
+            _reader = reader ?? throw new ArgumentNullException(nameof(reader));
+            _changes = changes;
+        }
 
         public string Type => TypeId;
+
+        public event Action Changed
+        {
+            add { if (_changes != null) _changes.Changed += value; }
+            remove { if (_changes != null) _changes.Changed -= value; }
+        }
 
         public ICondition Create(JObject node)
         {

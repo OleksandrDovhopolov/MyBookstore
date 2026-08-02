@@ -5,7 +5,9 @@ using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.DayCycle.Day;
 using Game.Quest.API;
+using Game.Tutorial;
 using Game.Tutorial.API;
+using Game.Tutorial.Presentation;
 using Game.UI;
 using MessagePipe;
 using Save;
@@ -21,10 +23,9 @@ namespace Game.Tutorial.Services
     /// </summary>
     public sealed class TutorialService : ITutorialService, ITutorialReevaluationGate, ISaveHook, IDisposable
     {
-        private const string LogPrefix = "[Tutorial]";
-
         private readonly ISaveService _save;
         private readonly IReadOnlyList<ITutorialSequence> _registeredSequences;
+        private readonly ITutorialSettings _settings;
 
         // When false, sequences never auto-start from triggers or resume on load; explicit TryStartAsync still runs.
         private readonly bool _autoStart;
@@ -39,7 +40,7 @@ namespace Game.Tutorial.Services
         private readonly IGameFlowService _gameFlow;
         private readonly IQuestsService _quests;
         private readonly IQuestReevaluationGate _questReevaluation;
-        private readonly ITutorialAutoStartGate _autoStartGate;
+        private readonly IGameplayAutoStartGate _autoStartGate;
         private readonly IUIManager _ui;
 
         private readonly Dictionary<string, ITutorialSequence> _sequences =
@@ -63,16 +64,18 @@ namespace Game.Tutorial.Services
             IPublisher<TutorialSequenceStarted> startedPub,
             IPublisher<TutorialStepChanged> stepPub,
             IPublisher<TutorialSequenceCompleted> completedPub,
+            ITutorialSettings settings = null,
             IDayProgressService dayProgress = null,
             IGameFlowService gameFlow = null,
             IQuestsService quests = null,
             IQuestReevaluationGate questReevaluation = null,
-            ITutorialAutoStartGate autoStartGate = null,
+            IGameplayAutoStartGate autoStartGate = null,
             IUIManager ui = null,
             bool autoStart = true)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _registeredSequences = sequences ?? Array.Empty<ITutorialSequence>();
+            _settings = settings;
             _autoStart = autoStart;
             _hubReadySub = hubReadySub;
             _startedPub = startedPub;
@@ -110,10 +113,8 @@ namespace Game.Tutorial.Services
             Subscribe();
             _loaded = true;
 
-            Debug.Log($"{LogPrefix} loaded: {_sequences.Count} sequences, " +
+            Debug.Log($"{TutorialLog.Prefix} loaded: {_sequences.Count} sequences, " +
                       $"{_state.CompletedSequenceIds.Count} completed. autoStart={_autoStart}.");
-
-            ResumeActiveSequence();
         }
 
         public UniTask BeforeSaveAsync(CancellationToken ct) => UniTask.CompletedTask;
@@ -176,12 +177,27 @@ namespace Game.Tutorial.Services
             _sequences.Clear();
             _byPriority.Clear();
 
+            var knownSequenceIds = new HashSet<string>(StringComparer.Ordinal);
             foreach (var seq in _registeredSequences)
             {
                 if (seq == null || string.IsNullOrEmpty(seq.Id)) continue;
+                knownSequenceIds.Add(seq.Id);
+            }
+
+            ValidateSettings(knownSequenceIds);
+
+            foreach (var seq in _registeredSequences)
+            {
+                if (seq == null || string.IsNullOrEmpty(seq.Id)) continue;
+                if (_settings?.IsEnabled(seq.Id) == false)
+                {
+                    Debug.Log($"{TutorialLog.Prefix} sequence '{seq.Id}' disabled by settings.");
+                    continue;
+                }
+
                 if (_sequences.ContainsKey(seq.Id))
                 {
-                    Debug.LogError($"{LogPrefix} duplicate sequence id '{seq.Id}', ignoring the later one.");
+                    Debug.LogError($"{TutorialLog.Prefix} duplicate sequence id '{seq.Id}', ignoring the later one.");
                     continue;
                 }
                 _sequences[seq.Id] = seq;
@@ -189,6 +205,35 @@ namespace Game.Tutorial.Services
             }
 
             _byPriority.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+        }
+
+        private void ValidateSettings(IReadOnlyCollection<string> knownSequenceIds)
+        {
+            if (_settings == null)
+                return;
+
+            if (_settings is TutorialSettings tutorialSettings)
+            {
+                tutorialSettings.ValidateAgainst(knownSequenceIds);
+                return;
+            }
+
+            var known = new HashSet<string>(knownSequenceIds ?? Array.Empty<string>(), StringComparer.Ordinal);
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var id in _settings.ConfiguredSequenceIds ?? Array.Empty<string>())
+            {
+                if (string.IsNullOrEmpty(id))
+                {
+                    Debug.LogWarning($"{TutorialLog.Prefix} tutorial settings contain an empty sequence id.");
+                    continue;
+                }
+
+                if (!known.Contains(id))
+                    Debug.LogWarning($"{TutorialLog.Prefix} tutorial settings contain unknown sequence id '{id}'.");
+
+                if (!seen.Add(id))
+                    Debug.LogWarning($"{TutorialLog.Prefix} tutorial settings contain duplicate sequence id '{id}'; first entry wins.");
+            }
         }
 
         private void Subscribe()
@@ -248,13 +293,22 @@ namespace Game.Tutorial.Services
                 return;
             }
 
-            TryStartEligible();
+            TryStartEligible(trigger, param);
         }
 
-        private bool TryStartEligible()
+        private bool TryStartEligible(TutorialTrigger? trigger = null, string param = null)
         {
+            var savedActiveId = _state.ActiveSequenceId;
+            if (TryStartSavedActiveSequence(trigger, param))
+                return true;
+
             foreach (var seq in _byPriority)
             {
+                if (trigger.HasValue
+                    && string.Equals(seq.Id, savedActiveId, StringComparison.Ordinal)
+                    && !TriggerMatches(seq, trigger.Value, param))
+                    continue;
+
                 if (!ContextAllows(seq)) continue;
                 if (!IsEligible(seq)) continue;
 
@@ -320,21 +374,31 @@ namespace Game.Tutorial.Services
 
         private bool CanStartOverlay() => _ui == null || _ui.GetTopWindow() == null;
 
-        private void ResumeActiveSequence()
+        private bool TryStartSavedActiveSequence(TutorialTrigger? trigger, string param)
         {
-            if (!_autoStart) return; // auto-start disabled: don't revive a mid-run sequence from a prior save
-            if (_running) return; // a trigger may have already started a run during load
             var id = _state.ActiveSequenceId;
-            if (string.IsNullOrEmpty(id)) return;
-            if (!_sequences.TryGetValue(id, out var seq)) return;
-            if (_state.CompletedSequenceIds.Contains(id)) return;
+            if (string.IsNullOrEmpty(id)) return false;
+            if (!_sequences.TryGetValue(id, out var seq)) return false;
+            if (trigger.HasValue && !TriggerMatches(seq, trigger.Value, param)) return false;
+            if (!ContextAllows(seq)) return false;
+            if (!IsEligible(seq)) return false;
 
             var steps = MaterializeSteps(seq);
-            var fromStep = seq.ResumePolicy == TutorialResumePolicy.FromStep
+            var startIndex = seq.ResumePolicy == TutorialResumePolicy.FromStep
                 ? ResolveResumeIndex(steps)
                 : 0;
 
-            BeginRun(seq, steps, fromStep);
+            BeginRun(seq, steps, startIndex);
+            return true;
+        }
+
+        private static bool TriggerMatches(ITutorialSequence seq, TutorialTrigger trigger, string param)
+        {
+            if (seq.Trigger != trigger)
+                return false;
+
+            return string.IsNullOrEmpty(seq.TriggerParam)
+                   || string.Equals(seq.TriggerParam, param, StringComparison.Ordinal);
         }
 
         // ----- Runner -----
@@ -375,7 +439,7 @@ namespace Game.Tutorial.Services
             try
             {
                 _startedPub?.Publish(new TutorialSequenceStarted(seq.Id));
-                Debug.Log($"{LogPrefix} sequence '{seq.Id}' started at step {startIndex}.");
+                Debug.Log($"{TutorialLog.Prefix} sequence '{seq.Id}' started at step {startIndex}.");
                 seq.OnRunStarted();
 
                 for (var i = startIndex; i < steps.Count; i++)
@@ -383,7 +447,7 @@ namespace Game.Tutorial.Services
                     var step = steps[i];
                     if (step == null)
                     {
-                        Debug.LogError($"{LogPrefix} null step in '{seq.Id}' (step {i}); skipping.");
+                        Debug.LogError($"{TutorialLog.Prefix} null step in '{seq.Id}' (step {i}); skipping.");
                         continue;
                     }
 
@@ -406,7 +470,7 @@ namespace Game.Tutorial.Services
             }
             catch (Exception e)
             {
-                Debug.LogError($"{LogPrefix} sequence '{seq.Id}' failed: {e}");
+                Debug.LogError($"{TutorialLog.Prefix} sequence '{seq.Id}' failed: {e}");
             }
             finally
             {
@@ -416,7 +480,7 @@ namespace Game.Tutorial.Services
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"{LogPrefix} sequence '{seq.Id}' teardown failed: {e}");
+                    Debug.LogError($"{TutorialLog.Prefix} sequence '{seq.Id}' teardown failed: {e}");
                 }
                 finally
                 {
@@ -441,7 +505,7 @@ namespace Game.Tutorial.Services
             await PersistAsync(ct);
 
             _completedPub?.Publish(new TutorialSequenceCompleted(seq.Id));
-            Debug.Log($"{LogPrefix} sequence '{seq.Id}' completed.");
+            Debug.Log($"{TutorialLog.Prefix} sequence '{seq.Id}' completed.");
 
             // Quests gating on "tutorialCompleted" are not driven by sales/decor/phase, so nudge a re-eval.
             _questReevaluation?.RequestReevaluation();

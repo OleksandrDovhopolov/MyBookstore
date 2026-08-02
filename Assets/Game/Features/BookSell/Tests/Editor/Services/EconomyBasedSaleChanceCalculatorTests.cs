@@ -85,7 +85,7 @@ namespace Book.Sell.Tests.Editor.Services
         public void NullDemandGenres_TreatedAsNoDemand()
         {
             var (calc, _) = Build();
-            var location = new LocationConfig { Id = "loc", DisplayName = "loc", DemandGenres = null, DemandQualities = null };
+            var location = new LocationConfig { Id = "loc", DisplayName = "loc", DemandGenres = null };
             var chance = calc.Compute("Fantasy", 1, location, null);
             Assert.AreEqual(0.10d, chance, Epsilon);
         }

@@ -18,7 +18,7 @@ namespace Game.LocationVisits.Services
     /// (<see cref="ICurrentLocationProvider"/>) and write (<see cref="ILocationVisitService"/>) seams.
     /// </summary>
     public sealed class LocationVisitService :
-        ILocationVisitService, ILocationVisitsReader, ICurrentLocationProvider, ISaveHook
+        ILocationVisitService, ILocationVisitsReader, ICurrentLocationProvider, ILocationVisitChangeSource, ISaveHook
     {
         private const string LogPrefix = "[LocationVisits]";
 
@@ -41,6 +41,8 @@ namespace Game.LocationVisits.Services
         // Runtime-only: null at the hub, set on entry, cleared on return.
         public string CurrentLocationId { get; private set; }
 
+        public event Action Changed;
+
         public int GetVisits(string locationId)
             => !string.IsNullOrEmpty(locationId) && _visits.TryGetValue(locationId, out var count) ? count : 0;
 
@@ -56,9 +58,16 @@ namespace Game.LocationVisits.Services
             // In-memory only; the real write is deferred to the next save cycle (BeforeSaveAsync).
             _dirty = true;
             _save.MarkDirty();
+            Changed?.Invoke();
         }
 
-        public void ClearCurrentLocation() => CurrentLocationId = null;
+        public void ClearCurrentLocation()
+        {
+            if (CurrentLocationId == null) return;
+
+            CurrentLocationId = null;
+            Changed?.Invoke();
+        }
 
         // ----- ISaveHook -----
 

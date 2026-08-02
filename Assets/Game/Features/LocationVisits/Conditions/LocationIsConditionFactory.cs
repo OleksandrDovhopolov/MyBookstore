@@ -10,16 +10,28 @@ namespace Game.LocationVisits.Conditions
     /// <c>{ "type": "locationIs", "locationId": "far_beach" }</c>.
     /// Registered in DI so the condition engine discovers it via the <see cref="IConditionFactory"/> collection.
     /// </summary>
-    public sealed class LocationIsConditionFactory : IConditionFactory
+    public sealed class LocationIsConditionFactory : IConditionFactory, IConditionChangeSource
     {
         public const string TypeId = "locationIs";
 
         private readonly ICurrentLocationProvider _provider;
+        private readonly ILocationVisitChangeSource _changes;
 
-        public LocationIsConditionFactory(ICurrentLocationProvider provider)
-            => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+        public LocationIsConditionFactory(
+            ICurrentLocationProvider provider,
+            ILocationVisitChangeSource changes = null)
+        {
+            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _changes = changes;
+        }
 
         public string Type => TypeId;
+
+        public event Action Changed
+        {
+            add { if (_changes != null) _changes.Changed += value; }
+            remove { if (_changes != null) _changes.Changed -= value; }
+        }
 
         public ICondition Create(JObject node)
         {

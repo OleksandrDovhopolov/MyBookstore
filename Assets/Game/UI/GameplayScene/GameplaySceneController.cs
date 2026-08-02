@@ -9,10 +9,12 @@ using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
 using Game.Decor.UI;
+using Game.Inventory.UI;
 using Game.Location.UI;
 using Game.LocationUnlock.API;
 using Game.Preparation.Services;
 using Game.Preparation.UI;
+using Game.Quest.UI;
 using Game.Tutorial.API;
 using Game.UI;
 using Game.UI.ContentWidget;
@@ -27,7 +29,6 @@ namespace GameplayUI
     [Window("GameplaySceneController", WindowType.HUD)]
     public class GameplaySceneController : WindowController<GameplaySceneView>, IDataReadyWindow
     {
-        private const string TutorialDayOneId = "tutorial_day_1";
         private const string TutorialClickGenreStepId = "click_genre_panel";
         private const string TutorialFinalTextStepId = "text_4";
 
@@ -98,6 +99,12 @@ namespace GameplayUI
             
             if (View.JournalButton != null)
                 View.JournalButton.onClick.AddListener(OnJournalButtonClicked);
+            
+            if (View.InventoryButton != null)
+                View.InventoryButton.onClick.AddListener(OnInventoryButtonClicked);
+            
+            if (View.QuestButton != null)
+                View.QuestButton.onClick.AddListener(OnQuestButtonClicked);
 
             View.GenreItemClicked += OnGenreItemClicked;
 
@@ -199,7 +206,13 @@ namespace GameplayUI
                 View.DecorButton.onClick.RemoveListener(OnDecorButtonClicked);
             
             if (View != null && View.JournalButton != null)
-                View.DecorButton.onClick.RemoveAllListeners();
+                View.JournalButton.onClick.RemoveAllListeners();
+            
+            if (View != null && View.InventoryButton != null)
+                View.InventoryButton.onClick.RemoveAllListeners();
+            
+            if (View != null && View.QuestButton != null)
+                View.QuestButton.onClick.RemoveAllListeners();
 
             if (View != null)
                 View.GenreItemClicked -= OnGenreItemClicked;
@@ -294,7 +307,7 @@ namespace GameplayUI
         private void OnTutorialStepChanged(TutorialStepChanged step)
         {
             _suppressSaleChanceWidgetAutoClose =
-                step.SequenceId == TutorialDayOneId
+                step.SequenceId == TutorialSequenceIds.DayOne
                 && (step.StepId == TutorialClickGenreStepId
                     || step.StepId == TutorialFinalTextStepId);
         }
@@ -391,6 +404,8 @@ namespace GameplayUI
 
         private void OnDecorButtonClicked() => ShowWindowWithPanelsHiddenAsync<DecorPlacementWindow>().Forget();
         private void OnJournalButtonClicked() => ShowWindowWithPanelsHiddenAsync<JournalWindow>().Forget();
+        private void OnInventoryButtonClicked() => ShowWindowWithPanelsHiddenAsync<InventoryWindowController>().Forget();
+        private void OnQuestButtonClicked() => ShowWindowWithPanelsHiddenAsync<QuestWindow>().Forget();
 
         private async UniTaskVoid ShowWindowWithPanelsHiddenAsync<TWindow>(WindowArgs args = null)
             where TWindow : class, IWindowController, new()

@@ -40,12 +40,11 @@ namespace Book.Sell.Tests.Editor.Fakes
         public static ActiveRequestRuntime ActiveRequest(string id, string quality = "space")
             => ActiveRequestRuntime.FromCondition(RequestDef(id, quality), $"ALL: qualities contains {quality}");
 
-        public static LocationConfig Location(string id = "loc", string[] demandGenres = null, string[] demandQualities = null)
+        public static LocationConfig Location(string id = "loc", string[] demandGenres = null)
             => new()
             {
                 Id = id, DisplayName = id,
-                DemandGenres = demandGenres ?? new[] { "sci-fi" },
-                DemandQualities = demandQualities ?? new[] { "space" }
+                DemandGenres = demandGenres ?? new[] { "sci-fi" }
             };
 
         public static SalesShelf Shelf(params BookConfig[] books)
@@ -73,7 +72,9 @@ namespace Book.Sell.Tests.Editor.Fakes
                 SpawnInterval = 0f,
                 MaxConcurrentCustomers = 0,  // no concurrency cap by default — all customers spawn at once
                 PassiveRequestGenreCount = 2,
-                PassiveDemandGenreWeight = 1.10d
+                PassiveDemandRequestShare = 0.70d,
+                PassiveDemandRequestShareNarrow = 0.50d,
+                NarrowDemandGenreThreshold = 3
             };
 
         /// <summary>Selector that passes the stage-1 gate every time. Useful for flow-focused tests.</summary>

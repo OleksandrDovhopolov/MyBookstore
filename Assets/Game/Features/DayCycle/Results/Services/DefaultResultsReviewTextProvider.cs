@@ -11,7 +11,7 @@ namespace Game.DayCycle.Results.Services
             if (sales.SalesCount == 0)
                 return "A quiet day for the cart. Tomorrow brings new readers.";
 
-            var positive = sales.ExcellentCount + sales.NormalCount;
+            var positive = sales.ExcellentCount;
             var negative = sales.FailedCount;
 
             if (sales.ExcellentCount > 0 && negative == 0)

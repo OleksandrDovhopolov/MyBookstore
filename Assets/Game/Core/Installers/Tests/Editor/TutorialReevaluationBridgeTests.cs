@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Conditions.API;
 using Game.Configs.Models;
 using Game.Decor;
 using Game.Inventory.API;
 using Game.SalesStats.API;
 using Game.Tutorial.API;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
 namespace Game.Bootstrap.Tests.Editor
@@ -56,13 +58,35 @@ namespace Game.Bootstrap.Tests.Editor
         }
 
         [Test]
+        public void ConditionSourceChange_RequestsReevaluation()
+        {
+            var gate = new FakeGate();
+            var source = new FakeConditionSource();
+            var bridge = new TutorialReevaluationBridge(
+                gate,
+                factories: new IConditionFactory[] { source });
+
+            bridge.Start();
+            source.RaiseChanged();
+
+            Assert.AreEqual(1, gate.RequestCount);
+            bridge.Dispose();
+        }
+
+        [Test]
         public void Dispose_UnsubscribesFromSources()
         {
             var gate = new FakeGate();
             var sales = new FakeSalesStatsService();
             var inventory = new FakeInventoryService();
             var decor = new FakeDecorPlacementService();
-            var bridge = new TutorialReevaluationBridge(gate, sales, inventory, decor);
+            var source = new FakeConditionSource();
+            var bridge = new TutorialReevaluationBridge(
+                gate,
+                sales,
+                inventory,
+                decor,
+                new IConditionFactory[] { source });
 
             bridge.Start();
             bridge.Dispose();
@@ -70,6 +94,7 @@ namespace Game.Bootstrap.Tests.Editor
             sales.RaiseChanged();
             inventory.RaiseChanged();
             decor.RaiseChanged();
+            source.RaiseChanged();
 
             Assert.AreEqual(0, gate.RequestCount);
         }
@@ -102,8 +127,10 @@ namespace Game.Bootstrap.Tests.Editor
             public int GetSoldOnDay(int day) => 0;
             public int GetSoldOnDay(int day, BookGenre genre) => 0;
             public int GetMaxSoldInSingleDay(BookGenre genre) => 0;
+            public int GetExcellentPicks(BookGenre genre) => 0;
             public void RecordSold(string bookId) { }
             public void RecordSold(string bookId, in SaleContext ctx) { }
+            public void RecordActivePick(string bookId, in SaleContext ctx) { }
 
             public void RaiseChanged()
                 => Changed?.Invoke(new SalesStatsChange(BookGenre.Crime, 1, 1, "book_crime"));
@@ -140,6 +167,14 @@ namespace Game.Bootstrap.Tests.Editor
             public UniTask ClearAllAsync(CancellationToken ct) => UniTask.CompletedTask;
 
             public void RaiseChanged() => PlacementChanged?.Invoke();
+        }
+
+        private sealed class FakeConditionSource : IConditionFactory, IConditionChangeSource
+        {
+            public string Type => "fake";
+            public event Action Changed;
+            public ICondition Create(JObject node) => null;
+            public void RaiseChanged() => Changed?.Invoke();
         }
     }
 }

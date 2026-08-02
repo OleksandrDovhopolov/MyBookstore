@@ -2,7 +2,9 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
+using Game.Location.API;
 using Game.LocationVisits.API;
+using Game.UI;
 using UnityEngine;
 using VContainer.Unity;
 
@@ -23,6 +25,8 @@ namespace Game.Bootstrap
         private readonly ITransitionAnimationService _animation;
         private readonly GameFlowSettings _settings;
         private readonly ILocationVisitService _locationVisits;
+        private readonly IGameplayAutoStartGate _gameplayAutoStartGate;
+        private readonly ILocationPrefabProvider _locationPrefabs;
 
         private GameObject _hubRoot;
         private LifetimeScope _globalScope;
@@ -33,12 +37,16 @@ namespace Game.Bootstrap
             ISceneTransitionService sceneTransition,
             ITransitionAnimationService animation,
             GameFlowSettings settings,
-            ILocationVisitService locationVisits)
+            ILocationVisitService locationVisits,
+            IGameplayAutoStartGate gameplayAutoStartGate = null,
+            ILocationPrefabProvider locationPrefabs = null)
         {
             _sceneTransition = sceneTransition ?? throw new ArgumentNullException(nameof(sceneTransition));
             _animation = animation ?? throw new ArgumentNullException(nameof(animation));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _locationVisits = locationVisits; // optional-safe: cleared best-effort on hub return
+            _gameplayAutoStartGate = gameplayAutoStartGate;
+            _locationPrefabs = locationPrefabs;
         }
 
         public bool IsTransitioning => _isTransitioning;
@@ -55,7 +63,7 @@ namespace Game.Bootstrap
         {
             // Day-1 «первый вход» оркеструется снаружи (GameplayUI.FirstDayEntryFlow через
             // MainSceneBootstrap): авто-сток + этот же обычный путь. Отдельной ветки здесь не нужно —
-            // tutorial_day_1 стартует по LocationLoadedChanged ниже.
+            // Day-one tutorial starts from LocationLoadedChanged below.
             if (!TryBeginTransition(nameof(EnterLocationAsync))) return;
 
             try
@@ -67,6 +75,8 @@ namespace Game.Bootstrap
                 }
 
                 await _animation.PlayCoverAsync(ct);
+                if (_locationPrefabs != null)
+                    await _locationPrefabs.PreloadAsync(locationId, ct);
 
                 var global = ResolveGlobalScope();
                 using (LifetimeScope.EnqueueParent(global))
@@ -104,6 +114,12 @@ namespace Game.Bootstrap
         public async UniTask ReturnToHubAsync(CancellationToken ct = default)
         {
             if (!TryBeginTransition(nameof(ReturnToHubAsync))) return;
+            var gateBlocked = false;
+            if (_gameplayAutoStartGate != null)
+            {
+                _gameplayAutoStartGate.Block();
+                gateBlocked = true;
+            }
 
             try
             {
@@ -138,6 +154,8 @@ namespace Game.Bootstrap
             finally
             {
                 _isTransitioning = false;
+                if (gateBlocked)
+                    _gameplayAutoStartGate.Release();
             }
         }
 

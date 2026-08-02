@@ -27,5 +27,8 @@ namespace Game.SalesStats.API
         /// <summary>Largest single-day count of <paramref name="genre"/> across all recorded days
         /// (backs the "sold N of a genre in a single day" condition). Always &gt;= 0.</summary>
         int GetMaxSoldInSingleDay(BookGenre genre);
+
+        /// <summary>Excellent active recommendations by the selected book's genre. Always &gt;= 0.</summary>
+        int GetExcellentPicks(BookGenre genre);
     }
 }

@@ -15,11 +15,10 @@ namespace Book.Sell.API
 
         public int CustomersServed { get; set; }       // active + passive
         public int ManualRequests { get; set; }        // active only (including Skipped)
-        public int SalesCount { get; set; }            // books actually sold (Normal + Excellent + passive)
+        public int SalesCount { get; set; }            // books actually sold (Excellent + passive)
         public int GoldEarned { get; set; }
 
         public int ExcellentCount { get; set; }
-        public int NormalCount { get; set; }
         public int FailedCount { get; set; }
         public int SkippedCount { get; set; }
 

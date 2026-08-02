@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading;
 using Book.Sell.Services;
@@ -112,6 +113,60 @@ namespace Book.Sell.Tests.Editor
                 .GetAwaiter().GetResult();
             Assert.AreEqual(1, dto.Ids.Count(id => id == "dlg"));
             Assert.AreEqual(1, save.UpdateCalls);
+        }
+
+        [Test]
+        public void MarkDelivered_NewId_RaisesChanged()
+        {
+            var service = new SaveBackedDeliveredDialoguesService(new FakeSaveService());
+            var changed = 0;
+            service.Changed += () => changed++;
+
+            service.MarkDeliveredAsync("dlg", CancellationToken.None).GetAwaiter().GetResult();
+            service.MarkDeliveredAsync("dlg", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, changed);
+        }
+
+        [Test]
+        public void MarkDeliveredDeferred_NewIdOnly_RaisesChanged()
+        {
+            var service = new SaveBackedDeliveredDialoguesService(new FakeSaveService());
+            var changed = 0;
+            service.Changed += () => changed++;
+
+            service.MarkDeliveredDeferredAsync("dlg", CancellationToken.None).GetAwaiter().GetResult();
+            service.MarkDeliveredDeferredAsync("dlg", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, changed);
+        }
+
+        [Test]
+        public void CommitDeferred_WhenCommittedSetChanges_RaisesChanged()
+        {
+            var service = new SaveBackedDeliveredDialoguesService(new FakeSaveService());
+            var changed = 0;
+            service.Changed += () => changed++;
+
+            service.MarkDeliveredDeferredAsync("dlg", CancellationToken.None).GetAwaiter().GetResult();
+            service.CommitAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(2, changed, "one deferred add + one committed-set update");
+        }
+
+        [Test]
+        public void DiscardDeferred_RaisesChangedOnlyWhenPendingWasNonEmpty()
+        {
+            var service = new SaveBackedDeliveredDialoguesService(new FakeSaveService());
+            var changed = 0;
+            service.Changed += () => changed++;
+
+            service.DiscardDeferred();
+            service.MarkDeliveredDeferredAsync("dlg", CancellationToken.None).GetAwaiter().GetResult();
+            service.DiscardDeferred();
+            service.DiscardDeferred();
+
+            Assert.AreEqual(2, changed, "one deferred add + one non-empty discard");
         }
     }
 }

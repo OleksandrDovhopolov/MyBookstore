@@ -29,6 +29,7 @@ namespace Book.Sell.UI
         private ICurrentDayProvider _dayProvider;
         private ISalesShelfStateService _shelfState;
         private IRecommendationMinigamePresenter _minigamePresenter;
+        private IGameplayAutoStartGate _autoStartGate;
         
         private IDisposable _genreBookCountsRequestSubscription;
         
@@ -36,6 +37,13 @@ namespace Book.Sell.UI
         private IPublisher<GameplayGenreBookCountsChanged> _genreBookCountsPublisher;
         private IPublisher<GameplaySceneButtonsInteractableChanged> _gameplayButtonsPublisher;
         private Dictionary<string, int> _salesDayGenreBaseline;
+
+        /// <summary>
+        /// Cheat/debug access to the live day controller. It is registered in the gameplay scope and is
+        /// not resolvable from the global-scope cheat panel, so <c>SalesCheatModule</c> reaches it through
+        /// the active screen view in the scene (see CheatModuleView).
+        /// </summary>
+        public ISalesDayController Controller => _controller;
         
         [Inject]
         public void Construct(
@@ -49,7 +57,8 @@ namespace Book.Sell.UI
             IPublisher<GameplaySceneButtonsInteractableChanged> gameplayButtonsPublisher = null,
             IPublisher<GameplayGenreBookCountsChanged> genreBookCountsPublisher = null,
             IPublisher<GameplaySalesGoldChanged> salesGoldPublisher = null,
-            ISubscriber<GameplayGenreBookCountsRequested> genreBookCountsRequestSubscriber = null)
+            ISubscriber<GameplayGenreBookCountsRequested> genreBookCountsRequestSubscriber = null,
+            IGameplayAutoStartGate autoStartGate = null)
         {
             _controller = controller;
             _dayProvider = dayProvider;
@@ -61,6 +70,7 @@ namespace Book.Sell.UI
             _gameplayButtonsPublisher = gameplayButtonsPublisher;
             _genreBookCountsPublisher = genreBookCountsPublisher;
             _salesGoldPublisher = salesGoldPublisher;
+            _autoStartGate = autoStartGate;
             _genreBookCountsRequestSubscription = genreBookCountsRequestSubscriber?.Subscribe(_ => PublishGenreBookCounts());
         }
 
@@ -97,16 +107,25 @@ namespace Book.Sell.UI
 
         private async UniTaskVoid StartDayFlowAsync(CancellationToken ct)
         {
-            // Day comes from DayCycle.DayProgressService via the ICurrentDayProvider adapter.
-            // When the adapter is not registered (e.g. early prototype scenes), fall back to day 1.
-            var day = _dayProvider?.CurrentDay ?? 1;
-            PublishSalesGold(0, true);
-            await _controller.StartDayAsync(day, ct);
-            _salesDayGenreBaseline = BuildGenreBookCounts();
-            RefreshHeader();
-            PublishGenreBookCounts();
-            _dayRunning = !_controller.IsDayCompleted;
-            SetGameplaySceneButtonsInteractable(!_dayRunning);
+            try
+            {
+                if (_autoStartGate is { IsBlocked: true })
+                    await UniTask.WaitUntil(() => !_autoStartGate.IsBlocked, cancellationToken: ct);
+
+                // Day comes from DayCycle.DayProgressService via the ICurrentDayProvider adapter.
+                // When the adapter is not registered (e.g. early prototype scenes), fall back to day 1.
+                var day = _dayProvider?.CurrentDay ?? 1;
+                PublishSalesGold(0, true);
+                await _controller.StartDayAsync(day, ct);
+                _salesDayGenreBaseline = BuildGenreBookCounts();
+                RefreshHeader();
+                PublishGenreBookCounts();
+                _dayRunning = !_controller.IsDayCompleted;
+                SetGameplaySceneButtonsInteractable(!_dayRunning);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
 
         // ---------- controller events ----------
@@ -144,7 +163,7 @@ namespace Book.Sell.UI
 
             Debug.Log($"[SalesScreenView] DayCompleted: day={result.Day}, customers={result.CustomersServed}, " +
                       $"sales={result.SalesCount}, gold={result.GoldEarned}, " +
-                      $"excellent={result.ExcellentCount}, normal={result.NormalCount}, " +
+                      $"excellent={result.ExcellentCount}, " +
                       $"failed={result.FailedCount}, skipped={result.SkippedCount}");
 
             if (_gameFlow != null)

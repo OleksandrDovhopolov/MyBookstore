@@ -6,7 +6,9 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap;
 using Game.Bootstrap.Loading;
+using Game.Location.API;
 using Game.LocationVisits.API;
+using Game.UI;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -77,6 +79,102 @@ namespace Game.Bootstrap.Loading.Tests.Editor
             Assert.That(harness.Visits.RecordedLocationIds, Is.EqualTo(new[] { "loc_downtown" }));
         }
 
+        [UnityTest]
+        public IEnumerator EnterLocationAsync_DoesNotGateTutorialAutoStart()
+        {
+            using var harness = new Harness();
+
+            yield return ToCoroutine(harness.Flow.EnterLocationAsync("loc_downtown", CancellationToken.None));
+
+            Assert.That(harness.AutoStartGate.BlockCount, Is.EqualTo(0));
+            Assert.That(harness.AutoStartGate.ReleaseCount, Is.EqualTo(0));
+        }
+
+        [UnityTest]
+        public IEnumerator EnterLocationAsync_PreloadsAfterCoverBeforeSceneLoad()
+        {
+            using var harness = new Harness();
+            harness.LocationPrefabs.OnPreload = () =>
+            {
+                Assert.That(harness.Animation.CoverCount, Is.EqualTo(1));
+                Assert.That(harness.SceneTransition.AdditiveLoadCount, Is.EqualTo(0));
+            };
+
+            yield return ToCoroutine(harness.Flow.EnterLocationAsync("loc_downtown", CancellationToken.None));
+
+            Assert.That(harness.LocationPrefabs.PreloadedLocationIds, Is.EqualTo(new[] { "loc_downtown" }));
+            Assert.That(harness.SceneTransition.AdditiveLoadCount, Is.EqualTo(1));
+        }
+
+        [UnityTest]
+        public IEnumerator EnterLocationAsync_PropagatesPreloadCancellation()
+        {
+            using var harness = new Harness();
+            harness.LocationPrefabs.CancelOnPreload = true;
+
+            var task = harness.Flow.EnterLocationAsync("loc_downtown", CancellationToken.None).AsTask();
+            while (!task.IsCompleted)
+                yield return null;
+
+            Assert.That(IsOperationCanceled(task), Is.True);
+            Assert.That(harness.SceneTransition.AdditiveLoadCount, Is.EqualTo(0));
+            Assert.That(harness.Visits.RecordedLocationIds, Is.Empty);
+        }
+
+        [UnityTest]
+        public IEnumerator ReturnToHubAsync_BlocksGateUntilRevealCompletes()
+        {
+            using var harness = new Harness();
+            harness.SetLocationLoaded(true);
+            harness.Animation.OnRevealStarted = () =>
+            {
+                Assert.That(harness.AutoStartGate.IsBlocked, Is.True);
+                Assert.That(harness.AutoStartGate.ReleaseCount, Is.EqualTo(0));
+            };
+
+            yield return ToCoroutine(harness.Flow.ReturnToHubAsync(CancellationToken.None));
+
+            Assert.That(harness.Animation.RevealCount, Is.EqualTo(1));
+            Assert.That(harness.AutoStartGate.BlockCount, Is.EqualTo(1));
+            Assert.That(harness.AutoStartGate.ReleaseCount, Is.EqualTo(1));
+            Assert.That(harness.AutoStartGate.IsBlocked, Is.False);
+        }
+
+        [UnityTest]
+        public IEnumerator ReturnToHubAsync_ReleasesGate_WhenRevealIsCanceled()
+        {
+            using var harness = new Harness();
+            harness.SetLocationLoaded(true);
+            harness.Animation.CancelOnReveal = true;
+
+            var task = harness.Flow.ReturnToHubAsync(CancellationToken.None).AsTask();
+            while (!task.IsCompleted)
+                yield return null;
+
+            Assert.That(IsOperationCanceled(task), Is.True);
+            Assert.That(harness.AutoStartGate.BlockCount, Is.EqualTo(1));
+            Assert.That(harness.AutoStartGate.ReleaseCount, Is.EqualTo(1));
+            Assert.That(harness.AutoStartGate.IsBlocked, Is.False);
+        }
+
+        [UnityTest]
+        public IEnumerator ReturnToHubAsync_ReleasesGate_WhenUnloadFails()
+        {
+            using var harness = new Harness();
+            harness.SetLocationLoaded(true);
+            harness.SceneTransition.ThrowOnUnload = true;
+            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex(@"\[GameFlow\] ReturnToHubAsync failed"));
+
+            var task = harness.Flow.ReturnToHubAsync(CancellationToken.None).AsTask();
+            while (!task.IsCompleted)
+                yield return null;
+
+            Assert.That(task.IsFaulted, Is.True);
+            Assert.That(harness.AutoStartGate.BlockCount, Is.EqualTo(1));
+            Assert.That(harness.AutoStartGate.ReleaseCount, Is.EqualTo(1));
+            Assert.That(harness.AutoStartGate.IsBlocked, Is.False);
+        }
+
         private static IEnumerator ToCoroutine(UniTask task)
         {
             var wrappedTask = task.AsTask();
@@ -106,9 +204,11 @@ namespace Game.Bootstrap.Loading.Tests.Editor
                 SceneTransition = new FakeSceneTransitionService();
                 Animation = new FakeTransitionAnimationService();
                 Visits = new FakeLocationVisitService();
+                AutoStartGate = new FakeGameplayAutoStartGate();
+                LocationPrefabs = new FakeLocationPrefabProvider();
                 _settings = ScriptableObject.CreateInstance<GameFlowSettings>();
 
-                Flow = new GameFlowService(SceneTransition, Animation, _settings, Visits);
+                Flow = new GameFlowService(SceneTransition, Animation, _settings, Visits, AutoStartGate, LocationPrefabs);
 
                 var scope = LifetimeScope.Create(_ => { }, "Test LifetimeScope");
                 _scopeRoot = scope.gameObject;
@@ -127,6 +227,18 @@ namespace Game.Bootstrap.Loading.Tests.Editor
             public FakeSceneTransitionService SceneTransition { get; }
             public FakeTransitionAnimationService Animation { get; }
             public FakeLocationVisitService Visits { get; }
+            public FakeGameplayAutoStartGate AutoStartGate { get; }
+            public FakeLocationPrefabProvider LocationPrefabs { get; }
+
+            public void SetLocationLoaded(bool loaded)
+            {
+                var field = typeof(GameFlowService)
+                    .GetField("_locationLoaded", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (field == null)
+                    throw new MissingFieldException(nameof(GameFlowService), "_locationLoaded");
+
+                field.SetValue(Flow, loaded);
+            }
 
             public void Dispose()
             {
@@ -140,6 +252,7 @@ namespace Game.Bootstrap.Loading.Tests.Editor
         {
             public int AdditiveLoadCount { get; private set; }
             public bool ThrowOnLoad { get; set; }
+            public bool ThrowOnUnload { get; set; }
 
             public UniTask TransitionToAsync(string sceneName, IProgress<float> progress, CancellationToken ct)
                 => UniTask.CompletedTask;
@@ -153,17 +266,28 @@ namespace Game.Bootstrap.Loading.Tests.Editor
                 return UniTask.FromResult(default(Scene));
             }
 
-            public UniTask UnloadAsync(string sceneName, CancellationToken ct) => UniTask.CompletedTask;
+            public UniTask UnloadAsync(string sceneName, CancellationToken ct)
+            {
+                if (ThrowOnUnload)
+                    throw new InvalidOperationException("unload failed");
+
+                return UniTask.CompletedTask;
+            }
             public void SetActiveScene(string sceneName) { }
         }
 
         private sealed class FakeTransitionAnimationService : ITransitionAnimationService
         {
+            public int CoverCount { get; private set; }
             public int RevealCount { get; private set; }
             public bool CancelOnReveal { get; set; }
             public Action OnRevealStarted { get; set; }
 
-            public UniTask PlayCoverAsync(CancellationToken ct) => UniTask.CompletedTask;
+            public UniTask PlayCoverAsync(CancellationToken ct)
+            {
+                CoverCount++;
+                return UniTask.CompletedTask;
+            }
 
             public async UniTask PlayRevealAsync(CancellationToken ct)
             {
@@ -176,6 +300,28 @@ namespace Game.Bootstrap.Loading.Tests.Editor
             }
         }
 
+        private sealed class FakeLocationPrefabProvider : ILocationPrefabProvider
+        {
+            public List<string> PreloadedLocationIds { get; } = new();
+            public Action OnPreload { get; set; }
+            public bool CancelOnPreload { get; set; }
+            public string LastPreloadedLocationId { get; private set; }
+
+            public UniTask<GameObject> PreloadAsync(string locationId, CancellationToken ct)
+            {
+                OnPreload?.Invoke();
+                if (CancelOnPreload)
+                    throw new OperationCanceledException(ct);
+
+                LastPreloadedLocationId = locationId;
+                PreloadedLocationIds.Add(locationId);
+                return UniTask.FromResult<GameObject>(null);
+            }
+
+            public GameObject GetPreloaded(string locationId) => null;
+            public bool IsPreloaded(string locationId) => false;
+        }
+
         private sealed class FakeLocationVisitService : ILocationVisitService
         {
             public List<string> RecordedLocationIds { get; } = new();
@@ -183,6 +329,31 @@ namespace Game.Bootstrap.Loading.Tests.Editor
 
             public void RecordVisit(string locationId) => RecordedLocationIds.Add(locationId);
             public void ClearCurrentLocation() => ClearCount++;
+        }
+
+        private sealed class FakeGameplayAutoStartGate : IGameplayAutoStartGate
+        {
+            private int _blockCount;
+
+            public bool IsBlocked => _blockCount > 0;
+            public int BlockCount { get; private set; }
+            public int ReleaseCount { get; private set; }
+
+            public event Action Released;
+
+            public void Block()
+            {
+                BlockCount++;
+                _blockCount++;
+            }
+
+            public void Release()
+            {
+                ReleaseCount++;
+                _blockCount--;
+                if (_blockCount == 0)
+                    Released?.Invoke();
+            }
         }
     }
 }

@@ -31,10 +31,17 @@ namespace Game.UI.ContentWidget
             => ShowContentView(data, anchor, autoCloseEnabled: true);
 
         public void ShowContentView(ContentWidgetDataBase data, RectTransform anchor, bool autoCloseEnabled)
+            => ShowContentView(data, anchor, autoCloseEnabled, ContentWidgetPlacementMode.Auto);
+
+        public void ShowContentView(
+            ContentWidgetDataBase data,
+            RectTransform anchor,
+            bool autoCloseEnabled,
+            ContentWidgetPlacementMode placementMode)
         {
             CancelPendingShow();
             _showCts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
-            ShowContentViewAsync(data, anchor, autoCloseEnabled, _showCts.Token, ++_showVersion).Forget();
+            ShowContentViewAsync(data, anchor, autoCloseEnabled, placementMode, _showCts.Token, ++_showVersion).Forget();
         }
 
         public void RequestClose()
@@ -53,6 +60,7 @@ namespace Game.UI.ContentWidget
             ContentWidgetDataBase data,
             RectTransform anchor,
             bool autoCloseEnabled,
+            ContentWidgetPlacementMode placementMode,
             CancellationToken ct,
             int version)
         {
@@ -91,12 +99,12 @@ namespace Game.UI.ContentWidget
                     return;
                 }
 
-                Reposition(anchor);
+                Reposition(anchor, placementMode);
 
                 await view.OnViewCreatedAsync(ct);
                 if (ct.IsCancellationRequested || version != _showVersion) return;
 
-                Reposition(anchor);
+                Reposition(anchor, placementMode);
                 if (autoCloseEnabled)
                     StartAutoCloseTimer(ct, version);
             }
@@ -145,7 +153,7 @@ namespace Game.UI.ContentWidget
             return instance;
         }
 
-        private void Reposition(RectTransform anchor)
+        private void Reposition(RectTransform anchor, ContentWidgetPlacementMode placementMode)
         {
             if (_container == null || anchor == null) return;
 
@@ -157,13 +165,7 @@ namespace Game.UI.ContentWidget
             if (!TryResolveAnchorRect(anchor, parent, out var anchorRect))
                 return;
 
-            var widgetSize = _container.rect.size;
-            if (widgetSize.x <= 0f || widgetSize.y <= 0f)
-            {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(_container);
-                Canvas.ForceUpdateCanvases();
-                widgetSize = _container.rect.size;
-            }
+            var widgetSize = ResolveWidgetSize();
 
             var placement = ContentWidgetPlacement.Resolve(
                 anchorRect,
@@ -173,9 +175,31 @@ namespace Game.UI.ContentWidget
                 _horizontalOffset,
                 _edgePadding,
                 _verticalZoneRatio,
-                _container.pivot);
+                _container.pivot,
+                placementMode);
 
             _container.anchoredPosition = placement.Position;
+        }
+
+        private Vector2 ResolveWidgetSize()
+        {
+            var activeRect = _activeView != null
+                ? _activeView.transform as RectTransform
+                : null;
+            var activeSize = MeasureRect(activeRect);
+            if (activeSize.x > 0f && activeSize.y > 0f)
+                return activeSize;
+
+            return MeasureRect(_container);
+        }
+
+        private static Vector2 MeasureRect(RectTransform rect)
+        {
+            if (rect == null) return Vector2.zero;
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+            Canvas.ForceUpdateCanvases();
+            return rect.rect.size;
         }
 
         private void NormalizeContainerAnchors(RectTransform parent)

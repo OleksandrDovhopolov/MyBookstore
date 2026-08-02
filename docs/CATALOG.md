@@ -104,6 +104,7 @@
 | ✅ [SAVE_DAY_FLOW.md](SAVE_DAY_FLOW.md) | Текущее поведение modular save + day flow: модули сейва, defer-commit (`SalesDayCommitService`), entry fee, идемпотентность, последствия выхода из `LocationScene` посреди дня. | [ADR-0001](adr/0001-save-data-modular-payload.md), [ADR-0003](adr/0003-customer-simulation.md), [GameFlowLoop.md](GameFlowLoop.md), [FTUE.md](FTUE.md) |
 | ⏳ [FTUE.md](FTUE.md) | Первый запуск: стартовое сидирование (gold/книги), save-ключи `ftue.*`, скриптовый день 1, требования к tutorial-движку. | [CORE_LOOP.md](CORE_LOOP.md), [SAVE_DAY_FLOW.md](SAVE_DAY_FLOW.md) |
 | ✅ [QUESTS.md](QUESTS.md) | Спека фичи `Game.Quest`: квесты как машина состояний поверх `Game.Conditions`, цепочки, задачи, save, permanent effects, prerequisites по `SalesStats`, обобщённые примеры цепочек (плейсхолдеры). | [ASMDEF_RULES.md](ASMDEF_RULES.md), [SAVE_DAY_FLOW.md](SAVE_DAY_FLOW.md), [TODO.md](TODO.md), [CHARACTERS_AND_QUESTS.md](CHARACTERS_AND_QUESTS.md), [ADR-0007](adr/0007-quest-system.md) |
+| ✅ [QUEST_FLOW.md](QUEST_FLOW.md) | **Состояние**, не спека: фактический путь всех 4 квестов (Эдди / Милли / Тара / Капитан) от спавна персонажа до разблокировки локации, цепочка локаций и реестр проблем P1–P9 с приоритетом. Проходим 1 из 4. | [QUESTS.md](QUESTS.md), [ACTIVE_REQUEST_CONDITIONS.md](ACTIVE_REQUEST_CONDITIONS.md), [LOCATION_UNLOCK_SYSTEM.md](LOCATION_UNLOCK_SYSTEM.md), [TODO.md](TODO.md) |
 | ✅ [CHARACTER_SYSTEM.md](CHARACTER_SYSTEM.md) | Архитектура фичи `Game.Characters`: персонаж как индекс над story-progression (действия живут в `Game.Quest`), discovered-состояние, memories, read-side для Journal. | [CHARACTERS_AND_QUESTS.md](CHARACTERS_AND_QUESTS.md), [QUESTS.md](QUESTS.md) |
 | ✅ [CHARACTERS_AND_QUESTS.md](CHARACTERS_AND_QUESTS.md) | Точка связи персонажей (`Game.Characters`) и квестов: discovery/memory, авторинг character-цепочек. `Characters` реализован (Этап 1–3); связь через пассивный `CharacterId` + обратный индекс. | [QUESTS.md](QUESTS.md), [CHARACTER_SYSTEM.md](CHARACTER_SYSTEM.md), [CORE_LOOP.md](CORE_LOOP.md) |
 | ⏳ [SHOP.md](SHOP.md) | _на будущее_ | — |
@@ -148,7 +149,7 @@
 | Документ | Связи |
 |---|---|
 | ⏳ [TODO.md](TODO.md) | Рабочий список задач (Геймплей/Инфраструктура/Визуал). Источник истины по задачам — Notion. |
-| ✅ [BUILD.md](BUILD.md) | Чеклист подготовки к player-сборке (APK): обязательный `Tools/Configs/Sync Bundled Defaults` (конфиги грузятся из StreamingAssets/manifest, не из Assets/Configs), Addressables, Firebase, Android Player Settings. | [SERVICES/CONFIG_CACHE_SYSTEM.md](SERVICES/CONFIG_CACHE_SYSTEM.md), [SERVICES/ADDRESSABLES.md](SERVICES/ADDRESSABLES.md) |
+| ✅ [BUILD.md](BUILD.md) | Подготовка к player-сборке (APK). Автоматический гейт `PreBuildValidationGate` (валит билд при рассинхроне StreamingAssets/manifest и при нерешаемых активных запросах) + ручной чеклист: Addressables, Firebase, Android Player Settings, флаги `BootstrapInstaller.asset`. | [SERVICES/CONFIG_CACHE_SYSTEM.md](SERVICES/CONFIG_CACHE_SYSTEM.md), [SERVICES/ADDRESSABLES.md](SERVICES/ADDRESSABLES.md), [ACTIVE_REQUEST_CONDITIONS.md](ACTIVE_REQUEST_CONDITIONS.md) |
 
 ---
 

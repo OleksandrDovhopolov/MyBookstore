@@ -62,12 +62,20 @@ namespace Game.Rewards.UI
         {
             if (View == null || _uiSprites == null) return;
 
-            // Snapshot: the view's dictionary is rebuilt by ResetView/SetReward, so avoid iterating
-            // the live collection across awaits.
-            var entries = View.GetViews().ToList();
-
             try
             {
+                var decorResource = View.GetDecorReward();
+                if (decorResource != null)
+                {
+                    var decorSprite = await _uiSprites.GetSpriteAsync(decorResource.ResourceId, ct);
+                    if (ct.IsCancellationRequested) return;
+                    if (View != null) View.SetDecorIcon(decorSprite);
+                    return;
+                }
+
+                // Snapshot: the view's dictionary is rebuilt by ResetView/SetReward, so avoid iterating
+                // the live collection across awaits.
+                var entries = View.GetViews().ToList();
                 foreach (var pair in entries)
                 {
                     var resource = pair.Key;

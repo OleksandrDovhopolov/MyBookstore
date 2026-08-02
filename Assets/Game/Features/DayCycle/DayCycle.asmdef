@@ -14,7 +14,6 @@
         "Game.LocationUnlock.API",
         "Game.Conditions.API",
         "Game.Core.UI",
-        "Game.Newspaper",
         "Infrastructure",
         "MessagePipe",
         "Game.Inventory.API",

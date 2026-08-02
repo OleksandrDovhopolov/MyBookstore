@@ -32,13 +32,17 @@ namespace Game.SalesStats.Tests.Editor
             // The factory ships with SalesStats and reads the same service through ISalesStatsReader.
             var registry = new ConditionFactoryRegistry(new IConditionFactory[]
             {
-                new SoldGenreConditionFactory(svc)
+                new SoldGenreConditionFactory(svc),
+                new SoldTotalConditionFactory(svc)
             });
             return (svc, new ConditionParser(registry));
         }
 
         private static JObject SoldGenre(BookGenre genre, int min)
             => new JObject { ["type"] = SoldGenreConditionFactory.TypeId, ["genre"] = genre.ToConfigValue(), ["min"] = min };
+
+        private static JObject SoldTotal(int min)
+            => new JObject { ["type"] = SoldTotalConditionFactory.TypeId, ["min"] = min };
 
         private static void Sell(SalesStatsService svc, string bookId, int times)
         {
@@ -78,6 +82,24 @@ namespace Game.SalesStats.Tests.Editor
 
             Sell(svc, KidsBook, 1);
             Assert.IsTrue(condition.Evaluate().IsMet, "Both genre thresholds reached.");
+        }
+
+        [Test]
+        public void SoldTotal_MetWhenTotalThresholdReached()
+        {
+            var (svc, parser) = Build();
+            var condition = parser.Parse(SoldTotal(3));
+
+            Sell(svc, CrimeBook, 2);
+            Assert.IsFalse(condition.Evaluate().IsMet);
+
+            Sell(svc, KidsBook, 1);
+
+            var result = condition.Evaluate();
+            Assert.IsTrue(result.IsMet);
+            Assert.AreEqual(3, result.Current);
+            Assert.AreEqual(3, result.Target);
+            Assert.AreEqual(SoldTotalConditionFactory.TypeId, result.ReasonKey);
         }
 
         [Test]

@@ -19,6 +19,8 @@ namespace Game.Rewards.UI
             var decorOrder = new List<string>();
             var decorAmounts = new Dictionary<string, int>(StringComparer.Ordinal);
             var decorConfigs = new Dictionary<string, DecorConfig>(StringComparer.Ordinal);
+            var simpleOrder = new List<string>();
+            var simpleRewards = new Dictionary<string, RewardSpecResource>(StringComparer.Ordinal);
 
             for (var i = 0; i < granted.Items.Count; i++)
             {
@@ -38,12 +40,27 @@ namespace Game.Rewards.UI
                     continue;
                 }
 
+                if (IsCategory(item, InventoryCategories.Consumable))
+                {
+                    AccumulateSimple(item, amount, configs, simpleOrder, simpleRewards,
+                        id => ResolveDisplayName<ConsumableConfig>(configs, id));
+                    continue;
+                }
+
+                if (IsCategory(item, InventoryCategories.QuestItem))
+                {
+                    AccumulateSimple(item, amount, configs, simpleOrder, simpleRewards,
+                        id => ResolveDisplayName<QuestItemConfig>(configs, id));
+                    continue;
+                }
+
                 Debug.LogWarning(
                     $"[RewardsWindow] Invalid reward item '{item.Id}' (kind={item.Kind}, category='{item.Category}'). Skipped.");
             }
 
             AddGenreResources(result, genreAmounts);
             AddDecorResources(result, decorOrder, decorAmounts, decorConfigs);
+            AddSimpleResources(result, simpleOrder, simpleRewards);
             return result;
         }
 
@@ -98,6 +115,40 @@ namespace Game.Rewards.UI
             decorAmounts[item.Id] = current + amount;
         }
 
+        private static void AccumulateSimple(
+            RewardItem item,
+            int amount,
+            IConfigsService configs,
+            ICollection<string> order,
+            IDictionary<string, RewardSpecResource> rewards,
+            Func<string, string> displayNameResolver)
+        {
+            if (!rewards.TryGetValue(item.Id, out var existing))
+            {
+                var displayName = displayNameResolver?.Invoke(item.Id);
+                if (string.IsNullOrEmpty(displayName))
+                {
+                    Debug.LogWarning(
+                        $"[RewardsWindow] Reward item '{item.Id}' (category='{item.Category}') has no config. Using id as display name.");
+                    displayName = item.Id;
+                }
+
+                existing = new RewardSpecResource
+                {
+                    ResourceId = item.Id,
+                    DisplayName = displayName,
+                    Kind = item.Kind,
+                    Category = item.Category,
+                    Amount = 0,
+                    Icon = null
+                };
+                rewards[item.Id] = existing;
+                order.Add(item.Id);
+            }
+
+            existing.Amount += amount;
+        }
+
         private static void AddGenreResources(
             ICollection<RewardSpecResource> result,
             IReadOnlyDictionary<BookGenre, int> genreAmounts)
@@ -141,6 +192,33 @@ namespace Game.Rewards.UI
                     Icon = null
                 });
             }
+        }
+
+        private static void AddSimpleResources(
+            ICollection<RewardSpecResource> result,
+            IReadOnlyList<string> order,
+            IReadOnlyDictionary<string, RewardSpecResource> rewards)
+        {
+            for (var i = 0; i < order.Count; i++)
+            {
+                var id = order[i];
+                if (!rewards.TryGetValue(id, out var reward) || reward == null || reward.Amount <= 0) continue;
+                result.Add(reward);
+            }
+        }
+
+        private static string ResolveDisplayName<T>(IConfigsService configs, string id)
+            where T : class, IConfig
+        {
+            if (configs == null || string.IsNullOrEmpty(id) || !configs.TryGet<T>(id, out var config) || config == null)
+                return null;
+
+            return config switch
+            {
+                ConsumableConfig consumable => consumable.DisplayName,
+                QuestItemConfig questItem => questItem.DisplayName,
+                _ => id
+            };
         }
     }
 }

@@ -1,97 +1,243 @@
 using System;
-using Game.Configs.Models;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Game.Inventory.API;
+using SpriteService;
 using TMPro;
+using UIShared;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Game.Inventory.UI
 {
-    public sealed class InventoryItemRowView : MonoBehaviour
+    public sealed class InventoryItemRowView : MonoBehaviour, ICleanup
     {
-        [SerializeField] private TMP_Text _idLabel;
-        [SerializeField] private TMP_Text _countLabel;
-        [SerializeField] private Button _useButton;
-        [SerializeField] private TextMeshProUGUI _index;
+        private enum VisualMode
+        {
+            None,
+            Default,
+            Decor,
+            QuestItem
+        }
 
-        [Header("Book details (optional — only filled for book category)")]
-        [SerializeField] private TMP_Text _titleLabel;
-        [SerializeField] private TMP_Text _authorLabel;
-        [SerializeField] private TMP_Text _genreLabel;
-        [FormerlySerializedAs("_basePriceLabel")]
-        [SerializeField] private TMP_Text _priceLabel;
-        [SerializeField] private TMP_Text _rarityWeightLabel;
-        [SerializeField] private TMP_Text _tagsLabel;
-        [SerializeField] private TMP_Text _moodLabel;
+        [SerializeField] private GameObject _defaultRoot;
+        [SerializeField] private GameObject _decorRoot;
+        [SerializeField] private GameObject _questItemRoot;
+        [SerializeField] private Image _defaultImage;
+        [SerializeField] private Image _decorImage;
+        [SerializeField] private Image _questItemImage;
+        [SerializeField] private GameObject _decorPlacedRoot;
+        [SerializeField] private TextMeshProUGUI _amountText;
+        [SerializeField] private Button _infoButton;
 
+        private Action<string> _onInfo;
         private string _itemId;
-        private Action<string> _onUse;
+        private CancellationTokenSource _iconCts;
+        private VisualMode _visualMode;
 
         private void Awake()
         {
-            if (_useButton != null) _useButton.onClick.AddListener(OnUseClicked);
+            if (_infoButton != null) _infoButton.onClick.AddListener(OnInfoClicked);
         }
 
-        public void Bind(InventoryItem item, bool hasUseHandler, string info, Action<string> onUse, int index)
+        public void Bind(
+            InventoryRowModel model,
+            IUiSpriteProvider sprites,
+            Action<string> onInfo,
+            CancellationToken ct)
         {
-            _itemId = item.ItemId;
-            _onUse = onUse;
+            CancelIconLoad();
+            _itemId = model.ItemId;
+            _onInfo = !string.IsNullOrEmpty(_itemId) ? onInfo : null;
 
-            if (_index != null) _index.text = $"×{index}";
+            SetVisualMode(ToVisualMode(model.Style));
+            SetDecorPlacedVisible(model.IsHighlighted);
+            if (_amountText != null)
+                _amountText.text = model.Count > 0 ? model.Count.ToString() : string.Empty;
+            SetInfoVisible(!string.IsNullOrEmpty(_itemId));
 
-            if (_idLabel != null)
-                _idLabel.text = string.IsNullOrEmpty(info) ? item.ItemId : $"{item.ItemId} — {info}";
-            if (_countLabel != null)
+            if (sprites == null || string.IsNullOrEmpty(model.SpriteId)) return;
+            LoadIconAsync(model.SpriteId, sprites, ct).Forget();
+        }
+
+        public void Cleanup()
+        {
+            CancelIconLoad();
+            _onInfo = null;
+            _itemId = null;
+            if (_amountText != null) _amountText.text = string.Empty;
+            SetInfoVisible(false);
+            SetVisualMode(VisualMode.None);
+            SetDecorPlacedVisible(false);
+        }
+
+        private async UniTaskVoid LoadIconAsync(string spriteId, IUiSpriteProvider sprites, CancellationToken ct)
+        {
+            CancelIconLoad();
+            _iconCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            var linkedCt = _iconCts.Token;
+
+            try
             {
-                _countLabel.gameObject.SetActive(item.Count > 1);
-                _countLabel.text = $"×{item.Count}";
+                var sprite = await sprites.GetSpriteAsync(spriteId, linkedCt);
+                if (linkedCt.IsCancellationRequested) return;
+                SetIcon(sprite);
             }
-
-            ClearBookDetailLabels();
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[InventoryItemRowView] Failed to load sprite '{spriteId}': {e.Message}");
+            }
         }
 
-        /// <summary>
-        /// Bind with full <see cref="BookConfig"/> display. Falls back to <see cref="Bind"/> behavior
-        /// for the common fields, then fills the book-specific labels (any null SerializeField is
-        /// silently skipped — prefab decides which fields to show).
-        /// </summary>
-        public void BindBook(InventoryItem item, BookConfig book, bool hasUseHandler, Action<string> onUse, int index)
+        private void OnInfoClicked()
         {
-            Bind(item, hasUseHandler, info: null, onUse, index);
-            if (book == null) return;
-
-            if (_titleLabel != null) _titleLabel.text = book.Title ?? string.Empty;
-            if (_authorLabel != null) _authorLabel.text = book.Author ?? string.Empty;
-            if (_genreLabel != null) _genreLabel.text = book.PrimaryGenre ?? string.Empty;
-            if (_priceLabel != null) _priceLabel.text = $"{BookConfig.FixedPriceGold} gold";
-            if (_rarityWeightLabel != null) _rarityWeightLabel.text = $"R: {book.RarityWeight:F2}";
-            if (_tagsLabel != null)
-                _tagsLabel.text = book.Qualities != null && book.Qualities.Length > 0
-                    ? string.Join(", ", book.Qualities)
-                    : string.Empty;
-            if (_moodLabel != null) _moodLabel.text = string.Empty;
+            if (!string.IsNullOrEmpty(_itemId)) _onInfo?.Invoke(_itemId);
         }
 
-        private void ClearBookDetailLabels()
+        private static VisualMode ToVisualMode(InventoryRowStyle style)
         {
-            if (_titleLabel != null) _titleLabel.text = string.Empty;
-            if (_authorLabel != null) _authorLabel.text = string.Empty;
-            if (_genreLabel != null) _genreLabel.text = string.Empty;
-            if (_priceLabel != null) _priceLabel.text = string.Empty;
-            if (_rarityWeightLabel != null) _rarityWeightLabel.text = string.Empty;
-            if (_tagsLabel != null) _tagsLabel.text = string.Empty;
-            if (_moodLabel != null) _moodLabel.text = string.Empty;
+            return style switch
+            {
+                InventoryRowStyle.Decor => VisualMode.Decor,
+                InventoryRowStyle.QuestItem => VisualMode.QuestItem,
+                _ => VisualMode.Default
+            };
         }
 
-        private void OnUseClicked()
+        private void SetInfoVisible(bool visible)
         {
-            if (!string.IsNullOrEmpty(_itemId)) _onUse?.Invoke(_itemId);
+            if (_infoButton == null) return;
+
+            if (_infoButton.gameObject != gameObject)
+                _infoButton.gameObject.SetActive(visible);
+
+            _infoButton.interactable = visible;
+        }
+
+        private void SetIcon(Sprite sprite)
+        {
+            SetImageSprite(GetActiveImage(), sprite);
+        }
+
+        private void SetVisualMode(VisualMode mode)
+        {
+            _visualMode = mode;
+
+            var defaultImage = GetDefaultImage();
+            var decorImage = GetDecorImage();
+            var questItemImage = GetQuestItemImage();
+
+            SetImageSprite(defaultImage, null);
+            if (decorImage != defaultImage) SetImageSprite(decorImage, null);
+            if (questItemImage != defaultImage && questItemImage != decorImage) SetImageSprite(questItemImage, null);
+
+            var defaultRoot = GetDefaultRoot();
+            var decorRoot = GetDecorRoot();
+            var questItemRoot = GetQuestItemRoot();
+
+            SetRootActive(defaultRoot, IsRootActive(defaultRoot, mode, defaultRoot, decorRoot, questItemRoot));
+            if (decorRoot != defaultRoot)
+                SetRootActive(decorRoot, IsRootActive(decorRoot, mode, defaultRoot, decorRoot, questItemRoot));
+            if (questItemRoot != defaultRoot && questItemRoot != decorRoot)
+                SetRootActive(questItemRoot, IsRootActive(questItemRoot, mode, defaultRoot, decorRoot, questItemRoot));
+        }
+
+        private Image GetActiveImage()
+        {
+            return _visualMode switch
+            {
+                VisualMode.Default => GetDefaultImage(),
+                VisualMode.Decor => GetDecorImage(),
+                VisualMode.QuestItem => GetQuestItemImage(),
+                _ => null
+            };
+        }
+
+        private Image GetDefaultImage()
+        {
+            return _defaultImage;
+        }
+
+        private Image GetDecorImage()
+        {
+            return _decorImage != null ? _decorImage : _defaultImage;
+        }
+
+        private Image GetQuestItemImage()
+        {
+            return _questItemImage != null ? _questItemImage : _defaultImage;
+        }
+
+        private GameObject GetDefaultRoot()
+        {
+            return _defaultRoot;
+        }
+
+        private GameObject GetDecorRoot()
+        {
+            return _decorRoot != null ? _decorRoot : _defaultRoot;
+        }
+
+        private GameObject GetQuestItemRoot()
+        {
+            return _questItemRoot != null ? _questItemRoot : _defaultRoot;
+        }
+
+        private void SetImageSprite(Image image, Sprite sprite)
+        {
+            if (image == null) return;
+            image.sprite = sprite;
+            image.enabled = sprite != null;
+
+            // Source art has mixed sizes and aspects, so the rect has to be re-fitted per sprite.
+            if (sprite != null && image.TryGetComponent<InventoryIconFitter>(out var fitter))
+                fitter.Fit();
+        }
+
+        private void SetRootActive(GameObject root, bool visible)
+        {
+            if (root == null || root == gameObject) return;
+            root.SetActive(visible);
+        }
+
+        private static bool IsRootActive(
+            GameObject root,
+            VisualMode mode,
+            GameObject defaultRoot,
+            GameObject decorRoot,
+            GameObject questItemRoot)
+        {
+            if (root == null || mode == VisualMode.None) return false;
+            return mode switch
+            {
+                VisualMode.Default => root == defaultRoot,
+                VisualMode.Decor => root == decorRoot,
+                VisualMode.QuestItem => root == questItemRoot,
+                _ => false
+            };
+        }
+
+        private void SetDecorPlacedVisible(bool visible)
+        {
+            if (_decorPlacedRoot == null || _decorPlacedRoot == gameObject) return;
+            _decorPlacedRoot.SetActive(visible);
+        }
+
+        private void CancelIconLoad()
+        {
+            if (_iconCts == null) return;
+            _iconCts.Cancel();
+            _iconCts.Dispose();
+            _iconCts = null;
         }
 
         private void OnDestroy()
         {
-            if (_useButton != null) _useButton.onClick.RemoveListener(OnUseClicked);
+            CancelIconLoad();
+            if (_infoButton != null) _infoButton.onClick.RemoveListener(OnInfoClicked);
         }
     }
 }

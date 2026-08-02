@@ -45,6 +45,10 @@ namespace Game.SalesStats.Tests.Editor.Fakes
                         : new Dictionary<string, int>(day.Value, StringComparer.OrdinalIgnoreCase);
             }
 
+            if (source?.ExcellentPicksByGenre != null)
+                dto.ExcellentPicksByGenre =
+                    new Dictionary<string, int>(source.ExcellentPicksByGenre, StringComparer.OrdinalIgnoreCase);
+
             return dto;
         }
     }

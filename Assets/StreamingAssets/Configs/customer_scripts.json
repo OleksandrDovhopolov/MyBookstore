@@ -1,13 +1,37 @@
 [
   {
     "id": "eddi_intro",
-    "activationQuestId": "q_intro_eddi",
+    "dayIndex": 1,
     "characterId": "eddi",
     "dialogueId": "eddy1",
     "passiveAttempts": [
       { "genre": "Fact", "forceHit": true },
       { "genre": "Travel", "forceHit": false }
     ]
+  },
+  {
+    "id": "eddi_quest_intro",
+    "dayIndex": 2,
+    "characterId": "eddi",
+    "dialogueId": "eddy_quest_1"
+  },
+  {
+    "id": "milly_intro",
+    "dayIndex": 2,
+    "characterId": "milly",
+    "dialogueId": "milly1"
+  },
+  {
+    "id": "tara_quest_intro",
+    "dayIndex": 5,
+    "characterId": "tara",
+    "dialogueId": "tara_quest_1"
+  },
+  {
+    "id": "captain_quest_intro",
+    "activationQuestId": "q_captain_postcards",
+    "characterId": "captain",
+    "dialogueId": "captain_quest_1"
   },
   {
     "id": "day2_missed_sale",

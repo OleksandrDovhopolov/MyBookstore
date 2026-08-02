@@ -90,7 +90,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dddf468c31cac9f4380a7292a5cdb548, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _targetId: 
+  _targetId: hub.gift_button
 --- !u!114 &8197154338773828207
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -9,6 +9,7 @@ namespace Game.Shop.API
     {
         public const string NewspaperBooks = "newspaper.books";
         public const string NewspaperDecor = "newspaper.decor";
+        public const string NewspaperConsumables = "newspaper.consumables";
 
         public const string ClassicBooks = "classic.books";
         public const string ClassicBoxes = "classic.boxes";

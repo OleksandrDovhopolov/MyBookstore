@@ -1,1 +1,1 @@
-["books.json","bookshops.json","characters.json","customer_scripts.json","days.json","decors.json","dialogues.json","economy.json","events.json","hard_requests.json","locations.json","quests.json","sample_requests.json","shop.json"]
+["books.json","bookshops.json","books_converted.json","characters.json","consumables.json","customer_scripts.json","days.json","decors.json","dialogues.json","economy.json","events.json","hard_requests.json","locations.json","quests.json","quest_items.json","sample_requests.json","shop.json"]

@@ -20,12 +20,12 @@ namespace Game.Preparation.Services
 
         // MVP: capacity захардкожена временно (см. CORE_LOOP_STATUS «Известные ограничения»).
         private const int DefaultMinDailyBooks = 0;
-        private const int DefaultDailyBookSlots = 12;
+        private const int DefaultDailyBookSlots = 30;
 
         // Fallback only: the location is normally chosen by the player (Location Window → Start) and
         // passed into StartOrResumeAsync. Used when no selection is supplied (e.g. resume of a session
         // saved before a location was picked).
-        private const string DefaultLocationId = "loc_downtown";
+        private const string DefaultLocationId = "loc_park";
 
         private readonly ISaveService _save;
         private readonly IDayProgressService _dayProgress;
@@ -87,7 +87,7 @@ namespace Game.Preparation.Services
                 _state = new PreparationSessionState
                 {
                     Day = currentDay,
-                    LocationId = string.IsNullOrEmpty(locationId) ? DefaultLocationId : locationId,
+                    LocationId = ResolveValidLocationId(locationId),
                     GenreQuantities = SeedInitialQuantities(),
                     SelectedDecorIds = new List<string>(),
                     UseExplicitSelectedBookIds = false,
@@ -98,6 +98,7 @@ namespace Game.Preparation.Services
             {
                 _state = saved;
                 if (!string.IsNullOrEmpty(locationId)) _state.LocationId = locationId;   // player re-picked
+                _state.LocationId = ResolveValidLocationId(_state.LocationId);
                 _state.GenreQuantities ??= new Dictionary<string, int>();
                 if (_state.GenreQuantities.Count == 0 && _state.SelectedBookIds is { Count: > 0 })
                     _state.GenreQuantities = BuildQuantitiesFromBookIds(_state.SelectedBookIds);
@@ -274,6 +275,20 @@ namespace Game.Preparation.Services
                 quantities[genre] -= 1;
                 total -= 1;
             }
+        }
+
+        private string ResolveValidLocationId(string candidate)
+        {
+            if (!string.IsNullOrEmpty(candidate) && _configs.Get<LocationConfig>(candidate) != null)
+                return candidate;
+
+            if (_configs.Get<LocationConfig>(DefaultLocationId) != null)
+                return DefaultLocationId;
+
+            var locations = _configs.GetAll<LocationConfig>();
+            return locations.Count > 0 && !string.IsNullOrEmpty(locations[0]?.Id)
+                ? locations[0].Id
+                : DefaultLocationId;
         }
 
         private void RefreshSelectedBookIds()

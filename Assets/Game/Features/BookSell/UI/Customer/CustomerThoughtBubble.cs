@@ -25,6 +25,7 @@ namespace Book.Sell.UI.Customer
         {
             _view = GetComponent<CustomerThoughtBubbleView>();
             DeactivateAll();
+            SetAvatar(null);
 
             if (CanvasGroup != null) CanvasGroup.alpha = 1f;
         }
@@ -49,6 +50,15 @@ namespace Book.Sell.UI.Customer
             ApplyContent(state, payload);   // starts/stops/keeps the dots loop as needed
             State = state;
             return UniTask.CompletedTask;
+        }
+
+        public void SetAvatar(Sprite sprite)
+        {
+            if (_view == null || _view.AvatarIcon == null) return;
+
+            var resolved = sprite != null ? sprite : _view.AvatarFallbackSprite;
+            _view.AvatarIcon.sprite = resolved;
+            _view.AvatarIcon.gameObject.SetActive(resolved != null);
         }
 
         private void ApplyContent(CustomerThoughtState state, CustomerThoughtPayload payload)

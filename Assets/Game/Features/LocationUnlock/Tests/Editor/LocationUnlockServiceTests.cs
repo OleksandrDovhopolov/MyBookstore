@@ -19,12 +19,13 @@ namespace Game.LocationUnlock.Tests.Editor
             public LocationUnlockService Service;
             public FakeLocationUnlockRepository Repo;
             public FakeSalesStatsService Sales;
+            public FakeInventoryService Inventory;
             public FakeConditionParser Parser;
             public MutableCondition CondA;
             public MutableCondition CondB;
         }
 
-        private static Harness Build(bool aMet = false, bool bMet = false,
+        private static Harness Build(bool aMet = false, bool bMet = false, bool aHasCost = false,
             FakeLocationUnlockRepository repo = null)
         {
             var parser = new FakeConditionParser();
@@ -32,17 +33,29 @@ namespace Game.LocationUnlock.Tests.Editor
             {
                 Repo = repo ?? new FakeLocationUnlockRepository(),
                 Sales = new FakeSalesStatsService(),
+                Inventory = new FakeInventoryService(),
                 Parser = parser,
                 CondA = parser.Register("A", aMet),
                 CondB = parser.Register("B", bMet)
             };
 
             var configs = new FakeConfigsService()
-                .Add(new LocationConfig { Id = LocA, Unlock = new JObject { ["tag"] = "A" } })
+                .Add(new LocationConfig
+                {
+                    Id = LocA,
+                    Unlock = new JObject { ["tag"] = "A" },
+                    UnlockCost = aHasCost
+                        ? new[]
+                        {
+                            new LocationUnlockCostConfig { ItemId = "permit", Amount = 1 },
+                            new LocationUnlockCostConfig { ItemId = "fuel_canister", Amount = 2 },
+                        }
+                        : null
+                })
                 .Add(new LocationConfig { Id = LocB, Unlock = new JObject { ["tag"] = "B" } });
 
             harness.Service = new LocationUnlockService(
-                new FakeSaveService(), harness.Repo, configs, parser, harness.Sales);
+                new FakeSaveService(), harness.Repo, configs, parser, harness.Sales, harness.Inventory);
             harness.Service.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
             return harness;
         }
@@ -62,6 +75,16 @@ namespace Game.LocationUnlock.Tests.Editor
             Assert.AreEqual(LocationUnlockState.Unlocked, h.Service.GetStatus(LocA).State);
             Assert.IsTrue(h.Service.IsUnlocked(LocA), "Conditions met → opened automatically, no buy step.");
             CollectionAssert.Contains(h.Repo.Stored.UnlockedIds, LocA);
+        }
+
+        [Test]
+        public void CostLocation_NotAutoUnlocked_WhenConditionsMetAtLoad()
+        {
+            var h = Build(aMet: true, aHasCost: true);
+
+            Assert.AreEqual(LocationUnlockState.Locked, h.Service.GetStatus(LocA).State);
+            Assert.IsFalse(h.Service.IsUnlocked(LocA));
+            CollectionAssert.DoesNotContain(h.Repo.Stored.UnlockedIds, LocA);
         }
 
         [Test]
@@ -89,6 +112,56 @@ namespace Game.LocationUnlock.Tests.Editor
             Assert.AreEqual(LocationUnlockState.Unlocked, h.Service.GetStatus(LocA).State);
             Assert.AreEqual(LocA, unlockedArg);
             CollectionAssert.Contains(h.Repo.Stored.UnlockedIds, LocA);
+        }
+
+        [Test]
+        public void TryUnlock_WithCost_NotEnoughItems_FailsWithoutRemoving()
+        {
+            var h = Build(aMet: true, aHasCost: true);
+            h.Inventory.Seed("permit", "quest_item", 1);
+
+            var result = h.Service.TryUnlockAsync(LocA, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(UnlockResult.NotEnoughItems, result);
+            Assert.IsFalse(h.Service.IsUnlocked(LocA));
+            Assert.AreEqual(1, h.Inventory.GetCount("permit"));
+            Assert.AreEqual(0, h.Inventory.GetCount("fuel_canister"));
+            Assert.AreEqual(0, h.Inventory.RemoveCalls.Count);
+        }
+
+        [Test]
+        public void TryUnlock_WithCost_ConsumesItems_Persists_FiresEvent()
+        {
+            var h = Build(aMet: true, aHasCost: true);
+            h.Inventory.Seed("permit", "quest_item", 1);
+            h.Inventory.Seed("fuel_canister", "consumable", 3);
+            string unlockedArg = null;
+            h.Service.Unlocked += id => unlockedArg = id;
+
+            var result = h.Service.TryUnlockAsync(LocA, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(UnlockResult.Ok, result);
+            Assert.IsTrue(h.Service.IsUnlocked(LocA));
+            Assert.AreEqual(LocA, unlockedArg);
+            Assert.AreEqual(0, h.Inventory.GetCount("permit"));
+            Assert.AreEqual(1, h.Inventory.GetCount("fuel_canister"));
+            CollectionAssert.Contains(h.Repo.Stored.UnlockedIds, LocA);
+            CollectionAssert.AreEqual(new[] { ("permit", 1), ("fuel_canister", 2) }, h.Inventory.RemoveCalls);
+        }
+
+        [Test]
+        public void TryUnlock_WithCost_AlreadyUnlocked_DoesNotConsumeAgain()
+        {
+            var h = Build(aMet: true, aHasCost: true);
+            h.Inventory.Seed("permit", "quest_item", 1);
+            h.Inventory.Seed("fuel_canister", "consumable", 2);
+
+            var first = h.Service.TryUnlockAsync(LocA, CancellationToken.None).GetAwaiter().GetResult();
+            var second = h.Service.TryUnlockAsync(LocA, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(UnlockResult.Ok, first);
+            Assert.AreEqual(UnlockResult.AlreadyUnlocked, second);
+            Assert.AreEqual(2, h.Inventory.RemoveCalls.Count);
         }
 
         [Test]
@@ -121,6 +194,26 @@ namespace Game.LocationUnlock.Tests.Editor
             Assert.IsTrue(h.Service.IsUnlocked(LocB));
             Assert.AreEqual(LocationUnlockState.Unlocked, h.Service.GetStatus(LocB).State);
             CollectionAssert.Contains(h.Repo.Stored.UnlockedIds, LocB);
+        }
+
+        [Test]
+        public void Reactivity_CostLocation_DoesNotAutoUnlock_WhenConditionBecomesMet()
+        {
+            var h = Build(aMet: false, aHasCost: true);
+            h.Inventory.Seed("permit", "quest_item", 1);
+            h.Inventory.Seed("fuel_canister", "consumable", 2);
+            string unlockedArg = null;
+            var changed = new List<string>();
+            h.Service.Unlocked += id => unlockedArg = id;
+            h.Service.StatusChanged += changed.Add;
+
+            h.CondA.Met = true;
+            h.Sales.RaiseChanged();
+
+            Assert.IsNull(unlockedArg);
+            Assert.IsFalse(h.Service.IsUnlocked(LocA));
+            CollectionAssert.Contains(changed, LocA);
+            CollectionAssert.DoesNotContain(h.Repo.Stored.UnlockedIds, LocA);
         }
 
         [Test]

@@ -28,6 +28,7 @@ namespace Book.Sell.UI.Customer
         private readonly IWorldHudManager _worldHud;
         private readonly IConfigsService _configs;
         private readonly IUiSpriteProvider _uiSprites;
+        private readonly IBubbleSlotAllocator _slots;
         private readonly SalesTuning _tuning;
         private readonly CancellationTokenSource _cts = new();
 
@@ -42,16 +43,13 @@ namespace Book.Sell.UI.Customer
         // addressable bubble finishes loading). Keep the intent so the late attach result is discarded.
         private readonly HashSet<string> _detachRequested = new();
 
-        // Customers showing a terminal bubble (passive "Failed" or "purchase completed"): it must survive
-        // the Leaving/Done transition (which can fire in the same tick) and only detach on visual despawn.
-        private readonly HashSet<string> _keepBubbleUntilDespawn = new();
-
         public CustomerBubbleBinder(
             ISalesDayController sales,
             ICustomerVisualRegistry registry,
             IWorldHudManager worldHud,
             IConfigsService configs,
             IUiSpriteProvider uiSprites,
+            IBubbleSlotAllocator slots,
             SalesTuning tuning)
         {
             _sales = sales;
@@ -59,6 +57,7 @@ namespace Book.Sell.UI.Customer
             _worldHud = worldHud;
             _configs = configs;
             _uiSprites = uiSprites;
+            _slots = slots;
             _tuning = tuning;
         }
 
@@ -73,6 +72,14 @@ namespace Book.Sell.UI.Customer
             _sales.CustomerThoughtBubbleHidden += OnCustomerThoughtBubbleHidden;
             _sales.CustomerRecommendationResolved += OnCustomerRecommendationResolved;
             _registry.CustomerVisualDespawned += OnCustomerVisualDespawned;
+
+            if (_slots != null
+                && _slots.Capacity > 0
+                && (_tuning.MaxConcurrentCustomers <= 0 || _tuning.MaxConcurrentCustomers > _slots.Capacity))
+            {
+                Debug.LogWarning(
+                    $"[CustomerBubbleBinder] MaxConcurrentCustomers ({_tuning.MaxConcurrentCustomers}) exceeds authored bubble slots ({_slots.Capacity}). Overflow bubbles will fall back to customer head anchors.");
+            }
         }
 
         public void Dispose()
@@ -115,10 +122,7 @@ namespace Book.Sell.UI.Customer
 
                 case CustomerPhase.Leaving:
                 case CustomerPhase.Done:
-                    // Keep a terminal bubble (Failed / purchase completed) up through the walk-away;
-                    // it is cleaned up on despawn.
-                    if (!_keepBubbleUntilDespawn.Contains(customer.Id))
-                        await DetachBubbleAsync(customer.Id);
+                    await DetachBubbleAsync(customer.Id);
                     break;
             }
         }
@@ -161,7 +165,6 @@ namespace Book.Sell.UI.Customer
 
         private void OnCustomerPassivePurchaseFailed(Domain.Customer customer, string genre)
         {
-            _keepBubbleUntilDespawn.Add(customer.Id);
             ShowFailedAsync(customer, genre).Forget();
         }
 
@@ -197,15 +200,11 @@ namespace Book.Sell.UI.Customer
 
         private void OnCustomerPurchaseCompleted(Domain.Customer customer, int purchasedBookCount)
         {
-            _keepBubbleUntilDespawn.Add(customer.Id);
             EnsureBubbleAsync(customer, CustomerThoughtState.PurchaseCompleted, $"Bought {purchasedBookCount} books").Forget();
         }
 
         private void OnCustomerThoughtBubbleHidden(Domain.Customer customer)
         {
-            // LeaveStep asked to clear the HUD: drop the keep-alive flag and detach so the customer
-            // walks away without a bubble (feedback already had its dwell in the prior steps).
-            _keepBubbleUntilDespawn.Remove(customer.Id);
             DetachBubbleAsync(customer.Id).Forget();
         }
 
@@ -274,18 +273,32 @@ namespace Book.Sell.UI.Customer
                 return await inFlight;
 
             var visual = _registry.GetById(customerId);
-            if (visual == null || visual.BubbleAnchor == null) return null;
+            if (visual == null) return null;
 
-            var attachTask = _worldHud.AttachAsync<CustomerThoughtBubble>(visual.BubbleAnchor, BubbleAttachArgs).Preserve();
+            var target = _slots?.Acquire(customerId) ?? visual.BubbleAnchor;
+            if (target == null) return null;
+
+            var attachTask = _worldHud.AttachAsync<CustomerThoughtBubble>(target, BubbleAttachArgs).Preserve();
             _attaching[customerId] = attachTask;
             try
             {
                 var bubble = await attachTask;
                 if (_detachRequested.Contains(customerId)) return null;
 
-                if (bubble != null)
-                    _bubbles[customerId] = bubble;
+                if (bubble == null)
+                {
+                    _slots?.Release(customerId);
+                    return null;
+                }
+
+                _bubbles[customerId] = bubble;
+                ApplyAvatarAsync(customerId, customer.CharacterId, bubble).Forget();
                 return bubble;
+            }
+            catch
+            {
+                _slots?.Release(customerId);
+                throw;
             }
             finally
             {
@@ -314,14 +327,35 @@ namespace Book.Sell.UI.Customer
             }
             finally
             {
+                _slots?.Release(customerId);
                 _detachRequested.Remove(customerId);
+            }
+        }
+
+        private async UniTaskVoid ApplyAvatarAsync(string customerId, string characterId, CustomerThoughtBubble bubble)
+        {
+            if (_uiSprites == null || string.IsNullOrWhiteSpace(characterId)) return;
+
+            try
+            {
+                var sprite = await _uiSprites.GetSpriteAsync(characterId, _cts.Token);
+                if (sprite == null || bubble == null) return;
+                if (!_bubbles.TryGetValue(customerId, out var current) || current != bubble) return;
+
+                bubble.SetAvatar(sprite);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[CustomerBubbleBinder] Failed to load avatar '{characterId}': {ex.Message}");
             }
         }
 
         private void OnCustomerVisualDespawned(CustomerVisual visual)
         {
             if (visual == null || visual.Customer == null) return;
-            _keepBubbleUntilDespawn.Remove(visual.Customer.Id);
             DetachBubbleAsync(visual.Customer.Id).Forget();
         }
     }

@@ -1,0 +1,19 @@
+{
+    "name": "Game.Build.Editor",
+    "rootNamespace": "Game.Build.Editor",
+    "references": [
+        "Book.Sell.Editor",
+        "Game.Rewards.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

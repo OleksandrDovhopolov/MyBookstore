@@ -70,6 +70,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7f685dc587da3c24a9bad647c5835ccc
+    m_Address: InfoWidget
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 83d7f17632a85ff48be4f7456c053062
     m_Address: PreparationWindow
     m_ReadOnly: 0
@@ -90,18 +95,13 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: aa9fdc7ac23d342798922793111065d0
-    m_Address: Assets/Game/UI/Fonts/LilitaOne-Regular Outline 40 SDF Atlas.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b29d91e3cb2876e4aa30f5e4801de68c
+  - m_GUID: a02c528c40ee4c146a9dbb6ae75fe0b7
     m_Address: RewardsWindow
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: bc5c515f71dbfe2408eea4e5b93bd08d
-    m_Address: NewspaperWindow
+  - m_GUID: aa9fdc7ac23d342798922793111065d0
+    m_Address: Assets/Game/UI/Fonts/LilitaOne-Regular Outline 40 SDF Atlas.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -110,13 +110,13 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: d7a3de56b03c2fd46abc7d2c00950e65
-    m_Address: ClassicShopWindow
+  - m_GUID: eb7817be6dc738e43a517ac8a8a5db85
+    m_Address: DecorPlacementWindow
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: eb7817be6dc738e43a517ac8a8a5db85
-    m_Address: DecorPlacementWindow
+  - m_GUID: f735762da0c0f6048a094505aafde0b2
+    m_Address: NewspaperWindow
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

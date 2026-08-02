@@ -8,32 +8,35 @@ using Dialogue;
 namespace Book.Sell.Services
 {
     /// <summary>
-    /// Quest character: a scripted dialogue up front, then N passive purchase attempts — "arrives → talks
-    /// → shops". Deterministic: fixed <paramref name="passiveCount"/>, no random consumed (like
-    /// <see cref="ActiveRequestArchetype"/>).
-    ///
-    /// Used by quest-aware production spawners. <see cref="DialogStep"/> holds the interaction lock until
-    /// presentation calls <c>CompleteDialogue</c>, then the passive shopping steps continue.
+    /// Quest character: a scripted dialogue up front, then an optional sales archetype.
+    /// The passive-count constructor stays for older call sites; production can pass the post-dialogue
+    /// archetype explicitly. <see cref="DialogStep"/> holds the interaction lock until presentation calls
+    /// <c>CompleteDialogue</c>, then the sales steps continue.
     /// </summary>
     public sealed class QuestCharacterArchetype : ICustomerArchetype
     {
         private readonly DialoguePayload _payload;
-        private readonly int _passiveCount;
+        private readonly ICustomerArchetype _afterDialogue;
 
         public QuestCharacterArchetype(DialoguePayload payload, int passiveCount = 1)
+            : this(payload, new PassiveAttemptsArchetype(Math.Max(0, passiveCount), Math.Max(0, passiveCount)))
+        {
+        }
+
+        public QuestCharacterArchetype(DialoguePayload payload, ICustomerArchetype afterDialogue)
         {
             _payload = payload ?? throw new ArgumentNullException(nameof(payload));
-            _passiveCount = Math.Max(0, passiveCount);
+            _afterDialogue = afterDialogue;
         }
 
         public string Id => "quest_character";
 
         public IEnumerable<ICustomerStep> BuildMiddle(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
         {
-            var steps = new List<ICustomerStep>(1 + _passiveCount);
-            steps.Add(new DialogStep(_payload));
-            for (var i = 0; i < _passiveCount; i++)
-                steps.Add(new PassivePurchaseStep());
+            var steps = new List<ICustomerStep> { new DialogStep(_payload) };
+            var after = _afterDialogue?.BuildMiddle(setup, tuning, random);
+            if (after != null)
+                steps.AddRange(after);
             return steps;
         }
     }

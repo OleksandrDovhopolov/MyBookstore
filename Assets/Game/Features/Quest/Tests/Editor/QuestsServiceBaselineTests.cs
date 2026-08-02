@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using Game.Conditions.API;
 using Game.Conditions.Services;
 using Game.Configs.Models;
+using Game.DayCycle.Conditions;
 using Game.DayCycle.Day;
 using Game.Quest.API;
 using Game.Quest.Services;
@@ -63,6 +64,12 @@ namespace Game.Quest.Tests.Editor
                 for (var i = 0; i < times; i++)
                     Sales.RecordSold(FantasyBook, new Game.SalesStats.API.SaleContext(FarBeach, day));
             }
+
+            public void Pick(int day, int times)
+            {
+                for (var i = 0; i < times; i++)
+                    Sales.RecordActivePick(FantasyBook, new Game.SalesStats.API.SaleContext(FarBeach, day));
+            }
         }
 
         private static Harness Build(IConditionFactory extra, params QuestConfig[] quests)
@@ -75,11 +82,15 @@ namespace Game.Quest.Tests.Editor
             var sales = new SalesStatsService(save, new SaveBackedSalesStatsRepository(save), configs);
             sales.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
 
+            var dayProgress = new FakeDayProgress();
             var factories = new List<IConditionFactory>
             {
                 new SoldGenreConditionFactory(sales),
                 new SoldGenreAtLocationConditionFactory(sales),
-                new SoldGenreInSingleDayConditionFactory(sales)
+                new SoldGenreInSingleDayConditionFactory(sales),
+                new ActivePickGenreConditionFactory(sales),
+                new ManualConditionFactory(),
+                new DayAtLeastConditionFactory(dayProgress)
             };
             if (extra != null) factories.Add(extra);
 
@@ -90,7 +101,7 @@ namespace Game.Quest.Tests.Editor
                 Configs = configs,
                 Save = save,
                 Repo = new FakeQuestsRepository(),
-                DayProgress = new FakeDayProgress()
+                DayProgress = dayProgress
             };
         }
 
@@ -110,7 +121,55 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual(QuestState.Active, State(quests, "q1"), "pre-existing sales must not satisfy the task");
 
             h.Sell(1, 3); // AFTER activation → scoped 3 ≥ 3 (RecordSold fires Changed → reevaluate)
-            Assert.AreEqual(QuestState.Awarded, State(quests, "q1"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "q1"));
+        }
+
+        [Test]
+        public void ManualSalesQuest_IgnoresSalesBeforeTryActivate()
+        {
+            var quest = QuestCfg("q_intro_eddi", Sales(SalesConditionTypeIds.SoldGenre, 3));
+            quest.ActivationConditions = new JObject { ["type"] = ManualConditionFactory.TypeId };
+
+            var h = Build(null, quest);
+            h.Sell(1, 3);
+
+            var quests = h.NewQuests();
+            quests.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            Assert.AreEqual(QuestState.Pending, State(quests, "q_intro_eddi"));
+
+            Assert.IsTrue(quests.TryActivateAsync("q_intro_eddi", CancellationToken.None).GetAwaiter().GetResult());
+            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_eddi"));
+            Assert.IsFalse(quests.TryActivateAsync("q_intro_eddi", CancellationToken.None).GetAwaiter().GetResult());
+
+            h.Sell(1, 2);
+            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_eddi"));
+
+            h.Sell(1, 1);
+            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "q_intro_eddi"));
+        }
+
+        [Test]
+        public void ManualActivePickQuest_IgnoresPicksBeforeTryActivate()
+        {
+            var quest = QuestCfg("q_intro_milly", Sales(SalesConditionTypeIds.ActivePickGenre, 5));
+            quest.ActivationConditions = new JObject { ["type"] = ManualConditionFactory.TypeId };
+
+            var h = Build(null, quest);
+            h.Pick(1, 5);
+
+            var quests = h.NewQuests();
+            quests.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            Assert.AreEqual(QuestState.Pending, State(quests, "q_intro_milly"));
+
+            Assert.IsTrue(quests.TryActivateAsync("q_intro_milly", CancellationToken.None).GetAwaiter().GetResult());
+            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_milly"));
+            Assert.IsFalse(quests.TryActivateAsync("q_intro_milly", CancellationToken.None).GetAwaiter().GetResult());
+
+            h.Pick(1, 4);
+            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_milly"));
+
+            h.Pick(1, 1);
+            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "q_intro_milly"));
         }
 
         [Test]
@@ -124,7 +183,7 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual(QuestState.Active, State(quests, "q1"));
 
             h.Sell(2, 5); // a full day AFTER activation
-            Assert.AreEqual(QuestState.Awarded, State(quests, "q1"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "q1"));
         }
 
         [Test]
@@ -145,7 +204,7 @@ namespace Game.Quest.Tests.Editor
 
             flag.Met = true;
             h.Sell(1, 1);                       // any sale fires Changed → reevaluate; soldGenre stays met (3 >= 2)
-            Assert.AreEqual(QuestState.Awarded, State(quests, "q1"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "q1"));
         }
 
         [Test]
@@ -165,7 +224,7 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual(QuestState.Active, State(q2, "q1"));
 
             h.Sell(1, 1);                        // scoped 3 → award
-            Assert.AreEqual(QuestState.Awarded, State(q2, "q1"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(q2, "q1"));
         }
 
         [Test]
@@ -233,7 +292,7 @@ namespace Game.Quest.Tests.Editor
 
             h.DayProgress.Current.CurrentDay = 3;
             h.Sell(3, 3);
-            Assert.AreEqual(QuestState.Awarded, State(q2, "q1"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(q2, "q1"));
         }
 
         [Test]
@@ -262,11 +321,14 @@ namespace Game.Quest.Tests.Editor
 
             // One reeval on dispose: head completes → q_sales activates → its baseline is captured NOW, so it
             // includes the 3 sales recorded during the suspension → those sales do NOT count toward q_sales.
-            Assert.AreEqual(QuestState.Awarded, State(quests, "head"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "head"));
+            Assert.AreEqual(QuestState.Pending, State(quests, "q_sales"));
+
+            Assert.IsTrue(quests.TryAwardAsync("head", CancellationToken.None).GetAwaiter().GetResult());
             Assert.AreEqual(QuestState.Active, State(quests, "q_sales"));
 
             h.Sell(2, 3); // only sales AFTER activation count → now it awards
-            Assert.AreEqual(QuestState.Awarded, State(quests, "q_sales"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "q_sales"));
         }
 
         private sealed class FlagFactory : IConditionFactory

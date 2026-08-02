@@ -51,7 +51,6 @@ namespace Game.Characters.UI
             try
             {
                 var sprite = await sprites.GetSpriteAsync(portraitKey, ct);
-                Debug.LogWarning($"[Journal] loading with ID portraitKey {portraitKey}");
                 if (ct.IsCancellationRequested || _portraitImage == null) return;
                 SetPortrait(sprite != null ? sprite : _spriteFallback);
             }

@@ -1,4 +1,5 @@
 using System;
+using Game.Conditions.API;
 using Game.LocationVisits.API;
 using Game.LocationVisits.Conditions;
 using Newtonsoft.Json.Linq;
@@ -8,12 +9,14 @@ namespace Game.LocationVisits.Tests.Editor
 {
     public sealed class LocationVisitsConditionTests
     {
-        private sealed class FakeVisits : ILocationVisitsReader, ICurrentLocationProvider
+        private sealed class FakeVisits : ILocationVisitsReader, ICurrentLocationProvider, ILocationVisitChangeSource
         {
             public int Visits;
             public string Current;
+            public event Action Changed;
             public int GetVisits(string locationId) => Visits;
             public string CurrentLocationId => Current;
+            public void RaiseChanged() => Changed?.Invoke();
         }
 
         // ----- visitLocation -----
@@ -50,6 +53,19 @@ namespace Game.LocationVisits.Tests.Editor
                 () => factory.Create(new JObject { ["type"] = "visitLocation", ["min"] = 3 }));
         }
 
+        [Test]
+        public void VisitLocationFactory_ForwardsChangeSource()
+        {
+            var visits = new FakeVisits();
+            var factory = new VisitLocationConditionFactory(visits, visits);
+            var changed = 0;
+
+            ((IConditionChangeSource)factory).Changed += () => changed++;
+            visits.RaiseChanged();
+
+            Assert.AreEqual(1, changed);
+        }
+
         // ----- locationIs -----
 
         [Test]
@@ -69,6 +85,19 @@ namespace Game.LocationVisits.Tests.Editor
             var factory = new LocationIsConditionFactory(new FakeVisits());
             Assert.Throws<ArgumentException>(
                 () => factory.Create(new JObject { ["type"] = "locationIs" }));
+        }
+
+        [Test]
+        public void LocationIsFactory_ForwardsChangeSource()
+        {
+            var visits = new FakeVisits();
+            var factory = new LocationIsConditionFactory(visits, visits);
+            var changed = 0;
+
+            ((IConditionChangeSource)factory).Changed += () => changed++;
+            visits.RaiseChanged();
+
+            Assert.AreEqual(1, changed);
         }
     }
 }

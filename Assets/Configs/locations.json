@@ -1,138 +1,97 @@
 [
   {
-    "id": "loc_downtown",
-    "displayName": "Downtown / Near University",
+    "id": "loc_park",
+    "displayName": "Park",
     "entryCost": 0,
+    "locationAddress": "location/park",
     "demandGenres": [
-      "Fantasy",
-      "Classic",
-      "Fact"
+      "Drama",
+      "Kids",
+      "Classic"
     ],
-    "customerTrafficPercentDelta": 0.2,
-    "demandQualities": [
-      "study",
-      "short",
-      "science"
-    ]
+    "customerTrafficPercentDelta": 0
   },
   {
-    "id": "loc_mall",
-    "displayName": "Shopping Mall",
-    "entryCost": 30,
+    "id": "loc_campus",
+    "displayName": "Campus",
+    "entryCost": 0,
+    "locationAddress": "location/campus",
+    "unlockCost": [
+      { "itemId": "milly_letter", "amount": 1 },
+      { "itemId": "fuel_canister", "amount": 2 }
+    ],
+    "demandGenres": [
+      "Fantasy",
+      "Fact",
+      "Classic"
+    ],
+    "customerTrafficPercentDelta": 0.2
+  },
+  {
+    "id": "loc_port",
+    "displayName": "Port",
+    "entryCost": 0,
+    "locationAddress": "location/port",
+    "unlockCost": [
+      { "itemId": "port_trade_permit", "amount": 1 },
+      { "itemId": "fuel_canister", "amount": 2 }
+    ],
+    "demandGenres": [
+      "Travel",
+      "Crime"
+    ],
+    "customerTrafficPercentDelta": 0
+  },
+  {
+    "id": "loc_market",
+    "displayName": "Market",
+    "entryCost": 0,
+    "locationAddress": "location/market",
     "unlock": {
       "all": [
         {
-          "type": "soldGenre",
-          "genre": "Crime",
-          "min": 15
+          "type": "soldTotal",
+          "min": 200
         }
       ]
     },
-    "demandGenres": [
-      "Drama",
-      "Crime"
+    "unlockCost": [
+      { "itemId": "captain_recommendation", "amount": 1 },
+      { "itemId": "fuel_canister", "amount": 5 }
     ],
-    "demandQualities": [
-      "cozy",
-      "summer",
-      "letters"
-    ]
+    "demandGenres": [
+      "Crime",
+      "Classic"
+    ],
+    "customerTrafficPercentDelta": 0
   },
   {
-    "id": "loc_riverside_park",
-    "displayName": "Riverside Park",
-    "entryCost": 50,
+    "id": "loc_village",
+    "displayName": "Village",
+    "entryCost": 0,
+    "locationAddress": "location/village",
     "unlock": {
       "all": [
-        {
-          "type": "soldGenre",
-          "genre": "Kids",
-          "min": 25
-        },
         {
           "type": "soldGenre",
           "genre": "Fantasy",
-          "min": 20
+          "min": 150
+        },
+        {
+          "type": "soldGenre",
+          "genre": "Kids",
+          "min": 150
         }
       ]
     },
+    "unlockCost": [
+      { "itemId": "map", "amount": 1 },
+      { "itemId": "fuel_canister", "amount": 15 }
+    ],
     "demandGenres": [
-      "Kids",
       "Fantasy",
       "Travel"
     ],
-    "demandQualities": [
-      "family",
-      "summer",
-      "adventure"
-    ]
-  },
-  {
-    "id": "loc_old_town",
-    "displayName": "Old Town",
-    "entryCost": 80,
-    "unlock": {
-      "all": [
-        {
-          "type": "soldGenre",
-          "genre": "Classic",
-          "min": 40
-        },
-        {
-          "type": "soldGenre",
-          "genre": "Drama",
-          "min": 35
-        },
-        {
-          "type": "soldGenre",
-          "genre": "Fact",
-          "min": 30
-        }
-      ]
-    },
-    "demandGenres": [
-      "Classic",
-      "Drama",
-      "Fact"
-    ],
-    "demandQualities": [
-      "history",
-      "letters",
-      "quiet"
-    ]
-  },
-  {
-    "id": "loc_train_station",
-    "displayName": "Train Station",
-    "entryCost": 120,
-    "unlock": {
-      "all": [
-        {
-          "type": "soldGenre",
-          "genre": "Travel",
-          "min": 60
-        },
-        {
-          "type": "soldGenre",
-          "genre": "Crime",
-          "min": 50
-        },
-        {
-          "type": "soldGenre",
-          "genre": "Fact",
-          "min": 45
-        }
-      ]
-    },
-    "demandGenres": [
-      "Travel",
-      "Crime",
-      "Fact"
-    ],
-    "demandQualities": [
-      "short",
-      "road",
-      "mystery"
-    ]
+    "customerTrafficPercentDelta": 0
   }
 ]

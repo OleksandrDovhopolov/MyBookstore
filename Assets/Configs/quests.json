@@ -1,121 +1,112 @@
 [
   {
-    "id": "far_beach_intro",
-    "type": "story",
-    "chainId": "far_beach_sand_empire",
-    "titleKey": "quest.far_beach_intro.title",
-    "descriptionKey": "quest.far_beach_intro.desc",
-    "nextQuestIds": ["sand_inspiration"],
-    "activationConditions": null,
-    "failConditions": null,
-    "tasks": [
-      {
-        "id": 1,
-        "descriptionKey": "task.visit_far_beach",
-        "completionConditions": {
-          "all": [
-            { "type": "visitLocation", "locationId": "loc_downtown", "min": 3 }
-          ]
-        }
-      }
-    ],
-    "rewards": [],
-    "worldEffects": []
-  },
-  {
-    "id": "sand_inspiration",
-    "type": "side",
-    "chainId": "far_beach_sand_empire",
-    "titleKey": "quest.sand_inspiration.title",
-    "descriptionKey": "quest.sand_inspiration.desc",
-    "nextQuestIds": [],
-    "activationConditions": null,
-    "failConditions": null,
-    "tasks": [
-      {
-        "id": 1,
-        "descriptionKey": "task.sell_fantasy_far_beach",
-        "completionConditions": {
-          "all": [
-            { "type": "soldGenreAtLocation", "genre": "Fantasy", "locationId": "loc_downtown", "min": 15 }
-          ]
-        }
-      }
-    ],
-    "rewards": [
-      { "kind": "InventoryItem", "id": "harper_castle_donation_box", "category": "decor", "amount": 1 }
-    ],
-    "worldEffects": [
-      { "type": "locationCustomerBonus", "params": { "locationId": "loc_downtown", "amount": 2 } }
-    ]
-  },
-  {
-    "id": "tut_first_day",
-    "type": "tutorial",
-    "chainId": null,
-    "titleKey": "quest.tut_first_day.title",
-    "descriptionKey": "quest.tut_first_day.desc",
-    "nextQuestIds": [],
-    "activationConditions": null,
-    "failConditions": null,
-    "tasks": [
-      {
-        "id": 1,
-        "descriptionKey": "task.tut_visit_location",
-        "completionConditions": {
-          "all": [
-            { "type": "visitLocation", "locationId": "loc_downtown", "min": 1 }
-          ]
-        }
-      }
-    ],
-    "rewards": [],
-    "worldEffects": []
-  },
-  {
-    "id": "tut_first_sale",
-    "type": "tutorial",
-    "chainId": null,
-    "titleKey": "quest.tut_first_sale.title",
-    "descriptionKey": "quest.tut_first_sale.desc",
-    "nextQuestIds": [],
-    "activationConditions": null,
-    "failConditions": null,
-    "tasks": [
-      {
-        "id": 1,
-        "descriptionKey": "task.tut_sell_fantasy",
-        "completionConditions": {
-          "all": [
-            { "type": "soldGenreAtLocation", "genre": "Fantasy", "locationId": "loc_downtown", "min": 1 }
-          ]
-        }
-      }
-    ],
-    "rewards": [],
-    "worldEffects": []
-  },
-  {
     "id": "q_intro_eddi",
     "type": "story",
     "chainId": null,
+    "characterId": "eddi",
     "titleKey": "quest.q_intro_eddi.title",
     "descriptionKey": "quest.q_intro_eddi.desc",
     "nextQuestIds": [],
-    "activationConditions": null,
+    "activationConditions": { "type": "dialogueDelivered", "dialogueId": "eddy1" },
+    "startsWhen": "Day 1. Customer script 'eddi_intro' brings dialogue 'eddy1'; the quest activates once that dialogue is delivered.",
     "failConditions": null,
     "tasks": [
       {
         "id": 1,
-        "descriptionKey": "task.q_intro_eddi_meet",
-        "completionConditions": {
-          "all": [
-            { "type": "visitLocation", "locationId": "loc_downtown", "min": 3 }
-          ]
-        }
+        "descriptionKey": "task.q_intro_eddi_sell_crime",
+        "completionConditions": { "type": "soldGenre", "genre": "Crime", "min": 10 }
+      },
+      {
+        "id": 2,
+        "descriptionKey": "task.q_intro_eddi_sell_drama",
+        "completionConditions": { "type": "soldGenre", "genre": "Drama", "min": 10 }
+      },
+      {
+        "id": 3,
+        "descriptionKey": "task.q_intro_eddi_sell_classic",
+        "completionConditions": { "type": "soldGenre", "genre": "Classic", "min": 10 }
+      },
+      {
+        "id": 4,
+        "descriptionKey": "task.q_intro_eddi_sell_fantasy",
+        "completionConditions": { "type": "soldGenre", "genre": "Fantasy", "min": 15 }
       }
     ],
-    "rewards": [],
+    "rewards": [
+      { "kind": "InventoryItem", "id": "fuel_canister", "category": "consumable", "amount": 2 }
+    ],
+    "worldEffects": []
+  },
+  {
+    "id": "q_intro_milly",
+    "type": "story",
+    "chainId": null,
+    "characterId": "milly",
+    "titleKey": "quest.q_intro_milly.title",
+    "descriptionKey": "quest.q_intro_milly.desc",
+    "nextQuestIds": [],
+    "activationConditions": { "type": "dialogueDelivered", "dialogueId": "milly1" },
+    "startsWhen": "Day 2. Customer script 'milly_intro' brings dialogue 'milly1'; the quest activates once that dialogue is delivered.",
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "descriptionKey": "task.q_intro_milly_pick_science",
+        "completionConditions": { "type": "activePickGenre", "genre": "Fact", "min": 5 }
+      }
+    ],
+    "rewards": [
+      { "kind": "InventoryItem", "id": "milly_letter", "category": "quest_item", "amount": 1 },
+      { "kind": "InventoryItem", "id": "fuel_canister", "category": "consumable", "amount": 1 }
+    ],
+    "worldEffects": []
+  },
+  {
+    "id": "q_tara_kids",
+    "type": "story",
+    "chainId": null,
+    "characterId": "tara",
+    "titleKey": "quest.q_tara_kids.title",
+    "descriptionKey": "quest.q_tara_kids.desc",
+    "nextQuestIds": [],
+    "activationConditions": { "type": "dialogueDelivered", "dialogueId": "tara_quest_1" },
+    "startsWhen": "Day 5. Customer script 'tara_quest_intro' brings dialogue 'tara_quest_1'; the quest activates once that dialogue is delivered.",
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "descriptionKey": "task.q_tara_kids_pick_kids",
+        "completionConditions": { "type": "activePickGenre", "genre": "Kids", "min": 5 }
+      }
+    ],
+    "rewards": [
+      { "kind": "InventoryItem", "id": "port_trade_permit", "category": "quest_item", "amount": 1 },
+      { "kind": "InventoryItem", "id": "lavender", "category": "decor", "amount": 1 }
+    ],
+    "worldEffects": []
+  },
+  {
+    "id": "q_captain_postcards",
+    "type": "story",
+    "chainId": null,
+    "characterId": "captain",
+    "titleKey": "quest.q_captain_postcards.title",
+    "descriptionKey": "quest.q_captain_postcards.desc",
+    "nextQuestIds": [],
+    "activationConditions": { "type": "visitLocation", "locationId": "loc_port", "min": 1 },
+    "startsWhen": "No fixed day - starts on the first visit to loc_port. Unlocking that location costs port_trade_permit x1 (the reward of q_tara_kids) plus fuel_canister x2, so in practice this follows q_tara_kids.",
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "descriptionKey": "task.q_captain_postcards_collect",
+        "completionConditions": { "type": "haveItem", "itemId": "postcard", "min": 10 }
+      }
+    ],
+    "rewards": [
+      { "kind": "InventoryItem", "id": "captain_recommendation", "category": "quest_item", "amount": 1 },
+      { "kind": "InventoryItem", "id": "ship", "category": "decor", "amount": 1 }
+    ],
     "worldEffects": []
   }
 ]

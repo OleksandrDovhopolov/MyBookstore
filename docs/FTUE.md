@@ -38,7 +38,7 @@ straight into the fixed day-1 location with an **auto-stocked shelf**:
   headlessly — `IMorningSessionService.ContinueToPreparationAsync` →
   `IPreparationSessionService.StartOrResumeAsync` →
   `SetSelectedBookIdsAsync(BuildFirstDayShelfPreset())` → `ConfirmAsync`
-  (fills the shelf from the 27 seeded books with a deterministic day-1 preset, advances to `Sales`) →
+  (fills the shelf from the 54 seeded books with a deterministic day-1 preset, advances to `Sales`) →
   `IGameFlowService.EnterLocationAsync`. **Day 1 entry is free** (no entry-fee charge).
 - Entering the location raises `LocationLoadedChanged`, which triggers the
   `tutorial_day_1` sequence (context `location`). Requires `_tutorialAutoStart = 1`.
@@ -72,7 +72,7 @@ phase_technical_init → phase_data_load → phase_ftue → phase_finalization
    is non-empty, the player has progressed already — mark applied and exit
    without touching balances or inventory.
 3. **Clean first launch.** Seed `gold = 60` (via `IResourcesService`) and add
-   27 starter books to inventory under the `book` category. Then write the
+   54 starter books to inventory under the `book` category. Then write the
    `ftue.applied` marker.
 
 ### Starter book preset
@@ -84,21 +84,21 @@ for organic discovery later.
 
 | Genre   | Starter count | Total in catalog |
 |---------|--------------:|-----------------:|
-| Fantasy |             5 |               12 |
-| Crime   |             5 |               10 |
-| Drama   |             6 |                9 |
-| Classic |             3 |                9 |
-| Fact    |             3 |                7 |
-| Travel  |             3 |                7 |
-| Kids    |             2 |                6 |
-| **Total** |       **27** |           **60** |
+| Fantasy |            10 |              135 |
+| Crime   |            10 |               94 |
+| Drama   |            12 |              133 |
+| Classic |             6 |              100 |
+| Fact    |             6 |              125 |
+| Travel  |             6 |               34 |
+| Kids    |             4 |               42 |
+| **Total** |       **54** |          **663** |
 
 ### Day-1 shelf preset
 
 The first direct-entry sales day does not randomize the shelf. `FirstDayEntryFlow`
 reads the seeded owned books through `IPreparationInventoryProvider` and writes an
 exact shelf selection through `IPreparationSessionService.SetSelectedBookIdsAsync`.
-The shelf capacity is the current `DailyBookSlots` value (12 in the MVP).
+The shelf capacity is the current `DailyBookSlots` value (30 in the MVP).
 
 The authored picker first pins one `Fact` book and one `Travel` book when those
 genres are available, then fills the remaining slots by genre order:
@@ -135,7 +135,7 @@ and the between-days hub through play, not text.
 ### Day 1 starting state
 
 - Player drops into a single fixed location.
-- Stock is **pre-seeded** (the 27-book preset above) so the shelf is alive on
+- Stock is **pre-seeded** (the 54-book preset above) so the shelf is alive on
   arrival; no empty shop on day 1.
 - A right-hand panel shows **per-genre counts** with icons; hover/tap reveals
   the genre's current sale chance — the same UI surface that will carry the
@@ -254,7 +254,7 @@ Minimum surface area:
 | End-of-day click ritual                       | ❌ ends automatically                              | New "evening" state with click zones + transition.   |
 | Tutorial / onboarding engine                  | ❌ none                                            | New subsystem (see requirements above).              |
 | Variable customer walk speed                  | ⚠️ uniform `ApproachDuration`                      | Per-customer `ApproachDuration` (easy change).       |
-| Shelf capacity (`In Shop X/40`)               | ⚠️ `DailyBookSlots = 12` constant                  | Migrate to player state + economy config (tracked).  |
+| Shelf capacity (`In Shop X/30`)               | ⚠️ `DailyBookSlots = 30` constant                  | Migrate to player state + economy config (tracked).  |
 | Location travel cost                          | ✅ shipped (`LocationConfig.EntryCost` + `LocationEntryCostCalculator`, charged in `PreparationWindow.ConfirmAsync`) | Tuning + map UI surfacing. See `docs/SAVE_DAY_FLOW.md`. |
 | Map UI with locked locations                  | ⚠️ data model supports list; UI is single-pick    | Map screen with locked entries + unlock conditions.  |
 | Shop customisation screen                     | ❌ none                                            | Placeholder; out of scope for first FTUE pass.       |
