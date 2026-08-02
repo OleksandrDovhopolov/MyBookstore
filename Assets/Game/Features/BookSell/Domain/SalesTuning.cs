@@ -65,11 +65,19 @@ namespace Book.Sell.Domain
         public int MaxPassiveAttempts { get; set; } = 6;
 
         /// <summary>How many genres a customer's passive desire profile holds (requested-genre model).
-        /// Clamped to the available genres by the profile provider.</summary>
+        /// Clamped to the catalog genres by the profile provider.</summary>
         public int PassiveRequestGenreCount { get; set; } = 2;
 
-        /// <summary>Relative weight for shelf genres listed in LocationConfig.DemandGenres when building
-        /// a customer's passive desire profile. Non-demand genres use weight 1.0.</summary>
-        public double PassiveDemandGenreWeight { get; set; } = 1.10d;
+        /// <summary>Target share of passive profile slots filled from LocationConfig.DemandGenres when the
+        /// authored location has at least <see cref="NarrowDemandGenreThreshold"/> demand genres.</summary>
+        public double PassiveDemandRequestShare { get; set; } = 0.70d;
+
+        /// <summary>Target share of passive profile slots filled from LocationConfig.DemandGenres when the
+        /// authored location has fewer than <see cref="NarrowDemandGenreThreshold"/> demand genres.</summary>
+        public double PassiveDemandRequestShareNarrow { get; set; } = 0.50d;
+
+        /// <summary>Authored LocationConfig.DemandGenres count that switches passive demand from narrow to
+        /// wide share.</summary>
+        public int NarrowDemandGenreThreshold { get; set; } = 3;
     }
 }

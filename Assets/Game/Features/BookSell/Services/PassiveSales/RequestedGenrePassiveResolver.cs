@@ -5,8 +5,8 @@ using Book.Sell.Domain;
 namespace Book.Sell.Services
 {
     /// <summary>
-    /// New passive model: pick one genre from the customer's profile (among those with stock), roll
-    /// only that genre's chance gate, and weighted-pick a book on a hit. The chosen genre is reported
+    /// New passive model: pick one genre from the customer's full profile, roll only that genre's chance
+    /// gate when it has stock, and weighted-pick a book on a hit. The chosen genre is reported
     /// on both hit and miss (so the bubble can show its sprite either way).
     /// </summary>
     public sealed class RequestedGenrePassiveResolver : IPassivePurchaseResolver
@@ -26,18 +26,9 @@ namespace Book.Sell.Services
 
             var groups = GenreShelfPicker.GroupAvailableByGenre(available);
 
-            // Eligible = requested genres that currently have stock on the shelf.
-            var eligible = new List<string>();
-            for (var i = 0; i < requested.Count; i++)
-                if (!string.IsNullOrEmpty(requested[i]) && groups.ContainsKey(requested[i]))
-                    eligible.Add(requested[i]);
-
-            // No requested genre has stock → miss, but still report a requested genre for feedback.
-            if (eligible.Count == 0)
-                return PassiveAttemptResult.Miss(PickEquiprobable(requested, ctx.Random));
-
-            var genre = PickEquiprobable(eligible, ctx.Random);
-            var genreBooks = groups[genre];
+            var genre = PickEquiprobable(requested, ctx.Random);
+            if (string.IsNullOrEmpty(genre) || !groups.TryGetValue(genre, out var genreBooks))
+                return PassiveAttemptResult.Miss(genre);
 
             var chance = _calculator.Compute(genre, genreBooks.Count, ctx.Location, ctx.ActiveDecorIds);
             if (chance <= 0d)

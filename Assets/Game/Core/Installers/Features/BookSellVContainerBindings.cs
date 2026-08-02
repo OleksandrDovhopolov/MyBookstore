@@ -82,7 +82,6 @@ namespace Game.Bootstrap
             // Passive sale chance gate (ADR-0004) resolves from the global scope so HUD previews and
             // sales use the same calculator instance.
             // Per-customer desire profile — used by the spawner in both passive models.
-            builder.Register<IDemandGenreWeightProvider, SalesTuningDemandGenreWeightProvider>(Lifetime.Singleton);
             builder.Register<ICustomerProfileProvider, LocationDemandProfileProvider>(Lifetime.Singleton);
             // Passive model behind the IPassivePurchaseResolver seam. Default = scripted story attempts
             // over requested-genre (v2). To roll back to pure v2, call RegisterRequestedGenrePassiveSales.
@@ -126,6 +125,7 @@ namespace Game.Bootstrap
 
             // Warns once per process if a day asks for more active requests than it has customers.
             builder.RegisterEntryPoint<CustomerTrafficConfigValidator>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<LocationDemandConfigValidator>(Lifetime.Singleton);
 
             // Base composition (concrete type) + scripted-customer decorator as ICustomerSpawner (GAME-16).
             // The decorator replaces regular slots only for scripts with authored sales attempts; dialogue-only
