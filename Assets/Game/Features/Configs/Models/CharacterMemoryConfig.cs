@@ -10,6 +10,8 @@ namespace Game.Configs.Models
     {
         public string Id { get; set; }
 
+        public int Order { get; set; }
+
         public string TitleKey { get; set; }
         public string DescriptionKey { get; set; }
 

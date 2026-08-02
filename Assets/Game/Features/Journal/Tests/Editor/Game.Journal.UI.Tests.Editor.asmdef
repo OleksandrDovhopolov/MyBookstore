@@ -1,14 +1,18 @@
 {
-    "name": "Game.Characters.Tests.Editor",
-    "rootNamespace": "Game.Characters.Tests.Editor",
+    "name": "Game.Journal.UI.Tests.Editor",
+    "rootNamespace": "Game.Journal.UI.Tests.Editor",
     "references": [
         "UniTask",
-        "Game.Characters",
+        "Game.Journal.UI",
         "Game.Characters.API",
+        "Game.Characters",
+        "Game.Decor.API",
+        "Game.LocationUnlock.API",
         "Game.Quest.API",
         "Configs",
         "Save",
-        "UnityEngine.TestRunner"
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
     ],
     "includePlatforms": [
         "Editor"

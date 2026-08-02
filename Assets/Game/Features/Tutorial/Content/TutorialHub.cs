@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Game.Characters.UI;
 using Game.DayCycle.Day;
 using Game.DayCycle.Results.UI;
+using Game.Journal.UI;
 using Game.Rewards.UI;
 using Game.Shop.API;
 using Game.Tutorial.API;

@@ -53,7 +53,9 @@ namespace Game.Characters.Services
 
                 rows[i] = new CharacterJournalMemory
                 {
+                    CharacterId = config.Id,
                     MemoryId = mc.Id,
+                    Order = mc.Order,
                     Unlocked = link.Unlocked || LedgerContains(saved, mc.Id),
                     IsGolden = mc.IsGolden,
                     TitleKey = mc.TitleKey,
@@ -71,6 +73,7 @@ namespace Game.Characters.Services
                 DisplayNameKey = config.DisplayNameKey,
                 RoleKey = config.RoleKey,
                 PortraitKey = config.PortraitKey,
+                FavoriteGenres = config.FavoriteGenres,
                 Memories = rows,
             };
         }

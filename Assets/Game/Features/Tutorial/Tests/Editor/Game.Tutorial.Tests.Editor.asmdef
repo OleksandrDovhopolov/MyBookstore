@@ -22,7 +22,7 @@
         "Game.Rewards",
         "Game.Rewards.API",
         "Dialogue",
-        "Game.Characters.UI"
+        "Game.Journal.UI"
     ],
     "includePlatforms": [
         "Editor"

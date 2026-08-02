@@ -15,7 +15,7 @@
         "Game.Shop.API",
         "Game.Rewards",
         "Dialogue",
-        "Game.Characters.UI",
+        "Game.Journal.UI",
         "Game.Rewards.API"
     ],
     "includePlatforms": [],
