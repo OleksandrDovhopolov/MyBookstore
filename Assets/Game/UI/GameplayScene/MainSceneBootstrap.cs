@@ -10,7 +10,6 @@ using Game.Ftue.Domain;
 using Game.Ftue.Services;
 using Game.LocationUnlock.API;
 using Game.Preparation.Services;
-using Game.Tutorial.API;
 using Game.UI;
 using MessagePipe;
 using Save;
@@ -30,7 +29,7 @@ namespace GameplayUI
         private FirstDayEntrySettings _firstDayEntrySettings;
         private IDayProgressService _dayProgress;
         private FirstDayEntryFlow _firstDayEntryFlow;
-        private ITutorialAutoStartGate _tutorialAutoStartGate;
+        private IGameplayAutoStartGate _gameplayAutoStartGate;
 
         private CancellationToken _destroyToken;
 
@@ -49,7 +48,7 @@ namespace GameplayUI
             IConfigsService configs = null,
             ILocationUnlockService locationUnlock = null,
             IPreparationInventoryProvider preparationInventory = null,
-            ITutorialAutoStartGate tutorialAutoStartGate = null)
+            IGameplayAutoStartGate gameplayAutoStartGate = null)
         {
             _uiManager = uiManager;
             _save = save;
@@ -58,7 +57,7 @@ namespace GameplayUI
             _welcomeWindowStartupSettings = welcomeWindowStartupSettings;
             _firstDayEntrySettings = firstDayEntrySettings;
             _dayProgress = dayProgress;
-            _tutorialAutoStartGate = tutorialAutoStartGate;
+            _gameplayAutoStartGate = gameplayAutoStartGate;
 
             if (morningSession != null && preparationSession != null && gameFlow != null && configs != null)
             {
@@ -101,9 +100,9 @@ namespace GameplayUI
                 {
                     hud.SetHudVisible(false);
 
-                    var gateTutorialUntilWelcomeCloses = showWelcomeWindow && _tutorialAutoStartGate != null;
-                    if (gateTutorialUntilWelcomeCloses)
-                        _tutorialAutoStartGate.Block();
+                    var gateAutoStartUntilWelcomeCloses = showWelcomeWindow && _gameplayAutoStartGate != null;
+                    if (gateAutoStartUntilWelcomeCloses)
+                        _gameplayAutoStartGate.Block();
 
                     var enteredLocation = false;
                     try
@@ -114,8 +113,8 @@ namespace GameplayUI
                     }
                     finally
                     {
-                        if (gateTutorialUntilWelcomeCloses)
-                            _tutorialAutoStartGate.Release();
+                        if (gateAutoStartUntilWelcomeCloses)
+                            _gameplayAutoStartGate.Release();
                     }
 
                     if (enteredLocation)
@@ -128,9 +127,9 @@ namespace GameplayUI
                 }
                 else
                 {
-                    var gateHubReveal = _tutorialAutoStartGate != null;
+                    var gateHubReveal = _gameplayAutoStartGate != null;
                     if (gateHubReveal)
-                        _tutorialAutoStartGate.Block();
+                        _gameplayAutoStartGate.Block();
 
                     try
                     {
@@ -147,7 +146,7 @@ namespace GameplayUI
                     finally
                     {
                         if (gateHubReveal)
-                            _tutorialAutoStartGate.Release();
+                            _gameplayAutoStartGate.Release();
                     }
 
                     _hubReadyPublisher?.Publish(new GameplayHubReady(0));
@@ -180,8 +179,7 @@ namespace GameplayUI
             if (_firstDayEntryFlow == null || _dayProgress == null) return false;
 
             var state = await _dayProgress.LoadAsync(ct);
-            return state != null
-                   && state.CurrentDay == 1
+            return state is { CurrentDay: 1 }
                    && !(state.CompletedDays?.Contains(1) ?? false);
         }
 

@@ -4,7 +4,7 @@ using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.Location.API;
 using Game.LocationVisits.API;
-using Game.Tutorial.API;
+using Game.UI;
 using UnityEngine;
 using VContainer.Unity;
 
@@ -25,7 +25,7 @@ namespace Game.Bootstrap
         private readonly ITransitionAnimationService _animation;
         private readonly GameFlowSettings _settings;
         private readonly ILocationVisitService _locationVisits;
-        private readonly ITutorialAutoStartGate _tutorialAutoStartGate;
+        private readonly IGameplayAutoStartGate _gameplayAutoStartGate;
         private readonly ILocationPrefabProvider _locationPrefabs;
 
         private GameObject _hubRoot;
@@ -38,14 +38,14 @@ namespace Game.Bootstrap
             ITransitionAnimationService animation,
             GameFlowSettings settings,
             ILocationVisitService locationVisits,
-            ITutorialAutoStartGate tutorialAutoStartGate = null,
+            IGameplayAutoStartGate gameplayAutoStartGate = null,
             ILocationPrefabProvider locationPrefabs = null)
         {
             _sceneTransition = sceneTransition ?? throw new ArgumentNullException(nameof(sceneTransition));
             _animation = animation ?? throw new ArgumentNullException(nameof(animation));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _locationVisits = locationVisits; // optional-safe: cleared best-effort on hub return
-            _tutorialAutoStartGate = tutorialAutoStartGate;
+            _gameplayAutoStartGate = gameplayAutoStartGate;
             _locationPrefabs = locationPrefabs;
         }
 
@@ -115,9 +115,9 @@ namespace Game.Bootstrap
         {
             if (!TryBeginTransition(nameof(ReturnToHubAsync))) return;
             var gateBlocked = false;
-            if (_tutorialAutoStartGate != null)
+            if (_gameplayAutoStartGate != null)
             {
-                _tutorialAutoStartGate.Block();
+                _gameplayAutoStartGate.Block();
                 gateBlocked = true;
             }
 
@@ -155,7 +155,7 @@ namespace Game.Bootstrap
             {
                 _isTransitioning = false;
                 if (gateBlocked)
-                    _tutorialAutoStartGate.Release();
+                    _gameplayAutoStartGate.Release();
             }
         }
 

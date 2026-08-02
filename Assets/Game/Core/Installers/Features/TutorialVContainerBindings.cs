@@ -26,7 +26,6 @@ namespace Game.Bootstrap
         {
             builder.RegisterInstance(overlaySettings != null ? overlaySettings : TutorialOverlaySettings.CreateDefault());
             builder.RegisterInstance<ITutorialSettings>(tutorialSettings != null ? tutorialSettings : TutorialSettings.CreateDefault());
-            builder.Register<ITutorialAutoStartGate, TutorialAutoStartGate>(Lifetime.Singleton);
             builder.Register<ITutorialTargetRegistry, TutorialTargetRegistry>(Lifetime.Singleton);
             builder.Register<TutorialOverlayController>(Lifetime.Singleton);
 

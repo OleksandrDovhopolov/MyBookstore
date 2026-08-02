@@ -8,7 +8,7 @@ using Game.Bootstrap;
 using Game.Bootstrap.Loading;
 using Game.Location.API;
 using Game.LocationVisits.API;
-using Game.Tutorial.API;
+using Game.UI;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -86,8 +86,8 @@ namespace Game.Bootstrap.Loading.Tests.Editor
 
             yield return ToCoroutine(harness.Flow.EnterLocationAsync("loc_downtown", CancellationToken.None));
 
-            Assert.That(harness.TutorialGate.BlockCount, Is.EqualTo(0));
-            Assert.That(harness.TutorialGate.ReleaseCount, Is.EqualTo(0));
+            Assert.That(harness.AutoStartGate.BlockCount, Is.EqualTo(0));
+            Assert.That(harness.AutoStartGate.ReleaseCount, Is.EqualTo(0));
         }
 
         [UnityTest]
@@ -128,16 +128,16 @@ namespace Game.Bootstrap.Loading.Tests.Editor
             harness.SetLocationLoaded(true);
             harness.Animation.OnRevealStarted = () =>
             {
-                Assert.That(harness.TutorialGate.IsBlocked, Is.True);
-                Assert.That(harness.TutorialGate.ReleaseCount, Is.EqualTo(0));
+                Assert.That(harness.AutoStartGate.IsBlocked, Is.True);
+                Assert.That(harness.AutoStartGate.ReleaseCount, Is.EqualTo(0));
             };
 
             yield return ToCoroutine(harness.Flow.ReturnToHubAsync(CancellationToken.None));
 
             Assert.That(harness.Animation.RevealCount, Is.EqualTo(1));
-            Assert.That(harness.TutorialGate.BlockCount, Is.EqualTo(1));
-            Assert.That(harness.TutorialGate.ReleaseCount, Is.EqualTo(1));
-            Assert.That(harness.TutorialGate.IsBlocked, Is.False);
+            Assert.That(harness.AutoStartGate.BlockCount, Is.EqualTo(1));
+            Assert.That(harness.AutoStartGate.ReleaseCount, Is.EqualTo(1));
+            Assert.That(harness.AutoStartGate.IsBlocked, Is.False);
         }
 
         [UnityTest]
@@ -152,9 +152,9 @@ namespace Game.Bootstrap.Loading.Tests.Editor
                 yield return null;
 
             Assert.That(IsOperationCanceled(task), Is.True);
-            Assert.That(harness.TutorialGate.BlockCount, Is.EqualTo(1));
-            Assert.That(harness.TutorialGate.ReleaseCount, Is.EqualTo(1));
-            Assert.That(harness.TutorialGate.IsBlocked, Is.False);
+            Assert.That(harness.AutoStartGate.BlockCount, Is.EqualTo(1));
+            Assert.That(harness.AutoStartGate.ReleaseCount, Is.EqualTo(1));
+            Assert.That(harness.AutoStartGate.IsBlocked, Is.False);
         }
 
         [UnityTest]
@@ -170,9 +170,9 @@ namespace Game.Bootstrap.Loading.Tests.Editor
                 yield return null;
 
             Assert.That(task.IsFaulted, Is.True);
-            Assert.That(harness.TutorialGate.BlockCount, Is.EqualTo(1));
-            Assert.That(harness.TutorialGate.ReleaseCount, Is.EqualTo(1));
-            Assert.That(harness.TutorialGate.IsBlocked, Is.False);
+            Assert.That(harness.AutoStartGate.BlockCount, Is.EqualTo(1));
+            Assert.That(harness.AutoStartGate.ReleaseCount, Is.EqualTo(1));
+            Assert.That(harness.AutoStartGate.IsBlocked, Is.False);
         }
 
         private static IEnumerator ToCoroutine(UniTask task)
@@ -204,11 +204,11 @@ namespace Game.Bootstrap.Loading.Tests.Editor
                 SceneTransition = new FakeSceneTransitionService();
                 Animation = new FakeTransitionAnimationService();
                 Visits = new FakeLocationVisitService();
-                TutorialGate = new FakeTutorialAutoStartGate();
+                AutoStartGate = new FakeGameplayAutoStartGate();
                 LocationPrefabs = new FakeLocationPrefabProvider();
                 _settings = ScriptableObject.CreateInstance<GameFlowSettings>();
 
-                Flow = new GameFlowService(SceneTransition, Animation, _settings, Visits, TutorialGate, LocationPrefabs);
+                Flow = new GameFlowService(SceneTransition, Animation, _settings, Visits, AutoStartGate, LocationPrefabs);
 
                 var scope = LifetimeScope.Create(_ => { }, "Test LifetimeScope");
                 _scopeRoot = scope.gameObject;
@@ -227,7 +227,7 @@ namespace Game.Bootstrap.Loading.Tests.Editor
             public FakeSceneTransitionService SceneTransition { get; }
             public FakeTransitionAnimationService Animation { get; }
             public FakeLocationVisitService Visits { get; }
-            public FakeTutorialAutoStartGate TutorialGate { get; }
+            public FakeGameplayAutoStartGate AutoStartGate { get; }
             public FakeLocationPrefabProvider LocationPrefabs { get; }
 
             public void SetLocationLoaded(bool loaded)
@@ -331,7 +331,7 @@ namespace Game.Bootstrap.Loading.Tests.Editor
             public void ClearCurrentLocation() => ClearCount++;
         }
 
-        private sealed class FakeTutorialAutoStartGate : ITutorialAutoStartGate
+        private sealed class FakeGameplayAutoStartGate : IGameplayAutoStartGate
         {
             private int _blockCount;
 

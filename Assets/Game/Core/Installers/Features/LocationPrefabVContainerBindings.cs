@@ -1,3 +1,4 @@
+using Game.Configs;
 using Game.Location.API;
 using Game.Location.Services;
 using VContainer;
@@ -10,7 +11,9 @@ namespace Game.Bootstrap
     {
         public static void RegisterLocationPrefabs(this IContainerBuilder builder)
         {
-            builder.Register<ILocationPrefabProvider, LocationPrefabProvider>(Lifetime.Singleton);
+            builder.Register<ILocationPrefabProvider>(
+                resolver => new LocationPrefabProvider(resolver.Resolve<IConfigsService>()),
+                Lifetime.Singleton);
         }
     }
 }

@@ -15,12 +15,12 @@ using UnityEngine;
 
 namespace Game.Tutorial.Tests.Editor
 {
-    public sealed class TutorialAutoStartGateTests
+    public sealed class GameplayAutoStartGateIntegrationTests
     {
         [Test]
         public async Task BlockedLocationLoaded_DoesNotStartImmediately()
         {
-            var gate = new TutorialAutoStartGate();
+            var gate = new GameplayAutoStartGate();
             gate.Block();
 
             var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
@@ -43,7 +43,7 @@ namespace Game.Tutorial.Tests.Editor
         [Test]
         public async Task Release_ReplaysDeferredLocationLoaded()
         {
-            var gate = new TutorialAutoStartGate();
+            var gate = new GameplayAutoStartGate();
             gate.Block();
 
             var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
@@ -67,7 +67,7 @@ namespace Game.Tutorial.Tests.Editor
         [Test]
         public async Task Release_RunsSingleScanAndStartsHighestPriorityEligibleSequence()
         {
-            var gate = new TutorialAutoStartGate();
+            var gate = new GameplayAutoStartGate();
             gate.Block();
 
             var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
@@ -99,7 +99,7 @@ namespace Game.Tutorial.Tests.Editor
         [Test]
         public async Task AutoStartFalse_DoesNotReplayDeferredTrigger()
         {
-            var gate = new TutorialAutoStartGate();
+            var gate = new GameplayAutoStartGate();
             gate.Block();
 
             var gameFlow = new FakeGameFlow { IsLocationLoaded = true };
@@ -123,7 +123,7 @@ namespace Game.Tutorial.Tests.Editor
         [Test]
         public async Task Release_ReplaysDeferredHubTrigger()
         {
-            var gate = new TutorialAutoStartGate();
+            var gate = new GameplayAutoStartGate();
             gate.Block();
 
             var dayProgress = new FakeDayProgress();
@@ -258,7 +258,7 @@ namespace Game.Tutorial.Tests.Editor
         }
 
         private static TutorialService BuildService(
-            TutorialAutoStartGate gate,
+            GameplayAutoStartGate gate,
             FakeGameFlow gameFlow,
             bool autoStart,
             FakeSaveService save = null,

@@ -29,6 +29,7 @@ namespace Book.Sell.UI
         private ICurrentDayProvider _dayProvider;
         private ISalesShelfStateService _shelfState;
         private IRecommendationMinigamePresenter _minigamePresenter;
+        private IGameplayAutoStartGate _autoStartGate;
         
         private IDisposable _genreBookCountsRequestSubscription;
         
@@ -56,7 +57,8 @@ namespace Book.Sell.UI
             IPublisher<GameplaySceneButtonsInteractableChanged> gameplayButtonsPublisher = null,
             IPublisher<GameplayGenreBookCountsChanged> genreBookCountsPublisher = null,
             IPublisher<GameplaySalesGoldChanged> salesGoldPublisher = null,
-            ISubscriber<GameplayGenreBookCountsRequested> genreBookCountsRequestSubscriber = null)
+            ISubscriber<GameplayGenreBookCountsRequested> genreBookCountsRequestSubscriber = null,
+            IGameplayAutoStartGate autoStartGate = null)
         {
             _controller = controller;
             _dayProvider = dayProvider;
@@ -68,6 +70,7 @@ namespace Book.Sell.UI
             _gameplayButtonsPublisher = gameplayButtonsPublisher;
             _genreBookCountsPublisher = genreBookCountsPublisher;
             _salesGoldPublisher = salesGoldPublisher;
+            _autoStartGate = autoStartGate;
             _genreBookCountsRequestSubscription = genreBookCountsRequestSubscriber?.Subscribe(_ => PublishGenreBookCounts());
         }
 
@@ -104,16 +107,25 @@ namespace Book.Sell.UI
 
         private async UniTaskVoid StartDayFlowAsync(CancellationToken ct)
         {
-            // Day comes from DayCycle.DayProgressService via the ICurrentDayProvider adapter.
-            // When the adapter is not registered (e.g. early prototype scenes), fall back to day 1.
-            var day = _dayProvider?.CurrentDay ?? 1;
-            PublishSalesGold(0, true);
-            await _controller.StartDayAsync(day, ct);
-            _salesDayGenreBaseline = BuildGenreBookCounts();
-            RefreshHeader();
-            PublishGenreBookCounts();
-            _dayRunning = !_controller.IsDayCompleted;
-            SetGameplaySceneButtonsInteractable(!_dayRunning);
+            try
+            {
+                if (_autoStartGate is { IsBlocked: true })
+                    await UniTask.WaitUntil(() => !_autoStartGate.IsBlocked, cancellationToken: ct);
+
+                // Day comes from DayCycle.DayProgressService via the ICurrentDayProvider adapter.
+                // When the adapter is not registered (e.g. early prototype scenes), fall back to day 1.
+                var day = _dayProvider?.CurrentDay ?? 1;
+                PublishSalesGold(0, true);
+                await _controller.StartDayAsync(day, ct);
+                _salesDayGenreBaseline = BuildGenreBookCounts();
+                RefreshHeader();
+                PublishGenreBookCounts();
+                _dayRunning = !_controller.IsDayCompleted;
+                SetGameplaySceneButtonsInteractable(!_dayRunning);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
 
         // ---------- controller events ----------

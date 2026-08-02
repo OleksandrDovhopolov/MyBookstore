@@ -31,6 +31,7 @@ namespace Game.Bootstrap
             builder.Register<IUIStack, UIStack>(Lifetime.Singleton);
             builder.Register<IUiFilter, UiFilter>(Lifetime.Singleton);
             builder.Register<LockMonitor>(Lifetime.Singleton);
+            builder.Register<IGameplayAutoStartGate, GameplayAutoStartGate>(Lifetime.Singleton);
 
             builder.Register<UIManager>(Lifetime.Singleton)
                 .As<IUIManager>()

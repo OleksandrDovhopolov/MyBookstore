@@ -1,10 +1,9 @@
 using System;
-using Game.Tutorial.API;
 using UnityEngine;
 
-namespace Game.Tutorial.Services
+namespace Game.UI
 {
-    public sealed class TutorialAutoStartGate : ITutorialAutoStartGate
+    public sealed class GameplayAutoStartGate : IGameplayAutoStartGate
     {
         private int _blockCount;
 
@@ -21,7 +20,7 @@ namespace Game.Tutorial.Services
         {
             if (_blockCount <= 0)
             {
-                Debug.LogWarning("[TutorialAutoStartGate] Release called without a matching Block.");
+                Debug.LogWarning("[GameplayAutoStartGate] Release called without a matching Block.");
                 return;
             }
 

@@ -40,7 +40,7 @@ namespace Game.Tutorial.Services
         private readonly IGameFlowService _gameFlow;
         private readonly IQuestsService _quests;
         private readonly IQuestReevaluationGate _questReevaluation;
-        private readonly ITutorialAutoStartGate _autoStartGate;
+        private readonly IGameplayAutoStartGate _autoStartGate;
         private readonly IUIManager _ui;
 
         private readonly Dictionary<string, ITutorialSequence> _sequences =
@@ -69,7 +69,7 @@ namespace Game.Tutorial.Services
             IGameFlowService gameFlow = null,
             IQuestsService quests = null,
             IQuestReevaluationGate questReevaluation = null,
-            ITutorialAutoStartGate autoStartGate = null,
+            IGameplayAutoStartGate autoStartGate = null,
             IUIManager ui = null,
             bool autoStart = true)
         {
