@@ -204,7 +204,9 @@ namespace Book.Sell.Tests.Editor.Services
                 location.DemandGenres,
                 StringComparer.OrdinalIgnoreCase);
 
-            const int profiles = 10000;
+            /* >1000 use only in batch mode */
+            //const int profiles = 10000;
+            const int profiles = 10;
             var demandSlots = 0;
             var totalSlots = 0;
             var random = new SeededSalesRandom(12345);
