@@ -237,11 +237,11 @@ MonoBehaviour:
   _titleLabel: {fileID: 1895202870599215572}
   _completeBadge: {fileID: 8118254785495417885}
   _taskPool:
-    prefab: {fileID: 4077997542497972351, guid: 137b67e27c8a8864baa0802103d4a6b6, type: 3}
+    prefab: {fileID: 4077997542497972351, guid: 0c5cef0b67dc9e94e82e8478bd1d3bf2, type: 3}
     parent: {fileID: 5144832710600331040}
   _rewardRoot: {fileID: 3283653594711426477}
   _rewardPool:
-    prefab: {fileID: 7159866281013524648, guid: 07d8f4dac600b7046b2c619b3e845d6f, type: 3}
+    prefab: {fileID: 7159866281013524648, guid: fced9bd61cb1eff45b61def4b6449b9d, type: 3}
     parent: {fileID: 2634312211917728854}
   _claimButton: {fileID: 844495702083323976}
   _claimedRoot: {fileID: 0}

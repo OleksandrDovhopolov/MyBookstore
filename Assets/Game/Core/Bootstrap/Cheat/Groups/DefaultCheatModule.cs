@@ -24,12 +24,6 @@ namespace Game.Cheat
                 {
                     _uiManager.ShowAsync<ShopWindow>().Forget();
                 }));
-
-            cheatsContainer.AddItem<CheatButtonItem>(item =>
-                item.OnClick("Open Quests", () =>
-                {
-                    _uiManager.ShowAsync<QuestWindow>().Forget();
-                }));
         }
     }
 }

@@ -65,11 +65,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 660037adb9d302f4a8c0ffc4825a594e
-    m_Address: QuestWindow
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7f685dc587da3c24a9bad647c5835ccc
     m_Address: InfoWidget
     m_ReadOnly: 0
