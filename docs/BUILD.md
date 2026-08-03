@@ -18,19 +18,21 @@
 `callbackOrder = 0` — раньше Addressables).
 
 Запускается **сам на каждой player-сборке** и **валит билд** (`BuildFailedException`), если хоть один
-валидатор из списка вернул ошибку.
+hard-валидатор вернул ошибку. Warning-проверки пишутся в консоль, но билд не останавливают.
 
 ### Список валидаторов в гейте
 
-Источник правды — массив `PreBuildValidationGate.Validators`. Эта таблица — его человекочитаемая копия;
+Источник правды — массивы `PreBuildValidationGate.Validators` и `SoftValidators`. Эта таблица — их
+человекочитаемая копия;
 **при добавлении валидатора обновлять оба места.**
 
-| Валидатор | Что ловит | Почему это не видно иначе |
-|---|---|---|
-| `CollectBundledConfigErrors` (внутри гейта) | Файл есть в `Assets/Configs`, но не в StreamingAssets; лежит в StreamingAssets, но удалён из источника; содержимое одноимённых файлов различается; файл забыт в `manifest.json` | В плеере `Directory.GetFiles` недоступен — не перечисленный в манифесте файл невидим, даже если физически попал в APK |
-| `ActiveRequestValidator` | Активный запрос, который не может удовлетворить ни одна книга каталога; жанр, ни одна книга которого не способна получить `Excellent` (тогда квест с `activePickGenre <жанр>` непроходим) | Синтаксически корректный запрос спавнится и просто никогда не решается |
-| `DialogueDeliveredConditionReferenceValidator` | Условие `dialogueDelivered` в квесте ссылается на несуществующий `dialogueId` (или не указывает его) | Условие fail-closed → квест молча никогда не стартует |
-| `BookBoxPoolValidator` | Лот-книжная коробка, чей пул не матчит ни одной книги (или матчит меньше, чем `rolls`); лот с `rewardId` вида `book_box_*`, для которого нет правила | Правила пула читают поля `BookConfig` напрямую: если в каталоге поля нет, книга садится на C#-дефолт, пул пустеет — ни ошибки парсинга, ни битой ссылки. Так `book_box_rare_8` (`RarityWeight >= 0.6`) сломался при замене каталога на тот, где нет `rarityWeight`: все книги получили дефолтные `0.5`, и лот начал брать золото, не выдавая ничего |
+| Валидатор | Уровень | Что ловит | Почему это не видно иначе |
+|---|---|---|---|
+| `CollectBundledConfigErrors` (внутри гейта) | Error | Файл есть в `Assets/Configs`, но не в StreamingAssets; лежит в StreamingAssets, но удалён из источника; содержимое одноимённых файлов различается; файл забыт в `manifest.json` | В плеере `Directory.GetFiles` недоступен — не перечисленный в манифесте файл невидим, даже если физически попал в APK |
+| `ActiveRequestValidator` | Error | Активный запрос, который не может удовлетворить ни одна книга каталога; жанр, ни одна книга которого не способна получить `Excellent` (тогда квест с `activePickGenre <жанр>` непроходим) | Синтаксически корректный запрос спавнится и просто никогда не решается |
+| `DialogueDeliveredConditionReferenceValidator` | Error | Условие `dialogueDelivered` в квесте ссылается на несуществующий `dialogueId` (или не указывает его) | Условие fail-closed → квест молча никогда не стартует |
+| `BookBoxPoolValidator` | Error | Лот-книжная коробка, чей пул не матчит ни одной книги (или матчит меньше, чем `rolls`); лот с `rewardId` вида `book_box_*`, для которого нет правила | Правила пула читают поля `BookConfig` напрямую: если в каталоге поля нет, книга садится на C#-дефолт, пул пустеет — ни ошибки парсинга, ни битой ссылки. Так `book_box_rare_8` (`RarityWeight >= 0.6`) сломался при замене каталога на тот, где нет `rarityWeight`: все книги получили дефолтные `0.5`, и лот начал брать золото, не выдавая ничего |
+| `CollectOrphanConfigWarnings` | Warning | JSON в `Assets/Configs`, для которого нет ни одного `[ConfigFile]` | Такой файл уезжает в APK и manifest как мёртвый груз; сейчас ожидаемый пример — legacy `hard_requests.json`, живой файл запросов — `sample_requests.json` |
 
 Правила общие для всех: валидаторы **чистые** (ничего не логируют и не показывают — решает вызывающий),
 читают JSON напрямую (без `IConfigsService`, которого вне Play mode нет) и переиспользуют рантаймовый код,
@@ -57,31 +59,36 @@
 
 ---
 
-## 1. ⚠️ Синхронизировать конфиги в StreamingAssets (ОБЯЗАТЕЛЬНО)
+## 1. ⚠️ Опубликовать и синхронизировать конфиги (ОБЯЗАТЕЛЬНО)
 
-**Почему.** В плеер-сборке конфиги грузятся из `Assets/StreamingAssets/Configs/` по `manifest.json`
-(`StreamingAssetsConfigSource`), а **не** из `Assets/Configs/` — та папка читается только в Editor
-(`LocalFolderConfigSource`, `TopDirectoryOnly`). Если не пересинхронизировать, APK уедет со **старыми**
-конфигами: активные запросы не сматчатся с каталогом книг, диалоги/тексты будут устаревшими и т.п.
+**Почему.** В player-сборке базовый источник — `ServerConfigSource`: он сначала прогревает bundled defaults
+из `Assets/StreamingAssets/Configs`, затем накладывает disk snapshot из `Application.persistentDataPath/configs/`,
+а поверх него — свежую серверную версию из public config API. StreamingAssets — это оффлайн-baseline, а не
+единственный источник правды.
+
+Следствия:
+
+- если менялись живые конфиги, актуальную версию нужно опубликовать на сервер; иначе онлайн-клиент может взять
+  старую серверную секцию поверх свежего APK;
+- snapshot переживает апдейт приложения, поэтому проверять билд нужно на чистой установке или после
+  `Tools → Configs → Clear Server Snapshot`;
+- для оффлайн/fresh-install baseline всё равно нужен Sync в StreamingAssets.
 
 **Что сделать:**
 
-1. (Рекомендуется) Удалить из `Assets/Configs/` (+`.meta`) конфиги, не привязанные ни к одному
-   `[ConfigFile]` — Sync перекладывает их в StreamingAssets и в манифест как мёртвый груз, а гейт потом
-   сверяет их побайтово. Сейчас в эту категорию попадают **`hard_requests.json`** (`RequestDefinitionConfig`
-   переключён на `sample_requests`). После переезда каталога книг `books.json` — живой файл `BookConfig`;
-   `books_converted.json` не должен оставаться в `Assets/Configs`.
-   Проверять так: файл живой, если его имя встречается в `[ConfigFile("…")]` у какого-нибудь DTO в
-   `Assets/Game/Features/Configs/Models/`. См. `TODO.md → GAME-14`.
-2. Запустить меню **`Tools → Configs → Sync Bundled Defaults to StreamingAssets`**. Оно:
+1. Разобраться с warning-ами orphan-config checker. Сейчас ожидаемый warning — `hard_requests.json`: живой файл
+   активных запросов мапится через `[ConfigFile("sample_requests")]`.
+2. Опубликовать изменённые живые секции через **`Tools → Configs → Editor Window`** в нужное окружение
+   (`dev`/`prod`) либо подтвердить, что сервер уже содержит ту же версию.
+3. Запустить **`Tools → Configs → Sync Bundled Defaults to StreamingAssets`**. Оно:
    - копирует все `Assets/Configs/*.json` → `Assets/StreamingAssets/Configs/`;
    - перегенерирует `manifest.json` из списка файлов.
-3. Проверить:
-   - `Assets/StreamingAssets/Configs/*` совпадает с `Assets/Configs/*` (нет расхождений в содержимом);
-   - в `manifest.json` перечислены все нужные конфиги;
+4. Проверить:
+   - `Assets/StreamingAssets/Configs/*` совпадает с `Assets/Configs/*` для одноимённых файлов;
+   - в `manifest.json` перечислены все bundled-конфиги;
    - `.meta` новых `.json` закоммичены.
 
-**Когда нужно.** Каждый раз, когда менялись любые `Assets/Configs/*.json` (`books`, `hard_requests`,
+**Когда нужно.** Каждый раз, когда менялись любые `Assets/Configs/*.json` (`books`, `sample_requests`,
 `dialogues`, `days`, `quests`, `locations`, …). Если сомневаешься — просто прогони Sync, он идемпотентный.
 
 ## 2. Addressables — собрать контент
@@ -152,7 +159,7 @@ Android-таргета на месте конфиг Firebase (`google-services.j
 - Приложение стартует, лоадинг проходит все фазы (`[Loading] result=completed …`, `[Bootstrap] Loading complete`).
 - `[LocalFolderConfigSource]` в Editor / `[StreamingAssetsConfigSource]` в билде грузит ожидаемое число
   конфигов без ошибок парсинга.
-- Активный запрос через мини-игру матчит подходящую книгу (не «всё Failed») — признак, что `hard_requests.json`
+- Активный запрос через мини-игру матчит подходящую книгу (не «всё Failed») — признак, что `sample_requests.json`
   в билде свежий.
 - Диалог (`eddy1`) открывается, ветки и кнопки работают.
 
@@ -160,9 +167,9 @@ Android-таргета на месте конфиг Firebase (`google-services.j
 
 ## Быстрый чеклист
 
-- [ ] Удалить `Assets/Configs/sample_requests.json` (если ещё лежит).
+- [ ] Разобраться с warning по `Assets/Configs/hard_requests.json` (legacy, живой файл — `sample_requests.json`).
 - [ ] `Tools → Configs → Sync Bundled Defaults to StreamingAssets`.
-- [ ] `Tools → Configs → Run Pre-Build Validation` — зелёный (иначе билд всё равно упадёт, см. §0).
+- [ ] `Tools → Configs → Run Pre-Build Validation` — ноль ошибок; warning по `hard_requests.json` ожидаем до удаления legacy-файла.
 - [ ] Войти в Play mode хотя бы раз — так отработают рантаймовые валидаторы (`ItemReferenceValidator`, `DecorConfigValidator`), которых нет в гейте.
 - [ ] Собрать/включить Addressables.
 - [ ] Firebase Android-конфиг на месте.

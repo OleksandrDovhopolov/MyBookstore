@@ -60,9 +60,9 @@
 | ✅ [ANIMATION_TARGET_SYSTEM.md](SERVICES/ANIMATION_TARGET_SYSTEM.md) | Reference-документ по `AnimationTarget` / `AnimationBuilder`: цели приземления, реестр таргетов и переиспользуемый движок летающих UI-наград. | — | [ANIMATION_BUILDER.md](SERVICES/ANIMATION_BUILDER.md) |
 | ⏳ [LOGGING_SYSTEM.md](SERVICES/LOGGING_SYSTEM.md) | _на будущее_ | — | [improvements/LOGGING_SYSTEM_REVIEW.md](improvements/LOGGING_SYSTEM_REVIEW.md), [improvements/LOGGING_ASMDEF_IMPROVEMENT.md](improvements/LOGGING_ASMDEF_IMPROVEMENT.md) |
 | ⏳ [BOOTSTRAP_AND_LOADING.md](BOOTSTRAP_AND_LOADING.md) | _на будущее_ | — | [ADDRESSABLES.md](SERVICES/ADDRESSABLES.md), [SAVE_DAY_FLOW.md](SAVE_DAY_FLOW.md), [GameFlowLoop.md](GameFlowLoop.md) |
-| ⏳ [CONFIG_CACHE_SYSTEM.md](SERVICES/CONFIG_CACHE_SYSTEM.md) | _на будущее_ | — | [ADR-0002](adr/0002-config-system-architecture.md) |
-| ⏳ [CONFIG_SERVER_API.md](SERVICES/CONFIG_SERVER_API.md) | _на будущее_ | — | [ADR-0002](adr/0002-config-system-architecture.md) |
-| ⏳ [CONFIG_EDITOR_WINDOW_MVP_SPEC.md](SERVICES/CONFIG_EDITOR_WINDOW_MVP_SPEC.md) | _на будущее_ | — | [ADR-0002](adr/0002-config-system-architecture.md), [SECRETS.md](SERVICES/SECRETS.md) |
+| ✅ [CONFIG_CACHE_SYSTEM.md](SERVICES/CONFIG_CACHE_SYSTEM.md) | Runtime-путь загрузки data-driven конфигов: `IConfigsService`, base/override слои, LocalFolder/StreamingAssets/Server sources, snapshot и Firebase RC partial overrides. | — | [ADR-0002](adr/0002-config-system-architecture.md) |
+| ✅ [CONFIG_SERVER_API.md](SERVICES/CONFIG_SERVER_API.md) | Контракт config backend: public manifest/config endpoints, admin publish/history/rollback/promote, ETag и окружения. | — | [ADR-0002](adr/0002-config-system-architecture.md) |
+| ✅ [CONFIG_EDITOR_WINDOW_MVP_SPEC.md](SERVICES/CONFIG_EDITOR_WINDOW_MVP_SPEC.md) | Editor-инструмент публикации конфигов: Pull/Publish, bootstrap, conflict handling, history, typed/generic editing и валидация. | — | [ADR-0002](adr/0002-config-system-architecture.md), [SECRETS.md](SERVICES/SECRETS.md) |
 | ⏳ [API_ENDPOINTS.md](SERVICES/API_ENDPOINTS.md) | _на будущее_ | — | — |
 | ⏳ [FIREBASE_INTEGRATION.md](SERVICES/FIREBASE_INTEGRATION.md) | _на будущее_ | — | [SECRETS.md](SERVICES/SECRETS.md) |
 | ⏳ [NEWSPAPER_REWARDS_SPRITE_SERVICE.md](SERVICES/NEWSPAPER_REWARDS_SPRITE_SERVICE.md) | Спека долгоживущего sprite-сервиса для newspaper/rewards UI: кэширование, объединение локального `ScriptableObject` и Addressables за единым API, управление lifetime спрайтов вне окна. | → [ADDRESSABLES.md](SERVICES/ADDRESSABLES.md) | Newspaper/rewards UI |
