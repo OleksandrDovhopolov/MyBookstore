@@ -18,10 +18,7 @@ namespace Game.Journal.UI
     {
         [SerializeField] private Image _portraitImage;
         [SerializeField] private Sprite _spriteFallback;
-        [SerializeField] private GameObject _lockedPanel;
         [SerializeField] private TextMeshProUGUI _nameLabel;
-        [SerializeField] private TextMeshProUGUI _discoveryStatusLabel;
-        [SerializeField] private TextMeshProUGUI _memoryCountLabel;
         [SerializeField] private UIListPool<JournalGenreIconView> _genrePool = new();
 
         private CancellationTokenSource _portraitCts;
@@ -30,13 +27,6 @@ namespace Game.Journal.UI
         public void Bind(JournalCharacterItemModel model, IUiSpriteProvider sprites)
         {
             if (_nameLabel != null) _nameLabel.text = model.DisplayNameKey;
-            if (_discoveryStatusLabel != null)
-                _discoveryStatusLabel.text = model.IsDiscovered
-                    ? "Персонаж разблокирован"
-                    : "Персонаж не разблокирован";
-            if (_memoryCountLabel != null)
-                _memoryCountLabel.text = $"{model.UnlockedMemoryCount}/{model.TotalMemoryCount}";
-            if (_lockedPanel != null) _lockedPanel.SetActive(model.Locked);
             RenderGenres(model.Locked ? null : model.FavoriteGenres, sprites);
 
             CancelPortraitLoad();

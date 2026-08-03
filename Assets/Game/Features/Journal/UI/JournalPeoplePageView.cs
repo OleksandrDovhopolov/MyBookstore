@@ -18,7 +18,7 @@ namespace Game.Journal.UI
                 for (var i = 0; i < models.Count; i++)
                 {
                     var model = models[i];
-                    if (model == null) continue;
+                    if (model == null || model.Locked) continue;
                     _rowPool.GetNext().Bind(model, sprites);
                 }
             }

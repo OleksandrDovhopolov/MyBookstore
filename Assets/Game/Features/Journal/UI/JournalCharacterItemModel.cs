@@ -3,8 +3,7 @@ using System.Collections.Generic;
 namespace Game.Journal.UI
 {
     /// <summary>
-    /// Immutable row data for one character in the Journal Characters view. We show every character;
-    /// <see cref="Locked"/> ones render a placeholder instead of the portrait (decided in the row view).
+    /// Immutable row data for one character in the Journal Characters view.
     /// </summary>
     public sealed class JournalCharacterItemModel
     {
