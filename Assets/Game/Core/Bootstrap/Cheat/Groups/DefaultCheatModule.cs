@@ -1,8 +1,5 @@
 using cheatModule;
 using Cysharp.Threading.Tasks;
-using Game.Decor.UI;
-using Game.Inventory.UI;
-using Game.Quest.UI;
 using Game.Shop.UI;
 using Game.UI;
 

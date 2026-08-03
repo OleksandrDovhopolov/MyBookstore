@@ -9,7 +9,6 @@
         "Game.Decor.API",
         "Game.LocationUnlock.API",
         "Game.Quest.API",
-        "Game.Quest.UI",
         "Configs",
         "Save",
         "UnityEngine.TestRunner",

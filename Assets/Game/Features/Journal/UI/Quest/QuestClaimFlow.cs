@@ -64,9 +64,7 @@ namespace Game.Quest.UI
 
                 if (result.Granted?.Items != null && result.Granted.Items.Count > 0 && _ui != null)
                 {
-                    await _ui.ShowAsync<RewardsWindow>(
-                        new RewardsWindowArgs(result.Granted, "Quest reward"),
-                        token);
+                    await _ui.ShowAsync<RewardsWindow>(new RewardsWindowArgs(result.Granted, "Quest reward"), token);
                 }
             }
             catch (OperationCanceledException)
