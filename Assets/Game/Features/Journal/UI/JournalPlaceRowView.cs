@@ -13,7 +13,6 @@ namespace Game.Journal.UI
     {
         [SerializeField] private Image _locationImage;
         [SerializeField] private TextMeshProUGUI _nameLabel;
-        [SerializeField] private GameObject _lockedPanel;
         [SerializeField] private UIListPool<JournalGenreIconView> _genrePool = new();
 
         private string _locationId;
@@ -23,7 +22,6 @@ namespace Game.Journal.UI
         {
             _locationId = model.LocationId;
             if (_nameLabel != null) _nameLabel.text = model.DisplayName;
-            if (_lockedPanel != null) _lockedPanel.SetActive(!model.IsUnlocked);
             RenderGenres(model.DemandGenres);
 
             CancelIconLoad();
@@ -81,7 +79,6 @@ namespace Game.Journal.UI
             CancelIconLoad();
             if (_locationImage != null) _locationImage.sprite = null;
             if (_nameLabel != null) _nameLabel.text = string.Empty;
-            if (_lockedPanel != null) _lockedPanel.SetActive(false);
             _genrePool.DisableAll();
         }
 

@@ -148,7 +148,7 @@ GameObject:
   - component: {fileID: 3219015472370716458}
   - component: {fileID: 5953174095093354958}
   m_Layer: 5
-  m_Name: JournalCharacterRowView
+  m_Name: CharacterRowView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
