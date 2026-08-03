@@ -4,6 +4,7 @@
     "references": [
         "UniTask",
         "Game.Ftue",
+        "Game.Characters.API",
         "Configs",
         "DayCycle",
         "Game.Inventory.API",

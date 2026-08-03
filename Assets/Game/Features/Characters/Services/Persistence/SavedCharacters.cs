@@ -3,20 +3,22 @@ using System.Collections.Generic;
 namespace Game.Characters.Services.Persistence
 {
     /// <summary>
-    /// Persisted character state (save module <see cref="CharactersSaveKeys.State"/>). Stage 1 persists only
-    /// the non-derivable <see cref="SavedCharacter.Discovered"/> flag; memory unlock is derived from quest
-    /// state at read time. <see cref="SavedCharacter.UnlockedMemoryIds"/> is reserved for Stage 2.
+    /// Persisted character state (save module <see cref="CharactersSaveKeys.State"/>). Character discovery is
+    /// persisted; memory unlock is quest-derived or kept in <see cref="SavedCharacter.UnlockedMemoryIds"/>.
     /// </summary>
     public sealed class SavedCharacters
     {
         public Dictionary<string, SavedCharacter> Characters { get; set; } = new();
+
+        /// <summary>Flat set of unlocked memory ids already seen in the Journal Memories tab.</summary>
+        public HashSet<string> SeenMemoryIds { get; set; }
     }
 
     public sealed class SavedCharacter
     {
         public bool Discovered { get; set; }
 
-        /// <summary>Reserved for Stage 2 (event-driven memory persistence). Unused in Stage 1.</summary>
+        /// <summary>Manual/event ledger that keeps memories unlocked even if quest state later changes.</summary>
         public HashSet<string> UnlockedMemoryIds { get; set; }
     }
 }

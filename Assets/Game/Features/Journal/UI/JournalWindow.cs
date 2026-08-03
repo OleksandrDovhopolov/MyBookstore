@@ -74,6 +74,7 @@ namespace Game.Journal.UI
 
             RenderAll();
             View.SelectTab(_activeTab);
+            MarkMemoriesSeenIfActive();
         }
 
         protected override void OnHideStart(bool isClosed)
@@ -98,7 +99,11 @@ namespace Game.Journal.UI
 
         protected override void OnDispose() => View.Clear();
 
-        private void OnTabSelected(JournalTab tab) => _activeTab = tab;
+        private void OnTabSelected(JournalTab tab)
+        {
+            _activeTab = tab;
+            MarkMemoriesSeenIfActive();
+        }
 
         private void OnCharacterDiscovered(ICharacter _)
         {
@@ -168,6 +173,12 @@ namespace Game.Journal.UI
         private bool IsLocationUnlocked(string locationId)
             => _locations == null
                || _locations.GetStatus(locationId)?.State == LocationUnlockState.Unlocked;
+
+        private void MarkMemoriesSeenIfActive()
+        {
+            if (_activeTab != JournalTab.Memories) return;
+            _characters?.MarkAllMemoriesSeen();
+        }
 
         private void OnDecorInfoClicked(string decorId)
         {

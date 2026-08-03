@@ -18,6 +18,9 @@ namespace Game.Configs.Models
         /// <summary>Asset key for the memory photograph shown in the Journal.</summary>
         public string PhotoKey { get; set; }
 
+        /// <summary>Unlocked idempotently by FTUE/manual bootstrap without a quest.</summary>
+        public bool UnlockedAtStart { get; set; }
+
         /// <summary>Unlocks when this specific quest is Awarded. Mutually exclusive with <see cref="QuestChainId"/>.</summary>
         public string QuestId { get; set; }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Characters.API;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Ftue.Domain;
@@ -41,6 +42,73 @@ namespace Game.Ftue.Tests.Editor
             Assert.IsFalse(string.IsNullOrWhiteSpace(marker.AppliedAtUtcIso));
         }
 
+        [Test]
+        public void RunAsync_CleanFirstLaunch_UnlocksStartMemories()
+        {
+            var save = new FakeSaveService();
+            var configs = new FakeConfigsService(BuildCatalog(), new[]
+            {
+                Character("owner", Memory("mem_owner_moving_in", unlockedAtStart: true))
+            });
+            var characters = new FakeCharactersService();
+            var bootstrapper = new FtueBootstrapper(
+                save,
+                configs,
+                new FakeInventoryService(),
+                new FakeResourcesService(),
+                characters);
+
+            bootstrapper.RunAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            CollectionAssert.AreEqual(new[] { "owner:mem_owner_moving_in" }, characters.SuccessfulUnlocks);
+        }
+
+        [Test]
+        public void RunAsync_AppliedSave_StillUnlocksStartMemoriesWithoutGrantingStarterResources()
+        {
+            var save = new FakeSaveService();
+            save.UpdateModuleAsync(FtueSaveKeys.Applied, new FtueAppliedState { Applied = true }, 1, CancellationToken.None)
+                .GetAwaiter()
+                .GetResult();
+            var configs = new FakeConfigsService(Array.Empty<BookConfig>(), new[]
+            {
+                Character("owner", Memory("mem_owner_moving_in", unlockedAtStart: true))
+            });
+            var inventory = new FakeInventoryService();
+            var resources = new FakeResourcesService();
+            var characters = new FakeCharactersService();
+            var bootstrapper = new FtueBootstrapper(save, configs, inventory, resources, characters);
+
+            bootstrapper.RunAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            CollectionAssert.AreEqual(new[] { "owner:mem_owner_moving_in" }, characters.SuccessfulUnlocks);
+            Assert.AreEqual(0, resources.GetAmount(ResourceIds.Gold));
+            Assert.AreEqual(0, inventory.GetByCategory(InventoryCategories.Book).Count);
+        }
+
+        [Test]
+        public void RunAsync_Repeated_DoesNotUnlockStartMemoryTwice()
+        {
+            var save = new FakeSaveService();
+            var configs = new FakeConfigsService(BuildCatalog(), new[]
+            {
+                Character("owner", Memory("mem_owner_moving_in", unlockedAtStart: true))
+            });
+            var characters = new FakeCharactersService();
+            var bootstrapper = new FtueBootstrapper(
+                save,
+                configs,
+                new FakeInventoryService(),
+                new FakeResourcesService(),
+                characters);
+
+            bootstrapper.RunAsync(CancellationToken.None).GetAwaiter().GetResult();
+            bootstrapper.RunAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, characters.SuccessfulUnlocks.Count);
+            Assert.AreEqual(2, characters.UnlockCallCount);
+        }
+
         private static IReadOnlyList<BookConfig> BuildCatalog()
         {
             var result = new List<BookConfig>();
@@ -65,6 +133,12 @@ namespace Game.Ftue.Tests.Editor
                 });
             }
         }
+
+        private static CharacterConfig Character(string id, params CharacterMemoryConfig[] memories)
+            => new() { Id = id, Memories = memories };
+
+        private static CharacterMemoryConfig Memory(string id, bool unlockedAtStart)
+            => new() { Id = id, UnlockedAtStart = unlockedAtStart };
 
         private sealed class FakeSaveService : ISaveService
         {
@@ -95,8 +169,15 @@ namespace Game.Ftue.Tests.Editor
         private sealed class FakeConfigsService : IConfigsService
         {
             private readonly IReadOnlyList<BookConfig> _books;
+            private readonly IReadOnlyList<CharacterConfig> _characters;
 
-            public FakeConfigsService(IReadOnlyList<BookConfig> books) => _books = books;
+            public FakeConfigsService(
+                IReadOnlyList<BookConfig> books,
+                IReadOnlyList<CharacterConfig> characters = null)
+            {
+                _books = books ?? Array.Empty<BookConfig>();
+                _characters = characters ?? Array.Empty<CharacterConfig>();
+            }
 
             public UniTask WarmupAsync(CancellationToken ct) => UniTask.CompletedTask;
 
@@ -113,7 +194,46 @@ namespace Game.Ftue.Tests.Editor
             public bool IsExists<T>(string id) where T : class, IConfig => Get<T>(id) != null;
 
             public IReadOnlyList<T> GetAll<T>() where T : class, IConfig
-                => typeof(T) == typeof(BookConfig) ? _books.Cast<T>().ToList() : Array.Empty<T>();
+            {
+                if (typeof(T) == typeof(BookConfig)) return _books.Cast<T>().ToList();
+                if (typeof(T) == typeof(CharacterConfig)) return _characters.Cast<T>().ToList();
+                return Array.Empty<T>();
+            }
+        }
+
+        private sealed class FakeCharactersService : ICharactersService
+        {
+            private readonly HashSet<string> _unlocked = new(StringComparer.Ordinal);
+
+            public List<string> SuccessfulUnlocks { get; } = new();
+            public int UnlockCallCount { get; private set; }
+
+            public ICharacter TryGetCharacter(string characterId) => null;
+            public IEnumerable<ICharacter> GetAllCharacters() => Array.Empty<ICharacter>();
+            public IEnumerable<ICharacter> GetDiscoveredCharacters() => Array.Empty<ICharacter>();
+            public bool IsDiscovered(string characterId) => false;
+            public bool IsMemoryUnlocked(string characterId, string memoryId) => _unlocked.Contains(Key(characterId, memoryId));
+            public CharacterJournalEntry GetJournalEntry(string characterId) => null;
+            public int UnseenMemoryCount => 0;
+            public bool HasUnseenMemories => false;
+            public void MarkAllMemoriesSeen() { }
+
+            public bool TryUnlockMemory(string characterId, string memoryId)
+            {
+                UnlockCallCount++;
+                var key = Key(characterId, memoryId);
+                if (!_unlocked.Add(key)) return false;
+                SuccessfulUnlocks.Add(key);
+                return true;
+            }
+
+#pragma warning disable 67
+            public event Action<ICharacter> CharacterDiscovered;
+            public event Action<ICharacterMemory> MemoryUnlocked;
+            public event Action UnseenMemoriesChanged;
+#pragma warning restore 67
+
+            private static string Key(string characterId, string memoryId) => $"{characterId}:{memoryId}";
         }
 
         private sealed class FakeInventoryService : IInventoryService

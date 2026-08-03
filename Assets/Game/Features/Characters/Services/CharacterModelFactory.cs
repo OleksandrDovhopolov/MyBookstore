@@ -70,6 +70,7 @@ namespace Game.Characters.Services
             {
                 CharacterId = config.Id,
                 Discovered = saved?.Discovered ?? false,
+                HiddenInJournal = config.HiddenInJournal,
                 DisplayNameKey = config.DisplayNameKey,
                 RoleKey = config.RoleKey,
                 PortraitKey = config.PortraitKey,
@@ -83,10 +84,10 @@ namespace Game.Characters.Services
         public bool IsUnlockedByQuest(CharacterMemoryConfig mc)
         {
             if (!string.IsNullOrEmpty(mc.QuestId))
-                return _quests.GetQuestState(mc.QuestId).IsCompleted();
+                return _quests.GetQuestState(mc.QuestId) == QuestState.Awarded;
 
             if (!string.IsNullOrEmpty(mc.QuestChainId))
-                return (_quests.GetChain(mc.QuestChainId)?.FinalQuest?.State ?? QuestState.Pending).IsCompleted();
+                return (_quests.GetChain(mc.QuestChainId)?.FinalQuest?.State ?? QuestState.Pending) == QuestState.Awarded;
 
             return false;
         }
@@ -145,14 +146,14 @@ namespace Game.Characters.Services
             if (!string.IsNullOrEmpty(mc.QuestId))
             {
                 var state = _quests.GetQuestState(mc.QuestId);
-                return new QuestLink(state.IsCompleted(), mc.QuestId, state);
+                return new QuestLink(state == QuestState.Awarded, mc.QuestId, state);
             }
 
             if (!string.IsNullOrEmpty(mc.QuestChainId))
             {
                 var final = _quests.GetChain(mc.QuestChainId)?.FinalQuest;
                 var state = final?.State ?? QuestState.Pending;
-                return new QuestLink(state.IsCompleted(), final?.Id, state);
+                return new QuestLink(state == QuestState.Awarded, final?.Id, state);
             }
 
             return new QuestLink(false, null, QuestState.Pending);

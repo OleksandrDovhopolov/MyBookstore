@@ -26,5 +26,20 @@
     "portraitKey": "captain",
     "favoriteGenres": ["Crime", "Travel"],
     "discoveryQuestIds": ["q_captain_postcards"]
+  },
+  {
+    "id": "owner",
+    "displayNameKey": "character.owner.name",
+    "hiddenInJournal": true,
+    "memories": [
+      {
+        "id": "mem_owner_moving_in",
+        "titleKey": "memory.owner.moving_in.title",
+        "descriptionKey": "memory.owner.moving_in.description",
+        "photoKey": "memory_moving_in",
+        "unlockedAtStart": true,
+        "order": 0
+      }
+    ]
   }
 ]

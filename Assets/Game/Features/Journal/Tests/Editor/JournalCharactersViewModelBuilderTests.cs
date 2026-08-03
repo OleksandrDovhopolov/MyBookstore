@@ -11,15 +11,18 @@ namespace Game.Journal.UI.Tests.Editor
     public sealed class JournalCharactersViewModelBuilderTests
     {
         [Test]
-        public void Build_ShowsAllCharacters_IncludingUndiscovered()
+        public void Build_ShowsVisibleCharacters_IncludingUndiscovered()
         {
             var characters = new[]
             {
                 new CharacterStub("harper"),
-                new CharacterStub("walt")
+                new CharacterStub("walt"),
+                new CharacterStub("owner")
             };
 
-            var models = new JournalCharactersViewModelBuilder().Build(characters, Entry);
+            var models = new JournalCharactersViewModelBuilder().Build(
+                characters,
+                id => Entry(id, hiddenInJournal: id == "owner"));
 
             CollectionAssert.AreEquivalent(
                 new[] { "harper", "walt" },
@@ -89,12 +92,14 @@ namespace Game.Journal.UI.Tests.Editor
         private static CharacterJournalEntry Entry(
             string id,
             bool discovered = false,
+            bool hiddenInJournal = false,
             string[] favoriteGenres = null,
             CharacterJournalMemory[] memories = null)
             => new()
             {
                 CharacterId = id,
                 Discovered = discovered,
+                HiddenInJournal = hiddenInJournal,
                 DisplayNameKey = $"character.{id}.name",
                 RoleKey = $"character.{id}.role",
                 PortraitKey = $"portrait_{id}",

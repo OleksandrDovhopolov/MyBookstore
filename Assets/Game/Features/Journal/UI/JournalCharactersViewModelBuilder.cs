@@ -22,6 +22,7 @@ namespace Game.Journal.UI
                 if (character?.Id == null) continue;
                 var entry = getEntry(character.Id);
                 if (entry == null) continue;
+                if (entry.HiddenInJournal) continue;
 
                 result.Add(BuildOne(entry));
             }

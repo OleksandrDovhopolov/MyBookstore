@@ -42,6 +42,21 @@ namespace Game.Journal.UI.Tests.Editor
             Assert.AreEqual(0, models.Count);
         }
 
+        [Test]
+        public void Build_IncludesUnlockedMemories_FromHiddenCharacters()
+        {
+            var models = new JournalMemoriesViewModelBuilder().Build(
+                new[] { new CharacterStub("owner") },
+                _ => new CharacterJournalEntry
+                {
+                    CharacterId = "owner",
+                    HiddenInJournal = true,
+                    Memories = new[] { Memory("intro", unlocked: true, order: 0) }
+                });
+
+            CollectionAssert.AreEqual(new[] { "intro" }, models.Select(m => m.MemoryId).ToArray());
+        }
+
         private static CharacterJournalEntry Entry(string characterId, params CharacterJournalMemory[] memories)
             => new()
             {

@@ -37,6 +37,7 @@ namespace Game.Characters.Tests.Editor
             public FakeQuestsService Quests;
             public readonly List<string> Discovered = new();
             public readonly List<string> Unlocked = new();
+            public int UnseenChanged;
         }
 
         private static Harness Load(FakeQuestsService quests, ICharactersRepository repo,
@@ -52,6 +53,7 @@ namespace Game.Characters.Tests.Editor
             // Subscribe AFTER load so reconcile-on-load never feeds the counters.
             h.Service.CharacterDiscovered += c => h.Discovered.Add(c.Id);
             h.Service.MemoryUnlocked += m => h.Unlocked.Add(m.Id);
+            h.Service.UnseenMemoriesChanged += () => h.UnseenChanged++;
             return h;
         }
 
@@ -111,6 +113,23 @@ namespace Game.Characters.Tests.Editor
 
             Assert.AreEqual(new[] { "m1" }, h.Unlocked.ToArray());
             Assert.IsTrue(h.Service.IsMemoryUnlocked("harper", "m1"));
+            Assert.AreEqual(1, h.Service.UnseenMemoryCount);
+            Assert.AreEqual(1, h.UnseenChanged);
+        }
+
+        [Test]
+        public void QuestReadyToAward_DoesNotRaiseMemoryUnlocked()
+        {
+            var quests = new FakeQuestsService();
+            var h = Load(quests, new FakeCharactersRepository(),
+                Character("harper", new[] { MemoryByQuest("m1", "q1") }));
+
+            quests.SetState("q1", QuestState.ReadyToAward);
+            quests.RaiseAwarded(new FakeQuest("q1", QuestState.ReadyToAward));
+
+            Assert.IsEmpty(h.Unlocked);
+            Assert.IsFalse(h.Service.IsMemoryUnlocked("harper", "m1"));
+            Assert.AreEqual(0, h.Service.UnseenMemoryCount);
         }
 
         [Test]

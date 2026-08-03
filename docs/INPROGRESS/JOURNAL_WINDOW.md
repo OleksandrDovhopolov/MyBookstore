@@ -1,9 +1,11 @@
 # Journal Window — окно журнала (5 вкладок)
 
-> Status: спецификация, реализации нет (кроме вкладки «Персонажи» в зачаточном виде).
+> Status: historical specification. Current implementation lives in `Assets/Game/Features/Journal/UI` / `Game.Journal.UI`; the `Memories`, `Places`, `Objects`, `People`, and `Quests` tabs already exist in code, and some blockers below are closed.
 > Date: 2026-08-02.
 > Scope: одно окно-справочник по персонажам, воспоминаниям, локациям, декору и квестам.
 > Референс табов из другого проекта: `C:\Projects\bigmerge\MD\...\ShopPage\ShopPageView_Tabs.md`.
+
+> Update 2026-08-03: `CharacterMemoryConfig.Order`, `CharacterJournalMemory.CharacterId/Order`, `PhotoKey`, `FavoriteGenres`, `HiddenInJournal`, manual `TryUnlockMemory`, `UnlockedAtStart`, and the unseen counter are implemented. Memories show only unlocked entries; hidden characters are omitted from People, but their memories remain in the feed. Quest-linked memories unlock strictly on `QuestState.Awarded`, not on `ReadyToAward`.
 
 ## Цель
 

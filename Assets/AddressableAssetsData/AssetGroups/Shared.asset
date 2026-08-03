@@ -195,6 +195,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eefd4c06ce62e8847bd3f908e88180ab
+    m_Address: memory_moving_in
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ef742898a12cf814facc5f58c83430af
     m_Address: port_trade_permit
     m_ReadOnly: 0

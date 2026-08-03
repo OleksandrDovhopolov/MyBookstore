@@ -19,6 +19,7 @@ namespace Game.Characters.Tests.Editor
                 Id = "harper",
                 DisplayNameKey = "character.harper.name",
                 PortraitKey = "portrait_harper",
+                HiddenInJournal = true,
                 FavoriteGenres = new[] { "Fact", "Travel" },
                 Memories = new[]
                 {
@@ -44,6 +45,7 @@ namespace Game.Characters.Tests.Editor
 
             var entry = service.GetJournalEntry("harper");
 
+            Assert.IsTrue(entry.HiddenInJournal);
             CollectionAssert.AreEqual(new[] { "Fact", "Travel" }, entry.FavoriteGenres);
             var memory = entry.Memories.Single();
             Assert.AreEqual("harper", memory.CharacterId);

@@ -10,6 +10,7 @@ namespace Game.Characters.API
     {
         public string CharacterId { get; set; }
         public bool Discovered { get; set; }
+        public bool HiddenInJournal { get; set; }
         public string DisplayNameKey { get; set; }
         public string RoleKey { get; set; }
 

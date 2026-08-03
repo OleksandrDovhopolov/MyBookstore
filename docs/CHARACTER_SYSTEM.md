@@ -4,7 +4,7 @@
 
 > Все имена персонажей, memory и квестов в этом документе (`Character_01`, `memory_01`, `quest_01` и т.п.) — **только примеры-плейсхолдеры** для иллюстрации модели. Реальные id задаются в `characters.json`.
 
-> **Статус:** Этап 1–3 реализованы (модуль, конфиги, read-side, интеграция с Quest, Journal-классы). Этап 4 (presence/modifiers) — **отложен** до дизайн-решения, спецификация сохранена в §15.
+> **Status:** Stages 1-3 are implemented (module, configs, read-side, Quest integration, Journal classes, manual memory unlock, unseen counter). Stage 4 (presence/modifiers) is **deferred** until a design decision; the specification is preserved in §15.
 
 ---
 
@@ -93,6 +93,7 @@ public sealed class CharacterConfig : IConfig
     public string DescriptionKey { get; set; }
     public string PortraitKey { get; set; }                 // Addressables-ключ портрета (пусто → заглушка)
     public string[] FavoriteGenres { get; set; }            // жанры персонажа для passive-профиля
+    public bool HiddenInJournal { get; set; }               // service/protagonist character is hidden from People
 
     public string[] DiscoveryQuestIds { get; set; }         // явные discovery-связи (intro/dialogue-квесты без memory)
     public string[] DiscoveryQuestChainIds { get; set; }
@@ -108,6 +109,8 @@ public sealed class CharacterMemoryConfig
     public string PhotoKey { get; set; }                    // memory в Journal — это фотография
     public string QuestId { get; set; }                     // открывается, когда этот квест Awarded
     public string QuestChainId { get; set; }                // открывается, когда финальный квест цепочки Awarded
+    public bool UnlockedAtStart { get; set; }               // FTUE/manual bootstrap unlocks without a quest
+    public int Order { get; set; }                          // authored Memories sort order, higher = earlier
     public bool IsGolden { get; set; }                      // UI-флаг значимости (награды всё равно через Game.Quest)
 }
 ```
@@ -116,19 +119,23 @@ public sealed class CharacterMemoryConfig
 
 > Скриптовые passive-действия (например authored hit/miss для intro-покупателя) живут в `CustomerScriptConfig`, а не на `CharacterConfig`. `FavoriteGenres` — стабильная черта персонажа; форсированные исходы продажи — действия конкретной встречи.
 
-Save (модуль-ключ `"characters"`, `StateSchemaVersion = 1`):
+Save (module key `"characters"`, `StateSchemaVersion = 2`):
 
 ```csharp
-public sealed class SavedCharacters { public Dictionary<string, SavedCharacter> Characters { get; set; } }
+public sealed class SavedCharacters
+{
+    public Dictionary<string, SavedCharacter> Characters { get; set; }
+    public HashSet<string> SeenMemoryIds { get; set; }      // flat ledger of seen memoryId values
+}
 
 public sealed class SavedCharacter
 {
     public bool Discovered { get; set; }                    // persisted-флаг открытия
-    public HashSet<string> UnlockedMemoryIds { get; set; }  // леджер «уже анонсированных» memory (идемпотентность + fallback)
+    public HashSet<string> UnlockedMemoryIds { get; set; }  // manual/quest ledger of unlocked memories
 }
 ```
 
-> Save-ключ — `"characters"` + отдельный `schemaVersion` (как `"quests"`/`"inventory"`), **не** строка `"characters.v1"`.
+> Save key is `"characters"` plus a separate `schemaVersion` (like `"quests"`/`"inventory"`), **not** the string `"characters.v1"`. Migration from v1 to v2 does not require custom code: missing `SeenMemoryIds` is initialized by the service.
 
 ---
 
@@ -163,7 +170,7 @@ internal interface ICharacterModelFactory
 
 - **memory by `QuestId`**: unlocked ⇔ `GetQuestState(questId) == Awarded`.
 - **memory by `QuestChainId`**: unlocked ⇔ `GetChain(chainId)?.FinalQuest?.State == Awarded`.
-- **read-model `memory.Unlocked` = `IsUnlockedByQuest(mc) || saved.UnlockedMemoryIds.Contains(mc.Id)`** — quest-derive основной, леджер надёжный fallback (после миграций/рефактора квестов) и одноразовость события.
+- **read-model `memory.Unlocked` = `IsUnlockedByQuest(mc) || saved.UnlockedMemoryIds.Contains(mc.Id)`** — quest-derive remains primary; the ledger supports manual/FTUE unlock and one-shot events.
 - **read-model `Discovered` = `saved?.Discovered ?? false`** (persisted-флаг).
 - **`IsDiscoveredByQuest`**: true, если любой из `DiscoveryQuestIds` / memory-`QuestId` имеет `GetQuestState != Pending`, либо любой `DiscoveryQuestChainId` / memory-`QuestChainId` имеет `GetChain(c)?.CurrentQuest?.State != Pending`.
 - **Journal-link** для chain-memory: `LinkedQuestId` и `LinkedQuestState` оба из `FinalQuest` (id и state согласованы).
@@ -178,14 +185,17 @@ internal interface ICharacterModelFactory
 
 `public sealed class CharactersService : ICharactersService, ISaveHook, IDisposable`. Зависимости: `ISaveService`, `IConfigsService`, `IQuestsService`, `ICharactersRepository`. Фабрику создаёт сам из `IQuestsService`.
 
-- `AfterLoadAsync`: `BuildCatalog()` → загрузить save → `Reconcile()` → `Subscribe()`.
+- `AfterLoadAsync`: `BuildCatalog()` → load save → `Reconcile()` → silent unseen recompute → `Subscribe()`.
 - `BuildCatalog`: строит каталог из `IConfigsService.GetAll<CharacterConfig>()` и **обратный индекс** `questId/chainId → characterId` из `DiscoveryQuestIds` + `DiscoveryQuestChainIds` + memory `QuestId`/`QuestChainId`.
 - `Reconcile()` (до подписки, без фаяринга): засеять `Discovered`/`UnlockedMemoryIds` из текущего состояния квестов — покрывает переходы, которые Quest зафаярил в своём `AfterLoadAsync` **до** нашей подписки, и не «переигрывает» события при каждом запуске.
 - Подписка на `QuestStarted`/`QuestAwarded`; событие → по индексу найти персонажа → пересчитать discovery (raise при новом) и memories (raise при новом).
+- `TryUnlockMemory(characterId, memoryId)`: idempotent manual unlock through the ledger; validates the character and memory, does not fire twice, and raises `MemoryUnlocked` only for a real new unlock.
+- `UnseenMemoryCount` / `HasUnseenMemories`: count unlocked memories missing from `SeenMemoryIds`; recomputed after load, quest/manual unlock, and `MarkAllMemoriesSeen()`.
+- `MarkAllMemoriesSeen()`: marks currently unlocked memories as seen. Journal calls this when entering the `Memories` tab; repeated calls are no-ops.
 - `BeforeSaveAsync`: если `_dirty` — пишет `_saved` через repository.
 - `Dispose`: отписка.
 
-Идемпотентность открытия memory — через `HashSet<string>.Add` (леджер): повторный `QuestAwarded` не фаярит событие второй раз.
+Memory unlock idempotency goes through `HashSet<string>.Add` (ledger): repeated `QuestAwarded` or `TryUnlockMemory` does not fire the event a second time.
 
 ---
 
@@ -195,6 +205,7 @@ internal interface ICharacterModelFactory
 
 - **Discovery**: персонаж открыт, когда стартовал (`!= Pending`) любой из его `DiscoveryQuestIds`/`DiscoveryQuestChainIds` или любой memory-квест. Покрывает intro/dialogue-квест без memory.
 - **Memory unlock**: на `QuestAwarded`, если квест/финал цепочки соответствует memory.
+- **Manual/FTUE unlock**: `TryUnlockMemory` unlocks a memory without a quest link. Before checking `ftue.applied`, `FtueBootstrapper` unlocks every `CharacterMemoryConfig.UnlockedAtStart`, so old saves with FTUE already applied still receive the intro memory without granting starter resources again.
 - **Timing**: `QuestsService` фаярит начальные/offline-переходы в своём `AfterLoadAsync` до нашей подписки → обязателен `Reconcile()` на загрузке (засев без фаяринга).
 
 Пример (id — плейсхолдеры):
@@ -224,10 +235,15 @@ public interface ICharactersService
     IEnumerable<ICharacter> GetDiscoveredCharacters();
     bool IsDiscovered(string characterId);
     bool IsMemoryUnlocked(string characterId, string memoryId);
+    bool TryUnlockMemory(string characterId, string memoryId);
     CharacterJournalEntry GetJournalEntry(string characterId);
+    int UnseenMemoryCount { get; }
+    bool HasUnseenMemories { get; }
+    void MarkAllMemoriesSeen();
 
     event Action<ICharacter> CharacterDiscovered;
     event Action<ICharacterMemory> MemoryUnlocked;
+    event Action UnseenMemoriesChanged;
 }
 
 public interface ICharacter
@@ -249,7 +265,7 @@ public interface ICharacterMemory
 }
 ```
 
-`CharacterJournalEntry` — плоская read-model для Journal: `CharacterId`, `Discovered`, `DisplayNameKey`, `RoleKey`, `PortraitKey`, `CharacterJournalMemory[]` (`MemoryId`, `Unlocked`, `IsGolden`, `TitleKey`, `DescriptionKey`, `PhotoKey`, `LinkedQuestId`, `LinkedQuestState`).
+`CharacterJournalEntry` is the flat Journal read-model: `CharacterId`, `Discovered`, `HiddenInJournal`, `DisplayNameKey`, `RoleKey`, `PortraitKey`, `FavoriteGenres`, `CharacterJournalMemory[]` (`MemoryId`, `CharacterId`, `Unlocked`, `IsGolden`, `Order`, `TitleKey`, `DescriptionKey`, `PhotoKey`, `LinkedQuestId`, `LinkedQuestState`).
 
 UI получает готовую read-model, а не `QuestConfig` напрямую.
 
@@ -261,8 +277,9 @@ UI получает готовую read-model, а не `QuestConfig` напря�
 
 - `JournalCharactersViewModelBuilder` (чистый, тестируемый): `Build(IEnumerable<ICharacter>, Func<string, CharacterJournalEntry>)` → список `JournalCharacterItemModel` (с `Locked => !IsDiscovered`, счётчиками memory, `PortraitKey`).
 - `JournalWindow`/`JournalWindowView`/`JournalCharacterRowView`: live-рефреш по `CharacterDiscovered`/`MemoryUnlocked`.
-- **Показываем всех** персонажей; **заблокированные** (`!Discovered`) → заглушка вместо портрета (`_lockedPanel.SetActive(Locked)`), портрет грузится по `PortraitKey` через `IUiSpriteProvider`.
-- memory-список не рендерится при `Locked` (показывается счётчик `0/N`).
+- `People` shows only discovered characters and also filters `HiddenInJournal`, so service characters such as `owner` stay out of the list.
+- `Memories` builds a flat feed from all characters, including `HiddenInJournal`, but shows only unlocked memories and sorts by `Order` descending.
+- Entering the `Memories` tab calls `MarkAllMemoriesSeen()` and clears the unseen counter.
 
 Префаб + Addressables-адрес `JournalWindow` + кнопка открытия — ручной шаг в редакторе (вне «классов»).
 

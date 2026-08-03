@@ -39,6 +39,7 @@ namespace Game.Characters.Services
         private SavedCharacters _saved = new();
         private bool _dirty;
         private bool _subscribed;
+        private int _unseenMemoryCount;
 
         public CharactersService(
             ISaveService save,
@@ -57,6 +58,7 @@ namespace Game.Characters.Services
 
         public event Action<ICharacter> CharacterDiscovered;
         public event Action<ICharacterMemory> MemoryUnlocked;
+        public event Action UnseenMemoriesChanged;
 
         // ----- ISaveHook -----
 
@@ -66,6 +68,7 @@ namespace Game.Characters.Services
             if (_repository != null)
                 _saved = await _repository.LoadAsync(ct) ?? new SavedCharacters();
             Reconcile();   // seed discovered/ledger from current quest state without raising events
+            RecomputeUnseen(raise: false);
             Subscribe();
             Debug.Log($"{LogPrefix} loaded: {_configsById.Count} characters.");
         }
@@ -116,6 +119,53 @@ namespace Game.Characters.Services
                     return memory.Unlocked;
 
             return false;
+        }
+
+        public bool TryUnlockMemory(string characterId, string memoryId)
+        {
+            if (string.IsNullOrEmpty(characterId) || string.IsNullOrEmpty(memoryId)) return false;
+            if (!_configsById.TryGetValue(characterId, out var config)) return false;
+
+            var memory = FindMemory(config, memoryId);
+            if (memory == null) return false;
+            if (IsMemoryUnlocked(config, memory)) return false;
+
+            var saved = GetOrCreateSaved(characterId);
+            saved.UnlockedMemoryIds ??= new HashSet<string>(StringComparer.Ordinal);
+            if (!saved.UnlockedMemoryIds.Add(memoryId)) return false;
+
+            SetDirty();
+            MemoryUnlocked?.Invoke(new CharacterMemory(
+                memory.Id, config.Id, true, memory.IsGolden, memory.QuestId, memory.QuestChainId));
+            RecomputeUnseen(raise: true);
+            return true;
+        }
+
+        public int UnseenMemoryCount => _unseenMemoryCount;
+        public bool HasUnseenMemories => _unseenMemoryCount > 0;
+
+        public void MarkAllMemoriesSeen()
+        {
+            EnsureSeenMemoryIds();
+
+            var changed = false;
+            foreach (var config in _configsById.Values)
+            {
+                var memories = config.Memories;
+                if (memories == null) continue;
+
+                for (var i = 0; i < memories.Length; i++)
+                {
+                    var memory = memories[i];
+                    if (memory == null || string.IsNullOrEmpty(memory.Id)) continue;
+                    if (!IsMemoryUnlocked(config, memory)) continue;
+                    changed |= _saved.SeenMemoryIds.Add(memory.Id);
+                }
+            }
+
+            if (!changed) return;
+            SetDirty();
+            RecomputeUnseen(raise: true);
         }
 
         public CharacterJournalEntry GetJournalEntry(string characterId)
@@ -187,6 +237,7 @@ namespace Game.Characters.Services
             var memories = config.Memories;
             if (memories == null) return;
 
+            var changed = false;
             for (var i = 0; i < memories.Length; i++)
             {
                 var mc = memories[i];
@@ -197,10 +248,14 @@ namespace Game.Characters.Services
                 if (!saved.UnlockedMemoryIds.Add(mc.Id)) continue; // already announced → idempotent
 
                 SetDirty();
+                changed = true;
                 if (raise)
                     MemoryUnlocked?.Invoke(
                         new CharacterMemory(mc.Id, config.Id, true, mc.IsGolden, mc.QuestId, mc.QuestChainId));
             }
+
+            if (changed)
+                RecomputeUnseen(raise);
         }
 
         // ----- internals -----
@@ -255,6 +310,55 @@ namespace Game.Characters.Services
 
         private SavedCharacter GetSaved(string characterId)
             => _saved?.Characters != null && _saved.Characters.TryGetValue(characterId, out var s) ? s : null;
+
+        private void RecomputeUnseen(bool raise)
+        {
+            var seen = _saved?.SeenMemoryIds;
+            var count = 0;
+            foreach (var config in _configsById.Values)
+            {
+                var memories = config.Memories;
+                if (memories == null) continue;
+
+                for (var i = 0; i < memories.Length; i++)
+                {
+                    var memory = memories[i];
+                    if (memory == null || string.IsNullOrEmpty(memory.Id)) continue;
+                    if (!IsMemoryUnlocked(config, memory)) continue;
+                    if (seen != null && seen.Contains(memory.Id)) continue;
+                    count++;
+                }
+            }
+
+            if (_unseenMemoryCount == count) return;
+            _unseenMemoryCount = count;
+            if (raise) UnseenMemoriesChanged?.Invoke();
+        }
+
+        private bool IsMemoryUnlocked(CharacterConfig config, CharacterMemoryConfig memory)
+            => _factory.IsUnlockedByQuest(memory) || LedgerContains(config.Id, memory.Id);
+
+        private bool LedgerContains(string characterId, string memoryId)
+            => GetSaved(characterId)?.UnlockedMemoryIds?.Contains(memoryId) ?? false;
+
+        private static CharacterMemoryConfig FindMemory(CharacterConfig config, string memoryId)
+        {
+            var memories = config.Memories;
+            if (memories == null) return null;
+            for (var i = 0; i < memories.Length; i++)
+            {
+                var memory = memories[i];
+                if (memory != null && string.Equals(memory.Id, memoryId, StringComparison.Ordinal))
+                    return memory;
+            }
+            return null;
+        }
+
+        private void EnsureSeenMemoryIds()
+        {
+            _saved ??= new SavedCharacters();
+            _saved.SeenMemoryIds ??= new HashSet<string>(StringComparer.Ordinal);
+        }
 
         private void SetDirty()
         {
