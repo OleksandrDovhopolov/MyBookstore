@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using cheatModule;
 using Cysharp.Threading.Tasks;
+using Game.Characters.API;
 using Game.Configs;
 using Game.Inventory.API;
 using Game.Resources.API;
@@ -30,6 +31,7 @@ namespace Game.Cheat
         private IInventoryService _inventory;
         private IConfigsService _configs;
         private IResourcesService _resources;
+        private ICharactersService _characters;
         private ISalesStatsRecorder _salesStatsRecorder;
         private ISalesStatsReader _salesStatsReader;
         private ISaveService _save;
@@ -44,14 +46,15 @@ namespace Game.Cheat
 
         [Inject]
         private void Construct(UIManager uiManager, IInventoryService inventory, IConfigsService configs,
-            IResourcesService resources, ISalesStatsRecorder salesStatsRecorder, ISalesStatsReader salesStatsReader,
-            ISaveService save, IResourceAnimationService resourceAnimations = null,
+            IResourcesService resources, ICharactersService characters, ISalesStatsRecorder salesStatsRecorder,
+            ISalesStatsReader salesStatsReader, ISaveService save, IResourceAnimationService resourceAnimations = null,
             IPublisher<ResourceCounterCountUpRequested> countUpPublisher = null)
         {
             _uiManager = uiManager;
             _inventory = inventory;
             _configs = configs;
             _resources = resources;
+            _characters = characters;
             _salesStatsRecorder = salesStatsRecorder;
             _salesStatsReader = salesStatsReader;
             _save = save;
@@ -62,9 +65,9 @@ namespace Game.Cheat
         public void Start()
         {
             InitializeRootPanel();
-            // Cheat-модули читают конфиги синхронно (GetAll<DecorConfig> и т.п.). Если Start успел до
-            // ConfigsService.WarmupAsync — список будет пустым + warning. Ждём прогрев (идемпотентный) и
-            // только потом строим модули.
+            // Cheat modules read configs synchronously (GetAll<DecorConfig>, etc.). If Start runs before
+            // ConfigsService.WarmupAsync, lists will be empty and warnings will appear. Wait for the
+            // idempotent warmup first, then build modules.
             InitializeCheatsModulesAsync().Forget();
         }
 
@@ -135,6 +138,7 @@ namespace Game.Cheat
                 new DefaultCheatModule(_uiManager),
                 new InventoryItemCheatModule(_inventory, _configs, destroyCt),
                 new ResourcesCheatModule(_resources, _resourceAnimations, _countUpPublisher, destroyCt),
+                new CharacterMemoryCheatModule(_characters, _save, destroyCt),
                 new SalesStatsCheatModule(_salesStatsRecorder, _salesStatsReader, _configs, _save, destroyCt),
                 new DialogueCheatModule(_uiManager, _configs),
                 new ActiveSaleCheatModule(_uiManager, _configs),

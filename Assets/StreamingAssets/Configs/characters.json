@@ -39,6 +39,13 @@
         "photoKey": "memory_moving_in",
         "unlockedAtStart": true,
         "order": 0
+      },
+      {
+        "id": "mem_owner_placeholder",
+        "titleKey": "memory.owner.placeholder.title",
+        "descriptionKey": "memory.owner.placeholder.description",
+        "photoKey": "memory_placeholder",
+        "order": -1
       }
     ]
   }

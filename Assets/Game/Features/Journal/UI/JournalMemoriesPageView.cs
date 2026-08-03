@@ -15,11 +15,13 @@ namespace Game.Journal.UI
 
             if (models != null)
             {
+                var visibleIndex = 0;
                 for (var i = 0; i < models.Count; i++)
                 {
                     var model = models[i];
                     if (model == null) continue;
-                    _rowPool.GetNext().Bind(model, sprites);
+                    _rowPool.GetNext().Bind(model, sprites, visibleIndex % 2 == 0);
+                    visibleIndex++;
                 }
             }
 

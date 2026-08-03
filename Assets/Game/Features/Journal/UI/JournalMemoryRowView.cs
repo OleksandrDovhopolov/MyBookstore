@@ -11,19 +11,22 @@ namespace Game.Journal.UI
 {
     public sealed class JournalMemoryRowView : MonoBehaviour, ICleanup
     {
+        private const float PhotoWidth = 342.1647f;
+        private const float HalfPhotoWidth = PhotoWidth * 0.5f;
+
         [SerializeField] private Image _photoImage;
         [SerializeField] private Sprite _photoFallback;
         [SerializeField] private TextMeshProUGUI _titleLabel;
         [SerializeField] private TextMeshProUGUI _descriptionLabel;
-        [SerializeField] private GameObject _goldenMarker;
 
         private CancellationTokenSource _photoCts;
 
-        public void Bind(JournalMemoryItemModel model, IUiSpriteProvider sprites)
+        public void Bind(JournalMemoryItemModel model, IUiSpriteProvider sprites, bool imageLeft)
         {
+            ApplyLayout(imageLeft);
+
             if (_titleLabel != null) _titleLabel.text = model.TitleKey;
             if (_descriptionLabel != null) _descriptionLabel.text = model.DescriptionKey;
-            if (_goldenMarker != null) _goldenMarker.SetActive(model.IsGolden);
 
             CancelPhotoLoad();
             SetPhoto(_photoFallback);
@@ -57,7 +60,38 @@ namespace Game.Journal.UI
             SetPhoto(null);
             if (_titleLabel != null) _titleLabel.text = string.Empty;
             if (_descriptionLabel != null) _descriptionLabel.text = string.Empty;
-            if (_goldenMarker != null) _goldenMarker.SetActive(false);
+        }
+
+        private void ApplyLayout(bool imageLeft)
+        {
+            ApplyPhotoLayout(imageLeft);
+            ApplyDescriptionLayout(imageLeft);
+
+            if (_titleLabel != null)
+                _titleLabel.horizontalAlignment = imageLeft ? HorizontalAlignmentOptions.Left : HorizontalAlignmentOptions.Right;
+        }
+
+        private void ApplyPhotoLayout(bool imageLeft)
+        {
+            if (_photoImage == null) return;
+
+            var rect = _photoImage.rectTransform;
+            rect.anchorMin = new Vector2(imageLeft ? 0f : 1f, 0f);
+            rect.anchorMax = new Vector2(imageLeft ? 0f : 1f, 1f);
+            rect.anchoredPosition = new Vector2(imageLeft ? HalfPhotoWidth : -HalfPhotoWidth, 0f);
+            rect.sizeDelta = new Vector2(PhotoWidth, 0f);
+        }
+
+        private void ApplyDescriptionLayout(bool imageLeft)
+        {
+            if (_descriptionLabel == null) return;
+
+            var rect = _descriptionLabel.rectTransform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.anchoredPosition = new Vector2(imageLeft ? HalfPhotoWidth : -HalfPhotoWidth, 0f);
+            rect.sizeDelta = new Vector2(-PhotoWidth, 0f);
+            _descriptionLabel.horizontalAlignment = HorizontalAlignmentOptions.Left;
         }
 
         private void SetPhoto(Sprite sprite)
