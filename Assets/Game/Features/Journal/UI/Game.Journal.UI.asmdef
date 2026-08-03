@@ -3,6 +3,7 @@
     "rootNamespace": "Game.Journal.UI",
     "references": [
         "Game.Characters.API",
+        "Game.Decor",
         "Game.Decor.API",
         "Game.LocationUnlock.API",
         "Game.Quest.API",

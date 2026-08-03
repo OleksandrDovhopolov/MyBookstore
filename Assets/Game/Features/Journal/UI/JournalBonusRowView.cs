@@ -12,7 +12,7 @@ namespace Game.Journal.UI
     public sealed class JournalBonusRowView : MonoBehaviour, ICleanup
     {
         [SerializeField] private Image _icon;
-        [SerializeField] private TextMeshProUGUI _label;
+        [SerializeField] private Sprite _fallbackSprite;
         [SerializeField] private TextMeshProUGUI _percentLabel;
         [SerializeField] private Color _positiveColor = Color.green;
         [SerializeField] private Color _negativeColor = Color.red;
@@ -21,19 +21,14 @@ namespace Game.Journal.UI
 
         public void Bind(JournalBonusItemModel model, IUiSpriteProvider sprites)
         {
-            if (_label != null) _label.text = model.Label;
             if (_percentLabel != null)
             {
-                _percentLabel.text = model.PercentText;
+                _percentLabel.text = model.Label;
                 _percentLabel.color = model.IsPositive ? _positiveColor : _negativeColor;
             }
 
             CancelIconLoad();
-            if (_icon != null)
-            {
-                _icon.sprite = null;
-                _icon.gameObject.SetActive(false);
-            }
+            SetIcon(_fallbackSprite);
 
             if (sprites == null || string.IsNullOrEmpty(model.IconKey)) return;
 
@@ -48,8 +43,7 @@ namespace Game.Journal.UI
                 var sprite = await sprites.GetSpriteAsync(iconKey, ct);
                 if (ct.IsCancellationRequested) return;
                 if (_icon == null) return;
-                _icon.sprite = sprite;
-                _icon.gameObject.SetActive(sprite != null);
+                SetIcon(sprite != null ? sprite : _fallbackSprite);
             }
             catch (OperationCanceledException)
             {
@@ -59,14 +53,16 @@ namespace Game.Journal.UI
         public void Cleanup()
         {
             CancelIconLoad();
-            if (_icon != null)
-            {
-                _icon.sprite = null;
-                _icon.gameObject.SetActive(false);
-            }
+            SetIcon(null);
 
-            if (_label != null) _label.text = string.Empty;
             if (_percentLabel != null) _percentLabel.text = string.Empty;
+        }
+
+        private void SetIcon(Sprite sprite)
+        {
+            if (_icon == null) return;
+            _icon.sprite = sprite;
+            _icon.gameObject.SetActive(sprite != null);
         }
 
         private void CancelIconLoad()

@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using SpriteService;
-using TMPro;
 using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,19 +11,28 @@ namespace Game.Journal.UI
     public sealed class JournalObjectCardView : MonoBehaviour, ICleanup
     {
         [SerializeField] private Image _icon;
-        [SerializeField] private TextMeshProUGUI _nameLabel;
+        [SerializeField] private Sprite _fallbackSprite;
+        [SerializeField] private Button _infoButton;
 
+        private string _decorId;
+        private Action<string> _onInfoClicked;
         private CancellationTokenSource _iconCts;
 
-        public void Bind(JournalObjectItemModel model, IUiSpriteProvider sprites)
+        private void Awake()
         {
-            if (_nameLabel != null) _nameLabel.text = model.DisplayName;
+            if (_infoButton != null) _infoButton.onClick.AddListener(OnInfoClicked);
+        }
+
+        public void Bind(JournalObjectItemModel model, IUiSpriteProvider sprites, Action<string> onInfoClicked)
+        {
+            _decorId = model.DecorId;
+            _onInfoClicked = onInfoClicked;
             CancelIconLoad();
-            if (_icon != null) _icon.sprite = null;
-            if (sprites == null || string.IsNullOrEmpty(model.DecorId)) return;
+            SetIcon(_fallbackSprite);
+            if (sprites == null || string.IsNullOrEmpty(_decorId)) return;
 
             _iconCts = new CancellationTokenSource();
-            LoadIconAsync(model.DecorId, sprites, _iconCts.Token).Forget();
+            LoadIconAsync(_decorId, sprites, _iconCts.Token).Forget();
         }
 
         private async UniTaskVoid LoadIconAsync(string decorId, IUiSpriteProvider sprites, CancellationToken ct)
@@ -33,7 +41,7 @@ namespace Game.Journal.UI
             {
                 var sprite = await sprites.GetSpriteAsync(decorId, ct);
                 if (ct.IsCancellationRequested) return;
-                if (_icon != null) _icon.sprite = sprite;
+                SetIcon(sprite != null ? sprite : _fallbackSprite);
             }
             catch (OperationCanceledException)
             {
@@ -43,8 +51,15 @@ namespace Game.Journal.UI
         public void Cleanup()
         {
             CancelIconLoad();
-            if (_icon != null) _icon.sprite = null;
-            if (_nameLabel != null) _nameLabel.text = string.Empty;
+            _decorId = null;
+            _onInfoClicked = null;
+            SetIcon(null);
+        }
+
+        private void OnInfoClicked()
+        {
+            if (string.IsNullOrEmpty(_decorId)) return;
+            _onInfoClicked?.Invoke(_decorId);
         }
 
         private void CancelIconLoad()
@@ -55,6 +70,16 @@ namespace Game.Journal.UI
             _iconCts = null;
         }
 
-        private void OnDestroy() => CancelIconLoad();
+        private void SetIcon(Sprite sprite)
+        {
+            if (_icon == null) return;
+            _icon.sprite = sprite;
+        }
+
+        private void OnDestroy()
+        {
+            CancelIconLoad();
+            if (_infoButton != null) _infoButton.onClick.RemoveListener(OnInfoClicked);
+        }
     }
 }

@@ -65,8 +65,8 @@ namespace Game.Journal.UI
         public void RenderPlaces(IReadOnlyList<JournalPlaceItemModel> models, IUiSpriteProvider sprites)
             => _placesPage?.Render(models, sprites);
 
-        public void RenderObjects(JournalObjectsViewModel model, IUiSpriteProvider sprites)
-            => _objectsPage?.Render(model, sprites);
+        public void RenderObjects(JournalObjectsViewModel model, IUiSpriteProvider sprites, Action<string> onInfoClicked)
+            => _objectsPage?.Render(model, sprites, onInfoClicked);
 
         public void RenderQuestsEmpty()
         {

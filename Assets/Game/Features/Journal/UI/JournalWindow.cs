@@ -1,8 +1,10 @@
 using System;
+using Cysharp.Threading.Tasks;
 using Game.Characters.API;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Decor;
+using Game.Decor.UI;
 using Game.LocationUnlock.API;
 using Game.UI;
 using SpriteService;
@@ -160,11 +162,20 @@ namespace Game.Journal.UI
         {
             var activeDecorIds = _decorPlacement?.GetActiveDecorIds() ?? Array.Empty<string>();
             var models = _objectsBuilder.Build(activeDecorIds, _configs, _decorEffects);
-            View.RenderObjects(models, _sprites);
+            View.RenderObjects(models, _sprites, OnDecorInfoClicked);
         }
 
         private bool IsLocationUnlocked(string locationId)
             => _locations == null
                || _locations.GetStatus(locationId)?.State == LocationUnlockState.Unlocked;
+
+        private void OnDecorInfoClicked(string decorId)
+        {
+            if (string.IsNullOrEmpty(decorId)) return;
+
+            UIManager.ShowAsync<DecorInfoPopup>(
+                new DecorInfoPopupArgs(decorId),
+                View != null ? View.destroyCancellationToken : default).Forget();
+        }
     }
 }
