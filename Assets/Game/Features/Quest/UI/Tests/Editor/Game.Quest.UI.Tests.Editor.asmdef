@@ -6,6 +6,7 @@
         "Game.Quest.API",
         "Game.Quest.UI",
         "Game.Conditions.API",
+        "Game.Core.UI",
         "Configs",
         "Game.Inventory.API",
         "Game.Rewards.API",

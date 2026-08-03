@@ -1,13 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Threading;
-using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Quest.API;
-using Game.Rewards.UI;
 using Game.UI;
 using SpriteService;
-using UnityEngine;
 using VContainer;
 
 namespace Game.Quest.UI
@@ -18,16 +13,13 @@ namespace Game.Quest.UI
     [Window("QuestWindow", WindowType.Page)]
     public sealed class QuestWindow : WindowController<QuestWindowView>
     {
-        private readonly HashSet<string> _claiming = new(StringComparer.Ordinal);
-
         private QuestViewModelBuilder _builder;
+        private QuestClaimFlow _claimFlow;
         private IQuestsService _quests;
         private IQuestRewardGranter _granter;
         private IConfigsService _configs;
         private IUiSpriteProvider _sprites;
-        private CancellationTokenSource _cts;
         private Action<string> _onClaim;
-        private bool _suppressRender;
 
         [Inject]
         public void InjectServices(
@@ -45,8 +37,8 @@ namespace Game.Quest.UI
         protected override void OnInit()
         {
             _builder = new QuestViewModelBuilder(_configs);
-            _onClaim = questId => ClaimAsync(questId).Forget();
-            _cts = new CancellationTokenSource();
+            _claimFlow = new QuestClaimFlow(_quests, _granter, UIManager, Render);
+            _onClaim = questId => _claimFlow?.Claim(questId);
         }
 
         protected override void OnShowStart()
@@ -79,9 +71,8 @@ namespace Game.Quest.UI
 
         protected override void OnDispose()
         {
-            _cts?.Cancel();
-            _cts?.Dispose();
-            _cts = null;
+            _claimFlow?.Dispose();
+            _claimFlow = null;
             View.Clear();
         }
 
@@ -90,7 +81,7 @@ namespace Game.Quest.UI
 
         private void Render()
         {
-            if (_suppressRender) return;
+            if (_claimFlow is { SuppressRender: true }) return;
 
             if (_quests == null || _builder == null)
             {
@@ -99,46 +90,6 @@ namespace Game.Quest.UI
             }
 
             View.Render(_builder.Build(_quests.GetAllQuests()), _onClaim, _sprites);
-        }
-
-        private async UniTaskVoid ClaimAsync(string questId)
-        {
-            if (string.IsNullOrEmpty(questId) || _quests == null || _granter == null) return;
-            if (!_claiming.Add(questId)) return;
-
-            _suppressRender = true;
-            try
-            {
-                var token = _cts?.Token ?? CancellationToken.None;
-                if (!await _quests.TryAwardAsync(questId, token))
-                    return;
-
-                var result = await _granter.TryGrantAsync(questId, token);
-                if (!result.Success)
-                {
-                    Debug.LogError($"[QuestWindow] Failed to grant reward for quest '{questId}': {result.FailureReason}");
-                    return;
-                }
-
-                _suppressRender = false;
-                Render();
-
-                if (result.Granted?.Items != null && result.Granted.Items.Count > 0)
-                {
-                    await UIManager.ShowAsync<RewardsWindow>(
-                        new RewardsWindowArgs(result.Granted, "Quest reward"),
-                        token);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            finally
-            {
-                _claiming.Remove(questId);
-                _suppressRender = false;
-                Render();
-            }
         }
     }
 }

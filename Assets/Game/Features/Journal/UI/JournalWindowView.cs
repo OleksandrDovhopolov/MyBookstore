@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DG.Tweening;
+using Game.Quest.UI;
 using Game.UI;
 using SpriteService;
 using UIShared;
@@ -25,6 +26,7 @@ namespace Game.Journal.UI
         [SerializeField] private JournalPlacesPageView _placesPage;
         [SerializeField] private JournalObjectsPageView _objectsPage;
         [SerializeField] private JournalPeoplePageView _peoplePage;
+        [SerializeField] private JournalQuestsPageView _questsPage;
 
         private JournalTab? _activeTab;
         private Vector2[] _tabBasePositions;
@@ -68,9 +70,8 @@ namespace Game.Journal.UI
         public void RenderObjects(JournalObjectsViewModel model, IUiSpriteProvider sprites, Action<string> onInfoClicked)
             => _objectsPage?.Render(model, sprites, onInfoClicked);
 
-        public void RenderQuestsEmpty()
-        {
-        }
+        public void RenderQuests(IReadOnlyList<QuestItemModel> models, Action<string> onClaim, IUiSpriteProvider sprites)
+            => _questsPage?.Render(models, onClaim, sprites);
 
         public void Clear()
         {
@@ -78,6 +79,7 @@ namespace Game.Journal.UI
             _memoriesPage?.Clear();
             _placesPage?.Clear();
             _objectsPage?.Clear();
+            _questsPage?.Clear();
         }
 
         private void OnTabButtonSelected(JournalTab tab)

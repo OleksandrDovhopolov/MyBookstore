@@ -6,6 +6,8 @@ using Game.Configs.Models;
 using Game.Decor;
 using Game.Decor.UI;
 using Game.LocationUnlock.API;
+using Game.Quest.API;
+using Game.Quest.UI;
 using Game.UI;
 using SpriteService;
 using VContainer;
@@ -25,12 +27,17 @@ namespace Game.Journal.UI
         private readonly JournalObjectsViewModelBuilder _objectsBuilder = new();
 
         private JournalTab _activeTab = JournalTab.People;
+        private QuestViewModelBuilder _questsBuilder;
+        private QuestClaimFlow _questClaimFlow;
         private ICharactersService _characters;
         private IConfigsService _configs;
         private ILocationUnlockService _locations;
         private IDecorPlacementService _decorPlacement;
         private IDecorTotalEffectsProvider _decorEffects;
+        private IQuestsService _quests;
+        private IQuestRewardGranter _questGranter;
         private IUiSpriteProvider _sprites;
+        private Action<string> _onQuestClaim;
 
         [Inject]
         public void InjectServices(
@@ -39,6 +46,8 @@ namespace Game.Journal.UI
             ILocationUnlockService locations = null,
             IDecorPlacementService decorPlacement = null,
             IDecorTotalEffectsProvider decorEffects = null,
+            IQuestsService quests = null,
+            IQuestRewardGranter questGranter = null,
             IUiSpriteProvider sprites = null)
         {
             _characters = characters;
@@ -46,15 +55,21 @@ namespace Game.Journal.UI
             _locations = locations;
             _decorPlacement = decorPlacement;
             _decorEffects = decorEffects;
+            _quests = quests;
+            _questGranter = questGranter;
             _sprites = sprites;
         }
 
         protected override void OnInit()
         {
+            _questsBuilder = new QuestViewModelBuilder(_configs);
+            _questClaimFlow = new QuestClaimFlow(_quests, _questGranter, UIManager, RenderQuests);
+            _onQuestClaim = questId => _questClaimFlow?.Claim(questId);
         }
 
         protected override void OnShowStart()
         {
+            ApplyWindowArgs();
             View.TabSelected += OnTabSelected;
 
             if (_characters != null)
@@ -71,6 +86,16 @@ namespace Game.Journal.UI
 
             if (_decorPlacement != null)
                 _decorPlacement.PlacementChanged += OnDecorPlacementChanged;
+
+            if (_quests != null)
+            {
+                _quests.QuestStarted += OnQuestChanged;
+                _quests.QuestCompleted += OnQuestChanged;
+                _quests.QuestAwarded += OnQuestChanged;
+                _quests.QuestFailed += OnQuestChanged;
+                _quests.TaskCompleted += OnQuestTaskChanged;
+                _quests.TaskProgressChanged += OnQuestTaskChanged;
+            }
 
             RenderAll();
             View.SelectTab(_activeTab);
@@ -95,9 +120,24 @@ namespace Game.Journal.UI
 
             if (_decorPlacement != null)
                 _decorPlacement.PlacementChanged -= OnDecorPlacementChanged;
+
+            if (_quests != null)
+            {
+                _quests.QuestStarted -= OnQuestChanged;
+                _quests.QuestCompleted -= OnQuestChanged;
+                _quests.QuestAwarded -= OnQuestChanged;
+                _quests.QuestFailed -= OnQuestChanged;
+                _quests.TaskCompleted -= OnQuestTaskChanged;
+                _quests.TaskProgressChanged -= OnQuestTaskChanged;
+            }
         }
 
-        protected override void OnDispose() => View.Clear();
+        protected override void OnDispose()
+        {
+            _questClaimFlow?.Dispose();
+            _questClaimFlow = null;
+            View.Clear();
+        }
 
         private void OnTabSelected(JournalTab tab)
         {
@@ -121,13 +161,17 @@ namespace Game.Journal.UI
 
         private void OnDecorPlacementChanged() => RenderObjects();
 
+        private void OnQuestChanged(IQuest _) => RenderQuests();
+
+        private void OnQuestTaskChanged(IQuestTask _) => RenderQuests();
+
         private void RenderAll()
         {
             RenderPeople();
             RenderMemories();
             RenderPlaces();
             RenderObjects();
-            View.RenderQuestsEmpty();
+            RenderQuests();
         }
 
         private void RenderPeople()
@@ -170,6 +214,20 @@ namespace Game.Journal.UI
             View.RenderObjects(models, _sprites, OnDecorInfoClicked);
         }
 
+        private void RenderQuests()
+        {
+            if (_questClaimFlow is { SuppressRender: true }) return;
+
+            if (_quests == null || _questsBuilder == null)
+            {
+                View.RenderQuests(Array.Empty<QuestItemModel>(), _onQuestClaim, _sprites);
+                return;
+            }
+
+            var models = _questsBuilder.Build(_quests.GetAllQuests());
+            View.RenderQuests(models, _onQuestClaim, _sprites);
+        }
+
         private bool IsLocationUnlocked(string locationId)
             => _locations == null
                || _locations.GetStatus(locationId)?.State == LocationUnlockState.Unlocked;
@@ -178,6 +236,12 @@ namespace Game.Journal.UI
         {
             if (_activeTab != JournalTab.Memories) return;
             _characters?.MarkAllMemoriesSeen();
+        }
+
+        private void ApplyWindowArgs()
+        {
+            if (Arguments is JournalWindowArgs { Tab: { } tab })
+                _activeTab = tab;
         }
 
         private void OnDecorInfoClicked(string decorId)
