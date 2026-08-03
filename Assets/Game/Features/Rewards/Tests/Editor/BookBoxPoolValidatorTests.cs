@@ -36,7 +36,7 @@ namespace Game.Rewards.Tests.Editor
         // Written as raw JSON (not typed DTOs) so a test can omit a field entirely — which is the whole
         // point: the regression came from an absent field, not a wrong one.
         private void WriteBooks(params string[] booksJson)
-            => File.WriteAllText(Path.Combine(_dir, "books_converted.json"), "[" + string.Join(",", booksJson) + "]");
+            => File.WriteAllText(Path.Combine(_dir, "books.json"), "[" + string.Join(",", booksJson) + "]");
 
         private void WriteShop(params string[] rewardIds)
             => File.WriteAllText(Path.Combine(_dir, "shop.json"), JsonConvert.SerializeObject(

@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 namespace Book.Sell.Editor
 {
     /// <summary>
-    /// Checks every active request in sample_requests.json against the whole books_converted.json catalog and reports
+    /// Checks every active request in sample_requests.json against the whole books.json catalog and reports
     /// the ones no book can ever satisfy. Pure — logs nothing, shows nothing; callers decide how to surface
     /// the report (console + dialog for the menu, thrown exception for the build gate).
     /// <para>
@@ -27,7 +27,7 @@ namespace Book.Sell.Editor
     /// </summary>
     public static class ActiveRequestValidator
     {
-        public const string BooksPath = "Assets/Configs/books_converted.json";
+        public const string BooksPath = "Assets/Configs/books.json";
         public const string RequestsPath = "Assets/Configs/sample_requests.json";
 
         public static ActiveRequestValidationReport Validate()

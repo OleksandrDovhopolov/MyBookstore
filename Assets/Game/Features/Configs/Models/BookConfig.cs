@@ -5,10 +5,9 @@ namespace Game.Configs.Models
 {
     /// <summary>
     /// Конфиг книги. Цена больше не хранится в контенте: все книги продаются за <see cref="FixedPriceGold"/>.
-    /// Файл: books_converted.json (JSON-массив). Legacy books.json remains in Assets/Configs but is not
-    /// used by the typed runtime mapping.
+    /// Файл: books.json (JSON-массив).
     /// </summary>
-    [ConfigFile("books_converted")]
+    [ConfigFile("books")]
     public sealed class BookConfig : IConfig
     {
         public const int FixedPriceGold = 10;

@@ -69,7 +69,8 @@
 1. (Рекомендуется) Удалить из `Assets/Configs/` (+`.meta`) конфиги, не привязанные ни к одному
    `[ConfigFile]` — Sync перекладывает их в StreamingAssets и в манифест как мёртвый груз, а гейт потом
    сверяет их побайтово. Сейчас в эту категорию попадают **`hard_requests.json`** (`RequestDefinitionConfig`
-   переключён на `sample_requests`) и **`books.json`** (`BookConfig` переключён на `books_converted`).
+   переключён на `sample_requests`). После переезда каталога книг `books.json` — живой файл `BookConfig`;
+   `books_converted.json` не должен оставаться в `Assets/Configs`.
    Проверять так: файл живой, если его имя встречается в `[ConfigFile("…")]` у какого-нибудь DTO в
    `Assets/Game/Features/Configs/Models/`. См. `TODO.md → GAME-14`.
 2. Запустить меню **`Tools → Configs → Sync Bundled Defaults to StreamingAssets`**. Оно:

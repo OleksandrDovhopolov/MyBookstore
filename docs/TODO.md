@@ -115,7 +115,7 @@
   - Покрыть boundary-тестами границы веков.
 
 - [x] **GAME-15. Согласовать стартовый пресет FTUE с каталогом книг.**
-  Закрыто: runtime читает `books_converted.json`, где хватает всех 7 стартовых жанров. Хардкод-пресет в
+  Закрыто: runtime читает `books.json` (бывший `books_converted.json`), где хватает всех 7 стартовых жанров. Хардкод-пресет в
   [FtueBootstrapper.cs:28-37](../Assets/Game/Features/Ftue/Services/FtueBootstrapper.cs) теперь сеет 54 книги:
   `Fantasy 10, Crime 10, Drama 12, Classic 6, Fact 6, Travel 6, Kids 4`.
   Вынести пресет из хардкода в `ftue.json` всё ещё отдельная задача, парная с рефактором `DailyBookSlots`.

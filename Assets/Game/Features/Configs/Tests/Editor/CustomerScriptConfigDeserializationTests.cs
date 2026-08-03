@@ -18,7 +18,7 @@ namespace Game.Configs.Tests.Editor
             Path.Combine("Assets", "StreamingAssets", "Configs")
         };
 
-        private const string BooksFileName = "books_converted.json";
+        private const string BooksFileName = "books.json";
 
         private const string Json = @"
 [

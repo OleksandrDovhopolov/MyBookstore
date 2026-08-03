@@ -15,9 +15,9 @@ namespace Game.Configs.Editor
 {
     public static class BooksExcelImporter
     {
-        public const string MenuPath = "Tools/Configs/Import Books Excel to Converted JSON";
+        public const string MenuPath = "Tools/Configs/Import Books Excel to Books JSON";
         public const string SheetName = "Books";
-        public const string DefaultOutputPath = "Assets/Configs/books_converted.json";
+        public const string DefaultOutputPath = "Assets/Configs/books.json";
 
         private const string LogPrefix = "[BooksExcelImporter]";
 
