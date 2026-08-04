@@ -12,6 +12,8 @@ namespace GameplayUI
 {
     public sealed class HudMenuButtonsView : MonoBehaviour
     {
+        [SerializeField] private Button _cheatButton;
+        [SerializeField] private Button _startDayButton;
         [SerializeField] private Button _decorButton;
         [SerializeField] private Button _journalButton;
         [SerializeField] private Button _inventoryButton;
@@ -20,10 +22,15 @@ namespace GameplayUI
         private IHudWindowLauncher _launcher;
         private bool _opening;
 
+        public event Action StartDayClicked;
+
         public void Bind(IHudWindowLauncher launcher)
         {
             Unbind();
             _launcher = launcher;
+
+            if (_startDayButton != null)
+                _startDayButton.onClick.AddListener(OnStartDayButtonClicked);
 
             if (_decorButton != null)
                 _decorButton.onClick.AddListener(OnDecorButtonClicked);
@@ -40,6 +47,9 @@ namespace GameplayUI
 
         public void Unbind()
         {
+            if (_startDayButton != null)
+                _startDayButton.onClick.RemoveListener(OnStartDayButtonClicked);
+
             if (_decorButton != null)
                 _decorButton.onClick.RemoveListener(OnDecorButtonClicked);
 
@@ -58,12 +68,17 @@ namespace GameplayUI
 
         public void SetInteractable(bool value)
         {
+            SetButtonInteractable(_cheatButton, value);
+            SetStartButtonActive(value);
             SetButtonInteractable(_decorButton, value);
             SetButtonInteractable(_journalButton, value);
             SetButtonInteractable(_inventoryButton, value);
             SetButtonInteractable(_shopButton, value);
         }
 
+        public void SetStartButtonActive(bool active) => SetButtonInteractable(_startDayButton, active);
+
+        private void OnStartDayButtonClicked() => StartDayClicked?.Invoke();
         private void OnDecorButtonClicked() => OpenAsync<DecorPlacementWindow>().Forget();
         private void OnJournalButtonClicked() => OpenAsync<JournalWindow>().Forget();
         private void OnInventoryButtonClicked() => OpenAsync<InventoryWindowController>().Forget();

@@ -7,18 +7,12 @@ using Game.UI.ContentWidget;
 using TMPro;
 using UIShared;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace GameplayUI
 {
     public class GameplaySceneView : WindowView
     {
         [SerializeField] private TMP_Text _dayLabel;
-
-        [Header("Cheats")] [SerializeField]
-        private Button _cheatButton;
-
-        [SerializeField] private Button _startDayButton;
         [SerializeField] private HudMenuButtonsView _menuButtons;
 
         [Header("Genre book counts")] [SerializeField]
@@ -32,7 +26,6 @@ namespace GameplayUI
 
         private AnimatedShowHidePanel[] _animatedPanels;
 
-        public Button StartDayButton => _startDayButton;
         public HudMenuButtonsView MenuButtons => _menuButtons;
         public event Action<BookGenre, Sprite, RectTransform> GenreItemClicked;
 
@@ -102,24 +95,10 @@ namespace GameplayUI
 
         public void SetSceneButtonsInteractable(bool interactable)
         {
-            if (_cheatButton != null)
-            {
-                _cheatButton.interactable = interactable;
-                _cheatButton.gameObject.SetActive(interactable);
-            }
-
             _menuButtons?.SetInteractable(interactable);
-            SetStartButtonActive(interactable);
         }
 
-        public void SetStartButtonActive(bool active)
-        {
-            if (_startDayButton != null)
-            {
-                _startDayButton.interactable = active;
-                _startDayButton.gameObject.SetActive(active);
-            }
-        }
+        public void SetStartButtonActive(bool active) => _menuButtons?.SetStartButtonActive(active);
 
         public void SetDayText(string value)
         {

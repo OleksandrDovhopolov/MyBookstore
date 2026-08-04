@@ -11,7 +11,6 @@ using Game.Location.UI;
 using Game.LocationUnlock.API;
 using Game.Preparation.Services;
 using Game.Preparation.UI;
-using Game.Quest.UI;
 using Game.Tutorial.API;
 using Game.UI;
 using Game.UI.ContentWidget;
@@ -84,10 +83,11 @@ namespace GameplayUI
 
         protected override void OnInit()
         {
-            if (View.StartDayButton != null)
-                View.StartDayButton.onClick.AddListener(OnStartGameClicked);
-
-            View.MenuButtons?.Bind(this);
+            if (View.MenuButtons != null)
+            {
+                View.MenuButtons.StartDayClicked += OnStartGameClicked;
+                View.MenuButtons.Bind(this);
+            }
 
             View.GenreItemClicked += OnGenreItemClicked;
 
@@ -176,10 +176,11 @@ namespace GameplayUI
             _tutorialStepSubscription?.Dispose();
             _tutorialStepSubscription = null;
 
-            if (View != null && View.StartDayButton != null)
-                View.StartDayButton.onClick.RemoveAllListeners();
-
-            View?.MenuButtons?.Unbind();
+            if (View?.MenuButtons != null)
+            {
+                View.MenuButtons.StartDayClicked -= OnStartGameClicked;
+                View.MenuButtons.Unbind();
+            }
             
             if (View != null)
                 View.GenreItemClicked -= OnGenreItemClicked;
