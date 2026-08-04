@@ -15,13 +15,11 @@ namespace GameplayUI
     {
         [SerializeField] private TMP_Text _dayLabel;
 
-        [Header("Shop entry")] [SerializeField]
+        [Header("Cheats")] [SerializeField]
         private Button _cheatButton;
 
         [SerializeField] private Button _startDayButton;
-        [SerializeField] private Button _decorButton;
-        [SerializeField] private Button _journalButton;
-        [SerializeField] private Button _inventoryButton;
+        [SerializeField] private HudMenuButtonsView _menuButtons;
 
         [Header("Genre book counts")] [SerializeField]
         private UIListPool<GameplayGenreBookCountItemView> _genreBookCountPool = new();
@@ -35,9 +33,7 @@ namespace GameplayUI
         private AnimatedShowHidePanel[] _animatedPanels;
 
         public Button StartDayButton => _startDayButton;
-        public Button DecorButton => _decorButton;
-        public Button JournalButton => _journalButton;
-        public Button InventoryButton => _inventoryButton;
+        public HudMenuButtonsView MenuButtons => _menuButtons;
         public event Action<BookGenre, Sprite, RectTransform> GenreItemClicked;
 
         // Collected from the view hierarchy at runtime (including inactive) so any number of
@@ -112,18 +108,7 @@ namespace GameplayUI
                 _cheatButton.gameObject.SetActive(interactable);
             }
 
-            if (_decorButton != null)
-            {
-                _decorButton.interactable = interactable;
-                _decorButton.gameObject.SetActive(interactable);
-            }
-
-            if (_journalButton != null)
-            {
-                _journalButton.interactable = interactable;
-                _journalButton.gameObject.SetActive(interactable);
-            }
-
+            _menuButtons?.SetInteractable(interactable);
             SetStartButtonActive(interactable);
         }
 

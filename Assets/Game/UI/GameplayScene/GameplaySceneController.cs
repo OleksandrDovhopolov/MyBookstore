@@ -7,9 +7,6 @@ using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
-using Game.Decor.UI;
-using Game.Inventory.UI;
-using Game.Journal.UI;
 using Game.Location.UI;
 using Game.LocationUnlock.API;
 using Game.Preparation.Services;
@@ -27,7 +24,7 @@ using VContainer;
 namespace GameplayUI
 {
     [Window("GameplaySceneController", WindowType.HUD)]
-    public class GameplaySceneController : WindowController<GameplaySceneView>, IDataReadyWindow
+    public class GameplaySceneController : WindowController<GameplaySceneView>, IDataReadyWindow, IHudWindowLauncher
     {
         private const string TutorialClickGenreStepId = "click_genre_panel";
         private const string TutorialFinalTextStepId = "text_4";
@@ -90,14 +87,7 @@ namespace GameplayUI
             if (View.StartDayButton != null)
                 View.StartDayButton.onClick.AddListener(OnStartGameClicked);
 
-            if (View.DecorButton != null)
-                View.DecorButton.onClick.AddListener(OnDecorButtonClicked);
-            
-            if (View.JournalButton != null)
-                View.JournalButton.onClick.AddListener(OnJournalButtonClicked);
-            
-            if (View.InventoryButton != null)
-                View.InventoryButton.onClick.AddListener(OnInventoryButtonClicked);
+            View.MenuButtons?.Bind(this);
 
             View.GenreItemClicked += OnGenreItemClicked;
 
@@ -189,14 +179,7 @@ namespace GameplayUI
             if (View != null && View.StartDayButton != null)
                 View.StartDayButton.onClick.RemoveAllListeners();
 
-            if (View != null && View.DecorButton != null)
-                View.DecorButton.onClick.RemoveListener(OnDecorButtonClicked);
-            
-            if (View != null && View.JournalButton != null)
-                View.JournalButton.onClick.RemoveAllListeners();
-            
-            if (View != null && View.InventoryButton != null)
-                View.InventoryButton.onClick.RemoveAllListeners();
+            View?.MenuButtons?.Unbind();
             
             if (View != null)
                 View.GenreItemClicked -= OnGenreItemClicked;
@@ -378,11 +361,7 @@ namespace GameplayUI
             return null;
         }
 
-        private void OnDecorButtonClicked() => ShowWindowWithPanelsHiddenAsync<DecorPlacementWindow>().Forget();
-        private void OnJournalButtonClicked() => ShowWindowWithPanelsHiddenAsync<JournalWindow>().Forget();
-        private void OnInventoryButtonClicked() => ShowWindowWithPanelsHiddenAsync<InventoryWindowController>().Forget();
-
-        private async UniTaskVoid ShowWindowWithPanelsHiddenAsync<TWindow>(WindowArgs args = null)
+        public async UniTask OpenAsync<TWindow>(WindowArgs args = null)
             where TWindow : class, IWindowController, new()
         {
             try
