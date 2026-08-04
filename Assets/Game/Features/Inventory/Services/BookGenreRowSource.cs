@@ -31,7 +31,7 @@ namespace Game.Inventory.Services
                 yield return new InventoryRowModel(
                     genre.ToConfigValue(),
                     count,
-                    null,
+                    genre.ToConfigValue(),
                     InventoryRowStyle.Default,
                     false);
             }

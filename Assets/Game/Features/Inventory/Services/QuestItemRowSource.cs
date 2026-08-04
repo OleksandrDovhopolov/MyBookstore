@@ -41,7 +41,7 @@ namespace Game.Inventory.Services
                 yield return new InventoryRowModel(
                     config.Id,
                     0,
-                    null,
+                    config.Id,
                     InventoryRowStyle.QuestItem,
                     false);
             }

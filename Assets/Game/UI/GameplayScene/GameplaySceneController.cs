@@ -44,7 +44,9 @@ namespace GameplayUI
         private IDisposable _buttonsInteractableSubscription;
         private IDisposable _tutorialStepSubscription;
 
-        private readonly HashSet<IWindowController> _panelHideOwners = new();
+        // Anything that currently wants the HUD panels hidden: either an open window (removed when it
+        // closes) or a PanelHideLease taken by a multi-window flow. Panels come back only when empty.
+        private readonly HashSet<object> _panelHideOwners = new();
 
         private ISubscriber<GameplayGenreBookCountsChanged> _genreBookCountsSubscriber;
         private IPublisher<GameplayGenreBookCountsRequested> _genreBookCountsRequestPublisher;
@@ -186,7 +188,11 @@ namespace GameplayUI
                 View.GenreItemClicked -= OnGenreItemClicked;
 
             foreach (var owner in _panelHideOwners)
-                owner.Closed -= OnPanelHidingWindowClosed;
+            {
+                if (owner is IWindowController window)
+                    window.Closed -= OnPanelHidingWindowClosed;
+            }
+
             _panelHideOwners.Clear();
 
             if (_dayProgress != null)
@@ -276,8 +282,14 @@ namespace GameplayUI
         {
             View.SetStartButtonActive(false);
 
+            IDisposable panelsLease = null;
             try
             {
+                // Held for the whole flow: the Location window closes before the Preparation window
+                // opens, so per-window ownership alone would drop to zero in between and flash the
+                // panels back in. Released in finally, after Preparation has taken over as owner.
+                panelsLease = await HideHudPanelsAsync();
+
                 var locationId = await PickLocationAsync(View.destroyCancellationToken);
                 if (string.IsNullOrEmpty(locationId))
                 {
@@ -303,6 +315,7 @@ namespace GameplayUI
                 }
 
                 window.Closed += OnPreparationWindowClosed;
+                TrackPanelHideOwner(window);
             }
             catch (OperationCanceledException)
             {
@@ -311,6 +324,10 @@ namespace GameplayUI
             {
                 Debug.LogError($"[GameplaySceneController] Failed to start the day: {e}");
                 View.SetStartButtonActive(true);
+            }
+            finally
+            {
+                panelsLease?.Dispose();
             }
         }
 
@@ -376,8 +393,7 @@ namespace GameplayUI
                     return;
                 }
 
-                _panelHideOwners.Add(window);
-                window.Closed += OnPanelHidingWindowClosed;
+                TrackPanelHideOwner(window);
             }
             catch (OperationCanceledException)
             {
@@ -390,6 +406,27 @@ namespace GameplayUI
             }
         }
 
+        // Hides the HUD panels until the returned lease is disposed. Used by flows that open more than
+        // one window in sequence, where per-window ownership would leave a gap between them.
+        private async UniTask<IDisposable> HideHudPanelsAsync()
+        {
+            var lease = new PanelHideLease(this);
+            _panelHideOwners.Add(lease);
+
+            await View.HideAnimatedPanelsAsync();
+            return lease;
+        }
+
+        // Add returns false for a window that is already an owner, so a repeated open never
+        // subscribes OnPanelHidingWindowClosed twice.
+        private void TrackPanelHideOwner(IWindowController window)
+        {
+            if (window == null) return;
+
+            if (_panelHideOwners.Add(window))
+                window.Closed += OnPanelHidingWindowClosed;
+        }
+
         private void OnPanelHidingWindowClosed(IWindowController controller)
         {
             controller.Closed -= OnPanelHidingWindowClosed;
@@ -399,9 +436,29 @@ namespace GameplayUI
 
         private void ShowPanelsIfNoOwnersLeft()
         {
+            // Can run after the HUD was torn down (cancelled flow, disposed lease) — nothing to animate then.
+            if (View == null) return;
+
             // Re-show is not gating anything, so fire-and-forget the animation.
             if (_panelHideOwners.Count == 0)
                 View.ShowAnimatedPanelsAsync().Forget();
+        }
+
+        private sealed class PanelHideLease : IDisposable
+        {
+            private GameplaySceneController _owner;
+
+            public PanelHideLease(GameplaySceneController owner) => _owner = owner;
+
+            public void Dispose()
+            {
+                if (_owner == null) return;
+
+                var owner = _owner;
+                _owner = null;
+                owner._panelHideOwners.Remove(this);
+                owner.ShowPanelsIfNoOwnersLeft();
+            }
         }
 
         private void OnPreparationWindowClosed(IWindowController controller)

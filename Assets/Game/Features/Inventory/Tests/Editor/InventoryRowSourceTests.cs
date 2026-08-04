@@ -34,7 +34,7 @@ namespace Game.Inventory.Tests.Editor
             Assert.AreEqual(2, rows.Single(r => r.SpriteId == BookGenre.Crime.ToConfigValue()).Count);
             Assert.AreEqual(4, rows.Single(r => r.SpriteId == BookGenre.Fantasy.ToConfigValue()).Count);
             Assert.IsTrue(rows.All(r => r.Style == InventoryRowStyle.Default));
-            Assert.IsTrue(rows.All(r => r.ItemId == null));
+            Assert.IsTrue(rows.All(r => r.ItemId == r.SpriteId));
         }
 
         [Test]
@@ -50,7 +50,7 @@ namespace Game.Inventory.Tests.Editor
             Assert.AreEqual(1, rows.Count);
             Assert.AreEqual("milly_letter", rows[0].SpriteId);
             Assert.AreEqual(0, rows[0].Count);
-            Assert.IsNull(rows[0].ItemId);
+            Assert.AreEqual("milly_letter", rows[0].ItemId);
             Assert.AreEqual(InventoryRowStyle.QuestItem, rows[0].Style);
         }
 
@@ -67,7 +67,7 @@ namespace Game.Inventory.Tests.Editor
             Assert.AreEqual(1, rows.Count);
             Assert.AreEqual("fuel_canister", rows[0].SpriteId);
             Assert.AreEqual(15, rows[0].Count);
-            Assert.IsNull(rows[0].ItemId);
+            Assert.AreEqual("fuel_canister", rows[0].ItemId);
             Assert.AreEqual(InventoryRowStyle.Default, rows[0].Style);
         }
 
