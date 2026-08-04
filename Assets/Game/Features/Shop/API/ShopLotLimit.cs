@@ -2,8 +2,8 @@ namespace Game.Shop.API
 {
     /// <summary>
     /// Purchase limit settings for a <see cref="ShopLot"/>. <see cref="MaxPurchases"/> is only read
-    /// when <see cref="Mode"/> is <see cref="ShopLimitMode.Disposable"/>; <c>null</c> for
-    /// <see cref="ShopLimitMode.Unlimited"/>.
+    /// when <see cref="Mode"/> is <see cref="ShopLimitMode.Disposable"/> or
+    /// <see cref="ShopLimitMode.Daily"/>; <c>null</c> for <see cref="ShopLimitMode.Unlimited"/>.
     /// </summary>
     public readonly struct ShopLotLimit
     {
@@ -20,5 +20,8 @@ namespace Game.Shop.API
 
         public static ShopLotLimit Disposable(int maxPurchases) =>
             new ShopLotLimit(ShopLimitMode.Disposable, maxPurchases);
+
+        public static ShopLotLimit Daily(int maxPurchases) =>
+            new ShopLotLimit(ShopLimitMode.Daily, maxPurchases);
     }
 }

@@ -49,7 +49,7 @@ namespace Game.Newspaper.Tests.Editor
         }
 
         [Test]
-        public void UpdateOfferState_BookUnavailable_DoesNotShowSold()
+        public void UpdateOfferState_BookUnavailable_ShowsSold()
         {
             var h = Build();
             try
@@ -57,8 +57,8 @@ namespace Game.Newspaper.Tests.Editor
                 h.Card.Bind(Offer(isDecor: false, isAvailable: true, price: "30"), null);
                 h.Card.UpdateOfferState(Offer(isDecor: false, isAvailable: false, price: "30"));
 
-                Assert.IsFalse(h.SoldRoot.activeSelf);
-                Assert.IsTrue(h.PriceRoot.activeSelf);
+                Assert.IsTrue(h.SoldRoot.activeSelf);
+                Assert.IsFalse(h.PriceRoot.activeSelf);
                 Assert.IsFalse(h.Button.interactable);
             }
             finally

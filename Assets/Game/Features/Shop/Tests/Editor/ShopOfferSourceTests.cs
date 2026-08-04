@@ -153,6 +153,8 @@ namespace Game.Shop.Tests.Editor
                 return result;
             }
 
+            public IReadOnlyList<ShopLot> GetOfferedLots(string storefrontId) => GetLots(storefrontId);
+
             public bool TryGetLot(string lotId, out ShopLot lot)
             {
                 for (var i = 0; i < _lots.Count; i++)

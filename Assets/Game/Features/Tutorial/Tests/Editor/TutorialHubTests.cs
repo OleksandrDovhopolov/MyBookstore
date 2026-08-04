@@ -186,6 +186,7 @@ namespace Game.Tutorial.Tests.Editor
             public event Action<ShopPurchaseEvent> LotPurchased;
 
             public IReadOnlyList<ShopLot> GetLots(string storefrontId) => Array.Empty<ShopLot>();
+            public IReadOnlyList<ShopLot> GetOfferedLots(string storefrontId) => GetLots(storefrontId);
             public bool TryGetLot(string lotId, out ShopLot lot)
             {
                 lot = null;

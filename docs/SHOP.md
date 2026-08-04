@@ -15,7 +15,7 @@
 
 ## 0. Статус реализации
 
-**Phase 0 ✅ Done** · **Phase 1 ✅ Done (кроме PR7 — отложен)** · **Phase 2+ — позднее**
+**Phase 0 ✅ Done** · **Phase 1 ✅ Done** · **Phase 2+ — позднее**
 
 40+ unit-тестов, 2 storefront-окна (Newspaper, Classic Shop), HUD кнопка, аналитика, confirmation dialog, RewardsWindow popup. Билд зелёный.
 
@@ -34,7 +34,7 @@
 | PR | Что | Файлы |
 |---|---|---|
 | **PR6** | Bootstrap-level race fix: `phase_data_load` разделён на 2 sequential группы (configs → save). Удалён локальный `_configs.WarmupAsync` из `ShopService.AfterLoadAsync`. | [`Bootstrap.cs:199-211`](../../Assets/Game/Core/Installers/Bootstrap/Bootstrap.cs) |
-| **PR7** | Daily reset (`ShopLimitMode.Daily`, `ICurrentDayProvider` inject, schema migration v2). | ⏳ **Отложен** на позднее. |
+| **PR7** | Daily reset (`ShopLimitMode.Daily`, `ICurrentDayProvider` inject) + deterministic `newspaper.books` rotation. | ✅ Implemented: daily purchase counters are stored per lot; the 4-box daily offer set is derived from current in-game day and is not persisted. |
 | **PR8** | `ShopAnalyticsListener` (`IStartable + IDisposable`) подписывается на `LotPurchased`, эмитит `item_purchased` в `IAnalyticsService`. `NullAnalyticsService` зарегистрирован как fallback (логирует через `Debug.Log`). | [`ShopAnalyticsListener.cs`](../../Assets/Game/Features/Shop/Services/ShopAnalyticsListener.cs), [`AnalyticsVContainerBindings.cs`](../../Assets/Game/Core/Installers/Features/AnalyticsVContainerBindings.cs) |
 | **PR9** | `IShopConfirmationPolicy` + `ThresholdConfirmationPolicy` (порог 50g). `NewspaperWindow` + `ShopLotsSectionView` показывают `ConfirmDialog` через `UIManager.ShowAsync<ConfirmDialog>` перед `BuyAsync`. | [`IShopConfirmationPolicy.cs`](../../Assets/Game/Features/Shop/API/IShopConfirmationPolicy.cs), [`ThresholdConfirmationPolicy.cs`](../../Assets/Game/Features/Shop/Services/ThresholdConfirmationPolicy.cs) |
 | **PR10** | `RewardsWindow` popup в `Game.Newspaper.UI`. `RewardsWindowArgs` несёт `RewardSpec Granted`. Используется и `NewspaperWindow`, и `ClassicShopWindow` (через `ShopLotsSectionView`). Лейбл показывает 1 reward per line. | [`RewardsWindow.cs`](../../Assets/Game/Features/Newspaper/UI/RewardsWindow.cs), [`RewardsWindowView.cs`](../../Assets/Game/Features/Newspaper/UI/RewardsWindowView.cs) |
@@ -102,15 +102,14 @@ InventoryWindowController → InventoryWindowView ─── tabs by category ─
 
 ### Конфиг `shop.json` (текущий ассортимент)
 
-**12 лотов** в 5 storefront'ах:
+**28 лотов** в 4 storefront'ах:
 
 | Storefront | Лоты | Лимит | Цены |
 |---|---|---|---|
-| `newspaper.decor` | `newspaper_decor_vintage_globe` (free), `newspaper_decor_coffee_pot` (paid 50g) | Disposable+1 | 0 / 50g |
-| `newspaper.books` | `newspaper_book_common_15`, `newspaper_book_rare_8`, `newspaper_book_genre_dystopic_1` | Unlimited | 20g / 30g / 40g |
-| `classic.books` | `classic_book_005`, `classic_book_042` | Unlimited | 15g / 25g |
-| `classic.boxes` | `classic_box_common_10` (reuses `book_box_common_15` expander rule), `classic_box_rare_5` | Unlimited | 15g / 25g |
-| `classic.decor` | `classic_decor_old_lamp`, `classic_decor_houseplant`, `classic_decor_maritime_painting` | Disposable+1 | 75g / 60g / 90g |
+| `newspaper.decor` | 14 decor lots, including migrated newspaper decor and current classic decor ids. | Disposable+1 | 0g–120g |
+| `newspaper.books` | 11 authored book-box lots: 4 general + 7 genre boxes; `GetOfferedLots` exposes 4 per day (2 general + 2 genre). | Daily+1 | 15g / 28g / 40g / 55g / 45g genre boxes |
+| `newspaper.consumables` | `newspaper_consumable_fuel_canister`, `newspaper_quest_item_map` | Unlimited / Disposable+1 | 20g / 200g |
+| `tutorial` | `tutorial_book_box_heartfelt` | Disposable+1 | 0g |
 
 Stub-ассортимент — реальная балансировка отложена. Single-book лоты подвержены `AlreadyOwned` блокировке (книга в инвентаре → лот disabled).
 
@@ -123,7 +122,7 @@ Stub-ассортимент — реальная балансировка отл
 | Server-authoritative flow | **Phase 2+.** Контракт `IRewardGrantService` стабилен — реализация заменится без правок consumer'ов. |
 | `ExchangeService` / `ExchangeSlot` (Heroes) | **Не делаем.** Избыточно для 12 лотов. |
 | `ActivationEvents` / `VisibilityEvents` / `UnlockPurchaseEvents` | **Phase 2+** с Offers/Sale. |
-| Daily reset (PR7) | **Отложен.** `ShopLimitMode` остался Unlimited/Disposable; счётчик save готов к расширению (LotPurchasesDto уже отдельный класс). |
+| Daily reset (PR7) | **Реализован для `newspaper.books`.** `ShopLimitMode.Daily` uses `LastPurchasedDay`/`PurchasesToday`; selection is deterministic from `ICurrentDayProvider.CurrentDay`. |
 
 ### Tech debt — финальный статус
 
@@ -133,7 +132,7 @@ Stub-ассортимент — реальная балансировка отл
 |---|---|---|
 | §1 | Inventory-aware book-box | ✅ PR5 |
 | §1.5 | AlreadyOwned для inline single-book лотов | ✅ Hotfix |
-| §2 | Redundant shop save для Unlimited | ⏳ Phase 2+ (или PR7 при возобновлении) |
+| §2 | Redundant shop save для Unlimited | ⏳ Phase 2+ |
 | §3 | MaxPurchases=0 semantic | ✅ Cleanup §3 (`int?`) |
 | §4 | DecorRewardService facade hardcoded ids | ⏳ Phase 1.5 cleanup |
 | §5 | Atomicity gap (gold-remove + grant-fail) | ⏳ Phase 2 (server-authoritative) |
@@ -142,13 +141,13 @@ Stub-ассортимент — реальная балансировка отл
 | §9 | Inline label вместо popup | ✅ PR10 (RewardsWindow) |
 | §10 | Нет аналитики | ✅ PR8 |
 | §11 | Нет confirmation dialog | ✅ PR9 |
-| §12 | Нет daily reset | ⏳ PR7 отложен |
+| §12 | Нет daily reset | ✅ PR7 |
 
-**Закрыто: 8** · **Отложено: 4** (atomicity = Phase 2, остальные = Phase 1.5 cleanup или PR7 возврат).
+**Закрыто: 9** · **Отложено: 3** (atomicity = Phase 2, остальные = Phase 1.5 cleanup).
 
 ### Что осталось делать (вне Phase 0/1)
 
-- **PR7 Daily reset** — `ShopLimitMode.Daily`, `ICurrentDayProvider`, schema migration v2. Возврат когда понадобится daily-rotation ассортимента.
+- **Daily rotation follow-up** — server-authoritative catalog/purchase flow remains Phase 2; local `newspaper.books` rotation is deterministic from in-game day and does not persist selected lot ids.
 - **Phase 1.5 cleanup**:
   - Удалить `DecorRewardService` facade (мигрировать `UiPilotDebugPanel` на `IShopService.BuyAsync`).
   - Объединить `InventoryWindow` (production) и `InventoryScreen` (debug) — сейчас дублируют логику.

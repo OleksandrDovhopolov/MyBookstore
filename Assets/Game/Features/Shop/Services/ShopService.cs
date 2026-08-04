@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Book.Sell.API;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
@@ -32,11 +33,14 @@ namespace Game.Shop.Services
         private readonly IShopRewardSpecProvider _rewardSpecs;
         private readonly IConfigsService _configs;
         private readonly IInventoryService _inventory;
+        private readonly ICurrentDayProvider _dayProvider;
 
         private readonly Dictionary<string, ShopLot> _lotsById = new(StringComparer.Ordinal);
         private readonly Dictionary<string, List<ShopLot>> _lotsByStorefront = new(StringComparer.Ordinal);
 
         private ShopStateDto _state = new ShopStateDto();
+        private IReadOnlyList<ShopLot> _offeredBooks;
+        private int _offeredBooksDay = int.MinValue;
         private bool _loaded;
 
         public ShopService(
@@ -46,7 +50,8 @@ namespace Game.Shop.Services
             IRewardGrantService rewards,
             IShopRewardSpecProvider rewardSpecs,
             IConfigsService configs,
-            IInventoryService inventory)
+            IInventoryService inventory,
+            ICurrentDayProvider dayProvider)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -55,6 +60,7 @@ namespace Game.Shop.Services
             _rewardSpecs = rewardSpecs ?? throw new ArgumentNullException(nameof(rewardSpecs));
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
+            _dayProvider = dayProvider ?? throw new ArgumentNullException(nameof(dayProvider));
 
             save.RegisterHook(this);
         }
@@ -129,6 +135,20 @@ namespace Game.Shop.Services
                 : (IReadOnlyList<ShopLot>)Array.Empty<ShopLot>();
         }
 
+        public IReadOnlyList<ShopLot> GetOfferedLots(string storefrontId)
+        {
+            if (!string.Equals(storefrontId, NewspaperShopLotIds.StorefrontBooks, StringComparison.Ordinal))
+                return GetLots(storefrontId);
+
+            var day = _dayProvider.CurrentDay;
+            if (_offeredBooks != null && _offeredBooksDay == day)
+                return _offeredBooks;
+
+            _offeredBooks = BookBoxRotation.Select(GetLots(storefrontId), day);
+            _offeredBooksDay = day;
+            return _offeredBooks;
+        }
+
         public bool TryGetLot(string lotId, out ShopLot lot)
         {
             if (string.IsNullOrEmpty(lotId)) { lot = null; return false; }
@@ -144,6 +164,7 @@ namespace Game.Shop.Services
         public bool IsAvailable(string lotId)
         {
             if (!TryGetLot(lotId, out var lot)) return false;
+            if (!IsOffered(lot)) return false;
             if (!IsWithinLimit(lotId, lot)) return false;
             if (!_rewardSpecs.TryBuild(lot, out var spec)) return false;
             if (HasOwnedInlineRewardItem(spec)) return false;
@@ -154,6 +175,16 @@ namespace Game.Shop.Services
         {
             if (lot.Limit.Mode == ShopLimitMode.Unlimited) return true;
             var cap = lot.Limit.MaxPurchases ?? int.MaxValue;  // null → effectively unlimited (defensive)
+            if (cap <= 0) return false;
+
+            if (lot.Limit.Mode == ShopLimitMode.Daily)
+            {
+                var dto = GetPurchaseDto(lotId);
+                return dto == null
+                       || dto.LastPurchasedDay != _dayProvider.CurrentDay
+                       || dto.PurchasesToday < cap;
+            }
+
             return GetPurchaseCount(lotId) < cap;
         }
 
@@ -193,6 +224,9 @@ namespace Game.Shop.Services
             if (!TryGetLot(lotId, out var lot))
                 return ShopPurchaseResult.Fail(ShopPurchaseStatus.LotNotFound);
 
+            if (!IsOffered(lot))
+                return ShopPurchaseResult.Fail(ShopPurchaseStatus.NotOffered, lot);
+
             if (!_rewardSpecs.TryBuild(lot, out var spec))
             {
                 Debug.LogError($"{LogPrefix} Missing RewardSpec for lot '{lotId}' (rewardId='{lot.RewardId}'). " +
@@ -230,7 +264,7 @@ namespace Game.Shop.Services
                 return ShopPurchaseResult.Fail(ShopPurchaseStatus.InternalError, lot);
             }
 
-            IncrementPurchase(lotId);
+            IncrementPurchase(lotId, lot);
             await _repository.SaveAsync(_state, ct);
 
             var evt = new ShopPurchaseEvent(lot, grant.Granted);
@@ -240,13 +274,26 @@ namespace Game.Shop.Services
 
         // ----- internals -----
 
-        private void IncrementPurchase(string lotId)
+        private void IncrementPurchase(string lotId, ShopLot lot)
         {
             if (!_state.Lots.TryGetValue(lotId, out var dto))
             {
                 dto = new LotPurchasesDto();
                 _state.Lots[lotId] = dto;
             }
+
+            if (lot.Limit.Mode == ShopLimitMode.Daily)
+            {
+                var day = _dayProvider.CurrentDay;
+                if (dto.LastPurchasedDay != day)
+                {
+                    dto.LastPurchasedDay = day;
+                    dto.PurchasesToday = 0;
+                }
+
+                dto.PurchasesToday++;
+            }
+
             dto.Purchases++;
         }
 
@@ -254,6 +301,8 @@ namespace Game.Shop.Services
         {
             _lotsById.Clear();
             _lotsByStorefront.Clear();
+            _offeredBooks = null;
+            _offeredBooksDay = int.MinValue;
 
             var configs = _configs.GetAll<ShopConfig>();
             if (configs == null) return;
@@ -284,6 +333,28 @@ namespace Game.Shop.Services
                 }
                 list.Add(lot);
             }
+        }
+
+        private LotPurchasesDto GetPurchaseDto(string lotId)
+        {
+            if (string.IsNullOrEmpty(lotId) || _state.Lots == null) return null;
+            return _state.Lots.TryGetValue(lotId, out var dto) ? dto : null;
+        }
+
+        private bool IsOffered(ShopLot lot)
+        {
+            if (lot == null) return false;
+            if (!string.Equals(lot.StorefrontId, NewspaperShopLotIds.StorefrontBooks, StringComparison.Ordinal))
+                return true;
+
+            var offered = GetOfferedLots(lot.StorefrontId);
+            for (var i = 0; i < offered.Count; i++)
+            {
+                if (string.Equals(offered[i]?.LotId, lot.LotId, StringComparison.Ordinal))
+                    return true;
+            }
+
+            return false;
         }
     }
 }

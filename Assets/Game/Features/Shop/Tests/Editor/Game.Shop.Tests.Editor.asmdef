@@ -4,6 +4,7 @@
     "references": [
         "UniTask",
         "Save",
+        "Book.Sell.API",
         "Configs",
         "Game.Shop.API",
         "Game.Shop",

@@ -57,7 +57,7 @@ namespace Game.Shop.UI
             if (offer == null) return;
 
             if (_priceLabel != null) _priceLabel.text = offer.PriceText;
-            SetSoldVisible(offer.IsDecor && !offer.IsAvailable);
+            SetSoldVisible(!offer.IsAvailable);
 
             if (_buyButton != null)
                 _buyButton.interactable = offer.IsAvailable;

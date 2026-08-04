@@ -106,8 +106,8 @@ namespace Game.Rewards.Tests.Editor
         [Test]
         public void ShopLotWithUnknownBoxId_IsAnError()
         {
-            // Every book is Drama, so book_box_genre_dystopic_1 (Fantasy) matches nothing — but no lot sells
-            // it, so it must not add an error. Only the unknown reward id may fail here.
+            // Several genre rules match nothing here, but no lot sells them, so they must not add errors.
+            // Only the unknown reward id may fail here.
             var books = Enumerable.Range(0, 20).Select(i => BookJson($"b{i:D2}", "Drama", 0.9)).ToArray();
             WriteBooks(books);
             WriteShop("book_box_common_15", "book_box_does_not_exist");
@@ -136,7 +136,7 @@ namespace Game.Rewards.Tests.Editor
 
             Assert.IsFalse(report.HasErrors, Errors(report));
             CollectionAssert.Contains(report.UnsoldBoxes, "book_box_rare_8");
-            CollectionAssert.Contains(report.UnsoldBoxes, "book_box_genre_dystopic_1");
+            CollectionAssert.Contains(report.UnsoldBoxes, "book_box_genre_drama_8");
         }
 
         [Test]
