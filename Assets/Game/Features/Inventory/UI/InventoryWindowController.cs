@@ -23,6 +23,13 @@ namespace Game.Inventory.UI
         private IReadOnlyList<IInventoryRowSource> _rowSources;
         private IDecorPlacementService _decorPlacement;
 
+        // The widget is hidden by instance, not by type: UIManager.HideAsync<T> and IsWindowShown
+        // both filter on IWindowController.IsShown, which is only set after the show animation
+        // finishes. Scroll events arriving before that would otherwise be dropped silently.
+        private IWindowController _itemInfoWidget;
+        private int _pendingWidgetShows;
+        private bool _hideRequestedWhileShowing;
+
         [Inject]
         public void Construct(
             IInventoryService inventory,
@@ -45,6 +52,10 @@ namespace Game.Inventory.UI
 
         protected override void OnDispose()
         {
+            // The widget itself is force-closed by the UIManager parent cascade (ContentWidgetArgs
+            // carries this controller as ParentWindow); here we only drop our subscription.
+            UntrackItemInfoWidget();
+
             if (View == null) return;
             View.Teardown();
         }
@@ -53,14 +64,14 @@ namespace Game.Inventory.UI
         {
             if (string.IsNullOrEmpty(itemId)) return;
 
-            HideItemInfoWidget();
             if (style == InventoryRowStyle.Decor)
             {
                 ShowDecorInfo(itemId);
-                return;
             }
-
-            ShowItemInfoWidgetAsync(itemId, anchor).Forget();
+            else
+            {
+                ShowItemInfoWidgetAsync(itemId, anchor).Forget();
+            }
         }
 
         private void ShowDecorInfo(string decorId)
@@ -76,6 +87,10 @@ namespace Game.Inventory.UI
             if (string.IsNullOrEmpty(itemId) || anchor == null || UIManager == null || View == null)
                 return;
 
+            // A fresh show supersedes a hide that was requested while the previous one was still running.
+            _hideRequestedWhileShowing = false;
+            _pendingWidgetShows++;
+
             try
             {
                 var data = new InventoryItemWidgetData(itemId, TodoDescription);
@@ -84,7 +99,8 @@ namespace Game.Inventory.UI
                     anchor,
                     this,
                     placementMode: ContentWidgetPlacementMode.HorizontalOnly);
-                await UIManager.ShowAsync<ContentWidgetController>(args, View.destroyCancellationToken);
+                TrackItemInfoWidget(
+                    await UIManager.ShowAsync<ContentWidgetController>(args, View.destroyCancellationToken));
             }
             catch (OperationCanceledException)
             {
@@ -93,16 +109,58 @@ namespace Game.Inventory.UI
             {
                 Debug.LogError($"[InventoryWindowController] Failed to show item widget for '{itemId}': {e}");
             }
+            finally
+            {
+                _pendingWidgetShows--;
+
+                if (_pendingWidgetShows == 0 && _hideRequestedWhileShowing)
+                {
+                    _hideRequestedWhileShowing = false;
+                    HideItemInfoWidget();
+                }
+            }
         }
+
+        private void TrackItemInfoWidget(IWindowController widget)
+        {
+            // null means the show was rejected by the window filter — keep tracking whatever is up.
+            if (widget == null || ReferenceEquals(_itemInfoWidget, widget)) return;
+
+            UntrackItemInfoWidget();
+            _itemInfoWidget = widget;
+
+            // The widget also closes on its own (auto-close timer, close button, another page opening),
+            // so drop the reference on Closed instead of hiding an already hidden controller later.
+            _itemInfoWidget.Closed += OnItemInfoWidgetClosed;
+        }
+
+        private void UntrackItemInfoWidget()
+        {
+            if (_itemInfoWidget == null) return;
+
+            _itemInfoWidget.Closed -= OnItemInfoWidgetClosed;
+            _itemInfoWidget = null;
+        }
+
+        private void OnItemInfoWidgetClosed(IWindowController _) => UntrackItemInfoWidget();
 
         private void HideItemInfoWidget()
         {
-            if (UIManager == null || !UIManager.IsWindowShown<ContentWidgetController>())
-                return;
+            if (UIManager == null) return;
 
-            UIManager.HideAsync<ContentWidgetController>(
-                forceClose: true,
-                ct: CancellationToken.None).Forget();
+            // ShowAsync is still holding the UIManager gate: the controller is not IsShown yet, so a
+            // hide issued now would be dropped. Replay it once the show completes.
+            if (_pendingWidgetShows > 0)
+            {
+                _hideRequestedWhileShowing = true;
+                return;
+            }
+
+            var widget = _itemInfoWidget;
+            if (widget == null) return;
+
+            UntrackItemInfoWidget();
+            UIManager.HideAsync(widget, forceClose: true, ct: CancellationToken.None).Forget();
         }
     }
 }
