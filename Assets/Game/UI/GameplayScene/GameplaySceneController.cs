@@ -44,14 +44,12 @@ namespace GameplayUI
         // True once the window has loaded all the data it needs to display (currently the genre sprites).
         public bool IsDataReady { get; private set; }
 
-        private IDisposable _salesGoldSubscription;
         private IDisposable _genreBookCountsSubscription;
         private IDisposable _buttonsInteractableSubscription;
         private IDisposable _tutorialStepSubscription;
 
         private readonly HashSet<IWindowController> _panelHideOwners = new();
 
-        private ISubscriber<GameplaySalesGoldChanged> _salesGoldSubscriber;
         private ISubscriber<GameplayGenreBookCountsChanged> _genreBookCountsSubscriber;
         private IPublisher<GameplayGenreBookCountsRequested> _genreBookCountsRequestPublisher;
         private ISubscriber<GameplaySceneButtonsInteractableChanged> _buttonsInteractableSubscriber;
@@ -70,7 +68,6 @@ namespace GameplayUI
             IConfigsService configs = null,
             IGameFlowService gameFlow = null,
             ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
-            ISubscriber<GameplaySalesGoldChanged> salesGoldSubscriber = null,
             IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null,
             ISubscriber<TutorialStepChanged> tutorialStepSubscriber = null)
         {
@@ -82,7 +79,6 @@ namespace GameplayUI
             _locationUnlock = locationUnlock;
             _configs = configs;
             _gameFlow = gameFlow;
-            _salesGoldSubscriber = salesGoldSubscriber;
             _genreBookCountsSubscriber = genreBookCountsSubscriber;
             _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
             _genreBookCountsRequestPublisher = genreBookCountsRequestPublisher;
@@ -111,7 +107,6 @@ namespace GameplayUI
             _genreBookCountsSubscription = _genreBookCountsSubscriber?.Subscribe(e =>
                 View.SetGenreBookCounts(e.Counts, e.PurchasedCounts, e.ShowPurchasedCounts));
 
-            _salesGoldSubscription = _salesGoldSubscriber?.Subscribe(OnSalesGoldChanged);
             _tutorialStepSubscription = _tutorialStepSubscriber?.Subscribe(OnTutorialStepChanged);
 
             if (_dayProgress != null)
@@ -123,8 +118,6 @@ namespace GameplayUI
 
         protected override void OnShowStart()
         {
-            View.SetSalesGoldVisible(false);
-
             // The genre panel is shown only inside the location; sync it instantly to the current state so a
             // hub boot starts hidden and a resume in-location starts shown (no animation flash).
             View.SetPanelShown(
@@ -190,9 +183,6 @@ namespace GameplayUI
             _genreBookCountsSubscription?.Dispose();
             _genreBookCountsSubscription = null;
 
-            _salesGoldSubscription?.Dispose();
-            _salesGoldSubscription = null;
-
             _tutorialStepSubscription?.Dispose();
             _tutorialStepSubscription = null;
 
@@ -225,14 +215,6 @@ namespace GameplayUI
         private void SetSceneButtonsInteractable(bool interactable)
         {
             View?.SetSceneButtonsInteractable(interactable);
-        }
-
-        private void OnSalesGoldChanged(GameplaySalesGoldChanged e)
-        {
-            if (View == null) return;
-
-            View.SetSalesGoldAmount(e.GoldEarned);
-            View.SetSalesGoldVisible(e.Visible);
         }
 
         private void OnDayPhaseChanged(DayProgressState state)

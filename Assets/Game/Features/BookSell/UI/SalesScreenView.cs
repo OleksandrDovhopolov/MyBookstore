@@ -9,8 +9,10 @@ using Game.Bootstrap.Loading;
 using Game.Configs;
 using Game.DayCycle.Results.UI;
 using Game.Configs.Models;
+using Game.Resources.API;
 using Game.UI;
 using MessagePipe;
+using UIShared;
 using UnityEngine;
 using VContainer;
 
@@ -33,7 +35,7 @@ namespace Book.Sell.UI
         
         private IDisposable _genreBookCountsRequestSubscription;
         
-        private IPublisher<GameplaySalesGoldChanged> _salesGoldPublisher;
+        private IPublisher<ResourceCounterDisplayOverrideChanged> _goldDisplayOverridePublisher;
         private IPublisher<GameplayGenreBookCountsChanged> _genreBookCountsPublisher;
         private IPublisher<GameplaySceneButtonsInteractableChanged> _gameplayButtonsPublisher;
         private Dictionary<string, int> _salesDayGenreBaseline;
@@ -56,7 +58,7 @@ namespace Book.Sell.UI
             IConfigsService configs = null,
             IPublisher<GameplaySceneButtonsInteractableChanged> gameplayButtonsPublisher = null,
             IPublisher<GameplayGenreBookCountsChanged> genreBookCountsPublisher = null,
-            IPublisher<GameplaySalesGoldChanged> salesGoldPublisher = null,
+            IPublisher<ResourceCounterDisplayOverrideChanged> goldDisplayOverridePublisher = null,
             ISubscriber<GameplayGenreBookCountsRequested> genreBookCountsRequestSubscriber = null,
             IGameplayAutoStartGate autoStartGate = null)
         {
@@ -69,7 +71,7 @@ namespace Book.Sell.UI
             _configs = configs;
             _gameplayButtonsPublisher = gameplayButtonsPublisher;
             _genreBookCountsPublisher = genreBookCountsPublisher;
-            _salesGoldPublisher = salesGoldPublisher;
+            _goldDisplayOverridePublisher = goldDisplayOverridePublisher;
             _autoStartGate = autoStartGate;
             _genreBookCountsRequestSubscription = genreBookCountsRequestSubscriber?.Subscribe(_ => PublishGenreBookCounts());
         }
@@ -115,7 +117,7 @@ namespace Book.Sell.UI
                 // Day comes from DayCycle.DayProgressService via the ICurrentDayProvider adapter.
                 // When the adapter is not registered (e.g. early prototype scenes), fall back to day 1.
                 var day = _dayProvider?.CurrentDay ?? 1;
-                PublishSalesGold(0, true);
+                PublishSalesGoldOverride(0, true);
                 await _controller.StartDayAsync(day, ct);
                 _salesDayGenreBaseline = BuildGenreBookCounts();
                 RefreshHeader();
@@ -201,7 +203,7 @@ namespace Book.Sell.UI
         private void RefreshHeader()
         {
             var result = _controller.AccumulatedResult;
-            PublishSalesGold(result.GoldEarned, true);
+            PublishSalesGoldOverride(result.GoldEarned, true);
         }
 
         private void SetGameplaySceneButtonsInteractable(bool interactable)
@@ -209,9 +211,12 @@ namespace Book.Sell.UI
             _gameplayButtonsPublisher?.Publish(new GameplaySceneButtonsInteractableChanged(interactable));
         }
 
-        private void PublishSalesGold(int goldEarned, bool visible)
+        private void PublishSalesGoldOverride(int goldEarned, bool active)
         {
-            _salesGoldPublisher?.Publish(new GameplaySalesGoldChanged(goldEarned, visible));
+            _goldDisplayOverridePublisher?.Publish(new ResourceCounterDisplayOverrideChanged(
+                ResourceIds.Gold,
+                goldEarned,
+                active));
         }
 
         private Dictionary<string, int> BuildGenreBookCounts()
@@ -278,7 +283,7 @@ namespace Book.Sell.UI
         private void OnDestroy()
         {
             SetGameplaySceneButtonsInteractable(true);
-            PublishSalesGold(0, false);
+            PublishSalesGoldOverride(0, false);
             PublishGenreBookCountsWithoutPurchased();
             _genreBookCountsRequestSubscription?.Dispose();
             _genreBookCountsRequestSubscription = null;

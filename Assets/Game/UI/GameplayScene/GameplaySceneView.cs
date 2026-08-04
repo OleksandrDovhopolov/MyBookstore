@@ -13,8 +13,6 @@ namespace GameplayUI
 {
     public class GameplaySceneView : WindowView
     {
-        [SerializeField] private GameObject _salesGoldRoot;
-        [SerializeField] private TMP_Text _salesGoldLabel;
         [SerializeField] private TMP_Text _dayLabel;
 
         [Header("Shop entry")] [SerializeField]
@@ -104,7 +102,6 @@ namespace GameplayUI
                 WidgetRegistry.Register<SaleChanceWidgetData>(_saleChanceWidgetPrefab);
 
             HideLegacyGenreBookCountItemsIfNeeded();
-            SetSalesGoldVisible(false);
         }
 
         public void SetSceneButtonsInteractable(bool interactable)
@@ -137,18 +134,6 @@ namespace GameplayUI
                 _startDayButton.interactable = active;
                 _startDayButton.gameObject.SetActive(active);
             }
-        }
-
-        public void SetSalesGoldAmount(int amount)
-        {
-            if (_salesGoldLabel != null)
-                _salesGoldLabel.text = amount.ToString();
-        }
-
-        public void SetSalesGoldVisible(bool visible)
-        {
-            if (_salesGoldRoot != null)
-                _salesGoldRoot.gameObject.SetActive(visible);
         }
 
         public void SetDayText(string value)
