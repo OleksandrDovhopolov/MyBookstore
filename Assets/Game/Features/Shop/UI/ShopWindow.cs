@@ -23,6 +23,8 @@ namespace Game.Shop.UI
         private IShopOfferSource _offerSource;
         private IUiSpriteProvider _uiSprites;
         private CancellationTokenSource _cts;
+        private CancellationTokenSource _iconsCts;
+        private ShopTab _activeTab = ShopTab.All;
         private readonly Dictionary<string, ShopItemView> _cardsByLotId = new(StringComparer.Ordinal);
 
         [Inject]
@@ -45,12 +47,32 @@ namespace Game.Shop.UI
 
         protected override void OnShowStart()
         {
+            if (View != null)
+            {
+                View.TabSelected -= OnTabSelected;
+                View.TabSelected += OnTabSelected;
+                View.SelectTab(_activeTab);
+            }
+
             RefreshOffers();
-            LoadOfferIconsAsync(_cts.Token).Forget();
+        }
+
+        protected override void OnHideStart(bool isClosed)
+        {
+            if (View != null)
+                View.TabSelected -= OnTabSelected;
+
+            CancelIconLoad();
+            base.OnHideStart(isClosed);
         }
 
         protected override void OnDispose()
         {
+            if (View != null)
+                View.TabSelected -= OnTabSelected;
+
+            CancelIconLoad();
+
             _cts?.Cancel();
             _cts?.Dispose();
             _cts = null;
@@ -68,10 +90,17 @@ namespace Game.Shop.UI
 
             pool.DisableAll();
             _cardsByLotId.Clear();
-            SpawnOffers(_offerSource.GetBookOffers(), pool);
-            SpawnOffers(_offerSource.GetConsumableOffers(), pool);
-            SpawnOffers(GetDecorOffersForDisplay(_offerSource.GetDecorOffers()), pool);
+            SpawnOffers(ShopTabOffers.Build(_offerSource, _activeTab), pool);
             pool.DisableNonActive();
+            LoadOfferIconsForCurrentPool();
+        }
+
+        private void OnTabSelected(ShopTab tab)
+        {
+            if (_activeTab == tab) return;
+
+            _activeTab = tab;
+            RefreshOffers();
         }
 
         private void SpawnOffers(
@@ -115,8 +144,25 @@ namespace Game.Shop.UI
             }
             catch (OperationCanceledException)
             {
-                // window closed mid-load — ok
+                // Window hidden or tab switched mid-load: the next refresh owns the visible cards.
             }
+        }
+
+        private void LoadOfferIconsForCurrentPool()
+        {
+            CancelIconLoad();
+
+            if (_cts == null || View == null || _uiSprites == null) return;
+
+            _iconsCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+            LoadOfferIconsAsync(_iconsCts.Token).Forget();
+        }
+
+        private void CancelIconLoad()
+        {
+            _iconsCts?.Cancel();
+            _iconsCts?.Dispose();
+            _iconsCts = null;
         }
 
         private async UniTask LoadIconsForPoolAsync(
@@ -186,15 +232,6 @@ namespace Game.Shop.UI
 
             if (TryGetCurrentOffer(lotId, out var offer))
                 card.UpdateOfferState(offer);
-        }
-
-        private static IReadOnlyList<ShopOffer> GetDecorOffersForDisplay(IReadOnlyList<ShopOffer> offers)
-        {
-            if (offers == null || offers.Count <= 1) return offers;
-
-            return offers
-                .OrderBy(offer => offer != null && offer.IsDecor && !offer.IsAvailable ? 1 : 0)
-                .ToList();
         }
 
         private bool TryGetCurrentOffer(string lotId, out ShopOffer offer)
