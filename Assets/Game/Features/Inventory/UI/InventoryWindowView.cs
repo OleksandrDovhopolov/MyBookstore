@@ -15,6 +15,9 @@ namespace Game.Inventory.UI
 {
     public class InventoryWindowView : WindowView
     {
+        // Pixels the content must travel before the scroll counts as "the player moved the list".
+        private const float ScrollMoveThresholdPixels = 2f;
+
         [Header("List")]
         [SerializeField] private ScrollRect _scrollRect;
         [SerializeField] private TabBar _tabBar;
@@ -28,7 +31,7 @@ namespace Game.Inventory.UI
         private readonly List<RowEntry> _rows = new();
         private Action<string, InventoryRowStyle, RectTransform> _onRowInfo;
         private Action _onRowsRebuilt;
-        private Vector2 _lastScrollPosition;
+        private Vector2 _lastContentPosition;
         private TabType _activeTab = TabType.All;
 
         private readonly CancellationTokenSource _cts = new();
@@ -78,7 +81,7 @@ namespace Game.Inventory.UI
             if (_decorPlacement != null) _decorPlacement.PlacementChanged += OnDecorPlacementChanged;
             if (_scrollRect != null)
             {
-                _lastScrollPosition = _scrollRect.normalizedPosition;
+                _lastContentPosition = GetContentPosition();
                 _scrollRect.onValueChanged.AddListener(OnScrollChanged);
             }
 
@@ -177,12 +180,22 @@ namespace Game.Inventory.UI
             if (_scrollRect == null)
                 return;
 
-            var position = _scrollRect.normalizedPosition;
-            if ((position - _lastScrollPosition).sqrMagnitude <= 0.000001f)
+            // Content position, not normalizedPosition: the latter degenerates into a constant 0/1 step
+            // when the content fits the viewport (a tab with one or two rows) and saturates at the list
+            // edges, so real drags produced no delta at all and the info widget stayed open.
+            var position = GetContentPosition();
+            if ((position - _lastContentPosition).sqrMagnitude
+                <= ScrollMoveThresholdPixels * ScrollMoveThresholdPixels)
                 return;
 
-            _lastScrollPosition = position;
+            _lastContentPosition = position;
             _onRowsRebuilt?.Invoke();
+        }
+
+        private Vector2 GetContentPosition()
+        {
+            var content = _scrollRect != null ? _scrollRect.content : null;
+            return content != null ? content.anchoredPosition : Vector2.zero;
         }
 
         private void OnTabSelected(TabType tab)

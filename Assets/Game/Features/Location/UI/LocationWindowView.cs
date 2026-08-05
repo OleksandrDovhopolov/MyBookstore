@@ -11,20 +11,23 @@ namespace Game.Location.UI
 {
     public sealed class LocationWindowView : WindowView
     {
+        // Pixels the content must travel before the scroll counts as "the player moved the list".
+        private const float ScrollMoveThresholdPixels = 2f;
+
         [Header("List")]
         [SerializeField] private ScrollRect _scrollRect;
         [SerializeField] private UIListPool<LocationRowView> _rowPool = new();
         [SerializeField] private LocationDemandWidgetView _demandWidgetPrefab;
 
         private Action _onScrolled;
-        private Vector2 _lastScrollPosition;
+        private Vector2 _lastContentPosition;
 
         protected override void Awake()
         {
             base.Awake();
             if (_scrollRect != null)
             {
-                _lastScrollPosition = _scrollRect.normalizedPosition;
+                _lastContentPosition = GetContentPosition();
                 _scrollRect.onValueChanged.AddListener(OnScrollChanged);
             }
 
@@ -59,15 +62,22 @@ namespace Game.Location.UI
 
         private void OnScrollChanged(Vector2 _)
         {
-            if (_scrollRect == null)
+            // Content position, not normalizedPosition: the latter degenerates into a constant 0/1 step
+            // when the content fits the viewport and saturates at the list edges, so real drags there
+            // produced no delta at all and the demand widget stayed open.
+            var position = GetContentPosition();
+            if ((position - _lastContentPosition).sqrMagnitude
+                <= ScrollMoveThresholdPixels * ScrollMoveThresholdPixels)
                 return;
 
-            var position = _scrollRect.normalizedPosition;
-            if ((position - _lastScrollPosition).sqrMagnitude <= 0.000001f)
-                return;
-
-            _lastScrollPosition = position;
+            _lastContentPosition = position;
             _onScrolled?.Invoke();
+        }
+
+        private Vector2 GetContentPosition()
+        {
+            var content = _scrollRect != null ? _scrollRect.content : null;
+            return content != null ? content.anchoredPosition : Vector2.zero;
         }
 
         protected override void OnDestroy()
