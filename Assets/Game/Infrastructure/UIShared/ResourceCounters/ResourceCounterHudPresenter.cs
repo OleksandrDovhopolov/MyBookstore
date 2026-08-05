@@ -157,6 +157,8 @@ namespace UIShared
             finally
             {
                 _displayedAmounts[resourceId] = finalAmount;
+                // Only the active target ran the ramp; the rest jump straight to the final amount.
+                ApplyToAllTargets(resourceId, finalAmount);
                 _countUpInProgress.Remove(resourceId);
             }
         }
@@ -167,9 +169,19 @@ namespace UIShared
 
             var clamped = Math.Max(0, amount);
             _displayedAmounts[resourceId] = clamped;
+            ApplyToAllTargets(resourceId, clamped);
+        }
 
-            if (_targets != null && _targets.TryGetTarget(resourceId, out var target))
-                target?.SetAmountImmediate(clamped);
+        // A window can host its own counter for the same resource (the shop shows the gold balance).
+        // Both are updated, so the one currently hidden behind a window is correct the moment it
+        // becomes visible again instead of showing a stale amount.
+        private void ApplyToAllTargets(string resourceId, int amount)
+        {
+            if (_targets == null) return;
+
+            var targets = _targets.GetTargets(resourceId);
+            for (var i = targets.Count - 1; i >= 0; i--)
+                targets[i]?.SetAmountImmediate(amount);
         }
 
         private static bool IsSalesDayChange(ResourceChangeEvent change)

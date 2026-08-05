@@ -433,6 +433,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _rootGroup: {fileID: 1056531040}
   _progressBar: {fileID: 727969765}
+  _progressCatchUpSpeed: 8
+  _progressMinSpeed: 0.15
   _statusText: {fileID: 225173486}
   _errorRoot: {fileID: 1109948523}
   _errorText: {fileID: 1109948525}
@@ -783,7 +785,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4632163579063557660, guid: 9808c443777d7ed49a4c49d42597ce98, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 436
+      value: 203
       objectReference: {fileID: 0}
     - target: {fileID: 7617935951810495281, guid: 9808c443777d7ed49a4c49d42597ce98, type: 3}
       propertyPath: m_Enabled
