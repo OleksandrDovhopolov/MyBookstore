@@ -52,6 +52,7 @@ namespace Game.Shop.UI
                 var isAvailable = _shop.IsAvailable(lot.LotId);
                 var iconId = ResolveRewardItemIconId(lot.LotId, rewardCategoryId)
                              ?? ResolveDefaultIconId(lot, isDecor);
+                var bookIconId = ResolveBookIconId(lot, isDecor);
                 offers.Add(new ShopOffer(
                     lot.LotId,
                     iconId,
@@ -60,7 +61,8 @@ namespace Game.Shop.UI
                     FormatPrice(lot.Price),
                     isAvailable,
                     isAvailable ? NewState : SoldState,
-                    isDecor));
+                    isDecor,
+                    bookIconId));
             }
 
             return offers;
@@ -101,12 +103,19 @@ namespace Game.Shop.UI
         {
             if (isDecor) return lot.LotId;
 
+            return BookOfferIconId;
+        }
+
+        private static string ResolveBookIconId(ShopLot lot, bool isDecor)
+        {
+            if (isDecor || lot == null) return null;
+
             if (BookBoxPoolRules.TryGet(lot.RewardId, out var rule)
                 && rule.Kind == BookBoxKind.Genre
                 && !string.IsNullOrEmpty(rule.Genre))
                 return rule.Genre;
 
-            return BookOfferIconId;
+            return null;
         }
 
         private static string FormatPrice(ShopPrice price)

@@ -2,6 +2,7 @@ using System;
 using TMPro;
 using UIShared;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Game.Shop.UI
@@ -9,34 +10,37 @@ namespace Game.Shop.UI
     public sealed class ShopItemView : MonoBehaviour, ICleanup
     {
         [SerializeField] private Image _icon;
+        [SerializeField] private Image _bookIcon;
         [SerializeField] private TMP_Text _priceLabel;
         [SerializeField] private GameObject _soldRoot;
         [SerializeField] private GameObject _priceRoot;
         [SerializeField] private Button _buyButton;
-        [SerializeField] private Button _decorInfoButton;
+        [FormerlySerializedAs("_decorInfoButton")]
+        [SerializeField] private Button _infoButton;
 
         private Action _onBuyClicked;
-        private Action<string> _onDecorInfoClicked;
-        private bool _isDecor;
+        private Action<string, RectTransform> _onInfoClicked;
 
         public string LotId { get; private set; }
         public string IconId { get; private set; }
+        public string BookIconId { get; private set; }
 
         public void Bind(
             ShopOffer offer,
             Action onBuyClicked,
             Sprite icon = null,
-            Action<string> onDecorInfoClicked = null)
+            Action<string, RectTransform> onInfoClicked = null)
         {
             if (offer == null) return;
 
             LotId = offer.LotId;
             IconId = offer.IconId;
-            _isDecor = offer.IsDecor;
+            BookIconId = offer.BookIconId;
             _onBuyClicked = onBuyClicked;
-            _onDecorInfoClicked = onDecorInfoClicked;
+            _onInfoClicked = onInfoClicked;
 
             SetIcon(icon);
+            SetBookIcon(null);
             UpdateOfferState(offer);
 
             if (_buyButton != null)
@@ -45,10 +49,10 @@ namespace Game.Shop.UI
                 _buyButton.onClick.AddListener(OnBuyClickedInternal);
             }
 
-            if (_decorInfoButton != null)
+            if (_infoButton != null)
             {
-                _decorInfoButton.onClick.RemoveListener(OnDecorInfoClickedInternal);
-                _decorInfoButton.onClick.AddListener(OnDecorInfoClickedInternal);
+                _infoButton.onClick.RemoveListener(OnInfoClickedInternal);
+                _infoButton.onClick.AddListener(OnInfoClickedInternal);
             }
         }
 
@@ -62,8 +66,8 @@ namespace Game.Shop.UI
             if (_buyButton != null)
                 _buyButton.interactable = offer.IsAvailable;
 
-            if (_decorInfoButton != null)
-                _decorInfoButton.interactable = offer.IsDecor && _onDecorInfoClicked != null;
+            if (_infoButton != null)
+                _infoButton.interactable = _onInfoClicked != null;
         }
 
         public void SetIcon(Sprite sprite)
@@ -72,12 +76,24 @@ namespace Game.Shop.UI
                 _icon.sprite = sprite;
         }
 
+        public void SetBookIcon(Sprite sprite)
+        {
+            if (_bookIcon == null) return;
+
+            _bookIcon.sprite = sprite;
+            _bookIcon.enabled = sprite != null;
+        }
+
         private void OnBuyClickedInternal() => _onBuyClicked?.Invoke();
 
-        private void OnDecorInfoClickedInternal()
+        private void OnInfoClickedInternal()
         {
-            if (!_isDecor || string.IsNullOrEmpty(IconId)) return;
-            _onDecorInfoClicked?.Invoke(IconId);
+            if (string.IsNullOrEmpty(LotId)) return;
+
+            var anchor = _infoButton != null && _infoButton.transform is RectTransform buttonRect
+                ? buttonRect
+                : transform as RectTransform;
+            _onInfoClicked?.Invoke(LotId, anchor);
         }
 
         private void SetSoldVisible(bool visible)
@@ -92,18 +108,19 @@ namespace Game.Shop.UI
         {
             if (_buyButton != null)
                 _buyButton.onClick.RemoveListener(OnBuyClickedInternal);
-            if (_decorInfoButton != null)
+            if (_infoButton != null)
             {
-                _decorInfoButton.onClick.RemoveListener(OnDecorInfoClickedInternal);
-                _decorInfoButton.interactable = false;
+                _infoButton.onClick.RemoveListener(OnInfoClickedInternal);
+                _infoButton.interactable = false;
             }
 
             _onBuyClicked = null;
-            _onDecorInfoClicked = null;
-            _isDecor = false;
+            _onInfoClicked = null;
             LotId = null;
             IconId = null;
+            BookIconId = null;
             SetIcon(null);
+            SetBookIcon(null);
             if (_priceLabel != null) _priceLabel.text = string.Empty;
             SetSoldVisible(false);
         }
