@@ -92,7 +92,7 @@ namespace UIShared
                 return;
             }
 
-            SetDisplayedAmount(change.ResourceId, change.NewAmount);
+            SetDisplayedAmount(change.ResourceId, change.NewAmount, animate: true);
         }
 
         private void OnDisplayOverrideChanged(ResourceCounterDisplayOverrideChanged change)
@@ -158,30 +158,48 @@ namespace UIShared
             {
                 _displayedAmounts[resourceId] = finalAmount;
                 // Only the active target ran the ramp; the rest jump straight to the final amount.
-                ApplyToAllTargets(resourceId, finalAmount);
+                ApplyToAllTargets(resourceId, finalAmount, animate: false);
                 _countUpInProgress.Remove(resourceId);
             }
         }
 
-        private void SetDisplayedAmount(string resourceId, int amount)
+        private void SetDisplayedAmount(string resourceId, int amount, bool animate = false)
         {
             if (string.IsNullOrWhiteSpace(resourceId)) return;
 
             var clamped = Math.Max(0, amount);
             _displayedAmounts[resourceId] = clamped;
-            ApplyToAllTargets(resourceId, clamped);
+            ApplyToAllTargets(resourceId, clamped, animate);
         }
 
         // A window can host its own counter for the same resource (the shop shows the gold balance).
-        // Both are updated, so the one currently hidden behind a window is correct the moment it
-        // becomes visible again instead of showing a stale amount.
-        private void ApplyToAllTargets(string resourceId, int amount)
+        // Every live target is updated, so the one currently hidden behind a window is correct the
+        // moment it becomes visible again instead of showing a stale amount. Only the active target
+        // ramps — animating counters nobody can see would just burn frames and could land mid-ramp
+        // when the window closes.
+        private void ApplyToAllTargets(string resourceId, int amount, bool animate)
         {
             if (_targets == null) return;
 
+            // A day payout is already ramping this resource; interrupting it would look like a glitch.
+            if (animate && _countUpInProgress.Contains(resourceId))
+                animate = false;
+
+            IResourceCounterTarget active = null;
+            if (animate && !_targets.TryGetTarget(resourceId, out active))
+                active = null;
+
             var targets = _targets.GetTargets(resourceId);
             for (var i = targets.Count - 1; i >= 0; i--)
-                targets[i]?.SetAmountImmediate(amount);
+            {
+                var target = targets[i];
+                if (target == null) continue;
+
+                if (ReferenceEquals(target, active))
+                    target.AnimateChangeAsync(amount).Forget();
+                else
+                    target.SetAmountImmediate(amount);
+            }
         }
 
         private static bool IsSalesDayChange(ResourceChangeEvent change)

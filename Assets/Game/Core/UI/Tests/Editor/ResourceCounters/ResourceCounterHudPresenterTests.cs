@@ -44,7 +44,7 @@ namespace Game.Core.UI.Tests.Editor.ResourceCounters
         }
 
         [Test]
-        public void NormalResourceChange_UpdatesTargetImmediately()
+        public void NormalResourceChange_UpdatesTarget()
         {
             var resources = new FakeResourcesService();
             var registry = new ResourceCounterTargetRegistry();
@@ -157,6 +157,7 @@ namespace Game.Core.UI.Tests.Editor.ResourceCounters
         public int DisplayedAmount { get; private set; }
         public int ArriveFeedbackCount { get; private set; }
         public int AnimateCallCount { get; private set; }
+        public int ChangeAnimateCallCount { get; private set; }
 
         // Keeps the next AnimateAmountToAsync pending so a test can fire more requests while a
         // count-up is "in flight", then release it with CompleteAnimation.
@@ -179,6 +180,13 @@ namespace Game.Core.UI.Tests.Editor.ResourceCounters
             AnimateCallCount++;
             DisplayedAmount = Math.Max(0, amount);
             return _pending != null ? _pending.Task : UniTask.CompletedTask;
+        }
+
+        public UniTask AnimateChangeAsync(int amount, CancellationToken ct = default)
+        {
+            ChangeAnimateCallCount++;
+            DisplayedAmount = Math.Max(0, amount);
+            return UniTask.CompletedTask;
         }
 
         public void PlayArriveFeedback()

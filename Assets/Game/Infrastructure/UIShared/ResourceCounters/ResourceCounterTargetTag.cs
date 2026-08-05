@@ -16,7 +16,12 @@ namespace UIShared
         [SerializeField] private TMP_Text _amountLabel;
 
         [Header("Count Up")]
+        [Tooltip("Ramp after a coin flight (day payout).")]
         [SerializeField] private float _countUpDuration = 1f;
+
+        [Tooltip("Ramp for ordinary balance changes — purchases, rewards. Kept short so spending " +
+                 "still feels immediate.")]
+        [SerializeField] private float _changeDuration = 0.3f;
 
         [Header("Feedback")]
         [SerializeField] private Transform _pulseRoot;
@@ -73,7 +78,13 @@ namespace UIShared
             SetDisplayedAmount(amount);
         }
 
-        public async UniTask AnimateAmountToAsync(int amount, CancellationToken ct = default)
+        public UniTask AnimateAmountToAsync(int amount, CancellationToken ct = default)
+            => AnimateAsync(amount, _countUpDuration, ct);
+
+        public UniTask AnimateChangeAsync(int amount, CancellationToken ct = default)
+            => AnimateAsync(amount, _changeDuration, ct);
+
+        private async UniTask AnimateAsync(int amount, float durationSeconds, CancellationToken ct)
         {
             CancelCountUp();
 
@@ -83,7 +94,7 @@ namespace UIShared
 
             var from = DisplayedAmount;
             var to = Mathf.Max(0, amount);
-            var duration = Mathf.Max(0f, _countUpDuration);
+            var duration = Mathf.Max(0f, durationSeconds);
 
             try
             {
