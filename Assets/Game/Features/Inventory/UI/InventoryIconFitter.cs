@@ -76,7 +76,12 @@ namespace Game.Inventory.UI
             if (_rectTransform == null) _rectTransform = transform as RectTransform;
 
             // Resolved separately from the serialized field so the fallback never dirties the prefab.
-            _resolvedFrame = _frame != null ? _frame : transform.parent as RectTransform;
+            // A frame pointing at our own rect is rejected: Fit would then measure the rect it is about
+            // to write, and every call would multiply the size by the sprite's aspect ratio — square art
+            // stays put while elongated art shrinks to nothing over a few OnEnable/Bind cycles.
+            _resolvedFrame = _frame != null && _frame != _rectTransform
+                ? _frame
+                : transform.parent as RectTransform;
 
             return _image != null && _rectTransform != null && _resolvedFrame != null;
         }
