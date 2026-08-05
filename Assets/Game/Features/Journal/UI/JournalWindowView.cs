@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using DG.Tweening;
 using Game.Quest.UI;
 using Game.UI;
 using SpriteService;
-using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,12 +12,9 @@ namespace Game.Journal.UI
     public sealed class JournalWindowView : WindowView
     {
         [Header("Tabs")]
-        [SerializeField] private JournalTabButton[] _tabButtons;
+        [SerializeField] private JournalTabBar _tabBar;
         [SerializeField] private GameObject[] _tabPages;
         [SerializeField] private ScrollRect[] _tabScrolls;
-        [SerializeField] private float _selectedTabYOffset = -50f;
-        [SerializeField] private float _tabMoveDuration = 0.18f;
-        [SerializeField] private Ease _tabMoveEase = Ease.OutCubic;
 
         [Header("Pages")]
         [SerializeField] private JournalMemoriesPageView _memoriesPage;
@@ -29,21 +24,14 @@ namespace Game.Journal.UI
         [SerializeField] private JournalQuestsPageView _questsPage;
 
         private JournalTab? _activeTab;
-        private Vector2[] _tabBasePositions;
-        private Tween[] _tabMoveTweens;
 
         public event Action<JournalTab> TabSelected;
 
         protected override void Awake()
         {
             base.Awake();
-            CacheTabBasePositions();
-            if (_tabButtons == null) return;
-            for (var i = 0; i < _tabButtons.Length; i++)
-            {
-                var button = _tabButtons[i];
-                if (button != null) button.Selected += OnTabButtonSelected;
-            }
+            if (_tabBar != null)
+                _tabBar.Selected += OnTabButtonSelected;
         }
 
         public void SelectTab(JournalTab tab)
@@ -51,10 +39,10 @@ namespace Game.Journal.UI
             if (_activeTab.HasValue && _activeTab.Value != tab)
                 ResetScroll(_activeTab.Value);
 
-            var selectedIndex = (int)tab;
-            SetPageActive(selectedIndex);
-            SetButtonsSelected(selectedIndex);
-            SetTabVisuals(selectedIndex);
+            // Pages are addressed by index, so _tabPages must stay in JournalTab order. The tab
+            // buttons themselves are matched by value inside the bar and may be in any order.
+            SetPageActive((int)tab);
+            _tabBar?.SelectTab(tab);
             _activeTab = tab;
         }
 
@@ -98,90 +86,6 @@ namespace Game.Journal.UI
             }
         }
 
-        private void SetButtonsSelected(int selectedIndex)
-        {
-            if (_tabButtons == null) return;
-            for (var i = 0; i < _tabButtons.Length; i++)
-            {
-                if (_tabButtons[i] != null)
-                    _tabButtons[i].SetSelected(i == selectedIndex);
-            }
-        }
-
-        private void SetTabVisuals(int selectedIndex)
-        {
-            CacheTabBasePositions();
-            if (_tabButtons == null) return;
-
-            for (var i = 0; i < _tabButtons.Length; i++)
-            {
-                var rect = GetTabRect(i);
-                if (rect == null) continue;
-
-                var target = _tabBasePositions[i];
-                if (i == selectedIndex)
-                    target.y += _selectedTabYOffset;
-
-                MoveTab(i, rect, target);
-            }
-        }
-
-        private void CacheTabBasePositions()
-        {
-            var count = _tabButtons?.Length ?? 0;
-            if (count == 0) return;
-            if (_tabBasePositions != null && _tabBasePositions.Length == count) return;
-
-            _tabBasePositions = new Vector2[count];
-            _tabMoveTweens = new Tween[count];
-            for (var i = 0; i < count; i++)
-            {
-                var rect = GetTabRect(i);
-                _tabBasePositions[i] = rect != null ? rect.anchoredPosition : Vector2.zero;
-            }
-        }
-
-        private void MoveTab(int index, RectTransform rect, Vector2 target)
-        {
-            if (_tabMoveTweens != null && index >= 0 && index < _tabMoveTweens.Length)
-            {
-                _tabMoveTweens[index]?.Kill();
-                _tabMoveTweens[index] = null;
-            }
-
-            if (_tabMoveDuration <= 0f)
-            {
-                rect.anchoredPosition = target;
-                return;
-            }
-
-            var tween = DOTween
-                .To(() => rect.anchoredPosition, value => rect.anchoredPosition = value, target, _tabMoveDuration)
-                .SetEase(_tabMoveEase)
-                .SetUpdate(true);
-
-            if (_tabMoveTweens != null && index >= 0 && index < _tabMoveTweens.Length)
-                _tabMoveTweens[index] = tween;
-        }
-
-        private RectTransform GetTabRect(int index)
-        {
-            if (_tabButtons == null || index < 0 || index >= _tabButtons.Length) return null;
-            return _tabButtons[index] != null
-                ? _tabButtons[index].GetComponent<RectTransform>()
-                : null;
-        }
-
-        private void KillTabTweens()
-        {
-            if (_tabMoveTweens == null) return;
-            for (var i = 0; i < _tabMoveTweens.Length; i++)
-            {
-                _tabMoveTweens[i]?.Kill();
-                _tabMoveTweens[i] = null;
-            }
-        }
-
         private void ResetScroll(JournalTab tab)
         {
             var index = (int)tab;
@@ -192,15 +96,8 @@ namespace Game.Journal.UI
 
         protected override void OnDestroy()
         {
-            KillTabTweens();
-            if (_tabButtons != null)
-            {
-                for (var i = 0; i < _tabButtons.Length; i++)
-                {
-                    var button = _tabButtons[i];
-                    if (button != null) button.Selected -= OnTabButtonSelected;
-                }
-            }
+            if (_tabBar != null)
+                _tabBar.Selected -= OnTabButtonSelected;
 
             base.OnDestroy();
         }

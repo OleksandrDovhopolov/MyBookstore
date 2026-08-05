@@ -4,14 +4,23 @@ using UnityEngine.UI;
 
 namespace UIShared
 {
-    public abstract class TabButton : MonoBehaviour
+    /// <summary>
+    /// Toggle-backed tab button. Owns only the tab value and the toggle bridge; how the selected
+    /// state looks is delegated to <see cref="ITabButtonVisual"/> components on the same GameObject.
+    /// Generic over the tab enum so each window keeps its own set of tabs — Unity cannot attach a
+    /// generic MonoBehaviour, so every feature declares a concrete subclass (see <c>GameTabButton</c>).
+    /// </summary>
+    public abstract class TabButton<TEnum> : MonoBehaviour
+        where TEnum : struct, Enum
     {
-        [SerializeField] private TabType _tab;
+        [SerializeField] private TEnum _tab;
         [SerializeField] private Toggle _toggle;
 
-        public TabType Tab => _tab;
+        private ITabButtonVisual[] _visuals;
 
-        public event Action<TabType> Selected;
+        public TEnum Tab => _tab;
+
+        public event Action<TEnum> Selected;
 
         protected virtual void Awake()
         {
@@ -20,6 +29,8 @@ namespace UIShared
 
             if (_toggle != null)
                 _toggle.onValueChanged.AddListener(OnValueChanged);
+
+            _visuals = GetComponents<ITabButtonVisual>();
         }
 
         public void SetSelected(bool selected)
@@ -27,10 +38,12 @@ namespace UIShared
             if (_toggle != null)
                 _toggle.SetIsOnWithoutNotify(selected);
 
-            ApplySelected(selected);
-        }
+            // Defensive: SetSelected can arrive before Awake if a window binds during its own Awake.
+            _visuals ??= GetComponents<ITabButtonVisual>();
 
-        protected abstract void ApplySelected(bool selected);
+            for (var i = 0; i < _visuals.Length; i++)
+                _visuals[i]?.ApplySelected(selected);
+        }
 
         private void OnValueChanged(bool value)
         {

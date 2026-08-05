@@ -3,13 +3,14 @@ using UnityEngine.UI;
 
 namespace UIShared
 {
-    public sealed class SpriteTabButton : TabButton
+    /// <summary>Swaps the tab background sprite between the normal and the selected state.</summary>
+    public sealed class SpriteTabVisual : MonoBehaviour, ITabButtonVisual
     {
         [SerializeField] private Image _targetImage;
         [SerializeField] private Sprite _normalSprite;
         [SerializeField] private Sprite _selectedSprite;
 
-        protected override void ApplySelected(bool selected)
+        public void ApplySelected(bool selected)
         {
             if (_targetImage == null)
                 return;

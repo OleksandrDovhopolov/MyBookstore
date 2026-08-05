@@ -13,7 +13,7 @@ namespace Game.Shop.UI
         private const float ScrollMoveThresholdPixels = 2f;
 
         [Header("Tabs")]
-        [SerializeField] private TabBar _tabBar;
+        [SerializeField] private GameTabBar _tabBar;
         [SerializeField] private ScrollRect _scroll;
 
         [Header("Offer prefabs")]

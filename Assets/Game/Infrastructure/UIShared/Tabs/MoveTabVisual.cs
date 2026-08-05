@@ -3,7 +3,8 @@ using UnityEngine;
 
 namespace UIShared
 {
-    public sealed class MoveTabButton : TabButton
+    /// <summary>Lifts the tab along Y while it is selected.</summary>
+    public sealed class MoveTabVisual : MonoBehaviour, ITabButtonVisual
     {
         [Tooltip("Child transform to lift. Leave empty to move the button root — only valid when no " +
                  "LayoutGroup owns this button, since a layout group rewrites child positions on every " +
@@ -17,16 +18,22 @@ namespace UIShared
         private RectTransform _rectTransform;
         private Vector2 _basePosition;
         private Tween _moveTween;
+        private bool _initialized;
 
-        protected override void Awake()
+        private void Awake() => EnsureInitialized();
+
+        private void EnsureInitialized()
         {
-            base.Awake();
+            if (_initialized) return;
+            _initialized = true;
+
             _rectTransform = _visualRoot != null ? _visualRoot : transform as RectTransform;
             _basePosition = _rectTransform != null ? _rectTransform.anchoredPosition : Vector2.zero;
         }
 
-        protected override void ApplySelected(bool selected)
+        public void ApplySelected(bool selected)
         {
+            EnsureInitialized();
             if (_rectTransform == null)
                 return;
 
@@ -49,11 +56,10 @@ namespace UIShared
                 .SetUpdate(true);
         }
 
-        protected override void OnDestroy()
+        private void OnDestroy()
         {
             _moveTween?.Kill();
             _moveTween = null;
-            base.OnDestroy();
         }
     }
 }

@@ -597,7 +597,7 @@ MonoBehaviour:
   _animation: {fileID: 5653145718807376124}
   _closeButtons:
   - {fileID: 6268431347567944567}
-  _tabBar: {fileID: 5539558825370028291}
+  _tabBar: {fileID: 8932780186574597989}
   _scroll: {fileID: 4070701341519934317}
   _cardsPool:
     prefab: {fileID: 7159866281013524648, guid: c0dcee05115c6f7428a956f5e90ce6f1, type: 3}
@@ -980,15 +980,27 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1704871314280016995, guid: 0c1137720bdbb424fa589fdd19c08b6d, type: 3}
+      propertyPath: _selectedYOffset
+      value: 50
+      objectReference: {fileID: 0}
     - target: {fileID: 2255095581302289244, guid: 0c1137720bdbb424fa589fdd19c08b6d, type: 3}
       propertyPath: m_Name
       value: Boxes
+      objectReference: {fileID: 0}
+    - target: {fileID: 3012695352250951883, guid: 0c1137720bdbb424fa589fdd19c08b6d, type: 3}
+      propertyPath: _selectedYOffset
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 4998185102249508538, guid: 0c1137720bdbb424fa589fdd19c08b6d, type: 3}
       propertyPath: m_Name
       value: TabBar
       objectReference: {fileID: 0}
     - target: {fileID: 5144330961221642585, guid: 0c1137720bdbb424fa589fdd19c08b6d, type: 3}
+      propertyPath: _tab
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5394414792980548839, guid: 0c1137720bdbb424fa589fdd19c08b6d, type: 3}
       propertyPath: _tab
       value: 1
       objectReference: {fileID: 0}
@@ -1007,6 +1019,10 @@ PrefabInstance:
     - target: {fileID: 5565131500736233110, guid: 0c1137720bdbb424fa589fdd19c08b6d, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6213526005061320399, guid: 0c1137720bdbb424fa589fdd19c08b6d, type: 3}
+      propertyPath: _selectedYOffset
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 7484715486725931164, guid: 0c1137720bdbb424fa589fdd19c08b6d, type: 3}
       propertyPath: m_AnchorMax.y
@@ -1124,6 +1140,10 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 9142152095515040118, guid: 0c1137720bdbb424fa589fdd19c08b6d, type: 3}
+      propertyPath: _selectedYOffset
+      value: 50
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1134,14 +1154,14 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 8165948418816584331, guid: 0c1137720bdbb424fa589fdd19c08b6d, type: 3}
   m_PrefabInstance: {fileID: 7557897102741370571}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5539558825370028291 stripped
+--- !u!114 &8932780186574597989 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2595054397894819784, guid: 0c1137720bdbb424fa589fdd19c08b6d, type: 3}
+  m_CorrespondingSourceObject: {fileID: 1374889947478579630, guid: 0c1137720bdbb424fa589fdd19c08b6d, type: 3}
   m_PrefabInstance: {fileID: 7557897102741370571}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4b3e8efa0667477a8995f2c6eccefe1c, type: 3}
+  m_Script: {fileID: 11500000, guid: f927d9d3594b6aa469f37c97e7855498, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

@@ -1,35 +1,12 @@
-using System;
-using UnityEngine;
-using UnityEngine.UI;
+using UIShared;
 
 namespace Game.Journal.UI
 {
-    public sealed class JournalTabButton : MonoBehaviour
+    /// <summary>
+    /// Concrete tab button over <see cref="JournalTab"/>. Serialized field names match the generic
+    /// base (<c>_tab</c>, <c>_toggle</c>), so values authored in JournalWindow.prefab survive.
+    /// </summary>
+    public sealed class JournalTabButton : TabButton<JournalTab>
     {
-        [SerializeField] private JournalTab _tab;
-        [SerializeField] private Toggle _toggle;
-
-        public event Action<JournalTab> Selected;
-
-        private void Awake()
-        {
-            if (_toggle == null) _toggle = GetComponent<Toggle>();
-            if (_toggle != null) _toggle.onValueChanged.AddListener(OnValueChanged);
-        }
-
-        public void SetSelected(bool selected)
-        {
-            if (_toggle != null) _toggle.SetIsOnWithoutNotify(selected);
-        }
-
-        private void OnValueChanged(bool value)
-        {
-            if (value) Selected?.Invoke(_tab);
-        }
-
-        private void OnDestroy()
-        {
-            if (_toggle != null) _toggle.onValueChanged.RemoveListener(OnValueChanged);
-        }
     }
 }

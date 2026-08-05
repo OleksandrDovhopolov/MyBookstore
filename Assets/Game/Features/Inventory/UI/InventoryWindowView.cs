@@ -20,7 +20,7 @@ namespace Game.Inventory.UI
 
         [Header("List")]
         [SerializeField] private ScrollRect _scrollRect;
-        [SerializeField] private TabBar _tabBar;
+        [SerializeField] private GameTabBar _tabBar;
         [SerializeField] private UIListPool<InventoryItemRowView> _rowPool = new();
         [SerializeField] private InventoryItemWidgetView _itemInfoWidgetPrefab;
 
