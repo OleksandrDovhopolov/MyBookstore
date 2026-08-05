@@ -12,7 +12,10 @@ namespace Game.Bootstrap.Loading
     public sealed class LoadingScreenView : MonoBehaviour
     {
         [SerializeField] private CanvasGroup _rootGroup;
-        [SerializeField] private Slider _progressBar;
+
+        [Tooltip("Image with Type = Filled; fillAmount is driven directly by normalized progress.")]
+        [SerializeField] private Image _progressBar;
+
         [SerializeField] private TextMeshProUGUI _statusText;
         [SerializeField] private GameObject _errorRoot;
         [SerializeField] private TextMeshProUGUI _errorText;
@@ -39,7 +42,7 @@ namespace Game.Bootstrap.Loading
         {
             if (_progressBar != null)
             {
-                _progressBar.value = normalizedProgress;
+                _progressBar.fillAmount = Mathf.Clamp01(normalizedProgress);
             }
         }
 
