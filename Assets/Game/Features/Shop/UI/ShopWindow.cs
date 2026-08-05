@@ -24,7 +24,7 @@ namespace Game.Shop.UI
         private IUiSpriteProvider _uiSprites;
         private CancellationTokenSource _cts;
         private CancellationTokenSource _iconsCts;
-        private ShopTab _activeTab = ShopTab.All;
+        private TabType _activeTab = TabType.All;
         private readonly Dictionary<string, ShopItemView> _cardsByLotId = new(StringComparer.Ordinal);
 
         [Inject]
@@ -95,7 +95,7 @@ namespace Game.Shop.UI
             LoadOfferIconsForCurrentPool();
         }
 
-        private void OnTabSelected(ShopTab tab)
+        private void OnTabSelected(TabType tab)
         {
             if (_activeTab == tab) return;
 

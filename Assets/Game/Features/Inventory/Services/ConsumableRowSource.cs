@@ -22,10 +22,11 @@ namespace Game.Inventory.Services
         }
 
         public int Order => 30;
+        public string CategoryId => InventoryCategories.Consumable;
 
         public IEnumerable<InventoryRowModel> BuildRows()
         {
-            var items = _inventory.GetByCategory(InventoryCategories.Consumable)
+            var items = _inventory.GetByCategory(CategoryId)
                 .OrderBy(it => it.ItemId, StringComparer.Ordinal)
                 .ToList();
 
@@ -34,7 +35,7 @@ namespace Game.Inventory.Services
                 var item = items[i];
                 if (!_configs.TryGet<ConsumableConfig>(item.ItemId, out var config) || config == null)
                 {
-                    Debug.LogWarning($"{LogPrefix} Missing ConsumableConfig for category '{InventoryCategories.Consumable}' item '{item.ItemId}'.");
+                    Debug.LogWarning($"{LogPrefix} Missing ConsumableConfig for category '{CategoryId}' item '{item.ItemId}'.");
                     continue;
                 }
 

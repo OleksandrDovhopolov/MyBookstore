@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Game.Shop.UI;
 using NUnit.Framework;
+using UIShared;
 
 namespace Game.Shop.Tests.Editor
 {
@@ -15,7 +16,7 @@ namespace Game.Shop.Tests.Editor
                 decor: new[] { Offer("decor_a", isDecor: true) },
                 consumables: new[] { Offer("fuel") });
 
-            var offers = ShopTabOffers.Build(source, ShopTab.Boxes);
+            var offers = ShopTabOffers.Build(source, TabType.Boxes);
 
             CollectionAssert.AreEqual(new[] { "box_a", "box_b" }, LotIds(offers));
         }
@@ -33,7 +34,7 @@ namespace Game.Shop.Tests.Editor
                 },
                 consumables: null);
 
-            var offers = ShopTabOffers.Build(source, ShopTab.Decor);
+            var offers = ShopTabOffers.Build(source, TabType.Decor);
 
             CollectionAssert.AreEqual(
                 new[] { "decor_available", "decor_sold", "decor_sold_b" },
@@ -48,7 +49,7 @@ namespace Game.Shop.Tests.Editor
                 decor: new[] { Offer("decor_a", isDecor: true) },
                 consumables: new[] { Offer("newspaper_quest_item_map"), Offer("fuel") });
 
-            var offers = ShopTabOffers.Build(source, ShopTab.Consumable);
+            var offers = ShopTabOffers.Build(source, TabType.Consumable);
 
             CollectionAssert.AreEqual(new[] { "newspaper_quest_item_map", "fuel" }, LotIds(offers));
         }
@@ -65,7 +66,7 @@ namespace Game.Shop.Tests.Editor
                 },
                 consumables: new[] { Offer("newspaper_quest_item_map"), Offer("fuel") });
 
-            var offers = ShopTabOffers.Build(source, ShopTab.All);
+            var offers = ShopTabOffers.Build(source, TabType.All);
 
             CollectionAssert.AreEqual(
                 new[] { "box_a", "box_b", "newspaper_quest_item_map", "fuel", "decor_available", "decor_sold" },
@@ -75,14 +76,14 @@ namespace Game.Shop.Tests.Editor
         [Test]
         public void Build_ReturnsEmpty_WhenSourceOrListsAreNull()
         {
-            Assert.IsEmpty(ShopTabOffers.Build(null, ShopTab.All));
+            Assert.IsEmpty(ShopTabOffers.Build(null, TabType.All));
 
             var source = new FakeShopOfferSource(books: null, decor: null, consumables: null);
 
-            Assert.IsEmpty(ShopTabOffers.Build(source, ShopTab.All));
-            Assert.IsEmpty(ShopTabOffers.Build(source, ShopTab.Boxes));
-            Assert.IsEmpty(ShopTabOffers.Build(source, ShopTab.Decor));
-            Assert.IsEmpty(ShopTabOffers.Build(source, ShopTab.Consumable));
+            Assert.IsEmpty(ShopTabOffers.Build(source, TabType.All));
+            Assert.IsEmpty(ShopTabOffers.Build(source, TabType.Boxes));
+            Assert.IsEmpty(ShopTabOffers.Build(source, TabType.Decor));
+            Assert.IsEmpty(ShopTabOffers.Build(source, TabType.Consumable));
         }
 
         private static IEnumerable<string> LotIds(IReadOnlyList<ShopOffer> offers) =>

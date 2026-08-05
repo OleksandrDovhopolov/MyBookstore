@@ -12,6 +12,7 @@
         "Game.Resources.API",
         "Game.Inventory.API",
         "Game.Decor.API",
+        "Infrastructure",
         "UnityEngine.TestRunner",
         "Unity.TextMeshPro",
         "Game.Rewards"

@@ -48,8 +48,6 @@ namespace Game.Inventory.UI
             View.Bind(_inventory, _sprites, _rowSources, _decorPlacement, OnRowInfoClicked, HideItemInfoWidget);
         }
 
-        protected override void OnShowStart() => View.Refresh();
-
         protected override void OnDispose()
         {
             // The widget itself is force-closed by the UIManager parent cascade (ContentWidgetArgs

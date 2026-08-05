@@ -21,6 +21,7 @@ namespace Game.Inventory.Services
         }
 
         public int Order => 0;
+        public string CategoryId => InventoryCategories.Book;
 
         public IEnumerable<InventoryRowModel> BuildRows()
         {
@@ -43,13 +44,13 @@ namespace Game.Inventory.Services
             foreach (BookGenre genre in Enum.GetValues(typeof(BookGenre)))
                 counts[genre] = 0;
 
-            var items = _inventory.GetByCategory(InventoryCategories.Book);
+            var items = _inventory.GetByCategory(CategoryId);
             for (var i = 0; i < items.Count; i++)
             {
                 var item = items[i];
                 if (!_configs.TryGet<BookConfig>(item.ItemId, out var book) || book == null)
                 {
-                    Debug.LogWarning($"{LogPrefix} Missing BookConfig for category '{InventoryCategories.Book}' item '{item.ItemId}'.");
+                    Debug.LogWarning($"{LogPrefix} Missing BookConfig for category '{CategoryId}' item '{item.ItemId}'.");
                     continue;
                 }
 

@@ -17,6 +17,7 @@ namespace Game.Inventory.UI
     {
         [Header("List")]
         [SerializeField] private ScrollRect _scrollRect;
+        [SerializeField] private TabBar _tabBar;
         [SerializeField] private UIListPool<InventoryItemRowView> _rowPool = new();
         [SerializeField] private InventoryItemWidgetView _itemInfoWidgetPrefab;
 
@@ -24,9 +25,11 @@ namespace Game.Inventory.UI
         private IUiSpriteProvider _sprites;
         private IReadOnlyList<IInventoryRowSource> _rowSources;
         private IDecorPlacementService _decorPlacement;
+        private readonly List<RowEntry> _rows = new();
         private Action<string, InventoryRowStyle, RectTransform> _onRowInfo;
         private Action _onRowsRebuilt;
         private Vector2 _lastScrollPosition;
+        private TabType _activeTab = TabType.All;
 
         private readonly CancellationTokenSource _cts = new();
         private CancellationTokenSource _renderCts;
@@ -35,6 +38,9 @@ namespace Game.Inventory.UI
         protected override void Awake()
         {
             base.Awake();
+            if (_tabBar != null)
+                _tabBar.Selected += OnTabSelected;
+
             if (_itemInfoWidgetPrefab != null)
                 WidgetRegistry.Register<InventoryItemWidgetData>(_itemInfoWidgetPrefab);
         }
@@ -77,13 +83,14 @@ namespace Game.Inventory.UI
             }
 
             _isBound = true;
-            Render();
+            _tabBar?.SelectTab(_activeTab);
+            RebuildRows();
         }
 
         public void Refresh()
         {
             if (!_isBound) return;
-            Render();
+            RebuildRows();
         }
 
         public void Teardown()
@@ -96,16 +103,18 @@ namespace Game.Inventory.UI
             _cts.Dispose();
             _onRowInfo = null;
             _onRowsRebuilt = null;
+            _rows.Clear();
             _isBound = false;
         }
 
-        private void Render()
+        private void RebuildRows()
         {
             _onRowsRebuilt?.Invoke();
             ClearRows();
             if (_rowPool == null) return;
 
             _renderCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+            _rows.Clear();
 
             for (var i = 0; i < _rowSources.Count; i++)
             {
@@ -116,16 +125,33 @@ namespace Game.Inventory.UI
                 {
                     var row = _rowPool.GetNext();
                     row.Bind(model, _sprites, _onRowInfo, _renderCts.Token);
+                    _rows.Add(new RowEntry(row, source.CategoryId));
                 }
             }
 
             _rowPool.DisableNonActive();
+            ApplyTabFilter();
+        }
+
+        private void ApplyTabFilter()
+        {
+            var categoryId = InventoryTabCategories.Resolve(_activeTab);
+            for (var i = 0; i < _rows.Count; i++)
+            {
+                var entry = _rows[i];
+                if (entry.View == null) continue;
+
+                var visible = categoryId == null || string.Equals(entry.CategoryId, categoryId, StringComparison.Ordinal);
+                if (entry.View.gameObject.activeSelf != visible)
+                    entry.View.gameObject.SetActive(visible);
+            }
         }
 
         private void ClearRows()
         {
             CancelRender();
             _rowPool?.DisableAll();
+            _rows.Clear();
         }
 
         private void CancelRender()
@@ -138,12 +164,12 @@ namespace Game.Inventory.UI
 
         private void OnInventoryChanged(InventoryChangeEvent _)
         {
-            if (_isBound) Render();
+            if (_isBound) RebuildRows();
         }
 
         private void OnDecorPlacementChanged()
         {
-            if (_isBound) Render();
+            if (_isBound) RebuildRows();
         }
 
         private void OnScrollChanged(Vector2 _)
@@ -159,12 +185,40 @@ namespace Game.Inventory.UI
             _onRowsRebuilt?.Invoke();
         }
 
+        private void OnTabSelected(TabType tab)
+        {
+            if (_activeTab == tab)
+                return;
+
+            _activeTab = tab;
+            _onRowsRebuilt?.Invoke();
+            if (_scrollRect != null)
+                _scrollRect.verticalNormalizedPosition = 1f;
+
+            ApplyTabFilter();
+        }
+
         protected override void OnDestroy()
         {
+            if (_tabBar != null)
+                _tabBar.Selected -= OnTabSelected;
+
             if (_scrollRect != null)
                 _scrollRect.onValueChanged.RemoveListener(OnScrollChanged);
 
             base.OnDestroy();
+        }
+
+        private readonly struct RowEntry
+        {
+            public RowEntry(InventoryItemRowView view, string categoryId)
+            {
+                View = view;
+                CategoryId = categoryId;
+            }
+
+            public InventoryItemRowView View { get; }
+            public string CategoryId { get; }
         }
     }
 }

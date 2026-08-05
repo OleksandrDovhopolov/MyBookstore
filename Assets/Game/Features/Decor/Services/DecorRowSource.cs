@@ -27,10 +27,11 @@ namespace Game.Decor.Services
         }
 
         public int Order => 10;
+        public string CategoryId => InventoryCategories.Decor;
 
         public IEnumerable<InventoryRowModel> BuildRows()
         {
-            var items = _inventory.GetByCategory(InventoryCategories.Decor)
+            var items = _inventory.GetByCategory(CategoryId)
                 .OrderBy(it => it.ItemId, StringComparer.Ordinal)
                 .ToList();
 
@@ -39,7 +40,7 @@ namespace Game.Decor.Services
                 var item = items[i];
                 if (!_configs.TryGet<DecorConfig>(item.ItemId, out var config) || config == null)
                 {
-                    Debug.LogWarning($"{LogPrefix} Missing DecorConfig for category '{InventoryCategories.Decor}' item '{item.ItemId}'.");
+                    Debug.LogWarning($"{LogPrefix} Missing DecorConfig for category '{CategoryId}' item '{item.ItemId}'.");
                     continue;
                 }
 

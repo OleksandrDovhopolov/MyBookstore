@@ -35,6 +35,7 @@ namespace Game.Inventory.Tests.Editor
             Assert.AreEqual(4, rows.Single(r => r.SpriteId == BookGenre.Fantasy.ToConfigValue()).Count);
             Assert.IsTrue(rows.All(r => r.Style == InventoryRowStyle.Default));
             Assert.IsTrue(rows.All(r => r.ItemId == r.SpriteId));
+            Assert.AreEqual(InventoryCategories.Book, new BookGenreRowSource(inventory, configs).CategoryId);
         }
 
         [Test]
@@ -52,6 +53,7 @@ namespace Game.Inventory.Tests.Editor
             Assert.AreEqual(0, rows[0].Count);
             Assert.AreEqual("milly_letter", rows[0].ItemId);
             Assert.AreEqual(InventoryRowStyle.QuestItem, rows[0].Style);
+            Assert.AreEqual(InventoryCategories.QuestItem, new QuestItemRowSource(inventory, configs).CategoryId);
         }
 
         [Test]
@@ -69,6 +71,7 @@ namespace Game.Inventory.Tests.Editor
             Assert.AreEqual(15, rows[0].Count);
             Assert.AreEqual("fuel_canister", rows[0].ItemId);
             Assert.AreEqual(InventoryRowStyle.Default, rows[0].Style);
+            Assert.AreEqual(InventoryCategories.Consumable, new ConsumableRowSource(inventory, configs).CategoryId);
         }
 
         [Test]

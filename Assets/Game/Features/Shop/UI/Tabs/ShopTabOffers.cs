@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using UIShared;
 
 namespace Game.Shop.UI
 {
@@ -7,15 +8,15 @@ namespace Game.Shop.UI
     {
         private static readonly ShopOffer[] Empty = { };
 
-        public static IReadOnlyList<ShopOffer> Build(IShopOfferSource source, ShopTab tab)
+        public static IReadOnlyList<ShopOffer> Build(IShopOfferSource source, TabType tab)
         {
             if (source == null) return Empty;
 
             return tab switch
             {
-                ShopTab.Boxes => OrEmpty(source.GetBookOffers()),
-                ShopTab.Decor => SortDecorForDisplay(source.GetDecorOffers()),
-                ShopTab.Consumable => OrEmpty(source.GetConsumableOffers()),
+                TabType.Boxes => OrEmpty(source.GetBookOffers()),
+                TabType.Decor => SortDecorForDisplay(source.GetDecorOffers()),
+                TabType.Consumable => OrEmpty(source.GetConsumableOffers()),
                 _ => BuildAll(source),
             };
         }
