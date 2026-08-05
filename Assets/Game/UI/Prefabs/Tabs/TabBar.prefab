@@ -175,6 +175,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _tab: 4
   _toggle: {fileID: 7323164748001778857}
+  _visualRoot: {fileID: 7752979995028915287}
   _selectedYOffset: 50
   _moveDuration: 0.18
   _moveEase: 9
@@ -429,6 +430,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _tab: 0
   _toggle: {fileID: 4291720786212352447}
+  _visualRoot: {fileID: 7699510246737153992}
   _selectedYOffset: 50
   _moveDuration: 0.18
   _moveEase: 9
@@ -549,6 +551,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _tab: 3
   _toggle: {fileID: 7293099045521580299}
+  _visualRoot: {fileID: 1895481075117510630}
   _selectedYOffset: 50
   _moveDuration: 0.18
   _moveEase: 9
@@ -963,6 +966,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _tab: 2
   _toggle: {fileID: 2163015111942482675}
+  _visualRoot: {fileID: 3367609123114425810}
   _selectedYOffset: 50
   _moveDuration: 0.18
   _moveEase: 9
