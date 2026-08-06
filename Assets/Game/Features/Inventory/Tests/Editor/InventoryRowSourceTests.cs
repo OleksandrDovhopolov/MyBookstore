@@ -42,16 +42,16 @@ namespace Game.Inventory.Tests.Editor
         public void QuestItemRowSource_BuildsQuestItemRows()
         {
             var inventory = new FakeInventoryService()
-                .Seed("milly_letter", InventoryCategories.QuestItem);
+                .Seed("millie_letter", InventoryCategories.QuestItem);
             var configs = new FakeConfigsService()
-                .Set(new QuestItemConfig { Id = "milly_letter" });
+                .Set(new QuestItemConfig { Id = "millie_letter" });
 
             var rows = new QuestItemRowSource(inventory, configs).BuildRows().ToList();
 
             Assert.AreEqual(1, rows.Count);
-            Assert.AreEqual("milly_letter", rows[0].SpriteId);
+            Assert.AreEqual("millie_letter", rows[0].SpriteId);
             Assert.AreEqual(0, rows[0].Count);
-            Assert.AreEqual("milly_letter", rows[0].ItemId);
+            Assert.AreEqual("millie_letter", rows[0].ItemId);
             Assert.AreEqual(InventoryRowStyle.QuestItem, rows[0].Style);
             Assert.AreEqual(InventoryCategories.QuestItem, new QuestItemRowSource(inventory, configs).CategoryId);
         }

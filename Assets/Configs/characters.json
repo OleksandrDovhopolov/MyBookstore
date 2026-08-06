@@ -7,11 +7,11 @@
     "discoveryQuestIds": ["q_intro_eddi"]
   },
   {
-    "id": "milly",
-    "displayNameKey": "character.milly.name",
-    "portraitKey": "milly",
+    "id": "millie",
+    "displayNameKey": "character.millie.name",
+    "portraitKey": "millie",
     "favoriteGenres": ["Drama", "Crime", "Classic"],
-    "discoveryQuestIds": ["q_intro_milly"]
+    "discoveryQuestIds": ["q_intro_millie"]
   },
   {
     "id": "tara",

@@ -17,7 +17,7 @@
     "entryCost": 0,
     "locationAddress": "location/campus",
     "unlockCost": [
-      { "itemId": "milly_letter", "amount": 1 },
+      { "itemId": "millie_letter", "amount": 1 },
       { "itemId": "fuel_canister", "amount": 2 }
     ],
     "demandGenres": [

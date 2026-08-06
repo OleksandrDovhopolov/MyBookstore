@@ -18,7 +18,7 @@ namespace Book.Sell.Tests.Editor
         ""id"": 1,
         ""completionConditions"": { ""all"": [
           { ""type"": ""dialogueDelivered"", ""dialogueId"": ""eddy1"" },
-          { ""not"": { ""type"": ""dialogueDelivered"", ""dialogueId"": ""milly1"" } }
+          { ""not"": { ""type"": ""dialogueDelivered"", ""dialogueId"": ""millie1"" } }
         ] }
       }
     ],
@@ -27,7 +27,7 @@ namespace Book.Sell.Tests.Editor
 ]",
                 @"[
   { ""id"": ""eddy1"", ""nodes"": [] },
-  { ""id"": ""milly1"", ""nodes"": [] }
+  { ""id"": ""millie1"", ""nodes"": [] }
 ]");
 
             var report = DialogueDeliveredConditionReferenceValidator.Validate(fixture.QuestsPath, fixture.DialoguesPath);

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 57c2f99d03555a34fa9cd645d6841edd
+guid: 3b4ec49d886e646418256d434201a53f
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -142113278480258135
-    second: Millie_0
+      213: -2371955314529836112
+    second: Eddy_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,9 +46,9 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Millie_0
+      name: Eddy_0
       rect:
         serializedVersion: 2
-        x: 31
+        x: 17
         y: 15
-        width: 389
-        height: 454
+        width: 412
+        height: 472
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9ab6156e9bc170ef0800000000000000
-      internalID: -142113278480258135
+      spriteID: 0b36956653f151fd0800000000000000
+      internalID: -2371955314529836112
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Millie_0: -142113278480258135
+      Eddy_0: -2371955314529836112
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

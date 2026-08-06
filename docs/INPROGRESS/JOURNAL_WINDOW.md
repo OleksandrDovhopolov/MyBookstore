@@ -106,7 +106,7 @@ public sealed class CharacterJournalMemory
 ### Чего не хватает — блокеры
 
 **M1. Данных нет вообще.** В `Assets/StreamingAssets/Configs/characters.json` четыре персонажа
-(eddi, milly, tara, captain) и **ни одного воспоминания** — строка `memories` в файле не встречается ни разу.
+(eddi, millie, tara, captain) и **ни одного воспоминания** — строка `memories` в файле не встречается ни разу.
 Вкладка сегодня отрендерит пустой список. Нужен контент от геймдизайна: id, titleKey, descriptionKey,
 photoKey и привязка к квесту (`questId` или `questChainId`).
 
@@ -234,7 +234,7 @@ photoKey и привязка к квесту (`questId` или `questChainId`).
 ### Чего не хватает
 
 **C1. Жанров нет в цепочке моделей.** `CharacterConfig.FavoriteGenres` заполнен
-(`eddi: [Fact, Travel]`, `milly: [Drama, Crime, Classic]`, …), но их не пробрасывает ни
+(`eddi: [Fact, Travel]`, `millie: [Drama, Crime, Classic]`, …), но их не пробрасывает ни
 `CharacterJournalEntry`, ни `JournalCharacterItemModel`, ни строка. Надо добавить поле в оба read-model и
 поле-пул `UIListPool<LocationDemandGenreItemView>` в строку (ячейка жанра переиспользуется из Location).
 

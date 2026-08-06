@@ -16,10 +16,10 @@
     "dialogueId": "eddy_quest_1"
   },
   {
-    "id": "milly_intro",
+    "id": "millie_intro",
     "dayIndex": 2,
-    "characterId": "milly",
-    "dialogueId": "milly1"
+    "characterId": "millie",
+    "dialogueId": "millie1"
   },
   {
     "id": "tara_quest_intro",

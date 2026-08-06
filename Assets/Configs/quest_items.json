@@ -1,8 +1,8 @@
 [
   {
-    "id": "milly_letter",
-    "displayName": "Milly Letter",
-    "descriptionKey": "questItem.milly_letter.desc"
+    "id": "millie_letter",
+    "displayName": "Millie Letter",
+    "descriptionKey": "questItem.millie_letter.desc"
   },
   {
     "id": "port_trade_permit",

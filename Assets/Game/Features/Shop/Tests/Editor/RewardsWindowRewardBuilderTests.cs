@@ -92,17 +92,17 @@ namespace Game.Newspaper.Tests.Editor
         public void Build_QuestItemRewards_UseQuestItemDisplayName()
         {
             var configs = new FakeConfigsService(
-                questItems: new[] { new QuestItemConfig { Id = "milly_letter", DisplayName = "Milly Letter" } });
+                questItems: new[] { new QuestItemConfig { Id = "millie_letter", DisplayName = "Millie Letter" } });
             var spec = new RewardSpec("quest_reward", new[]
             {
-                RewardItem.InventoryItem("milly_letter", InventoryCategories.QuestItem, 1)
+                RewardItem.InventoryItem("millie_letter", InventoryCategories.QuestItem, 1)
             });
 
             var rewards = RewardsWindowRewardBuilder.Build(spec, configs);
 
             Assert.AreEqual(1, rewards.Count);
-            Assert.AreEqual("milly_letter", rewards[0].ResourceId);
-            Assert.AreEqual("Milly Letter", rewards[0].DisplayName);
+            Assert.AreEqual("millie_letter", rewards[0].ResourceId);
+            Assert.AreEqual("Millie Letter", rewards[0].DisplayName);
             Assert.AreEqual(InventoryCategories.QuestItem, rewards[0].Category);
         }
 

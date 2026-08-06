@@ -38,25 +38,25 @@
     "worldEffects": []
   },
   {
-    "id": "q_intro_milly",
+    "id": "q_intro_millie",
     "type": "story",
     "chainId": null,
-    "characterId": "milly",
-    "titleKey": "quest.q_intro_milly.title",
-    "descriptionKey": "quest.q_intro_milly.desc",
+    "characterId": "millie",
+    "titleKey": "quest.q_intro_millie.title",
+    "descriptionKey": "quest.q_intro_millie.desc",
     "nextQuestIds": [],
-    "activationConditions": { "type": "dialogueDelivered", "dialogueId": "milly1" },
-    "startsWhen": "Day 2. Customer script 'milly_intro' brings dialogue 'milly1'; the quest activates once that dialogue is delivered.",
+    "activationConditions": { "type": "dialogueDelivered", "dialogueId": "millie1" },
+    "startsWhen": "Day 2. Customer script 'millie_intro' brings dialogue 'millie1'; the quest activates once that dialogue is delivered.",
     "failConditions": null,
     "tasks": [
       {
         "id": 1,
-        "descriptionKey": "task.q_intro_milly_pick_science",
+        "descriptionKey": "task.q_intro_millie_pick_science",
         "completionConditions": { "type": "activePickGenre", "genre": "Fact", "min": 5 }
       }
     ],
     "rewards": [
-      { "kind": "InventoryItem", "id": "milly_letter", "category": "quest_item", "amount": 1 },
+      { "kind": "InventoryItem", "id": "millie_letter", "category": "quest_item", "amount": 1 },
       { "kind": "InventoryItem", "id": "fuel_canister", "category": "consumable", "amount": 1 }
     ],
     "worldEffects": []
