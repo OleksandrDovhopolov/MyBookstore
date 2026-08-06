@@ -34,6 +34,14 @@ namespace Game.LocationUnlock.API
         /// </summary>
         UniTask<bool> ForceUnlockAsync(string locationId, CancellationToken ct);
 
+        /// <summary>
+        /// Debug/cheat seam: closes an already opened location, persists it and raises
+        /// <see cref="StatusChanged"/>. Returns false for an unknown id or for a location that is
+        /// already closed. Spent unlock cost is NOT refunded, and a location without unlock cost
+        /// re-opens by itself on the next condition recheck.
+        /// </summary>
+        UniTask<bool> ForceLockAsync(string locationId, CancellationToken ct);
+
         /// <summary>Fired after a location is opened. Argument is the location id.</summary>
         event Action<string> Unlocked;
 

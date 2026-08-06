@@ -11,10 +11,13 @@ using UnityEngine;
 namespace Game.Cheat
 {
     /// <summary>
-    /// One "Unlock" button per location config. Goes through
-    /// <see cref="ILocationUnlockService.ForceUnlockAsync"/>, so unlock conditions (soldTotal /
-    /// soldGenre) and item cost are bypassed — the player-facing TryUnlockAsync would refuse for
-    /// Market and Village until their counters are ground out.
+    /// "Unlock" and "Lock" buttons per location config. Both go through the force seams of
+    /// <see cref="ILocationUnlockService"/>, so unlock conditions (soldTotal / soldGenre) and item
+    /// cost are bypassed — the player-facing TryUnlockAsync would refuse for Market and Village until
+    /// their counters are ground out.
+    /// Locking sticks only for locations that have an unlockCost: the ones without it (loc_park) are
+    /// re-opened by the service's own auto-unlock pass on the next sale or launch, so the button logs
+    /// a warning instead of pretending the change is permanent.
     /// </summary>
     public sealed class LocationUnlockCheatModule : ICheatsModule
     {
@@ -54,9 +57,14 @@ namespace Game.Cheat
 
                 var id = config.Id;
                 var displayName = string.IsNullOrEmpty(config.DisplayName) ? id : config.DisplayName;
+                var hasCost = config.UnlockCost != null && config.UnlockCost.Length > 0;
 
                 cheatsContainer.AddItem<CheatButtonItem>(item =>
                     item.OnClick($"Unlock {displayName}", () => UnlockAsync(id).Forget())
+                        .WithGroup(Group));
+
+                cheatsContainer.AddItem<CheatButtonItem>(item =>
+                    item.OnClick($"Lock {displayName}", () => LockAsync(id, hasCost).Forget())
                         .WithGroup(Group));
             }
         }
@@ -74,6 +82,31 @@ namespace Game.Cheat
 
                 await _save.SaveAsync(_ct);
                 Debug.Log($"{LogTag} unlocked '{locationId}'.");
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        private async UniTaskVoid LockAsync(string locationId, bool hasUnlockCost)
+        {
+            try
+            {
+                var locked = await _locationUnlock.ForceLockAsync(locationId, _ct);
+                if (!locked)
+                {
+                    Debug.Log($"{LogTag} '{locationId}' is already locked or missing.");
+                    return;
+                }
+
+                await _save.SaveAsync(_ct);
+                Debug.Log($"{LogTag} locked '{locationId}'. Spent unlock cost is not refunded.");
+
+                if (!hasUnlockCost)
+                {
+                    Debug.LogWarning($"{LogTag} '{locationId}' has no unlockCost, so the service " +
+                                     $"auto-unlocks it again on the next sale or launch.");
+                }
             }
             catch (OperationCanceledException)
             {
