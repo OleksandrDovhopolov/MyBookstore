@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Game.Quest.UI;
 using Game.UI;
 using SpriteService;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,6 +14,7 @@ namespace Game.Journal.UI
     {
         [Header("Tabs")]
         [SerializeField] private JournalTabBar _tabBar;
+        [SerializeField] private TextMeshProUGUI _tabTitleLabel;
         [SerializeField] private GameObject[] _tabPages;
         [SerializeField] private ScrollRect[] _tabScrolls;
 
@@ -44,6 +46,9 @@ namespace Game.Journal.UI
             SetPageActive((int)tab);
             _tabBar?.SelectTab(tab);
             _activeTab = tab;
+
+            if (_tabTitleLabel != null)
+                _tabTitleLabel.text = JournalTabTitles.Get(tab);
         }
 
         public void RenderPeople(IReadOnlyList<JournalCharacterItemModel> models, IUiSpriteProvider sprites)

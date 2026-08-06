@@ -12,6 +12,7 @@
         "Save",
         "Game.Characters.API",
         "Game.Inventory.API",
+        "Game.LocationUnlock.API",
         "Game.Resources.API",
         "Game.SalesStats.API",
         "Book.Sell",

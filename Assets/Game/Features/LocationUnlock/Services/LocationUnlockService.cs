@@ -140,6 +140,24 @@ namespace Game.LocationUnlock.Services
             return UnlockResult.Ok;
         }
 
+        public async UniTask<bool> ForceUnlockAsync(string locationId, CancellationToken ct)
+        {
+            if (string.IsNullOrEmpty(locationId) || !_conditions.ContainsKey(locationId))
+            {
+                Debug.LogWarning($"{LogPrefix} force unlock for unknown location '{locationId}'.");
+                return false;
+            }
+
+            // HashSet.Add is the already-unlocked check: no conditions, no cost, no item consumption.
+            if (!_unlocked.Add(locationId)) return false;
+
+            await _repository.SaveAsync(BuildDto(), ct);
+
+            Debug.Log($"{LogPrefix} force-unlocked '{locationId}' (conditions and cost bypassed).");
+            Unlocked?.Invoke(locationId);
+            return true;
+        }
+
         private void OnConditionDataChanged()
         {
             if (!_loaded) return;

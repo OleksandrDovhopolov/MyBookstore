@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using Game.Characters.API;
 using Game.Configs;
 using Game.Inventory.API;
+using Game.LocationUnlock.API;
 using Game.Resources.API;
 using Game.SalesStats.API;
 using Game.UI;
@@ -32,6 +33,7 @@ namespace Game.Cheat
         private IConfigsService _configs;
         private IResourcesService _resources;
         private ICharactersService _characters;
+        private ILocationUnlockService _locationUnlock;
         private ISalesStatsRecorder _salesStatsRecorder;
         private ISalesStatsReader _salesStatsReader;
         private ISaveService _save;
@@ -46,7 +48,8 @@ namespace Game.Cheat
 
         [Inject]
         private void Construct(UIManager uiManager, IInventoryService inventory, IConfigsService configs,
-            IResourcesService resources, ICharactersService characters, ISalesStatsRecorder salesStatsRecorder,
+            IResourcesService resources, ICharactersService characters, ILocationUnlockService locationUnlock,
+            ISalesStatsRecorder salesStatsRecorder,
             ISalesStatsReader salesStatsReader, ISaveService save, IResourceAnimationService resourceAnimations = null,
             IPublisher<ResourceCounterCountUpRequested> countUpPublisher = null)
         {
@@ -55,6 +58,7 @@ namespace Game.Cheat
             _configs = configs;
             _resources = resources;
             _characters = characters;
+            _locationUnlock = locationUnlock;
             _salesStatsRecorder = salesStatsRecorder;
             _salesStatsReader = salesStatsReader;
             _save = save;
@@ -138,6 +142,7 @@ namespace Game.Cheat
                 new InventoryItemCheatModule(_inventory, _configs, destroyCt),
                 new ResourcesCheatModule(_resources, _resourceAnimations, _countUpPublisher, destroyCt),
                 new CharacterMemoryCheatModule(_characters, _save, destroyCt),
+                new LocationUnlockCheatModule(_locationUnlock, _configs, _save, destroyCt),
                 new SalesStatsCheatModule(_salesStatsRecorder, _salesStatsReader, _configs, _save, destroyCt),
                 new DialogueCheatModule(_uiManager, _configs),
                 new ActiveSaleCheatModule(_uiManager, _configs),
