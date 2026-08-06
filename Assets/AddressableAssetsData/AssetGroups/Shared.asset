@@ -55,6 +55,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1b1022f11fc618649af3adae9e46fd5b
+    m_Address: memory_placeholder
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 206f074573da1684b8291e0cdb337cce
     m_Address: Fact
     m_ReadOnly: 0
@@ -137,6 +142,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 913dab9a7930aaf4db302aa573d7b9f9
     m_Address: Kids
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 968f7e801ba279c4b9d373659828dcfa
+    m_Address: memory_moving_in
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

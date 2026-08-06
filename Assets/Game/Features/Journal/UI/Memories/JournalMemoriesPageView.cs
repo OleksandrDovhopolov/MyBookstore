@@ -7,6 +7,10 @@ namespace Game.Journal.UI
 {
     public sealed class JournalMemoriesPageView : MonoBehaviour
     {
+        private const string HardcodedMemoryTitle = "New beginning";
+        private const string HardcodedMemoryDescription =
+            "Leaving my settled place is the best decision of my thousand-year life. Who said a deity can't choose its home?";
+
         [SerializeField] private UIListPool<JournalMemoryRowView> _rowPool = new();
 
         public void Render(IReadOnlyList<JournalMemoryItemModel> models, IUiSpriteProvider sprites)
@@ -20,7 +24,7 @@ namespace Game.Journal.UI
                 {
                     var model = models[i];
                     if (model == null) continue;
-                    _rowPool.GetNext().Bind(model, sprites, visibleIndex % 2 == 0);
+                    _rowPool.GetNext().Bind(WithHardcodedText(model), sprites, visibleIndex % 2 == 0);
                     visibleIndex++;
                 }
             }
@@ -29,5 +33,17 @@ namespace Game.Journal.UI
         }
 
         public void Clear() => _rowPool.DisableAll();
+
+        private static JournalMemoryItemModel WithHardcodedText(JournalMemoryItemModel model) =>
+            new(
+                model.CharacterId,
+                model.MemoryId,
+                HardcodedMemoryTitle,
+                HardcodedMemoryDescription,
+                model.PhotoKey,
+                model.Order,
+                model.IsUnlocked,
+                model.IsGolden,
+                model.LinkedQuestState);
     }
 }
