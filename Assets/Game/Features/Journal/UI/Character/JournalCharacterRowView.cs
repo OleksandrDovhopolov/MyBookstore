@@ -43,7 +43,8 @@ namespace Game.Journal.UI
         {
             try
             {
-                var sprite = await sprites.GetSpriteAsync(portraitKey, ct);
+                var avatarSprite = portraitKey + "_avatar";
+                var sprite = await sprites.GetSpriteAsync(avatarSprite, ct);
                 if (ct.IsCancellationRequested || _portraitImage == null) return;
                 SetPortrait(sprite != null ? sprite : _spriteFallback);
             }
