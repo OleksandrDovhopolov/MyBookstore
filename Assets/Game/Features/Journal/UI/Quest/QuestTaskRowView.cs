@@ -8,7 +8,10 @@ namespace Game.Quest.UI
     public sealed class QuestTaskRowView : MonoBehaviour, ICleanup
     {
         [SerializeField] private TextMeshProUGUI _descriptionLabel;
-        [SerializeField] private Slider _progressSlider;
+
+        [Tooltip("Image with Type = Filled; fillAmount is driven by task progress in the 0..1 range.")]
+        [SerializeField] private Image _progressFill;
+
         [SerializeField] private TextMeshProUGUI _counterLabel;
         [SerializeField] private GameObject _doneBadge;
 
@@ -31,11 +34,9 @@ namespace Game.Quest.UI
 
         private void ApplyProgress(float fill01)
         {
-            if (_progressSlider == null) return;
+            if (_progressFill == null) return;
 
-            _progressSlider.minValue = 0f;
-            _progressSlider.maxValue = 100f;
-            _progressSlider.SetValueWithoutNotify(Mathf.Clamp01(fill01) * 100f);
+            _progressFill.fillAmount = Mathf.Clamp01(fill01);
         }
     }
 }
