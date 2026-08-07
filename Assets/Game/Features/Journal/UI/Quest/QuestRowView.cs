@@ -1,9 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using SpriteService;
-using TMPro;
 using UIShared;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,15 +12,12 @@ namespace Game.Quest.UI
 {
     public sealed class QuestRowView : MonoBehaviour, ICleanup
     {
-        [SerializeField] private GameObject _portraitRoot;
         [SerializeField] private Image _portraitImage;
         [SerializeField] private Sprite _spriteFallback;
         [SerializeField] private GameObject _completeBadge;
         [SerializeField] private UIListPool<QuestTaskRowView> _taskPool = new();
-        [SerializeField] private GameObject _rewardRoot;
         [SerializeField] private UIListPool<QuestRewardIconView> _rewardPool = new();
         [SerializeField] private Button _claimButton;
-        [SerializeField] private GameObject _claimedRoot;
 
         private Action<string> _onClaim;
         private Action<QuestRewardItemModel, RectTransform> _onRewardInfo;
@@ -45,18 +42,17 @@ namespace Game.Quest.UI
 
             if (_completeBadge != null) _completeBadge.SetActive(model?.IsRewardClaimed == true);
 
-            var hasPortrait = !string.IsNullOrEmpty(model?.CharacterId);
-            if (_portraitRoot != null) _portraitRoot.SetActive(hasPortrait);
             if (_portraitImage != null) _portraitImage.sprite = _spriteFallback;
 
-            var hasRewards = model?.IsRewardClaimed != true && model?.Rewards != null && model.Rewards.Count > 0;
-            if (_rewardRoot != null) _rewardRoot.SetActive(hasRewards);
             if (_claimButton != null) _claimButton.gameObject.SetActive(model?.CanClaim == true);
             var claimedRoot = GetClaimedRoot();
             if (claimedRoot != null) claimedRoot.SetActive(model?.IsRewardClaimed == true);
 
             RenderTasks(model?.Tasks);
-            RenderRewards(hasRewards ? model?.Rewards : null);
+
+            // Rewards are part of the quest description, not of the claim flow: they stay on screen
+            // in every state, including Awarded.
+            RenderRewards(model?.Rewards);
             LoadSprites(model, sprites);
         }
 
@@ -67,9 +63,7 @@ namespace Game.Quest.UI
             _questId = null;
             CancelSpriteLoad();
             if (_portraitImage != null) _portraitImage.sprite = _spriteFallback;
-            if (_portraitRoot != null) _portraitRoot.SetActive(false);
             if (_completeBadge != null) _completeBadge.SetActive(false);
-            if (_rewardRoot != null) _rewardRoot.SetActive(false);
             if (_claimButton != null) _claimButton.gameObject.SetActive(false);
             var claimedRoot = GetClaimedRoot();
             if (claimedRoot != null) claimedRoot.SetActive(false);
@@ -77,12 +71,9 @@ namespace Game.Quest.UI
             _rewardPool.DisableAll();
         }
 
-        private GameObject GetClaimedRoot()
-            => _claimedRoot != null && (_claimButton == null || _claimedRoot != _claimButton.gameObject)
-                ? _claimedRoot
-                : null;
+        private GameObject GetClaimedRoot() => null;
 
-        private void RenderTasks(System.Collections.Generic.IReadOnlyList<QuestTaskItemModel> tasks)
+        private void RenderTasks(IReadOnlyList<QuestTaskItemModel> tasks)
         {
             if (!CanUsePool(_taskPool))
             {
@@ -98,7 +89,7 @@ namespace Game.Quest.UI
             _taskPool.DisableNonActive();
         }
 
-        private void RenderRewards(System.Collections.Generic.IReadOnlyList<QuestRewardItemModel> rewards)
+        private void RenderRewards(IReadOnlyList<QuestRewardItemModel> rewards)
         {
             if (!CanUsePool(_rewardPool)) return;
 
