@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Characters.API;
 using Game.Configs;
@@ -9,7 +10,9 @@ using Game.LocationUnlock.API;
 using Game.Quest.API;
 using Game.Quest.UI;
 using Game.UI;
+using Game.UI.ContentWidget;
 using SpriteService;
+using UnityEngine;
 using VContainer;
 
 namespace Game.Journal.UI
@@ -21,6 +24,8 @@ namespace Game.Journal.UI
     [Window("JournalWindow", WindowType.Page, true)]
     public sealed class JournalWindow : WindowController<JournalWindowView>
     {
+        private const string TodoDescription = "TODO: reward description";
+
         private readonly JournalCharactersViewModelBuilder _peopleBuilder = new();
         private readonly JournalMemoriesViewModelBuilder _memoriesBuilder = new();
         private readonly JournalPlacesViewModelBuilder _placesBuilder = new();
@@ -38,6 +43,14 @@ namespace Game.Journal.UI
         private IQuestRewardGranter _questGranter;
         private IUiSpriteProvider _sprites;
         private Action<string> _onQuestClaim;
+        private Action<QuestRewardItemModel, RectTransform> _onRewardInfo;
+
+        // The widget is tracked by instance, not by type: UIManager.HideAsync<T> filters on
+        // IWindowController.IsShown, which is only set after the show animation finishes, so a hide
+        // issued while the show is still running would be dropped silently.
+        private IWindowController _rewardInfoWidget;
+        private int _pendingWidgetShows;
+        private bool _hideRequestedWhileShowing;
 
         [Inject]
         public void InjectServices(
@@ -65,12 +78,14 @@ namespace Game.Journal.UI
             _questsBuilder = new QuestViewModelBuilder(_configs);
             _questClaimFlow = new QuestClaimFlow(_quests, _questGranter, UIManager, RenderQuests);
             _onQuestClaim = questId => _questClaimFlow?.Claim(questId);
+            _onRewardInfo = (reward, anchor) => ShowRewardInfoWidgetAsync(reward, anchor).Forget();
         }
 
         protected override void OnShowStart()
         {
             ApplyWindowArgs();
             View.TabSelected += OnTabSelected;
+            View.QuestsScrolled += HideRewardInfoWidget;
 
             if (_characters != null)
             {
@@ -105,6 +120,8 @@ namespace Game.Journal.UI
         protected override void OnHideStart(bool isClosed)
         {
             View.TabSelected -= OnTabSelected;
+            View.QuestsScrolled -= HideRewardInfoWidget;
+            HideRewardInfoWidget();
 
             if (_characters != null)
             {
@@ -134,6 +151,9 @@ namespace Game.Journal.UI
 
         protected override void OnDispose()
         {
+            // The widget itself is force-closed by the UIManager parent cascade (ContentWidgetArgs
+            // carries this controller as ParentWindow); here we only drop our subscription.
+            UntrackRewardInfoWidget();
             _questClaimFlow?.Dispose();
             _questClaimFlow = null;
             View.Clear();
@@ -142,6 +162,7 @@ namespace Game.Journal.UI
         private void OnTabSelected(JournalTab tab)
         {
             _activeTab = tab;
+            HideRewardInfoWidget();
             MarkMemoriesSeenIfActive();
         }
 
@@ -220,12 +241,94 @@ namespace Game.Journal.UI
 
             if (_quests == null || _questsBuilder == null)
             {
-                View.RenderQuests(Array.Empty<QuestItemModel>(), _onQuestClaim, _sprites);
+                View.RenderQuests(Array.Empty<QuestItemModel>(), _onQuestClaim, _onRewardInfo, _sprites);
                 return;
             }
 
             var models = _questsBuilder.Build(_quests.GetAllQuests());
-            View.RenderQuests(models, _onQuestClaim, _sprites);
+            View.RenderQuests(models, _onQuestClaim, _onRewardInfo, _sprites);
+        }
+
+        private async UniTaskVoid ShowRewardInfoWidgetAsync(QuestRewardItemModel reward, RectTransform anchor)
+        {
+            if (reward == null || string.IsNullOrEmpty(reward.Id) || anchor == null
+                || UIManager == null || View == null)
+                return;
+
+            // A fresh show supersedes a hide that was requested while the previous one was still running.
+            _hideRequestedWhileShowing = false;
+            _pendingWidgetShows++;
+
+            try
+            {
+                var description = string.IsNullOrEmpty(reward.DisplayName) ? TodoDescription : reward.DisplayName;
+                var args = new ContentWidgetArgs(
+                    new QuestRewardWidgetData(reward.Id, description),
+                    anchor,
+                    this,
+                    placementMode: ContentWidgetPlacementMode.HorizontalOnly);
+                TrackRewardInfoWidget(
+                    await UIManager.ShowAsync<ContentWidgetController>(args, View.destroyCancellationToken));
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[JournalWindow] Failed to show reward widget for '{reward.Id}': {e}");
+            }
+            finally
+            {
+                _pendingWidgetShows--;
+
+                if (_pendingWidgetShows == 0 && _hideRequestedWhileShowing)
+                {
+                    _hideRequestedWhileShowing = false;
+                    HideRewardInfoWidget();
+                }
+            }
+        }
+
+        private void TrackRewardInfoWidget(IWindowController widget)
+        {
+            // null means the show was rejected by the window filter — keep tracking whatever is up.
+            if (widget == null || ReferenceEquals(_rewardInfoWidget, widget)) return;
+
+            UntrackRewardInfoWidget();
+            _rewardInfoWidget = widget;
+
+            // The widget also closes on its own (auto-close, close button, another page opening),
+            // so drop the reference on Closed instead of hiding an already hidden controller later.
+            _rewardInfoWidget.Closed += OnRewardInfoWidgetClosed;
+        }
+
+        private void UntrackRewardInfoWidget()
+        {
+            if (_rewardInfoWidget == null) return;
+
+            _rewardInfoWidget.Closed -= OnRewardInfoWidgetClosed;
+            _rewardInfoWidget = null;
+        }
+
+        private void OnRewardInfoWidgetClosed(IWindowController _) => UntrackRewardInfoWidget();
+
+        private void HideRewardInfoWidget()
+        {
+            if (UIManager == null) return;
+
+            // ShowAsync is still holding the UIManager gate: the controller is not IsShown yet, so a
+            // hide issued now would be dropped. Replay it once the show completes.
+            if (_pendingWidgetShows > 0)
+            {
+                _hideRequestedWhileShowing = true;
+                return;
+            }
+
+            var widget = _rewardInfoWidget;
+            if (widget == null) return;
+
+            UntrackRewardInfoWidget();
+            UIManager.HideAsync(widget, forceClose: true, ct: CancellationToken.None).Forget();
         }
 
         private bool IsLocationUnlocked(string locationId)

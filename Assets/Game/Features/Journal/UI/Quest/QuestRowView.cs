@@ -15,7 +15,6 @@ namespace Game.Quest.UI
         [SerializeField] private GameObject _portraitRoot;
         [SerializeField] private Image _portraitImage;
         [SerializeField] private Sprite _spriteFallback;
-        [SerializeField] private TextMeshProUGUI _titleLabel;
         [SerializeField] private GameObject _completeBadge;
         [SerializeField] private UIListPool<QuestTaskRowView> _taskPool = new();
         [SerializeField] private GameObject _rewardRoot;
@@ -24,6 +23,7 @@ namespace Game.Quest.UI
         [SerializeField] private GameObject _claimedRoot;
 
         private Action<string> _onClaim;
+        private Action<QuestRewardItemModel, RectTransform> _onRewardInfo;
         private string _questId;
         private CancellationTokenSource _spriteCts;
 
@@ -33,9 +33,14 @@ namespace Game.Quest.UI
                 _claimButton.onClick.AddListener(OnClaimClicked);
         }
 
-        public void Bind(QuestItemModel model, Action<string> onClaim, IUiSpriteProvider sprites)
+        public void Bind(
+            QuestItemModel model,
+            Action<string> onClaim,
+            Action<QuestRewardItemModel, RectTransform> onRewardInfo,
+            IUiSpriteProvider sprites)
         {
             _onClaim = onClaim;
+            _onRewardInfo = onRewardInfo;
             _questId = model?.Id;
 
             if (_completeBadge != null) _completeBadge.SetActive(model?.IsRewardClaimed == true);
@@ -58,11 +63,11 @@ namespace Game.Quest.UI
         public void Cleanup()
         {
             _onClaim = null;
+            _onRewardInfo = null;
             _questId = null;
             CancelSpriteLoad();
             if (_portraitImage != null) _portraitImage.sprite = _spriteFallback;
             if (_portraitRoot != null) _portraitRoot.SetActive(false);
-            if (_titleLabel != null) _titleLabel.text = string.Empty;
             if (_completeBadge != null) _completeBadge.SetActive(false);
             if (_rewardRoot != null) _rewardRoot.SetActive(false);
             if (_claimButton != null) _claimButton.gameObject.SetActive(false);
@@ -101,7 +106,7 @@ namespace Game.Quest.UI
             if (rewards != null)
             {
                 for (var i = 0; i < rewards.Count; i++)
-                    _rewardPool.GetNext().Bind(rewards[i]);
+                    _rewardPool.GetNext().Bind(rewards[i], _onRewardInfo);
             }
             _rewardPool.DisableNonActive();
         }
@@ -125,7 +130,8 @@ namespace Game.Quest.UI
             {
                 if (_portraitImage != null && !string.IsNullOrEmpty(portraitKey))
                 {
-                    var portrait = await sprites.GetSpriteAsync(portraitKey, ct);
+                    var avatarKey = portraitKey + "_avatar";
+                    var portrait = await sprites.GetSpriteAsync(avatarKey, ct);
                     if (ct.IsCancellationRequested) return;
                     if (_portraitImage != null) _portraitImage.sprite = portrait != null ? portrait : _spriteFallback;
                 }

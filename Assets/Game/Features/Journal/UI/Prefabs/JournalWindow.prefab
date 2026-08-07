@@ -2476,12 +2476,18 @@ MonoBehaviour:
   - {fileID: 8699085712165282748}
   - {fileID: 767505824390941111}
   - {fileID: 1899609652230193963}
-  _tabScrolls: []
+  _tabScrolls:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 8561442284816178281}
   _memoriesPage: {fileID: 6310153097584030274}
   _placesPage: {fileID: 6520171356048656916}
   _objectsPage: {fileID: 1683636390050875640}
   _peoplePage: {fileID: 7560714814644556088}
   _questsPage: {fileID: 8186653346661823032}
+  _rewardInfoWidgetPrefab: {fileID: 388471136482870693, guid: 343085043b2533b429c28cd9323e8a68, type: 3}
 --- !u!1 &6031840542076914911
 GameObject:
   m_ObjectHideFlags: 0

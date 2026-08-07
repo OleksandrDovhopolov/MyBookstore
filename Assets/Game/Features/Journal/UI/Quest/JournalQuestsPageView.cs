@@ -11,7 +11,11 @@ namespace Game.Journal.UI
     {
         [SerializeField] private UIListPool<QuestRowView> _rowPool = new();
 
-        public void Render(IReadOnlyList<QuestItemModel> models, Action<string> onClaim, IUiSpriteProvider sprites)
+        public void Render(
+            IReadOnlyList<QuestItemModel> models,
+            Action<string> onClaim,
+            Action<QuestRewardItemModel, RectTransform> onRewardInfo,
+            IUiSpriteProvider sprites)
         {
             _rowPool.DisableAll();
 
@@ -21,7 +25,7 @@ namespace Game.Journal.UI
                 {
                     var model = models[i];
                     if (model == null) continue;
-                    _rowPool.GetNext().Bind(model, onClaim, sprites);
+                    _rowPool.GetNext().Bind(model, onClaim, onRewardInfo, sprites);
                 }
             }
 
