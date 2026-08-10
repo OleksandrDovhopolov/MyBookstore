@@ -15,11 +15,13 @@ namespace Game.Configs.Tests.Editor
             CollectionAssert.Contains(sections, "books");
             CollectionAssert.Contains(sections, "bookshops");
             CollectionAssert.Contains(sections, "sample_requests");
+            CollectionAssert.Contains(sections, "shelf_presets");
             CollectionAssert.Contains(sections, "shop");
 
             CollectionAssert.DoesNotContain(sections, "requests");
             CollectionAssert.DoesNotContain(sections, "hard_requests");
-            Assert.AreEqual(15, sections.Length);
+            CollectionAssert.DoesNotContain(sections, "popular_books");
+            Assert.AreEqual(16, sections.Length);
         }
 
         [Test]
