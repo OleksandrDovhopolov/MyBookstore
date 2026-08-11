@@ -46,7 +46,7 @@ namespace Book.Sell.UI
         {
             KillAll();
             HideButtons(instant: true);
-            HideBookDetailInstant();
+            ShowBookDetailInstant();
             HideResultInstant();
             SetFinishButtonVisible(false, interactable: false);
         }
@@ -90,6 +90,24 @@ namespace Book.Sell.UI
                 .Join(DOTween.To(() => _bookDetailRoot.localScale, x => _bookDetailRoot.localScale = x, Vector3.one, _detailShowDuration)
                     .SetEase(Ease.OutBack))
                 .SetTarget(this);
+        }
+
+        /// <summary>
+        /// Resets the detail area to fully visible without animating. The area hosts both the
+        /// "nothing selected" placeholder and the selected-book content, so it stays on screen for the
+        /// whole selection phase — only <see cref="HideSelection"/> (moving to the result) takes it away.
+        /// </summary>
+        public void ShowBookDetailInstant()
+        {
+            KillDetailTween();
+            if (_bookDetailRoot == null) return;
+
+            _bookDetailRoot.gameObject.SetActive(true);
+            var group = EnsureCanvasGroup(_bookDetailRoot.gameObject);
+            group.alpha = 1f;
+            group.interactable = true;
+            group.blocksRaycasts = true;
+            _bookDetailRoot.localScale = Vector3.one;
         }
 
         public void HideBookDetail(Action onComplete = null)
