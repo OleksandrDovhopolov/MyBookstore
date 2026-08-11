@@ -19,9 +19,9 @@ namespace Game.Configs.Tests.Editor
         private const string Json = @"
 [
   {
-    ""id"": ""milly_letter"",
-    ""displayName"": ""Milly Letter"",
-    ""descriptionKey"": ""questItem.milly_letter.desc""
+    ""id"": ""millie_letter"",
+    ""displayName"": ""Millie Letter"",
+    ""descriptionKey"": ""questItem.millie_letter.desc""
   }
 ]";
 
@@ -32,9 +32,9 @@ namespace Game.Configs.Tests.Editor
 
             Assert.IsNotNull(items);
             Assert.AreEqual(1, items.Length);
-            Assert.AreEqual("milly_letter", items[0].Id);
-            Assert.AreEqual("Milly Letter", items[0].DisplayName);
-            Assert.AreEqual("questItem.milly_letter.desc", items[0].DescriptionKey);
+            Assert.AreEqual("millie_letter", items[0].Id);
+            Assert.AreEqual("Millie Letter", items[0].DisplayName);
+            Assert.AreEqual("questItem.millie_letter.desc", items[0].DescriptionKey);
         }
 
         [Test]
@@ -46,9 +46,9 @@ namespace Game.Configs.Tests.Editor
             var all = service.GetAll<QuestItemConfig>();
             Assert.AreEqual(1, all.Count);
 
-            var letter = service.Get<QuestItemConfig>("milly_letter");
+            var letter = service.Get<QuestItemConfig>("millie_letter");
             Assert.IsNotNull(letter);
-            Assert.AreEqual("questItem.milly_letter.desc", letter.DescriptionKey);
+            Assert.AreEqual("questItem.millie_letter.desc", letter.DescriptionKey);
         }
 
         [Test]
@@ -60,8 +60,8 @@ namespace Game.Configs.Tests.Editor
                 Assert.IsTrue(File.Exists(path), $"{path} missing.");
 
                 var items = JsonConvert.DeserializeObject<QuestItemConfig[]>(File.ReadAllText(path));
-                var letter = items.Single(i => i.Id == "milly_letter");
-                Assert.AreEqual("questItem.milly_letter.desc", letter.DescriptionKey);
+                var letter = items.Single(i => i.Id == "millie_letter");
+                Assert.AreEqual("questItem.millie_letter.desc", letter.DescriptionKey);
             }
         }
 

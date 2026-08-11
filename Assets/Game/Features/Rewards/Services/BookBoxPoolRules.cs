@@ -4,6 +4,12 @@ using Game.Configs.Models;
 
 namespace Game.Rewards.Services
 {
+    public enum BookBoxKind
+    {
+        General,
+        Genre
+    }
+
     /// <summary>
     /// Per-box selection rules for <see cref="BookBoxRewardExpander"/>. Each rule consists of:
     /// - <c>Filter</c>: which books are eligible.
@@ -31,47 +37,68 @@ namespace Game.Rewards.Services
             public Predicate<BookConfig> Filter { get; }
             public Func<BookConfig, double> Weight { get; }
             public int Rolls { get; }
+            public BookBoxKind Kind { get; }
+            public string Genre { get; }
 
             /// <summary>The filter in words, e.g. "RarityWeight &gt;= 0.6". Used in diagnostics only.</summary>
             public string FilterDescription { get; }
 
             public Rule(Predicate<BookConfig> filter, Func<BookConfig, double> weight, int rolls,
-                string filterDescription)
+                string filterDescription, BookBoxKind kind, string genre = null)
             {
                 Filter = filter;
                 Weight = weight;
                 Rolls = rolls;
                 FilterDescription = filterDescription;
+                Kind = kind;
+                Genre = genre;
             }
         }
 
         // Hardcoded rules keyed by RewardSpec.Id (same id as the shop lot's rewardId).
-        private static readonly Dictionary<string, Rule> _rules = new(StringComparer.Ordinal)
+        private static readonly Dictionary<string, Rule> _rules = BuildRules();
+
+        private static Dictionary<string, Rule> BuildRules()
         {
-            ["book_box_common_15"] = new Rule(
+            var rules = new Dictionary<string, Rule>(StringComparer.Ordinal)
+            {
+                ["book_box_general_5"] = GeneralRule(5),
+                ["book_box_general_10"] = GeneralRule(10),
+                ["book_box_common_15"] = GeneralRule(15),
+                ["book_box_rare_8"] = new Rule(
+                    filter: b => b.RarityWeight >= 0.6f,
+                    weight: b => b.RarityWeight,
+                    rolls: 8,
+                    filterDescription: "RarityWeight >= 0.6",
+                    kind: BookBoxKind.General),
+            };
+
+            foreach (BookGenre genre in Enum.GetValues(typeof(BookGenre)))
+            {
+                var genreName = genre.ToString();
+                rules[$"book_box_genre_{genreName.ToLowerInvariant()}_8"] = GenreRule(genreName, 8);
+            }
+
+            rules["book_box_genre_heartfelt_1"] = GenreRule("Drama", 1);
+            return rules;
+        }
+
+        private static Rule GeneralRule(int rolls) =>
+            new(
                 filter: _ => true,
                 weight: b => Math.Max(0.0001, 1.0 - b.RarityWeight),
-                rolls: 15,
-                filterDescription: "any book (lower RarityWeight = higher chance)"),
+                rolls: rolls,
+                filterDescription: "any book (lower RarityWeight = higher chance)",
+                kind: BookBoxKind.General);
 
-            ["book_box_rare_8"] = new Rule(
-                filter: b => b.RarityWeight >= 0.6f,
+        private static Rule GenreRule(string genre, int rolls) =>
+            new(
+                filter: b => string.Equals(b.PrimaryGenre, genre, StringComparison.OrdinalIgnoreCase),
                 weight: b => b.RarityWeight,
-                rolls: 8,
-                filterDescription: "RarityWeight >= 0.6"),
-
-            ["book_box_genre_dystopic_1"] = new Rule(
-                filter: b => string.Equals(b.PrimaryGenre, "Fantasy", StringComparison.OrdinalIgnoreCase),
-                weight: b => b.RarityWeight,
-                rolls: 1,
-                filterDescription: "PrimaryGenre == Fantasy"),
-
-            ["book_box_genre_heartfelt_1"] = new Rule(
-                filter: b => string.Equals(b.PrimaryGenre, "Drama", StringComparison.OrdinalIgnoreCase),
-                weight: b => b.RarityWeight,
-                rolls: 1,
-                filterDescription: "PrimaryGenre == Drama"),
-        };
+                rolls: rolls,
+                filterDescription: $"PrimaryGenre == {genre}",
+                kind: BookBoxKind.Genre,
+                genre: genre);
 
         /// <summary>Every authored box id, in declaration order. Used by the editor validator.</summary>
         public static IEnumerable<KeyValuePair<string, Rule>> All => _rules;

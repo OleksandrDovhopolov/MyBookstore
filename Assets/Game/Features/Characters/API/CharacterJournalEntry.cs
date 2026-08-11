@@ -10,11 +10,14 @@ namespace Game.Characters.API
     {
         public string CharacterId { get; set; }
         public bool Discovered { get; set; }
+        public bool HiddenInJournal { get; set; }
         public string DisplayNameKey { get; set; }
         public string RoleKey { get; set; }
 
         /// <summary>Addressables key for the character portrait; empty when the UI should show a placeholder.</summary>
         public string PortraitKey { get; set; }
+
+        public string[] FavoriteGenres { get; set; }
 
         public CharacterJournalMemory[] Memories { get; set; }
     }
@@ -22,7 +25,9 @@ namespace Game.Characters.API
     /// <summary>One memory row in a <see cref="CharacterJournalEntry"/>.</summary>
     public sealed class CharacterJournalMemory
     {
+        public string CharacterId { get; set; }
         public string MemoryId { get; set; }
+        public int Order { get; set; }
         public bool Unlocked { get; set; }
         public bool IsGolden { get; set; }
         public string TitleKey { get; set; }

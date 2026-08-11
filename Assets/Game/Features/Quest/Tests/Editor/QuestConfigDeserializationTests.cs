@@ -146,10 +146,10 @@ namespace Game.Quest.Tests.Editor
         }
 
         [Test]
-        public void Content_MillyIntro_IsDialogueDeliveredActivePickQuestWithLetterAndFuelReward()
+        public void Content_MillieIntro_IsDialogueDeliveredActivePickQuestWithLetterAndFuelReward()
         {
             foreach (var root in ContentRoots)
-                AssertMillyIntroQuest(root);
+                AssertMillieIntroQuest(root);
         }
 
         [Test]
@@ -160,15 +160,15 @@ namespace Game.Quest.Tests.Editor
         }
 
         [Test]
-        public void Content_MillyDiscovery_UsesIntroQuest()
+        public void Content_MillieDiscovery_UsesIntroQuest()
         {
             foreach (var root in ContentRoots)
             {
                 var characters = JsonConvert.DeserializeObject<CharacterConfig[]>(
                     File.ReadAllText(Path.Combine(root, "characters.json")));
-                var milly = characters.Single(c => c.Id == "milly");
+                var millie = characters.Single(c => c.Id == "millie");
 
-                CollectionAssert.Contains(milly.DiscoveryQuestIds, "q_intro_milly");
+                CollectionAssert.Contains(millie.DiscoveryQuestIds, "q_intro_millie");
             }
         }
 
@@ -220,15 +220,15 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual(2, quest.Rewards[0].Amount);
         }
 
-        private static void AssertMillyIntroQuest(string root)
+        private static void AssertMillieIntroQuest(string root)
         {
             var quests = JsonConvert.DeserializeObject<QuestConfig[]>(
                 File.ReadAllText(Path.Combine(root, "quests.json")));
 
-            var quest = quests.Single(q => q.Id == "q_intro_milly");
+            var quest = quests.Single(q => q.Id == "q_intro_millie");
             Assert.AreEqual("story", quest.Type);
-            Assert.AreEqual("milly", quest.CharacterId);
-            AssertDialogueDeliveredActivation(quest, "milly1");
+            Assert.AreEqual("millie", quest.CharacterId);
+            AssertDialogueDeliveredActivation(quest, "millie1");
 
             Assert.AreEqual(1, quest.Tasks.Length);
             var task = quest.Tasks[0];
@@ -239,7 +239,7 @@ namespace Game.Quest.Tests.Editor
             Assert.AreEqual(5, (int)task.CompletionConditions["min"]);
 
             Assert.AreEqual(2, quest.Rewards.Length);
-            var letter = quest.Rewards.Single(r => r.Id == "milly_letter");
+            var letter = quest.Rewards.Single(r => r.Id == "millie_letter");
             Assert.AreEqual("InventoryItem", letter.Kind);
             Assert.AreEqual("quest_item", letter.Category);
             Assert.AreEqual(1, letter.Amount);

@@ -18,7 +18,7 @@ namespace Game.Configs.Tests.Editor
             Path.Combine("Assets", "StreamingAssets", "Configs")
         };
 
-        private const string BooksFileName = "books_converted.json";
+        private const string BooksFileName = "books.json";
 
         private const string Json = @"
 [
@@ -47,10 +47,10 @@ namespace Game.Configs.Tests.Editor
     ""dialogueId"": ""eddy_quest_1""
   },
   {
-    ""id"": ""milly_intro"",
+    ""id"": ""millie_intro"",
     ""dayIndex"": 2,
-    ""characterId"": ""milly"",
-    ""dialogueId"": ""milly1""
+    ""characterId"": ""millie"",
+    ""dialogueId"": ""millie1""
   }
 ]";
 
@@ -88,12 +88,12 @@ namespace Game.Configs.Tests.Editor
             Assert.AreEqual("eddi", eddiQuest.CharacterId);
             Assert.IsNull(eddiQuest.PassiveAttempts);
 
-            var milly = scripts[3];
-            Assert.AreEqual("milly_intro", milly.Id);
-            Assert.AreEqual(2, milly.DayIndex.Value);
-            Assert.AreEqual("milly1", milly.DialogueId);
-            Assert.AreEqual("milly", milly.CharacterId);
-            Assert.IsNull(milly.PassiveAttempts);
+            var millie = scripts[3];
+            Assert.AreEqual("millie_intro", millie.Id);
+            Assert.AreEqual(2, millie.DayIndex.Value);
+            Assert.AreEqual("millie1", millie.DialogueId);
+            Assert.AreEqual("millie", millie.CharacterId);
+            Assert.IsNull(millie.PassiveAttempts);
         }
 
         [Test]
@@ -116,10 +116,10 @@ namespace Game.Configs.Tests.Editor
             Assert.AreEqual(1, eddi.DayIndex.Value);
             Assert.IsNull(eddi.ActivationQuestId);
 
-            var milly = service.Get<CustomerScriptConfig>("milly_intro");
-            Assert.IsNotNull(milly);
-            Assert.AreEqual(2, milly.DayIndex.Value);
-            Assert.AreEqual("milly1", milly.DialogueId);
+            var millie = service.Get<CustomerScriptConfig>("millie_intro");
+            Assert.IsNotNull(millie);
+            Assert.AreEqual(2, millie.DayIndex.Value);
+            Assert.AreEqual("millie1", millie.DialogueId);
         }
 
         [Test]
@@ -273,7 +273,7 @@ namespace Game.Configs.Tests.Editor
                 File.ReadAllText(Path.Combine(root, "dialogues.json")));
 
             var day2QuestScripts = scripts
-                .Where(s => s.Id == "eddi_quest_intro" || s.Id == "milly_intro")
+                .Where(s => s.Id == "eddi_quest_intro" || s.Id == "millie_intro")
                 .ToArray();
 
             Assert.AreEqual(2, day2QuestScripts.Length);
@@ -283,9 +283,9 @@ namespace Game.Configs.Tests.Editor
                 "eddi",
                 "eddy_quest_1");
             AssertQuestIntroScript(
-                day2QuestScripts.Single(s => s.Id == "milly_intro"),
-                "milly",
-                "milly1");
+                day2QuestScripts.Single(s => s.Id == "millie_intro"),
+                "millie",
+                "millie1");
 
             foreach (var script in day2QuestScripts)
             {

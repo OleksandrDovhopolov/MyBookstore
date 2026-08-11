@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Book.Sell.Editor;
+using Game.Configs.Editor;
 using Game.Rewards.Editor;
 using UnityEditor;
 using UnityEditor.Build;
@@ -15,11 +16,10 @@ namespace Game.Build.Editor
     /// <summary>
     /// Fails the player build before it starts when content that only breaks at runtime is wrong.
     /// <para>
-    /// docs/BUILD.md is a manual checklist, and the two items it marks as mandatory are exactly the ones a
-    /// human forgets: re-syncing configs into StreamingAssets (the build reads them from there, never from
-    /// <c>Assets/Configs</c>) and keeping active requests solvable. Both fail silently — the APK starts fine
-    /// and the content is simply wrong. A build callback cannot be forgotten, so the checklist becomes the
-    /// backstop instead of the primary guard.
+    /// docs/BUILD.md is a manual checklist, and the items it marks as mandatory are exactly the ones a
+    /// human forgets: keeping bundled defaults synced, keeping active requests solvable, and checking for
+    /// dead config files. These fail silently — the APK starts fine and the content is simply wrong or stale.
+    /// A build callback cannot be forgotten, so the checklist becomes the backstop instead of the primary guard.
     /// </para>
     /// <para>
     /// Runs on every player build. Throwing <see cref="BuildFailedException"/> aborts it.
@@ -40,17 +40,20 @@ namespace Game.Build.Editor
 
         public void OnPreprocessBuild(BuildReport report)
         {
-            var errors = Collect();
-            if (errors.Count == 0)
+            var validation = Collect();
+            LogWarnings(validation.Warnings);
+
+            if (validation.Errors.Count == 0)
             {
-                Debug.Log($"{LogPrefix} content validation passed.");
+                var suffix = validation.Warnings.Count > 0 ? $" with {validation.Warnings.Count} warning(s)" : string.Empty;
+                Debug.Log($"{LogPrefix} content validation passed{suffix}.");
                 return;
             }
 
             var message = new StringBuilder()
-                .AppendLine($"{LogPrefix} {errors.Count} content problem(s) — build aborted.")
+                .AppendLine($"{LogPrefix} {validation.Errors.Count} content problem(s) — build aborted.")
                 .AppendLine("Fix these, or see docs/BUILD.md:");
-            foreach (var error in errors)
+            foreach (var error in validation.Errors)
                 message.AppendLine($"  - {error}");
 
             var text = message.ToString();
@@ -62,17 +65,16 @@ namespace Game.Build.Editor
         [MenuItem(MenuPath)]
         public static void RunManually()
         {
-            var errors = Collect();
-            var summary = errors.Count == 0
-                ? "All pre-build content checks passed."
-                : $"{errors.Count} problem(s) would abort a player build:\n\n" +
-                  string.Join("\n", errors.Select(e => "- " + e));
+            var report = Collect();
+            var summary = BuildManualSummary(report);
 
-            if (errors.Count == 0) Debug.Log($"{LogPrefix} {summary}");
+            LogWarnings(report.Warnings);
+
+            if (report.Errors.Count == 0) Debug.Log($"{LogPrefix} {summary}");
             else Debug.LogError($"{LogPrefix} {summary}");
 
             EditorUtility.DisplayDialog(
-                errors.Count == 0 ? "Pre-Build Validation OK" : $"Pre-Build Validation — {errors.Count} problem(s)",
+                DialogTitle(report),
                 summary,
                 "OK");
         }
@@ -99,15 +101,34 @@ namespace Game.Build.Editor
             ("Book box pools", CollectBookBoxPoolErrors),
         };
 
-        private static List<string> Collect()
+        /// <summary>
+        /// Warning-level checks: useful hygiene signals that should be fixed, but do not make the shipped
+        /// player content wrong by themselves.
+        /// </summary>
+        private static readonly (string Name, Action<List<string>> Run)[] SoftValidators =
         {
-            var errors = new List<string>();
-            foreach (var validator in Validators)
+            ("Orphan configs", CollectOrphanConfigWarnings),
+        };
+
+        private static ValidationReport Collect()
+        {
+            var report = new ValidationReport();
+            RunValidators(Validators, report.Errors, report.Errors);
+            RunValidators(SoftValidators, report.Warnings, report.Errors);
+            return report;
+        }
+
+        private static void RunValidators(
+            (string Name, Action<List<string>> Run)[] validators,
+            List<string> findings,
+            List<string> errors)
+        {
+            foreach (var validator in validators)
             {
-                var before = errors.Count;
+                var before = findings.Count;
                 try
                 {
-                    validator.Run(errors);
+                    validator.Run(findings);
                 }
                 catch (Exception ex)
                 {
@@ -118,11 +139,9 @@ namespace Game.Build.Editor
                 }
 
                 // Prefix here rather than in each collector, so every check reads the same way in the log.
-                for (var i = before; i < errors.Count; i++)
-                    errors[i] = $"{validator.Name}: {errors[i]}";
+                for (var i = before; i < findings.Count; i++)
+                    findings[i] = $"{validator.Name}: {findings[i]}";
             }
-
-            return errors;
         }
 
         /// <summary>
@@ -197,6 +216,66 @@ namespace Game.Build.Editor
         private static void CollectBookBoxPoolErrors(List<string> errors)
             => errors.AddRange(BookBoxPoolValidator.Validate().Errors);
 
+        private static void CollectOrphanConfigWarnings(List<string> warnings)
+        {
+            if (!Directory.Exists(ConfigsDir)) return;
+
+            var knownSections = new HashSet<string>(ConfigSectionCatalog.SectionNames, StringComparer.OrdinalIgnoreCase);
+            foreach (var fileName in FileNames(ConfigsDir))
+            {
+                var section = Path.GetFileNameWithoutExtension(fileName);
+                if (knownSections.Contains(section)) continue;
+
+                warnings.Add(
+                    $"{fileName} ships into the APK as dead weight; no [ConfigFile] maps to section '{section}'.");
+            }
+        }
+
+        private static void LogWarnings(IReadOnlyList<string> warnings)
+        {
+            if (warnings == null || warnings.Count == 0) return;
+
+            var message = new StringBuilder()
+                .AppendLine($"{LogPrefix} {warnings.Count} warning(s):");
+            foreach (var warning in warnings)
+                message.AppendLine($"  - {warning}");
+            Debug.LogWarning(message.ToString());
+        }
+
+        private static string BuildManualSummary(ValidationReport report)
+        {
+            var sb = new StringBuilder();
+            if (report.Errors.Count == 0)
+                sb.AppendLine("All pre-build content checks passed.");
+            else
+            {
+                sb.AppendLine($"{report.Errors.Count} problem(s) would abort a player build:");
+                sb.AppendLine();
+                foreach (var error in report.Errors)
+                    sb.AppendLine("- " + error);
+            }
+
+            if (report.Warnings.Count > 0)
+            {
+                if (sb.Length > 0) sb.AppendLine();
+                sb.AppendLine($"{report.Warnings.Count} warning(s):");
+                sb.AppendLine();
+                foreach (var warning in report.Warnings)
+                    sb.AppendLine("- " + warning);
+            }
+
+            return sb.ToString().TrimEnd();
+        }
+
+        private static string DialogTitle(ValidationReport report)
+        {
+            if (report.Errors.Count > 0)
+                return $"Pre-Build Validation — {report.Errors.Count} problem(s), {report.Warnings.Count} warning(s)";
+            if (report.Warnings.Count > 0)
+                return $"Pre-Build Validation OK — {report.Warnings.Count} warning(s)";
+            return "Pre-Build Validation OK";
+        }
+
         private static List<string> FileNames(string dir)
             => Directory.GetFiles(dir, "*.json")
                 .Select(Path.GetFileName)
@@ -215,6 +294,12 @@ namespace Game.Build.Editor
                 errors.Add($"{ManifestFileName} is not a valid JSON string array: {ex.Message}");
                 return null;
             }
+        }
+
+        private sealed class ValidationReport
+        {
+            public readonly List<string> Errors = new();
+            public readonly List<string> Warnings = new();
         }
     }
 }

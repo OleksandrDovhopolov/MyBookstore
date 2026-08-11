@@ -4,6 +4,7 @@ using Game.Configs;
 using Game.Configs.Models;
 using Game.Inventory.API;
 using Game.Rewards.API;
+using Game.Rewards.Services;
 using Game.Shop.API;
 using UnityEngine;
 
@@ -37,7 +38,9 @@ namespace Game.Shop.UI
 
         private IReadOnlyList<ShopOffer> BuildOffers(string storefrontId, bool isDecor, string rewardCategoryId = null)
         {
-            var lots = _shop.GetLots(storefrontId);
+            var lots = string.Equals(storefrontId, NewspaperShopLotIds.StorefrontBooks, StringComparison.Ordinal)
+                ? _shop.GetOfferedLots(storefrontId)
+                : _shop.GetLots(storefrontId);
             if (lots == null || lots.Count == 0) return Array.Empty<ShopOffer>();
 
             var offers = new List<ShopOffer>(lots.Count);
@@ -48,7 +51,8 @@ namespace Game.Shop.UI
 
                 var isAvailable = _shop.IsAvailable(lot.LotId);
                 var iconId = ResolveRewardItemIconId(lot.LotId, rewardCategoryId)
-                             ?? (isDecor ? lot.LotId : BookOfferIconId);
+                             ?? ResolveDefaultIconId(lot, isDecor);
+                var bookIconId = ResolveBookIconId(lot, isDecor);
                 offers.Add(new ShopOffer(
                     lot.LotId,
                     iconId,
@@ -57,7 +61,8 @@ namespace Game.Shop.UI
                     FormatPrice(lot.Price),
                     isAvailable,
                     isAvailable ? NewState : SoldState,
-                    isDecor));
+                    isDecor,
+                    bookIconId));
             }
 
             return offers;
@@ -91,6 +96,25 @@ namespace Game.Shop.UI
 
             Debug.LogWarning(
                 $"[ShopBackedNewspaperOfferSource] No inventory reward item for lot '{lotId}'.");
+            return null;
+        }
+
+        private static string ResolveDefaultIconId(ShopLot lot, bool isDecor)
+        {
+            if (isDecor) return lot.LotId;
+
+            return BookOfferIconId;
+        }
+
+        private static string ResolveBookIconId(ShopLot lot, bool isDecor)
+        {
+            if (isDecor || lot == null) return null;
+
+            if (BookBoxPoolRules.TryGet(lot.RewardId, out var rule)
+                && rule.Kind == BookBoxKind.Genre
+                && !string.IsNullOrEmpty(rule.Genre))
+                return rule.Genre;
+
             return null;
         }
 

@@ -162,44 +162,31 @@ namespace Game.Configs.Tests.Editor
 
         [TestCase("Assets/Configs/books.json")]
         [TestCase("Assets/StreamingAssets/Configs/books.json")]
-        public void BookConfig_LegacyBooksJson_StillDeserializes(string path)
+        public void BookConfig_CatalogJson_Deserializes(string path)
         {
             var books = JsonConvert.DeserializeObject<BookConfig[]>(File.ReadAllText(path));
 
             Assert.IsNotNull(books);
-            Assert.Greater(books.Length, 0);
+            Assert.AreEqual(663, books.Length, "books.json must be the full generated catalog, not the old legacy catalog.");
             Assert.IsTrue(books.All(book => !string.IsNullOrWhiteSpace(book.Id)));
         }
 
         [Test]
-        public void ConfigsService_LoadsBookConfigFromConvertedCatalog()
+        public void ConfigsService_LoadsBookConfigFromBooksSection()
         {
             var source = new FakeConfigSource
             {
-                ConvertedBooks = @"[
+                Books = @"[
   {
     ""id"": ""book01"",
-    ""title"": ""Converted"",
+    ""title"": ""Catalog"",
     ""author"": ""Ada Reed"",
-    ""description"": ""Generated catalog"",
+    ""description"": ""Books catalog"",
     ""genres"": [""Travel""],
     ""published"": 2001,
     ""pages"": 123,
     ""qualities"": [""Nature""],
     ""fakeOrReal"": ""Real""
-  }
-]",
-                LegacyBooks = @"[
-  {
-    ""id"": ""Book1"",
-    ""title"": ""Legacy"",
-    ""author"": ""Old"",
-    ""description"": ""Legacy catalog"",
-    ""genres"": [""Crime""],
-    ""rarityWeight"": 0.1,
-    ""published"": 1999,
-    ""pages"": 321,
-    ""qualities"": [""Detective""]
   }
 ]"
             };
@@ -210,21 +197,19 @@ namespace Game.Configs.Tests.Editor
 
             Assert.AreEqual(1, books.Count);
             Assert.AreEqual("book01", books[0].Id);
-            Assert.AreEqual("Converted", books[0].Title);
+            Assert.AreEqual("Catalog", books[0].Title);
         }
 
         private sealed class FakeConfigSource : IConfigSource
         {
-            public string ConvertedBooks;
-            public string LegacyBooks;
+            public string Books;
 
             public Cysharp.Threading.Tasks.UniTask WarmupAsync(System.Threading.CancellationToken ct)
                 => Cysharp.Threading.Tasks.UniTask.CompletedTask;
 
             public string GetRaw(string fileName)
             {
-                if (fileName == "books_converted") return ConvertedBooks;
-                if (fileName == "books") return LegacyBooks;
+                if (fileName == "books") return Books;
                 return null;
             }
         }

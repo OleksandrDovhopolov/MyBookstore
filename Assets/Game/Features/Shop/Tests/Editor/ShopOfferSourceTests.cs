@@ -29,6 +29,14 @@ namespace Game.Shop.Tests.Editor
                     "Book A",
                     "Book description"),
                 new ShopLot(
+                    "book_crime",
+                    NewspaperShopLotIds.StorefrontBooks,
+                    new ShopPrice("gold", 45),
+                    "book_box_genre_crime_8",
+                    ShopLotLimit.Unlimited(),
+                    "Crime Box",
+                    "Crime books"),
+                new ShopLot(
                     "decor_free",
                     NewspaperShopLotIds.StorefrontDecor,
                     new ShopPrice("gold", 0),
@@ -66,14 +74,18 @@ namespace Game.Shop.Tests.Editor
             var decor = source.GetDecorOffers();
             var consumables = source.GetConsumableOffers();
 
-            Assert.AreEqual(1, books.Count);
+            Assert.AreEqual(2, books.Count);
             Assert.AreEqual("book_a", books[0].LotId);
             Assert.AreEqual("book_box", books[0].IconId);
+            Assert.IsNull(books[0].BookIconId);
             Assert.AreEqual("Book A", books[0].DisplayName);
             Assert.AreEqual("30", books[0].PriceText);
             Assert.AreEqual("NEW!", books[0].StateText);
             Assert.IsTrue(books[0].IsAvailable);
             Assert.IsFalse(books[0].IsDecor);
+            Assert.AreEqual("book_crime", books[1].LotId);
+            Assert.AreEqual("book_box", books[1].IconId);
+            Assert.AreEqual("Crime", books[1].BookIconId);
 
             Assert.AreEqual(2, decor.Count);
             // Icon id comes from decors.json (the lot's decor reward item id), not the shop lot id.
@@ -152,6 +164,8 @@ namespace Game.Shop.Tests.Editor
 
                 return result;
             }
+
+            public IReadOnlyList<ShopLot> GetOfferedLots(string storefrontId) => GetLots(storefrontId);
 
             public bool TryGetLot(string lotId, out ShopLot lot)
             {

@@ -4,6 +4,7 @@
     "references": [
         "UniTask",
         "Save",
+        "Book.Sell.API",
         "Configs",
         "Game.Shop.API",
         "Game.Shop",
@@ -11,6 +12,7 @@
         "Game.Resources.API",
         "Game.Inventory.API",
         "Game.Decor.API",
+        "Infrastructure",
         "UnityEngine.TestRunner",
         "Unity.TextMeshPro",
         "Game.Rewards"

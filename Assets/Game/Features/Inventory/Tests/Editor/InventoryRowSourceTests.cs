@@ -34,24 +34,26 @@ namespace Game.Inventory.Tests.Editor
             Assert.AreEqual(2, rows.Single(r => r.SpriteId == BookGenre.Crime.ToConfigValue()).Count);
             Assert.AreEqual(4, rows.Single(r => r.SpriteId == BookGenre.Fantasy.ToConfigValue()).Count);
             Assert.IsTrue(rows.All(r => r.Style == InventoryRowStyle.Default));
-            Assert.IsTrue(rows.All(r => r.ItemId == null));
+            Assert.IsTrue(rows.All(r => r.ItemId == r.SpriteId));
+            Assert.AreEqual(InventoryCategories.Book, new BookGenreRowSource(inventory, configs).CategoryId);
         }
 
         [Test]
         public void QuestItemRowSource_BuildsQuestItemRows()
         {
             var inventory = new FakeInventoryService()
-                .Seed("milly_letter", InventoryCategories.QuestItem);
+                .Seed("millie_letter", InventoryCategories.QuestItem);
             var configs = new FakeConfigsService()
-                .Set(new QuestItemConfig { Id = "milly_letter" });
+                .Set(new QuestItemConfig { Id = "millie_letter" });
 
             var rows = new QuestItemRowSource(inventory, configs).BuildRows().ToList();
 
             Assert.AreEqual(1, rows.Count);
-            Assert.AreEqual("milly_letter", rows[0].SpriteId);
+            Assert.AreEqual("millie_letter", rows[0].SpriteId);
             Assert.AreEqual(0, rows[0].Count);
-            Assert.IsNull(rows[0].ItemId);
+            Assert.AreEqual("millie_letter", rows[0].ItemId);
             Assert.AreEqual(InventoryRowStyle.QuestItem, rows[0].Style);
+            Assert.AreEqual(InventoryCategories.QuestItem, new QuestItemRowSource(inventory, configs).CategoryId);
         }
 
         [Test]
@@ -67,8 +69,9 @@ namespace Game.Inventory.Tests.Editor
             Assert.AreEqual(1, rows.Count);
             Assert.AreEqual("fuel_canister", rows[0].SpriteId);
             Assert.AreEqual(15, rows[0].Count);
-            Assert.IsNull(rows[0].ItemId);
+            Assert.AreEqual("fuel_canister", rows[0].ItemId);
             Assert.AreEqual(InventoryRowStyle.Default, rows[0].Style);
+            Assert.AreEqual(InventoryCategories.Consumable, new ConsumableRowSource(inventory, configs).CategoryId);
         }
 
         [Test]

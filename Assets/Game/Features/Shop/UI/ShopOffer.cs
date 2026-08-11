@@ -9,6 +9,7 @@ namespace Game.Shop.UI
         /// (e.g. <c>vintage_globe</c>); for book offers it is the shared book-box sprite id.
         /// </summary>
         public string IconId { get; }
+        public string BookIconId { get; }
 
         public string DisplayName { get; }
         public string Description { get; }
@@ -25,10 +26,12 @@ namespace Game.Shop.UI
             string priceText,
             bool isAvailable,
             string stateText,
-            bool isDecor)
+            bool isDecor,
+            string bookIconId = null)
         {
             LotId = lotId;
             IconId = iconId;
+            BookIconId = bookIconId;
             DisplayName = displayName;
             Description = description;
             PriceText = priceText;

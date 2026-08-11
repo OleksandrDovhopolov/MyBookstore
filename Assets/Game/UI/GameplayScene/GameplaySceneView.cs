@@ -7,24 +7,13 @@ using Game.UI.ContentWidget;
 using TMPro;
 using UIShared;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace GameplayUI
 {
     public class GameplaySceneView : WindowView
     {
-        [SerializeField] private GameObject _salesGoldRoot;
-        [SerializeField] private TMP_Text _salesGoldLabel;
         [SerializeField] private TMP_Text _dayLabel;
-
-        [Header("Shop entry")] [SerializeField]
-        private Button _cheatButton;
-
-        [SerializeField] private Button _startDayButton;
-        [SerializeField] private Button _decorButton;
-        [SerializeField] private Button _journalButton;
-        [SerializeField] private Button _inventoryButton;
-        [SerializeField] private Button _questButton;
+        [SerializeField] private HudMenuButtonsView _menuButtons;
 
         [Header("Genre book counts")] [SerializeField]
         private UIListPool<GameplayGenreBookCountItemView> _genreBookCountPool = new();
@@ -37,11 +26,7 @@ namespace GameplayUI
 
         private AnimatedShowHidePanel[] _animatedPanels;
 
-        public Button StartDayButton => _startDayButton;
-        public Button DecorButton => _decorButton;
-        public Button JournalButton => _journalButton;
-        public Button InventoryButton => _inventoryButton;
-        public Button QuestButton => _questButton;
+        public HudMenuButtonsView MenuButtons => _menuButtons;
         public event Action<BookGenre, Sprite, RectTransform> GenreItemClicked;
 
         // Collected from the view hierarchy at runtime (including inactive) so any number of
@@ -106,52 +91,14 @@ namespace GameplayUI
                 WidgetRegistry.Register<SaleChanceWidgetData>(_saleChanceWidgetPrefab);
 
             HideLegacyGenreBookCountItemsIfNeeded();
-            SetSalesGoldVisible(false);
         }
 
         public void SetSceneButtonsInteractable(bool interactable)
         {
-            if (_cheatButton != null)
-            {
-                _cheatButton.interactable = interactable;
-                _cheatButton.gameObject.SetActive(interactable);
-            }
-
-            if (_decorButton != null)
-            {
-                _decorButton.interactable = interactable;
-                _decorButton.gameObject.SetActive(interactable);
-            }
-
-            if (_journalButton != null)
-            {
-                _journalButton.interactable = interactable;
-                _journalButton.gameObject.SetActive(interactable);
-            }
-
-            SetStartButtonActive(interactable);
+            _menuButtons?.SetInteractable(interactable);
         }
 
-        public void SetStartButtonActive(bool active)
-        {
-            if (_startDayButton != null)
-            {
-                _startDayButton.interactable = active;
-                _startDayButton.gameObject.SetActive(active);
-            }
-        }
-
-        public void SetSalesGoldAmount(int amount)
-        {
-            if (_salesGoldLabel != null)
-                _salesGoldLabel.text = amount.ToString();
-        }
-
-        public void SetSalesGoldVisible(bool visible)
-        {
-            if (_salesGoldRoot != null)
-                _salesGoldRoot.gameObject.SetActive(visible);
-        }
+        public void SetStartButtonActive(bool active) => _menuButtons?.SetStartButtonActive(active);
 
         public void SetDayText(string value)
         {

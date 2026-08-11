@@ -7,8 +7,13 @@ namespace Book.Sell.UI
 {
     /// <summary>
     /// View for the active book-recommendation minigame window. Holds the selection UI
-    /// (<see cref="MinigameRoot"/>: request line, shelf grid, book-detail panel, Recommend/Skip) and the
+    /// (<see cref="MinigameRoot"/>: request line, shelf grid, book-detail area, Recommend/Skip) and the
     /// post-recommendation result container (<see cref="ResultPanel"/>: customer emotion + Finish).
+    ///
+    /// The detail area is on screen the whole time and swaps between two containers:
+    /// <see cref="DetailEmptyRoot"/> (nothing picked — authored placeholder text only) and
+    /// <see cref="DetailSelectedRoot"/> (the picked book's title/author/description/date/pages).
+    ///
     /// All logic lives in <see cref="RecommendationMinigameWindow"/>; this only exposes serialized refs.
     /// </summary>
     public sealed class RecommendationMinigameWindowView : WindowView
@@ -25,8 +30,11 @@ namespace Book.Sell.UI
         [SerializeField] private BookCardView _bookCardPrefab;
         [SerializeField] private Button _clearFocusButton;      // Transparent/background button for clearing book focus
 
-        [Header("Book detail panel")]
-        [SerializeField] private GameObject _detailPanel;
+        [Header("Book detail — no book selected")]
+        [SerializeField] private GameObject _detailEmptyRoot;
+
+        [Header("Book detail — book selected")]
+        [SerializeField] private GameObject _detailSelectedRoot;
         [SerializeField] private TMP_Text _detailTitle;
         [SerializeField] private TMP_Text _detailAuthor;
         [SerializeField] private TMP_Text _detailDescription;
@@ -51,7 +59,8 @@ namespace Book.Sell.UI
         public BookCardView BookCardPrefab => _bookCardPrefab;
         public Button ClearFocusButton => _clearFocusButton;
 
-        public GameObject DetailPanel => _detailPanel;
+        public GameObject DetailEmptyRoot => _detailEmptyRoot;
+        public GameObject DetailSelectedRoot => _detailSelectedRoot;
         public TMP_Text DetailTitle => _detailTitle;
         public TMP_Text DetailAuthor => _detailAuthor;
         public TMP_Text DetailDescription => _detailDescription;

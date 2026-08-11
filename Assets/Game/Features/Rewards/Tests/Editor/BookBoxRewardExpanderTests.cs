@@ -109,9 +109,9 @@ namespace Game.Rewards.Tests.Editor
         }
 
         [Test]
-        public void Expand_GenreDystopic_FiltersByGenreOnly()
+        public void Expand_GenreFantasy8_FiltersByGenreOnly()
         {
-            // Pool has two Fantasy books. With default RNG (NextDouble=0.0) the first Fantasy is selected.
+            // Pool has two Fantasy books. Rolls clamp to the matching pool size.
             var pool = new List<BookConfig>
             {
                 Book("fantasy_first", "Fantasy", 0.7f),
@@ -121,12 +121,32 @@ namespace Game.Rewards.Tests.Editor
             };
 
             var (svc, _, _, _) = Build(pool);
-            var spec = new RewardSpec("book_box_genre_dystopic_1", new RewardItem[0]);
+            var spec = new RewardSpec("book_box_genre_fantasy_8", new RewardItem[0]);
 
             var result = svc.ExpandAsync(spec, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(1, result.Items.Count);
+            Assert.AreEqual(2, result.Items.Count);
             Assert.AreEqual("fantasy_first", result.Items[0].Id);
+            Assert.AreEqual("fantasy_second", result.Items[1].Id);
+        }
+
+        [Test]
+        public void Expand_GenreClassic8_ReturnsEightBooksFromGenre()
+        {
+            var pool = new List<BookConfig>();
+            for (var i = 0; i < 10; i++)
+                pool.Add(Book($"classic_{i:D2}", "Classic", 0.4f + i * 0.01f));
+            for (var i = 0; i < 5; i++)
+                pool.Add(Book($"drama_{i:D2}", "Drama", 0.7f));
+
+            var (svc, _, _, _) = Build(pool);
+            var spec = new RewardSpec("book_box_genre_classic_8", new RewardItem[0]);
+
+            var result = svc.ExpandAsync(spec, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(8, result.Items.Count);
+            foreach (var item in result.Items)
+                StringAssert.StartsWith("classic_", item.Id);
         }
 
         [Test]

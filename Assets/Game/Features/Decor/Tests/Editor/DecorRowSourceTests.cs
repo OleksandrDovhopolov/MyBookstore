@@ -32,6 +32,7 @@ namespace Game.Decor.Tests.Editor
             Assert.AreEqual(0, rows[0].Count);
             Assert.AreEqual("globe", rows[0].ItemId);
             Assert.AreEqual(InventoryRowStyle.Decor, rows[0].Style);
+            Assert.AreEqual(InventoryCategories.Decor, new DecorRowSource(inventory, configs, placement).CategoryId);
             Assert.IsTrue(rows[0].IsHighlighted);
         }
 

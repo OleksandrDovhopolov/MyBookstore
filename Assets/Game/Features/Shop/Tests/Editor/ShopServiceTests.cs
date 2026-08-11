@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using Game.Configs.Models;
 using Game.Rewards.API;
+using Game.Rewards.Services;
 using Game.Shop.API;
 using Game.Shop.Services;
 using Game.Shop.Tests.Editor.Fakes;
@@ -31,6 +32,41 @@ namespace Game.Shop.Tests.Editor
                 Limit = new ShopLotLimitData { Mode = mode, MaxPurchases = max }
             };
 
+        private static ShopConfig BookLot(
+            string id,
+            string rewardId,
+            int price = 10,
+            string displayName = null,
+            string description = null,
+            ShopLimitMode mode = ShopLimitMode.Daily,
+            int max = 1) =>
+            new ShopConfig
+            {
+                Id = id,
+                StorefrontId = NewspaperShopLotIds.StorefrontBooks,
+                DisplayName = displayName ?? id,
+                Description = description ?? rewardId,
+                Price = new ShopPriceData { Currency = Gold, Amount = price },
+                RewardId = rewardId,
+                RewardItems = new RewardItemData[0],
+                Limit = new ShopLotLimitData { Mode = mode, MaxPurchases = max }
+            };
+
+        private static IReadOnlyList<ShopConfig> BookRotationLots() => new[]
+        {
+            BookLot(NewspaperShopLotIds.BookBoxGeneral5, "book_box_general_5"),
+            BookLot(NewspaperShopLotIds.BookBoxGeneral10, "book_box_general_10"),
+            BookLot(NewspaperShopLotIds.BookBoxCommon15, "book_box_common_15"),
+            BookLot(NewspaperShopLotIds.BookBoxRare8, "book_box_rare_8"),
+            BookLot(NewspaperShopLotIds.BookBoxGenreClassic, "book_box_genre_classic_8"),
+            BookLot(NewspaperShopLotIds.BookBoxGenreCrime, "book_box_genre_crime_8"),
+            BookLot(NewspaperShopLotIds.BookBoxGenreDrama, "book_box_genre_drama_8"),
+            BookLot(NewspaperShopLotIds.BookBoxGenreFact, "book_box_genre_fact_8"),
+            BookLot(NewspaperShopLotIds.BookBoxGenreFantasy, "book_box_genre_fantasy_8"),
+            BookLot(NewspaperShopLotIds.BookBoxGenreKids, "book_box_genre_kids_8"),
+            BookLot(NewspaperShopLotIds.BookBoxGenreTravel, "book_box_genre_travel_8"),
+        };
+
         private sealed class Harness
         {
             public ShopService Svc;
@@ -39,6 +75,7 @@ namespace Game.Shop.Tests.Editor
             public FakeRewardGrantService Rewards;
             public FakeConfigsService Configs;
             public FakeInventoryService Inventory;
+            public FakeCurrentDayProvider Day;
             public SaveBackedShopRepository Repo;
         }
 
@@ -53,7 +90,8 @@ namespace Game.Shop.Tests.Editor
                 Resources = new FakeResourcesService(),
                 Rewards = new FakeRewardGrantService(),
                 Configs = new FakeConfigsService(),
-                Inventory = new FakeInventoryService()
+                Inventory = new FakeInventoryService(),
+                Day = new FakeCurrentDayProvider()
             };
             h.Configs.Seed(lots ?? new List<ShopConfig>());
             h.Repo = new SaveBackedShopRepository(h.Save);
@@ -64,7 +102,8 @@ namespace Game.Shop.Tests.Editor
                 h.Rewards,
                 rewardSpecs ?? new ShopConfigRewardSpecProvider(h.Configs),
                 h.Configs,
-                h.Inventory);
+                h.Inventory,
+                h.Day);
             if (runAfterLoad)
                 h.Svc.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
             return h;
@@ -90,69 +129,36 @@ namespace Game.Shop.Tests.Editor
         }
 
         [Test]
-        public void AfterLoadAsync_NewspaperBooks_LoadsFourLotsWithDisplayTextInConfigOrder()
+        public void AfterLoadAsync_NewspaperBooks_LoadsFullCatalogAndOffersDailyRotation()
         {
             var lots = new[]
             {
-                new ShopConfig
-                {
-                    Id = "newspaper_book_common_15",
-                    StorefrontId = NewspaperShopLotIds.StorefrontBooks,
-                    DisplayName = "Young Adult Favorites",
-                    Description = "15 mixed books",
-                    Price = new ShopPriceData { Currency = Gold, Amount = 20 },
-                    RewardId = "book_box_common_15",
-                    RewardItems = new RewardItemData[0],
-                    Limit = new ShopLotLimitData { Mode = ShopLimitMode.Unlimited }
-                },
-                new ShopConfig
-                {
-                    Id = "newspaper_book_rare_8",
-                    StorefrontId = NewspaperShopLotIds.StorefrontBooks,
-                    DisplayName = "Fantasy Treasures",
-                    Description = "8 rare books",
-                    Price = new ShopPriceData { Currency = Gold, Amount = 30 },
-                    RewardId = "book_box_rare_8",
-                    RewardItems = new RewardItemData[0],
-                    Limit = new ShopLotLimitData { Mode = ShopLimitMode.Unlimited }
-                },
-                new ShopConfig
-                {
-                    Id = "newspaper_book_genre_dystopic_1",
-                    StorefrontId = NewspaperShopLotIds.StorefrontBooks,
-                    DisplayName = "World Explorers",
-                    Description = "1 dark fantasy pick",
-                    Price = new ShopPriceData { Currency = Gold, Amount = 40 },
-                    RewardId = "book_box_genre_dystopic_1",
-                    RewardItems = new RewardItemData[0],
-                    Limit = new ShopLotLimitData { Mode = ShopLimitMode.Unlimited }
-                },
-                new ShopConfig
-                {
-                    Id = NewspaperShopLotIds.BookBoxGenreHeartfelt1,
-                    StorefrontId = NewspaperShopLotIds.StorefrontBooks,
-                    DisplayName = "Heartfelt Stories",
-                    Description = "1 romantic drama pick",
-                    Price = new ShopPriceData { Currency = Gold, Amount = 40 },
-                    RewardId = "book_box_genre_heartfelt_1",
-                    RewardItems = new RewardItemData[0],
-                    Limit = new ShopLotLimitData { Mode = ShopLimitMode.Unlimited }
-                },
+                BookLot(NewspaperShopLotIds.BookBoxGeneral5, "book_box_general_5", 15, "Small Book Box", "5 random books"),
+                BookLot(NewspaperShopLotIds.BookBoxGeneral10, "book_box_general_10", 28, "Medium Book Box", "10 random books"),
+                BookLot(NewspaperShopLotIds.BookBoxCommon15, "book_box_common_15", 40, "Large Book Box", "15 random books"),
+                BookLot(NewspaperShopLotIds.BookBoxRare8, "book_box_rare_8", 55, "Rare Book Box", "8 rare books"),
+                BookLot(NewspaperShopLotIds.BookBoxGenreClassic, "book_box_genre_classic_8"),
+                BookLot(NewspaperShopLotIds.BookBoxGenreCrime, "book_box_genre_crime_8"),
+                BookLot(NewspaperShopLotIds.BookBoxGenreDrama, "book_box_genre_drama_8"),
+                BookLot(NewspaperShopLotIds.BookBoxGenreFact, "book_box_genre_fact_8"),
+                BookLot(NewspaperShopLotIds.BookBoxGenreFantasy, "book_box_genre_fantasy_8"),
+                BookLot(NewspaperShopLotIds.BookBoxGenreKids, "book_box_genre_kids_8"),
+                BookLot(NewspaperShopLotIds.BookBoxGenreTravel, "book_box_genre_travel_8"),
             };
 
             var h = Build(lots);
 
             var books = h.Svc.GetLots(NewspaperShopLotIds.StorefrontBooks);
+            var offered = h.Svc.GetOfferedLots(NewspaperShopLotIds.StorefrontBooks);
 
-            Assert.AreEqual(4, books.Count);
-            Assert.AreEqual("newspaper_book_common_15", books[0].LotId);
-            Assert.AreEqual("newspaper_book_rare_8", books[1].LotId);
-            Assert.AreEqual("newspaper_book_genre_dystopic_1", books[2].LotId);
-            Assert.AreEqual(NewspaperShopLotIds.BookBoxGenreHeartfelt1, books[3].LotId);
-            Assert.AreEqual("Young Adult Favorites", books[0].DisplayName);
-            Assert.AreEqual("15 mixed books", books[0].Description);
-            Assert.AreEqual("Heartfelt Stories", books[3].DisplayName);
-            Assert.AreEqual("1 romantic drama pick", books[3].Description);
+            Assert.AreEqual(11, books.Count);
+            Assert.AreEqual(4, offered.Count);
+            Assert.AreEqual(2, offered.Count(l => BookBoxPoolRules.TryGet(l.RewardId, out var rule) && rule.Kind == BookBoxKind.General));
+            Assert.AreEqual(2, offered.Count(l => BookBoxPoolRules.TryGet(l.RewardId, out var rule) && rule.Kind == BookBoxKind.Genre));
+            Assert.AreEqual("Small Book Box", books[0].DisplayName);
+            Assert.AreEqual("5 random books", books[0].Description);
+            Assert.AreEqual("Rare Book Box", books[3].DisplayName);
+            Assert.AreEqual("8 rare books", books[3].Description);
         }
 
         [Test]
@@ -226,6 +232,48 @@ namespace Game.Shop.Tests.Editor
             Assert.AreEqual(1, h.Svc.GetPurchaseCount("lot_a"));
             Assert.IsFalse(h.Svc.IsAvailable("lot_a"));
             Assert.AreEqual(90, h.Resources.GetAmount(Gold), "Second buy must not charge.");
+        }
+
+        [Test]
+        public void Buy_DailyLot_ResetsOnNextDay()
+        {
+            var h = Build(new[] { DecorLot("daily_lot", 10, ShopLimitMode.Daily, max: 1) });
+            h.Resources.Seed(Gold, 100);
+            h.Day.CurrentDay = 3;
+
+            var first = h.Svc.BuyAsync("daily_lot", CancellationToken.None).GetAwaiter().GetResult();
+            var secondSameDay = h.Svc.BuyAsync("daily_lot", CancellationToken.None).GetAwaiter().GetResult();
+
+            h.Day.CurrentDay = 4;
+            var nextDay = h.Svc.BuyAsync("daily_lot", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(ShopPurchaseStatus.Success, first.Status);
+            Assert.AreEqual(ShopPurchaseStatus.LimitReached, secondSameDay.Status);
+            Assert.AreEqual(ShopPurchaseStatus.Success, nextDay.Status);
+            Assert.AreEqual(2, h.Svc.GetPurchaseCount("daily_lot"));
+
+            var dto = h.Repo.LoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            Assert.AreEqual(4, dto.Lots["daily_lot"].LastPurchasedDay);
+            Assert.AreEqual(1, dto.Lots["daily_lot"].PurchasesToday);
+        }
+
+        [Test]
+        public void Buy_BookLotOutsideDailyRotation_ReturnsNotOffered_NoCharge()
+        {
+            var h = Build(BookRotationLots());
+            h.Resources.Seed(Gold, 1000);
+
+            var offeredIds = new HashSet<string>(h.Svc.GetOfferedLots(NewspaperShopLotIds.StorefrontBooks).Select(l => l.LotId));
+            var notOffered = h.Svc.GetLots(NewspaperShopLotIds.StorefrontBooks).First(l => !offeredIds.Contains(l.LotId));
+
+            var result = h.Svc.BuyAsync(notOffered.LotId, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(ShopPurchaseStatus.NotOffered, result.Status);
+            Assert.AreSame(notOffered, result.Lot);
+            Assert.IsFalse(h.Svc.IsAvailable(notOffered.LotId));
+            Assert.AreEqual(1000, h.Resources.GetAmount(Gold));
+            Assert.AreEqual(0, h.Resources.RemoveCalls.Count);
+            Assert.AreEqual(0, h.Rewards.GrantCalls.Count);
         }
 
         [Test]

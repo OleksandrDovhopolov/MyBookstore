@@ -30,6 +30,9 @@ namespace Game.Characters.Tests.Editor
         private static CharacterMemoryConfig MemoryByChain(string id, string chainId, bool golden = false)
             => new() { Id = id, QuestChainId = chainId, IsGolden = golden, TitleKey = $"m.{id}.t" };
 
+        private static CharacterMemoryConfig ManualMemory(string id)
+            => new() { Id = id, TitleKey = $"m.{id}.t" };
+
         private static CharactersService Build(
             FakeQuestsService quests,
             FakeCharactersRepository repo,
@@ -87,6 +90,17 @@ namespace Game.Characters.Tests.Editor
         }
 
         [Test]
+        public void MemoryByQuest_ReadyToAward_Locked()
+        {
+            var quests = new FakeQuestsService().SetState("q1", QuestState.ReadyToAward);
+            var service = Build(quests, new FakeCharactersRepository(),
+                Character("harper", MemoryByQuest("m1", "q1")));
+
+            Assert.IsFalse(service.IsMemoryUnlocked("harper", "m1"));
+            Assert.IsFalse(service.GetJournalEntry("harper").Memories.Single().Unlocked);
+        }
+
+        [Test]
         public void MemoryByChain_FinalQuestAwarded_Unlocked()
         {
             var quests = new FakeQuestsService().AddChain("chain",
@@ -108,6 +122,76 @@ namespace Game.Characters.Tests.Editor
                 Character("harper", MemoryByChain("m1", "chain")));
 
             Assert.IsFalse(service.IsMemoryUnlocked("harper", "m1"));
+        }
+
+        [Test]
+        public void MemoryByChain_FinalQuestReadyToAward_Locked()
+        {
+            var quests = new FakeQuestsService().AddChain("chain",
+                new FakeQuest("c1", QuestState.Awarded, "chain"),
+                new FakeQuest("c2", QuestState.ReadyToAward, "chain"));
+            var service = Build(quests, new FakeCharactersRepository(),
+                Character("harper", MemoryByChain("m1", "chain")));
+
+            Assert.IsFalse(service.IsMemoryUnlocked("harper", "m1"));
+            Assert.AreEqual(QuestState.ReadyToAward, service.GetJournalEntry("harper").Memories.Single().LinkedQuestState);
+        }
+
+        [Test]
+        public void TryUnlockMemory_ManualMemory_UnlocksPersistsAndMarksUnseen()
+        {
+            var repo = new FakeCharactersRepository();
+            var service = Build(new FakeQuestsService(), repo,
+                Character("harper", ManualMemory("m1")));
+            var unlocked = new System.Collections.Generic.List<string>();
+            var unseenChanged = 0;
+            service.MemoryUnlocked += m => unlocked.Add(m.Id);
+            service.UnseenMemoriesChanged += () => unseenChanged++;
+
+            Assert.IsTrue(service.TryUnlockMemory("harper", "m1"));
+
+            Assert.IsTrue(service.IsMemoryUnlocked("harper", "m1"));
+            Assert.AreEqual(1, service.UnseenMemoryCount);
+            Assert.IsTrue(service.HasUnseenMemories);
+            CollectionAssert.AreEqual(new[] { "m1" }, unlocked);
+            Assert.AreEqual(1, unseenChanged);
+
+            service.BeforeSaveAsync(CancellationToken.None).GetAwaiter().GetResult();
+            Assert.IsTrue(repo.Stored.Characters["harper"].UnlockedMemoryIds.Contains("m1"));
+        }
+
+        [Test]
+        public void TryUnlockMemory_DuplicateOrUnknown_ReturnsFalseWithoutEvents()
+        {
+            var service = Build(new FakeQuestsService(), new FakeCharactersRepository(),
+                Character("harper", ManualMemory("m1")));
+            var unlockedCount = 0;
+            service.MemoryUnlocked += _ => unlockedCount++;
+
+            Assert.IsTrue(service.TryUnlockMemory("harper", "m1"));
+            Assert.IsFalse(service.TryUnlockMemory("harper", "m1"));
+            Assert.IsFalse(service.TryUnlockMemory("harper", "missing"));
+            Assert.IsFalse(service.TryUnlockMemory("missing", "m1"));
+
+            Assert.AreEqual(1, unlockedCount);
+            Assert.AreEqual(1, service.UnseenMemoryCount);
+        }
+
+        [Test]
+        public void MarkAllMemoriesSeen_ClearsUnlockedMemories_AndIsIdempotent()
+        {
+            var service = Build(new FakeQuestsService(), new FakeCharactersRepository(),
+                Character("harper", ManualMemory("m1")));
+            var unseenChanged = 0;
+            service.TryUnlockMemory("harper", "m1");
+            service.UnseenMemoriesChanged += () => unseenChanged++;
+
+            service.MarkAllMemoriesSeen();
+            service.MarkAllMemoriesSeen();
+
+            Assert.AreEqual(0, service.UnseenMemoryCount);
+            Assert.IsFalse(service.HasUnseenMemories);
+            Assert.AreEqual(1, unseenChanged);
         }
 
         [Test]

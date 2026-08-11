@@ -1,30 +1,52 @@
 [
   {
     "id": "eddi",
-    "displayNameKey": "character.eddi.name",
+    "displayNameKey": "Eddy",
     "portraitKey": "eddi",
     "favoriteGenres": ["Fact", "Travel"],
     "discoveryQuestIds": ["q_intro_eddi"]
   },
   {
-    "id": "milly",
-    "displayNameKey": "character.milly.name",
-    "portraitKey": "milly",
+    "id": "millie",
+    "displayNameKey": "Millie",
+    "portraitKey": "millie",
     "favoriteGenres": ["Drama", "Crime", "Classic"],
-    "discoveryQuestIds": ["q_intro_milly"]
+    "discoveryQuestIds": ["q_intro_millie"]
   },
   {
     "id": "tara",
-    "displayNameKey": "character.tara.name",
+    "displayNameKey": "Tara",
     "portraitKey": "tara",
     "favoriteGenres": ["Fantasy", "Kids"],
     "discoveryQuestIds": ["q_tara_kids"]
   },
   {
     "id": "captain",
-    "displayNameKey": "character.captain.name",
+    "displayNameKey": "Captain",
     "portraitKey": "captain",
     "favoriteGenres": ["Crime", "Travel"],
     "discoveryQuestIds": ["q_captain_postcards"]
+  },
+  {
+    "id": "owner",
+    "displayNameKey": "character.owner.name",
+    "hiddenInJournal": true,
+    "memories": [
+      {
+        "id": "mem_owner_moving_in",
+        "titleKey": "memory.owner.moving_in.title",
+        "descriptionKey": "memory.owner.moving_in.description",
+        "photoKey": "memory_moving_in",
+        "unlockedAtStart": true,
+        "order": 0
+      },
+      {
+        "id": "mem_owner_placeholder",
+        "titleKey": "memory.owner.placeholder.title",
+        "descriptionKey": "memory.owner.placeholder.description",
+        "photoKey": "memory_placeholder",
+        "order": -1
+      }
+    ]
   }
 ]

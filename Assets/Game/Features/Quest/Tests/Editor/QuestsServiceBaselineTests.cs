@@ -151,7 +151,7 @@ namespace Game.Quest.Tests.Editor
         [Test]
         public void ManualActivePickQuest_IgnoresPicksBeforeTryActivate()
         {
-            var quest = QuestCfg("q_intro_milly", Sales(SalesConditionTypeIds.ActivePickGenre, 5));
+            var quest = QuestCfg("q_intro_millie", Sales(SalesConditionTypeIds.ActivePickGenre, 5));
             quest.ActivationConditions = new JObject { ["type"] = ManualConditionFactory.TypeId };
 
             var h = Build(null, quest);
@@ -159,17 +159,17 @@ namespace Game.Quest.Tests.Editor
 
             var quests = h.NewQuests();
             quests.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
-            Assert.AreEqual(QuestState.Pending, State(quests, "q_intro_milly"));
+            Assert.AreEqual(QuestState.Pending, State(quests, "q_intro_millie"));
 
-            Assert.IsTrue(quests.TryActivateAsync("q_intro_milly", CancellationToken.None).GetAwaiter().GetResult());
-            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_milly"));
-            Assert.IsFalse(quests.TryActivateAsync("q_intro_milly", CancellationToken.None).GetAwaiter().GetResult());
+            Assert.IsTrue(quests.TryActivateAsync("q_intro_millie", CancellationToken.None).GetAwaiter().GetResult());
+            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_millie"));
+            Assert.IsFalse(quests.TryActivateAsync("q_intro_millie", CancellationToken.None).GetAwaiter().GetResult());
 
             h.Pick(1, 4);
-            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_milly"));
+            Assert.AreEqual(QuestState.Active, State(quests, "q_intro_millie"));
 
             h.Pick(1, 1);
-            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "q_intro_milly"));
+            Assert.AreEqual(QuestState.ReadyToAward, State(quests, "q_intro_millie"));
         }
 
         [Test]

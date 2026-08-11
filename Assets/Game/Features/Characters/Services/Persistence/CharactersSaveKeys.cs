@@ -5,7 +5,7 @@ namespace Game.Characters.Services.Persistence
     {
         public const string State = "characters";
 
-        // v1: discovered flag only. Memory unlock is derived from quest state, not persisted.
-        public const int StateSchemaVersion = 1;
+        // v2: adds flat SeenMemoryIds for Journal notification tracking.
+        public const int StateSchemaVersion = 2;
     }
 }

@@ -140,6 +140,43 @@ namespace Game.LocationUnlock.Services
             return UnlockResult.Ok;
         }
 
+        public async UniTask<bool> ForceUnlockAsync(string locationId, CancellationToken ct)
+        {
+            if (string.IsNullOrEmpty(locationId) || !_conditions.ContainsKey(locationId))
+            {
+                Debug.LogWarning($"{LogPrefix} force unlock for unknown location '{locationId}'.");
+                return false;
+            }
+
+            // HashSet.Add is the already-unlocked check: no conditions, no cost, no item consumption.
+            if (!_unlocked.Add(locationId)) return false;
+
+            await _repository.SaveAsync(BuildDto(), ct);
+
+            Debug.Log($"{LogPrefix} force-unlocked '{locationId}' (conditions and cost bypassed).");
+            Unlocked?.Invoke(locationId);
+            return true;
+        }
+
+        public async UniTask<bool> ForceLockAsync(string locationId, CancellationToken ct)
+        {
+            if (string.IsNullOrEmpty(locationId) || !_conditions.ContainsKey(locationId))
+            {
+                Debug.LogWarning($"{LogPrefix} force lock for unknown location '{locationId}'.");
+                return false;
+            }
+
+            if (!_unlocked.Remove(locationId)) return false;
+
+            await _repository.SaveAsync(BuildDto(), ct);
+
+            // No Locked event exists (nothing needs one outside cheats); StatusChanged is what the
+            // location list and the journal already listen to.
+            Debug.Log($"{LogPrefix} force-locked '{locationId}'.");
+            StatusChanged?.Invoke(locationId);
+            return true;
+        }
+
         private void OnConditionDataChanged()
         {
             if (!_loaded) return;

@@ -58,12 +58,12 @@ namespace Book.Sell.UI
             else
             {
                 if (View.ResultPanel != null) View.ResultPanel.SetActive(false);
-                if (View.DetailPanel != null) View.DetailPanel.SetActive(false);
+                SetDetailState(hasBook: false);
             }
 
             RenderRequest(_controller.CurrentRequest);
             PopulateShelfCards();
-            ClearSelection(instant: true);
+            ClearSelection();
             View.Animator?.PlayRequestIntro();
 
             Subscribe();
@@ -152,43 +152,40 @@ namespace Book.Sell.UI
 
         private void ShowDetail(BookConfig book)
         {
-            if (View.DetailPanel != null) View.DetailPanel.SetActive(book != null);
+            SetDetailState(book != null);
             if (book == null) return;
 
             Set(View.DetailTitle, book.Title);
             Set(View.DetailAuthor, book.Author);
 
             Set(View.DetailDescription, book.Description);
-            Set(View.DetailPublishDate, book.Published.ToString());
-            Set(View.DetailPageCount, book.Pages.ToString());
+            Set(View.DetailPublishDate, $"{book.Published} y");
+            Set(View.DetailPageCount, $"{book.Pages} p");
 
             View.Animator?.ShowBookDetail();
         }
 
-        private void ClearSelection(bool instant = false)
+        private void ClearSelection()
         {
             _selectedBookId = null;
             foreach (var card in _cards) card.SetSelected(false);
 
-            if (View.Animator != null)
-            {
-                if (instant)
-                {
-                    View.Animator.HideBookDetailInstant();
-                    ClearDetailAfterHide();
-                }
-                else
-                {
-                    View.Animator.HideBookDetail(ClearDetailAfterHide);
-                }
-            }
-            else
-            {
-                if (View.DetailPanel != null) View.DetailPanel.SetActive(false);
-                ClearDetailText();
-            }
+            // The detail area is not hidden here — it stays up and swaps back to the placeholder. The
+            // instant reset also kills a running show-tween, so a half-faded panel cannot stick.
+            View.Animator?.ShowBookDetailInstant();
+            SetDetailState(hasBook: false);
+            ClearDetailText();
 
             if (View.RecommendButton != null) View.RecommendButton.interactable = false;
+        }
+
+        // The detail area never leaves the screen during selection: exactly one of the two containers
+        // is active. The animator's _bookDetailRoot is the area itself (it holds both containers), so
+        // it is only taken away by HideSelection when the window moves to the result.
+        private void SetDetailState(bool hasBook)
+        {
+            if (View.DetailSelectedRoot != null) View.DetailSelectedRoot.SetActive(hasBook);
+            if (View.DetailEmptyRoot != null) View.DetailEmptyRoot.SetActive(!hasBook);
         }
 
         private void ClearDetailText()
@@ -198,12 +195,6 @@ namespace Book.Sell.UI
             Set(View.DetailDescription, string.Empty);
             Set(View.DetailPublishDate, string.Empty);
             Set(View.DetailPageCount, string.Empty);
-        }
-
-        private void ClearDetailAfterHide()
-        {
-            if (View.DetailPanel != null) View.DetailPanel.SetActive(false);
-            ClearDetailText();
         }
 
         // ---------- actions ----------

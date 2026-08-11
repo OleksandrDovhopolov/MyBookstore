@@ -32,6 +32,7 @@ namespace Game.Bootstrap
             builder.Register<IConditionFactory, DecorEquippedConditionFactory>(Lifetime.Singleton);
 
             builder.Register<IDecorModifierProvider, ConfigBasedDecorModifierProvider>(Lifetime.Singleton);
+            builder.Register<IDecorTotalEffectsProvider, DecorTotalEffectsProvider>(Lifetime.Singleton);
 
             // Customer-traffic contributor for placed decor. Registered here (global scope) as a concrete
             // type; the traffic resolver (location scope) composes it explicitly — see RegisterBookSell.

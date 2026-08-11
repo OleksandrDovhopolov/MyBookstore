@@ -28,15 +28,21 @@ namespace Game.Configs.Editor
                 {
                     ["id"] = "",
                     ["displayName"] = "",
-                    ["unlockCost"] = 0,
-                    ["requiredLevel"] = 1
+                    ["entryCost"] = 0,
+                    ["locationAddress"] = "",
+                    ["demandGenres"] = new JArray(),
+                    ["customerTrafficPercentDelta"] = 0.0
                 },
-                "requests" => new JObject
+                "sample_requests" => new JObject
                 {
                     ["id"] = "",
-                    ["bookId"] = "",
-                    ["rewardSoft"] = 0,
-                    ["timeLimitSeconds"] = 0
+                    ["genre"] = "",
+                    ["bookTitle"] = "",
+                    ["enabled"] = true,
+                    ["conditions"] = new JObject
+                    {
+                        ["all"] = new JArray()
+                    }
                 },
                 "events" => new JObject
                 {

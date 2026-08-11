@@ -15,13 +15,15 @@ namespace Game.Shop.API
     {
         IReadOnlyList<ShopLot> GetLots(string storefrontId);
 
+        IReadOnlyList<ShopLot> GetOfferedLots(string storefrontId);
+
         bool TryGetLot(string lotId, out ShopLot lot);
 
         /// <summary>Current persisted purchase counter (0 if never bought).</summary>
         int GetPurchaseCount(string lotId);
 
         /// <summary>
-        /// True when the lot can be bought right now (i.e. not exhausted for Disposable lots).
+        /// True when the lot can be bought right now (i.e. currently offered and not exhausted).
         /// Does NOT check currency balance — currency is checked inside <see cref="BuyAsync"/>.
         /// </summary>
         bool IsAvailable(string lotId);

@@ -1,0 +1,30 @@
+{
+    "name": "Game.Journal.UI",
+    "rootNamespace": "Game.Journal.UI",
+    "references": [
+        "Game.Characters.API",
+        "Game.Decor",
+        "Game.Decor.API",
+        "Game.LocationUnlock.API",
+        "Game.Quest.API",
+        "Configs",
+        "Game.Core.UI",
+        "Infrastructure",
+        "VContainer",
+        "UniTask",
+        "Unity.TextMeshPro",
+        "Game.Inventory.API",
+        "Game.Rewards.API",
+        "Game.Conditions.API",
+        "Game.Rewards"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

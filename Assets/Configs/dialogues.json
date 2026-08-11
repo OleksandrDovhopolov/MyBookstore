@@ -126,14 +126,14 @@
     ]
   },
   {
-    "id": "milly1",
+    "id": "millie1",
     "nodes": [
       {
         "nodeId": "root",
         "options": [],
         "lines": [
-          { "speaker": "Milly", "text": "[STUB] Hi. I left a letter for you." },
-          { "speaker": "Milly", "text": "[STUB] If someone asks for facts, find them something exact." }
+          { "speaker": "Millie", "text": "[STUB] Hi. I left a letter for you." },
+          { "speaker": "Millie", "text": "[STUB] If someone asks for facts, find them something exact." }
         ]
       }
     ]

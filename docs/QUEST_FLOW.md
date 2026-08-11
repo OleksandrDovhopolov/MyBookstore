@@ -71,15 +71,15 @@ QuestRewardBridge (ISaveHook.BeforeSaveAsync) ──▶ IRewardGrantService
 
 ---
 
-## 2. Милли — `q_intro_milly` 🔴
+## 2. Милли — `q_intro_millie` 🔴
 
 | | |
 |---|---|
-| **Вызов** | `milly_intro`, `dayIndex: 2`, персонаж `milly` |
-| **Активация** | `activationConditions: { type: dialogueDelivered, dialogueId: milly1 }` |
+| **Вызов** | `millie_intro`, `dayIndex: 2`, персонаж `millie` |
+| **Активация** | `activationConditions: { type: dialogueDelivered, dialogueId: millie1 }` |
 | **Задача** | `activePickGenre` Fact 5 — пять **отличных** активных рекомендаций Fact-книгой |
-| **Награда** | `milly_letter` (quest_item) + `fuel_canister` ×1 |
-| **Дальше** | `milly_letter` ×1 + `fuel_canister` ×2 → **Кампус** |
+| **Награда** | `millie_letter` (quest_item) + `fuel_canister` ×1 |
+| **Дальше** | `millie_letter` ×1 + `fuel_canister` ×2 → **Кампус** |
 
 🔴 **Блокер: ни одна Fact-книга не может получить «отлично».** Все 7 Fact-запросов в `hard_requests.json`
 идентичны по условиям — `genres contains "Fact"` **AND** `qualities contains "History"`. Качество `History`
@@ -160,7 +160,7 @@ dayProgress и **не на посещения локаций**. Визит фи�
 | Локация | `unlockCost` | `unlock` (условия) | Даёт квест | Статус |
 |---|---|---|---|---|
 | **Парк** | — | — | — | ✅ открыт сразу |
-| **Кампус** | `milly_letter` ×1, `fuel_canister` ×2 | — | Милли | 🔴 упирается в P2 |
+| **Кампус** | `millie_letter` ×1, `fuel_canister` ×2 | — | Милли | 🔴 упирается в P2 |
 | **Порт** | `port_trade_permit` ×1, `fuel_canister` ×2 | — | Тара | 🔴 упирается в P1 |
 | **Рынок** | `captain_recommendation` ×1, `fuel_canister` ×5 | `soldTotal` 200 | Капитан | 🔴 упирается в P3 |
 | **Деревня** | `map` ×1, `fuel_canister` ×15 | `soldGenre` Fantasy 150, Kids 150 | — | 🔴 у `map` нет источника |

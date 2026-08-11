@@ -47,8 +47,8 @@ namespace Book.Sell.Tests.Editor
         public void Evaluate_DeferredDelivered_ReturnsMetBeforeCommit()
         {
             var delivered = new FakeDeliveredDialogues();
-            delivered.MarkDeliveredDeferredAsync("milly1", CancellationToken.None).GetAwaiter().GetResult();
-            var condition = new DialogueDeliveredCondition(delivered, "milly1");
+            delivered.MarkDeliveredDeferredAsync("millie1", CancellationToken.None).GetAwaiter().GetResult();
+            var condition = new DialogueDeliveredCondition(delivered, "millie1");
 
             Assert.IsTrue(condition.Evaluate().IsMet);
         }

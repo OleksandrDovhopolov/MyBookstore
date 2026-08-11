@@ -18,6 +18,9 @@ namespace Game.Configs.Models
         /// <summary>Addressables key for the character portrait. Empty/null → Journal shows a placeholder.</summary>
         public string PortraitKey { get; set; }
 
+        /// <summary>Hidden service/protagonist characters stay out of People, but their memories remain in Memories.</summary>
+        public bool HiddenInJournal { get; set; }
+
         /// <summary>
         /// Preferred book genres for this character. Used as the passive purchase desire profile for
         /// quest/story customers; future active requests can reuse the same persona data.

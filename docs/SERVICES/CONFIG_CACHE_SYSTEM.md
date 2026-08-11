@@ -41,13 +41,15 @@ IReadOnlyList<T> GetAll<T>();                   // все конфиги тип�
 Все методы — `where T : class, IConfig`. Конфиги immutable после `WarmupAsync` (см. ADR §11
 «reactive refresh» — отложено сознательно).
 
-**Конкретные конфиги** (Notion-задача «Data-driven конфиги»):
+**Конкретные конфиги.** Полный список живых секций определяется атрибутами `[ConfigFile("...")]` на
+моделях в `Assets/Game/Features/Configs/Models/`. В Editor тот же список собирает `ConfigSectionCatalog`,
+чтобы инструменты и build-гейт не расходились с runtime-маппингом. Ниже — несколько базовых примеров:
 
 | Тип | Файл | Путь модели |
 |-----|------|-------------|
 | `BookConfig` | `books.json` | [Models/BookConfig.cs](../Assets/Game/Features/Configs/Models/BookConfig.cs) |
 | `LocationConfig` | `locations.json` | [Models/LocationConfig.cs](../Assets/Game/Features/Configs/Models/LocationConfig.cs) |
-| `RequestDefinitionConfig` | `hard_requests.json` | [Models/RequestDefinitionConfig.cs](../Assets/Game/Features/Configs/Models/RequestDefinitionConfig.cs) |
+| `RequestDefinitionConfig` | `sample_requests.json` | [Models/RequestDefinitionConfig.cs](../Assets/Game/Features/Configs/Models/RequestDefinitionConfig.cs) |
 | `EventConfig` | `events.json` | [Models/EventConfig.cs](../Assets/Game/Features/Configs/Models/EventConfig.cs) |
 
 Файл секции = JSON-массив объектов одного типа; индексируется по `id` (case-insensitive).

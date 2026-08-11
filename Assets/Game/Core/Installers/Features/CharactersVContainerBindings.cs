@@ -14,7 +14,7 @@ namespace Game.Bootstrap
     {
         public static void RegisterCharacters(this IContainerBuilder builder)
         {
-            // Local save-module-backed persistence (Stage 1: discovered flag only).
+            // Local save-module-backed persistence (discovered flag, unlocked/seen memory ledgers).
             builder.Register<ICharactersRepository, SaveBackedCharactersRepository>(Lifetime.Singleton);
 
             // CharactersService self-registers as ISaveHook in its constructor; AfterLoadAsync builds the

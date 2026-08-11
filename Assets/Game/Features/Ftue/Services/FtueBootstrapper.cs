@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Characters.API;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
@@ -40,17 +41,26 @@ namespace Game.Ftue.Services
         private readonly IConfigsService _configs;
         private readonly IInventoryService _inventory;
         private readonly IResourcesService _resources;
+        private readonly ICharactersService _characters;
 
-        public FtueBootstrapper(ISaveService save, IConfigsService configs, IInventoryService inventory, IResourcesService resources)
+        public FtueBootstrapper(
+            ISaveService save,
+            IConfigsService configs,
+            IInventoryService inventory,
+            IResourcesService resources,
+            ICharactersService characters = null)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
             _resources = resources ?? throw new ArgumentNullException(nameof(resources));
+            _characters = characters;
         }
 
         public async UniTask RunAsync(CancellationToken ct)
         {
+            UnlockStartMemories();
+
             var applied = await _save.GetModuleAsync<FtueAppliedState>(FtueSaveKeys.Applied, ct);
             if (applied != null && applied.Applied)
             {
@@ -129,6 +139,33 @@ namespace Game.Ftue.Services
             }
 
             return result;
+        }
+
+        private void UnlockStartMemories()
+        {
+            if (_characters == null) return;
+
+            var configs = _configs.GetAll<CharacterConfig>();
+            if (configs == null || configs.Count == 0) return;
+
+            var unlocked = 0;
+            for (var i = 0; i < configs.Count; i++)
+            {
+                var character = configs[i];
+                var memories = character?.Memories;
+                if (string.IsNullOrEmpty(character?.Id) || memories == null) continue;
+
+                for (var j = 0; j < memories.Length; j++)
+                {
+                    var memory = memories[j];
+                    if (memory == null || !memory.UnlockedAtStart || string.IsNullOrEmpty(memory.Id)) continue;
+                    if (_characters.TryUnlockMemory(character.Id, memory.Id))
+                        unlocked++;
+                }
+            }
+
+            if (unlocked > 0)
+                Debug.Log($"{LogPrefix} unlocked start memories: {unlocked}.");
         }
 
         private UniTask WriteAppliedMarkerAsync(CancellationToken ct)

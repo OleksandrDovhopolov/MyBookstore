@@ -19,9 +19,9 @@
         "Game.Tutorial.API",
         "Save",
         "Game.GameplayUI.Signals",
-        "Game.Characters.UI",
+        "Game.Journal.UI",
         "Game.Inventory",
-        "Game.Quest.UI"
+        "Game.Shop"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

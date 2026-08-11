@@ -49,7 +49,7 @@ namespace Game.Newspaper.Tests.Editor
         }
 
         [Test]
-        public void UpdateOfferState_BookUnavailable_DoesNotShowSold()
+        public void UpdateOfferState_BookUnavailable_ShowsSold()
         {
             var h = Build();
             try
@@ -57,8 +57,8 @@ namespace Game.Newspaper.Tests.Editor
                 h.Card.Bind(Offer(isDecor: false, isAvailable: true, price: "30"), null);
                 h.Card.UpdateOfferState(Offer(isDecor: false, isAvailable: false, price: "30"));
 
-                Assert.IsFalse(h.SoldRoot.activeSelf);
-                Assert.IsTrue(h.PriceRoot.activeSelf);
+                Assert.IsTrue(h.SoldRoot.activeSelf);
+                Assert.IsFalse(h.PriceRoot.activeSelf);
                 Assert.IsFalse(h.Button.interactable);
             }
             finally
@@ -89,23 +89,29 @@ namespace Game.Newspaper.Tests.Editor
         }
 
         [Test]
-        public void Bind_DecorOffer_EnablesDecorInfoButtonAndPassesDecorId()
+        public void Bind_DecorOffer_EnablesInfoButtonAndPassesLotIdAndAnchor()
         {
             var h = Build();
             try
             {
-                string clickedDecorId = null;
+                string clickedLotId = null;
+                RectTransform clickedAnchor = null;
 
                 h.Card.Bind(
                     Offer(isDecor: true, isAvailable: true, price: "50"),
                     null,
-                    onDecorInfoClicked: id => clickedDecorId = id);
+                    onInfoClicked: (id, anchor) =>
+                    {
+                        clickedLotId = id;
+                        clickedAnchor = anchor;
+                    });
 
-                Assert.IsTrue(h.DecorInfoButton.interactable);
+                Assert.IsTrue(h.InfoButton.interactable);
 
-                h.DecorInfoButton.onClick.Invoke();
+                h.InfoButton.onClick.Invoke();
 
-                Assert.AreEqual("decor_icon", clickedDecorId);
+                Assert.AreEqual("decor_lot", clickedLotId);
+                Assert.IsNotNull(clickedAnchor);
             }
             finally
             {
@@ -114,7 +120,7 @@ namespace Game.Newspaper.Tests.Editor
         }
 
         [Test]
-        public void Bind_BookOffer_DisablesDecorInfoButton()
+        public void Bind_BookOffer_EnablesInfoButton()
         {
             var h = Build();
             try
@@ -122,9 +128,9 @@ namespace Game.Newspaper.Tests.Editor
                 h.Card.Bind(
                     Offer(isDecor: false, isAvailable: true, price: "30"),
                     null,
-                    onDecorInfoClicked: _ => { });
+                    onInfoClicked: (_, _) => { });
 
-                Assert.IsFalse(h.DecorInfoButton.interactable);
+                Assert.IsTrue(h.InfoButton.interactable);
             }
             finally
             {
@@ -132,7 +138,32 @@ namespace Game.Newspaper.Tests.Editor
             }
         }
 
-        private static ShopOffer Offer(bool isDecor, bool isAvailable, string price) =>
+        [Test]
+        public void Bind_StoresBookIconIdAndClearsBookIconSprite()
+        {
+            var h = Build();
+            var texture = new Texture2D(1, 1);
+            var sprite = Sprite.Create(texture, new Rect(0, 0, 1, 1), Vector2.zero);
+            try
+            {
+                h.BookIcon.sprite = sprite;
+                h.BookIcon.enabled = true;
+
+                h.Card.Bind(Offer(isDecor: false, isAvailable: true, price: "30", bookIconId: "Crime"), null);
+
+                Assert.AreEqual("Crime", h.Card.BookIconId);
+                Assert.IsNull(h.BookIcon.sprite);
+                Assert.IsFalse(h.BookIcon.enabled);
+            }
+            finally
+            {
+                Object.DestroyImmediate(sprite);
+                Object.DestroyImmediate(texture);
+                Object.DestroyImmediate(h.Root);
+            }
+        }
+
+        private static ShopOffer Offer(bool isDecor, bool isAvailable, string price, string bookIconId = null) =>
             new(
                 isDecor ? "decor_lot" : "book_lot",
                 isDecor ? "decor_icon" : "book_box",
@@ -141,7 +172,8 @@ namespace Game.Newspaper.Tests.Editor
                 price,
                 isAvailable,
                 isAvailable ? "NEW!" : "SOLD",
-                isDecor);
+                isDecor,
+                bookIconId);
 
         private static Harness Build()
         {
@@ -150,6 +182,9 @@ namespace Game.Newspaper.Tests.Editor
 
             var icon = new GameObject("icon").AddComponent<Image>();
             icon.transform.SetParent(root.transform);
+
+            var bookIcon = new GameObject("bookIcon").AddComponent<Image>();
+            bookIcon.transform.SetParent(root.transform);
 
             var priceLabel = new GameObject("priceLabel").AddComponent<TextMeshProUGUI>();
             priceLabel.transform.SetParent(root.transform);
@@ -163,17 +198,18 @@ namespace Game.Newspaper.Tests.Editor
             var button = new GameObject("button").AddComponent<Button>();
             button.transform.SetParent(root.transform);
 
-            var decorInfoButton = new GameObject("decorInfoButton").AddComponent<Button>();
-            decorInfoButton.transform.SetParent(root.transform);
+            var infoButton = new GameObject("infoButton", typeof(RectTransform)).AddComponent<Button>();
+            infoButton.transform.SetParent(root.transform);
 
             SetField(card, "_icon", icon);
+            SetField(card, "_bookIcon", bookIcon);
             SetField(card, "_priceLabel", priceLabel);
             SetField(card, "_soldRoot", soldRoot);
             SetField(card, "_priceRoot", priceRoot);
             SetField(card, "_buyButton", button);
-            SetField(card, "_decorInfoButton", decorInfoButton);
+            SetField(card, "_infoButton", infoButton);
 
-            return new Harness(root, card, icon, priceLabel, soldRoot, priceRoot, button, decorInfoButton);
+            return new Harness(root, card, icon, bookIcon, priceLabel, soldRoot, priceRoot, button, infoButton);
         }
 
         private static void SetField(object target, string name, object value)
@@ -189,30 +225,33 @@ namespace Game.Newspaper.Tests.Editor
                 GameObject root,
                 ShopItemView card,
                 Image icon,
+                Image bookIcon,
                 TextMeshProUGUI priceLabel,
                 GameObject soldRoot,
                 GameObject priceRoot,
                 Button button,
-                Button decorInfoButton)
+                Button infoButton)
             {
                 Root = root;
                 Card = card;
                 Icon = icon;
+                BookIcon = bookIcon;
                 PriceLabel = priceLabel;
                 SoldRoot = soldRoot;
                 PriceRoot = priceRoot;
                 Button = button;
-                DecorInfoButton = decorInfoButton;
+                InfoButton = infoButton;
             }
 
             public GameObject Root { get; }
             public ShopItemView Card { get; }
             public Image Icon { get; }
+            public Image BookIcon { get; }
             public TextMeshProUGUI PriceLabel { get; }
             public GameObject SoldRoot { get; }
             public GameObject PriceRoot { get; }
             public Button Button { get; }
-            public Button DecorInfoButton { get; }
+            public Button InfoButton { get; }
         }
     }
 }

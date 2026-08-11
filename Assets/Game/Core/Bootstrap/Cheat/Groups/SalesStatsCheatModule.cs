@@ -16,7 +16,7 @@ namespace Game.Cheat
     /// Per genre that has at least one book in configs: sold buttons (+1 / +10) and excellent-pick
     /// buttons (+1 / +5). Both recorders resolve the genre from the book config themselves, so the
     /// cheat only needs a representative book id; a save is forced so the increment lands on disk now.
-    /// Bulk amounts match the quest content: Eddi's tasks need 10-15 sold, Milly's needs 5 picks.
+    /// Bulk amounts match the quest content: Eddi's tasks need 10-15 sold, Millie's needs 5 picks.
     /// </summary>
     public class SalesStatsCheatModule : ICheatsModule
     {

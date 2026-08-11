@@ -12,6 +12,7 @@ namespace Game.Shop.API
         /// fix — book-box lots are excluded because their expander filters owned items separately.
         /// </summary>
         AlreadyOwned,
-        InternalError
+        InternalError,
+        NotOffered
     }
 }

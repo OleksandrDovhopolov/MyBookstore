@@ -156,19 +156,19 @@ namespace Book.Sell.Tests.Editor
             {
                 new CustomerScriptConfig
                 {
-                    Id = "milly_intro",
+                    Id = "millie_intro",
                     DayIndex = 2,
-                    CharacterId = "milly",
-                    DialogueId = "milly1"
+                    CharacterId = "millie",
+                    DialogueId = "millie1"
                 }
             });
-            configs.SetAll(new[] { SingleNodeDialogue("milly1") });
+            configs.SetAll(new[] { SingleNodeDialogue("millie1") });
             configs.SetAll(new[] { SalesTestKit.Book("book_drama", "Drama") });
             configs.SetAll(new[]
             {
                 new CharacterConfig
                 {
-                    Id = "milly",
+                    Id = "millie",
                     FavoriteGenres = new[] { "Drama" }
                 }
             });
@@ -180,9 +180,9 @@ namespace Book.Sell.Tests.Editor
             var ctx = SalesTestKit.Context(SalesTestKit.Shelf(), SalesTestKit.Location(), new RecordingSink());
 
             Assert.AreEqual(2, customers.Count, "Dialogue-only story visits do not consume regular sales slots.");
-            Assert.AreEqual("script_milly_intro", customer.Id);
+            Assert.AreEqual("script_millie_intro", customer.Id);
             Assert.AreEqual("inner_1", customers[1].Id);
-            Assert.AreEqual("milly", customer.CharacterId);
+            Assert.AreEqual("millie", customer.CharacterId);
             Assert.IsNull(customer.ScriptedPassivePlan);
 
             customer.Tick(ctx, 1f); // Approach -> Dialog

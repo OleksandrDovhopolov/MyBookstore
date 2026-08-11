@@ -97,15 +97,15 @@ namespace Game.Inventory.Tests.Editor
         }
 
         [Test]
-        public void AddQuestItem_MillyLetter_IsUnique()
+        public void AddQuestItem_MillieLetter_IsUnique()
         {
             var (svc, repo, _) = Build();
-            svc.AddAsync("milly_letter", QuestItemCategory, 1, CancellationToken.None).GetAwaiter().GetResult();
+            svc.AddAsync("millie_letter", QuestItemCategory, 1, CancellationToken.None).GetAwaiter().GetResult();
             var savesBefore = repo.SaveCallCount;
 
-            svc.AddAsync("milly_letter", QuestItemCategory, 1, CancellationToken.None).GetAwaiter().GetResult();
+            svc.AddAsync("millie_letter", QuestItemCategory, 1, CancellationToken.None).GetAwaiter().GetResult();
 
-            Assert.AreEqual(1, svc.GetCount("milly_letter"));
+            Assert.AreEqual(1, svc.GetCount("millie_letter"));
             Assert.AreEqual(1, svc.GetByCategory(QuestItemCategory).Count);
             Assert.AreEqual(savesBefore, repo.SaveCallCount);
         }
@@ -114,13 +114,13 @@ namespace Game.Inventory.Tests.Editor
         public void RemoveQuestItem_PartialAmount_FailsNoChange()
         {
             var (svc, _, _) = Build();
-            svc.AddAsync("milly_letter", QuestItemCategory, 1, CancellationToken.None).GetAwaiter().GetResult();
+            svc.AddAsync("millie_letter", QuestItemCategory, 1, CancellationToken.None).GetAwaiter().GetResult();
 
-            var ok = svc.RemoveAsync("milly_letter", 2, CancellationToken.None).GetAwaiter().GetResult();
+            var ok = svc.RemoveAsync("millie_letter", 2, CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.IsFalse(ok);
-            Assert.AreEqual(1, svc.GetCount("milly_letter"));
-            Assert.IsTrue(svc.Has("milly_letter"));
+            Assert.AreEqual(1, svc.GetCount("millie_letter"));
+            Assert.IsTrue(svc.Has("millie_letter"));
         }
 
         [Test]

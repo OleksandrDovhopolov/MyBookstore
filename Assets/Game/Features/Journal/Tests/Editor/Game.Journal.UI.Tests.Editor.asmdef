@@ -1,0 +1,33 @@
+{
+    "name": "Game.Journal.UI.Tests.Editor",
+    "rootNamespace": "Game.Journal.UI.Tests.Editor",
+    "references": [
+        "UniTask",
+        "Game.Journal.UI",
+        "Game.Characters.API",
+        "Game.Characters",
+        "Game.Decor.API",
+        "Game.LocationUnlock.API",
+        "Game.Quest.API",
+        "Configs",
+        "Save",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

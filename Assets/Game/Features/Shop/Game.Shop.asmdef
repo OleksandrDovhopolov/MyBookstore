@@ -5,6 +5,7 @@
         "UniTask",
         "VContainer",
         "Save",
+        "Book.Sell.API",
         "Configs",
         "Game.Shop.API",
         "Game.Rewards.API",

@@ -132,44 +132,114 @@
     "limit": { "mode": "Disposable", "maxPurchases": 1 }
   },
   {
+    "id": "newspaper_box_general_5",
+    "storefrontId": "newspaper.books",
+    "displayName": "Small Book Box",
+    "description": "5 random books from all genres",
+    "price": { "currency": "gold", "amount": 15 },
+    "rewardId": "book_box_general_5",
+    "rewardItems": [],
+    "limit": { "mode": "Daily", "maxPurchases": 1 }
+  },
+  {
+    "id": "newspaper_box_general_10",
+    "storefrontId": "newspaper.books",
+    "displayName": "Medium Book Box",
+    "description": "10 random books from all genres",
+    "price": { "currency": "gold", "amount": 28 },
+    "rewardId": "book_box_general_10",
+    "rewardItems": [],
+    "limit": { "mode": "Daily", "maxPurchases": 1 }
+  },
+  {
     "id": "newspaper_book_common_15",
     "storefrontId": "newspaper.books",
-    "displayName": "Young Adult Favorites",
-    "description": "15 mixed books",
-    "price": { "currency": "gold", "amount": 20 },
+    "displayName": "Large Book Box",
+    "description": "15 random books from all genres",
+    "price": { "currency": "gold", "amount": 40 },
     "rewardId": "book_box_common_15",
     "rewardItems": [],
-    "limit": { "mode": "Unlimited" }
+    "limit": { "mode": "Daily", "maxPurchases": 1 }
   },
   {
     "id": "newspaper_book_rare_8",
     "storefrontId": "newspaper.books",
-    "displayName": "Fantasy Treasures",
-    "description": "8 rare books",
-    "price": { "currency": "gold", "amount": 30 },
+    "displayName": "Rare Book Box",
+    "description": "8 rare books from all genres",
+    "price": { "currency": "gold", "amount": 55 },
     "rewardId": "book_box_rare_8",
     "rewardItems": [],
-    "limit": { "mode": "Unlimited" }
+    "limit": { "mode": "Daily", "maxPurchases": 1 }
   },
   {
-    "id": "newspaper_book_genre_dystopic_1",
+    "id": "newspaper_box_genre_classic",
     "storefrontId": "newspaper.books",
-    "displayName": "World Explorers",
-    "description": "1 dark fantasy pick",
-    "price": { "currency": "gold", "amount": 40 },
-    "rewardId": "book_box_genre_dystopic_1",
+    "displayName": "Classic Book Box",
+    "description": "8 Classic books",
+    "price": { "currency": "gold", "amount": 45 },
+    "rewardId": "book_box_genre_classic_8",
     "rewardItems": [],
-    "limit": { "mode": "Unlimited" }
+    "limit": { "mode": "Daily", "maxPurchases": 1 }
   },
   {
-    "id": "newspaper_book_genre_heartfelt_1",
+    "id": "newspaper_box_genre_crime",
     "storefrontId": "newspaper.books",
-    "displayName": "Heartfelt Stories",
-    "description": "1 romantic drama pick",
-    "price": { "currency": "gold", "amount": 40 },
-    "rewardId": "book_box_genre_heartfelt_1",
+    "displayName": "Crime Book Box",
+    "description": "8 Crime books",
+    "price": { "currency": "gold", "amount": 45 },
+    "rewardId": "book_box_genre_crime_8",
     "rewardItems": [],
-    "limit": { "mode": "Unlimited" }
+    "limit": { "mode": "Daily", "maxPurchases": 1 }
+  },
+  {
+    "id": "newspaper_box_genre_drama",
+    "storefrontId": "newspaper.books",
+    "displayName": "Drama Book Box",
+    "description": "8 Drama books",
+    "price": { "currency": "gold", "amount": 45 },
+    "rewardId": "book_box_genre_drama_8",
+    "rewardItems": [],
+    "limit": { "mode": "Daily", "maxPurchases": 1 }
+  },
+  {
+    "id": "newspaper_box_genre_fact",
+    "storefrontId": "newspaper.books",
+    "displayName": "Fact Book Box",
+    "description": "8 Fact books",
+    "price": { "currency": "gold", "amount": 45 },
+    "rewardId": "book_box_genre_fact_8",
+    "rewardItems": [],
+    "limit": { "mode": "Daily", "maxPurchases": 1 }
+  },
+  {
+    "id": "newspaper_box_genre_fantasy",
+    "storefrontId": "newspaper.books",
+    "displayName": "Fantasy Book Box",
+    "description": "8 Fantasy books",
+    "price": { "currency": "gold", "amount": 45 },
+    "rewardId": "book_box_genre_fantasy_8",
+    "rewardItems": [],
+    "limit": { "mode": "Daily", "maxPurchases": 1 }
+  },
+  {
+    "id": "newspaper_box_genre_kids",
+    "storefrontId": "newspaper.books",
+    "displayName": "Kids Book Box",
+    "description": "8 Kids books",
+    "price": { "currency": "gold", "amount": 45 },
+    "rewardId": "book_box_genre_kids_8",
+    "rewardItems": [],
+    "limit": { "mode": "Daily", "maxPurchases": 1 }
+  },
+  {
+    "id": "newspaper_box_genre_travel",
+    "storefrontId": "newspaper.books",
+    "displayName": "Travel Book Box",
+    "description": "8 Travel books",
+    "price": { "currency": "gold", "amount": 45 },
+    "rewardId": "book_box_genre_travel_8",
+    "rewardItems": [],
+    "limit": { "mode": "Daily", "maxPurchases": 1 }
   },
   {
     "id": "newspaper_consumable_fuel_canister",

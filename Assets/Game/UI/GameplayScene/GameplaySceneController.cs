@@ -3,18 +3,14 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
-using Game.Characters.UI;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
-using Game.Decor.UI;
-using Game.Inventory.UI;
 using Game.Location.UI;
 using Game.LocationUnlock.API;
 using Game.Preparation.Services;
 using Game.Preparation.UI;
-using Game.Quest.UI;
 using Game.Tutorial.API;
 using Game.UI;
 using Game.UI.ContentWidget;
@@ -27,7 +23,7 @@ using VContainer;
 namespace GameplayUI
 {
     [Window("GameplaySceneController", WindowType.HUD)]
-    public class GameplaySceneController : WindowController<GameplaySceneView>, IDataReadyWindow
+    public class GameplaySceneController : WindowController<GameplaySceneView>, IDataReadyWindow, IHudWindowLauncher
     {
         private const string TutorialClickGenreStepId = "click_genre_panel";
         private const string TutorialFinalTextStepId = "text_4";
@@ -44,14 +40,14 @@ namespace GameplayUI
         // True once the window has loaded all the data it needs to display (currently the genre sprites).
         public bool IsDataReady { get; private set; }
 
-        private IDisposable _salesGoldSubscription;
         private IDisposable _genreBookCountsSubscription;
         private IDisposable _buttonsInteractableSubscription;
         private IDisposable _tutorialStepSubscription;
 
-        private readonly HashSet<IWindowController> _panelHideOwners = new();
+        // Anything that currently wants the HUD panels hidden: either an open window (removed when it
+        // closes) or a PanelHideLease taken by a multi-window flow. Panels come back only when empty.
+        private readonly HashSet<object> _panelHideOwners = new();
 
-        private ISubscriber<GameplaySalesGoldChanged> _salesGoldSubscriber;
         private ISubscriber<GameplayGenreBookCountsChanged> _genreBookCountsSubscriber;
         private IPublisher<GameplayGenreBookCountsRequested> _genreBookCountsRequestPublisher;
         private ISubscriber<GameplaySceneButtonsInteractableChanged> _buttonsInteractableSubscriber;
@@ -70,7 +66,6 @@ namespace GameplayUI
             IConfigsService configs = null,
             IGameFlowService gameFlow = null,
             ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
-            ISubscriber<GameplaySalesGoldChanged> salesGoldSubscriber = null,
             IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null,
             ISubscriber<TutorialStepChanged> tutorialStepSubscriber = null)
         {
@@ -82,7 +77,6 @@ namespace GameplayUI
             _locationUnlock = locationUnlock;
             _configs = configs;
             _gameFlow = gameFlow;
-            _salesGoldSubscriber = salesGoldSubscriber;
             _genreBookCountsSubscriber = genreBookCountsSubscriber;
             _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
             _genreBookCountsRequestPublisher = genreBookCountsRequestPublisher;
@@ -91,20 +85,11 @@ namespace GameplayUI
 
         protected override void OnInit()
         {
-            if (View.StartDayButton != null)
-                View.StartDayButton.onClick.AddListener(OnStartGameClicked);
-
-            if (View.DecorButton != null)
-                View.DecorButton.onClick.AddListener(OnDecorButtonClicked);
-            
-            if (View.JournalButton != null)
-                View.JournalButton.onClick.AddListener(OnJournalButtonClicked);
-            
-            if (View.InventoryButton != null)
-                View.InventoryButton.onClick.AddListener(OnInventoryButtonClicked);
-            
-            if (View.QuestButton != null)
-                View.QuestButton.onClick.AddListener(OnQuestButtonClicked);
+            if (View.MenuButtons != null)
+            {
+                View.MenuButtons.StartDayClicked += OnStartGameClicked;
+                View.MenuButtons.Bind(this);
+            }
 
             View.GenreItemClicked += OnGenreItemClicked;
 
@@ -114,7 +99,6 @@ namespace GameplayUI
             _genreBookCountsSubscription = _genreBookCountsSubscriber?.Subscribe(e =>
                 View.SetGenreBookCounts(e.Counts, e.PurchasedCounts, e.ShowPurchasedCounts));
 
-            _salesGoldSubscription = _salesGoldSubscriber?.Subscribe(OnSalesGoldChanged);
             _tutorialStepSubscription = _tutorialStepSubscriber?.Subscribe(OnTutorialStepChanged);
 
             if (_dayProgress != null)
@@ -126,8 +110,6 @@ namespace GameplayUI
 
         protected override void OnShowStart()
         {
-            View.SetSalesGoldVisible(false);
-
             // The genre panel is shown only inside the location; sync it instantly to the current state so a
             // hub boot starts hidden and a resume in-location starts shown (no animation flash).
             View.SetPanelShown(
@@ -193,32 +175,24 @@ namespace GameplayUI
             _genreBookCountsSubscription?.Dispose();
             _genreBookCountsSubscription = null;
 
-            _salesGoldSubscription?.Dispose();
-            _salesGoldSubscription = null;
-
             _tutorialStepSubscription?.Dispose();
             _tutorialStepSubscription = null;
 
-            if (View != null && View.StartDayButton != null)
-                View.StartDayButton.onClick.RemoveAllListeners();
-
-            if (View != null && View.DecorButton != null)
-                View.DecorButton.onClick.RemoveListener(OnDecorButtonClicked);
+            if (View?.MenuButtons != null)
+            {
+                View.MenuButtons.StartDayClicked -= OnStartGameClicked;
+                View.MenuButtons.Unbind();
+            }
             
-            if (View != null && View.JournalButton != null)
-                View.JournalButton.onClick.RemoveAllListeners();
-            
-            if (View != null && View.InventoryButton != null)
-                View.InventoryButton.onClick.RemoveAllListeners();
-            
-            if (View != null && View.QuestButton != null)
-                View.QuestButton.onClick.RemoveAllListeners();
-
             if (View != null)
                 View.GenreItemClicked -= OnGenreItemClicked;
 
             foreach (var owner in _panelHideOwners)
-                owner.Closed -= OnPanelHidingWindowClosed;
+            {
+                if (owner is IWindowController window)
+                    window.Closed -= OnPanelHidingWindowClosed;
+            }
+
             _panelHideOwners.Clear();
 
             if (_dayProgress != null)
@@ -231,14 +205,6 @@ namespace GameplayUI
         private void SetSceneButtonsInteractable(bool interactable)
         {
             View?.SetSceneButtonsInteractable(interactable);
-        }
-
-        private void OnSalesGoldChanged(GameplaySalesGoldChanged e)
-        {
-            if (View == null) return;
-
-            View.SetSalesGoldAmount(e.GoldEarned);
-            View.SetSalesGoldVisible(e.Visible);
         }
 
         private void OnDayPhaseChanged(DayProgressState state)
@@ -316,8 +282,14 @@ namespace GameplayUI
         {
             View.SetStartButtonActive(false);
 
+            IDisposable panelsLease = null;
             try
             {
+                // Held for the whole flow: the Location window closes before the Preparation window
+                // opens, so per-window ownership alone would drop to zero in between and flash the
+                // panels back in. Released in finally, after Preparation has taken over as owner.
+                panelsLease = await HideHudPanelsAsync();
+
                 var locationId = await PickLocationAsync(View.destroyCancellationToken);
                 if (string.IsNullOrEmpty(locationId))
                 {
@@ -343,6 +315,7 @@ namespace GameplayUI
                 }
 
                 window.Closed += OnPreparationWindowClosed;
+                TrackPanelHideOwner(window);
             }
             catch (OperationCanceledException)
             {
@@ -351,6 +324,10 @@ namespace GameplayUI
             {
                 Debug.LogError($"[GameplaySceneController] Failed to start the day: {e}");
                 View.SetStartButtonActive(true);
+            }
+            finally
+            {
+                panelsLease?.Dispose();
             }
         }
 
@@ -402,12 +379,7 @@ namespace GameplayUI
             return null;
         }
 
-        private void OnDecorButtonClicked() => ShowWindowWithPanelsHiddenAsync<DecorPlacementWindow>().Forget();
-        private void OnJournalButtonClicked() => ShowWindowWithPanelsHiddenAsync<JournalWindow>().Forget();
-        private void OnInventoryButtonClicked() => ShowWindowWithPanelsHiddenAsync<InventoryWindowController>().Forget();
-        private void OnQuestButtonClicked() => ShowWindowWithPanelsHiddenAsync<QuestWindow>().Forget();
-
-        private async UniTaskVoid ShowWindowWithPanelsHiddenAsync<TWindow>(WindowArgs args = null)
+        public async UniTask OpenAsync<TWindow>(WindowArgs args = null)
             where TWindow : class, IWindowController, new()
         {
             try
@@ -421,8 +393,7 @@ namespace GameplayUI
                     return;
                 }
 
-                _panelHideOwners.Add(window);
-                window.Closed += OnPanelHidingWindowClosed;
+                TrackPanelHideOwner(window);
             }
             catch (OperationCanceledException)
             {
@@ -435,6 +406,27 @@ namespace GameplayUI
             }
         }
 
+        // Hides the HUD panels until the returned lease is disposed. Used by flows that open more than
+        // one window in sequence, where per-window ownership would leave a gap between them.
+        private async UniTask<IDisposable> HideHudPanelsAsync()
+        {
+            var lease = new PanelHideLease(this);
+            _panelHideOwners.Add(lease);
+
+            await View.HideAnimatedPanelsAsync();
+            return lease;
+        }
+
+        // Add returns false for a window that is already an owner, so a repeated open never
+        // subscribes OnPanelHidingWindowClosed twice.
+        private void TrackPanelHideOwner(IWindowController window)
+        {
+            if (window == null) return;
+
+            if (_panelHideOwners.Add(window))
+                window.Closed += OnPanelHidingWindowClosed;
+        }
+
         private void OnPanelHidingWindowClosed(IWindowController controller)
         {
             controller.Closed -= OnPanelHidingWindowClosed;
@@ -444,9 +436,29 @@ namespace GameplayUI
 
         private void ShowPanelsIfNoOwnersLeft()
         {
+            // Can run after the HUD was torn down (cancelled flow, disposed lease) — nothing to animate then.
+            if (View == null) return;
+
             // Re-show is not gating anything, so fire-and-forget the animation.
             if (_panelHideOwners.Count == 0)
                 View.ShowAnimatedPanelsAsync().Forget();
+        }
+
+        private sealed class PanelHideLease : IDisposable
+        {
+            private GameplaySceneController _owner;
+
+            public PanelHideLease(GameplaySceneController owner) => _owner = owner;
+
+            public void Dispose()
+            {
+                if (_owner == null) return;
+
+                var owner = _owner;
+                _owner = null;
+                owner._panelHideOwners.Remove(this);
+                owner.ShowPanelsIfNoOwnersLeft();
+            }
         }
 
         private void OnPreparationWindowClosed(IWindowController controller)

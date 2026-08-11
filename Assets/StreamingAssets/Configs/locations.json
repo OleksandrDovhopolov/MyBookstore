@@ -15,8 +15,9 @@
     "id": "loc_campus",
     "displayName": "Campus",
     "entryCost": 0,
+    "locationAddress": "location/campus",
     "unlockCost": [
-      { "itemId": "milly_letter", "amount": 1 },
+      { "itemId": "millie_letter", "amount": 1 },
       { "itemId": "fuel_canister", "amount": 2 }
     ],
     "demandGenres": [
@@ -30,6 +31,7 @@
     "id": "loc_port",
     "displayName": "Port",
     "entryCost": 0,
+    "locationAddress": "location/port",
     "unlockCost": [
       { "itemId": "port_trade_permit", "amount": 1 },
       { "itemId": "fuel_canister", "amount": 2 }
@@ -44,6 +46,7 @@
     "id": "loc_market",
     "displayName": "Market",
     "entryCost": 0,
+    "locationAddress": "location/market",
     "unlock": {
       "all": [
         {
@@ -66,6 +69,7 @@
     "id": "loc_village",
     "displayName": "Village",
     "entryCost": 0,
+    "locationAddress": "location/village",
     "unlock": {
       "all": [
         {

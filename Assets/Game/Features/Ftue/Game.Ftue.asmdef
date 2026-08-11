@@ -8,6 +8,7 @@
         "Configs",
         "DayCycle",
         "Game.Bootstrap.Loading",
+        "Game.Characters.API",
         "Game.Inventory.API",
         "Game.Resources.API",
         "Game.Core.UI",

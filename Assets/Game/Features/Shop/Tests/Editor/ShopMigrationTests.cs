@@ -42,6 +42,7 @@ namespace Game.Shop.Tests.Editor
             public FakeResourcesService Resources;
             public FakeRewardGrantService Rewards;
             public FakeInventoryService Inventory;
+            public FakeCurrentDayProvider Day;
             public FakeConfigsService Configs;
             public SaveBackedShopRepository Repo;
         }
@@ -54,7 +55,8 @@ namespace Game.Shop.Tests.Editor
                 Resources = new FakeResourcesService(),
                 Rewards = new FakeRewardGrantService(),
                 Configs = new FakeConfigsService(),
-                Inventory = new FakeInventoryService()
+                Inventory = new FakeInventoryService(),
+                Day = new FakeCurrentDayProvider()
             };
             h.Configs.Seed(DecorLots());
             h.Repo = new SaveBackedShopRepository(h.Save);
@@ -65,7 +67,8 @@ namespace Game.Shop.Tests.Editor
                 h.Rewards,
                 new ShopConfigRewardSpecProvider(h.Configs),
                 h.Configs,
-                h.Inventory);
+                h.Inventory,
+                h.Day);
             return h;
         }
 

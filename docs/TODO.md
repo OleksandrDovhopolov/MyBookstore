@@ -115,7 +115,7 @@
   - Покрыть boundary-тестами границы веков.
 
 - [x] **GAME-15. Согласовать стартовый пресет FTUE с каталогом книг.**
-  Закрыто: runtime читает `books_converted.json`, где хватает всех 7 стартовых жанров. Хардкод-пресет в
+  Закрыто: runtime читает `books.json` (бывший `books_converted.json`), где хватает всех 7 стартовых жанров. Хардкод-пресет в
   [FtueBootstrapper.cs:28-37](../Assets/Game/Features/Ftue/Services/FtueBootstrapper.cs) теперь сеет 54 книги:
   `Fantasy 10, Crime 10, Drama 12, Classic 6, Fact 6, Travel 6, Kids 4`.
   Вынести пресет из хардкода в `ftue.json` всё ещё отдельная задача, парная с рефактором `DailyBookSlots`.
@@ -469,6 +469,42 @@
   active-mix и `PickActiveIndices` в `Ten*`-спавнерах, `PassiveActivePassiveArchetype` /
   `ActiveRequestArchetype`, TODO про «несколько режимов» в `DefaultCustomerSpawner`. Брать под возврат
   active-mix.
+
+- [ ] **GAME-23. Вынести memories из `characters.json` в отдельный конфиг.**
+  **Сейчас делать НЕ надо** (разбор 2026-08-03). Memories живут вложенно в
+  [CharacterConfig.Memories](../Assets/Game/Features/Configs/Models/CharacterConfig.cs), и это оправдано:
+  - Вложенность структурно выражает правило из [CHARACTER_SYSTEM.md](CHARACTER_SYSTEM.md) §0 «одна memory =
+    один персонаж» (shared memory отложена). Отдельный файл снимает гарантию — «memory без персонажа» и
+    «memory у двух персонажей» станут возможны, и ловиться будут в рантайме, а не на компиляции.
+  - Разделение не упрощает ни одно из **9** мест чтения `config.Memories` (`CharacterModelFactory`,
+    `CharactersService`, `FtueBootstrapper`), а `CharactersService.BuildCatalog` придётся распилить на два
+    прохода: сейчас он строит каталог и обратный индекс `questId/chainId → characterId` за один обход
+    `GetAll<CharacterConfig>()`.
+  - Memory не самостоятельная сущность: своего lifecycle у неё нет, `Unlocked` — проекция состояния квеста.
+    По этому признаку она ближе к `QuestConfig.Tasks` (вложенные), чем к `QuestConfig` в цепочке (плоские
+    + `ChainId`).
+  - Цена: новый тип с `[ConfigFile]`, запись в `manifest.json`, синк в StreamingAssets — иначе
+    `PreBuildValidationGate` валит билд ([BUILD.md](BUILD.md)).
+
+  **Триггер — делать, когда сработает любое из трёх:**
+  1. **Объём.** У персонажей набралось по 5-10 воспоминаний с абзацами текста, и профиль персонажа
+     (5 строк) тонет в контенте. Порог: файл перестал читаться глазами.
+  2. **Разные авторы.** Тексты воспоминаний ведёт нарративщик, а `favoriteGenres`/`discoveryQuestIds` —
+     геймдизайнер: разные файлы снимают конфликты в git.
+  3. **Безличных memories стало много.** Одна запись у псевдо-персонажа `owner` — нормально; десяток
+     превращает его в свалку.
+
+  **Как делать, когда возьмётесь:** плоский массив `MemoryConfig : IConfig` с полем `characterId` — по
+  образцу `quests.json`/`ChainId`, а не `{ "characterId": [...] }`: `IConfigsService` работает через
+  `GetAll<T>()`/`Get<T>(id)`, плоский массив ложится без переходника. Формат сейва менять не придётся —
+  `SavedCharacters.SeenMemoryIds` уже плоский root-level `HashSet<string>`, то есть id воспоминаний де-факто
+  глобально уникальны; `UnlockedMemoryIds` остаётся per-character.
+
+  **Что сделать сейчас вместо разделения** (даёт ту же безопасность без его цены) — две проверки в
+  валидатор характеров, по образцу `LocationDemandConfigValidator`:
+  - дубликаты `memory.Id` **между** персонажами — сейчас молча ломают `SeenMemoryIds` и леджер;
+  - `QuestId`/`QuestChainId`, ссылающиеся на несуществующий квест — такая memory не откроется никогда,
+    и об этом никто не сообщит.
 
 ---
 

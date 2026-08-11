@@ -55,13 +55,13 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 206f074573da1684b8291e0cdb337cce
-    m_Address: Fact
+  - m_GUID: 1b1022f11fc618649af3adae9e46fd5b
+    m_Address: memory_placeholder
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 236b8ef8fb25c724eaa7e5eee19a4083
-    m_Address: captain
+  - m_GUID: 206f074573da1684b8291e0cdb337cce
+    m_Address: Fact
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -72,6 +72,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3a0282d134a0ab34ca672b6747044f6d
     m_Address: Classic
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3b4ec49d886e646418256d434201a53f
+    m_Address: eddi_avatar
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -95,23 +100,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 57c2f99d03555a34fa9cd645d6841edd
-    m_Address: milly
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6046e1a31fd48ec4d8db68b56931bed1
     m_Address: tifany_lamp
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 71eabe4c4720cf64093f4c905a60bc5d
-    m_Address: fuel_canister
+  - m_GUID: 6f077335830febe45804a2e23887988a
+    m_Address: millie_avatar
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7405d3beb7b1e3947a94fe1abbb50846
     m_Address: loc_market
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 75e0907dad91f6e4f89d370758495607
+    m_Address: fuel_canister
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -131,12 +136,17 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8c03afe373aab47408779f3f4c08e844
-    m_Address: milly_letter
+    m_Address: millie_letter
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 913dab9a7930aaf4db302aa573d7b9f9
     m_Address: Kids
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 968f7e801ba279c4b9d373659828dcfa
+    m_Address: memory_moving_in
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -180,6 +190,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c470e333a5b3cce408ea5f39415838ad
+    m_Address: yuki_avatar
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ce5c12c00e88a154ab25f58b569dda27
     m_Address: Crime
     m_ReadOnly: 0
@@ -192,6 +207,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e5870de896be30d439d086e058a9f31a
     m_Address: green_flower
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eefd4c06ce62e8847bd3f908e88180ab
+    m_Address: memory_moving_in
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

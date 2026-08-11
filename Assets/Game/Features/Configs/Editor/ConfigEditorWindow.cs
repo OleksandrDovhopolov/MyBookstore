@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
@@ -17,9 +19,10 @@ namespace Game.Configs.Editor
     /// </summary>
     internal sealed class ConfigEditorWindow : EditorWindow
     {
-        private static readonly string[] Sections = { "books", "locations", "requests", "events" };
         private static readonly string[] Environments = { "dev", "prod" };
 
+        private const string DefaultSection = "books";
+        private const string ConfigsDir = "Assets/Configs";
         private const string BootstrapEtag = "bootstrap";
 
         private readonly SectionState _state = new();
@@ -50,6 +53,7 @@ namespace Game.Configs.Editor
             _baseUrlField = ConfigEditorSettings.BaseUrl;
             _userField = ConfigEditorSettings.Username;
             _passField = ConfigEditorSettings.Password;
+            EnsureKnownSection();
             RefreshDisconnectedState();
         }
 
@@ -95,12 +99,25 @@ namespace Game.Configs.Editor
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
 
-            var newSection = EditorGUILayout.Popup(Array.IndexOf(Sections, _state.Section), Sections, EditorStyles.toolbarPopup, GUILayout.Width(110));
-            if (newSection >= 0 && Sections[newSection] != _state.Section)
+            var sections = ConfigSectionCatalog.SectionNames.ToArray();
+            EnsureKnownSection(sections);
+
+            if (sections.Length == 0)
             {
-                _state.Section = Sections[newSection];
-                _state.MarkEmpty();
-                _state.State = ConfigEditorSettings.IsConfigured ? EditorWindowState.Idle : EditorWindowState.Disconnected;
+                EditorGUILayout.LabelField("No sections", EditorStyles.toolbarPopup, GUILayout.Width(110));
+            }
+            else
+            {
+                var sectionIndex = Array.IndexOf(sections, _state.Section);
+                if (sectionIndex < 0) sectionIndex = 0;
+
+                var newSection = EditorGUILayout.Popup(sectionIndex, sections, EditorStyles.toolbarPopup, GUILayout.Width(140));
+                if (newSection >= 0 && sections[newSection] != _state.Section)
+                {
+                    _state.Section = sections[newSection];
+                    _state.MarkEmpty();
+                    _state.State = ConfigEditorSettings.IsConfigured ? EditorWindowState.Idle : EditorWindowState.Disconnected;
+                }
             }
 
             var newEnv = EditorGUILayout.Popup(Array.IndexOf(Environments, _state.Environment), Environments, EditorStyles.toolbarPopup, GUILayout.Width(80));
@@ -118,6 +135,14 @@ namespace Game.Configs.Editor
             using (new EditorGUI.DisabledScope(!CanPublish()))
                 if (GUILayout.Button("Publish", EditorStyles.toolbarButton, GUILayout.Width(70)))
                     PublishAsync().Forget();
+
+            using (new EditorGUI.DisabledScope(IsBusy() || sections.Length == 0))
+                if (GUILayout.Button("Load File", EditorStyles.toolbarButton, GUILayout.Width(80)))
+                    LoadFromAssetsConfigs();
+
+            using (new EditorGUI.DisabledScope(IsBusy() || _state.WorkingArray == null || sections.Length == 0))
+                if (GUILayout.Button("Save File", EditorStyles.toolbarButton, GUILayout.Width(80)))
+                    SaveToAssetsConfigs();
 
             using (new EditorGUI.DisabledScope(!CanShowHistory()))
                 if (GUILayout.Button("History", EditorStyles.toolbarButton, GUILayout.Width(70)))
@@ -430,6 +455,77 @@ namespace Game.Configs.Editor
             Repaint();
         }
 
+        private void LoadFromAssetsConfigs()
+        {
+            ResetMessages();
+            var path = SectionFilePath(_state.Section);
+
+            if (!File.Exists(path))
+            {
+                _state.LastError = $"File not found: {path}";
+                Repaint();
+                return;
+            }
+
+            try
+            {
+                var token = JToken.Parse(File.ReadAllText(path));
+                if (token is not JArray array)
+                {
+                    _state.LastError = $"{path} must contain a JSON array.";
+                    Repaint();
+                    return;
+                }
+
+                _state.WorkingArray = array;
+                _state.SelectedItemIndex = -1;
+                _state.State = EditorWindowState.Dirty;
+                _state.LastOperationResult = $"Loaded {path} into working copy.";
+            }
+            catch (Exception ex)
+            {
+                _state.LastError = $"Failed to load {path}: {ex.Message}";
+            }
+
+            Repaint();
+        }
+
+        private void SaveToAssetsConfigs()
+        {
+            ResetMessages();
+            if (_state.WorkingArray == null)
+            {
+                _state.LastError = "Nothing to save: working JSON is null.";
+                Repaint();
+                return;
+            }
+
+            var path = SectionFilePath(_state.Section);
+            if (File.Exists(path) && !EditorUtility.DisplayDialog(
+                    "Overwrite config file",
+                    $"Overwrite {path}? StreamingAssets will not be synced automatically.",
+                    "Save",
+                    "Cancel"))
+            {
+                Repaint();
+                return;
+            }
+
+            try
+            {
+                Directory.CreateDirectory(ConfigsDir);
+                File.WriteAllText(path, _state.SerializeWorking(Formatting.Indented));
+                AssetDatabase.Refresh();
+                _state.LastOperationResult = $"Saved working copy to {path}. Run Sync before building.";
+            }
+            catch (Exception ex)
+            {
+                _state.LastError = $"Failed to save {path}: {ex.Message}";
+            }
+
+            Repaint();
+        }
+
         private async UniTask PromoteAsync()
         {
             ResetMessages();
@@ -519,6 +615,24 @@ namespace Game.Configs.Editor
             _state.LastError = null;
             _state.LastOperationResult = null;
         }
+
+        private void EnsureKnownSection()
+            => EnsureKnownSection(ConfigSectionCatalog.SectionNames.ToArray());
+
+        private void EnsureKnownSection(string[] sections)
+        {
+            if (sections == null || sections.Length == 0) return;
+            if (sections.Any(section => string.Equals(section, _state.Section, StringComparison.OrdinalIgnoreCase)))
+                return;
+
+            var fallback = sections.FirstOrDefault(section =>
+                string.Equals(section, DefaultSection, StringComparison.OrdinalIgnoreCase));
+            _state.Section = fallback ?? sections[0];
+            _state.MarkEmpty();
+        }
+
+        private static string SectionFilePath(string section)
+            => Path.Combine(ConfigsDir, section + ".json").Replace('\\', '/');
 
         private bool IsBusy()
             => _state.State == EditorWindowState.Loading || _state.State == EditorWindowState.Publishing;

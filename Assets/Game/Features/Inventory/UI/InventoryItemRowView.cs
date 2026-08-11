@@ -30,10 +30,11 @@ namespace Game.Inventory.UI
         [SerializeField] private TextMeshProUGUI _amountText;
         [SerializeField] private Button _infoButton;
 
-        private Action<string> _onInfo;
+        private Action<string, InventoryRowStyle, RectTransform> _onInfo;
         private string _itemId;
         private CancellationTokenSource _iconCts;
         private VisualMode _visualMode;
+        private InventoryRowStyle _style;
 
         private void Awake()
         {
@@ -43,11 +44,12 @@ namespace Game.Inventory.UI
         public void Bind(
             InventoryRowModel model,
             IUiSpriteProvider sprites,
-            Action<string> onInfo,
+            Action<string, InventoryRowStyle, RectTransform> onInfo,
             CancellationToken ct)
         {
             CancelIconLoad();
             _itemId = model.ItemId;
+            _style = model.Style;
             _onInfo = !string.IsNullOrEmpty(_itemId) ? onInfo : null;
 
             SetVisualMode(ToVisualMode(model.Style));
@@ -65,6 +67,7 @@ namespace Game.Inventory.UI
             CancelIconLoad();
             _onInfo = null;
             _itemId = null;
+            _style = InventoryRowStyle.Default;
             if (_amountText != null) _amountText.text = string.Empty;
             SetInfoVisible(false);
             SetVisualMode(VisualMode.None);
@@ -94,7 +97,12 @@ namespace Game.Inventory.UI
 
         private void OnInfoClicked()
         {
-            if (!string.IsNullOrEmpty(_itemId)) _onInfo?.Invoke(_itemId);
+            if (string.IsNullOrEmpty(_itemId)) return;
+
+            var anchor = _infoButton != null && _infoButton.transform is RectTransform buttonRect
+                ? buttonRect
+                : transform as RectTransform;
+            _onInfo?.Invoke(_itemId, _style, anchor);
         }
 
         private static VisualMode ToVisualMode(InventoryRowStyle style)
