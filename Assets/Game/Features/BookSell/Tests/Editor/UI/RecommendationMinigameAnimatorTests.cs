@@ -1,4 +1,5 @@
 using System.Reflection;
+using Book.Sell.API;
 using Book.Sell.UI;
 using NUnit.Framework;
 using UnityEngine;
@@ -20,7 +21,7 @@ namespace Book.Sell.Tests.Editor.UI
                 Assert.DoesNotThrow(() => animator.PlayRequestIntro());
                 Assert.DoesNotThrow(() => animator.ShowBookDetail());
                 Assert.DoesNotThrow(() => animator.HideBookDetail());
-                Assert.DoesNotThrow(() => animator.PlayResult("ok"));
+                Assert.DoesNotThrow(() => animator.PlayResult("ok", RecommendationTier.Excellent, selectedBookRect: null));
                 Assert.DoesNotThrow(() => animator.KillAll());
             }
             finally
@@ -55,15 +56,13 @@ namespace Book.Sell.Tests.Editor.UI
         public void PlayResult_DisablesFinishButtonImmediately()
         {
             var root = new GameObject("animator");
-            var result = new GameObject("result", typeof(RectTransform));
             var button = new GameObject("finish", typeof(RectTransform), typeof(Button));
             try
             {
                 var animator = root.AddComponent<RecommendationMinigameAnimator>();
-                SetPrivate(animator, "_resultRoot", result.GetComponent<RectTransform>());
                 SetPrivate(animator, "_finishButton", button.GetComponent<Button>());
 
-                animator.PlayResult("done");
+                animator.PlayResult("done", RecommendationTier.Excellent, selectedBookRect: null);
 
                 Assert.IsFalse(button.GetComponent<Button>().interactable);
                 Assert.IsFalse(button.GetComponent<CanvasGroup>().blocksRaycasts);
@@ -72,7 +71,36 @@ namespace Book.Sell.Tests.Editor.UI
             {
                 root.GetComponent<RecommendationMinigameAnimator>()?.KillAll();
                 UnityEngine.Object.DestroyImmediate(button);
-                UnityEngine.Object.DestroyImmediate(result);
+                UnityEngine.Object.DestroyImmediate(root);
+            }
+        }
+
+        [Test]
+        public void PlayResult_ActivatesOnlyMatchingStamp()
+        {
+            var root = new GameObject("animator");
+            var success = new GameObject("success", typeof(RectTransform));
+            var fail = new GameObject("fail", typeof(RectTransform));
+            try
+            {
+                var animator = root.AddComponent<RecommendationMinigameAnimator>();
+                animator.SetResultObjects(success, fail);
+
+                animator.PlayResult("done", RecommendationTier.Excellent, selectedBookRect: null);
+
+                Assert.IsTrue(success.activeSelf);
+                Assert.IsFalse(fail.activeSelf);
+
+                animator.PlayResult("done", RecommendationTier.Failed, selectedBookRect: null);
+
+                Assert.IsFalse(success.activeSelf);
+                Assert.IsTrue(fail.activeSelf);
+            }
+            finally
+            {
+                root.GetComponent<RecommendationMinigameAnimator>()?.KillAll();
+                UnityEngine.Object.DestroyImmediate(fail);
+                UnityEngine.Object.DestroyImmediate(success);
                 UnityEngine.Object.DestroyImmediate(root);
             }
         }

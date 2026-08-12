@@ -15,15 +15,32 @@ MonoBehaviour:
   m_GroupName: Locations
   m_GUID: 43414eee4ece2d64c9f139e126f8f53f
   m_SerializeEntries:
+  - m_GUID: 051d0f9ee2fd4104f8fdf6781c78f41e
+    m_Address: loc_village
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0762d8f8854a7964e82fc0c13c35d7e0
     m_Address: location/campus
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - location
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1425550bb6b95cb46a25da040d808684
+    m_Address: loc_park
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 143c5db1bda88e04cbb356c988f2f87a
+    m_Address: loc_campus
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 59a1b2529a63bb94a8f5141b13f3567f
     m_Address: location/village
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - location
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 617e068ad10ff1349ba88599252da465
     m_Address: location/park
@@ -31,15 +48,27 @@ MonoBehaviour:
     m_SerializedLabels:
     - location
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7405d3beb7b1e3947a94fe1abbb50846
+    m_Address: loc_market
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 83ed6f3b18404ea489965dae26722074
     m_Address: location/market
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - location
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ab8811f57efe48241b6671e7edca91db
+    m_Address: loc_port
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f57283b47097550429d7e3a3903972e3
     m_Address: location/port
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - location
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 962dd82bfa6d0f047923cc0481612c96, type: 2}

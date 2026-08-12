@@ -15,8 +15,8 @@ namespace Book.Sell.UI
     /// <summary>
     /// Modal window for the active recommendation minigame (extracted from <see cref="SalesScreenView"/>).
     /// Shows the customer's request + the current shelf; clicking a book opens a detail panel; Recommend/Skip
-    /// resolve the request via <see cref="ISalesDayController"/>; the resolution swaps in a result container
-    /// showing the customer's reaction (mapped from <see cref="RecommendationTier"/>) and a Finish button that
+    /// resolve the request via <see cref="ISalesDayController"/>; the resolution stamps success/fail over
+    /// the selected book, keeps the customer's reaction text, and reveals a Finish button that
     /// closes the window. The day is paused by <see cref="SalesScreenView"/> while this window is open, so the
     /// shelf is static and rendered once on show.
     /// </summary>
@@ -28,6 +28,7 @@ namespace Book.Sell.UI
         private readonly List<BookCardView> _cards = new();
         private string _selectedBookId;
         private bool _subscribed;
+        private bool _resolutionPending;
 
         // Resolved from the bootstrap scope (global singleton), same as DialogWindow injects IConfigsService.
         // Null-safe: BookCardView.Bind skips the icon load when the provider is unavailable.
@@ -53,14 +54,18 @@ namespace Book.Sell.UI
 
             // Selection state visible, result hidden.
             if (View.MinigameRoot != null) View.MinigameRoot.SetActive(true);
+            //if (View.ResultPanel != null) View.ResultPanel.SetActive(false);
             if (View.Animator != null)
+            {
+                View.Animator.SetResultObjects(View.SuccessResultObject, View.FailResultObject);
                 View.Animator.PrepareForRequest();
+            }
             else
             {
-                if (View.ResultPanel != null) View.ResultPanel.SetActive(false);
                 SetDetailState(hasBook: false);
             }
 
+            _resolutionPending = false;
             RenderRequest(_controller.CurrentRequest);
             PopulateShelfCards();
             ClearSelection();
@@ -143,6 +148,8 @@ namespace Book.Sell.UI
 
         private void OnBookCardClicked(string bookId)
         {
+            if (_resolutionPending) return;
+
             _selectedBookId = bookId;
             foreach (var card in _cards) card.SetSelected(card.BookId == bookId);
 
@@ -199,17 +206,27 @@ namespace Book.Sell.UI
 
         // ---------- actions ----------
 
-        private void OnClearFocus() => ClearSelection();
+        private void OnClearFocus()
+        {
+            if (_resolutionPending) return;
+            ClearSelection();
+        }
 
         private void OnRecommend()
         {
-            if (_controller == null || string.IsNullOrEmpty(_selectedBookId)) return;
+            if (_resolutionPending || _controller == null || string.IsNullOrEmpty(_selectedBookId)) return;
+
+            _resolutionPending = true;
+            SetSelectionActionsInteractable(false);
             _controller.RecommendBook(_selectedBookId);
         }
 
         private void OnSkip()
         {
-            if (_controller == null) return;
+            if (_resolutionPending || _controller == null) return;
+
+            _resolutionPending = true;
+            SetSelectionActionsInteractable(false);
             _controller.SkipCurrentRequest();
         }
 
@@ -219,23 +236,42 @@ namespace Book.Sell.UI
 
         private void OnResolved(RecommendationResult result)
         {
+            _resolutionPending = true;
+            SetSelectionActionsInteractable(false);
+
             var emotion = EmotionFor(result?.Tier ?? RecommendationTier.Skipped);
             Set(View.EmotionLabel, emotion);
             if (View.Animator != null)
             {
-                View.Animator.HideSelection(onComplete: () =>
-                {
-                    if (View.MinigameRoot != null) View.MinigameRoot.SetActive(false);
-                    View.Animator.PlayResult(emotion);
-                });
+                //if (View.ResultPanel != null) View.ResultPanel.SetActive(true);
+                View.Animator.PlayResult(emotion, result?.Tier ?? RecommendationTier.Skipped, SelectedBookRect());
             }
             else
             {
-                if (View.MinigameRoot != null) View.MinigameRoot.SetActive(false);
-                if (View.ResultPanel != null) View.ResultPanel.SetActive(true);
+                //if (View.ResultPanel != null) View.ResultPanel.SetActive(true);
                 Set(View.EmotionLabel, emotion);
                 if (View.FinishButton != null) View.FinishButton.interactable = true;
             }
+        }
+
+        private RectTransform SelectedBookRect()
+        {
+            if (string.IsNullOrEmpty(_selectedBookId)) return null;
+
+            foreach (var card in _cards)
+            {
+                if (card == null || card.BookId != _selectedBookId) continue;
+                return card.GetComponent<RectTransform>();
+            }
+
+            return null;
+        }
+
+        private void SetSelectionActionsInteractable(bool interactable)
+        {
+            if (View.RecommendButton != null) View.RecommendButton.interactable = interactable && !string.IsNullOrEmpty(_selectedBookId);
+            if (View.SkipButton != null) View.SkipButton.interactable = interactable;
+            if (View.ClearFocusButton != null) View.ClearFocusButton.interactable = interactable;
         }
 
         // TODO: replace with proper reaction art/animation (hearts, speech bubble, etc.).
