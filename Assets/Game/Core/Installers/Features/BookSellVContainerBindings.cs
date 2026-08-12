@@ -76,6 +76,8 @@ namespace Game.Bootstrap
             // which reads the player's choice from preparation.session and falls back to the
             // catalog if no session exists yet.
             builder.Register<IBookConditionRequestEvaluator, BookConditionRequestEvaluator>(Lifetime.Singleton);
+            builder.Register<IActiveRequestGenreResolver, ConditionActiveRequestGenreResolver>(Lifetime.Singleton);
+            builder.Register<IActiveRequestSelectorFactory, ProfileMatchedRequestSelectorFactory>(Lifetime.Singleton);
             builder.Register<IActiveRequestRuntimeProvider, ConfigActiveRequestRuntimeProvider>(Lifetime.Singleton);
             builder.Register<IActiveRequestScoringService, ActiveRequestScoringService>(Lifetime.Singleton);
 
@@ -126,6 +128,7 @@ namespace Game.Bootstrap
             // Warns once per process if a day asks for more active requests than it has customers.
             builder.RegisterEntryPoint<CustomerTrafficConfigValidator>(Lifetime.Singleton);
             builder.RegisterEntryPoint<LocationDemandConfigValidator>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<ActiveRequestGenreCoverageValidator>(Lifetime.Singleton);
 
             // Base composition (concrete type) + scripted-customer decorator as ICustomerSpawner (GAME-16).
             // The decorator replaces regular slots only for scripts with authored sales attempts; dialogue-only
@@ -138,14 +141,17 @@ namespace Game.Bootstrap
                     r.Resolve<ICustomerTrafficResolver>(),
                     r.Resolve<IActiveRequestRuntimeProvider>(),
                     r.Resolve<ICustomerProfileProvider>(),
-                    r.Resolve<IActiveRequestCountResolver>()),
+                    r.Resolve<IActiveRequestCountResolver>(),
+                    r.Resolve<IActiveRequestSelectorFactory>()),
                 Lifetime.Singleton); // production base: count from ICustomerTrafficResolver
             builder.Register<ICustomerSpawner>(r => new ScriptedCustomerSpawner(
                     r.Resolve<RegularCustomerSpawner>(),
                     r.Resolve<IConfigsService>(),
                     r.Resolve<IQuestsService>(),
                     r.Resolve<IDeliveredDialoguesService>(),
-                    r.Resolve<ICustomerProfileProvider>()),
+                    r.Resolve<ICustomerProfileProvider>(),
+                    r.Resolve<IActiveRequestRuntimeProvider>(),
+                    r.Resolve<IActiveRequestSelectorFactory>()),
                 Lifetime.Singleton);
             
             

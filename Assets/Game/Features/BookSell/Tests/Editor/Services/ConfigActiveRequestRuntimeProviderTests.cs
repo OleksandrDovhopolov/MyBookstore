@@ -45,6 +45,7 @@ namespace Book.Sell.Tests.Editor.Services
             Assert.AreEqual(1, requests.Count);
             Assert.AreEqual("valid", requests[0].Id);
             Assert.AreEqual(RequestDifficulty.Unknown, requests[0].Difficulty);
+            CollectionAssert.AreEqual(new[] { "Crime" }, requests[0].RequiredGenres);
             StringAssert.Contains("genres", requests[0].Text);
         }
     }

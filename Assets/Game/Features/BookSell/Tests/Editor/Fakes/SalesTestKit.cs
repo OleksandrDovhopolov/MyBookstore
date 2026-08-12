@@ -37,8 +37,14 @@ namespace Book.Sell.Tests.Editor.Fakes
                 }
             };
 
-        public static ActiveRequestRuntime ActiveRequest(string id, string quality = "space")
-            => ActiveRequestRuntime.FromCondition(RequestDef(id, quality), $"ALL: qualities contains {quality}");
+        public static ActiveRequestRuntime ActiveRequest(
+            string id,
+            string quality = "space",
+            IReadOnlyList<string> requiredGenres = null)
+            => ActiveRequestRuntime.FromCondition(
+                RequestDef(id, quality),
+                $"ALL: qualities contains {quality}",
+                requiredGenres);
 
         public static LocationConfig Location(string id = "loc", string[] demandGenres = null)
             => new()
