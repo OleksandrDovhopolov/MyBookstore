@@ -46,7 +46,6 @@ namespace Book.Sell.UI
         [SerializeField] private Button _skipButton;            // "I couldn't find the right book"
 
         [Header("Result container")]
-        //[SerializeField] private GameObject _resultPanel;
         [SerializeField] private GameObject _successResultObject;
         [SerializeField] private GameObject _failResultObject;
         [SerializeField] private TMP_Text _emotionLabel;        // customer reaction (mapped from Tier)

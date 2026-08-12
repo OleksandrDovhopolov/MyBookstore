@@ -23,12 +23,17 @@ namespace Book.Sell.UI
     [Window("RecommendationMinigameWindow", WindowType.Popup, true)]
     public sealed class RecommendationMinigameWindow : WindowController<RecommendationMinigameWindowView>
     {
+        private const int FallbackFinishButtonDelayMs = 3000;
+        private const int FallbackEmotionTypeDurationMs = 1000;
+
         private ISalesDayController _controller;
         private IUiSpriteProvider _uiSprites;
         private readonly List<BookCardView> _cards = new();
         private string _selectedBookId;
         private bool _subscribed;
         private bool _resolutionPending;
+        private bool _resultShown;
+        private int _fallbackFinishDelayVersion;
 
         // Resolved from the bootstrap scope (global singleton), same as DialogWindow injects IConfigsService.
         // Null-safe: BookCardView.Bind skips the icon load when the provider is unavailable.
@@ -63,13 +68,15 @@ namespace Book.Sell.UI
             else
             {
                 SetDetailState(hasBook: false);
+                SetFinishButtonVisible(false, interactable: false);
             }
 
             _resolutionPending = false;
+            _resultShown = false;
             RenderRequest(_controller.CurrentRequest);
             PopulateShelfCards();
             ClearSelection();
-            View.Animator?.PlayRequestIntro();
+            View.Animator?.PlayRequestIntro(showShelfPanel: View.Animation is not RecommendationMinigameWindowAnimation);
 
             Subscribe();
         }
@@ -77,7 +84,8 @@ namespace Book.Sell.UI
         protected override void OnHideStart(bool isClosed)
         {
             base.OnHideStart(isClosed);
-            View?.Animator?.HideSelection();
+            View?.Animator?.KillAll();
+            _fallbackFinishDelayVersion++;
             Unsubscribe();
         }
 
@@ -228,6 +236,9 @@ namespace Book.Sell.UI
             _resolutionPending = true;
             SetSelectionActionsInteractable(false);
             _controller.SkipCurrentRequest();
+
+            if (!_resultShown)
+                OnResolved(RecommendationResult.Skipped(_controller.CurrentRequest?.Id));
         }
 
         private void OnFinish() => CloseAsync().Forget();
@@ -236,11 +247,13 @@ namespace Book.Sell.UI
 
         private void OnResolved(RecommendationResult result)
         {
+            if (_resultShown) return;
+
+            _resultShown = true;
             _resolutionPending = true;
             SetSelectionActionsInteractable(false);
 
             var emotion = EmotionFor(result?.Tier ?? RecommendationTier.Skipped);
-            Set(View.EmotionLabel, emotion);
             if (View.Animator != null)
             {
                 //if (View.ResultPanel != null) View.ResultPanel.SetActive(true);
@@ -249,9 +262,48 @@ namespace Book.Sell.UI
             else
             {
                 //if (View.ResultPanel != null) View.ResultPanel.SetActive(true);
-                Set(View.EmotionLabel, emotion);
-                if (View.FinishButton != null) View.FinishButton.interactable = true;
+                PlayFallbackResultAsync(emotion, ++_fallbackFinishDelayVersion).Forget();
             }
+        }
+
+        private async UniTaskVoid PlayFallbackResultAsync(string emotion, int version)
+        {
+            SetFinishButtonVisible(false, interactable: false);
+            TypeFallbackEmotionAsync(emotion, version).Forget();
+            await UniTask.Delay(FallbackFinishButtonDelayMs, ignoreTimeScale: true);
+            if (version != _fallbackFinishDelayVersion || View == null) return;
+            SetFinishButtonVisible(true, interactable: true);
+        }
+
+        private async UniTaskVoid TypeFallbackEmotionAsync(string emotion, int version)
+        {
+            var label = View?.EmotionLabel;
+            if (label == null) return;
+
+            label.text = emotion ?? string.Empty;
+            label.maxVisibleCharacters = 0;
+            label.ForceMeshUpdate();
+
+            var characterCount = label.textInfo.characterCount;
+            if (FallbackEmotionTypeDurationMs <= 0 || characterCount <= 0)
+            {
+                label.maxVisibleCharacters = int.MaxValue;
+                return;
+            }
+
+            var duration = FallbackEmotionTypeDurationMs / 1000f;
+            var elapsed = 0f;
+            while (elapsed < duration)
+            {
+                await UniTask.Yield(PlayerLoopTiming.Update);
+                if (version != _fallbackFinishDelayVersion || View == null) return;
+
+                elapsed += Time.unscaledDeltaTime;
+                var progress = Mathf.Clamp01(elapsed / duration);
+                label.maxVisibleCharacters = Mathf.CeilToInt(characterCount * progress);
+            }
+
+            label.maxVisibleCharacters = int.MaxValue;
         }
 
         private RectTransform SelectedBookRect()
@@ -274,6 +326,13 @@ namespace Book.Sell.UI
             if (View.ClearFocusButton != null) View.ClearFocusButton.interactable = interactable;
         }
 
+        private void SetFinishButtonVisible(bool visible, bool interactable)
+        {
+            if (View.FinishButton == null) return;
+            View.FinishButton.gameObject.SetActive(visible);
+            View.FinishButton.interactable = interactable;
+        }
+
         // TODO: replace with proper reaction art/animation (hearts, speech bubble, etc.).
         private static string EmotionFor(RecommendationTier tier) => tier switch
         {
@@ -285,7 +344,9 @@ namespace Book.Sell.UI
 
         private static void Set(TMP_Text label, string value)
         {
-            if (label != null) label.text = value ?? string.Empty;
+            if (label == null) return;
+            label.text = value ?? string.Empty;
+            label.maxVisibleCharacters = int.MaxValue;
         }
     }
 }

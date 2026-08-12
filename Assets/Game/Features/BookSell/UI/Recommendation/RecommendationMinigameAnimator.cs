@@ -28,11 +28,13 @@ namespace Book.Sell.UI
         [SerializeField, Min(0f)] private float _detailHideDuration = 0.27f;
         [SerializeField, Range(0.01f, 1f)] private float _detailScaleFrom = 0.97f;
         [SerializeField, Min(0f)] private float _resultTextDuration = 0.45f;
+        [SerializeField, Min(0f)] private float _resultTextTypeDuration = 1f;
         [SerializeField, Min(0f)] private float _finishButtonDelay = 3f;
         [SerializeField, Min(0f)] private float _finishButtonDuration = 0.405f;
         [SerializeField, Min(0f)] private float _buttonsFadeDuration = 0.405f;
-        [SerializeField, Min(0f)] private float _stampDuration = 0.36f;
-        [SerializeField, Min(0f)] private float _stampDropY = 42f;
+
+        [Header("StampAnimation")]
+        [SerializeField, Min(0f)] private float _stampDuration = 0.6f;
         [SerializeField, Min(0.01f)] private float _stampScaleFrom = 1.55f;
         [SerializeField, Min(0.01f)] private float _stampImpactScale = 0.86f;
         [SerializeField] private float _stampRotationFrom = -9f;
@@ -65,12 +67,12 @@ namespace Book.Sell.UI
             HideStampInstant(_failResultObject);
         }
 
-        public void PlayRequestIntro()
+        public void PlayRequestIntro(bool showShelfPanel = true)
         {
             CaptureRequestPosition();
             PlayRequestPanelIntro();
             ShowButtons();
-            if (_shelfPanel != null) _shelfPanel.Show();
+            if (showShelfPanel && _shelfPanel != null) _shelfPanel.Show();
         }
 
         public void HideSelectionInstant()
@@ -164,8 +166,7 @@ namespace Book.Sell.UI
 
         public void PlayResult(string text, RecommendationTier tier, RectTransform selectedBookRect)
         {
-            if (_resultText != null)
-                _resultText.text = text ?? string.Empty;
+            _ = selectedBookRect;
 
             KillResultTween();
             HideStampInstant(_successResultObject);
@@ -173,7 +174,7 @@ namespace Book.Sell.UI
             SetFinishButtonVisible(false, interactable: false);
 
             var textGroup = _resultText != null ? EnsureCanvasGroup(_resultText.gameObject) : null;
-            if (textGroup != null) textGroup.alpha = 0f;
+            var visibleCharacterCount = PrepareResultText(text, textGroup);
 
             _resultTween = DOTween.Sequence()
                 .SetUpdate(true)
@@ -183,9 +184,26 @@ namespace Book.Sell.UI
                 _resultTween.Insert(0f, DOTween.To(() => textGroup.alpha, x => textGroup.alpha = x, 1f, _resultTextDuration)
                     .SetEase(Ease.OutCubic));
 
+            if (_resultText != null)
+            {
+                if (_resultTextTypeDuration <= 0f || visibleCharacterCount <= 0)
+                {
+                    _resultText.maxVisibleCharacters = int.MaxValue;
+                }
+                else
+                {
+                    _resultTween.Insert(0f, DOTween.To(
+                            () => _resultText.maxVisibleCharacters,
+                            x => _resultText.maxVisibleCharacters = x,
+                            visibleCharacterCount,
+                            _resultTextTypeDuration)
+                        .SetEase(Ease.Linear));
+                }
+            }
+
             var stamp = StampFor(tier);
             if (stamp != null)
-                _resultTween.Insert(0f, BuildStampTween(stamp, selectedBookRect));
+                _resultTween.Insert(0f, BuildStampTween(stamp));
 
             _resultTween.InsertCallback(_finishButtonDelay, () => SetFinishButtonVisible(true, interactable: false));
 
@@ -209,7 +227,10 @@ namespace Book.Sell.UI
             HideStampInstant(_failResultObject);
 
             if (_resultText != null)
+            {
                 EnsureCanvasGroup(_resultText.gameObject).alpha = 1f;
+                _resultText.maxVisibleCharacters = int.MaxValue;
+            }
         }
 
         public void KillAll()
@@ -339,7 +360,21 @@ namespace Book.Sell.UI
                 _ => null
             };
 
-        private Tween BuildStampTween(GameObject stamp, RectTransform selectedBookRect)
+        private int PrepareResultText(string text, CanvasGroup textGroup)
+        {
+            if (_resultText == null) return 0;
+
+            _resultText.text = text ?? string.Empty;
+            _resultText.maxVisibleCharacters = 0;
+            _resultText.ForceMeshUpdate();
+
+            if (textGroup != null)
+                textGroup.alpha = 0f;
+
+            return _resultText.textInfo.characterCount;
+        }
+
+        private Tween BuildStampTween(GameObject stamp)
         {
             var rect = stamp.GetComponent<RectTransform>();
             var group = EnsureCanvasGroup(stamp);
@@ -351,19 +386,14 @@ namespace Book.Sell.UI
 
             if (rect != null)
             {
-                if (selectedBookRect != null)
-                    rect.position = selectedBookRect.position + new Vector3(0f, _stampDropY, 0f);
-
                 rect.localScale = Vector3.one * _stampScaleFrom;
                 rect.localRotation = Quaternion.Euler(0f, 0f, _stampRotationFrom);
 
-                var targetPosition = selectedBookRect != null ? selectedBookRect.position : rect.position;
                 var halfDuration = Mathf.Max(0.01f, _stampDuration * 0.5f);
 
                 return DOTween.Sequence()
                     .SetUpdate(true)
                     .Join(DOTween.To(() => group.alpha, x => group.alpha = x, 1f, halfDuration).SetEase(Ease.OutCubic))
-                    .Join(DOTween.To(() => rect.position, x => rect.position = x, targetPosition, halfDuration).SetEase(Ease.InCubic))
                     .Join(DOTween.To(() => rect.localScale, x => rect.localScale = x, Vector3.one * _stampImpactScale, halfDuration)
                         .SetEase(Ease.InCubic))
                     .Join(DOTween.To(() => _stampRotationFrom, z => rect.localRotation = Quaternion.Euler(0f, 0f, z), 3f, halfDuration)
