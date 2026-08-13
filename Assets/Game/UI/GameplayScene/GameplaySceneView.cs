@@ -15,6 +15,12 @@ namespace GameplayUI
         [SerializeField] private TMP_Text _dayLabel;
         [SerializeField] private HudMenuButtonsView _menuButtons;
 
+        [Header("Gold counters")]
+        [SerializeField] private GameObject _hubGoldCounterRoot;
+        [SerializeField] private ResourceCounterTargetTag _hubGoldCounter;
+        [SerializeField] private GameObject _locationGoldCounterRoot;
+        [SerializeField] private ResourceCounterTargetTag _locationGoldCounter;
+
         [Header("Genre book counts")] [SerializeField]
         private UIListPool<GameplayGenreBookCountItemView> _genreBookCountPool = new();
 
@@ -91,6 +97,24 @@ namespace GameplayUI
                 WidgetRegistry.Register<SaleChanceWidgetData>(_saleChanceWidgetPrefab);
 
             HideLegacyGenreBookCountItemsIfNeeded();
+            ResolveGoldCounterReferences();
+        }
+
+        public void SetGoldCounterMode(bool locationLoaded)
+        {
+            ResolveGoldCounterReferences();
+
+            if (_hubGoldCounterRoot != null)
+                _hubGoldCounterRoot.SetActive(!locationLoaded);
+
+            if (_locationGoldCounterRoot != null)
+                _locationGoldCounterRoot.SetActive(locationLoaded);
+        }
+
+        public void SetLocationEarnedGold(int amount)
+        {
+            ResolveGoldCounterReferences();
+            _locationGoldCounter?.SetAmountImmediate(amount);
         }
 
         public void SetSceneButtonsInteractable(bool interactable)
@@ -169,6 +193,15 @@ namespace GameplayUI
 
         private Sprite ResolveGenreSprite(BookGenre genre)
             => _genreSprites.TryGetValue(genre, out var sprite) ? sprite : null;
+
+        private void ResolveGoldCounterReferences()
+        {
+            if (_hubGoldCounter != null && _hubGoldCounterRoot == null)
+                _hubGoldCounterRoot = _hubGoldCounter.gameObject;
+
+            if (_locationGoldCounter != null && _locationGoldCounterRoot == null)
+                _locationGoldCounterRoot = _locationGoldCounter.gameObject;
+        }
 
         private void OnGenreItemClicked(GameplayGenreBookCountItemView item)
         {

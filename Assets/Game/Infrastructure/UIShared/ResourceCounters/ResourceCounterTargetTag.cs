@@ -14,6 +14,7 @@ namespace UIShared
         [Header("Resource")]
         [SerializeField] private string _resourceId = "Gold";
         [SerializeField] private TMP_Text _amountLabel;
+        [SerializeField] private bool _registerAsResourceTarget = true;
 
         [Header("Count Up")]
         [Tooltip("Ramp after a coin flight (day payout).")]
@@ -47,6 +48,7 @@ namespace UIShared
 
         private void OnEnable()
         {
+            if (!_registerAsResourceTarget) return;
             if (string.IsNullOrWhiteSpace(_resourceId)) return;
 
             ResourceCounterTargets.Register(this);
@@ -59,6 +61,7 @@ namespace UIShared
             _feedbackTween?.Kill();
             _feedbackTween = null;
 
+            if (!_registerAsResourceTarget) return;
             if (string.IsNullOrWhiteSpace(_resourceId)) return;
 
             ResourceCounterTargets.Unregister(this);

@@ -26,6 +26,7 @@ namespace Game.Bootstrap
             builder.RegisterMessageBroker<GameplaySceneButtonsInteractableChanged>(options);
             builder.RegisterMessageBroker<GameplayGenreBookCountsChanged>(options);
             builder.RegisterMessageBroker<GameplayGenreBookCountsRequested>(options);
+            builder.RegisterMessageBroker<GameplayLocationGoldEarnedChanged>(options);
             builder.RegisterMessageBroker<SalesCustomerPhaseChanged>(options);
             builder.RegisterMessageBroker<SalesPassiveSaleHappened>(options);
             builder.RegisterMessageBroker<SalesPassivePurchaseFailed>(options);

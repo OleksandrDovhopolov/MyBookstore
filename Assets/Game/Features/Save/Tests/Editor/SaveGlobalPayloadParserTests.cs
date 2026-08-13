@@ -93,6 +93,32 @@ namespace Save.Tests.Editor
         }
 
         [Test]
+        public void ShouldLocalWinOverServer_WhenServerMaterializesResourcesAndInventoryWithoutMetaModules_ReturnsTrue()
+        {
+            const string local = "{\"Meta\":{\"Revision\":12},\"Modules\":{\"shop\":{\"Version\":1,\"Json\":{\"Level\":3}}}}";
+            var serverEnvelope = JObject.FromObject(new
+            {
+                data = new
+                {
+                    Resources = new { Energy = 0, Gems = 0, Gold = 0 },
+                    Inventory = new
+                    {
+                        InventoryItems = new { }
+                    }
+                },
+                lastModified = 1770000000000L
+            }).ToString();
+
+            var serverData = SaveGlobalPayloadParser.ExtractDataForStorage(serverEnvelope, out var mode);
+            var shouldPushLocal = SaveSyncBootstrap.ShouldLocalWinOverServer(local, serverData);
+
+            Assert.That(mode, Is.EqualTo("data-json"));
+            Assert.That(JObject.Parse(serverData)["Meta"], Is.Null);
+            Assert.That(JObject.Parse(serverData)["Modules"], Is.Null);
+            Assert.That(shouldPushLocal, Is.True);
+        }
+
+        [Test]
         public void ShouldLocalWinOverServer_WhenServerHasProgress_ReturnsFalse()
         {
             const string local = "{\"Meta\":{\"Revision\":2},\"Modules\":{\"shop\":{\"Version\":1,\"Json\":{}}}}";

@@ -11,6 +11,7 @@
         "Game.LocationUnlock.API",
         "Game.Ftue",
         "Game.Core.UI",
+        "Infrastructure",
         "Save",
         "MessagePipe",
         "Game.GameplayUI.Signals",
