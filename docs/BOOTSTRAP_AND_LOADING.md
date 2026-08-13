@@ -235,10 +235,10 @@ IConfigsService (ConfigsService)
 | Класс | Интерфейс | Описание |
 |---|---|---|
 | `PersistentInstallPlayerIdentityProvider` | `IPlayerIdentityProvider` | UUID, сохраняется между запусками |
-| `LocalDiskStorage` | `ISaveStorage` | Текущий MVP. Сохраняет JSON на диск |
-| `HttpSaveStorage` | `ISaveStorage` | HTTP-режим (закомментирован, для раскомментирования) |
+| `LocalDiskStorage` | — | Локальный write-through cache и offline fallback |
+| `HttpSaveStorage` | `ISaveStorage` | Основное хранилище: HTTP `/save/global` + локальный cache |
 | `SaveService` | `ISaveService` | Основной сервис сохранений |
-| `SaveSyncBootstrap` | — | Синхронизация local vs server при старте (только для HTTP-режима) |
+| `SaveSyncBootstrap` | — | Синхронизация local vs server перед `SaveDataLoadOperation` |
 
 ### Жизненный цикл SaveService
 
@@ -277,7 +277,7 @@ IConfigsService (ConfigsService)
 local.Revision > server.Revision → push local → server
 server.Revision > local.Revision → overwrite local ← server
 equal                            → no-op
-server = null (первый запуск)   → push local → server
+server default + local progress → push local → server
 local = null                     → SaveService.LoadAsync возьмёт с сервера
 ```
 
@@ -387,8 +387,6 @@ GlobalLifetimeScope (DontDestroyOnLoad)
 | `IGameplayReadyGate` (барьер готовности) | новая фича | По мере появления потребителей |
 | `IWindowRouter` / nav stack | `Game.Core.UI` | Средний |
 | `IAnalyticsService` | `AnalyticsVContainerBindings` | Средний |
-| `SaveSyncBootstrap` регистрация | `SaveVContainerBindings` | Зависит от бэкенда |
-| `HttpSaveStorage` активация | `SaveVContainerBindings` | Зависит от бэкенда |
 | FTUE-ветка «первый вход → LocationScene + tutorial» | `GameFlowService` seam | Отдельная задача |
 
 > Реализовано (ранее в этой таблице): `UIManager` + `IWindowFactory` (`AddressablesWindowFactory`),

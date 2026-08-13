@@ -17,6 +17,7 @@ using Game.Resources.API;
 using Game.Tutorial.API;
 using Infrastructure;
 using Save;
+using Save.Sync;
 using SpriteService;
 using UnityEngine;
 using VContainer;
@@ -58,6 +59,7 @@ namespace Game.Bootstrap
         private IRemoteConfigService _remoteConfig;
         private IConfigsService _configs;
         private ISaveService _save;
+        private SaveSyncBootstrap _saveSync;
         private ISceneTransitionService _sceneTransition;
         private ITransitionAnimationService _transition;
         private IFtueBootstrapper _ftue;
@@ -95,6 +97,7 @@ namespace Game.Bootstrap
             IRemoteConfigService remoteConfig,
             IConfigsService configs,
             ISaveService save,
+            SaveSyncBootstrap saveSync,
             ISceneTransitionService sceneTransition,
             ITransitionAnimationService transition,
             IFtueBootstrapper ftue,
@@ -115,6 +118,7 @@ namespace Game.Bootstrap
             _remoteConfig = remoteConfig;
             _configs = configs;
             _save = save;
+            _saveSync = saveSync;
             _sceneTransition = sceneTransition;
             _transition = transition;
             _ftue = ftue;
@@ -244,6 +248,7 @@ namespace Game.Bootstrap
                 }),
                 new LoadingGroup("phase_data_save", LoadingGroupExecutionMode.Sequential, new ILoadingOperation[]
                 {
+                    new SaveStartupSyncOperation(_saveSync),
                     new SaveDataLoadOperation(_save)
                 })
             });
