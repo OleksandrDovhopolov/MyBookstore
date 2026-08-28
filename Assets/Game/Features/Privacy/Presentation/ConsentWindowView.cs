@@ -18,7 +18,6 @@ namespace Game.Privacy
         [Header("Consent")]
         [SerializeField] private Button _acceptButton;
         [SerializeField] private Button _privacyLinkButton;
-        [SerializeField] private TextMeshProUGUI _titleText;
         [SerializeField] private TextMeshProUGUI _bodyText;
 
         protected override void Awake()
@@ -52,13 +51,8 @@ namespace Game.Privacy
             }
         }
 
-        public void SetTexts(string title, string body)
+        public void SetTexts(string body)
         {
-            if (_titleText != null)
-            {
-                _titleText.text = title;
-            }
-
             if (_bodyText != null)
             {
                 _bodyText.text = body;

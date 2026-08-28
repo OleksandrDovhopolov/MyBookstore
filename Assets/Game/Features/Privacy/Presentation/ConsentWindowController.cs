@@ -25,8 +25,6 @@ namespace Game.Privacy
     [Window("ConsentWindow", WindowType.Popup, keepInCache: false)]
     public sealed class ConsentWindowController : WindowController<ConsentWindowView>
     {
-        // TODO: replace with localization ids once a localization system exists (docs/LANGUAGE_POLICY.md).
-        private const string TitleText = "Before you start";
 
         private const string BodyText =
             "We do not collect analytics or crash data in this release. " +
@@ -46,7 +44,7 @@ namespace Game.Privacy
         {
             View.AcceptClick += OnAcceptClicked;
             View.PrivacyLinkClick += OnPrivacyLinkClicked;
-            View.SetTexts(TitleText, BodyText);
+            View.SetTexts(BodyText);
 
             // Degrade rather than brick the boot: an unconfigured URL hides the link. The build-time
             // PrivacyLinksBuildCheck is what actually stops a release from shipping without one.

@@ -21,5 +21,7 @@ MonoBehaviour:
   _tutorialAutoStart: 0
   _startWelcomeWindow: 1
   _firstDayEntry: 1
+  _privacyPolicyUrl: https://themergegames.com/privacypolicy.html
+  _termsOfUseUrl: https://themergegames.com/termsofuse.html
   _useDebugFeatures: 0
   _skipFullLoading: 0
