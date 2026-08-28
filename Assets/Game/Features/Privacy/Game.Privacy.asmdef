@@ -1,0 +1,21 @@
+{
+    "name": "Game.Privacy",
+    "rootNamespace": "Game.Privacy",
+    "references": [
+        "UniTask",
+        "VContainer",
+        "Analytics",
+        "Game.Bootstrap.Loading",
+        "Game.Core.UI",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

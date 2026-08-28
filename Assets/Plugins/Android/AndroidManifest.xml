@@ -3,13 +3,26 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Firebase / Analytics / Crashlytics требуют сетевые permissions -->
+    <!-- Firebase / Analytics / Crashlytics need network permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- Advertising ID (нужен Firebase Analytics на Android 13+) -->
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+    <!-- REL-5: the advertising ID is never used. firebase-analytics declares AD_ID in its own library
+         manifest, so it has to be stripped at merge time - deleting this line would not be enough. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
 
     <application>
+        <!-- REL-5 / UK GDPR: this release collects nothing. Firebase Analytics and Crashlytics start from
+             their own ContentProviders before any C# runs, so the kill switch has to live in the manifest
+             rather than in code.
+
+             Deliberately NOT firebase_analytics_collection_deactivated: that flag is permanent and cannot
+             be overridden at runtime, which would force a manifest change and a new build once analytics
+             are actually wired up. -->
+        <meta-data android:name="firebase_analytics_collection_enabled" android:value="false" />
+        <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
+        <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
+        <meta-data android:name="google_analytics_ssaid_collection_enabled" android:value="false" />
+
         <!-- Application Entry Point = Activity (Player Settings → Android → Other Settings).
              Если когда-то переключишься на GameActivity — закомментируй этот блок и раскомментируй
              блок с UnityPlayerGameActivity / @style/BaseUnityGameActivityTheme ниже. -->

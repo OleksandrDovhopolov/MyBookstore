@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Analytics;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.Characters.API;
@@ -11,10 +12,12 @@ using Game.Ftue.Services;
 using Game.Inventory.API;
 using Game.LocationUnlock.API;
 using Game.LocationVisits.API;
+using Game.Privacy.Services;
 using Game.Progression.API;
 using Game.Quest.API;
 using Game.Resources.API;
 using Game.Tutorial.API;
+using Game.UI;
 using Infrastructure;
 using Save;
 using Save.Sync;
@@ -64,6 +67,8 @@ namespace Game.Bootstrap
         private ITransitionAnimationService _transition;
         private IFtueBootstrapper _ftue;
         private IUiSpriteProvider _uiSprites;
+        private IConsentGateService _consent;
+        private IUIManager _uiManager;
 
         // Injected to force construction (and therefore ISaveHook self-registration) before
         // SaveDataLoadOperation runs LoadAsync. We never invoke methods on these fields directly.
@@ -102,6 +107,8 @@ namespace Game.Bootstrap
             ITransitionAnimationService transition,
             IFtueBootstrapper ftue,
             IUiSpriteProvider uiSprites,
+            IConsentGateService consent,
+            IUIManager uiManager,
             IInventoryService inventory,
             IResourcesService resources,
             IProgressionService progression,
@@ -123,6 +130,8 @@ namespace Game.Bootstrap
             _transition = transition;
             _ftue = ftue;
             _uiSprites = uiSprites;
+            _consent = consent;
+            _uiManager = uiManager;
             _inventory = inventory;
             _resources = resources;
             _progression = progression;
@@ -221,13 +230,20 @@ namespace Game.Bootstrap
         {
             var skipHeavy = DebugStartFlags.SkipFullLoading;
             if (skipHeavy)
-                Debug.LogWarning($"{LogPrefix} SkipFullLoading=true: Addressables update and RemoteConfig init will be skipped.");
+                Debug.LogWarning($"{LogPrefix} SkipFullLoading=true: Addressables update and RemoteConfig init will be skipped. The privacy gate still runs.");
+
+            // REL-5: the privacy gate sits after the Addressables catalog is up (its prefab is in the
+            // Local "UI" group) and before RemoteConfigInitOperation, the first thing to touch Firebase.
+            // Present in BOTH branches on purpose — SkipFullLoading is an Editor-only debug flag and must
+            // never become a silent consent bypass.
+            var consentGate = new ConsentGateOperation(_uiManager, _consent);
 
             var technicalOps = skipHeavy
-                ? new ILoadingOperation[] { new WarmupOperation() }
+                ? new ILoadingOperation[] { new WarmupOperation(), consentGate }
                 : new ILoadingOperation[]
                 {
                     new AddressablesUpdateOperation(_catalog),
+                    consentGate,
                     new RemoteConfigInitOperation(_remoteConfig)
                 };
 

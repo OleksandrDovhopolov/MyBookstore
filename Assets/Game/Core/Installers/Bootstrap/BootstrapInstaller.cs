@@ -52,6 +52,14 @@ namespace Game.Bootstrap
                  "Location = drop straight into the location with an auto-stocked shelf (see docs/FTUE.md).")]
         [SerializeField] private FirstDayEntryMode _firstDayEntry = FirstDayEntryMode.Location;
 
+        [Header("Privacy (REL-5)")]
+        [Tooltip("Public privacy policy URL opened from the first-run consent screen. " +
+                 "RELEASE BLOCKER: must be a live https URL — PrivacyLinksBuildCheck fails the build otherwise.")]
+        [SerializeField] private string _privacyPolicyUrl = "";
+
+        [Tooltip("Public terms of use URL. Leave empty when one page covers both privacy and terms.")]
+        [SerializeField] private string _termsOfUseUrl = "";
+
 #if UNITY_EDITOR
         [Header("Debug Start (Editor only)")]
         [Tooltip("Master switch. When off, the debug flags below are ignored.")]
@@ -70,6 +78,7 @@ namespace Game.Bootstrap
             builder.RegisterGameLoading();
             builder.RegisterGameFlow(_gameFlowSettings);
             builder.RegisterAnalytics();
+            builder.RegisterConsent(_privacyPolicyUrl, _termsOfUseUrl);
             builder.RegisterSave();
             builder.RegisterInfrastructure();
             builder.RegisterConfigs();
