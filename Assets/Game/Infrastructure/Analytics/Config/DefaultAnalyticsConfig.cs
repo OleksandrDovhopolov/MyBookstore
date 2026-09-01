@@ -24,7 +24,7 @@ namespace Analytics
 
         public int MaxParameterKeyLength => 40;
 
-        public int MaxParameterCount => 50;
+        public int MaxParameterCount => 25;
 
         public bool SendEventsWithoutUserId => true;
     }

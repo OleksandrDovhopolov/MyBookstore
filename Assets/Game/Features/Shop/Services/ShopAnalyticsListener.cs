@@ -45,12 +45,20 @@ namespace Game.Shop.Services
             var parameters = new Dictionary<string, object>
             {
                 ["lot_id"] = lot.LotId,
-                ["storefront_id"] = lot.StorefrontId,
-                ["reward_id"] = lot.RewardId,
                 ["price_currency"] = lot.Price.Currency,
                 ["price_amount"] = lot.Price.Amount,
                 ["granted_item_count"] = evt.Granted?.Items?.Count ?? 0,
             };
+
+            if (!string.IsNullOrWhiteSpace(lot.StorefrontId))
+            {
+                parameters["storefront_id"] = lot.StorefrontId;
+            }
+
+            if (!string.IsNullOrWhiteSpace(lot.RewardId))
+            {
+                parameters["reward_id"] = lot.RewardId;
+            }
 
             _analytics.TrackEvent(new AnalyticsEvent(AnalyticsEventNames.ItemPurchased, parameters));
         }

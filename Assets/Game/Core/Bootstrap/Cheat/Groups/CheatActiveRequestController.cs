@@ -47,6 +47,7 @@ namespace Game.Cheat
         // Inert events (no backing delegate) so the interface is satisfied without CS0067 warnings.
         public event Action DayReadyToClose { add { } remove { } }
         public event Action<ActiveRequestRuntime> ActiveRequestStarted { add { } remove { } }
+        public event Action<int, string> DayStarted { add { } remove { } }
         public event Action<Customer, DialoguePayload> DialogueStarted { add { } remove { } }
         public event Action<PassiveSaleEvent> PassiveSaleHappened { add { } remove { } }
         public event Action<Customer, RecommendationResult> CustomerRecommendationResolved { add { } remove { } }

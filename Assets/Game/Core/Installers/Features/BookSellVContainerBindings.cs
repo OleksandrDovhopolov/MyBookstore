@@ -6,6 +6,7 @@ using Book.Sell.Services;
 using Book.Sell.Services.Director;
 using Book.Sell.UI;
 using Book.Sell.UI.Customer;
+using Game.Bootstrap.Analytics;
 using Game.Configs;
 using Game.Conditions.API;
 using Game.Decor.Services;
@@ -173,6 +174,7 @@ namespace Game.Bootstrap
             builder.RegisterEntryPoint<CustomerBubbleBinder>(Lifetime.Singleton);
             builder.RegisterEntryPoint<SalesTutorialSignalsBridge>(Lifetime.Singleton);
             builder.RegisterEntryPoint<SalesInteractionPauseBridge>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<SalesDayAnalyticsListener>(Lifetime.Singleton);
 
             // Opens RecommendationMinigameWindow on active requests and pauses the day while it is up.
             // IUIManager resolves from the parent (bootstrap) scope; the controller is passed via WindowArgs.

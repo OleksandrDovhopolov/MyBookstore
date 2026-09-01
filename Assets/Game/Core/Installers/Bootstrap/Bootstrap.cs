@@ -20,6 +20,7 @@ using Game.Tutorial.API;
 using Game.UI;
 using Infrastructure;
 using Save;
+using PlayerIdentityProvider = Save.Identity.IPlayerIdentityProvider;
 using Save.Sync;
 using SpriteService;
 using UnityEngine;
@@ -69,6 +70,8 @@ namespace Game.Bootstrap
         private IUiSpriteProvider _uiSprites;
         private IConsentGateService _consent;
         private IUIManager _uiManager;
+        private IAnalyticsService _analytics;
+        private PlayerIdentityProvider _playerIdentity;
 
         // Injected to force construction (and therefore ISaveHook self-registration) before
         // SaveDataLoadOperation runs LoadAsync. We never invoke methods on these fields directly.
@@ -109,6 +112,8 @@ namespace Game.Bootstrap
             IUiSpriteProvider uiSprites,
             IConsentGateService consent,
             IUIManager uiManager,
+            IAnalyticsService analytics,
+            PlayerIdentityProvider playerIdentity,
             IInventoryService inventory,
             IResourcesService resources,
             IProgressionService progression,
@@ -132,6 +137,8 @@ namespace Game.Bootstrap
             _uiSprites = uiSprites;
             _consent = consent;
             _uiManager = uiManager;
+            _analytics = analytics;
+            _playerIdentity = playerIdentity;
             _inventory = inventory;
             _resources = resources;
             _progression = progression;
@@ -237,13 +244,15 @@ namespace Game.Bootstrap
             // Present in BOTH branches on purpose — SkipFullLoading is an Editor-only debug flag and must
             // never become a silent consent bypass.
             var consentGate = new ConsentGateOperation(_uiManager, _consent);
+            var analyticsInit = new AnalyticsStartupOperation(_analytics, _playerIdentity);
 
             var technicalOps = skipHeavy
-                ? new ILoadingOperation[] { new WarmupOperation(), consentGate }
+                ? new ILoadingOperation[] { new WarmupOperation(), consentGate, analyticsInit }
                 : new ILoadingOperation[]
                 {
                     new AddressablesUpdateOperation(_catalog),
                     consentGate,
+                    analyticsInit,
                     new RemoteConfigInitOperation(_remoteConfig)
                 };
 

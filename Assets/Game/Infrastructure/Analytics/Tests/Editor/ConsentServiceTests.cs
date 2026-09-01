@@ -120,6 +120,20 @@ namespace AnalyticsTests.Editor
         }
 
         [Test]
+        public void RecordDecision_AllFalse_DisablesAnalytics()
+        {
+            var store = new FakeConsentStore();
+            var service = new ConsentService(store);
+
+            service.RecordDecision(analytics: false, attribution: false, personalizedAds: false);
+
+            Assert.That(service.CanSendAnalytics, Is.False);
+            Assert.That(service.CanSendAttributionData, Is.False);
+            Assert.That(service.CanSendPersonalizedAdsData, Is.False);
+            Assert.That(store.Saved.Analytics, Is.False);
+        }
+
+        [Test]
         public void SetAnalyticsConsent_False_RevokesOnlyAnalytics()
         {
             var service = new ConsentService(new FakeConsentStore());

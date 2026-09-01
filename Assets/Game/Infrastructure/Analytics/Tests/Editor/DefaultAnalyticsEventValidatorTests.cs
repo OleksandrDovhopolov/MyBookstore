@@ -52,6 +52,20 @@ namespace AnalyticsTests.Editor
         }
 
         [Test]
+        public void Validate_RejectsEnumValue()
+        {
+            var validator = CreateValidator();
+            var analyticsEvent = new AnalyticsEvent("active_sale_completed", new Dictionary<string, object>
+            {
+                ["tier"] = TestTier.Excellent
+            });
+
+            var isValid = validator.Validate(analyticsEvent, out _);
+
+            Assert.That(isValid, Is.False);
+        }
+
+        [Test]
         public void Validate_RejectsNullValue()
         {
             var validator = CreateValidator();
@@ -63,6 +77,21 @@ namespace AnalyticsTests.Editor
             var isValid = validator.Validate(analyticsEvent, out _);
 
             Assert.That(isValid, Is.False);
+        }
+
+        [Test]
+        public void Validate_AcceptsParameterCountAtLimit()
+        {
+            var validator = CreateValidator(maxParameterCount: 25);
+            var parameters = new Dictionary<string, object>();
+            for (var i = 0; i < 25; i++)
+            {
+                parameters[$"param_{i}"] = i;
+            }
+
+            var isValid = validator.Validate(new AnalyticsEvent("day_completed", parameters), out var error);
+
+            Assert.That(isValid, Is.True, error);
         }
 
         [Test]
@@ -99,6 +128,11 @@ namespace AnalyticsTests.Editor
                 MaxEventNameLengthValue = maxEventNameLength,
                 MaxParameterCountValue = maxParameterCount
             });
+        }
+
+        private enum TestTier
+        {
+            Excellent
         }
     }
 }

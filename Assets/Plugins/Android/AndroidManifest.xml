@@ -11,13 +11,12 @@
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
 
     <application>
-        <!-- REL-5 / UK GDPR: this release collects nothing. Firebase Analytics and Crashlytics start from
-             their own ContentProviders before any C# runs, so the kill switch has to live in the manifest
-             rather than in code.
+        <!-- REL-5 / UK GDPR: Firebase Analytics and Crashlytics start from their own ContentProviders
+             before any C# runs, so collection starts disabled in the manifest and analytics is enabled
+             explicitly from code only after consent.
 
              Deliberately NOT firebase_analytics_collection_deactivated: that flag is permanent and cannot
-             be overridden at runtime, which would force a manifest change and a new build once analytics
-             are actually wired up. -->
+             be overridden at runtime. -->
         <meta-data android:name="firebase_analytics_collection_enabled" android:value="false" />
         <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
         <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />

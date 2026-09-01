@@ -31,6 +31,7 @@ namespace Game.Decor.Services
         private DecorPlacementState _state = new();
 
         public event Action PlacementChanged;
+        public event Action<DecorPlacementChange> PlacementActionPerformed;
 
         public DecorPlacementService(
             SaveBackedDecorPlacementStorage storage,
@@ -107,6 +108,7 @@ namespace Game.Decor.Services
             await _storage.SaveAsync(_state, ct);
             Debug.Log($"{LogTag} PlaceAsync EXIT save: slot={slotId}, decor={decorId} — persisted.");
             PlacementChanged?.Invoke();
+            PlacementActionPerformed?.Invoke(new DecorPlacementChange(decorId, slotId, "place"));
             return DecorPlacementResult.Success;
         }
 
@@ -149,6 +151,7 @@ namespace Game.Decor.Services
             if (string.Equals(target.DecorId, decorId, StringComparison.OrdinalIgnoreCase))
                 return DecorPlacementResult.Success;
 
+            var previousDecorId = target.DecorId;
             for (var i = 0; i < _state.Placements.Count; i++)
             {
                 var placement = _state.Placements[i];
@@ -162,17 +165,20 @@ namespace Game.Decor.Services
             await _storage.SaveAsync(_state, ct);
             Debug.Log($"{LogTag} ReplaceAsync EXIT save: slot={slotId}, decor={decorId} — persisted.");
             PlacementChanged?.Invoke();
+            PlacementActionPerformed?.Invoke(new DecorPlacementChange(previousDecorId, slotId, "replace"));
             return DecorPlacementResult.Success;
         }
 
         public async UniTask UnplaceAsync(string slotId, CancellationToken ct)
         {
             if (string.IsNullOrEmpty(slotId)) return;
+            var removedDecorId = GetDecorInSlot(slotId);
             var removed = _state.Placements.RemoveAll(p =>
                 string.Equals(p.SlotId, slotId, StringComparison.OrdinalIgnoreCase));
             if (removed == 0) return;
             await _storage.SaveAsync(_state, ct);
             PlacementChanged?.Invoke();
+            PlacementActionPerformed?.Invoke(new DecorPlacementChange(removedDecorId, slotId, "unplace"));
         }
 
         public async UniTask ClearAllAsync(CancellationToken ct)

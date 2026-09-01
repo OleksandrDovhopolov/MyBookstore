@@ -117,6 +117,22 @@ namespace Game.Decor.Tests.Editor.Services
         }
 
         [Test]
+        public void Unplace_Success_ReportsRemovedDecorInTypedChange()
+        {
+            _inventory.Seed("globe", InventoryCategories.Decor);
+            _service.PlaceAsync("globe", "s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+            DecorPlacementChange? change = null;
+            _service.PlacementActionPerformed += evt => change = evt;
+
+            _service.UnplaceAsync("s_stand_small", CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.IsTrue(change.HasValue);
+            Assert.AreEqual("globe", change.Value.DecorId);
+            Assert.AreEqual("s_stand_small", change.Value.SlotId);
+            Assert.AreEqual("unplace", change.Value.Action);
+        }
+
+        [Test]
         public void Replace_OccupiedSlotWithCompatibleDecor_Succeeds()
         {
             _inventory.Seed("globe", InventoryCategories.Decor);
@@ -240,6 +256,27 @@ namespace Game.Decor.Tests.Editor.Services
             _service.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.AreEqual(0, _service.GetAllPlacements().Count, "orphaned placement should be dropped");
+        }
+
+        [Test]
+        public void AfterLoad_OrphanCleanup_RaisesLegacyChangeButNotTypedPlayerAction()
+        {
+            _save.Store[DecorSaveKeys.Placement] = Newtonsoft.Json.JsonConvert.SerializeObject(new DecorPlacementState
+            {
+                Placements = new System.Collections.Generic.List<DecorPlacementEntry>
+                {
+                    new() { SlotId = "s_stand_small", DecorId = "ghost_decor" }
+                }
+            });
+            var legacyChanges = 0;
+            var typedChanges = 0;
+            _service.PlacementChanged += () => legacyChanges++;
+            _service.PlacementActionPerformed += _ => typedChanges++;
+
+            _service.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, legacyChanges);
+            Assert.AreEqual(0, typedChanges);
         }
 
         [Test]

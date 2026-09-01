@@ -17,7 +17,7 @@ namespace Analytics
         [SerializeField] private int _maxQueueSize = 100;
         [SerializeField] private int _maxEventNameLength = 40;
         [SerializeField] private int _maxParameterKeyLength = 40;
-        [SerializeField] private int _maxParameterCount = 50;
+        [SerializeField] private int _maxParameterCount = 25;
         [SerializeField] private bool _sendEventsWithoutUserId = true;
 
         public bool IsAnalyticsEnabled => _isAnalyticsEnabled;

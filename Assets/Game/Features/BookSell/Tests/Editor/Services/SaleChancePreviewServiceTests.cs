@@ -184,6 +184,7 @@ namespace Book.Sell.Tests.Editor.Services
             }
 
             public event Action PlacementChanged;
+            public event Action<DecorPlacementChange> PlacementActionPerformed { add { } remove { } }
             public IReadOnlyList<DecorPlacementEntry> GetAllPlacements() => Array.Empty<DecorPlacementEntry>();
             public string GetDecorInSlot(string slotId) => null;
             public IReadOnlyList<string> GetActiveDecorIds() => _activeDecorIds;

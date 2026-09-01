@@ -39,6 +39,7 @@ namespace Book.Sell.Services
         /// subscribes and drives completion via <see cref="CompleteDialogue"/>. Subscribe BEFORE the first
         /// <see cref="Tick"/> (same contract as the other events) — the event is not replayed for late
         /// subscribers.</summary>
+        event Action<int, string> DayStarted;
         event Action<Customer, DialoguePayload> DialogueStarted;
         event Action<RecommendationResult> RecommendationResolved;
         event Action<PassiveSaleEvent> PassiveSaleHappened;

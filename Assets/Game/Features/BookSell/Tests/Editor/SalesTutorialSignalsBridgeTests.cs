@@ -134,6 +134,7 @@ namespace Book.Sell.Tests.Editor
 
             public event Action DayReadyToClose;
             public event Action<ActiveRequestRuntime> ActiveRequestStarted;
+            public event Action<int, string> DayStarted;
             public event Action<Customer, DialoguePayload> DialogueStarted;
             public event Action<RecommendationResult> RecommendationResolved;
             public event Action<PassiveSaleEvent> PassiveSaleHappened;

@@ -47,7 +47,7 @@ namespace Analytics
 
         public void Initialize()
         {
-            if (IsInitialized)
+            if (IsInitialized || !CanSendAnalytics())
             {
                 return;
             }
@@ -88,6 +88,12 @@ namespace Analytics
         public void SetUserId(string userId)
         {
             _userId = string.IsNullOrWhiteSpace(userId) ? null : userId;
+
+            if (!CanSendAnalytics())
+            {
+                return;
+            }
+
             _userContext?.SetUserId(_userId);
 
             foreach (var provider in _providers)
@@ -112,6 +118,11 @@ namespace Analytics
 
         public void SetUserProperty(string key, string value)
         {
+            if (!CanSendAnalytics())
+            {
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(key))
             {
                 Debug.LogWarning($"{LogPrefix} User property key is empty.");
@@ -138,6 +149,12 @@ namespace Analytics
 
         public void Flush()
         {
+            if (!CanSendAnalytics())
+            {
+                _queue.Clear();
+                return;
+            }
+
             var count = _queue.Count;
             for (var i = 0; i < count; i++)
             {
@@ -172,7 +189,7 @@ namespace Analytics
 
         private bool TrackEventInternal(IAnalyticsEvent analyticsEvent)
         {
-            if (!_config.IsAnalyticsEnabled || !_consentService.CanSendAnalytics)
+            if (!CanSendAnalytics())
             {
                 return true;
             }
@@ -291,5 +308,8 @@ namespace Analytics
                    userId is string userIdString &&
                    !string.IsNullOrWhiteSpace(userIdString);
         }
+
+        private bool CanSendAnalytics() =>
+            _config.IsAnalyticsEnabled && _consentService.CanSendAnalytics;
     }
 }

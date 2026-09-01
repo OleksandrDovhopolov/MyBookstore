@@ -79,6 +79,7 @@ namespace Book.Sell.Services
         public bool IsDayCompleted => _phase == SalesDayPhase.Completed;
 
         public event Action<ActiveRequestRuntime> ActiveRequestStarted;
+        public event Action<int, string> DayStarted;
         public event Action<Customer, DialoguePayload> DialogueStarted;
         public event Action<RecommendationResult> RecommendationResolved;
         public event Action<PassiveSaleEvent> PassiveSaleHappened;
@@ -128,6 +129,7 @@ namespace Book.Sell.Services
             }
 
             ShelfChanged?.Invoke();
+            DayStarted?.Invoke(Day, LocationId);
             return UniTask.CompletedTask;
         }
 

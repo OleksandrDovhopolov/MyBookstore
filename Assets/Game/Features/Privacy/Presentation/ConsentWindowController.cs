@@ -25,10 +25,10 @@ namespace Game.Privacy
     [Window("ConsentWindow", WindowType.Popup, keepInCache: false)]
     public sealed class ConsentWindowController : WindowController<ConsentWindowView>
     {
-
         private const string BodyText =
-            "We do not collect analytics or crash data in this release. " +
-            "Tap Continue to accept our Terms of Use and Privacy Policy.";
+            "We use anonymous gameplay analytics to understand whether players get through the first day, " +
+            "how the daily shop loop performs, and where progression stalls. We do not collect advertising ID. " +
+            "You can continue with analytics enabled or decline analytics for this release.";
 
         private IConsentGateService _gate;
         private PrivacyLinkSettings _links;
@@ -43,6 +43,7 @@ namespace Game.Privacy
         protected override void OnInit()
         {
             View.AcceptClick += OnAcceptClicked;
+            View.DeclineClick += OnDeclineClicked;
             View.PrivacyLinkClick += OnPrivacyLinkClicked;
             View.SetTexts(BodyText);
 
@@ -60,6 +61,7 @@ namespace Game.Privacy
         protected override void OnShowStart()
         {
             View.SetAcceptInteractable(true);
+            View.SetDeclineInteractable(true);
         }
 
         protected override void OnDispose()
@@ -67,6 +69,7 @@ namespace Game.Privacy
             if (View == null) return;
 
             View.AcceptClick -= OnAcceptClicked;
+            View.DeclineClick -= OnDeclineClicked;
             View.PrivacyLinkClick -= OnPrivacyLinkClicked;
         }
 
@@ -81,10 +84,21 @@ namespace Game.Privacy
         {
             // Guard against a double tap while the close animation plays.
             View.SetAcceptInteractable(false);
+            View.SetDeclineInteractable(false);
 
             // Persist BEFORE closing: ConsentGateOperation re-checks IsDecisionRequired once the window
             // closes, and would otherwise race the write.
             _gate.AcceptAll();
+
+            CloseAsync(View.destroyCancellationToken).Forget();
+        }
+
+        private void OnDeclineClicked()
+        {
+            View.SetAcceptInteractable(false);
+            View.SetDeclineInteractable(false);
+
+            _gate.RecordDecision(analytics: false, attribution: false, personalizedAds: false);
 
             CloseAsync(View.destroyCancellationToken).Forget();
         }

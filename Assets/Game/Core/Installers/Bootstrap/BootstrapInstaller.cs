@@ -1,3 +1,4 @@
+using Analytics;
 using Game.Bootstrap.Loading;
 using Game.Ftue.Services;
 using Game.Tutorial.Presentation;
@@ -43,6 +44,11 @@ namespace Game.Bootstrap
                  "but sequences never auto-start from triggers or resume on load. Explicit TryStartAsync still works.")]
         [SerializeField] private bool _tutorialAutoStart = true;
 
+        [Header("Analytics")]
+        [SerializeField] private AnalyticsConfigSO _analyticsConfig;
+        [SerializeField] private AnalyticsRoutingConfigSO _analyticsRoutingConfig;
+        [SerializeField] private AnalyticsMappingConfigSO _analyticsMappingConfig;
+
         [Header("FTUE")]
         [Tooltip("When off, the first-entry WelcomeWindow is not shown. The welcome_completed save flag is left unchanged.")]
         [SerializeField] private bool _startWelcomeWindow = true;
@@ -77,7 +83,7 @@ namespace Game.Bootstrap
             builder.RegisterMessagePipeSmokeTest(); // TODO: remove after first real message broker is wired up
             builder.RegisterGameLoading();
             builder.RegisterGameFlow(_gameFlowSettings);
-            builder.RegisterAnalytics();
+            builder.RegisterGameAnalytics(_analyticsConfig, _analyticsRoutingConfig, _analyticsMappingConfig);
             builder.RegisterConsent(_privacyPolicyUrl, _termsOfUseUrl);
             builder.RegisterSave();
             builder.RegisterInfrastructure();

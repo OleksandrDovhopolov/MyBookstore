@@ -43,20 +43,13 @@ namespace Analytics
             builder.Register<IAnalyticsRouter, DefaultAnalyticsRouter>(Lifetime.Singleton);
             builder.Register<IAnalyticsEventMapper, DefaultAnalyticsEventMapper>(Lifetime.Singleton);
             builder.Register<IAnalyticsQueue, AnalyticsQueue>(Lifetime.Singleton);
-            // Real, persisted consent. This whole method is currently unused (BootstrapInstaller binds
-            // NullAnalyticsService instead), but when the composite pipeline is revived it must start out
-            // consent-correct rather than with the always-allow stub.
-            builder.Register<IConsentStore, PlayerPrefsConsentStore>(Lifetime.Singleton);
-            builder.Register<ConsentService>(Lifetime.Singleton)
-                .As<IAnalyticsConsentService>()
-                .As<IConsentGateService>()
-                .AsSelf();
 
             builder.Register<DebugAnalyticsProvider>(Lifetime.Singleton).As<IAnalyticsProvider>();
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             builder.Register<FirebaseAnalyticsProvider>(Lifetime.Singleton).As<IAnalyticsProvider>();
+#endif
 
             builder.Register<IAnalyticsService, CompositeAnalyticsService>(Lifetime.Singleton);
-            builder.RegisterBuildCallback(resolver => resolver.Resolve<IAnalyticsService>().Initialize());
         }
     }
 }
