@@ -1,28 +1,28 @@
 [
   {
     "id": "eddi",
-    "displayNameKey": "character.eddi.name",
+    "displayNameKey": "Eddy",
     "portraitKey": "eddi",
     "favoriteGenres": ["Fact", "Travel"],
     "discoveryQuestIds": ["q_intro_eddi"]
   },
   {
     "id": "millie",
-    "displayNameKey": "character.millie.name",
+    "displayNameKey": "Millie",
     "portraitKey": "millie",
     "favoriteGenres": ["Drama", "Crime", "Classic"],
     "discoveryQuestIds": ["q_intro_millie"]
   },
   {
     "id": "tara",
-    "displayNameKey": "character.tara.name",
+    "displayNameKey": "Tara",
     "portraitKey": "tara",
     "favoriteGenres": ["Fantasy", "Kids"],
     "discoveryQuestIds": ["q_tara_kids"]
   },
   {
     "id": "captain",
-    "displayNameKey": "character.captain.name",
+    "displayNameKey": "Captain",
     "portraitKey": "captain",
     "favoriteGenres": ["Crime", "Travel"],
     "discoveryQuestIds": ["q_captain_postcards"]

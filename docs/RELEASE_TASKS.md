@@ -24,6 +24,28 @@
 
 Главное правило: если задача не помогает завершить, наполнить и зарелизить текущую игру, она не попадает в этот файл.
 
+## Done
+
+### ANL-1 — Minimal Release Analytics (Firebase)
+
+Статус: сделано и проверено на устройстве, коммит `e3cdd8e7`. **Дальнейшее расширение аналитики вне релизного scope** — новые события не добавляем.
+
+Что сделано:
+- Живой пайплайн вместо заглушки: `CompositeAnalyticsService` + `FirebaseAnalyticsProvider` забинжены через `RegisterGameAnalytics` в `BootstrapInstaller`; `NullAnalyticsService` удалён вместе с перекрывающейся перегрузкой `RegisterAnalytics`, из-за которой пайплайн молча оставался мёртвым. Три конфиг-SO (`AnalyticsConfig`, `AnalyticsRoutingConfig`, `AnalyticsMappingConfig`) подключены к `BootstrapInstaller.asset`.
+- `AnalyticsStartupOperation` в `phase_technical_init` сразу после consent-гейта: поднимает Firebase через `CheckAndFixDependenciesAsync`, ставит `user_id` из `save.http.player_id.v1` (адаптер закрывает коллизию двух одноимённых `IPlayerIdentityProvider`), инициализирует пайплайн и шлёт `session_started`. Операция некритичная — аналитика никогда не блокирует загрузку.
+- Firebase-провайдер регистрируется только под `#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR`; в Editor работает только `debug`-провайдер.
+- События: `session_started`, `day_started`, `day_completed`, `active_sale_completed`, `quest_started`, `quest_completed`, `character_discovered`, `location_unlocked`, `decor_changed` — плюс существовавший ранее `item_purchased`. Слушатели живут в сборке `Game.Bootstrap` (`Assets/Game/Core/Installers/Features/Analytics/`), поэтому ни один asmdef фич не пришлось менять.
+- Пассивные продажи **намеренно не шлются по попытке**, а агрегируются в `day_completed` (`passive_sales_count`, `passive_misses`): их количество растёт вместе с дневным трафиком покупателей и забило бы сигнал.
+- Бюджет параметров Firebase (жёсткий лимит 25/событие): общие параметры урезаны с 13 до 6, `_maxParameterCount` снижен 50 → 25. `day_completed` — самое тяжёлое событие — укладывается в 17.
+- Экран согласия приведён в соответствие: честный текст вместо «we do not collect analytics», кнопки Accept/Decline, `ConsentPolicy.Version` поднят до 2 (старые записи согласия, выданные под прежним текстом, аннулированы).
+- При Decline блокировка двойная: события отбрасываются по `CanSendAnalytics`, а `CompositeAnalyticsService.Initialize()` вообще не поднимает Firebase — значит манифестный `firebase_analytics_collection_enabled=false` остаётся в силе и не собираются даже автоматические события Firebase.
+
+Аналитика смотрится в Firebase-проекте `mybookstore-13b53`. Для отладки на устройстве: `adb shell setprop debug.firebase.analytics.app com.bobak.mybookstore`, дальше DebugView.
+
+### INF-8 — Force Construct `CharactersService`
+
+Статус: сделано. `Bootstrap.cs` форс-конструирует `ICharactersService` через `Construct(...)` до `SaveDataLoadOperation`, save-хук регистрируется, `AfterLoadAsync` отрабатывает — Journal наполняется. Задача оставалась в списке по инерции; проверено при аудите аналитики.
+
 ## Part 1 — From TODO / Existing Docs
 
 ### GAME-2 — Finish `Game.Quest` Slice
@@ -57,7 +79,7 @@
 Что сделать:
 - Добавить debug/cheat поддержку: list, force-run, force-complete, reset, replay Day 1 через сброс `ftue.*`.
 - Добавить editor/EditMode validation для tutorial target ids, `TutorialTargetTag`, quest ids и `quests.json`.
-- Добавить минимальную tutorial-аналитику: sequence start, step start, sequence complete.
+- Tutorial-аналитика: инфраструктура готова (ANL-1), `TutorialAnalyticsSteps` уже шлёт `tutorial_checkpoint`. Расширять не нужно.
 - Закрыть устойчивость Day 1: корректный resume посреди дня и cancel-path.
 - Проверить player-facing skip и pointer/highlight только там, где это нужно для релизного первого опыта.
 - Убрать временную связность tutorial UI id из `GameplaySceneController`, если она создаёт риск поломки релиза.
@@ -177,17 +199,6 @@
 
 Критичность: high. Это фундамент прогресса, но делать аккуратно: если быстрый релиз ближе, не расширять задачу сверх нужного.
 
-### INF-8 — Force Construct `CharactersService`
-
-Источник: [TODO.md → INF-8](TODO.md), [INPROGRESS/JOURNAL_WINDOW.md](INPROGRESS/JOURNAL_WINDOW.md).
-
-Что сделать:
-- Форс-конструировать `ICharactersService` на bootstrap до `SaveDataLoadOperation`.
-- Убедиться, что `CharactersService` регистрирует save hook и `AfterLoadAsync` выполняется.
-- Проверить, что Journal не пустой из-за позднего создания сервиса.
-
-Критичность: critical. Это прямой bugfix, который может ломать персонажей, memories и Journal.
-
 ### INF-9 — Replace Manual Save-Hook Force Construction
 
 Источник: [TODO.md → INF-9](TODO.md), [SAVE_DAY_FLOW.md](SAVE_DAY_FLOW.md).
@@ -197,7 +208,7 @@
 - Регистрировать save-aware сервисы как `ISaveHook`.
 - Убрать `save.RegisterHook(this)` из конструкторов и мёртвые bootstrap injections, если это безопасно в рамках релиза.
 
-Критичность: high, но после INF-8. Это устраняет корневую причину похожих багов, но не должно раздувать релиз, если быстрый фикс достаточен.
+Критичность: high. Блокирующая зависимость INF-8 уже закрыта (см. Done), так что задачу можно брать в любой момент. Это устраняет корневую причину похожих багов, но не должно раздувать релиз, если быстрый фикс достаточен.
 
 ### INF-13 — Close Default Admin Credentials And Public Swagger
 
@@ -223,8 +234,10 @@
 - Проверить Firebase Android config.
 - Проверить Android Player Settings: IL2CPP, ARM64, API level, keystore, scenes.
 - Проверить `BootstrapInstaller.asset`: debug off, full loading on, tutorial settings, first-day path.
+- Прогнать REL-12: в `AnalyticsConfig.asset` выключить `_isDebugLoggingEnabled` и переключить `_environment` на `production`.
 - Проверить FTUE на чистой установке.
 - Собрать APK и сделать smoke: старт, configs, active request, dialogue, FTUE/tutorial.
+- Проверить на чистой установке оба пути согласия: Accept → события видны в Firebase DebugView; Decline → в логе нет ни одного `[Analytics] Sent`, в DebugView тишина.
 
 Критичность: critical. Это релизный gate.
 
@@ -256,8 +269,10 @@
 Что сделать:
 - Добавить минимальные настройки.
 - В релизный scope входит только включение/выключение звука.
-- Добавить тоггл отзыва согласия на аналитику и кнопку открытия Privacy & Terms — UK GDPR требует, чтобы отозвать согласие было так же легко, как дать. См. REL-5, где отзыв сознательно оставлен вне scope.
+- Добавить кнопку открытия Privacy & Terms.
 - Не добавлять сложные графические настройки, аккаунты, cloud save UI или дополнительные toggles.
+
+Тоггл отзыва согласия на аналитику **сознательно отложен** — вынесен в [Deferred](#deferred--сознательно-отложено), чтобы не потеряться.
 
 Критичность: medium. Желательно для APK, но не должно расширяться.
 
@@ -281,31 +296,36 @@
 
 ### REL-5 — GDPR Consent On First Launch
 
-Статус: код и UI готовы. Осталось только контентно-юридическое — своя страница и правильные ссылки (см. «Осталось сделать» в конце).
+Статус: код и UI готовы, включая Accept/Decline (см. ANL-1). Осталось только контентно-юридическое — своя страница, правильные ссылки и Data Safety (см. «Осталось сделать» в конце).
 
 Что сделано:
 - `ConsentGateOperation` показывает окно первого запуска в `phase_technical_init` — после `AddressablesUpdateOperation`, до `RemoteConfigInitOperation`, то есть до первого обращения к Firebase.
 - `ConsentService` + `PlayerPrefsConsentStore` хранят решение в PlayerPrefs (`consent.*.v1`). PlayerPrefs, а не `ISaveService`, потому что решение нужно читать задолго до `SaveDataLoadOperation`.
 - Дефолты — deny по всем категориям. Бамп `ConsentPolicy.Version` перепоказывает окно и до повторного согласия обнуляет ранее выданные флаги.
 - `IInteractiveLoadingOperation` приостанавливает 60-секундный глобальный дедлайн загрузки, пока окно открыто, иначе игрок получал бы ложный экран «проверьте интернет».
-- Android-манифест: `firebase_analytics_collection_enabled=false`, `firebase_crashlytics_collection_enabled=false`, `google_analytics_adid_collection_enabled=false`, `google_analytics_ssaid_collection_enabled=false`; `AD_ID` снимается через `tools:node="remove"`.
+- Android-манифест: `firebase_analytics_collection_enabled=false`, `firebase_crashlytics_collection_enabled=false`, `google_analytics_adid_collection_enabled=false`, `google_analytics_ssaid_collection_enabled=false`; `AD_ID` снимается через `tools:node="remove"`. Флаг аналитики остаётся `false` намеренно: сбор включается из кода (`SetAnalyticsCollectionEnabled(true)`) только после согласия, поэтому до решения игрока не собирается ничего.
 - `PrivacyLinksBuildCheck` роняет сборку, если на `BootstrapInstaller` не задан https-URL политики.
 - Префаб `Assets/Game/Features/Privacy/ConsentWindow.prefab` собран и заведён в Addressables-группу `UI` под адресом `ConsentWindow`. Окно открывается.
 - `Tools/Privacy/Reset Consent` чистит только ключи `consent.*`, чтобы можно было перепроверять первый запуск, не сбрасывая звук и player id.
 
-Границы этого слайса:
-- Релиз не собирает аналитику вообще (`NullAnalyticsService` остаётся забинденным), поэтому экран сформулирован как privacy notice + подтверждение Terms, а не как согласие на аналитику.
-- Одна кнопка Continue без Decline и без пути отзыва — валидное уведомление, но **не** валидное согласие по UK GDPR/PECR. Как только сбор включат, экран обязан получить Accept/Decline, а REL-2 — тоггл отзыва.
+Согласие как согласие, а не уведомление (закрыто в ANL-1):
+- Экран получил **Accept/Decline** и честный текст: аналитика собирается, advertising ID — нет. Прежняя формулировка «we do not collect analytics» и единственная кнопка Continue больше не соответствовали коду и были бы недействительным согласием по UK GDPR/PECR.
+- `ConsentPolicy.Version` поднят до 2, поэтому записи согласия, выданные под старым текстом, аннулированы и игрок будет спрошен заново.
+- Decline блокирует всё: события отбрасываются по `CanSendAnalytics`, а `CompositeAnalyticsService.Initialize()` не поднимает Firebase вообще — манифестный `firebase_analytics_collection_enabled=false` остаётся в силе, и не собираются даже автоматические события Firebase.
+
+Остаётся незакрытым путь **отзыва** согласия — вынесен в DEF-1 и сознательно отложен. По UK GDPR отозвать согласие должно быть так же просто, как его дать; сейчас после решения на первом экране передумать нельзя.
+
+Также сам экран будет переработан в REL-11: Terms и согласие на аналитику разделяются на одну кнопку Continue плюс отдельный переключатель.
 
 Осталось сделать:
 
-1. **Создать свою страницу Privacy + Terms.** Сейчас в `BootstrapInstaller.asset` прописаны чужие ссылки на `themergegames.com` — это домен другого проекта, и по ним игрок попадёт на политику чужого продукта. Нужна собственная публичная страница, покрывающая: кто разработчик и как с ним связаться; какие данные собираются (аналитики и крашей в этом релизе нет — сбор выключен в манифесте; наружу уходят только save-данные на собственный сервер и `player_id` из `save.http.player_id.v1`); зачем они нужны; третьи стороны (Firebase Remote Config, Cloudflare R2 для Addressables, собственный config/save-сервер); сроки хранения; права пользователя и как запросить удаление данных.
+1. **Создать свою страницу Privacy + Terms.** Сейчас в `BootstrapInstaller.asset` прописаны чужие ссылки на `themergegames.com` — это домен другого проекта, и по ним игрок попадёт на политику чужого продукта. Нужна собственная публичная страница, покрывающая: кто разработчик и как с ним связаться; какие данные собираются (**анонимная геймплейная аналитика через Firebase Analytics** — прогресс по дням, квестам, локациям, покупки в игровом магазине; плюс save-данные на собственный сервер и `player_id` из `save.http.player_id.v1`; advertising ID не собирается, крашлитика выключена); зачем они нужны; третьи стороны (Firebase Analytics, Firebase Remote Config, Cloudflare R2 для Addressables, собственный config/save-сервер); сроки хранения; права пользователя и как запросить удаление данных.
 2. **Поменять ссылки в `Assets/Game/Core/Installers/Bootstrap/BootstrapInstaller.asset`** — поля `_privacyPolicyUrl` и `_termsOfUseUrl`. Если одна страница покрывает оба документа, `_termsOfUseUrl` можно оставить пустым: `PrivacyLinkSettings.TermsOfUseUrl` сам падает обратно на privacy-ссылку.
-3. Обновить форму Data Safety в Google Play Console: ни advertising ID, ни сбора данных.
+3. **Обновить форму Data Safety в Google Play Console: теперь нужно декларировать сбор данных.** Раньше здесь стояло «ни advertising ID, ни сбора данных» — после ANL-1 это неверно. Декларировать: аналитика собирается, advertising ID не собирается, данные привязаны к сгенерированному идентификатору установки.
 
 Важно про пункт 2: `PrivacyLinksBuildCheck` проверяет только что URL непустой и начинается с `https://`. Нынешние чужие ссылки эту проверку **проходят**, то есть автоматика от такой ошибки не защитит — сверять домен нужно глазами перед релизной сборкой.
 
-Критичность: critical before store release. Особенно если есть analytics/ads.
+Критичность: critical before store release — и выше, чем раньше: аналитика теперь реально собирается, поэтому расхождение между политикой, формой Data Safety и фактическим поведением стало настоящим, а не гипотетическим.
 
 ### REL-6 — App Signing
 
@@ -351,6 +371,54 @@
 - Проверить, что нужные для прохождения предметы доступны вовремя, а late-game decor не ломает баланс.
 
 Критичность: high. Сейчас "всё доступно сразу" ломает progression pacing.
+
+### REL-11 — Split Terms Acceptance From Analytics Consent
+
+Сейчас экран первого запуска смешивает две разные по смыслу вещи в одном решении: принятие Terms of Use (это договор — «прими или не пользуйся» здесь законно) и согласие на аналитику (это отдельная правовая категория, где нужен реальный выбор). Из-за слияния кнопки Accept/Decline получились равнозначными, хотя отказ от Terms и отказ от аналитики — разные вещи.
+
+Что сделать:
+- Переделать `ConsentWindow` на одну основную кнопку **Continue**, которая принимает Terms и закрывает окно.
+- Согласие на аналитику вынести на этом же экране в отдельный переключатель/чекбокс рядом с текстом.
+- Убрать кнопку Decline: её роль берёт на себя выключенный переключатель аналитики.
+- Определить и зафиксировать дефолт переключателя (см. «Открытый вопрос» ниже).
+- Вызывать `RecordDecision(analytics: <состояние тоггла>, attribution: false, personalizedAds: false)` вместо нынешних `AcceptAll()` / `RecordDecision(false, false, false)`.
+- Переписать `BodyText`: отдельно про Terms, отдельно про аналитику и что она отключается тут же.
+- Поднять `ConsentPolicy.Version` до 3 — формулировка и модель решения меняются, старые записи нужно аннулировать.
+
+Что менять **не** нужно:
+- `ConsentService.RecordDecision(analytics, attribution, personalizedAds)` уже принимает три независимых флага — API изначально спроектирован под покатегорийное согласие, сейчас используются только «всё true» и «всё false». Инфраструктуру дописывать не придётся.
+- Двойная блокировка при отказе (`CanSendAnalytics` + guard в `CompositeAnalyticsService.Initialize()`) работает как есть и продолжит работать: выключенный тоггл даст ровно тот же путь, что нынешний Decline.
+- `ConsentGateOperation` не трогать — он по-прежнему `isCritical: true` и ждёт закрытия окна.
+
+Открытый вопрос, решить до реализации: дефолт переключателя. Включённый по умолчанию даёт заметно больше данных, но для ЕЭЗ/UK предвыбранное согласие не считается действительным. Выключенный по умолчанию безопаснее юридически и дешевле в поддержке. Решение зависит от географии релиза (страны распространения в Play Console) — если ЕЭЗ и UK из листинга исключены, расклад другой.
+
+Критичность: high before store release. Не блокирует сборку APK, но должно быть закрыто до публикации вместе с REL-5.
+
+### REL-12 — Turn Off Analytics Debug Logging For Release
+
+Что сделать:
+- Выключить `_isDebugLoggingEnabled` в `Assets/Game/Infrastructure/Analytics/AnalyticsConfig.asset`.
+- Переключить там же `_environment` с `development` на `production`.
+
+Зачем: это не только чистота лога. При включённом флаге `DebugAnalyticsProvider` на **каждом** событии склеивает все параметры в строку и пишет её через `Debug.LogWarning`, а на Android запись в logcat синхронная. Самый тяжёлый момент — завершение дня, когда `day_completed` с десятью параметрами уходит одновременно с сохранением и анимациями результатов. Плюс `_environment: development` пометит весь релизный трафик как тестовый и испортит отчёты в Firebase.
+
+Проверка: в релизной сборке в логе не должно быть ни одной строки `[Analytics][Debug]`, при этом события продолжают приходить в Firebase DebugView.
+
+Критичность: medium, но обязательно до релизной сборки. Дублируется пунктом в Build Checklist For APK.
+
+## Deferred — сознательно отложено
+
+Задачи, которые осознанно вынесены из текущего релизного scope, но не отменены. Держим здесь, чтобы не потерялись и чтобы не всплывали заново в Part 1/Part 2.
+
+### DEF-1 — Analytics Consent Withdrawal Toggle
+
+Тоггл отзыва согласия на аналитику в настройках. Изначально был частью REL-2, вынесен отдельно — **сейчас делать не будем**.
+
+Что потребуется, когда возьмём:
+- Переключатель в окне настроек, дёргающий `IAnalyticsConsentService.SetAnalyticsConsent(bool)` — метод уже существует, `ConsentService` его реализует.
+- Учесть, что выключение посреди сессии не гасит уже поднятый Firebase: `SetAnalyticsCollectionEnabled(true)` вызывается один раз в `FirebaseAnalyticsProvider.Initialize()`. Отзыв должен либо дополнительно звать `SetAnalyticsCollectionEnabled(false)`, либо применяться со следующего запуска — это нужно решить явно, иначе тоггл будет наполовину декоративным.
+
+Почему это не выброшено насовсем: UK GDPR требует, чтобы отозвать согласие было так же просто, как его дать. Пока согласие выдаётся на первом экране и отозвать его нельзя ничем, кроме переустановки, симметрия нарушена. Риск принят осознанно; если игра пойдёт в ЕЭЗ/UK, задачу нужно вернуть в релизный scope и пересмотреть вместе с REL-11.
 
 ## Explicitly Not Release Scope Unless Reclassified
 
