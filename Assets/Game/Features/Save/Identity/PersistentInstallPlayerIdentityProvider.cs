@@ -21,6 +21,7 @@ namespace Save.Identity
             if (IsValid(storedPlayerId))
             {
                 _cachedPlayerId = storedPlayerId;
+                AuthPlayerId.SeedIfMissing(_cachedPlayerId);
                 return _cachedPlayerId;
             }
 
@@ -28,6 +29,12 @@ namespace Save.Identity
             PlayerPrefs.SetString(PlayerIdPrefsKey, _cachedPlayerId);
             PlayerPrefs.Save();
             Debug.Log($"{LogPrefix} Generated new install player id.");
+
+            // Until the anonymous auth flow exists, this install id IS the id the server knows, so
+            // mirror it into auth.player_id.v1 for the editor tooling. SeedIfMissing never overwrites
+            // an id a real auth flow already stored. Only on the resolve paths — the cached early-out
+            // above would turn this into a PlayerPrefs read on every HTTP request.
+            AuthPlayerId.SeedIfMissing(_cachedPlayerId);
 
             return _cachedPlayerId;
         }

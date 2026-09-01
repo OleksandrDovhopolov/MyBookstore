@@ -1,27 +1,26 @@
-#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 
-namespace Save
+namespace Save.Editor
 {
-    public class SaveFolderMenu
+    public static class SaveFolderMenu
     {
-    
         [MenuItem("Tools/Save/Open Persistent Folder")]
         private static void Open() => EditorUtility.RevealInFinder(Application.persistentDataPath);
 
         [MenuItem("Tools/Save/Delete Save Files")]
         private static void Wipe()
         {
-            if (!EditorUtility.DisplayDialog("Delete save?", "This wipes bookstore_save.json + .bak", "Delete", "Cancel")) return;
-            var dir = Application.persistentDataPath;
-            foreach (var f in new[] { "bookstore_save.json", "bookstore_save.json.bak", "bookstore_save.json.tmp" })
+            var files = string.Join(", ", LocalSaveFiles.FileNames);
+            if (!EditorUtility.DisplayDialog("Delete save?", $"This wipes {files}", "Delete", "Cancel"))
             {
-                var p = System.IO.Path.Combine(dir, f);
-                if (System.IO.File.Exists(p)) System.IO.File.Delete(p);
+                return;
             }
-            Debug.Log("[Save] wiped");
+
+            var deleted = LocalSaveFiles.DeleteAll();
+            Debug.Log(deleted.Count == 0
+                ? "[Save] no local save files to delete"
+                : $"[Save] wiped {deleted.Count} local save file(s): {string.Join(", ", deleted)}");
         }
     }
 }
-#endif

@@ -281,7 +281,7 @@
 
 ### REL-5 — GDPR Consent On First Launch
 
-Статус: реализовано в коде, остались ручные шаги (см. ниже).
+Статус: код и UI готовы. Осталось только контентно-юридическое — своя страница и правильные ссылки (см. «Осталось сделать» в конце).
 
 Что сделано:
 - `ConsentGateOperation` показывает окно первого запуска в `phase_technical_init` — после `AddressablesUpdateOperation`, до `RemoteConfigInitOperation`, то есть до первого обращения к Firebase.
@@ -290,15 +290,20 @@
 - `IInteractiveLoadingOperation` приостанавливает 60-секундный глобальный дедлайн загрузки, пока окно открыто, иначе игрок получал бы ложный экран «проверьте интернет».
 - Android-манифест: `firebase_analytics_collection_enabled=false`, `firebase_crashlytics_collection_enabled=false`, `google_analytics_adid_collection_enabled=false`, `google_analytics_ssaid_collection_enabled=false`; `AD_ID` снимается через `tools:node="remove"`.
 - `PrivacyLinksBuildCheck` роняет сборку, если на `BootstrapInstaller` не задан https-URL политики.
-
-Осталось сделать вручную:
-- Собрать префаб `Assets/Game/Features/Privacy/UI/ConsentWindow/ConsentWindow.prefab` и завести его в Addressables-группу `UI` с адресом `ConsentWindow`.
-- Опубликовать страницу Privacy + Terms и прописать её URL в `BootstrapInstaller.asset` (`_privacyPolicyUrl`). Без этого сборка не пройдёт.
-- Обновить форму Data Safety в Google Play Console: ни advertising ID, ни сбора данных.
+- Префаб `Assets/Game/Features/Privacy/ConsentWindow.prefab` собран и заведён в Addressables-группу `UI` под адресом `ConsentWindow`. Окно открывается.
+- `Tools/Privacy/Reset Consent` чистит только ключи `consent.*`, чтобы можно было перепроверять первый запуск, не сбрасывая звук и player id.
 
 Границы этого слайса:
 - Релиз не собирает аналитику вообще (`NullAnalyticsService` остаётся забинденным), поэтому экран сформулирован как privacy notice + подтверждение Terms, а не как согласие на аналитику.
 - Одна кнопка Continue без Decline и без пути отзыва — валидное уведомление, но **не** валидное согласие по UK GDPR/PECR. Как только сбор включат, экран обязан получить Accept/Decline, а REL-2 — тоггл отзыва.
+
+Осталось сделать:
+
+1. **Создать свою страницу Privacy + Terms.** Сейчас в `BootstrapInstaller.asset` прописаны чужие ссылки на `themergegames.com` — это домен другого проекта, и по ним игрок попадёт на политику чужого продукта. Нужна собственная публичная страница, покрывающая: кто разработчик и как с ним связаться; какие данные собираются (аналитики и крашей в этом релизе нет — сбор выключен в манифесте; наружу уходят только save-данные на собственный сервер и `player_id` из `save.http.player_id.v1`); зачем они нужны; третьи стороны (Firebase Remote Config, Cloudflare R2 для Addressables, собственный config/save-сервер); сроки хранения; права пользователя и как запросить удаление данных.
+2. **Поменять ссылки в `Assets/Game/Core/Installers/Bootstrap/BootstrapInstaller.asset`** — поля `_privacyPolicyUrl` и `_termsOfUseUrl`. Если одна страница покрывает оба документа, `_termsOfUseUrl` можно оставить пустым: `PrivacyLinkSettings.TermsOfUseUrl` сам падает обратно на privacy-ссылку.
+3. Обновить форму Data Safety в Google Play Console: ни advertising ID, ни сбора данных.
+
+Важно про пункт 2: `PrivacyLinksBuildCheck` проверяет только что URL непустой и начинается с `https://`. Нынешние чужие ссылки эту проверку **проходят**, то есть автоматика от такой ошибки не защитит — сверять домен нужно глазами перед релизной сборкой.
 
 Критичность: critical before store release. Особенно если есть analytics/ads.
 

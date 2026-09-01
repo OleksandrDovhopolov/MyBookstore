@@ -3,6 +3,7 @@
     "rootNamespace": "Save.Tests.Editor",
     "references": [
         "Save",
+        "Save.Editor",
         "UniTask",
         "Game.Commands.Abstractions",
         "Game.Commands",

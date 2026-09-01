@@ -1,12 +1,10 @@
 {
-    "name": "Configs.Editor",
-    "rootNamespace": "Game.Configs.Editor",
+    "name": "Save.Editor",
+    "rootNamespace": "Save.Editor",
     "references": [
-        "Configs",
-        "Game.AdminTooling.Editor",
+        "Save",
         "UniTask",
-        "Game.Http",
-        "Game.Commands"
+        "Game.AdminTooling.Editor"
     ],
     "includePlatforms": [
         "Editor"
