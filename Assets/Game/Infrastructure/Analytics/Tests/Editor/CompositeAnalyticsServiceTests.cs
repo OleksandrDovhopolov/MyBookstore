@@ -109,6 +109,44 @@ namespace AnalyticsTests.Editor
             Assert.That(provider.Events, Is.Empty);
         }
 
+        [Test]
+        public void TrackEvent_NoEnabledProviders_WarnsOnlyOnce()
+        {
+            // A release Standalone build genuinely has zero providers: debug logging is off by build
+            // type and FirebaseAnalyticsProvider is only registered for Android/iOS. Warning per event
+            // there would flood the log, which is exactly what REL-12 set out to stop.
+            //
+            // Counting through logMessageReceived rather than LogAssert on purpose: Unity does not
+            // treat surplus warnings as failures, so LogAssert would pass even if the warning fired
+            // on every event.
+            var warnings = 0;
+
+            void CountWarnings(string condition, string stackTrace, LogType type)
+            {
+                if (type == LogType.Warning && condition.Contains("No enabled analytics providers"))
+                {
+                    warnings++;
+                }
+            }
+
+            Application.logMessageReceived += CountWarnings;
+            try
+            {
+                var service = CreateService(Array.Empty<IAnalyticsProvider>(), null, null);
+                service.Initialize();
+
+                service.TrackEvent(new AnalyticsEvent("app_started"));
+                service.TrackEvent(new AnalyticsEvent("day_started"));
+                service.TrackEvent(new AnalyticsEvent("day_completed"));
+            }
+            finally
+            {
+                Application.logMessageReceived -= CountWarnings;
+            }
+
+            Assert.That(warnings, Is.EqualTo(1), "The warning must be logged once, not per event.");
+        }
+
         private static CompositeAnalyticsService CreateService(
             params IAnalyticsProvider[] providers)
         {

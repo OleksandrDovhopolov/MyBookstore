@@ -416,7 +416,8 @@
     контентных ошибок сейчас не защищён build-гейтом.
   Зафиксировано как «известный пробел» в [BUILD.md](BUILD.md) §0.
 
-- [ ] **INF-13. Закрыть дефолтные креды админского API и публичный Swagger.**
+- [x] **INF-13. Закрыть дефолтные креды админского API и публичный Swagger.**
+  Статус: закрыто в `RELEASE_TASKS.md`. Backend-аудит подтвердил, что Swagger доступен только в `Development`, admin API закрыт Basic auth, production не стартует без admin credentials, `admin` / `admin` запрещены вне `Development`, а в Railway установлены реальные credentials.
   Что сделать:
   - Зафиксировать, что `ADMIN_USER` / `ADMIN_PASS` — это Basic-auth логин и пароль для `/api/admin/*`, а не креды Postgres; у базы свои значения в `Postgres__ConnectionString`.
   - Заменить дефолтные `admin` / `admin` на реальные значения через env vars в окружении API.

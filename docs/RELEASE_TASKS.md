@@ -46,6 +46,12 @@
 
 Статус: сделано. `Bootstrap.cs` форс-конструирует `ICharactersService` через `Construct(...)` до `SaveDataLoadOperation`, save-хук регистрируется, `AfterLoadAsync` отрабатывает — Journal наполняется. Задача оставалась в списке по инерции; проверено при аудите аналитики.
 
+### INF-13 — Close Default Admin Credentials And Public Swagger
+
+Статус: сделано. Backend-аудит подтвердил, что Swagger включается только в `Development`, `/api/admin/*` закрыт Basic auth, `ADMIN_USER` / `ADMIN_PASS` не используются как креды базы, production без admin credentials падает на старте, а `admin` / `admin` явно запрещены вне `Development`.
+
+Дополнительно проверено: в Railway установлены реальные admin credentials, не дефолтные `admin` / `admin`.
+
 ## Part 1 — From TODO / Existing Docs
 
 ### GAME-2 — Finish `Game.Quest` Slice
@@ -210,18 +216,6 @@
 
 Критичность: high. Блокирующая зависимость INF-8 уже закрыта (см. Done), так что задачу можно брать в любой момент. Это устраняет корневую причину похожих багов, но не должно раздувать релиз, если быстрый фикс достаточен.
 
-### INF-13 — Close Default Admin Credentials And Public Swagger
-
-Источник: [TODO.md → INF-13](TODO.md), [SERVICES/SECRETS.md](SERVICES/SECRETS.md), [SERVICES/CONFIG_SERVER_API.md](SERVICES/CONFIG_SERVER_API.md).
-
-Что сделать:
-- Убедиться, что `ADMIN_USER` / `ADMIN_PASS` — Basic-auth для `/api/admin/*`, а не креды базы.
-- Убрать дефолтные `admin` / `admin` из окружения API.
-- Закрыть публичный Swagger: только Development или тот же auth/gate.
-- Проверить вручную, что старые креды не работают, новые работают, `/swagger` не раскрыт публично.
-
-Критичность: critical before public backend. Это безопасность, не polish.
-
 ### Build Checklist For APK
 
 Источник: [BUILD.md](BUILD.md), [TODO.md](TODO.md).
@@ -234,7 +228,7 @@
 - Проверить Firebase Android config.
 - Проверить Android Player Settings: IL2CPP, ARM64, API level, keystore, scenes.
 - Проверить `BootstrapInstaller.asset`: debug off, full loading on, tutorial settings, first-day path.
-- Прогнать REL-12: в `AnalyticsConfig.asset` выключить `_isDebugLoggingEnabled` и переключить `_environment` на `production`.
+- Настройки аналитики (отладочный лог и `environment`) вручную **не трогать** — они выводятся из типа сборки, см. REL-12 и [BUILD.md §5](BUILD.md).
 - Проверить FTUE на чистой установке.
 - Собрать APK и сделать smoke: старт, configs, active request, dialogue, FTUE/tutorial.
 - Проверить на чистой установке оба пути согласия: Accept → события видны в Firebase DebugView; Decline → в логе нет ни одного `[Analytics] Sent`, в DebugView тишина.
@@ -396,15 +390,23 @@
 
 ### REL-12 — Turn Off Analytics Debug Logging For Release
 
-Что сделать:
-- Выключить `_isDebugLoggingEnabled` в `Assets/Game/Infrastructure/Analytics/AnalyticsConfig.asset`.
-- Переключить там же `_environment` с `development` на `production`.
+Статус: **сделано**. Ручного шага перед сборкой нет — оба значения выводятся из типа сборки.
 
-Зачем: это не только чистота лога. При включённом флаге `DebugAnalyticsProvider` на **каждом** событии склеивает все параметры в строку и пишет её через `Debug.LogWarning`, а на Android запись в logcat синхронная. Самый тяжёлый момент — завершение дня, когда `day_completed` с десятью параметрами уходит одновременно с сохранением и анимациями результатов. Плюс `_environment: development` пометит весь релизный трафик как тестовый и испортит отчёты в Firebase.
+Зачем это понадобилось: при включённом флаге `DebugAnalyticsProvider` на **каждом** событии склеивает все параметры в строку и пишет её через `Debug.LogWarning`, а на Android запись в logcat синхронная. Самый тяжёлый момент — завершение дня, когда `day_completed` с десятью параметрами уходит одновременно с сохранением и анимациями результатов. Плюс `_environment: development` пометил бы весь релизный трафик как тестовый и испортил отчёты в Firebase.
 
-Проверка: в релизной сборке в логе не должно быть ни одной строки `[Analytics][Debug]`, при этом события продолжают приходить в Firebase DebugView.
+Почему не ручной флаг: `DebugAnalyticsProvider.IsEnabled` завязан на `IsDebugLoggingEnabled`, поэтому простое выключение флага в ассете оставляло бы Editor вообще без включённых провайдеров (Firebase там не регистрируется из-за `#if`), и `CompositeAnalyticsService` начинал печатать `No enabled analytics providers.` на каждое событие. То есть ручной вариант делал Editor-лог не тише, а шумнее — и требовал не забыть переключить флаг обратно.
 
-Критичность: medium, но обязательно до релизной сборки. Дублируется пунктом в Build Checklist For APK.
+Как сделано:
+- `AnalyticsBuildContext.IsDevelopmentBuild` (обёртка над `Debug.isDebugBuild`) — единая точка решения «dev или release» для обеих реализаций `IAnalyticsConfig`.
+- `IsDebugLoggingEnabled` — сериализованный флаг может только **выключить** лог в dev-сборке, но не включить его в релизной.
+- `Environment` — в dev-сборке берётся из поля, в релизной жёстко `production`.
+- `DefaultAnalyticsConfig` зеркалит ту же логику: это фолбэк на случай, если SO не назначен в `BootstrapInstaller`, и забытое назначение не должно вернуть отладочный лог в релиз.
+- Предупреждение `No enabled analytics providers.` печатается один раз, а не на каждое событие — в релизной Standalone-сборке провайдеров действительно ноль.
+- `AnalyticsConfig.asset` не менялся: его значения теперь означают «настройки для dev-сборок».
+
+Граница: Editor и Development Build — логи есть, `environment=development`. Обычная релизная сборка — логов нет, `environment=production`.
+
+Критичность: medium. Закрыто.
 
 ## Deferred — сознательно отложено
 

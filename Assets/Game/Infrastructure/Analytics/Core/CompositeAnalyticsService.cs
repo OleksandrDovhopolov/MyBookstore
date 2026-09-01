@@ -19,6 +19,7 @@ namespace Analytics
         private readonly IReadOnlyList<IAnalyticsProvider> _providers;
         private readonly IAnalyticsUserContext _userContext;
         private string _userId;
+        private bool _noProvidersLogged;
 
         public CompositeAnalyticsService(
             IAnalyticsConfig config,
@@ -211,7 +212,15 @@ namespace Analytics
 
             if (enabledProviders.Length == 0)
             {
-                Debug.LogWarning($"{LogPrefix} No enabled analytics providers.");
+                // Warn once, not per event: in a release Standalone build there are genuinely zero
+                // providers (debug is off by build type, Firebase is only registered for Android/iOS),
+                // and a per-event warning there would defeat the point of silencing the log at all.
+                if (!_noProvidersLogged)
+                {
+                    _noProvidersLogged = true;
+                    Debug.LogWarning($"{LogPrefix} No enabled analytics providers.");
+                }
+
                 return true;
             }
 
