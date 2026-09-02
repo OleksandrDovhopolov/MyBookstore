@@ -42,7 +42,7 @@ namespace Game.Journal.UI
 
             collected.Sort((a, b) =>
             {
-                var order = b.Model.Order.CompareTo(a.Model.Order);
+                var order = a.Model.Order.CompareTo(b.Model.Order);
                 return order != 0 ? order : a.Sequence.CompareTo(b.Sequence);
             });
 

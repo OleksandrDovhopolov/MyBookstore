@@ -10,6 +10,7 @@ namespace Game.Configs.Models
     {
         public string Id { get; set; }
 
+        /// <summary>Authored chronology for Memories feed. Lower values appear earlier.</summary>
         public int Order { get; set; }
 
         public string TitleKey { get; set; }

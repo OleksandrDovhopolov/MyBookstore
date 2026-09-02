@@ -104,6 +104,16 @@
 - **Тесты на resume-сценарии сознательно не добавлялись** — текущего состояния достаточно. Если начнём
   трогать defer-commit или порядок confirm/entry, тесты нужно будет завести до правок.
 
+### JRN-1 — Memories Structure In `characters.json`
+
+Статус: сделано. Инженерная часть закрыта: четыре story-персонажа получили по одной memory в
+`characters.json`, `mem_owner_placeholder` удалён, сортировка Memories переведена в хронологию
+`order` по возрастанию, а `CharacterMemoryReferenceValidator` добавлен в pre-build gate.
+
+Тексты и фотографии остаются отдельно в [JRN-2](#jrn-2--memories-copy-and-photos): новые `titleKey` /
+`descriptionKey` сейчас являются ключами будущей локализации, а `photoKey` рассчитан на будущие Addressables
+assets и до их появления показывает fallback.
+
 ## Part 1 — From TODO / Existing Docs
 
 ### GAME-2 — Finish `Game.Quest` Slice
@@ -202,49 +212,6 @@
 - Покрыть сценарий тестом или валидатором scripted customer config.
 
 Критичность: high. Это не всегда технический блокер, но ломает дизайн цепочки и ожидание игрока.
-
-### JRN-1 — Memories Structure In `characters.json`
-
-Источник: [INPROGRESS/JOURNAL_WINDOW.md](INPROGRESS/JOURNAL_WINDOW.md), [TODO.md](TODO.md).
-
-Инженерная часть задачи. Тексты и фотографии — отдельно в [JRN-2](#jrn-2--memories-copy-and-photos),
-она в Wait Resources.
-
-**Код уже готов, отсутствует только контент.** При аудите выяснилось, что три из четырёх исходных
-пунктов закрыты: `CharacterMemoryConfig` уже имеет `Id`, `Order`, `TitleKey`, `DescriptionKey`, `PhotoKey`,
-`UnlockedAtStart`, `QuestId`, `QuestChainId`, `IsGolden`; `Order` доезжает до UI; плоская read-model
-существует — `JournalMemoriesViewModelBuilder` собирает memories всех персонажей в один список и сортирует.
-
-Фактическое состояние `Assets/Configs/characters.json`:
-
-| Персонаж | memories |
-|---|---|
-| eddi, millie, tara, captain | **0** |
-| owner (`hiddenInJournal: true`) | 2 |
-
-То есть вкладка Memories за всю игру показывает **одну** карточку — `mem_owner_moving_in`, выданную FTUE,
-и та принадлежит скрытому персонажу.
-
-Что сделать:
-- **Завести memories четырём story-персонажам.** Квестов ровно четыре, все без `chainId`, поэтому привязка
-  через `questId`, а не `questChainId`: `q_intro_eddi`, `q_intro_millie`, `q_tara_kids`, `q_captain_postcards`.
-- **Починить или удалить `mem_owner_placeholder`** — у него нет ни `questId`, ни `questChainId`, ни
-  `unlockedAtStart`, поэтому разблокироваться ему нечем. `JournalMemoriesViewModelBuilder` отфильтровывает
-  незалоченные, так что запись мёртвая.
-- **Определиться с направлением сортировки.** Сейчас `JournalMemoriesViewModelBuilder` сортирует по `Order`
-  **по убыванию**, при равенстве — стабильно по порядку обхода. Если задумка «новые сверху», новым memories
-  нужно давать больший `order`; если «в хронологии истории», сортировка перевёрнута. На одной карточке этот
-  вопрос не проявляется.
-- **Определить политику `isGolden`** — это UI-флаг значимости, награды идут через `Game.Quest`. Решить,
-  что делает memory золотой, или не использовать флаг в первом релизе.
-- **Решить, сколько memories на персонажа.** Квестов по одному на героя, поэтому минимум — одна на каждого.
-
-Заводить структуру можно **до** появления арта и текстов: `JournalMemoryRowView` имеет сериализованный
-`_photoFallback`, поэтому пропущенная картинка даёт заглушку, а не пустоту.
-
-Не выносить memories в отдельный конфиг — они живут внутри `CharacterConfig.Memories`.
-
-Критичность: high. Без записей вкладка Memories пуста, и журнал не даёт ощущения прогресса.
 
 ### INF-4 — Localization
 
@@ -680,7 +647,7 @@ Memories станет презентабельной только с этими 
 #### Сколько единиц контента
 
 По одной memory на каждого из четырёх story-персонажей — минимум. Итого на первый заход: **4 заголовка,
-4 описания, 4 фотографии**, плюс решение по `mem_owner_placeholder` (починить или удалить).
+4 описания, 4 фотографии**. `mem_owner_placeholder` уже удалён в JRN-1.
 
 #### Что ещё нужно, кроме текста и картинки
 

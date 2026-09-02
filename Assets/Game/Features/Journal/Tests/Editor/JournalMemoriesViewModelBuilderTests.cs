@@ -22,7 +22,7 @@ namespace Game.Journal.UI.Tests.Editor
         }
 
         [Test]
-        public void Build_SortsByOrderDescending_StableForTies()
+        public void Build_SortsByOrderAscending_StableForTies()
         {
             var models = new JournalMemoriesViewModelBuilder().Build(
                 new[] { new CharacterStub("c1"), new CharacterStub("c2") },
@@ -31,7 +31,7 @@ namespace Game.Journal.UI.Tests.Editor
                     : Entry("c2", Memory("high", true, 10), Memory("tie_b", true, 5)));
 
             CollectionAssert.AreEqual(
-                new[] { "high", "tie_a", "tie_b", "low" },
+                new[] { "low", "tie_a", "tie_b", "high" },
                 models.Select(m => m.MemoryId).ToArray());
         }
 

@@ -4,28 +4,72 @@
     "displayNameKey": "Eddy",
     "portraitKey": "eddi",
     "favoriteGenres": ["Fact", "Travel"],
-    "discoveryQuestIds": ["q_intro_eddi"]
+    "discoveryQuestIds": ["q_intro_eddi"],
+    "memories": [
+      {
+        "id": "mem_eddi_intro",
+        "titleKey": "memory.eddi.intro.title",
+        "descriptionKey": "memory.eddi.intro.description",
+        "photoKey": "memory_eddi_intro",
+        "questId": "q_intro_eddi",
+        "order": 1,
+        "isGolden": false
+      }
+    ]
   },
   {
     "id": "millie",
     "displayNameKey": "Millie",
     "portraitKey": "millie",
     "favoriteGenres": ["Drama", "Crime", "Classic"],
-    "discoveryQuestIds": ["q_intro_millie"]
+    "discoveryQuestIds": ["q_intro_millie"],
+    "memories": [
+      {
+        "id": "mem_millie_intro",
+        "titleKey": "memory.millie.intro.title",
+        "descriptionKey": "memory.millie.intro.description",
+        "photoKey": "memory_millie_intro",
+        "questId": "q_intro_millie",
+        "order": 2,
+        "isGolden": false
+      }
+    ]
   },
   {
     "id": "tara",
     "displayNameKey": "Tara",
     "portraitKey": "tara",
     "favoriteGenres": ["Fantasy", "Kids"],
-    "discoveryQuestIds": ["q_tara_kids"]
+    "discoveryQuestIds": ["q_tara_kids"],
+    "memories": [
+      {
+        "id": "mem_tara_kids",
+        "titleKey": "memory.tara.kids.title",
+        "descriptionKey": "memory.tara.kids.description",
+        "photoKey": "memory_tara_kids",
+        "questId": "q_tara_kids",
+        "order": 3,
+        "isGolden": false
+      }
+    ]
   },
   {
     "id": "captain",
     "displayNameKey": "Captain",
     "portraitKey": "captain",
     "favoriteGenres": ["Crime", "Travel"],
-    "discoveryQuestIds": ["q_captain_postcards"]
+    "discoveryQuestIds": ["q_captain_postcards"],
+    "memories": [
+      {
+        "id": "mem_captain_postcards",
+        "titleKey": "memory.captain.postcards.title",
+        "descriptionKey": "memory.captain.postcards.description",
+        "photoKey": "memory_captain_postcards",
+        "questId": "q_captain_postcards",
+        "order": 4,
+        "isGolden": false
+      }
+    ]
   },
   {
     "id": "owner",
@@ -39,13 +83,6 @@
         "photoKey": "memory_moving_in",
         "unlockedAtStart": true,
         "order": 0
-      },
-      {
-        "id": "mem_owner_placeholder",
-        "titleKey": "memory.owner.placeholder.title",
-        "descriptionKey": "memory.owner.placeholder.description",
-        "photoKey": "memory_placeholder",
-        "order": -1
       }
     ]
   }
