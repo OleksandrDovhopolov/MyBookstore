@@ -178,6 +178,54 @@ namespace Game.Configs.Tests.Editor
                 AssertFirstDayStarterGenresCoverScriptedPassiveAttempts(root);
         }
 
+        [Test]
+        public void CustomerScriptDayLookup_PassiveGenresForDay_DedupesAndKeepsFirstOrder()
+        {
+            var scripts = new[]
+            {
+                new CustomerScriptConfig
+                {
+                    Id = "day1_a",
+                    DayIndex = 1,
+                    PassiveAttempts = new[]
+                    {
+                        new ScriptedPassivePurchaseConfig { Genre = "Kids", ForceHit = true },
+                        new ScriptedPassivePurchaseConfig { Genre = "kids", ForceHit = false },
+                        new ScriptedPassivePurchaseConfig { Genre = " Travel ", ForceHit = false }
+                    }
+                },
+                new CustomerScriptConfig
+                {
+                    Id = "day2",
+                    DayIndex = 2,
+                    PassiveAttempts = new[]
+                    {
+                        new ScriptedPassivePurchaseConfig { Genre = "Crime", ForceHit = true }
+                    }
+                },
+                new CustomerScriptConfig
+                {
+                    Id = "day1_nulls",
+                    DayIndex = 1,
+                    PassiveAttempts = new[]
+                    {
+                        null,
+                        new ScriptedPassivePurchaseConfig { Genre = "", ForceHit = true },
+                        new ScriptedPassivePurchaseConfig { Genre = "Fact", ForceHit = true }
+                    }
+                },
+                new CustomerScriptConfig
+                {
+                    Id = "day1_dialogue",
+                    DayIndex = 1
+                }
+            };
+
+            CollectionAssert.AreEqual(
+                new[] { "Kids", "Travel", "Fact" },
+                CustomerScriptDayLookup.PassiveGenresForDay(scripts, 1));
+        }
+
         private static void AssertDayOneUsesTwoWavesForEddiThenMissNpc(string root)
         {
             var days = JsonConvert.DeserializeObject<DayConfig[]>(
@@ -324,15 +372,14 @@ namespace Game.Configs.Tests.Editor
             AssertGenreCount("Travel", 6);
             AssertGenreCount("Kids", 4);
 
-            var scriptedDayOneAttempts = scripts
-                .Where(s => s.DayIndex == 1 || string.Equals(s.Id, "eddi_intro", StringComparison.Ordinal))
-                .SelectMany(s => s.PassiveAttempts ?? Array.Empty<ScriptedPassivePurchaseConfig>());
+            var scriptedDayOneGenres = CustomerScriptDayLookup.PassiveGenresForDay(scripts, 1);
+            Assert.IsNotEmpty(scriptedDayOneGenres);
 
-            foreach (var attempt in scriptedDayOneAttempts.Where(a => a.ForceHit))
+            foreach (var genre in scriptedDayOneGenres)
             {
                 Assert.IsTrue(
-                    genreCounts.TryGetValue(attempt.Genre, out var count) && count > 0,
-                    $"Scripted forced hit genre '{attempt.Genre}' must have starter stock in {root}.");
+                    genreCounts.TryGetValue(genre, out var count) && count > 0,
+                    $"Scripted day-1 passive genre '{genre}' must have starter stock in {root}.");
             }
 
             void AssertGenreCount(string genre, int min)

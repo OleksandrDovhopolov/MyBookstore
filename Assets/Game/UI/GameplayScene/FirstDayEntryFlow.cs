@@ -114,8 +114,8 @@ namespace GameplayUI
             var selected = new List<BookConfig>(capacity);
             var selectedIds = new HashSet<string>(StringComparer.Ordinal);
 
-            AddFirstByGenre("Fact");
-            AddFirstByGenre("Travel");
+            foreach (var genre in CustomerScriptDayLookup.PassiveGenresForDay(_configs.GetAll<CustomerScriptConfig>(), 1))
+                AddFirstByGenre(genre);
 
             foreach (var book in owned.OrderBy(GenreRank)
                          .ThenByDescending(b => b.RarityWeight)

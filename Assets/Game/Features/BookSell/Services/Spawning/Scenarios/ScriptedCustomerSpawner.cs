@@ -176,7 +176,7 @@ namespace Book.Sell.Services
             }
 
             if (hasDay)
-                return script.DayIndex.Value == setup.Day;
+                return CustomerScriptDayLookup.MatchesDay(script, setup.Day);
 
             var questId = script.ActivationQuestId;
             if (_quests.TryGetQuest(questId) == null)

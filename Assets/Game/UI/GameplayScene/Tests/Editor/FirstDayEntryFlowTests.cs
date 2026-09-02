@@ -41,6 +41,110 @@ namespace GameplayUI.Tests.Editor
         }
 
         [Test]
+        public async System.Threading.Tasks.Task EnterAsync_AutoStocksGenresFromDayOnePassiveAttempts()
+        {
+            var scripts = new[]
+            {
+                Script("eddi_intro", 1,
+                    Attempt("Fact", forceHit: true),
+                    Attempt("Travel", forceHit: false))
+            };
+            var books = FirstDayBooks();
+            var preparation = new FakePreparation(slots: 2);
+            var flow = new FirstDayEntryFlow(
+                new FakeMorning(),
+                preparation,
+                new RecordingGameFlow(new List<string>()),
+                ConfigsWith(new[] { new LocationConfig { Id = "loc" } }, books, scripts),
+                inventory: new FakeInventory(books));
+
+            var entered = await flow.EnterAsync(CancellationToken.None);
+
+            Assert.IsTrue(entered);
+            var expectedGenres = CustomerScriptDayLookup.PassiveGenresForDay(scripts, 1);
+            var selectedBooks = books.Where(b => preparation.SelectedBookIds.Contains(b.Id)).ToArray();
+            foreach (var genre in expectedGenres)
+            {
+                Assert.IsTrue(
+                    selectedBooks.Any(b => string.Equals(b.PrimaryGenre, genre, StringComparison.OrdinalIgnoreCase)),
+                    $"Day-1 shelf must include a book for scripted passive genre '{genre}'.");
+            }
+        }
+
+        [Test]
+        public async System.Threading.Tasks.Task EnterAsync_WhenDayOneScriptGenreChanges_ReservesThatGenre()
+        {
+            var scripts = new[] { Script("custom_intro", 1, Attempt("Crime", forceHit: true)) };
+            var books = new[]
+            {
+                Book("fact", "Fact"),
+                Book("travel", "Travel"),
+                Book("crime", "Crime")
+            };
+            var preparation = new FakePreparation(slots: 1);
+            var flow = new FirstDayEntryFlow(
+                new FakeMorning(),
+                preparation,
+                new RecordingGameFlow(new List<string>()),
+                ConfigsWith(new[] { new LocationConfig { Id = "loc" } }, books, scripts),
+                inventory: new FakeInventory(books));
+
+            var entered = await flow.EnterAsync(CancellationToken.None);
+
+            Assert.IsTrue(entered);
+            CollectionAssert.AreEqual(new[] { "crime" }, preparation.SelectedBookIds);
+        }
+
+        [Test]
+        public async System.Threading.Tasks.Task EnterAsync_ScriptWithoutPassiveAttempts_DoesNotFail()
+        {
+            var scripts = new[] { Script("dialogue_only", 1, attempts: null) };
+            var books = FirstDayBooks();
+            var preparation = new FakePreparation(slots: 2);
+            var flow = new FirstDayEntryFlow(
+                new FakeMorning(),
+                preparation,
+                new RecordingGameFlow(new List<string>()),
+                ConfigsWith(new[] { new LocationConfig { Id = "loc" } }, books, scripts),
+                inventory: new FakeInventory(books));
+
+            var entered = await flow.EnterAsync(CancellationToken.None);
+
+            Assert.IsTrue(entered);
+            Assert.AreEqual(2, preparation.TotalSelected);
+        }
+
+        [Test]
+        public async System.Threading.Tasks.Task EnterAsync_WhenScriptedGenresExceedSlots_ClampsToCapacity()
+        {
+            var scripts = new[]
+            {
+                Script("crowded_day", 1,
+                    Attempt("Fact", forceHit: true),
+                    Attempt("Travel", forceHit: false),
+                    Attempt("Crime", forceHit: true))
+            };
+            var books = new[]
+            {
+                Book("fact", "Fact"),
+                Book("travel", "Travel"),
+                Book("crime", "Crime")
+            };
+            var preparation = new FakePreparation(slots: 2);
+            var flow = new FirstDayEntryFlow(
+                new FakeMorning(),
+                preparation,
+                new RecordingGameFlow(new List<string>()),
+                ConfigsWith(new[] { new LocationConfig { Id = "loc" } }, books, scripts),
+                inventory: new FakeInventory(books));
+
+            var entered = await flow.EnterAsync(CancellationToken.None);
+
+            Assert.IsTrue(entered);
+            Assert.AreEqual(preparation.Capacity.DailyBookSlots, preparation.TotalSelected);
+        }
+
+        [Test]
         public async System.Threading.Tasks.Task DirectEntryGate_AllowsUnfinishedDayOneInSalesPhase()
         {
             var bootstrap = CreateBootstrap(new DayProgressState
@@ -105,9 +209,26 @@ namespace GameplayUI.Tests.Editor
         private static BookConfig[] FirstDayBooks()
             => new[]
             {
-                new BookConfig { Id = "fact", Genres = new[] { "Fact" }, RarityWeight = 1f },
-                new BookConfig { Id = "travel", Genres = new[] { "Travel" }, RarityWeight = 1f }
+                Book("fact", "Fact"),
+                Book("travel", "Travel")
             };
+
+        private static BookConfig Book(string id, string genre)
+            => new() { Id = id, Genres = new[] { genre }, RarityWeight = 1f };
+
+        private static CustomerScriptConfig Script(
+            string id,
+            int day,
+            params ScriptedPassivePurchaseConfig[] attempts)
+            => new()
+            {
+                Id = id,
+                DayIndex = day,
+                PassiveAttempts = attempts
+            };
+
+        private static ScriptedPassivePurchaseConfig Attempt(string genre, bool forceHit)
+            => new() { Genre = genre, ForceHit = forceHit };
 
         private static FakeConfigsService ConfigsWith(
             IReadOnlyList<LocationConfig> locations,
@@ -137,10 +258,14 @@ namespace GameplayUI.Tests.Editor
 
         private sealed class FakePreparation : IPreparationSessionService
         {
-            public PreparationCapacity Capacity { get; } = new PreparationCapacity(0, 2);
+            public FakePreparation(int slots = 2)
+                => Capacity = new PreparationCapacity(0, slots);
+
+            public PreparationCapacity Capacity { get; }
             public PreparationSessionState CurrentState { get; private set; }
             public event Action<PreparationSessionState> StateChanged { add { } remove { } }
             public int TotalSelected { get; private set; }
+            public IReadOnlyList<string> SelectedBookIds { get; private set; } = Array.Empty<string>();
 
             public UniTask<IReadOnlyList<GenreSelectionItem>> StartOrResumeAsync(CancellationToken ct, string locationId = null)
                 => UniTask.FromResult<IReadOnlyList<GenreSelectionItem>>(Array.Empty<GenreSelectionItem>());
@@ -153,7 +278,8 @@ namespace GameplayUI.Tests.Editor
 
             public UniTask SetSelectedBookIdsAsync(IReadOnlyList<string> bookIds, CancellationToken ct)
             {
-                TotalSelected = bookIds?.Count ?? 0;
+                SelectedBookIds = bookIds?.ToArray() ?? Array.Empty<string>();
+                TotalSelected = SelectedBookIds.Count;
                 return UniTask.CompletedTask;
             }
 
