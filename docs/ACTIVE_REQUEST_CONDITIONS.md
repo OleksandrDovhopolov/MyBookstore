@@ -191,9 +191,19 @@ C#-модель — [`RequestDefinitionConfig`](../../Assets/Game/Features/Confi
 
 ## 6. Зависимость: книги → список жанров
 
-`BookConfig.Genres` — **массив жанров**. Для старых систем, которым пока нужен один жанр, используется
-`BookConfig.PrimaryGenre` = первый элемент `Genres`. Условия используют `genres` + `contains`/`containsAll`
-по полному списку жанров книги.
+`BookConfig.Genres` — **массив жанров**. Условия активного запроса (`genres contains`, `containsAny`,
+`containsAll`) проверяют полный список жанров книги.
+
+`BookConfig.PrimaryGenre` = первый элемент `Genres`, но это не "жанр продажи". Он используется как
+display/shelf-жанр: визуал книги, группировка полки и пассивная полка остаются привязаны к первому жанру.
+
+Жанр продажи фиксируется в момент продажи:
+- пассивная продажа использует `PassiveSaleEvent.ResolvedGenre`;
+- активная продажа использует первое пересечение `ActiveRequestRuntime.RequiredGenres` с `BookConfig.Genres`
+  в порядке жанров запроса.
+
+Одна продажа увеличивает ровно один счётчик прогресса. Если жанр продажи не известен, статистика
+использует fallback на `PrimaryGenre`.
 
 ## 7. Accepted implementation decisions (2026-07-13)
 

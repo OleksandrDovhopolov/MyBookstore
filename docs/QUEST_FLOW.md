@@ -91,8 +91,8 @@ QuestRewardBridge (ISaveHook.BeforeSaveAsync) ──▶ IRewardGrantService
 `Historic` (1), `Biography` (1), `Political` (2), `Cooking` (1).
 
 **Как считается зачёт** (важно при починке): засчитывается только `RecommendationTier.Excellent`
-(`SalesDayCommitService`), и жанр берётся у **выбранной книги** через `BookConfig.PrimaryGenre`, то есть
-**только `genres[0]`** — см. проблему **P8**.
+(`SalesDayCommitService`). После GAME-22 активная продажа засчитывается в жанр, по которому прошёл
+активный запрос; `BookConfig.PrimaryGenre` остаётся fallback, когда жанр продажи не известен.
 
 ---
 
@@ -187,7 +187,7 @@ dayProgress и **не на посещения локаций**. Визит фи�
 | **P5** 🟠 | `days.json` обрывается на дне 2; у дней 1–2 `activeRequestCount: 0` при `applyModifiers: false` (жёсткий override), с дня 3 берётся `SalesTrafficSettings.DefaultActiveRequestCount` = 1 | обе `activePickGenre`-задачи стартуют на ~1 запросе в день; в дни выдачи прогресс невозможен физически | `days.json` |
 | **P6** 🟠 | Капитан спавнится на любой локации | расхождение с ТЗ «заход в Порт» | нет `locationId` в `CustomerScriptConfig` |
 | **P7** 🟡 | Активация по `visitLocation` с задержкой | квест появляется не в момент входа | `QuestsService.Subscribe()` |
-| **P8** 🟡 | `activePickGenre` считает `genres[0]`, а условие запроса — весь массив `genres` | двужанровая книга даст «отлично», но не зачтётся в квест | GAME-22 в [TODO.md](TODO.md) |
+| **P8** ✅ | `activePickGenre` считал `genres[0]`, а условие запроса — весь массив `genres` | двужанровая книга давала «отлично», но не засчитывалась в квест | Закрыто GAME-22: активная продажа фиксирует жанр запроса |
 | **P9** 🟡 | Открытки не списываются при сдаче квеста | предметы остаются в инвентаре | нет механики |
 
 **Порядок разбора.** P5 первым — он корень темпа для P1/P2 и вообще всей прогрессии после дня 2. Затем

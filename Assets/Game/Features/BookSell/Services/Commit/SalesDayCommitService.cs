@@ -97,23 +97,10 @@ namespace Book.Sell.Services
                             Debug.LogError($"{LogPrefix} sold book '{bookId}' not present in inventory at commit (day {result.Day}).");
 
                         await _shelfState.MarkSoldAsync(bookId, ct);
-                        _salesStats.RecordSold(bookId, new SaleContext(result.LocationId, result.Day));
                     }
                 }
 
-                if (result.Recommendations != null)
-                {
-                    foreach (var recommendation in result.Recommendations)
-                    {
-                        if (recommendation == null) continue;
-                        if (recommendation.Tier != RecommendationTier.Excellent) continue;
-                        if (string.IsNullOrEmpty(recommendation.BookId)) continue;
-
-                        _salesStats.RecordActivePick(
-                            recommendation.BookId,
-                            new SaleContext(result.LocationId, result.Day));
-                    }
-                }
+                RecordSalesStats(result);
 
                 await _save.UpdateModuleAsync(SalesSaveKeys.LastDayResult, result,
                     SalesSaveKeys.LastDayResultSchemaVersion, ct);
@@ -161,6 +148,55 @@ namespace Book.Sell.Services
                 }
 
                 await _inventory.AddAsync(reward.Id, reward.Category, reward.Amount, ct);
+            }
+        }
+
+        private void RecordSalesStats(SalesDayResult result)
+        {
+            var passiveCount = 0;
+            if (result.PassiveSales != null)
+            {
+                foreach (var sale in result.PassiveSales)
+                {
+                    if (sale == null) continue;
+                    if (string.IsNullOrEmpty(sale.BookId)) continue;
+
+                    passiveCount++;
+                    _salesStats.RecordSold(
+                        sale.BookId,
+                        new SaleContext(result.LocationId, result.Day, sale.ResolvedGenre));
+                }
+            }
+
+            var excellentCount = 0;
+            if (result.Recommendations != null)
+            {
+                foreach (var recommendation in result.Recommendations)
+                {
+                    if (recommendation == null) continue;
+                    if (recommendation.Tier != RecommendationTier.Excellent) continue;
+                    if (string.IsNullOrEmpty(recommendation.BookId)) continue;
+
+                    excellentCount++;
+                    var context = new SaleContext(result.LocationId, result.Day, recommendation.SoldGenre);
+                    _salesStats.RecordSold(recommendation.BookId, context);
+                    _salesStats.RecordActivePick(recommendation.BookId, context);
+                }
+            }
+
+            var soldBookCount = 0;
+            if (result.SoldBookIds != null)
+            {
+                for (var i = 0; i < result.SoldBookIds.Count; i++)
+                    if (!string.IsNullOrEmpty(result.SoldBookIds[i]))
+                        soldBookCount++;
+            }
+
+            if (soldBookCount != passiveCount + excellentCount)
+            {
+                Debug.LogError(
+                    $"{LogPrefix} sold book accounting mismatch on day {result.Day}: " +
+                    $"soldBookIds={soldBookCount}, passive={passiveCount}, activeExcellent={excellentCount}.");
             }
         }
     }

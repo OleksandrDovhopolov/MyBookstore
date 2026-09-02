@@ -8,7 +8,7 @@ namespace Game.Configs.Models
     ///
     /// <para>Nested groups are intentionally NOT supported here. For the rare request that cannot be
     /// expressed with flat groups, use the escape-hatch (raw conditions JSON) rather than growing this
-    /// structure — see docs/INPROGRESS/ACTIVE_REQUEST_CONDITIONS.md.</para>
+    /// structure — see docs/ACTIVE_REQUEST_CONDITIONS.md.</para>
     /// </summary>
     public sealed class RequestConditionGroup
     {

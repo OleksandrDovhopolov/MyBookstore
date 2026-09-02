@@ -9,15 +9,19 @@ namespace Book.Sell.Tests.Editor.Fakes
     /// <summary>Small builders to keep sales tests terse.</summary>
     public static class SalesTestKit
     {
-        public static BookConfig Book(string id, string genre = "sci-fi", int price = BookConfig.FixedPriceGold,
-            string[] qualities = null)
+        public static BookConfig Book(
+            string id,
+            string genre = "sci-fi",
+            int price = BookConfig.FixedPriceGold,
+            string[] qualities = null,
+            string[] genres = null)
             => new()
             {
                 Id = id,
                 Title = id,
                 Author = "author",
                 Description = $"[description_{id}]",
-                Genres = string.IsNullOrEmpty(genre) ? null : new[] { genre },
+                Genres = genres ?? (string.IsNullOrEmpty(genre) ? null : new[] { genre }),
                 Qualities = qualities ?? new[] { "space" }
             };
 

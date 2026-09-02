@@ -73,7 +73,11 @@ namespace Game.Cheat
 
             var result = _scoring.Score(shelfBook.Config, _request, location: null);
             if (result.Tier == RecommendationTier.Excellent)
+            {
+                var soldGenre = ActiveSaleGenreAttribution.ResolveSoldGenre(_request, shelfBook.Config);
+                result = result.WithSoldGenre(soldGenre);
                 _shelf.CommitSale(bookId);   // cosmetic: grey out the picked card if the window stays open
+            }
 
             Debug.Log($"{LogPrefix} request='{_request.Id}' book='{bookId}' tier={result.Tier} gold={result.GoldEarned}");
             RecommendationResolved?.Invoke(result);

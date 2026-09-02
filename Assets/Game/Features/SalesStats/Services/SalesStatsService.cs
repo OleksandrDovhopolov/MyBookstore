@@ -232,7 +232,7 @@ namespace Game.SalesStats.Services
             if (!_loaded)
                 Debug.LogWarning($"{LogPrefix} RecordSold before AfterLoadAsync; mutation will still apply.");
 
-            if (!TryResolveGenre(bookId, out var genre))
+            if (!TryResolveGenre(bookId, ctx, out var genre))
                 return;
 
             var key = genre.ToConfigValue();
@@ -261,7 +261,7 @@ namespace Game.SalesStats.Services
             if (!_loaded)
                 Debug.LogWarning($"{LogPrefix} RecordActivePick before AfterLoadAsync; mutation will still apply.");
 
-            if (!TryResolveGenre(bookId, out var genre))
+            if (!TryResolveGenre(bookId, ctx, out var genre))
                 return;
 
             var key = genre.ToConfigValue();
@@ -290,9 +290,18 @@ namespace Game.SalesStats.Services
 
         // ----- internals -----
 
-        private bool TryResolveGenre(string bookId, out BookGenre genre)
+        private bool TryResolveGenre(string bookId, in SaleContext ctx, out BookGenre genre)
         {
             genre = default;
+
+            if (!string.IsNullOrWhiteSpace(ctx.SoldGenre))
+            {
+                if (BookGenreExtensions.TryParseGenre(ctx.SoldGenre, out genre))
+                    return true;
+
+                Debug.LogWarning($"{LogPrefix} sold book '{bookId}' has unknown attributed genre '{ctx.SoldGenre}'; not counted.");
+                return false;
+            }
 
             var book = _configs.Get<BookConfig>(bookId);
             if (book == null)
