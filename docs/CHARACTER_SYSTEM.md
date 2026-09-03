@@ -110,7 +110,7 @@ public sealed class CharacterMemoryConfig
     public string QuestId { get; set; }                     // открывается, когда этот квест Awarded
     public string QuestChainId { get; set; }                // открывается, когда финальный квест цепочки Awarded
     public bool UnlockedAtStart { get; set; }               // FTUE/manual bootstrap unlocks without a quest
-    public int Order { get; set; }                          // authored Memories sort order, higher = earlier
+    public int Order { get; set; }                          // authored Memories chronology, lower = earlier
     public bool IsGolden { get; set; }                      // UI-флаг значимости (награды всё равно через Game.Quest)
 }
 ```
@@ -278,7 +278,7 @@ UI получает готовую read-model, а не `QuestConfig` напря�
 - `JournalCharactersViewModelBuilder` (чистый, тестируемый): `Build(IEnumerable<ICharacter>, Func<string, CharacterJournalEntry>)` → список `JournalCharacterItemModel` (с `Locked => !IsDiscovered`, счётчиками memory, `PortraitKey`).
 - `JournalWindow`/`JournalWindowView`/`JournalCharacterRowView`: live-рефреш по `CharacterDiscovered`/`MemoryUnlocked`.
 - `People` shows only discovered characters and also filters `HiddenInJournal`, so service characters such as `owner` stay out of the list.
-- `Memories` builds a flat feed from all characters, including `HiddenInJournal`, but shows only unlocked memories and sorts by `Order` descending.
+- `Memories` builds a flat feed from all characters, including `HiddenInJournal`, but shows only unlocked memories and sorts by `Order` ascending.
 - Entering the `Memories` tab calls `MarkAllMemoriesSeen()` and clears the unseen counter.
 
 Префаб + Addressables-адрес `JournalWindow` + кнопка открытия — ручной шаг в редакторе (вне «классов»).

@@ -18,7 +18,7 @@ namespace Game.Configs.Models
         public string Author { get; set; }
         public string Description { get; set; }
 
-        /// <summary>Жанры книги. Текущие legacy-системы используют первый жанр как основной.</summary>
+        /// <summary>Жанры книги. Active request conditions match the full list.</summary>
         public string[] Genres { get; set; }
 
         public float RarityWeight { get; set; } = 0.5f;
@@ -30,6 +30,7 @@ namespace Game.Configs.Models
         /// <summary>Уникальные качества книги. Временно содержит legacy-значения из старого поля tags.</summary>
         public string[] Qualities { get; set; }
 
+        /// <summary>Display/shelf genre. Sale progress uses an attributed sale genre when one is known.</summary>
         public string PrimaryGenre => Genres != null && Genres.Length > 0 ? Genres[0] : null;
 
         //TODO do not calculate every request

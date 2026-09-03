@@ -1,4 +1,5 @@
 using System;
+using Book.Sell.API;
 using DG.Tweening;
 using TMPro;
 using UIShared;
@@ -13,7 +14,6 @@ namespace Book.Sell.UI
         [SerializeField] private RectTransform _requestPanel;
         [SerializeField] private AnimatedShowHidePanel _shelfPanel;
         [SerializeField] private RectTransform _bookDetailRoot;
-        [SerializeField] private RectTransform _resultRoot;
         [SerializeField] private GameObject _buttonsRoot;
 
         [Header("Result")]
@@ -27,16 +27,24 @@ namespace Book.Sell.UI
         [SerializeField, Min(0f)] private float _detailShowDuration = 0.405f;
         [SerializeField, Min(0f)] private float _detailHideDuration = 0.27f;
         [SerializeField, Range(0.01f, 1f)] private float _detailScaleFrom = 0.97f;
-        [SerializeField, Min(0f)] private float _resultRootDuration = 0.5625f;
         [SerializeField, Min(0f)] private float _resultTextDuration = 0.45f;
-        [SerializeField, Min(0f)] private float _finishButtonDelay = 1.0125f;
+        [SerializeField, Min(0f)] private float _resultTextTypeDuration = 1f;
+        [SerializeField, Min(0f)] private float _finishButtonDelay = 3f;
         [SerializeField, Min(0f)] private float _finishButtonDuration = 0.405f;
         [SerializeField, Min(0f)] private float _buttonsFadeDuration = 0.405f;
+
+        [Header("StampAnimation")]
+        [SerializeField, Min(0f)] private float _stampDuration = 0.6f;
+        [SerializeField, Min(0.01f)] private float _stampScaleFrom = 1.55f;
+        [SerializeField, Min(0.01f)] private float _stampImpactScale = 0.86f;
+        [SerializeField] private float _stampRotationFrom = -9f;
 
         private Sequence _requestTween;
         private Sequence _detailTween;
         private Sequence _resultTween;
         private Tween _buttonsTween;
+        private GameObject _successResultObject;
+        private GameObject _failResultObject;
         private Vector2 _requestShownPosition;
         private bool _requestPositionCaptured;
 
@@ -51,12 +59,20 @@ namespace Book.Sell.UI
             SetFinishButtonVisible(false, interactable: false);
         }
 
-        public void PlayRequestIntro()
+        public void SetResultObjects(GameObject successResultObject, GameObject failResultObject)
+        {
+            _successResultObject = successResultObject;
+            _failResultObject = failResultObject;
+            HideStampInstant(_successResultObject);
+            HideStampInstant(_failResultObject);
+        }
+
+        public void PlayRequestIntro(bool showShelfPanel = true)
         {
             CaptureRequestPosition();
             PlayRequestPanelIntro();
             ShowButtons();
-            if (_shelfPanel != null) _shelfPanel.Show();
+            if (showShelfPanel && _shelfPanel != null) _shelfPanel.Show();
         }
 
         public void HideSelectionInstant()
@@ -148,46 +164,54 @@ namespace Book.Sell.UI
             _bookDetailRoot.gameObject.SetActive(false);
         }
 
-        public void PlayResult(string text)
+        public void PlayResult(string text, RecommendationTier tier, RectTransform selectedBookRect)
         {
-            if (_resultText != null)
-                _resultText.text = text ?? string.Empty;
+            _ = selectedBookRect;
 
             KillResultTween();
-            if (_resultRoot == null)
-            {
-                SetFinishButtonVisible(true, interactable: true);
-                return;
-            }
-
-            _resultRoot.gameObject.SetActive(true);
-            var rootGroup = EnsureCanvasGroup(_resultRoot.gameObject);
-            rootGroup.alpha = 0f;
-            rootGroup.interactable = true;
-            rootGroup.blocksRaycasts = true;
-            _resultRoot.localScale = Vector3.one * _detailScaleFrom;
+            HideStampInstant(_successResultObject);
+            HideStampInstant(_failResultObject);
+            SetFinishButtonVisible(false, interactable: false);
 
             var textGroup = _resultText != null ? EnsureCanvasGroup(_resultText.gameObject) : null;
-            if (textGroup != null) textGroup.alpha = 0f;
-            SetFinishButtonVisible(false, interactable: false);
+            var visibleCharacterCount = PrepareResultText(text, textGroup);
 
             _resultTween = DOTween.Sequence()
                 .SetUpdate(true)
-                .Append(DOTween.To(() => rootGroup.alpha, x => rootGroup.alpha = x, 1f, _resultRootDuration).SetEase(Ease.OutCubic))
-                .Join(DOTween.To(() => _resultRoot.localScale, x => _resultRoot.localScale = x, Vector3.one, _resultRootDuration)
-                    .SetEase(Ease.OutBack));
+                .SetTarget(this);
 
             if (textGroup != null)
-                _resultTween.Append(DOTween.To(() => textGroup.alpha, x => textGroup.alpha = x, 1f, _resultTextDuration).SetEase(Ease.OutCubic));
+                _resultTween.Insert(0f, DOTween.To(() => textGroup.alpha, x => textGroup.alpha = x, 1f, _resultTextDuration)
+                    .SetEase(Ease.OutCubic));
 
-            _resultTween.AppendInterval(_finishButtonDelay)
-                .AppendCallback(() => SetFinishButtonVisible(true, interactable: false));
+            if (_resultText != null)
+            {
+                if (_resultTextTypeDuration <= 0f || visibleCharacterCount <= 0)
+                {
+                    _resultText.maxVisibleCharacters = int.MaxValue;
+                }
+                else
+                {
+                    _resultTween.Insert(0f, DOTween.To(
+                            () => _resultText.maxVisibleCharacters,
+                            x => _resultText.maxVisibleCharacters = x,
+                            visibleCharacterCount,
+                            _resultTextTypeDuration)
+                        .SetEase(Ease.Linear));
+                }
+            }
+
+            var stamp = StampFor(tier);
+            if (stamp != null)
+                _resultTween.Insert(0f, BuildStampTween(stamp));
+
+            _resultTween.InsertCallback(_finishButtonDelay, () => SetFinishButtonVisible(true, interactable: false));
 
             var buttonGroup = _finishButton != null ? EnsureCanvasGroup(_finishButton.gameObject) : null;
             if (buttonGroup != null)
             {
                 buttonGroup.alpha = 0f;
-                _resultTween.Append(DOTween.To(() => buttonGroup.alpha, x => buttonGroup.alpha = x, 1f, _finishButtonDuration)
+                _resultTween.Insert(_finishButtonDelay, DOTween.To(() => buttonGroup.alpha, x => buttonGroup.alpha = x, 1f, _finishButtonDuration)
                     .SetEase(Ease.OutCubic));
             }
 
@@ -199,17 +223,14 @@ namespace Book.Sell.UI
         {
             KillResultTween();
             SetFinishButtonVisible(false, interactable: false);
-            if (_resultRoot == null) return;
-
-            var rootGroup = EnsureCanvasGroup(_resultRoot.gameObject);
-            rootGroup.alpha = 0f;
-            rootGroup.interactable = false;
-            rootGroup.blocksRaycasts = false;
-            _resultRoot.localScale = Vector3.one;
-            _resultRoot.gameObject.SetActive(false);
+            HideStampInstant(_successResultObject);
+            HideStampInstant(_failResultObject);
 
             if (_resultText != null)
+            {
                 EnsureCanvasGroup(_resultText.gameObject).alpha = 1f;
+                _resultText.maxVisibleCharacters = int.MaxValue;
+            }
         }
 
         public void KillAll()
@@ -329,6 +350,76 @@ namespace Book.Sell.UI
             if (_requestPanel == null || _requestPositionCaptured) return;
             _requestShownPosition = _requestPanel.anchoredPosition;
             _requestPositionCaptured = true;
+        }
+
+        private GameObject StampFor(RecommendationTier tier)
+            => tier switch
+            {
+                RecommendationTier.Excellent => _successResultObject,
+                RecommendationTier.Failed => _failResultObject,
+                _ => null
+            };
+
+        private int PrepareResultText(string text, CanvasGroup textGroup)
+        {
+            if (_resultText == null) return 0;
+
+            _resultText.text = text ?? string.Empty;
+            _resultText.maxVisibleCharacters = 0;
+            _resultText.ForceMeshUpdate();
+
+            if (textGroup != null)
+                textGroup.alpha = 0f;
+
+            return _resultText.textInfo.characterCount;
+        }
+
+        private Tween BuildStampTween(GameObject stamp)
+        {
+            var rect = stamp.GetComponent<RectTransform>();
+            var group = EnsureCanvasGroup(stamp);
+
+            stamp.SetActive(true);
+            group.alpha = 0f;
+            group.interactable = false;
+            group.blocksRaycasts = false;
+
+            if (rect != null)
+            {
+                rect.localScale = Vector3.one * _stampScaleFrom;
+                rect.localRotation = Quaternion.Euler(0f, 0f, _stampRotationFrom);
+
+                var halfDuration = Mathf.Max(0.01f, _stampDuration * 0.5f);
+
+                return DOTween.Sequence()
+                    .SetUpdate(true)
+                    .Join(DOTween.To(() => group.alpha, x => group.alpha = x, 1f, halfDuration).SetEase(Ease.OutCubic))
+                    .Join(DOTween.To(() => rect.localScale, x => rect.localScale = x, Vector3.one * _stampImpactScale, halfDuration)
+                        .SetEase(Ease.InCubic))
+                    .Join(DOTween.To(() => _stampRotationFrom, z => rect.localRotation = Quaternion.Euler(0f, 0f, z), 3f, halfDuration)
+                        .SetEase(Ease.InCubic))
+                    .Append(DOTween.To(() => rect.localScale, x => rect.localScale = x, Vector3.one, halfDuration).SetEase(Ease.OutBack))
+                    .Join(DOTween.To(() => 3f, z => rect.localRotation = Quaternion.Euler(0f, 0f, z), 0f, halfDuration)
+                        .SetEase(Ease.OutCubic));
+            }
+
+            stamp.transform.localScale = Vector3.one;
+            return DOTween.To(() => group.alpha, x => group.alpha = x, 1f, Mathf.Max(0.01f, _stampDuration))
+                .SetEase(Ease.OutCubic)
+                .SetUpdate(true);
+        }
+
+        private static void HideStampInstant(GameObject stamp)
+        {
+            if (stamp == null) return;
+
+            var group = EnsureCanvasGroup(stamp);
+            group.alpha = 0f;
+            group.interactable = false;
+            group.blocksRaycasts = false;
+            stamp.transform.localScale = Vector3.one;
+            stamp.transform.localRotation = Quaternion.identity;
+            stamp.SetActive(false);
         }
 
         private void SetFinishButtonVisible(bool visible, bool interactable)

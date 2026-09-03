@@ -17,13 +17,17 @@ namespace Book.Sell.API
         public RecommendationReason Reason { get; }
         public int GoldEarned { get; }
 
+        /// <summary>Genre attributed to this sale, fixed when an Excellent active recommendation sells the book.</summary>
+        public string SoldGenre { get; }
+
         public RecommendationResult(
             string requestId,
             string bookId,
             RecommendationTier tier,
             ScoreBreakdown breakdown,
             RecommendationReason reason,
-            int goldEarned)
+            int goldEarned,
+            string soldGenre = null)
         {
             RequestId = requestId;
             BookId = bookId;
@@ -31,9 +35,13 @@ namespace Book.Sell.API
             Breakdown = breakdown;
             Reason = reason;
             GoldEarned = goldEarned;
+            SoldGenre = soldGenre;
         }
 
         public static RecommendationResult Skipped(string requestId)
             => new(requestId, null, RecommendationTier.Skipped, default, RecommendationReason.Empty, 0);
+
+        public RecommendationResult WithSoldGenre(string soldGenre)
+            => new(RequestId, BookId, Tier, Breakdown, Reason, GoldEarned, soldGenre);
     }
 }

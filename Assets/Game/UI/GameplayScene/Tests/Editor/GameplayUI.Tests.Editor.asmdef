@@ -11,12 +11,14 @@
         "Game.LocationUnlock.API",
         "Game.Ftue",
         "Game.Core.UI",
+        "Infrastructure",
         "Save",
         "MessagePipe",
         "Game.GameplayUI.Signals",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Game.Tutorial.API"
+        "Game.Tutorial.API",
+        "Game.Privacy"
     ],
     "includePlatforms": [
         "Editor"

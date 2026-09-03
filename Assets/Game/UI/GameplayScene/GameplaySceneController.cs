@@ -41,6 +41,7 @@ namespace GameplayUI
         public bool IsDataReady { get; private set; }
 
         private IDisposable _genreBookCountsSubscription;
+        private IDisposable _locationGoldEarnedSubscription;
         private IDisposable _buttonsInteractableSubscription;
         private IDisposable _tutorialStepSubscription;
 
@@ -49,6 +50,7 @@ namespace GameplayUI
         private readonly HashSet<object> _panelHideOwners = new();
 
         private ISubscriber<GameplayGenreBookCountsChanged> _genreBookCountsSubscriber;
+        private ISubscriber<GameplayLocationGoldEarnedChanged> _locationGoldEarnedSubscriber;
         private IPublisher<GameplayGenreBookCountsRequested> _genreBookCountsRequestPublisher;
         private ISubscriber<GameplaySceneButtonsInteractableChanged> _buttonsInteractableSubscriber;
         private ISubscriber<TutorialStepChanged> _tutorialStepSubscriber;
@@ -66,6 +68,7 @@ namespace GameplayUI
             IConfigsService configs = null,
             IGameFlowService gameFlow = null,
             ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
+            ISubscriber<GameplayLocationGoldEarnedChanged> locationGoldEarnedSubscriber = null,
             IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null,
             ISubscriber<TutorialStepChanged> tutorialStepSubscriber = null)
         {
@@ -78,6 +81,7 @@ namespace GameplayUI
             _configs = configs;
             _gameFlow = gameFlow;
             _genreBookCountsSubscriber = genreBookCountsSubscriber;
+            _locationGoldEarnedSubscriber = locationGoldEarnedSubscriber;
             _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
             _genreBookCountsRequestPublisher = genreBookCountsRequestPublisher;
             _tutorialStepSubscriber = tutorialStepSubscriber;
@@ -99,6 +103,9 @@ namespace GameplayUI
             _genreBookCountsSubscription = _genreBookCountsSubscriber?.Subscribe(e =>
                 View.SetGenreBookCounts(e.Counts, e.PurchasedCounts, e.ShowPurchasedCounts));
 
+            _locationGoldEarnedSubscription = _locationGoldEarnedSubscriber?.Subscribe(e =>
+                View.SetLocationEarnedGold(e.Amount));
+
             _tutorialStepSubscription = _tutorialStepSubscriber?.Subscribe(OnTutorialStepChanged);
 
             if (_dayProgress != null)
@@ -116,6 +123,7 @@ namespace GameplayUI
                 AnimatedShowHidePanel.PanelId.GenreBookCounts,
                 _gameFlow?.IsLocationLoaded == true,
                 instant: true);
+            View.SetGoldCounterMode(_gameFlow?.IsLocationLoaded == true);
 
             LoadGenreSpritesAsync(View.destroyCancellationToken).Forget();
             RefreshDayAndGenreCountsAsync().Forget();
@@ -175,6 +183,9 @@ namespace GameplayUI
             _genreBookCountsSubscription?.Dispose();
             _genreBookCountsSubscription = null;
 
+            _locationGoldEarnedSubscription?.Dispose();
+            _locationGoldEarnedSubscription = null;
+
             _tutorialStepSubscription?.Dispose();
             _tutorialStepSubscription = null;
 
@@ -220,6 +231,7 @@ namespace GameplayUI
         private void OnLocationLoadedChanged(bool loaded)
         {
             View?.SetPanelShown(AnimatedShowHidePanel.PanelId.GenreBookCounts, loaded);
+            View?.SetGoldCounterMode(loaded);
         }
 
         private void OnStartGameClicked() => StartGameAsync().Forget();

@@ -147,6 +147,12 @@ This matches the ADR-0003 MVP decision that "the day is recreated on restart":
 the player replays the day from a stable setup instead of resuming runtime
 customer state.
 
+**Confirmed intentional (GAME-7).** Losing an in-progress day is a deliberate
+consequence of `Sales = provisional buffer`, not a desync bug: `PreparationSalesSetupProvider.BuildForDay`
+always rebuilds the shelf from `preparation.session.SelectedBookIds`, and
+`SalesShelfStateService.MarkSoldAsync` only runs inside `SalesDayCommitService` at day
+completion. Nothing is half-committed, so the replay starts from a clean, consistent setup.
+
 ---
 
 ## FTUE Impact
@@ -278,10 +284,9 @@ New data + seam:
 
 ### Confirm / Entry Order (do gold check BEFORE confirm)
 
-`PreparationWindow.ConfirmAsync` today calls `_session.ConfirmAsync` first
-(which writes `preparation.session`, `shelf_state`, and phase `Sales`) and only
-then `EnterLocationAsync`. Charging/validating the fee after confirm risks the
-state *"preparation confirmed but entry blocked"*. Correct order:
+**Status: implemented** in `PreparationWindow.ConfirmAsync` (verified during the GAME-7 audit).
+Charging or validating the fee after confirm would risk the state
+*"preparation confirmed but entry blocked"*, so the afford-check runs first. Order:
 
 ```text
 1. calculate entry cost (location + active decor)
@@ -291,11 +296,15 @@ state *"preparation confirmed but entry blocked"*. Correct order:
 5. EnterLocationAsync
 ```
 
-Failure path: if `EnterLocationAsync` fails, the recovery must restore **both**
-the gold (refund the fee) **and** the Preparation UX — not just gold. Note that
-`preparation.session.Confirmed == true` will make `StartOrResume` build a fresh
-state, so `ReopenAfterTransitionFailureAsync` must account for that, not assume a
-clean reopen.
+Failure path — also implemented. A technical `EnterLocationAsync` failure restores
+**both** the gold (`AddAsync` with a `refund_enter_location:` reason) **and** the
+Preparation UX (`_session.RestoreAfterEntryFailureAsync` +
+`ReopenAfterTransitionFailureAsync`). The reopen path exists precisely because
+`preparation.session.Confirmed == true` would otherwise make `StartOrResume` build a
+fresh state, so it cannot assume a clean reopen.
+
+A failed fee charge *after* a successful confirm is handled separately: the session is
+restored and the location is **not** entered, so no refund is owed.
 
 ### Commit Ownership and Boundaries
 

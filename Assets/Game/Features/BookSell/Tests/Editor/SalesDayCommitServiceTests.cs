@@ -156,10 +156,75 @@ namespace Book.Sell.Tests.Editor
             result.Recommendations.Add(Recommendation("book_crime", RecommendationTier.Failed));
             result.Recommendations.Add(RecommendationResult.Skipped("req_skip"));
             result.Recommendations.Add(Recommendation(null, RecommendationTier.Excellent));
+            result.SoldBookIds.Add("book_fact");
 
             service.CommitAsync(result, CancellationToken.None).GetAwaiter().GetResult();
 
             CollectionAssert.AreEqual(new[] { "book_fact" }, salesStats.ActivePicks);
+        }
+
+        [Test]
+        public void CommitAsync_RecordsPassiveSaleWithResolvedGenre()
+        {
+            var save = new RecordingSaveService();
+            var delivered = new RecordingDeliveredDialogues(() => save.BlockDepth > 0);
+            var dayProgress = new FakeDayProgress { Current = { CurrentDay = 1 } };
+            var salesStats = new FakeSalesStatsRecorder();
+            var service = CreateService(save, dayProgress, delivered, salesStats);
+            var result = new SalesDayResult { Day = 3, LocationId = "loc_port" };
+            result.SoldBookIds.Add("book_classic_kids");
+            result.PassiveSales.Add(new PassiveSaleEvent(
+                "book_classic_kids",
+                BookConfig.FixedPriceGold,
+                resolvedGenre: "Kids"));
+
+            service.CommitAsync(result, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, salesStats.SoldRecords.Count);
+            Assert.AreEqual("book_classic_kids", salesStats.SoldRecords[0].BookId);
+            Assert.AreEqual("loc_port", salesStats.SoldRecords[0].Context.LocationId);
+            Assert.AreEqual(3, salesStats.SoldRecords[0].Context.Day);
+            Assert.AreEqual("Kids", salesStats.SoldRecords[0].Context.SoldGenre);
+        }
+
+        [Test]
+        public void CommitAsync_RecordsExcellentRecommendationWithSoldGenre()
+        {
+            var save = new RecordingSaveService();
+            var delivered = new RecordingDeliveredDialogues(() => save.BlockDepth > 0);
+            var dayProgress = new FakeDayProgress { Current = { CurrentDay = 1 } };
+            var salesStats = new FakeSalesStatsRecorder();
+            var service = CreateService(save, dayProgress, delivered, salesStats);
+            var result = new SalesDayResult { Day = 4, LocationId = "loc_campus" };
+            result.SoldBookIds.Add("book_classic_kids");
+            result.Recommendations.Add(Recommendation("book_classic_kids", RecommendationTier.Excellent, "Kids"));
+            result.Recommendations.Add(Recommendation("book_crime", RecommendationTier.Failed, "Crime"));
+            result.Recommendations.Add(RecommendationResult.Skipped("req_skip"));
+
+            service.CommitAsync(result, CancellationToken.None).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, salesStats.SoldRecords.Count);
+            Assert.AreEqual(1, salesStats.ActivePickRecords.Count);
+            Assert.AreEqual("Kids", salesStats.SoldRecords[0].Context.SoldGenre);
+            Assert.AreEqual("Kids", salesStats.ActivePickRecords[0].Context.SoldGenre);
+            CollectionAssert.AreEqual(new[] { "book_classic_kids" }, salesStats.ActivePicks);
+        }
+
+        [Test]
+        public void CommitAsync_SoldBookAccountingMismatch_LogsError()
+        {
+            var save = new RecordingSaveService();
+            var delivered = new RecordingDeliveredDialogues(() => save.BlockDepth > 0);
+            var dayProgress = new FakeDayProgress { Current = { CurrentDay = 1 } };
+            var service = CreateService(save, dayProgress, delivered);
+            var result = new SalesDayResult { Day = 2, LocationId = "loc" };
+            result.SoldBookIds.Add("book_without_source");
+
+            LogAssert.Expect(
+                LogType.Error,
+                "[Sales.Commit] sold book accounting mismatch on day 2: soldBookIds=1, passive=0, activeExcellent=0.");
+
+            service.CommitAsync(result, CancellationToken.None).GetAwaiter().GetResult();
         }
 
         [Test]
@@ -179,8 +244,8 @@ namespace Book.Sell.Tests.Editor
             Assert.AreEqual(0, salesStats.ActivePicks.Count);
         }
 
-        private static RecommendationResult Recommendation(string bookId, RecommendationTier tier)
-            => new("req", bookId, tier, default, RecommendationReason.Empty, 0);
+        private static RecommendationResult Recommendation(string bookId, RecommendationTier tier, string soldGenre = null)
+            => new("req", bookId, tier, default, RecommendationReason.Empty, 0, soldGenre);
 
         private static FakeConfigsService ConfigsWithDayRewards(params RewardItemData[] rewards)
         {
@@ -336,7 +401,7 @@ namespace Book.Sell.Tests.Editor
             }
 
             public UniTask AddBatchAsync(IEnumerable<InventoryItem> items, CancellationToken ct) => UniTask.CompletedTask;
-            public UniTask<bool> RemoveAsync(string itemId, int amount, CancellationToken ct) => UniTask.FromResult(false);
+            public UniTask<bool> RemoveAsync(string itemId, int amount, CancellationToken ct) => UniTask.FromResult(true);
         }
 
         private sealed class FakeShelfStateService : ISalesShelfStateService
@@ -352,10 +417,26 @@ namespace Book.Sell.Tests.Editor
         {
             public readonly List<string> Sold = new();
             public readonly List<string> ActivePicks = new();
+            public readonly List<(string BookId, SaleContext Context)> SoldRecords = new();
+            public readonly List<(string BookId, SaleContext Context)> ActivePickRecords = new();
 
-            public void RecordSold(string bookId) => Sold.Add(bookId);
-            public void RecordSold(string bookId, in SaleContext ctx) => Sold.Add(bookId);
-            public void RecordActivePick(string bookId, in SaleContext ctx) => ActivePicks.Add(bookId);
+            public void RecordSold(string bookId)
+            {
+                Sold.Add(bookId);
+                SoldRecords.Add((bookId, default));
+            }
+
+            public void RecordSold(string bookId, in SaleContext ctx)
+            {
+                Sold.Add(bookId);
+                SoldRecords.Add((bookId, ctx));
+            }
+
+            public void RecordActivePick(string bookId, in SaleContext ctx)
+            {
+                ActivePicks.Add(bookId);
+                ActivePickRecords.Add((bookId, ctx));
+            }
         }
 
         private sealed class FakeQuestReevaluationGate : IQuestReevaluationGate

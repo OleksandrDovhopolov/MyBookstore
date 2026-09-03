@@ -20,6 +20,8 @@ namespace Book.Sell.Editor
 
             foreach (var error in report.Errors)
                 Debug.LogError($"{LogPrefix} {error}");
+            foreach (var warning in report.Warnings)
+                Debug.LogWarning($"{LogPrefix} {warning}");
 
             if (report.HasErrors)
                 Debug.LogWarning($"{LogPrefix} {summary}");

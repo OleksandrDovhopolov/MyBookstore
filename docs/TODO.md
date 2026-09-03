@@ -298,38 +298,11 @@
      под-шагам. Реализовать поверх п.4 (`TutorialActionStep` + `IAnalyticsService`). Смежно с аналитикой из
      GAME-10 §7 (`seq_start`/`step_start`/`seq_complete`).
 
-- [ ] **GAME-22. Зафиксировать контракт «главный жанр» — `genres[0]` vs весь массив `genres`.**
-  Сейчас две подсистемы читают `BookConfig.Genres` по-разному, и это разъедется на первой же книге с
-  двумя жанрами.
-  - **Весь массив** читает только условие активного запроса: `BookConditionRequestEvaluator.GetList`
-    возвращает `book.Genres`, и `genres contains "Fact"` матчится по любому элементу.
-  - **Только `genres[0]`** (через `BookConfig.PrimaryGenre`) читают все остальные: статистика и квесты
-    (`SalesStatsService.TryResolveGenre` → `activePickGenre` / `soldGenre`), пассивные продажи
-    (`GenreShelfPicker`, `WeightedPassiveSaleSelector`), спрос локации (`LocationDemandProfileProvider`),
-    любимые жанры персонажей (`ScriptedCustomerSpawner`), итоги дня (`ResultsSummaryBuilder.SoldByGenre`),
-    жанровые строки инвентаря (`BookGenreRowSource`) и **визуал** — ярлык и иконка жанра в
-    `BookCardView` (`_genreLabel`, `LoadGenreIcon`) и спрайт в баббле покупателя (`CustomerBubbleBinder`).
-
-  **Следствие расхождения.** Книга `["Classic","Fact"]` пройдёт Fact-запрос и получит `Excellent`, но
-  в `activePickGenre Fact` не попадёт — уйдёт в счётчик `Classic`. То есть квест Милли будет визуально
-  выполняться и не завершаться.
-
-  **Почему это ещё не всплыло.** У всех 100 книг в `books.json` ровно один жанр — проверено.
-
-  **Направление решения.** `genres[0]` — уже де-факто «основной тип книги», он определяет её визуал, и это
-  осознанное решение; отдельная сущность-«главный жанр» не нужна. Значит выбор не 50/50: выбивается
-  evaluator. Варианты:
-  1. Оставить как есть, но **явно задокументировать** в [ACTIVE_REQUEST_CONDITIONS.md](ACTIVE_REQUEST_CONDITIONS.md),
-     что `genres contains` — это «есть среди жанров», а зачёт квеста — по основному. Дешевле всего, но
-     расхождение остаётся ловушкой для контентщика.
-  2. Свести evaluator к основному жанру (`genres[0]`) — самое согласованное поведение, но теряется
-     возможность «книга подходит и как Classic, и как Fact».
-  3. Добавить отдельный тип условия (`primaryGenre` рядом с `genres`), чтобы автор запроса выбирал сам.
-
-  **Что сделать:** выбрать вариант, зафиксировать в
-  [ACTIVE_REQUEST_CONDITIONS.md](ACTIVE_REQUEST_CONDITIONS.md) и в XML-доке `BookConfig.PrimaryGenre`,
-  покрыть тестом на двужанровой книге. Брать **до** того, как в `books.json` появится первая книга с
-  несколькими жанрами. Смежно: GAME-12 (модель условий запроса).
+- [x] **GAME-22. Зафиксировать контракт жанра продажи.**
+  Решение: active request conditions продолжают читать весь `BookConfig.Genres`, но успешная активная
+  продажа фиксирует один жанр продажи — первое пересечение `ActiveRequestRuntime.RequiredGenres` с жанрами
+  книги в порядке запроса. `BookConfig.PrimaryGenre` остаётся display/shelf-жанром и fallback для путей,
+  где жанр продажи неизвестен. Контракт зафиксирован в [ACTIVE_REQUEST_CONDITIONS.md](ACTIVE_REQUEST_CONDITIONS.md).
 
 ---
 
@@ -416,6 +389,15 @@
     контентных ошибок сейчас не защищён build-гейтом.
   Зафиксировано как «известный пробел» в [BUILD.md](BUILD.md) §0.
 
+- [x] **INF-13. Закрыть дефолтные креды админского API и публичный Swagger.**
+  Статус: закрыто в `RELEASE_TASKS.md`. Backend-аудит подтвердил, что Swagger доступен только в `Development`, admin API закрыт Basic auth, production не стартует без admin credentials, `admin` / `admin` запрещены вне `Development`, а в Railway установлены реальные credentials.
+  Что сделать:
+  - Зафиксировать, что `ADMIN_USER` / `ADMIN_PASS` — это Basic-auth логин и пароль для `/api/admin/*`, а не креды Postgres; у базы свои значения в `Postgres__ConnectionString`.
+  - Заменить дефолтные `admin` / `admin` на реальные значения через env vars в окружении API.
+  - Проверить `Program.cs`: `app.UseSwagger()` и `UseSwaggerUI()` сейчас вызываются безусловно, вне `Development`, поэтому `/swagger` публично раскрывает каталог админских маршрутов.
+  - Решить и реализовать политику Swagger: либо только `Development`, либо закрыть Swagger тем же Basic auth / отдельным gate.
+  - После изменения вручную проверить: `/api/admin/*` не принимает старые креды, новые креды работают, `/swagger` недоступен публично или доступен только по выбранной политике.
+
 ---
 
 ## 📋 Backlog
@@ -442,7 +424,7 @@
 
 - [ ] **GAME-14. Active purchase conditions — follow-up после готового слайса.** Condition-based active
   purchases считаются готовыми; базовое поведение зафиксировано в
-  [INPROGRESS/ACTIVE_REQUEST_CONDITIONS.md](INPROGRESS/ACTIVE_REQUEST_CONDITIONS.md). Осталось как backlog,
+  [ACTIVE_REQUEST_CONDITIONS.md](ACTIVE_REQUEST_CONDITIONS.md). Осталось как backlog,
   без блокировки текущего функционала:
   - **ADR-0009:** оформить решение «Active requests over a condition tree» и пометить активную часть
     [adr/0003-customer-simulation.md](adr/0003-customer-simulation.md) как superseded. Пассивную часть

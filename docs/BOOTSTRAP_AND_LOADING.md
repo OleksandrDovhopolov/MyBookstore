@@ -123,7 +123,7 @@ builder.RegisterBookSell(/* customer anchors + SalesTuningConfig */);      // Sa
 
 ## 6. Entry Points и оркестрация загрузки
 
-Единственный entry point загрузки — `LoadingOrchestratorEntryPoint` (`Assets/Game/Core/Bootstrap/Loading/`). Реализует `IAsyncStartable`. VContainer вызывает его `StartAsync()` после сборки контейнера.
+Единственный entry point загрузки — `Bootstrap` (`Assets/Game/Core/Installers/Bootstrap/Bootstrap.cs`) в сцене `Bootstrap.unity`. VContainer inject-ит зависимости в `Construct()`, после чего `Start()` запускает `RunBootstrapAsync()`.
 
 ### Архитектура: Phase → Group → Operation
 
@@ -132,11 +132,15 @@ LoadingOrchestrator
     ├── Phase: технические init (Sequential)
     │     ├── AddressablesUpdateOperation     ← IAddressablesCatalogService.InitializeAndUpdateAsync
     │     └── RemoteConfigInitOperation       ← IRemoteConfigService.InitializeAsync
-    ├── Phase: данные (Parallel)
+    ├── Phase: данные (Sequential groups)
     │     ├── ConfigsWarmupOperation          ← IConfigsService.WarmupAsync
+    │     ├── SaveStartupSyncOperation        ← SaveSyncBootstrap.SyncOnStartupAsync
     │     └── SaveDataLoadOperation           ← ISaveService.LoadAsync
+    ├── Phase: FTUE (Sequential)
+    │     └── FtueBootstrapOperation
     └── Phase: финализация (Sequential)
           ├── WarmupOperation                 ← prefab/shader prewarm placeholder
+          ├── UiSpritePreloadOperation
           └── SceneTransitionOperation        ← ISceneTransitionService.TransitionToAsync(gameplayScene)
 ```
 
@@ -235,10 +239,11 @@ IConfigsService (ConfigsService)
 | Класс | Интерфейс | Описание |
 |---|---|---|
 | `PersistentInstallPlayerIdentityProvider` | `IPlayerIdentityProvider` | UUID, сохраняется между запусками |
-| `LocalDiskStorage` | `ISaveStorage` | Текущий MVP. Сохраняет JSON на диск |
-| `HttpSaveStorage` | `ISaveStorage` | HTTP-режим (закомментирован, для раскомментирования) |
+| `LocalDiskStorage` | — | Локальный write-through cache и offline fallback |
+| `HttpSaveStorage` | `ISaveStorage` | Основное хранилище: HTTP `/save/global` + локальный cache |
 | `SaveService` | `ISaveService` | Основной сервис сохранений |
-| `SaveSyncBootstrap` | — | Синхронизация local vs server при старте (только для HTTP-режима) |
+| `SaveStartupSyncOperation` | `ILoadingOperation` | Критичная операция bootstrap: запускает `SaveSyncBootstrap` перед `SaveDataLoadOperation` |
+| `SaveSyncBootstrap` | — | Синхронизация local vs server перед `SaveDataLoadOperation` |
 
 ### Жизненный цикл SaveService
 
@@ -268,17 +273,46 @@ IConfigsService (ConfigsService)
 - **Rate limit** 500ms — между сохранениями не менее 500ms (кроме `ForceWithSync`)
 - **Semaphore** — потокобезопасность; hooks выполняются до захвата семафора
 - **BlockAutosave()** — блокирует авто-сохранение (возвращает `IDisposable`), при release сохраняет если `_hasPendingAutosave`
-- **Integrity**: SHA256-хэш от JSON + `HashSalt`, вычисляется и верифицируется при каждом сохранении
-- **Payload limit**: warn при > 30 KB total, warn при > 5 KB per module
+- **Integrity metadata**: SHA256-хэш от JSON + `HashSalt` вычисляется при сохранении и пишется в `Meta.Hash`; верификации при загрузке сейчас нет
+- **Payload limit**: клиент warning при > 30 KB total и > 5 KB per module; backend сейчас жёстко отвергает save blob > 30 KB с `400`
+
+### HttpSaveStorage — контракт с сервером
+
+`HttpSaveStorage` работает поверх `Game.Http` / `IConnectionService` и использует production base URL из `SaveBackendConfig`:
+`https://gameserver-production-be8b.up.railway.app/api/v1/`, path `save/global`.
+
+```
+SaveAsync(json)
+    ├── LocalDiskStorage.SaveAsync(json)          ← write-through cache first
+    └── POST /api/v1/save/global
+            Content-Type: application/json
+            body: { "playerId": "<install-guid>", "data": "<raw SaveData JSON string>" }
+
+LoadAsync()
+    ├── GET /api/v1/save/global?playerId=<install-guid>
+    ├── accepts {data:{...}}, {data:"..."}, or raw SaveData JSON
+    ├── if server payload ok → overwrite local cache and return server data
+    └── if server error/empty → return local cache
+```
+
+`DELETE /save/global` и `/save/global/meta` клиент сейчас не использует: `DeleteAsync()` чистит только локальный cache, `GetLastModifiedTimestampAsync()` возвращает `0`.
+`lastModified` из ответа `GET` допускается, но клиент его намеренно игнорирует: server-default для нового игрока имеет свежее время, хотя не содержит клиентского `SaveData`.
+
+Backend-особенности, которые важны для клиента:
+- `GET /api/v1/save/global` для нового игрока сейчас возвращает `200` и материализованный server-default aggregate без `Meta` / `Modules`, а не `404`;
+- признак "серверного клиентского сейва нет" — отсутствие `Meta` / `Modules` в нормализованном root payload;
+- `POST /api/v1/save/global` с payload > 30 KB вернёт `400`; текущий клиент оставит такой сейв локально и будет только warning-логом сообщать, что server push не прошёл;
+- сервер не сериализует параллельные save-запросы одного игрока, поэтому несколько быстрых `ForceWithSync` могут конкурировать на backend.
 
 ### SaveSyncBootstrap — стартовая синхронизация (HTTP-режим)
-Алгоритм last-write-wins по `MetaData.Revision`:
+Алгоритм сравнивает локальный cache и server payload по `MetaData.Revision`, не по `lastModified`:
 ```
 local.Revision > server.Revision → push local → server
 server.Revision > local.Revision → overwrite local ← server
 equal                            → no-op
-server = null (первый запуск)   → push local → server
+server default/missing Meta+Modules + local progress → push local → server
 local = null                     → SaveService.LoadAsync возьмёт с сервера
+server unreachable + local data  → skip sync, next load uses local cache
 ```
 
 ---
@@ -387,8 +421,6 @@ GlobalLifetimeScope (DontDestroyOnLoad)
 | `IGameplayReadyGate` (барьер готовности) | новая фича | По мере появления потребителей |
 | `IWindowRouter` / nav stack | `Game.Core.UI` | Средний |
 | `IAnalyticsService` | `AnalyticsVContainerBindings` | Средний |
-| `SaveSyncBootstrap` регистрация | `SaveVContainerBindings` | Зависит от бэкенда |
-| `HttpSaveStorage` активация | `SaveVContainerBindings` | Зависит от бэкенда |
 | FTUE-ветка «первый вход → LocationScene + tutorial» | `GameFlowService` seam | Отдельная задача |
 
 > Реализовано (ранее в этой таблице): `UIManager` + `IWindowFactory` (`AddressablesWindowFactory`),
@@ -500,7 +532,7 @@ GlobalLifetimeScope (DontDestroyOnLoad)
 7. Дождаться minimumLoadingSeconds (если прошло меньше)
 ```
 
-> **В MyBookstore эквивалент:** `LoadingOrchestratorEntryPoint` (раздел 6) — без UIManager/WindowFactory/Auth, без minimumLoadingSeconds, retry-петля та же.
+> **В MyBookstore эквивалент:** `Bootstrap` (раздел 6) — без UIManager/WindowFactory/Auth, retry-петля та же.
 
 ### 13.3 LoadingOrchestrator — движок фаз (Research)
 
@@ -568,11 +600,12 @@ HasCachedToken → скрыть кнопки логина, сразу return
 
 Таймаут 5 минут — достаточно для ручного логина. Операция критична: без авторизации нет токена для серверных запросов.
 
-#### Phase 3 — `phase_data_load` (Parallel)
+#### Phase 3 — `phase_data_load` (Sequential groups)
 
 | Операция | ID | Critical | Weight | Timeout | Retry |
 |---|---|---|---|---|---|
-| `RemoteConfigFetchOperation` | `remote_config_fetch` | ❌ | 0.2 | 10s | 2×0.5s |
+| `ConfigsWarmupOperation` | `configs_warmup` | ✅ | 0.2 | 10s | 1 |
+| `SaveStartupSyncOperation` | `save_startup_sync` | ✅ | 0.15 | 10s | 1 |
 | `SaveDataLoadOperation` | `save_data_load` | ✅ | 0.3 | 10s | 2×0.3s |
 
 #### Phase 4 — `phase_finalization` (Sequential)
@@ -582,7 +615,7 @@ HasCachedToken → скрыть кнопки логина, сразу return
 | `WarmupOperation` | `warmup` | ❌ | 0.1 | 5s | 1 |
 | `SceneTransitionOperation` | `scene_transition` | ✅ | 0.15 | 15s | 1 |
 
-> **В MyBookstore сейчас:** Phase 1 — без `UiManagerConfigureOperation`; `FirebaseDependenciesOperation + RemoteConfigFetchOperation` объединены в `RemoteConfigInitOperation` через существующий `IRemoteConfigService.InitializeAsync()`. Фаза авторизации отсутствует. Phase 3 заменена на `ConfigsWarmupOperation + SaveDataLoadOperation`. Phase 4 — `WarmupOperation + SceneTransitionOperation`. Итого 3 фазы, 6 операций.
+> **В MyBookstore сейчас:** technical phase — без `UiManagerConfigureOperation`; `FirebaseDependenciesOperation + RemoteConfigFetchOperation` объединены в `RemoteConfigInitOperation` через существующий `IRemoteConfigService.InitializeAsync()`. Фаза авторизации отсутствует. `phase_data_load` идёт последовательными группами: сначала `ConfigsWarmupOperation`, затем `SaveStartupSyncOperation + SaveDataLoadOperation`. После data-load есть `phase_ftue`, затем `phase_finalization`: `WarmupOperation + UiSpritePreloadOperation + SceneTransitionOperation`.
 
 ### 13.5 SceneTransitionOperation — переход в сцену (Research)
 
@@ -772,22 +805,20 @@ RunBootstrapAsync()
 LoadingOrchestrator.RunAsync()
   │
   ├─ PHASE 1: phase_technical_init [Sequential]
-  │     UiManagerConfigureOperation  [critical, w=0.1, t=5s]
-  │     FirebaseDependenciesOperation [non-critical, w=0.1, t=8s, retry×2]
   │     AddressablesUpdateOperation   [critical, w=0.3, t=20s, retry×2]
+  │     RemoteConfigInitOperation     [non-critical, w=0.1, t=8s, retry×2]
   │
-  ├─ PHASE 2: phase_authorization [Sequential]
-  │     AuthorizationGateOperation   [critical, w=0.15, t=5min]
-  │       └─ WaitUntilAuthorizedAsync()
-  │            ├─ HasCachedToken → immediate
-  │            └─ No token → show login UI → wait for tap
+  ├─ PHASE 2: phase_data_load [Sequential groups]
+  │     ConfigsWarmupOperation        [critical, w=0.2, t=10s]
+  │     SaveStartupSyncOperation      [critical, w=0.15, t=10s]
+  │     SaveDataLoadOperation         [critical, w=0.3, t=10s, retry×2]
   │
-  ├─ PHASE 3: phase_data_load [Parallel]
-  │     ┌─ RemoteConfigFetchOperation [non-critical, w=0.2, t=10s, retry×2]
-  │     └─ SaveDataLoadOperation      [critical, w=0.3, t=10s, retry×2]
+  ├─ PHASE 3: phase_ftue [Sequential]
+  │     FtueBootstrapOperation
   │
   └─ PHASE 4: phase_finalization [Sequential]
-        WarmupOperation               [non-critical, w=0.1, t=5s]
+        WarmupOperation
+        UiSpritePreloadOperation
         SceneTransitionOperation      [critical, w=0.15, t=15s]
           ↓
           PlayCoverAsync()            ← transition закрывает экран
@@ -831,8 +862,11 @@ OrchestratorRunner.WaitUntilReadyAsync() → InitializeAsync() → tick/refresh 
 | `AddressablesUpdateOperation` | 0.3 | ✅ | 20s | 2 |
 | `AuthorizationGateOperation` | 0.15 | ✅ | 5min | 1 |
 | `RemoteConfigFetchOperation` | 0.2 | ❌ | 10s | 2 |
+| `ConfigsWarmupOperation` | 0.2 | ✅ | 10s | 1 |
+| `SaveStartupSyncOperation` | 0.15 | ✅ | 10s | 1 |
 | `SaveDataLoadOperation` | 0.3 | ✅ | 10s | 2 |
 | `WarmupOperation` | 0.1 | ❌ | 5s | 1 |
+| `UiSpritePreloadOperation` | — | ❌ | — | — |
 | `SceneTransitionOperation` | 0.15 | ✅ | 15s | 1 |
 
 **Итоговый суммарный вес:** 1.5 (используется для нормализации взвешенного прогресса)

@@ -107,6 +107,7 @@ namespace Game.Quest.Tests.ConditionsIntegration
             public UniTask ClearAllAsync(CancellationToken ct) => UniTask.CompletedTask;
 #pragma warning disable CS0067
             public event Action PlacementChanged;
+            public event Action<DecorPlacementChange> PlacementActionPerformed;
 #pragma warning restore CS0067
         }
 

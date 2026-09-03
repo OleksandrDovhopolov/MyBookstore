@@ -9,15 +9,19 @@ namespace Book.Sell.Tests.Editor.Fakes
     /// <summary>Small builders to keep sales tests terse.</summary>
     public static class SalesTestKit
     {
-        public static BookConfig Book(string id, string genre = "sci-fi", int price = BookConfig.FixedPriceGold,
-            string[] qualities = null)
+        public static BookConfig Book(
+            string id,
+            string genre = "sci-fi",
+            int price = BookConfig.FixedPriceGold,
+            string[] qualities = null,
+            string[] genres = null)
             => new()
             {
                 Id = id,
                 Title = id,
                 Author = "author",
                 Description = $"[description_{id}]",
-                Genres = string.IsNullOrEmpty(genre) ? null : new[] { genre },
+                Genres = genres ?? (string.IsNullOrEmpty(genre) ? null : new[] { genre }),
                 Qualities = qualities ?? new[] { "space" }
             };
 
@@ -37,8 +41,14 @@ namespace Book.Sell.Tests.Editor.Fakes
                 }
             };
 
-        public static ActiveRequestRuntime ActiveRequest(string id, string quality = "space")
-            => ActiveRequestRuntime.FromCondition(RequestDef(id, quality), $"ALL: qualities contains {quality}");
+        public static ActiveRequestRuntime ActiveRequest(
+            string id,
+            string quality = "space",
+            IReadOnlyList<string> requiredGenres = null)
+            => ActiveRequestRuntime.FromCondition(
+                RequestDef(id, quality),
+                $"ALL: qualities contains {quality}",
+                requiredGenres);
 
         public static LocationConfig Location(string id = "loc", string[] demandGenres = null)
             => new()

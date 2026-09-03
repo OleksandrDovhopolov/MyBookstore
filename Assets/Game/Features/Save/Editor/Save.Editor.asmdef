@@ -1,0 +1,22 @@
+{
+    "name": "Save.Editor",
+    "rootNamespace": "Save.Editor",
+    "references": [
+        "Save",
+        "UniTask",
+        "Game.AdminTooling.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

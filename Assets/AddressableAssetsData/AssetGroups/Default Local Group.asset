@@ -14,17 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_GroupName: Default Local Group
   m_GUID: fccd7b0b9b9a713418d140e161e9f26b
-  m_SerializeEntries:
-  - m_GUID: 7f77387ad19d3964cb2666ace5bbfd61
-    m_Address: millie
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: ef0296323ad364a40a60e4a5bf383f3a
-    m_Address: tara_avatar
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
+  m_SerializeEntries: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 962dd82bfa6d0f047923cc0481612c96, type: 2}
   m_SchemaSet:

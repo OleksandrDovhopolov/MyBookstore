@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Firebase;
 using Firebase.Analytics;
 using UnityEngine;
 
@@ -13,6 +14,31 @@ namespace Analytics
         }
 
         public override string ProviderId => AnalyticsProviderIds.Firebase;
+
+        public override void Initialize()
+        {
+            if (!IsEnabled)
+            {
+                return;
+            }
+
+            try
+            {
+                var app = FirebaseApp.DefaultInstance;
+                if (app == null)
+                {
+                    Debug.LogError("[Analytics][Firebase] Default FirebaseApp is not available.");
+                    return;
+                }
+
+                FirebaseAnalytics.SetAnalyticsCollectionEnabled(true);
+                base.Initialize();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"[Analytics][Firebase] Initialize failed: {exception}");
+            }
+        }
 
         public override void TrackEvent(IAnalyticsEvent analyticsEvent)
         {

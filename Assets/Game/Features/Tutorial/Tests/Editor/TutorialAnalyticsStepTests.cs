@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Analytics;
 using Game.Tutorial.API;
 using Game.Tutorial.Content;
@@ -11,7 +10,7 @@ namespace Game.Tutorial.Tests.Editor
         [Test]
         public void Checkpoint_TracksTutorialCheckpointEvent()
         {
-            var analytics = new FakeAnalyticsService();
+            var analytics = new RecordingAnalyticsService();
             var step = TutorialAnalyticsSteps.Checkpoint(
                 "checkpoint_eddi_intro_start",
                 analytics,
@@ -28,17 +27,6 @@ namespace Game.Tutorial.Tests.Editor
             Assert.AreEqual(TutorialContent.Analytics.EddiIntroStage, evt.Parameters[AnalyticsParameterNames.TutorialStage]);
             Assert.AreEqual("checkpoint_eddi_intro_start", evt.Parameters[AnalyticsParameterNames.TutorialStepId]);
             Assert.AreEqual(TutorialContent.Analytics.StateStart, evt.Parameters[AnalyticsParameterNames.TutorialState]);
-        }
-
-        private sealed class FakeAnalyticsService : IAnalyticsService
-        {
-            public List<IAnalyticsEvent> Events { get; } = new();
-            public bool IsInitialized => true;
-            public void Initialize() { }
-            public void TrackEvent(IAnalyticsEvent analyticsEvent) => Events.Add(analyticsEvent);
-            public void SetUserId(string userId) { }
-            public void SetUserProperty(string key, string value) { }
-            public void Flush() { }
         }
     }
 }

@@ -3,6 +3,7 @@
     "rootNamespace": "Game.Configs.Editor",
     "references": [
         "Configs",
+        "Game.AdminTooling.Editor",
         "UniTask",
         "Game.Http",
         "Game.Commands"

@@ -98,6 +98,7 @@ namespace Game.Build.Editor
             ("Bundled configs", CollectBundledConfigErrors),
             ("Active requests", CollectActiveRequestErrors),
             ("Dialogue delivered conditions", CollectDialogueDeliveredReferenceErrors),
+            ("Character memories", CollectCharacterMemoryReferenceErrors),
             ("Book box pools", CollectBookBoxPoolErrors),
         };
 
@@ -207,6 +208,9 @@ namespace Game.Build.Editor
 
         private static void CollectDialogueDeliveredReferenceErrors(List<string> errors)
             => errors.AddRange(DialogueDeliveredConditionReferenceValidator.Validate().Errors);
+
+        private static void CollectCharacterMemoryReferenceErrors(List<string> errors)
+            => errors.AddRange(CharacterMemoryReferenceValidator.Validate().Errors);
 
         /// <summary>
         /// A book-box shop lot whose pool matches no book takes the player's gold and returns nothing. The

@@ -8,17 +8,12 @@ using UnityEngine;
 
 namespace Save.Sync
 {
-    // Runs once at startup (before SaveService.LoadAsync) to resolve local vs server conflicts.
-    // Algorithm: compare MetaData.Revision → last-write-wins.
-    //   server newer  → overwrite local disk with server data
-    //   local newer   → push local to server
-    //   equal / error → do nothing (SaveService.LoadAsync proceeds normally)
     public sealed class SaveSyncBootstrap
     {
-        private readonly ISaveStorage _localStorage;
+        private readonly LocalDiskStorage _localStorage;
         private readonly HttpSaveStorage _httpStorage;
 
-        public SaveSyncBootstrap(ISaveStorage localStorage, HttpSaveStorage httpStorage)
+        public SaveSyncBootstrap(LocalDiskStorage localStorage, HttpSaveStorage httpStorage)
         {
             _localStorage = localStorage ?? throw new ArgumentNullException(nameof(localStorage));
             _httpStorage = httpStorage ?? throw new ArgumentNullException(nameof(httpStorage));
@@ -28,6 +23,7 @@ namespace Save.Sync
         {
             var localJson = await _localStorage.LoadAsync(ct);
             var localMeta = TryParseMeta(localJson);
+            var localHasProgress = HasMeaningfulProgress(localJson);
 
             string serverJson;
             try
@@ -37,27 +33,32 @@ namespace Save.Sync
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 Debug.LogWarning($"[SaveSyncBootstrap] Server unreachable, skipping sync. {ex.Message}");
+                if (localHasProgress)
+                    _httpStorage.UseLocalCacheForNextLoad();
                 return;
             }
 
             var serverMeta = TryParseMeta(serverJson);
 
-            if (serverMeta == null && localMeta != null)
+            if (ShouldLocalWinOverServer(localJson, serverJson))
             {
-                // First launch on this server (e.g. account restored) → push local
                 await _httpStorage.SaveAsync(localJson, ct);
-                Debug.Log("[SaveSyncBootstrap] No server save found, pushed local.");
+                _httpStorage.UseLocalCacheForNextLoad();
+                Debug.Log("[SaveSyncBootstrap] Local save wins over missing/default server save, attempted server push.");
                 return;
             }
 
             if (localMeta == null)
             {
-                // No local data — SaveService.LoadAsync will pull from server via HttpSaveStorage
                 Debug.Log("[SaveSyncBootstrap] No local save, server data will be loaded normally.");
                 return;
             }
 
-            if (serverMeta.Revision > localMeta.Revision)
+            if (serverMeta == null)
+            {
+                Debug.Log("[SaveSyncBootstrap] No comparable server save, keeping local.");
+            }
+            else if (serverMeta.Revision > localMeta.Revision)
             {
                 await _localStorage.SaveAsync(serverJson, ct);
                 Debug.Log($"[SaveSyncBootstrap] Server newer (rev {serverMeta.Revision} > {localMeta.Revision}), local updated.");
@@ -65,7 +66,8 @@ namespace Save.Sync
             else if (localMeta.Revision > serverMeta.Revision)
             {
                 await _httpStorage.SaveAsync(localJson, ct);
-                Debug.Log($"[SaveSyncBootstrap] Local newer (rev {localMeta.Revision} > {serverMeta.Revision}), pushed to server.");
+                _httpStorage.UseLocalCacheForNextLoad();
+                Debug.Log($"[SaveSyncBootstrap] Local newer (rev {localMeta.Revision} > {serverMeta.Revision}), attempted server push.");
             }
             else
             {
@@ -73,12 +75,38 @@ namespace Save.Sync
             }
         }
 
-        private static MetaData TryParseMeta(string json)
+        private static MetaData TryParseMeta(string json) => TryParseSave(json)?.Meta;
+
+        internal static bool ShouldLocalWinOverServer(string localJson, string serverJson)
+        {
+            var localMeta = TryParseMeta(localJson);
+            var serverMeta = TryParseMeta(serverJson);
+            return localMeta != null &&
+                   (serverMeta == null || (HasMeaningfulProgress(localJson) && LooksLikeMaterializedDefault(serverJson)));
+        }
+
+        private static bool HasMeaningfulProgress(string json)
+        {
+            var save = TryParseSave(json);
+            return save?.Modules is { Count: > 0 } || (save?.Meta?.Revision ?? 0) > 1;
+        }
+
+        private static bool LooksLikeMaterializedDefault(string json)
+        {
+            var save = TryParseSave(json);
+            if (save == null)
+                return false;
+
+            var revision = save.Meta?.Revision ?? 0;
+            return (save.Modules == null || save.Modules.Count == 0) && revision <= 1;
+        }
+
+        private static SaveData TryParseSave(string json)
         {
             if (string.IsNullOrWhiteSpace(json)) return null;
             try
             {
-                return JsonConvert.DeserializeObject<SaveData>(json)?.Meta;
+                return JsonConvert.DeserializeObject<SaveData>(json);
             }
             catch
             {

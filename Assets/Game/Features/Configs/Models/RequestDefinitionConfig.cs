@@ -4,7 +4,7 @@ namespace Game.Configs.Models
     /// Condition-based active-purchase request — the sole active-request model. A request is a boolean
     /// predicate over a book: the book either satisfies it (Excellent) or it does not (Failed).
     ///
-    /// <para>See docs/INPROGRESS/ACTIVE_REQUEST_CONDITIONS.md for the model spec and the ADR to update.</para>
+    /// <para>See docs/ACTIVE_REQUEST_CONDITIONS.md for the model spec and the ADR to update.</para>
     ///
     /// <para>File: sample_requests.json (JSON array). Legacy hard_requests.json remains in Assets/Configs.</para>
     /// </summary>

@@ -43,13 +43,13 @@ namespace Analytics
             builder.Register<IAnalyticsRouter, DefaultAnalyticsRouter>(Lifetime.Singleton);
             builder.Register<IAnalyticsEventMapper, DefaultAnalyticsEventMapper>(Lifetime.Singleton);
             builder.Register<IAnalyticsQueue, AnalyticsQueue>(Lifetime.Singleton);
-            builder.Register<IAnalyticsConsentService, StubAnalyticsConsentService>(Lifetime.Singleton);
 
             builder.Register<DebugAnalyticsProvider>(Lifetime.Singleton).As<IAnalyticsProvider>();
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             builder.Register<FirebaseAnalyticsProvider>(Lifetime.Singleton).As<IAnalyticsProvider>();
+#endif
 
             builder.Register<IAnalyticsService, CompositeAnalyticsService>(Lifetime.Singleton);
-            builder.RegisterBuildCallback(resolver => resolver.Resolve<IAnalyticsService>().Initialize());
         }
     }
 }

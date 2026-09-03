@@ -84,10 +84,13 @@ namespace Game.Bootstrap.Loading
             ct.ThrowIfCancellationRequested();
             var clampedStart = Math.Clamp(startPhaseIndex, 0, _phases.Count - 1);
             using var globalCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            if (globalTimeout.HasValue && globalTimeout.Value > TimeSpan.Zero)
+            var hasGlobalBudget = globalTimeout.HasValue && globalTimeout.Value > TimeSpan.Zero;
+            if (hasGlobalBudget)
             {
                 globalCts.CancelAfter(globalTimeout.Value);
             }
+
+            var deadline = new GlobalDeadline(globalCts, hasGlobalBudget ? globalTimeout : null);
 
             for (var phaseIndex = clampedStart; phaseIndex < _phases.Count; phaseIndex++)
             {
@@ -95,8 +98,8 @@ namespace Game.Bootstrap.Loading
                 foreach (var group in phase.Groups)
                 {
                     LoadingFailure failure = group.ExecutionMode == LoadingGroupExecutionMode.Sequential
-                        ? await ExecuteSequentialGroupAsync(phase, group, globalCts.Token, ct)
-                        : await ExecuteParallelGroupAsync(phase, group, globalCts.Token, ct);
+                        ? await ExecuteSequentialGroupAsync(phase, group, globalCts.Token, ct, deadline)
+                        : await ExecuteParallelGroupAsync(phase, group, globalCts.Token, ct, deadline);
 
                     if (failure is { IsCritical: true })
                     {
@@ -115,12 +118,13 @@ namespace Game.Bootstrap.Loading
             LoadingPhase phase,
             LoadingGroup group,
             CancellationToken groupToken,
-            CancellationToken rootToken)
+            CancellationToken rootToken,
+            GlobalDeadline deadline)
         {
             foreach (var operation in group.Operations)
             {
                 SetActiveDescription(operation.Description);
-                var failure = await ExecuteOperationWithPolicyAsync(phase, group, operation, groupToken, rootToken);
+                var failure = await ExecuteOperationWithPolicyAsync(phase, group, operation, groupToken, rootToken, deadline);
                 RefreshProgress();
 
                 if (failure == null)
@@ -141,7 +145,8 @@ namespace Game.Bootstrap.Loading
             LoadingPhase phase,
             LoadingGroup group,
             CancellationToken groupToken,
-            CancellationToken rootToken)
+            CancellationToken rootToken,
+            GlobalDeadline deadline)
         {
             var groupCts = CancellationTokenSource.CreateLinkedTokenSource(groupToken);
             var progressLoopCts = CancellationTokenSource.CreateLinkedTokenSource(groupCts.Token);
@@ -172,7 +177,7 @@ namespace Game.Bootstrap.Loading
                     try
                     {
                         var failure = await ExecuteOperationWithPolicyAsync(
-                            phase, group, operation, executionToken, root);
+                            phase, group, operation, executionToken, root, deadline);
 
                         if (failure is { IsCritical: true })
                         {
@@ -218,10 +223,21 @@ namespace Game.Bootstrap.Loading
             LoadingGroup group,
             ILoadingOperation operation,
             CancellationToken operationGroupToken,
-            CancellationToken rootToken)
+            CancellationToken rootToken,
+            GlobalDeadline deadline)
         {
             var maxAttempts = operation.RetryPolicy.MaxAttempts;
             var delay = operation.RetryPolicy.DelayBetweenAttempts;
+            var isInteractive = operation is IInteractiveLoadingOperation;
+
+            // A per-operation timeout on an interactive operation would cancel the dialog while the
+            // player is still reading it. Suspending the global budget below cannot save it from that.
+            if (isInteractive && operation.Timeout.HasValue)
+            {
+                UnityEngine.Debug.LogError(
+                    $"[LoadingOrchestrator] Operation '{operation.Id}' implements IInteractiveLoadingOperation " +
+                    "but declares a Timeout. It will be cancelled while waiting for the player. Set timeout: null.");
+            }
 
             for (var attempt = 1; attempt <= maxAttempts; attempt++)
             {
@@ -238,7 +254,27 @@ namespace Game.Bootstrap.Loading
                     }
 
                     LogOperation("start", phase.Id, group.Id, operation, attempt, false, null, sw.ElapsedMilliseconds);
-                    await operation.ExecuteAsync(opCts.Token);
+
+                    // The global deadline exists to catch hung network calls. An interactive operation waits
+                    // on a human, so the timer is paused for its duration and restarted afterwards. globalCts
+                    // stays linked to the app-exit token, so quitting the app still cancels immediately.
+                    if (isInteractive)
+                    {
+                        deadline.Suspend();
+                    }
+
+                    try
+                    {
+                        await operation.ExecuteAsync(opCts.Token);
+                    }
+                    finally
+                    {
+                        if (isInteractive)
+                        {
+                            deadline.Resume();
+                        }
+                    }
+
                     sw.Stop();
                     LogOperation("completed", phase.Id, group.Id, operation, attempt, false, null, sw.ElapsedMilliseconds);
                     return null;
@@ -278,6 +314,44 @@ namespace Game.Bootstrap.Loading
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Pauses and restarts the global loading budget around an <see cref="IInteractiveLoadingOperation"/>.
+        /// Resume grants a fresh full budget rather than the remainder: the budget guards against hung
+        /// operations, and every operation downstream still carries its own per-operation timeout.
+        /// </summary>
+        private sealed class GlobalDeadline
+        {
+            private readonly CancellationTokenSource _cts;
+            private readonly TimeSpan? _budget;
+
+            public GlobalDeadline(CancellationTokenSource cts, TimeSpan? budget)
+            {
+                _cts = cts;
+                _budget = budget;
+            }
+
+            public void Suspend()
+            {
+                if (!_budget.HasValue || _cts.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                // -1 ms disables the pending timer without cancelling the source.
+                _cts.CancelAfter(Timeout.InfiniteTimeSpan);
+            }
+
+            public void Resume()
+            {
+                if (!_budget.HasValue || _cts.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                _cts.CancelAfter(_budget.Value);
+            }
         }
 
         private LoadingFailure BuildFailure(

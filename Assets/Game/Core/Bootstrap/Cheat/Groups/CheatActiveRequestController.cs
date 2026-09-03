@@ -47,6 +47,7 @@ namespace Game.Cheat
         // Inert events (no backing delegate) so the interface is satisfied without CS0067 warnings.
         public event Action DayReadyToClose { add { } remove { } }
         public event Action<ActiveRequestRuntime> ActiveRequestStarted { add { } remove { } }
+        public event Action<int, string> DayStarted { add { } remove { } }
         public event Action<Customer, DialoguePayload> DialogueStarted { add { } remove { } }
         public event Action<PassiveSaleEvent> PassiveSaleHappened { add { } remove { } }
         public event Action<Customer, RecommendationResult> CustomerRecommendationResolved { add { } remove { } }
@@ -72,7 +73,11 @@ namespace Game.Cheat
 
             var result = _scoring.Score(shelfBook.Config, _request, location: null);
             if (result.Tier == RecommendationTier.Excellent)
+            {
+                var soldGenre = ActiveSaleGenreAttribution.ResolveSoldGenre(_request, shelfBook.Config);
+                result = result.WithSoldGenre(soldGenre);
                 _shelf.CommitSale(bookId);   // cosmetic: grey out the picked card if the window stays open
+            }
 
             Debug.Log($"{LogPrefix} request='{_request.Id}' book='{bookId}' tier={result.Tier} gold={result.GoldEarned}");
             RecommendationResolved?.Invoke(result);

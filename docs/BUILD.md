@@ -31,6 +31,7 @@ hard-валидатор вернул ошибку. Warning-проверки пи
 | `CollectBundledConfigErrors` (внутри гейта) | Error | Файл есть в `Assets/Configs`, но не в StreamingAssets; лежит в StreamingAssets, но удалён из источника; содержимое одноимённых файлов различается; файл забыт в `manifest.json` | В плеере `Directory.GetFiles` недоступен — не перечисленный в манифесте файл невидим, даже если физически попал в APK |
 | `ActiveRequestValidator` | Error | Активный запрос, который не может удовлетворить ни одна книга каталога; жанр, ни одна книга которого не способна получить `Excellent` (тогда квест с `activePickGenre <жанр>` непроходим) | Синтаксически корректный запрос спавнится и просто никогда не решается |
 | `DialogueDeliveredConditionReferenceValidator` | Error | Условие `dialogueDelivered` в квесте ссылается на несуществующий `dialogueId` (или не указывает его) | Условие fail-closed → квест молча никогда не стартует |
+| `CharacterMemoryReferenceValidator` | Error | Memory без источника разблокировки; несколько источников разблокировки сразу; битый `questId`/`questChainId`; дубликаты `memory.id`; две memories на один quest/chain unlock | `CharactersService` строит обратный индекс `questId`/`chainId` по принципу last-write-wins, а memory без unlock source просто остаётся скрытой навсегда |
 | `BookBoxPoolValidator` | Error | Лот-книжная коробка, чей пул не матчит ни одной книги (или матчит меньше, чем `rolls`); лот с `rewardId` вида `book_box_*`, для которого нет правила | Правила пула читают поля `BookConfig` напрямую: если в каталоге поля нет, книга садится на C#-дефолт, пул пустеет — ни ошибки парсинга, ни битой ссылки. Так `book_box_rare_8` (`RarityWeight >= 0.6`) сломался при замене каталога на тот, где нет `rarityWeight`: все книги получили дефолтные `0.5`, и лот начал брать золото, не выдавая ничего |
 | `CollectOrphanConfigWarnings` | Warning | JSON в `Assets/Configs`, для которого нет ни одного `[ConfigFile]` | Такой файл уезжает в APK и manifest как мёртвый груз; сейчас ожидаемый пример — legacy `hard_requests.json`, живой файл запросов — `sample_requests.json` |
 
@@ -129,22 +130,94 @@ Android-таргета на месте конфиг Firebase (`google-services.j
 - **Keystore** для подписи (для тестового APK хватает debug keystore; для релиза — release keystore).
 - Список сцен в **Build Settings** актуален (bootstrap-сцена первой).
 
-## 5. FTUE / Tutorial — флаги в `BootstrapInstaller.asset`
+## 5. `BootstrapInstaller.asset` — настройки и ссылки (Dev / Release)
 
-Файл: `Assets/Game/Core/Installers/Bootstrap/BootstrapInstaller.asset`. Перед релизным билдом проверить поля:
+Файл: `Assets/Game/Core/Installers/Bootstrap/BootstrapInstaller.asset` — `ScriptableObjectInstaller`,
+лежит в Script Installers на `GlobalLifetimeScope.prefab`. Это единственное место, где задаются
+глобальные ссылки и флаги старта, поэтому перед каждой сборкой имеет смысл пройтись по таблице.
 
-- **`_useDebugFeatures` = 0 (выкл)** — для релиза строго `0`, иначе в билд утекут debug/cheat-фичи.
-- **`_skipFullLoading` = 0 (выкл)** — дев-шорткат, обрезающий полный лоадинг. Должен быть `0`, иначе не
-  отработают критические фазы бутстрапа, **включая FTUE-сидирование** (`phase_ftue / ftue_bootstrap`).
-- **`_tutorialOverlaySettings` — назначен** (не `None`) — ассет настроек оверлея туториала (pointer +
-  затемнение). Без него подсветки шагов туториала не отрисуются. (сейчас назначен.)
-- **`_tutorialAutoStart`** — под задачу билда: `1` — туториал стартует автоматически на первом заходе,
-  `0` — нет. (сейчас `1`; нужно `1`, иначе `tutorial_day_1` не запустится по `locationLoaded`.)
-- **`_startWelcomeWindow`** — показывать ли welcome-окно на старте. (сейчас `0`.)
-- **`_firstDayEntry`** — путь входа в день 1: `Location` (`1`) — сразу в локацию с авто-стоком полки
-  (продуктовый путь, см. [FTUE.md](FTUE.md)); `Hub` (`0`) — классический флоу через хаб. (сейчас `1`.)
+> **Правило поддержки этого раздела:** здесь описывается **назначение** поля и **требуемое значение**
+> для Dev/Release. Текущие значения полей тут не фиксируем — источник правды по ним сам ассет.
+> Раньше в этом разделе стояли пометки «сейчас X», и две из них разошлись с реальностью.
 
-**FTUE.** FTUE — save-backed: сидирование (стартовые gold/книги, скриптовый день 1) выполняется, только если
+### 5.1 Ассеты-ссылки — должны быть назначены всегда
+
+| Поле | Что делает | Если `None` |
+|---|---|---|
+| `_uiCanvasRootPrefab` | Префаб `UICanvasRoot`, инстанцируется один раз в `DontDestroyOnLoad` | UI-система не поднимется |
+| `_gameFlowSettings` | Имена сцен для петли хаб ↔ локация (см. [GameFlowLoop.md](GameFlowLoop.md)) | Переходы между сценами сломаются |
+| `_uiSpriteCatalog` | Адреса Addressables-спрайтов newspaper/rewards, предзагружаются на бутстрапе | Спрайты догрузятся позже или не найдутся |
+| `_resourceAnimationSettings` | Общие настройки летящих анимаций ресурсов | Анимации наград не отработают |
+| `_tutorialOverlaySettings` | Оверлей туториала (затемнение + pointer + панель текста) | Подсветки шагов туториала не отрисуются |
+| `_tutorialSettings` | Пер-последовательное вкл/выкл туториалов | **`None` = включены все** зарегистрированные последовательности, а не выключены |
+
+### 5.2 Аналитика (ANL-1)
+
+| Поле | Что делает |
+|---|---|
+| `_analyticsConfig` | Основной конфиг аналитики (провайдеры, лимиты параметров) |
+| `_analyticsRoutingConfig` | Правила «какое событие в какого провайдера» |
+| `_analyticsMappingConfig` | Переименование событий/параметров под конкретного провайдера |
+
+Все три должны быть назначены. **Если поле пустое, `RegisterAnalytics` молча падает на
+`DefaultAnalyticsConfig` / `DefaultAnalyticsRoutingConfig` / `DefaultAnalyticsMappingConfig`** — аналитика
+будет выглядеть работающей, но настройки из ассетов проигнорируются. Ошибки в лог при этом не будет,
+проверять глазами.
+
+**Содержимое `AnalyticsConfig.asset` перед релизом менять не нужно.** Он хранит dev defaults
+(`_isDebugLoggingEnabled: 1`, `_environment: development`), а `AnalyticsBuildContext` выводит фактическое
+поведение из типа сборки:
+
+- Editor и Development Build используют dev defaults — debug provider пишет `[Analytics][Debug]`, и проверка
+  через `adb logcat` работает как раньше;
+- обычная release-сборка принудительно выключает отладочный лог аналитики и отправляет `environment=production`.
+
+Сериализованный флаг может только **выключить** лог в dev-сборке, но не включить его в релизной.
+Подробности — REL-12 в [RELEASE_TASKS.md](RELEASE_TASKS.md).
+
+### 5.3 Поведенческие флаги — под задачу билда
+
+| Поле | Что делает | Значение для релиза |
+|---|---|---|
+| `_tutorialAutoStart` | Автостарт последовательностей по триггерам и резюм при загрузке. При `0` движок всё равно регистрируется (оверлей + условие `tutorialCompleted`), явный `TryStartAsync` работает | `1` — иначе `tutorial_day_1` не запустится по `locationLoaded` |
+| `_startWelcomeWindow` | Показывать ли welcome-окно при первом заходе. Save-флаг `welcome_completed` при выключении не меняется | `1` для продуктового первого опыта |
+| `_firstDayEntry` | Путь входа в день 1: `Location` (`1`) — сразу в локацию с авто-стоком полки (продуктовый путь, см. [FTUE.md](FTUE.md)); `Hub` (`0`) — классический флоу через хаб | `1` |
+
+### 5.4 Privacy (REL-5) — релизный блокер
+
+| Поле | Что делает |
+|---|---|
+| `_privacyPolicyUrl` | Публичная ссылка на политику, открывается с экрана согласия первого запуска |
+| `_termsOfUseUrl` | Ссылка на условия использования. Можно оставить пустой — `PrivacyLinkSettings.TermsOfUseUrl` сам падает обратно на privacy-ссылку |
+
+`PrivacyLinksBuildCheck` валит сборку, если `_privacyPolicyUrl` пустой или не начинается с `https://`.
+**Но домен он не проверяет.** Сейчас в ассете стоят ссылки на `themergegames.com` — домен другого
+проекта, и эту проверку они успешно проходят. Перед релизной сборкой домен нужно сверить глазами.
+
+### 5.5 Settings Window (REL-2)
+
+Code-side REL-2 не меняет prefab assets. Перед релизным APK вручную проверить:
+
+- `SettingsWindow.prefab` существует, содержит `SettingsWindowView` и опубликован в Addressables UI group с address
+  ровно `SettingsWindow`;
+- в prefab назначены sound toggle, music toggle, Privacy & Terms button и close button в `WindowView._closeButtons`;
+- в HUD назначен `HudMenuButtonsView._settingsButton`;
+- кнопка Privacy & Terms открывает ожидаемый `TermsOfUseUrl` или fallback на `PrivacyPolicyUrl`;
+- Sound/Music toggles сохраняют `audio.sfx`, `audio.ui`, `audio.music` между перезапусками.
+
+### 5.6 Debug Start — только Editor
+
+`_useDebugFeatures` (мастер-выключатель) и `_skipFullLoading` (пропуск Addressables update + RemoteConfig
+init) объявлены под `#if UNITY_EDITOR`, тело `ApplyDebugFlags()` — тоже. **В плеер эти поля не попадают,
+и `DebugStartFlags` в билде всегда `false`** — то есть утечь в релиз debug/cheat-фичи через них не могут.
+
+Держать их в `0` нужно для другого: при `_skipFullLoading = 1` в Editor не отрабатывают критические фазы
+бутстрапа, **включая FTUE-сидирование** (`phase_ftue / ftue_bootstrap`), и проверка получится нерепрезентативной.
+Экран согласия при этом всё равно показывается — `ConsentGateOperation` намеренно присутствует в обеих ветках.
+
+### 5.7 FTUE
+
+FTUE — save-backed: сидирование (стартовые gold/книги, скриптовый день 1) выполняется, только если
 в сейве нет `ftue.applied` (см. [FTUE.md](FTUE.md)). Следствия для проверки билда:
 
 - проверять FTUE нужно на **чистой установке / со сброшенными данными** — иначе в логе будет
@@ -174,6 +247,9 @@ Android-таргета на месте конфиг Firebase (`google-services.j
 - [ ] Собрать/включить Addressables.
 - [ ] Firebase Android-конфиг на месте.
 - [ ] Player Settings: IL2CPP + ARM64, API level, keystore, список сцен.
-- [ ] `BootstrapInstaller.asset`: `_useDebugFeatures=0`, `_skipFullLoading=0`, `_tutorialOverlaySettings` назначен, `_tutorialAutoStart`/`_startWelcomeWindow`/`_firstDayEntry` — под задачу билда.
+- [ ] `BootstrapInstaller.asset` — пройти по таблицам [§5](#5-bootstrapinstallerasset--настройки-и-ссылки-dev--release): ассеты-ссылки и три поля аналитики назначены, поведенческие флаги под задачу билда, debug-флаги `0`.
+- [ ] `_privacyPolicyUrl` ведёт на **свой** домен — build-check проверяет только `https://`, чужую ссылку он пропустит.
+- [ ] Settings: prefab `SettingsWindow`, address `SettingsWindow`, HUD button, toggles и Privacy & Terms button назначены; ссылка открывает ожидаемый URL.
+- [ ] `AnalyticsConfig.asset` руками не переключать: release-сборка сама получает silent debug logging и `environment=production`.
 - [ ] FTUE проверять на чистой установке (сброшенные данные).
 - [ ] Собрать APK → smoke-проверка старта, конфигов, активного запроса, диалога, FTUE/туториала.

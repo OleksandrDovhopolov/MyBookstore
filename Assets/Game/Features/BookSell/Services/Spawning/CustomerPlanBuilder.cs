@@ -10,11 +10,10 @@ namespace Book.Sell.Services
     /// Leave) and the random approach/leave duration helpers that every spawner used to duplicate.
     /// Spawners now own only day composition (how many customers) and each customer's middle steps.
     ///
-    /// Random-draw order is preserved exactly as the old spawners had it: approach -> middle -> leave
-    /// -> profile. <paramref name="buildMiddle"/> is invoked EXACTLY ONCE, right after the approach
-    /// duration is rolled and before the leave duration, because the middle may itself consume
-    /// <see cref="ISalesRandom"/> and the order matters for seeded/queued streams. Spawner-level
-    /// pre-loop draws (e.g. customer count, active-index shuffles) stay in the spawner, before Build.
+    /// Spawners build the profile before calling this method, then this helper preserves the local
+    /// step draw order: approach -> middle -> leave. <paramref name="buildMiddle"/> is invoked EXACTLY
+    /// ONCE, right after the approach duration is rolled and before the leave duration, because the
+    /// middle may itself consume <see cref="ISalesRandom"/> and the order matters for seeded/queued streams.
     ///
     /// Phase 1 note: Build returns a full <see cref="Customer"/>, not a "plan" object. After the
     /// CustomerPlan phase (see docs/INPROGRESS/CUSTOMER_STEP_PIPELINE_REFACTOR.md) this may build or
@@ -27,7 +26,7 @@ namespace Book.Sell.Services
             SalesTuning tuning,
             ISalesRandom random,
             Func<IEnumerable<ICustomerStep>> buildMiddle,
-            Func<CustomerProfile> buildProfile = null,
+            CustomerProfile profile = null,
             string characterId = null,
             ScriptedPassivePurchasePlan scriptedPassivePlan = null)
         {
@@ -43,7 +42,6 @@ namespace Book.Sell.Services
             steps.Add(new CompletePurchaseStep());
             steps.Add(new LeaveStep(RandomInRange(tuning.MinLeaveDuration, tuning.MaxLeaveDuration, random)));
 
-            var profile = buildProfile?.Invoke();
             return new Customer(id, steps, profile, characterId, scriptedPassivePlan);
         }
 

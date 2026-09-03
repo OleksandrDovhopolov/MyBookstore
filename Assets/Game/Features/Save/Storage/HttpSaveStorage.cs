@@ -10,24 +10,21 @@ using UnityEngine;
 
 namespace Save.Storage
 {
-    // Write-through cache: SaveAsync writes locally first, then pushes to the server.
-    // On network errors no progress is lost — the next save will retry the push.
-    // Transport goes through Game.Http command infrastructure (retries, connection check,
-    // unified logging, error reporting) instead of raw UnityWebRequest.
     public sealed class HttpSaveStorage : ISaveStorage
     {
         private const string LogPrefix = "[HttpSaveStorage]";
 
         private readonly ISaveBackendConfig _config;
-        private readonly ISaveStorage _localCache;
+        private readonly LocalDiskStorage _localCache;
         private readonly IPlayerIdentityProvider _identity;
         private readonly IConnectionService _connectionService;
         private readonly ICommandLogger _logger;
         private readonly ICommandErrorReporter _errorReporter;
+        private bool _useLocalCacheForNextLoad;
 
         public HttpSaveStorage(
             ISaveBackendConfig config,
-            ISaveStorage localCache,
+            LocalDiskStorage localCache,
             IPlayerIdentityProvider identity,
             IConnectionService connectionService,
             ICommandLogger logger,
@@ -45,13 +42,16 @@ namespace Save.Storage
         {
             ct.ThrowIfCancellationRequested();
 
-            // 1. Local atomic write — progress guaranteed even if the server push fails.
             await _localCache.SaveAsync(data, ct);
 
-            // 2. Push via command — retries, timeouts, connection checks handled by Game.Http.
             var cmd = new PostSaveGlobalCommand(
-                _connectionService, _logger, _errorReporter,
-                BuildUrl(), _identity.GetPlayerId(), data);
+                _connectionService,
+                _logger,
+                _errorReporter,
+                BuildSaveUrl(),
+                _identity.GetPlayerId(),
+                data);
+            cmd.ConnectionCheckBehaviour = ConnectionCheckBehaviour.SilentWithComplete;
 
             await cmd.ExecuteAsync();
 
@@ -65,15 +65,17 @@ namespace Save.Storage
         {
             ct.ThrowIfCancellationRequested();
 
-            var cmd = new GetSaveGlobalCommand(_connectionService, _logger, _errorReporter, BuildUrl());
-            await cmd.ExecuteAsync();
-
-            // 404 → new user, no server save yet.
-            if (cmd.Error == ConnectionCommandsErrors.NotFoundError)
+            if (_useLocalCacheForNextLoad)
             {
-                Debug.Log($"{LogPrefix} LoadAsync: no remote save (new user).");
-                return null;
+                _useLocalCacheForNextLoad = false;
+                var local = await _localCache.LoadAsync(ct);
+                Debug.Log($"{LogPrefix} LoadAsync: using local cache after startup sync.");
+                return local;
             }
+
+            var cmd = new GetSaveGlobalCommand(_connectionService, _logger, _errorReporter, BuildLoadUrl());
+            cmd.ConnectionCheckBehaviour = ConnectionCheckBehaviour.SilentWithComplete;
+            await cmd.ExecuteAsync();
 
             if (cmd.IsSucceed)
             {
@@ -97,12 +99,12 @@ namespace Save.Storage
             return cached;
         }
 
-        // Used by SaveSyncBootstrap to compare revisions without write-through.
         public async UniTask<string> PeekServerAsync(CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
-            var cmd = new GetSaveGlobalCommand(_connectionService, _logger, _errorReporter, BuildUrl());
+            var cmd = new GetSaveGlobalCommand(_connectionService, _logger, _errorReporter, BuildLoadUrl());
+            cmd.ConnectionCheckBehaviour = ConnectionCheckBehaviour.SilentWithComplete;
             await cmd.ExecuteAsync();
 
             if (cmd.Error == ConnectionCommandsErrors.NotFoundError) return null;
@@ -111,33 +113,42 @@ namespace Save.Storage
             throw new InvalidOperationException($"{LogPrefix} PeekServerAsync failed: {cmd.Error}");
         }
 
+        public void UseLocalCacheForNextLoad()
+        {
+            _useLocalCacheForNextLoad = true;
+        }
+
         public async UniTask DeleteAsync(CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             await _localCache.DeleteAsync(ct);
-
-            // DELETE is not migrated to the command infrastructure yet because Game.Http
-            // currently only supports GET/POST (see UnityWebRequestAdapter.BuildRequest).
-            // Server-side deletion is not part of the normal save flow — skip with a warning.
-            Debug.LogWarning($"{LogPrefix} DeleteAsync: server-side delete is not supported via command infrastructure; only local cache cleared.");
+            Debug.LogWarning($"{LogPrefix} DeleteAsync: server-side delete is not supported; only local cache cleared.");
         }
 
         public UniTask<long> GetLastModifiedTimestampAsync(CancellationToken ct)
         {
-            // HEAD is not part of HTTPMethods (Game.Http supports GET/POST only).
-            // This API is consumed by SaveSyncBootstrap, which is deferred to a separate task.
             ct.ThrowIfCancellationRequested();
             return UniTask.FromResult(0L);
         }
 
-        private string BuildUrl()
+        private string BuildSaveUrl()
+        {
+            return BuildBaseSaveUrl();
+        }
+
+        private string BuildLoadUrl()
+        {
+            var full = BuildBaseSaveUrl();
+            var playerId = Uri.EscapeDataString(_identity.GetPlayerId());
+            var sep = full.Contains("?") ? "&" : "?";
+            return $"{full}{sep}playerId={playerId}";
+        }
+
+        private string BuildBaseSaveUrl()
         {
             var baseUrl = _config.BaseUrl.TrimEnd('/');
             var path = _config.SavePath.TrimStart('/');
-            var playerId = Uri.EscapeDataString(_identity.GetPlayerId());
-            var full = $"{baseUrl}/{path}";
-            var sep = full.Contains("?") ? "&" : "?";
-            return $"{full}{sep}playerId={playerId}";
+            return $"{baseUrl}/{path}";
         }
     }
 }

@@ -1,0 +1,177 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Threading;
+using Cysharp.Threading.Tasks;
+using Infrastructure.Audio;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.UI;
+using Object = UnityEngine.Object;
+
+namespace GameplayUI.Tests.Editor
+{
+    public sealed class SettingsWindowTests
+    {
+        [Test]
+        public void SoundToggle_Off_WritesSfxAndUiToZero()
+        {
+            var audio = new FakeAudioService();
+
+            SettingsAudioToggleAdapter.SetSoundEnabled(audio, false);
+
+            Assert.AreEqual(0f, audio.GetVolume(AudioChannelId.Sfx));
+            Assert.AreEqual(0f, audio.GetVolume(AudioChannelId.Ui));
+            CollectionAssert.AreEqual(
+                new[] { AudioChannelId.Sfx, AudioChannelId.Ui },
+                audio.WrittenChannels);
+        }
+
+        [Test]
+        public void SoundToggle_On_WritesSfxAndUiToOne()
+        {
+            var audio = new FakeAudioService();
+            audio.SetVolume(AudioChannelId.Sfx, 0f);
+            audio.SetVolume(AudioChannelId.Ui, 0f);
+            audio.WrittenChannels.Clear();
+
+            SettingsAudioToggleAdapter.SetSoundEnabled(audio, true);
+
+            Assert.AreEqual(1f, audio.GetVolume(AudioChannelId.Sfx));
+            Assert.AreEqual(1f, audio.GetVolume(AudioChannelId.Ui));
+            CollectionAssert.AreEqual(
+                new[] { AudioChannelId.Sfx, AudioChannelId.Ui },
+                audio.WrittenChannels);
+        }
+
+        [Test]
+        public void MusicToggle_OnlyWritesMusic()
+        {
+            var audio = new FakeAudioService();
+
+            SettingsAudioToggleAdapter.SetMusicEnabled(audio, false);
+            SettingsAudioToggleAdapter.SetMusicEnabled(audio, true);
+
+            CollectionAssert.AreEqual(
+                new[] { AudioChannelId.Music, AudioChannelId.Music },
+                audio.WrittenChannels);
+            Assert.AreEqual(1f, audio.GetVolume(AudioChannelId.Music));
+        }
+
+        [Test]
+        public void SoundEnabled_IsTrueWhenEitherSfxOrUiIsAudible()
+        {
+            var audio = new FakeAudioService();
+
+            audio.SetVolume(AudioChannelId.Sfx, 0f);
+            audio.SetVolume(AudioChannelId.Ui, 0f);
+            Assert.IsFalse(SettingsAudioToggleAdapter.IsSoundEnabled(audio));
+
+            audio.SetVolume(AudioChannelId.Sfx, 1f);
+            audio.SetVolume(AudioChannelId.Ui, 0f);
+            Assert.IsTrue(SettingsAudioToggleAdapter.IsSoundEnabled(audio));
+
+            audio.SetVolume(AudioChannelId.Sfx, 0f);
+            audio.SetVolume(AudioChannelId.Ui, 1f);
+            Assert.IsTrue(SettingsAudioToggleAdapter.IsSoundEnabled(audio));
+        }
+
+        [Test]
+        public void SetSoundAndMusic_DoNotFireToggleEvents()
+        {
+            var root = new GameObject("SettingsWindowViewTests");
+            root.SetActive(false);
+            try
+            {
+                var view = root.AddComponent<SettingsWindowView>();
+                var soundToggle = CreateChildToggle(root.transform, "Sound");
+                var musicToggle = CreateChildToggle(root.transform, "Music");
+                SetPrivateField(view, "_soundToggle", soundToggle);
+                SetPrivateField(view, "_musicToggle", musicToggle);
+
+                root.SetActive(true);
+
+                var soundChanges = 0;
+                var musicChanges = 0;
+                view.SoundChanged += _ => soundChanges++;
+                view.MusicChanged += _ => musicChanges++;
+
+                view.SetSound(true);
+                view.SetMusic(true);
+                view.SetSound(false);
+                view.SetMusic(false);
+
+                Assert.AreEqual(0, soundChanges);
+                Assert.AreEqual(0, musicChanges);
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
+        private static Toggle CreateChildToggle(Transform parent, string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent);
+            return go.AddComponent<Toggle>();
+        }
+
+        private static void SetPrivateField(object target, string name, object value)
+        {
+            var field = target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(field, name);
+            field.SetValue(target, value);
+        }
+
+        private sealed class FakeAudioService : IAudioService
+        {
+            private readonly Dictionary<AudioChannelId, float> _volumes = new()
+            {
+                [AudioChannelId.Master] = 1f,
+                [AudioChannelId.Music] = 1f,
+                [AudioChannelId.Sfx] = 1f,
+                [AudioChannelId.Ui] = 1f,
+                [AudioChannelId.Ambient] = 1f,
+            };
+
+            public readonly List<AudioChannelId> WrittenChannels = new();
+
+            public AudioVolumeSettings Volumes => new()
+            {
+                Master = GetVolume(AudioChannelId.Master),
+                Music = GetVolume(AudioChannelId.Music),
+                Sfx = GetVolume(AudioChannelId.Sfx),
+                Ui = GetVolume(AudioChannelId.Ui),
+                Ambient = GetVolume(AudioChannelId.Ambient)
+            };
+
+            public bool IsMusicPlaying => false;
+
+            public void SetVolume(AudioChannelId channel, float volume)
+            {
+                _volumes[channel] = volume;
+                WrittenChannels.Add(channel);
+            }
+
+            public float GetVolume(AudioChannelId channel)
+                => _volumes.TryGetValue(channel, out var volume) ? volume : 0f;
+
+            public void PlayMusic(AudioClip clip, bool loop = true, bool restartIfSame = false) { }
+            public UniTask PlayMusicAsync(string address, CancellationToken ct, bool loop = true, bool restartIfSame = false) => UniTask.CompletedTask;
+            public void StopMusic() { }
+            public void PlaySfx(AudioClip clip, float volumeScale = 1f) { }
+            public UniTask PlaySfxAsync(string address, CancellationToken ct, float volumeScale = 1f) => UniTask.CompletedTask;
+            public void PlaySfxAt(AudioClip clip, Vector3 position, float volumeScale = 1f) { }
+            public void PlayUi(AudioClip clip, float volumeScale = 1f) { }
+            public UniTask PlayUiAsync(string address, CancellationToken ct, float volumeScale = 1f) => UniTask.CompletedTask;
+            public void PlayAmbient(AudioClip clip, bool loop = true, bool restartIfSame = false) { }
+            public UniTask PlayAmbientAsync(string address, CancellationToken ct, bool loop = true, bool restartIfSame = false) => UniTask.CompletedTask;
+            public void StopSfx() { }
+            public void StopAmbient() { }
+            public void StopAll() { }
+            public void ReleaseCachedClips() { }
+            public void SetMuted(bool muted) { }
+        }
+    }
+}

@@ -304,6 +304,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _resourceId: gold
   _amountLabel: {fileID: 2574581960083575027}
+  _registerAsResourceTarget: 1
   _countUpDuration: 1
   _pulseRoot: {fileID: 4107358840850401649}
   _pulseScale: 1.08

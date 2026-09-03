@@ -30,7 +30,8 @@ namespace Book.Sell.Tests.Editor
             string activationQuestId = null,
             string dialogueId = null,
             string characterId = null,
-            ScriptedPassivePurchaseConfig[] attempts = null)
+            ScriptedPassivePurchaseConfig[] attempts = null,
+            bool activeRequest = false)
             => new()
             {
                 Id = id,
@@ -38,6 +39,7 @@ namespace Book.Sell.Tests.Editor
                 ActivationQuestId = activationQuestId,
                 DialogueId = dialogueId,
                 CharacterId = characterId,
+                ActiveRequest = activeRequest,
                 PassiveAttempts = attempts ?? new[]
                 {
                     new ScriptedPassivePurchaseConfig { Genre = "Travel", ForceHit = false }
@@ -69,13 +71,16 @@ namespace Book.Sell.Tests.Editor
             FakeConfigsService configs,
             FakeQuestsService quests = null,
             StubDeliveredDialogues delivered = null,
-            ICustomerProfileProvider profiles = null)
+            ICustomerProfileProvider profiles = null,
+            IActiveRequestRuntimeProvider activeRequests = null)
             => new(
                 inner,
                 configs,
                 quests ?? new FakeQuestsService(),
                 delivered ?? new StubDeliveredDialogues(),
-                profiles ?? new StubProfileProvider());
+                profiles ?? new StubProfileProvider(),
+                activeRequests ?? new StubActiveRequests(Array.Empty<ActiveRequestRuntime>()),
+                new ProfileMatchedRequestSelectorFactory());
 
         [Test]
         public void DayScript_ReplacesRegularSlot_AndPreservesTotalCount()
@@ -141,7 +146,7 @@ namespace Book.Sell.Tests.Editor
             var spawner = Spawner(inner, configs);
 
             LogAssert.Expect(LogType.Warning,
-                "[Sales.CustomerScript] script 'empty' has no passive attempts; skipped.");
+                "[Sales.CustomerScript] script 'empty' has no passive attempts or active request; skipped.");
             var customers = spawner.BuildCustomers(DayTwoSetup, Tuning, new FakeSalesRandom());
 
             Assert.AreEqual(1, customers.Count);
@@ -391,6 +396,51 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void ActiveRequestScript_SelectsRequestForCharacterProfile_AndReplacesRegularSlot()
+        {
+            var configs = new FakeConfigsService();
+            configs.SetAll(new[]
+            {
+                Script("active_fact", characterId: "fact_fan", attempts: Array.Empty<ScriptedPassivePurchaseConfig>(),
+                    activeRequest: true)
+            });
+            configs.SetAll(new[] { SalesTestKit.Book("book_fact", "Fact") });
+            configs.SetAll(new[]
+            {
+                new CharacterConfig
+                {
+                    Id = "fact_fan",
+                    FavoriteGenres = new[] { "Fact" }
+                }
+            });
+            var inner = new StubCustomerSpawner(new List<Customer> { Passive("inner_1"), Passive("inner_2") });
+            var activeRequests = new StubActiveRequests(new[]
+            {
+                SalesTestKit.ActiveRequest("crime", requiredGenres: new[] { "Crime" }),
+                SalesTestKit.ActiveRequest("fact", requiredGenres: new[] { "Fact" })
+            });
+
+            var customers = Spawner(inner, configs, activeRequests: activeRequests)
+                .BuildCustomers(DayTwoSetup, Tuning, new FakeSalesRandom());
+            var customer = customers[0];
+            var ctx = SalesTestKit.Context(SalesTestKit.Shelf(SalesTestKit.Book("book_fact", "Fact")),
+                SalesTestKit.Location(), new RecordingSink());
+
+            Assert.AreEqual(2, customers.Count);
+            Assert.AreEqual("script_active_fact", customer.Id);
+            CollectionAssert.AreEqual(new[] { "Fact" }, customer.Profile.DesiredGenres);
+
+            customer.Tick(ctx, 1f); // Approach -> Active request.
+
+            Assert.IsInstanceOf<ActiveRequestStep>(customer.CurrentStep);
+            Assert.AreEqual("fact", ((ActiveRequestStep)customer.CurrentStep).Request.Id);
+
+            customer.ForceCompleteCurrentStep(ctx);
+
+            Assert.IsInstanceOf<CompletePurchaseStep>(customer.CurrentStep);
+        }
+
+        [Test]
         public void InvalidSchedule_WarnsAndSkips()
         {
             var configs = ConfigsWithEddi(Script("bad", dayIndex: 1, activationQuestId: "q_intro_eddi"));
@@ -427,6 +477,16 @@ namespace Book.Sell.Tests.Editor
         {
             public CustomerProfile Create(SalesSessionSetup setup, ISalesRandom random)
                 => new(new[] { "Fallback" });
+        }
+
+        private sealed class StubActiveRequests : IActiveRequestRuntimeProvider
+        {
+            private readonly IReadOnlyList<ActiveRequestRuntime> _requests;
+
+            public StubActiveRequests(IReadOnlyList<ActiveRequestRuntime> requests)
+                => _requests = requests;
+
+            public IReadOnlyList<ActiveRequestRuntime> GetRequests() => _requests;
         }
 
         private sealed class StubDeliveredDialogues : IDeliveredDialoguesService

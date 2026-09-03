@@ -79,6 +79,7 @@ namespace Book.Sell.Services
         public bool IsDayCompleted => _phase == SalesDayPhase.Completed;
 
         public event Action<ActiveRequestRuntime> ActiveRequestStarted;
+        public event Action<int, string> DayStarted;
         public event Action<Customer, DialoguePayload> DialogueStarted;
         public event Action<RecommendationResult> RecommendationResolved;
         public event Action<PassiveSaleEvent> PassiveSaleHappened;
@@ -128,6 +129,7 @@ namespace Book.Sell.Services
             }
 
             ShelfChanged?.Invoke();
+            DayStarted?.Invoke(Day, LocationId);
             return UniTask.CompletedTask;
         }
 
@@ -175,6 +177,9 @@ namespace Book.Sell.Services
 
             if (result.Tier == RecommendationTier.Excellent)
             {
+                var soldGenre = ActiveSaleGenreAttribution.ResolveSoldGenre(request, shelfBook.Config);
+                result = result.WithSoldGenre(soldGenre);
+
                 _shelf.CommitSale(bookId);
 
                 //TODO active should be const in config class
@@ -184,7 +189,7 @@ namespace Book.Sell.Services
                 _activeCustomer.RegisterPurchasedBook();
                 ShelfChanged?.Invoke();
                 Debug.Log($"{LogPrefix} active sale: book={bookId}, tier={result.Tier}, " +
-                          $"gold={result.GoldEarned}, request={request.Id}");
+                          $"gold={result.GoldEarned}, request={request.Id}, soldGenre={result.SoldGenre ?? "<fallback>"}");
             }
             else if (result.Tier == RecommendationTier.Failed)
             {

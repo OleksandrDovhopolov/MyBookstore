@@ -30,6 +30,7 @@ namespace Game.Cheat
         private readonly IUIManager _uiManager;
         private readonly IConfigsService _configs;
         private readonly IBookConditionRequestEvaluator _evaluator = new BookConditionRequestEvaluator();
+        private readonly IActiveRequestGenreResolver _genreResolver = new ConditionActiveRequestGenreResolver();
 
         private ShelfPresetConfig _activePreset;
         private bool _useFullCatalog;
@@ -64,7 +65,10 @@ namespace Game.Cheat
         {
             try
             {
-                var runtime = ActiveRequestRuntime.FromCondition(cfg, _evaluator.BuildDebugText(cfg));
+                var runtime = ActiveRequestRuntime.FromCondition(
+                    cfg,
+                    _evaluator.BuildDebugText(cfg),
+                    _genreResolver.Resolve(cfg));
 
                 var bookIds = ResolveShelfBookIds();
                 var shelf = new SalesShelfBuilder(_configs).Build(bookIds);

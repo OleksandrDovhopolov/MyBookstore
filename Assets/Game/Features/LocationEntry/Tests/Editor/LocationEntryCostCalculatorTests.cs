@@ -101,6 +101,7 @@ namespace Game.LocationEntry.Tests.Editor
             public UniTask UnplaceAsync(string slotId, CancellationToken ct) => UniTask.CompletedTask;
             public UniTask ClearAllAsync(CancellationToken ct) => UniTask.CompletedTask;
             public event Action PlacementChanged { add { } remove { } }
+            public event Action<DecorPlacementChange> PlacementActionPerformed { add { } remove { } }
         }
 
         private sealed class FakeConfigsService : IConfigsService

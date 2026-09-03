@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Analytics;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.Characters.API;
@@ -11,12 +12,16 @@ using Game.Ftue.Services;
 using Game.Inventory.API;
 using Game.LocationUnlock.API;
 using Game.LocationVisits.API;
+using Game.Privacy.Services;
 using Game.Progression.API;
 using Game.Quest.API;
 using Game.Resources.API;
 using Game.Tutorial.API;
+using Game.UI;
 using Infrastructure;
 using Save;
+using PlayerIdentityProvider = Save.Identity.IPlayerIdentityProvider;
+using Save.Sync;
 using SpriteService;
 using UnityEngine;
 using VContainer;
@@ -58,10 +63,15 @@ namespace Game.Bootstrap
         private IRemoteConfigService _remoteConfig;
         private IConfigsService _configs;
         private ISaveService _save;
+        private SaveSyncBootstrap _saveSync;
         private ISceneTransitionService _sceneTransition;
         private ITransitionAnimationService _transition;
         private IFtueBootstrapper _ftue;
         private IUiSpriteProvider _uiSprites;
+        private IConsentGateService _consent;
+        private IUIManager _uiManager;
+        private IAnalyticsService _analytics;
+        private PlayerIdentityProvider _playerIdentity;
 
         // Injected to force construction (and therefore ISaveHook self-registration) before
         // SaveDataLoadOperation runs LoadAsync. We never invoke methods on these fields directly.
@@ -95,10 +105,15 @@ namespace Game.Bootstrap
             IRemoteConfigService remoteConfig,
             IConfigsService configs,
             ISaveService save,
+            SaveSyncBootstrap saveSync,
             ISceneTransitionService sceneTransition,
             ITransitionAnimationService transition,
             IFtueBootstrapper ftue,
             IUiSpriteProvider uiSprites,
+            IConsentGateService consent,
+            IUIManager uiManager,
+            IAnalyticsService analytics,
+            PlayerIdentityProvider playerIdentity,
             IInventoryService inventory,
             IResourcesService resources,
             IProgressionService progression,
@@ -115,10 +130,15 @@ namespace Game.Bootstrap
             _remoteConfig = remoteConfig;
             _configs = configs;
             _save = save;
+            _saveSync = saveSync;
             _sceneTransition = sceneTransition;
             _transition = transition;
             _ftue = ftue;
             _uiSprites = uiSprites;
+            _consent = consent;
+            _uiManager = uiManager;
+            _analytics = analytics;
+            _playerIdentity = playerIdentity;
             _inventory = inventory;
             _resources = resources;
             _progression = progression;
@@ -217,13 +237,22 @@ namespace Game.Bootstrap
         {
             var skipHeavy = DebugStartFlags.SkipFullLoading;
             if (skipHeavy)
-                Debug.LogWarning($"{LogPrefix} SkipFullLoading=true: Addressables update and RemoteConfig init will be skipped.");
+                Debug.LogWarning($"{LogPrefix} SkipFullLoading=true: Addressables update and RemoteConfig init will be skipped. The privacy gate still runs.");
+
+            // REL-5: the privacy gate sits after the Addressables catalog is up (its prefab is in the
+            // Local "UI" group) and before RemoteConfigInitOperation, the first thing to touch Firebase.
+            // Present in BOTH branches on purpose — SkipFullLoading is an Editor-only debug flag and must
+            // never become a silent consent bypass.
+            var consentGate = new ConsentGateOperation(_uiManager, _consent);
+            var analyticsInit = new AnalyticsStartupOperation(_analytics, _playerIdentity);
 
             var technicalOps = skipHeavy
-                ? new ILoadingOperation[] { new WarmupOperation() }
+                ? new ILoadingOperation[] { new WarmupOperation(), consentGate, analyticsInit }
                 : new ILoadingOperation[]
                 {
                     new AddressablesUpdateOperation(_catalog),
+                    consentGate,
+                    analyticsInit,
                     new RemoteConfigInitOperation(_remoteConfig)
                 };
 
@@ -244,6 +273,7 @@ namespace Game.Bootstrap
                 }),
                 new LoadingGroup("phase_data_save", LoadingGroupExecutionMode.Sequential, new ILoadingOperation[]
                 {
+                    new SaveStartupSyncOperation(_saveSync),
                     new SaveDataLoadOperation(_save)
                 })
             });

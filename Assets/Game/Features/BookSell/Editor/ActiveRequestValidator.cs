@@ -84,8 +84,47 @@ namespace Book.Sell.Editor
             foreach (var pair in solvableByGenre)
                 report.SolvableByPrimaryGenre[pair.Key] = pair.Value.Count;
 
+            AddRequestGenreCoverage(requests, report);
             AddStarvedGenres(books, solvableByGenre, report);
             return report;
+        }
+
+        private static void AddRequestGenreCoverage(
+            List<RequestDefinitionConfig> requests,
+            ActiveRequestValidationReport report)
+        {
+            var resolver = new ConditionActiveRequestGenreResolver();
+            var coveredGenres = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var request in requests)
+            {
+                if (request == null || !request.Enabled) continue;
+
+                var id = string.IsNullOrWhiteSpace(request.Id) ? "<missing-id>" : request.Id;
+                var genres = resolver.Resolve(request);
+                if (genres == null || genres.Count == 0)
+                {
+                    report.Warnings.Add($"Request '{id}' has no resolved genre conditions; it can match every customer profile.");
+                    continue;
+                }
+
+                for (var i = 0; i < genres.Count; i++)
+                    coveredGenres.Add(genres[i]);
+
+                if (!string.IsNullOrWhiteSpace(request.Genre) && !ContainsGenre(genres, request.Genre))
+                {
+                    report.Warnings.Add(
+                        $"Request '{id}' metadata genre '{request.Genre}' is not included in resolved genres " +
+                        $"[{string.Join(", ", genres)}].");
+                }
+            }
+
+            foreach (BookGenre genre in Enum.GetValues(typeof(BookGenre)))
+            {
+                var name = genre.ToString();
+                if (!coveredGenres.Contains(name))
+                    report.Errors.Add($"Genre '{name}' has no enabled active request; profile-matched spawning will fall back.");
+            }
         }
 
         /// <summary>
@@ -140,11 +179,20 @@ namespace Book.Sell.Editor
             report.Errors.Add($"{path} contains no entries.");
             return false;
         }
+
+        private static bool ContainsGenre(IReadOnlyList<string> genres, string expected)
+        {
+            for (var i = 0; i < genres.Count; i++)
+                if (string.Equals(genres[i], expected, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            return false;
+        }
     }
 
     public sealed class ActiveRequestValidationReport
     {
         public List<string> Errors { get; } = new();
+        public List<string> Warnings { get; } = new();
         public List<string> StarvedGenres { get; } = new();
         public Dictionary<string, int> SolvableByPrimaryGenre { get; } = new(StringComparer.Ordinal);
 
@@ -162,6 +210,7 @@ namespace Book.Sell.Editor
             var sb = new StringBuilder();
             sb.AppendLine($"Checked {CheckedRequests} enabled request(s) against {BookCount} book(s).");
             sb.AppendLine($"Problems: {Errors.Count}");
+            sb.AppendLine($"Warnings: {Warnings.Count}");
             if (StarvedGenres.Count > 0)
                 sb.AppendLine($"Genres with no winning book: {string.Join(", ", StarvedGenres)}");
             sb.Append("Books that can score Excellent, by primary genre: ");

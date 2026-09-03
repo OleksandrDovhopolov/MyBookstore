@@ -149,8 +149,8 @@ namespace Book.Sell.Tests.Editor.Services
         }
 
         /// <summary>
-        /// Active customers are no longer hardcoded to the first N slots. The two pre-loop Range draws
-        /// pick slots 3 and 4 here (pool == demand, so the request selection draws nothing).
+        /// Active customers are no longer hardcoded to the first N slots. The slot-picking draws
+        /// place active requests at the tail of the day.
         /// </summary>
         [Test]
         public void ActiveSlots_AreSpreadAcrossCustomers_NotAlwaysFirstN()
@@ -183,6 +183,26 @@ namespace Book.Sell.Tests.Editor.Services
 
             Assert.AreEqual(1, customers.Count);
             CollectionAssert.AreEqual(new[] { "Fact", "Travel" }, customers[0].Profile.DesiredGenres);
+        }
+
+        [Test]
+        public void ActiveRequest_IsSelectedToMatchCustomerProfile()
+        {
+            var spawner = new RegularCustomerSpawner(
+                new FakeConfigsService(),
+                new StubResolver(new CustomerTrafficResult(1, 1, isHardOverride: false, breakdown: null)),
+                new StubActiveRequests(new[]
+                {
+                    SalesTestKit.ActiveRequest("crime", requiredGenres: new[] { "Crime" }),
+                    SalesTestKit.ActiveRequest("fact", requiredGenres: new[] { "Fact" })
+                }),
+                new StubProfileProvider(),
+                new StubRequestCount(1));
+            var customers = spawner.BuildCustomers(Setup(), SalesTestKit.FastTuning(), new FakeSalesRandom());
+            var sink = DriveAll(customers);
+
+            Assert.AreEqual(1, sink.ActiveStarted.Count);
+            Assert.AreEqual("fact", sink.ActiveStarted[0].request.Id);
         }
     }
 }

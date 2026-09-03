@@ -12,13 +12,23 @@ namespace Book.Sell.Services
 
         private readonly IConfigsService _configs;
         private readonly IBookConditionRequestEvaluator _conditionEvaluator;
+        private readonly IActiveRequestGenreResolver _genreResolver;
 
         public ConfigActiveRequestRuntimeProvider(
             IConfigsService configs,
             IBookConditionRequestEvaluator conditionEvaluator)
+            : this(configs, conditionEvaluator, new ConditionActiveRequestGenreResolver())
+        {
+        }
+
+        public ConfigActiveRequestRuntimeProvider(
+            IConfigsService configs,
+            IBookConditionRequestEvaluator conditionEvaluator,
+            IActiveRequestGenreResolver genreResolver)
         {
             _configs = configs ?? throw new System.ArgumentNullException(nameof(configs));
             _conditionEvaluator = conditionEvaluator ?? throw new System.ArgumentNullException(nameof(conditionEvaluator));
+            _genreResolver = genreResolver ?? throw new System.ArgumentNullException(nameof(genreResolver));
         }
 
         public IReadOnlyList<ActiveRequestRuntime> GetRequests()
@@ -38,7 +48,8 @@ namespace Book.Sell.Services
 
                 requests.Add(ActiveRequestRuntime.FromCondition(
                     request,
-                    _conditionEvaluator.BuildDebugText(request)));
+                    _conditionEvaluator.BuildDebugText(request),
+                    _genreResolver.Resolve(request)));
             }
 
             return requests;

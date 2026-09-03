@@ -12,9 +12,14 @@ namespace Analytics
 
         public bool IsAnalyticsEnabled => true;
 
-        public bool IsDebugLoggingEnabled => true;
+        // Mirrors AnalyticsConfigSO on purpose: this is the fallback used when the SO is not assigned
+        // on BootstrapInstaller, so a forgotten assignment must not resurrect debug logging in a
+        // release build.
+        public bool IsDebugLoggingEnabled => AnalyticsBuildContext.IsDevelopmentBuild;
 
-        public string Environment => "development";
+        public string Environment => AnalyticsBuildContext.IsDevelopmentBuild
+            ? AnalyticsBuildContext.DevelopmentEnvironment
+            : AnalyticsBuildContext.ProductionEnvironment;
 
         public IReadOnlyCollection<string> EnabledProviderIds => DefaultEnabledProviderIds;
 
@@ -24,7 +29,7 @@ namespace Analytics
 
         public int MaxParameterKeyLength => 40;
 
-        public int MaxParameterCount => 50;
+        public int MaxParameterCount => 25;
 
         public bool SendEventsWithoutUserId => true;
     }

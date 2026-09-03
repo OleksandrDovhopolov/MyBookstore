@@ -1,5 +1,6 @@
 using UIShared;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace Game.Core.UI.Tests.Editor.ResourceCounters
@@ -85,6 +86,25 @@ namespace Game.Core.UI.Tests.Editor.ResourceCounters
 
             Assert.IsFalse(ResourceCounterTargets.TryGetTarget("Gold", out var resolved));
             Assert.IsNull(resolved);
+        }
+
+        [Test]
+        public void TargetTag_DisplayOnly_DoesNotRegister()
+        {
+            var registry = new ResourceCounterTargetRegistry();
+            ResourceCounterTargets.Bind(registry);
+
+            _firstGo = new GameObject("display-only", typeof(RectTransform));
+            _firstGo.SetActive(false);
+            var target = _firstGo.AddComponent<ResourceCounterTargetTag>();
+            var serialized = new SerializedObject(target);
+            serialized.FindProperty("_resourceId").stringValue = "Gold";
+            serialized.FindProperty("_registerAsResourceTarget").boolValue = false;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            _firstGo.SetActive(true);
+
+            Assert.IsFalse(registry.TryGetTarget("Gold", out _));
         }
 
         private FakeCounterTarget CreateTarget(string resourceId, string name)

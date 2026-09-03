@@ -14,7 +14,6 @@ namespace Game.Cheat
         private const string LogTag = "[CharacterMemoryCheat]";
         private const string CharacterId = "owner";
         private const string MovingInMemoryId = "mem_owner_moving_in";
-        private const string PlaceholderMemoryId = "mem_owner_placeholder";
 
         private readonly ICharactersService _characters;
         private readonly ISaveService _save;
@@ -30,7 +29,6 @@ namespace Game.Cheat
         public void Initialize(ICheatsContainer cheatsContainer)
         {
             AddUnlockButton(cheatsContainer, "Unlock owner moving in", MovingInMemoryId);
-            AddUnlockButton(cheatsContainer, "Unlock owner placeholder", PlaceholderMemoryId);
         }
 
         private void AddUnlockButton(ICheatsContainer cheatsContainer, string label, string memoryId)

@@ -21,8 +21,14 @@ namespace Analytics
         public const string LevelStarted = "level_started";
         public const string LevelCompleted = "level_completed";
         public const string LevelFailed = "level_failed";
+        public const string DayStarted = "day_started";
+        public const string DayCompleted = "day_completed";
+        public const string ActiveSaleCompleted = "active_sale_completed";
         public const string QuestStarted = "quest_started";
         public const string QuestCompleted = "quest_completed";
+        public const string CharacterDiscovered = "character_discovered";
+        public const string LocationUnlocked = "location_unlocked";
+        public const string DecorChanged = "decor_changed";
         public const string TutorialStarted = "tutorial_started";
         public const string TutorialStepCompleted = "tutorial_step_completed";
         public const string TutorialCheckpoint = "tutorial_checkpoint";

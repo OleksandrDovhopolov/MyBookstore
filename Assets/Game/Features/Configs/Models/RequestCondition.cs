@@ -8,7 +8,7 @@ namespace Game.Configs.Models
     ///
     /// <para><see cref="Type"/> and <see cref="Operator"/> are kept as strings (not enums) on purpose: a new
     /// condition type or operator can be added by registering a handler, without touching this model
-    /// (open/closed). The authoritative vocabulary lives in docs/INPROGRESS/ACTIVE_REQUEST_CONDITIONS.md.</para>
+    /// (open/closed). The authoritative vocabulary lives in docs/ACTIVE_REQUEST_CONDITIONS.md.</para>
     ///
     /// <para><see cref="Value"/> is polymorphic (Newtonsoft <see cref="JToken"/>); its shape depends on the operator:</para>
     /// <list type="bullet">

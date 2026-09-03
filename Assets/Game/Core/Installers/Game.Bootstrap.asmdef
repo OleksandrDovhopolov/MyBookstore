@@ -47,6 +47,7 @@
         "Game.Characters",
         "Game.Characters.API",
         "Analytics",
+        "Game.Privacy",
         "Game.LocationVisits",
         "Game.LocationVisits.API",
         "Game.Tutorial",

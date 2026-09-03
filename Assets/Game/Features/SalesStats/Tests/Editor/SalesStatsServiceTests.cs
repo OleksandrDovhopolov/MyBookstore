@@ -4,6 +4,8 @@ using Game.SalesStats.API;
 using Game.SalesStats.Services;
 using Game.SalesStats.Tests.Editor.Fakes;
 using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Game.SalesStats.Tests.Editor
 {
@@ -11,6 +13,7 @@ namespace Game.SalesStats.Tests.Editor
     {
         private const string CrimeBook = "book_crime";
         private const string KidsBook = "book_kids";
+        private const string ClassicKidsBook = "book_classic_kids";
 
         private const string FarBeach = "far_beach";
         private const string CafeLiberte = "cafe_liberte";
@@ -21,7 +24,12 @@ namespace Game.SalesStats.Tests.Editor
             var repo = new FakeSalesStatsRepository();
             var configs = new FakeConfigsService()
                 .Add(new BookConfig { Id = CrimeBook, Genres = new[] { BookGenre.Crime.ToConfigValue() } })
-                .Add(new BookConfig { Id = KidsBook, Genres = new[] { BookGenre.Kids.ToConfigValue() } });
+                .Add(new BookConfig { Id = KidsBook, Genres = new[] { BookGenre.Kids.ToConfigValue() } })
+                .Add(new BookConfig
+                {
+                    Id = ClassicKidsBook,
+                    Genres = new[] { BookGenre.Classic.ToConfigValue(), BookGenre.Kids.ToConfigValue() }
+                });
 
             var svc = new SalesStatsService(save, repo, configs);
             svc.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
@@ -185,6 +193,59 @@ namespace Game.SalesStats.Tests.Editor
             Assert.AreEqual(0, svc.GetSold(BookGenre.Crime, "unknown_location"));
             // Lifetime total is unaffected by the location split.
             Assert.AreEqual(3, svc.GetSold(BookGenre.Crime));
+        }
+
+        [Test]
+        public void RecordSold_WithAttributedGenre_UsesSoldGenreInsteadOfPrimaryGenre()
+        {
+            var (svc, _, _) = Build();
+
+            svc.RecordSold(ClassicKidsBook, new SaleContext(FarBeach, 1, BookGenre.Kids.ToConfigValue()));
+
+            Assert.AreEqual(1, svc.GetSold(BookGenre.Kids));
+            Assert.AreEqual(0, svc.GetSold(BookGenre.Classic));
+            Assert.AreEqual(1, svc.GetSold(BookGenre.Kids, FarBeach));
+            Assert.AreEqual(1, svc.GetSoldOnDay(1, BookGenre.Kids));
+            Assert.AreEqual(1, svc.TotalSold);
+        }
+
+        [Test]
+        public void RecordActivePick_WithAttributedGenre_UsesSoldGenreInsteadOfPrimaryGenre()
+        {
+            var (svc, _, _) = Build();
+
+            svc.RecordActivePick(ClassicKidsBook, new SaleContext(FarBeach, 1, BookGenre.Kids.ToConfigValue()));
+
+            Assert.AreEqual(1, svc.GetExcellentPicks(BookGenre.Kids));
+            Assert.AreEqual(0, svc.GetExcellentPicks(BookGenre.Classic));
+            Assert.AreEqual(0, svc.TotalSold);
+        }
+
+        [Test]
+        public void RecordSold_WithoutAttributedGenre_FallsBackToPrimaryGenre()
+        {
+            var (svc, _, _) = Build();
+
+            svc.RecordSold(ClassicKidsBook, new SaleContext(FarBeach, 1));
+
+            Assert.AreEqual(1, svc.GetSold(BookGenre.Classic));
+            Assert.AreEqual(0, svc.GetSold(BookGenre.Kids));
+        }
+
+        [Test]
+        public void RecordSold_WithUnknownAttributedGenre_IsNotCounted()
+        {
+            var (svc, _, _) = Build();
+
+            LogAssert.Expect(
+                LogType.Warning,
+                "[SalesStats] sold book 'book_classic_kids' has unknown attributed genre 'Mystery'; not counted.");
+
+            svc.RecordSold(ClassicKidsBook, new SaleContext(FarBeach, 1, "Mystery"));
+
+            Assert.AreEqual(0, svc.TotalSold);
+            Assert.AreEqual(0, svc.GetSold(BookGenre.Classic));
+            Assert.AreEqual(0, svc.GetSold(BookGenre.Kids));
         }
 
         [Test]

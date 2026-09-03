@@ -36,17 +36,10 @@ namespace Analytics
         public IReadOnlyDictionary<string, object> GetCommonParameters()
         {
             var installId = GetInstallId();
-            var userId = string.IsNullOrWhiteSpace(_userId) ? installId : _userId;
 
             var parameters = new Dictionary<string, object>
             {
                 [AnalyticsParameterNames.AppVersion] = Application.version,
-                [AnalyticsParameterNames.BuildNumber] = GetBuildNumber(),
-                [AnalyticsParameterNames.Platform] = Application.platform.ToString(),
-                [AnalyticsParameterNames.DeviceModel] = SystemInfo.deviceModel,
-                [AnalyticsParameterNames.OsVersion] = SystemInfo.operatingSystem,
-                [AnalyticsParameterNames.Language] = Application.systemLanguage.ToString(),
-                [AnalyticsParameterNames.Country] = GetCountry(),
                 [AnalyticsParameterNames.InstallId] = installId,
                 [AnalyticsParameterNames.SessionId] = _sessionId,
                 [AnalyticsParameterNames.SessionNumber] = _sessionNumber,
@@ -54,9 +47,9 @@ namespace Analytics
                 [AnalyticsParameterNames.Environment] = _config.Environment
             };
 
-            if (!string.IsNullOrWhiteSpace(userId))
+            if (!string.IsNullOrWhiteSpace(_userId))
             {
-                parameters[AnalyticsParameterNames.UserId] = userId;
+                parameters[AnalyticsParameterNames.UserId] = _userId;
             }
 
             return parameters;
@@ -78,29 +71,6 @@ namespace Analytics
             }
 
             return SystemInfo.deviceUniqueIdentifier;
-        }
-
-        private static string GetBuildNumber()
-        {
-#if UNITY_IOS
-            return UnityEngine.iOS.Device.generation.ToString();
-#elif UNITY_ANDROID
-            return Application.version;
-#else
-            return Application.version;
-#endif
-        }
-
-        private static string GetCountry()
-        {
-            try
-            {
-                return RegionInfo.CurrentRegion.TwoLetterISORegionName;
-            }
-            catch (Exception)
-            {
-                return "unknown";
-            }
         }
 
         private static void EnsureInstallTimestamp()

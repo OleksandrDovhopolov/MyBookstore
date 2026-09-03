@@ -100,6 +100,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b6fcf00d0a2b141449648ee8ca793fdb
+    m_Address: ConsentWindow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c70814d0d5d4eae448cf543d98a94c62
     m_Address: JournalWindow
     m_ReadOnly: 0

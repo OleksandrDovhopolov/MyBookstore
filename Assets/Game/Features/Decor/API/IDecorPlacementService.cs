@@ -5,6 +5,20 @@ using Cysharp.Threading.Tasks;
 
 namespace Game.Decor
 {
+    public readonly struct DecorPlacementChange
+    {
+        public DecorPlacementChange(string decorId, string slotId, string action)
+        {
+            DecorId = decorId;
+            SlotId = slotId;
+            Action = action;
+        }
+
+        public string DecorId { get; }
+        public string SlotId { get; }
+        public string Action { get; }
+    }
+
     public interface IDecorPlacementService
     {
         IReadOnlyList<DecorPlacementEntry> GetAllPlacements();
@@ -17,5 +31,6 @@ namespace Game.Decor
         UniTask ClearAllAsync(CancellationToken ct);
 
         event Action PlacementChanged;
+        event Action<DecorPlacementChange> PlacementActionPerformed;
     }
 }

@@ -73,6 +73,7 @@ namespace Game.Decor.Tests.Editor
 
 #pragma warning disable CS0067
             public event Action PlacementChanged;
+            public event Action<DecorPlacementChange> PlacementActionPerformed;
 #pragma warning restore CS0067
         }
     }

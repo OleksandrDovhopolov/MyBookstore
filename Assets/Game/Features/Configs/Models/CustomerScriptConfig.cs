@@ -11,6 +11,7 @@ namespace Game.Configs.Models
         public string ActivationQuestId { get; set; }
         public string DialogueId { get; set; }
         public string CharacterId { get; set; }
+        public bool ActiveRequest { get; set; }
         public ScriptedPassivePurchaseConfig[] PassiveAttempts { get; set; }
     }
 }

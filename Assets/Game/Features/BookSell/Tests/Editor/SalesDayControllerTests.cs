@@ -109,6 +109,32 @@ namespace Book.Sell.Tests.Editor
             return ActiveRequestRuntime.FromCondition(request, $"ALL: qualities contains {quality}");
         }
 
+        private static ActiveRequestRuntime GenreRequest(string id, params string[] genres)
+        {
+            var request = new RequestDefinitionConfig
+            {
+                Id = id,
+                Enabled = true,
+                Conditions = new RequestConditionGroup
+                {
+                    All = new[]
+                    {
+                        new RequestCondition
+                        {
+                            Type = "genres",
+                            Operator = "containsAny",
+                            Value = JToken.FromObject(genres)
+                        }
+                    }
+                }
+            };
+
+            return ActiveRequestRuntime.FromCondition(
+                request,
+                $"ALL: genres containsAny [{string.Join(", ", genres)}]",
+                genres);
+        }
+
         // Records the day result handed to the transactional commit at day completion.
         private sealed class RecordingSalesDayCommitService : ISalesDayCommitService
         {
@@ -1424,8 +1450,53 @@ namespace Book.Sell.Tests.Editor
             Assert.IsNotNull(resolved);
             Assert.AreEqual(RecommendationTier.Excellent, resolved.Tier);
             Assert.AreEqual(BookConfig.FixedPriceGold, resolved.GoldEarned);
+            Assert.IsNull(resolved.SoldGenre);
             Assert.AreEqual(BookConfig.FixedPriceGold, c.AccumulatedResult.GoldEarned);
             Assert.AreEqual(ShelfBookState.SoldOut, c.Shelf.Find("b1").State);
+        }
+
+        [Test]
+        public void RecommendBook_ActiveGenreMatch_AttributesSaleToMatchedSecondaryGenre()
+        {
+            var request = GenreRequest("req_kids", "Kids");
+            var c = Build(
+                new[] { SalesTestKit.Book("b1", genres: new[] { "Classic", "Kids" }) },
+                Array.Empty<RequestDefinitionConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { Active("c1", request) });
+
+            RecommendationResult resolved = null;
+            c.RecommendationResolved += r => resolved = r;
+
+            StartDay(c);
+            DriveUntilActive(c);
+            c.RecommendBook("b1");
+
+            Assert.IsNotNull(resolved);
+            Assert.AreEqual(RecommendationTier.Excellent, resolved.Tier);
+            Assert.AreEqual("Kids", resolved.SoldGenre);
+        }
+
+        [Test]
+        public void RecommendBook_MultipleActiveGenreMatches_UsesRequestOrder()
+        {
+            var request = GenreRequest("req_kids_classic", "Kids", "Classic");
+            var c = Build(
+                new[] { SalesTestKit.Book("b1", genres: new[] { "Classic", "Kids" }) },
+                Array.Empty<RequestDefinitionConfig>(),
+                SalesTestKit.Location(),
+                new List<Customer> { Active("c1", request) });
+
+            RecommendationResult resolved = null;
+            c.RecommendationResolved += r => resolved = r;
+
+            StartDay(c);
+            DriveUntilActive(c);
+            c.RecommendBook("b1");
+
+            Assert.IsNotNull(resolved);
+            Assert.AreEqual(RecommendationTier.Excellent, resolved.Tier);
+            Assert.AreEqual("Kids", resolved.SoldGenre);
         }
 
         [Test]

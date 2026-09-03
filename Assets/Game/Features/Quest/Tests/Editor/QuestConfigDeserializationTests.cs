@@ -196,6 +196,24 @@ namespace Game.Quest.Tests.Editor
             }
         }
 
+        [Test]
+        public void Content_StoryCharacters_HaveQuestLinkedMemories_InBothRoots()
+        {
+            foreach (var root in ContentRoots)
+            {
+                var quests = JsonConvert.DeserializeObject<QuestConfig[]>(
+                    File.ReadAllText(Path.Combine(root, "quests.json")));
+                var characters = JsonConvert.DeserializeObject<CharacterConfig[]>(
+                    File.ReadAllText(Path.Combine(root, "characters.json")));
+                var questIds = new System.Collections.Generic.HashSet<string>(quests.Select(q => q.Id));
+
+                AssertStoryCharacterMemory(characters, questIds, "eddi");
+                AssertStoryCharacterMemory(characters, questIds, "millie");
+                AssertStoryCharacterMemory(characters, questIds, "tara");
+                AssertStoryCharacterMemory(characters, questIds, "captain");
+            }
+        }
+
         private static void AssertEddiIntroQuest(string root)
         {
             var quests = JsonConvert.DeserializeObject<QuestConfig[]>(
@@ -279,6 +297,24 @@ namespace Game.Quest.Tests.Editor
             Assert.IsNotNull(quest.ActivationConditions);
             Assert.AreEqual("dialogueDelivered", quest.ActivationConditions["type"].ToString());
             Assert.AreEqual(dialogueId, quest.ActivationConditions["dialogueId"].ToString());
+        }
+
+        private static void AssertStoryCharacterMemory(
+            CharacterConfig[] characters,
+            System.Collections.Generic.HashSet<string> questIds,
+            string characterId)
+        {
+            var character = characters.Single(c => c.Id == characterId);
+            Assert.IsNotNull(character.Memories, characterId);
+            Assert.IsTrue(character.Memories.Length > 0, characterId);
+
+            foreach (var memory in character.Memories)
+            {
+                Assert.IsFalse(string.IsNullOrEmpty(memory.Id), characterId);
+                Assert.IsFalse(string.IsNullOrEmpty(memory.QuestId), memory.Id);
+                Assert.IsTrue(questIds.Contains(memory.QuestId),
+                    $"{characterId}.{memory.Id} questId '{memory.QuestId}' must resolve in quests.json");
+            }
         }
 
         private static void AssertSalesTask(QuestTaskConfig task, int id, string genre, int min)

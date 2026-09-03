@@ -21,5 +21,5 @@ MonoBehaviour:
   _maxQueueSize: 100
   _maxEventNameLength: 40
   _maxParameterKeyLength: 40
-  _maxParameterCount: 50
+  _maxParameterCount: 25
   _sendEventsWithoutUserId: 1

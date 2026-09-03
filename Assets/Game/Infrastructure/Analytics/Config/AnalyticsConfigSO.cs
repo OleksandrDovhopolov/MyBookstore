@@ -17,14 +17,22 @@ namespace Analytics
         [SerializeField] private int _maxQueueSize = 100;
         [SerializeField] private int _maxEventNameLength = 40;
         [SerializeField] private int _maxParameterKeyLength = 40;
-        [SerializeField] private int _maxParameterCount = 50;
+        [SerializeField] private int _maxParameterCount = 25;
         [SerializeField] private bool _sendEventsWithoutUserId = true;
 
         public bool IsAnalyticsEnabled => _isAnalyticsEnabled;
 
-        public bool IsDebugLoggingEnabled => _isDebugLoggingEnabled;
+        // Debug logging is a development affordance: the serialized flag can only turn it OFF for a
+        // development build, never ON for a release one. DebugAnalyticsProvider builds a string per
+        // event and writes it through Debug.LogWarning, which is a synchronous logcat write on Android.
+        public bool IsDebugLoggingEnabled => _isDebugLoggingEnabled && AnalyticsBuildContext.IsDevelopmentBuild;
 
-        public string Environment => string.IsNullOrWhiteSpace(_environment) ? "development" : _environment;
+        // Release builds always report "production" so test traffic can never pollute the live reports.
+        public string Environment => AnalyticsBuildContext.IsDevelopmentBuild
+            ? (string.IsNullOrWhiteSpace(_environment)
+                ? AnalyticsBuildContext.DevelopmentEnvironment
+                : _environment)
+            : AnalyticsBuildContext.ProductionEnvironment;
 
         public IReadOnlyCollection<string> EnabledProviderIds => _enabledProviderIds;
 

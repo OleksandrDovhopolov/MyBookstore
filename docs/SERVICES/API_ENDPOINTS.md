@@ -6,6 +6,14 @@ Base URL: `http://localhost:<port>`
 
 ## Player Save — `/api/v1/save/global`
 
+Текущий Unity-клиент использует `HttpSaveStorage`:
+
+- production base URL: `https://gameserver-production-be8b.up.railway.app/api/v1/`
+- `playerId` — install UUID из `PlayerPrefs`, без авторизации/токена;
+- локальный файл всегда write-through cache: клиент сначала пишет локально, затем пробует отправить на сервер;
+- при ошибке сервера клиент продолжает работать с локальным cache;
+- startup sync сравнивает local/server по `SaveData.Meta.Revision`, не по `lastModified`.
+
 ### POST `/api/v1/save/global`
 Сохраняет данные игрока.
 
@@ -16,6 +24,18 @@ Base URL: `http://localhost:<port>`
 | `data` | string | JSON-строка с данными сохранения |
 
 **Ответ:** `200 OK`
+
+Серверный hard limit: save blob больше `MaxSaveBytes` (сейчас 30 KB) отвергается с `400`.
+Клиент на неуспешный `POST` оставляет данные локально и пишет warning, поэтому 400 из-за размера означает "игрок продолжает играть, но серверная синхронизация перестала проходить".
+
+`data` отправляется именно строкой, не вложенным объектом:
+
+```json
+{
+  "playerId": "player-1",
+  "data": "{\"Meta\":{\"SchemaVersion\":1,\"Revision\":7,\"Hash\":\"...\",\"TimestampUtcMs\":...},\"Modules\":{}}"
+}
+```
 
 ---
 
@@ -29,10 +49,34 @@ Base URL: `http://localhost:<port>`
 
 **Ответ:** `{ data, lastModified }`
 
+Клиент принимает несколько форматов ответа и нормализует их в raw `SaveData` JSON:
+
+- `{ "data": { ... }, "lastModified": 123 }` — основной формат;
+- `{ "data": "<json-string>", "lastModified": 123 }` — legacy/совместимый формат;
+- `{ "Meta": {...}, "Modules": {...} }` — raw save JSON без envelope.
+
+`lastModified` сейчас клиентом намеренно не используется. Для нового игрока серверный `GET /api/v1/save/global` в текущей реализации не возвращает `404`: backend материализует дефолтный aggregate и отвечает `200` со свежим `lastModified`, но без клиентских `Meta` / `Modules`.
+
+Пример server-default ответа для нового игрока:
+
+```json
+{
+  "data": {
+    "Resources": { "Energy": 0, "Gems": 0, "Gold": 0 },
+    "Inventory": { "InventoryItems": {} }
+  },
+  "lastModified": 1770000000000
+}
+```
+
+Для клиента признак "на сервере нет клиентского сейва" — отсутствие `Meta` / `Modules` в нормализованном root payload, а не `404`. Это важно: свежий `lastModified` у server-default не должен побеждать локальный прогресс. Defensive 404-ветка в клиенте безопасна, но для основного `GET /save/global` сейчас недостижима; `404` актуален для `/save/global/meta`.
+
 ---
 
 ### DELETE `/api/v1/save/global`
 Удаляет сохранение игрока.
+
+> Сейчас Unity-клиент не вызывает server-side delete: `HttpSaveStorage.DeleteAsync()` очищает только локальный cache.
 
 **Query:**
 | Параметр | Тип | Описание |
@@ -46,12 +90,22 @@ Base URL: `http://localhost:<port>`
 ### GET `/api/v1/save/global/meta`
 Возвращает метаданные сохранения (время последнего изменения).
 
+> Сейчас Unity-клиент не вызывает этот endpoint: `HttpSaveStorage.GetLastModifiedTimestampAsync()` возвращает `0`. В отличие от основного `GET /save/global`, этот endpoint может вернуть `404` при отсутствии данных.
+
 **Query:**
 | Параметр | Тип | Описание |
 |----------|-----|----------|
 | `playerId` | string | ID игрока |
 
 **Ответ:** `{ lastModified }`
+
+---
+
+### Player Save — operational notes
+
+- `lastModified` нельзя использовать как критерий победителя в startup sync: server-default для нового игрока получает свежее время и иначе затрёт локальный прогресс.
+- Параллельные `POST /save/global` одного `playerId` сервер сейчас не сериализует; read-modify-write гонки возможны при нескольких быстрых сохранениях.
+- При переходе backend auth в `Optional` текущие запросы без токена продолжат работать. При переходе в `Required` клиенту сначала нужен anonymous auth flow: `POST /api/v1/auth/anonymous` с `legacyPlayerId = PersistentInstallPlayerIdentityProvider.GetPlayerId()`, чтобы не потерять уже накопленный серверный прогресс.
 
 ---
 

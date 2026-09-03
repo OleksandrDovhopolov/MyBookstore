@@ -8,7 +8,7 @@ namespace Book.Sell.UI
     /// <summary>
     /// View for the active book-recommendation minigame window. Holds the selection UI
     /// (<see cref="MinigameRoot"/>: request line, shelf grid, book-detail area, Recommend/Skip) and the
-    /// post-recommendation result container (<see cref="ResultPanel"/>: customer emotion + Finish).
+    /// post-recommendation result controls (<see cref="ResultPanel"/>: customer emotion + Finish).
     ///
     /// The detail area is on screen the whole time and swaps between two containers:
     /// <see cref="DetailEmptyRoot"/> (nothing picked — authored placeholder text only) and
@@ -46,7 +46,8 @@ namespace Book.Sell.UI
         [SerializeField] private Button _skipButton;            // "I couldn't find the right book"
 
         [Header("Result container")]
-        [SerializeField] private GameObject _resultPanel;
+        [SerializeField] private GameObject _successResultObject;
+        [SerializeField] private GameObject _failResultObject;
         [SerializeField] private TMP_Text _emotionLabel;        // customer reaction (mapped from Tier)
         [SerializeField] private Button _finishButton;
 
@@ -70,7 +71,9 @@ namespace Book.Sell.UI
         public Button RecommendButton => _recommendButton;
         public Button SkipButton => _skipButton;
 
-        public GameObject ResultPanel => _resultPanel;
+        //public GameObject ResultPanel => _resultPanel;
+        public GameObject SuccessResultObject => _successResultObject;
+        public GameObject FailResultObject => _failResultObject;
         public TMP_Text EmotionLabel => _emotionLabel;
         public Button FinishButton => _finishButton;
     }

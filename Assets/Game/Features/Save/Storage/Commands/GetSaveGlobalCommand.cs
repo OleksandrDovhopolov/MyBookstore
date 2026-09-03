@@ -3,10 +3,8 @@ using Game.Http;
 
 namespace Save.Storage.Commands
 {
-    // GET /save/global?playerId=<id>. The server may wrap the payload in {"data":"..."}
-    // or return raw JSON — both shapes are normalized through SaveGlobalPayloadParser.
-    // 404 (new user) is handled by AbstractServiceCommand and surfaces as
-    // Error == ConnectionCommandsErrors.NotFoundError after ExecuteAsync completes.
+    // GET /save/global?playerId=<id>. Production returns {"data":{...},"lastModified":...}.
+    // Legacy raw save JSON and {"data":"..."} responses are normalized through SaveGlobalPayloadParser.
     public sealed class GetSaveGlobalCommand : AbstractServiceCommand
     {
         public string NormalizedData { get; private set; }

@@ -1,3 +1,4 @@
+using Analytics;
 using Game.Bootstrap.Loading;
 using Game.Ftue.Services;
 using Game.Tutorial.Presentation;
@@ -43,6 +44,11 @@ namespace Game.Bootstrap
                  "but sequences never auto-start from triggers or resume on load. Explicit TryStartAsync still works.")]
         [SerializeField] private bool _tutorialAutoStart = true;
 
+        [Header("Analytics")]
+        [SerializeField] private AnalyticsConfigSO _analyticsConfig;
+        [SerializeField] private AnalyticsRoutingConfigSO _analyticsRoutingConfig;
+        [SerializeField] private AnalyticsMappingConfigSO _analyticsMappingConfig;
+
         [Header("FTUE")]
         [Tooltip("When off, the first-entry WelcomeWindow is not shown. The welcome_completed save flag is left unchanged.")]
         [SerializeField] private bool _startWelcomeWindow = true;
@@ -51,6 +57,14 @@ namespace Game.Bootstrap
         [Tooltip("Day 1 entry path. Hub = classic flow (hub → Start Day → Location Window → Preparation). " +
                  "Location = drop straight into the location with an auto-stocked shelf (see docs/FTUE.md).")]
         [SerializeField] private FirstDayEntryMode _firstDayEntry = FirstDayEntryMode.Location;
+
+        [Header("Privacy (REL-5)")]
+        [Tooltip("Public privacy policy URL opened from the first-run consent screen. " +
+                 "RELEASE BLOCKER: must be a live https URL — PrivacyLinksBuildCheck fails the build otherwise.")]
+        [SerializeField] private string _privacyPolicyUrl = "";
+
+        [Tooltip("Public terms of use URL. Leave empty when one page covers both privacy and terms.")]
+        [SerializeField] private string _termsOfUseUrl = "";
 
 #if UNITY_EDITOR
         [Header("Debug Start (Editor only)")]
@@ -69,7 +83,8 @@ namespace Game.Bootstrap
             builder.RegisterMessagePipeSmokeTest(); // TODO: remove after first real message broker is wired up
             builder.RegisterGameLoading();
             builder.RegisterGameFlow(_gameFlowSettings);
-            builder.RegisterAnalytics();
+            builder.RegisterGameAnalytics(_analyticsConfig, _analyticsRoutingConfig, _analyticsMappingConfig);
+            builder.RegisterConsent(_privacyPolicyUrl, _termsOfUseUrl);
             builder.RegisterSave();
             builder.RegisterInfrastructure();
             builder.RegisterConfigs();
