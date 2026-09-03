@@ -7,7 +7,7 @@ using VContainer;
 
 namespace GameplayUI
 {
-    [Window("SettingsWindow", WindowType.Popup)]
+    [Window("SettingsWindow", WindowType.Widget)]
     public sealed class SettingsWindowController : WindowController<SettingsWindowView>
     {
         private const string LogPrefix = "[Settings]";

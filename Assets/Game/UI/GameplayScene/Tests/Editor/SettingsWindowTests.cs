@@ -77,17 +77,17 @@ namespace GameplayUI.Tests.Editor
         }
 
         [Test]
-        public void SetSoundAndMusic_DoNotFireToggleEvents()
+        public void SetSoundAndMusic_DoNotFireSwitchEvents()
         {
             var root = new GameObject("SettingsWindowViewTests");
             root.SetActive(false);
             try
             {
                 var view = root.AddComponent<SettingsWindowView>();
-                var soundToggle = CreateChildToggle(root.transform, "Sound");
-                var musicToggle = CreateChildToggle(root.transform, "Music");
-                SetPrivateField(view, "_soundToggle", soundToggle);
-                SetPrivateField(view, "_musicToggle", musicToggle);
+                var soundSwitch = CreateChildSwitch(root.transform, "Sound");
+                var musicSwitch = CreateChildSwitch(root.transform, "Music");
+                SetPrivateField(view, "_soundSwitch", soundSwitch);
+                SetPrivateField(view, "_musicSwitch", musicSwitch);
 
                 root.SetActive(true);
 
@@ -110,11 +110,21 @@ namespace GameplayUI.Tests.Editor
             }
         }
 
-        private static Toggle CreateChildToggle(Transform parent, string name)
+        private static UISwitch CreateChildSwitch(Transform parent, string name)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent);
-            return go.AddComponent<Toggle>();
+            var bgImage = go.AddComponent<Image>();
+            var button = go.AddComponent<Button>();
+            var pointer = new GameObject("Pointer").AddComponent<Image>();
+            pointer.transform.SetParent(go.transform);
+
+            var uiSwitch = go.AddComponent<UISwitch>();
+            SetPrivateField(uiSwitch, "_bgImage", bgImage);
+            SetPrivateField(uiSwitch, "_switchPointer", pointer);
+            SetPrivateField(uiSwitch, "_button", button);
+
+            return uiSwitch;
         }
 
         private static void SetPrivateField(object target, string name, object value)

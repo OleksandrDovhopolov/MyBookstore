@@ -8,9 +8,12 @@ namespace GameplayUI
     public sealed class SettingsWindowView : WindowView
     {
         [Header("Settings")]
-        [SerializeField] private Toggle _soundToggle;
-        [SerializeField] private Toggle _musicToggle;
+        [SerializeField] private UISwitch _soundSwitch;
+        [SerializeField] private UISwitch _musicSwitch;
         [SerializeField] private Button _privacyTermsButton;
+
+        private bool _soundEnabled;
+        private bool _musicEnabled;
 
         public event Action<bool> SoundChanged;
         public event Action<bool> MusicChanged;
@@ -20,11 +23,11 @@ namespace GameplayUI
         {
             base.Awake();
 
-            if (_soundToggle != null)
-                _soundToggle.onValueChanged.AddListener(OnSoundToggleChanged);
+            if (_soundSwitch != null)
+                _soundSwitch.Init(OnSoundSwitchChanged, () => _soundEnabled);
 
-            if (_musicToggle != null)
-                _musicToggle.onValueChanged.AddListener(OnMusicToggleChanged);
+            if (_musicSwitch != null)
+                _musicSwitch.Init(OnMusicSwitchChanged, () => _musicEnabled);
 
             if (_privacyTermsButton != null)
                 _privacyTermsButton.onClick.AddListener(OnPrivacyTermsClicked);
@@ -32,12 +35,6 @@ namespace GameplayUI
 
         protected override void OnDestroy()
         {
-            if (_soundToggle != null)
-                _soundToggle.onValueChanged.RemoveListener(OnSoundToggleChanged);
-
-            if (_musicToggle != null)
-                _musicToggle.onValueChanged.RemoveListener(OnMusicToggleChanged);
-
             if (_privacyTermsButton != null)
                 _privacyTermsButton.onClick.RemoveListener(OnPrivacyTermsClicked);
 
@@ -46,14 +43,18 @@ namespace GameplayUI
 
         public void SetSound(bool enabled)
         {
-            if (_soundToggle != null)
-                _soundToggle.SetIsOnWithoutNotify(enabled);
+            _soundEnabled = enabled;
+
+            if (_soundSwitch != null)
+                _soundSwitch.SetIsOnWithoutNotify(enabled);
         }
 
         public void SetMusic(bool enabled)
         {
-            if (_musicToggle != null)
-                _musicToggle.SetIsOnWithoutNotify(enabled);
+            _musicEnabled = enabled;
+
+            if (_musicSwitch != null)
+                _musicSwitch.SetIsOnWithoutNotify(enabled);
         }
 
         public void SetPrivacyTermsVisible(bool visible)
@@ -62,8 +63,18 @@ namespace GameplayUI
                 _privacyTermsButton.gameObject.SetActive(visible);
         }
 
-        private void OnSoundToggleChanged(bool value) => SoundChanged?.Invoke(value);
-        private void OnMusicToggleChanged(bool value) => MusicChanged?.Invoke(value);
+        private void OnSoundSwitchChanged(bool value)
+        {
+            _soundEnabled = value;
+            SoundChanged?.Invoke(value);
+        }
+
+        private void OnMusicSwitchChanged(bool value)
+        {
+            _musicEnabled = value;
+            MusicChanged?.Invoke(value);
+        }
+
         private void OnPrivacyTermsClicked() => PrivacyTermsClicked?.Invoke();
     }
 }
