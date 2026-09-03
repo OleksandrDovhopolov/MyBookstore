@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
@@ -394,6 +395,15 @@ namespace GameplayUI
         public async UniTask OpenAsync<TWindow>(WindowArgs args = null)
             where TWindow : class, IWindowController, new()
         {
+            // A widget (or the HUD itself) opens on top of the HUD without replacing its context, so it
+            // leaves the panels up — and must not become a hide owner either: a still-open widget would
+            // otherwise keep the panels down after every real owner has released them.
+            if (KeepsHudPanelsVisible<TWindow>())
+            {
+                await ShowKeepingPanelsAsync<TWindow>(args);
+                return;
+            }
+
             try
             {
                 await View.HideAnimatedPanelsAsync();
@@ -417,6 +427,28 @@ namespace GameplayUI
                 ShowPanelsIfNoOwnersLeft();
             }
         }
+
+        private async UniTask ShowKeepingPanelsAsync<TWindow>(WindowArgs args)
+            where TWindow : class, IWindowController, new()
+        {
+            try
+            {
+                await UIManager.ShowAsync<TWindow>(args, View.destroyCancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[GameplaySceneController] Failed to open {typeof(TWindow).Name}: {e}");
+            }
+        }
+
+        // Mirrors the [Window] lookup UIManager.ShowAsync does. A type without the attribute throws
+        // there anyway, so it just falls through to the regular panel-hiding path.
+        private static bool KeepsHudPanelsVisible<TWindow>()
+            => typeof(TWindow).GetCustomAttribute<WindowAttribute>()?.Type
+                is WindowType.Widget or WindowType.HUD;
 
         // Hides the HUD panels until the returned lease is disposed. Used by flows that open more than
         // one window in sequence, where per-window ownership would leave a gap between them.
