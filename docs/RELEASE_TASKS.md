@@ -114,6 +114,34 @@
 `descriptionKey` сейчас являются ключами будущей локализации, а `photoKey` рассчитан на будущие Addressables
 assets и до их появления показывает fallback.
 
+### GAME-17 — Validate Day Shelf vs Scripted Customer Scripts
+
+Статус: сделано, коммит `c1c1b1a`.
+
+Корень проблемы оказался не в отсутствии проверок, а в **дублировании контракта**: жанры скриптованного
+покупателя первого дня были захардкожены и в `customer_scripts.json`, и отдельно в C#
+(`AddFirstByGenre("Fact")`, `AddFirstByGenre("Travel")`), причём связи между ними не было — правка конфига
+молча ломала урок первого дня.
+
+Что сделано:
+- **Общий хелпер `CustomerScriptDayLookup`** в сборке `Configs` — `MatchesDay` и `PassiveGenresForDay`.
+  Положен именно туда, потому что `GameplayUI` не ссылается на `Book.Sell`, а на `Configs` ссылаются обе.
+- **Полка первого дня выводится из конфига**: `FirstDayEntryFlow` резервирует слот под каждый жанр из
+  `passiveAttempts` дня 1. Хардкод убран.
+- **Спавнер делегирует тот же хелпер** (`ScriptedCustomerSpawner.IsEligible` → `MatchesDay`), поэтому
+  день-матчинг не может разойтись между двумя местами.
+- **Forced miss покрыт заодно**: `PassiveGenresForDay` не фильтрует по `ForceHit`, поэтому жанр промаха
+  тоже резервируется — урок «книга была, но продажа не гарантирована» обеспечен конструктивно.
+- **Провал forced hit остаётся `LogError`** в `ScriptedPassivePurchaseResolver` — было и сохранено.
+- **Тесты**: юнит на хелпер, контентный тест по обоим content-рутам (каждый жанр дня 1 имеет стартовый
+  сток), тест полки, и регрессия на дрейф — `EnterAsync_WhenDayOneScriptGenreChanges_ReservesThatGenre`
+  проверяет, что смена жанра в конфиге меняет резервируемый жанр. Ad-hoc третья копия day-1 матчинга в
+  `CustomerScriptConfigDeserializationTests` заменена на хелпер.
+
+Ограничение, зафиксированное осознанно: статически проверяется **только день 1** — его полка
+детерминирована (FTUE-сид + правила пресета). Со дня 2 полку выбирает игрок, поэтому такие проверки там
+невозможны. Сегодня это безопасно: `passiveAttempts` есть только у записей дня 1.
+
 ## Part 1 — From TODO / Existing Docs
 
 ### GAME-2 — Finish `Game.Quest` Slice
@@ -141,22 +169,6 @@ assets и до их появления показывает fallback.
 - Убрать временную связность tutorial UI id из `GameplaySceneController`, если она создаёт риск поломки релиза.
 
 Критичность: critical. Tutorial — первый контакт игрока с игрой; сломанный Day 1 будет выглядеть как сломанный продукт.
-
-### GAME-17 — Validate Day Shelf vs Scripted Customer Scripts
-
-Источник: [TODO.md → GAME-17](TODO.md), [INPROGRESS/TUTORIAL_SYSTEM.md](INPROGRESS/TUTORIAL_SYSTEM.md).
-
-Статус: частично закрыто. Day-1 auto-stock больше не дублирует `Fact` / `Travel` в C#: обязательные
-жанры полки выводятся из `customer_scripts.json` через общий day-helper. Если жанры первого дня меняются
-в scripted config, резервирование полки меняется вместе с ними.
-
-Что сделать:
-- Для Day 1 уже покрыто: scripted passive жанры, включая forced miss, резервируются в auto-stock из конфига.
-- Добавить editor-валидатор по всем scripted customer entries после Day 1, где полку выбирает игрок, а не `FirstDayEntryFlow`.
-- Проверить, что forced miss жанры тоже есть в доступном starter/прогрессионном пуле, если урок объясняет "книга была, но продажа не гарантирована".
-- Сделать провал forced hit дефектом контента (`LogError` / failing validation), не тихим warning.
-
-Критичность: critical. Рассинхрон ломает tutorial Day 1 и объяснение sale chance.
 
 ### Quest Flow P1/P2 — Fix Impossible Kids / Fact Active Requests
 
@@ -310,13 +322,21 @@ assets и до их появления показывает fallback.
 
 Критичность: high. Это не новая механика, а видимость уже существующей прогрессии.
 
-### REL-2 — Settings: Sound On / Off Only
+### REL-2 — Settings: Sound / Music + Privacy & Terms
 
-Что сделать:
-- Добавить минимальные настройки.
-- В релизный scope входит только включение/выключение звука.
-- Добавить кнопку открытия Privacy & Terms.
+Статус: code-side ready. Добавлены `SettingsWindowController` / `SettingsWindowView`, Sound/Music toggles через
+`IAudioService`, HUD integration point и кнопка Privacy & Terms через `PrivacyLinkSettings`.
+
+Что осталось вручную:
+- Создать/назначить `SettingsWindow.prefab` с `SettingsWindowView`.
+- Добавить Addressables address ровно `SettingsWindow` в UI-группу.
+- Назначить sound/music toggles, Privacy & Terms button и close button в `WindowView._closeButtons`.
+- Назначить HUD settings button в `HudMenuButtonsView._settingsButton`.
+- Проверить, что Privacy & Terms открывает ожидаемый URL.
+
+Не делать в REL-2:
 - Не добавлять сложные графические настройки, аккаунты, cloud save UI или дополнительные toggles.
+- Не менять REL-11 consent screen.
 
 Тоггл отзыва согласия на аналитику **сознательно отложен** — вынесен в [Deferred](#deferred--сознательно-отложено), чтобы не потеряться.
 

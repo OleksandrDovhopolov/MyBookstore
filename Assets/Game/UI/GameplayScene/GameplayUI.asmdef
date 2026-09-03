@@ -21,7 +21,8 @@
         "Game.GameplayUI.Signals",
         "Game.Journal.UI",
         "Game.Inventory",
-        "Game.Shop"
+        "Game.Shop",
+        "Game.Privacy"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

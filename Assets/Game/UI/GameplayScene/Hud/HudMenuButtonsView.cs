@@ -18,6 +18,7 @@ namespace GameplayUI
         [SerializeField] private Button _journalButton;
         [SerializeField] private Button _inventoryButton;
         [SerializeField] private Button _shopButton;
+        [SerializeField] private Button _settingsButton;
 
         private IHudWindowLauncher _launcher;
         private bool _opening;
@@ -43,6 +44,9 @@ namespace GameplayUI
 
             if (_shopButton != null)
                 _shopButton.onClick.AddListener(OnShopButtonClicked);
+
+            if (_settingsButton != null)
+                _settingsButton.onClick.AddListener(OnSettingsButtonClicked);
         }
 
         public void Unbind()
@@ -62,6 +66,9 @@ namespace GameplayUI
             if (_shopButton != null)
                 _shopButton.onClick.RemoveListener(OnShopButtonClicked);
 
+            if (_settingsButton != null)
+                _settingsButton.onClick.RemoveListener(OnSettingsButtonClicked);
+
             _launcher = null;
             _opening = false;
         }
@@ -74,6 +81,7 @@ namespace GameplayUI
             SetButtonInteractable(_journalButton, value);
             SetButtonInteractable(_inventoryButton, value);
             SetButtonInteractable(_shopButton, value);
+            SetButtonInteractable(_settingsButton, value);
         }
 
         public void SetStartButtonActive(bool active) => SetButtonInteractable(_startDayButton, active);
@@ -83,6 +91,7 @@ namespace GameplayUI
         private void OnJournalButtonClicked() => OpenAsync<JournalWindow>().Forget();
         private void OnInventoryButtonClicked() => OpenAsync<InventoryWindowController>().Forget();
         private void OnShopButtonClicked() => OpenAsync<ShopWindow>().Forget();
+        private void OnSettingsButtonClicked() => OpenAsync<SettingsWindowController>().Forget();
 
         private async UniTaskVoid OpenAsync<TWindow>()
             where TWindow : class, IWindowController, new()

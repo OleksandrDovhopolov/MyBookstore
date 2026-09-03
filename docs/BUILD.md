@@ -194,7 +194,18 @@ Android-таргета на месте конфиг Firebase (`google-services.j
 **Но домен он не проверяет.** Сейчас в ассете стоят ссылки на `themergegames.com` — домен другого
 проекта, и эту проверку они успешно проходят. Перед релизной сборкой домен нужно сверить глазами.
 
-### 5.5 Debug Start — только Editor
+### 5.5 Settings Window (REL-2)
+
+Code-side REL-2 не меняет prefab assets. Перед релизным APK вручную проверить:
+
+- `SettingsWindow.prefab` существует, содержит `SettingsWindowView` и опубликован в Addressables UI group с address
+  ровно `SettingsWindow`;
+- в prefab назначены sound toggle, music toggle, Privacy & Terms button и close button в `WindowView._closeButtons`;
+- в HUD назначен `HudMenuButtonsView._settingsButton`;
+- кнопка Privacy & Terms открывает ожидаемый `TermsOfUseUrl` или fallback на `PrivacyPolicyUrl`;
+- Sound/Music toggles сохраняют `audio.sfx`, `audio.ui`, `audio.music` между перезапусками.
+
+### 5.6 Debug Start — только Editor
 
 `_useDebugFeatures` (мастер-выключатель) и `_skipFullLoading` (пропуск Addressables update + RemoteConfig
 init) объявлены под `#if UNITY_EDITOR`, тело `ApplyDebugFlags()` — тоже. **В плеер эти поля не попадают,
@@ -204,7 +215,7 @@ init) объявлены под `#if UNITY_EDITOR`, тело `ApplyDebugFlags()`
 бутстрапа, **включая FTUE-сидирование** (`phase_ftue / ftue_bootstrap`), и проверка получится нерепрезентативной.
 Экран согласия при этом всё равно показывается — `ConsentGateOperation` намеренно присутствует в обеих ветках.
 
-### 5.6 FTUE
+### 5.7 FTUE
 
 FTUE — save-backed: сидирование (стартовые gold/книги, скриптовый день 1) выполняется, только если
 в сейве нет `ftue.applied` (см. [FTUE.md](FTUE.md)). Следствия для проверки билда:
@@ -238,6 +249,7 @@ FTUE — save-backed: сидирование (стартовые gold/книги
 - [ ] Player Settings: IL2CPP + ARM64, API level, keystore, список сцен.
 - [ ] `BootstrapInstaller.asset` — пройти по таблицам [§5](#5-bootstrapinstallerasset--настройки-и-ссылки-dev--release): ассеты-ссылки и три поля аналитики назначены, поведенческие флаги под задачу билда, debug-флаги `0`.
 - [ ] `_privacyPolicyUrl` ведёт на **свой** домен — build-check проверяет только `https://`, чужую ссылку он пропустит.
+- [ ] Settings: prefab `SettingsWindow`, address `SettingsWindow`, HUD button, toggles и Privacy & Terms button назначены; ссылка открывает ожидаемый URL.
 - [ ] `AnalyticsConfig.asset` руками не переключать: release-сборка сама получает silent debug logging и `environment=production`.
 - [ ] FTUE проверять на чистой установке (сброшенные данные).
 - [ ] Собрать APK → smoke-проверка старта, конфигов, активного запроса, диалога, FTUE/туториала.
