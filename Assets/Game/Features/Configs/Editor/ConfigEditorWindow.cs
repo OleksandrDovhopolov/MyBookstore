@@ -39,6 +39,9 @@ namespace Game.Configs.Editor
 
         private Vector2 _detailScroll;
         private CancellationTokenSource _cts;
+        private int _validationRevision = -1;
+        private string _validationSection;
+        private List<ValidationIssue> _validationIssues = new();
 
         [MenuItem("Tools/Configs/Editor Window")]
         public static void Open()
@@ -72,7 +75,7 @@ namespace Game.Configs.Editor
             DrawConnectionFoldout();
             EditorGUILayout.Space(4);
 
-            var issues = SectionValidator.Validate(_state.Section, _state.WorkingArray);
+            var issues = GetValidationIssues();
             var invalidIds = CollectInvalidIds(issues);
 
             using (new EditorGUI.DisabledScope(IsBusy()))
@@ -215,10 +218,13 @@ namespace Game.Configs.Editor
             else
             {
                 _detailScroll = EditorGUILayout.BeginScrollView(_detailScroll, GUILayout.ExpandHeight(true));
+                bool changed;
                 if (_state.Section == "books")
-                    BooksItemDrawer.Draw(selected);
+                    changed = BooksItemDrawer.Draw(selected);
                 else
-                    _genericDrawer.Draw(selected);
+                    changed = _genericDrawer.Draw(selected);
+                if (changed)
+                    _state.MarkDirty();
                 EditorGUILayout.EndScrollView();
             }
             EditorGUILayout.EndVertical();
@@ -249,9 +255,13 @@ namespace Game.Configs.Editor
 
             if (issues.Count > 0)
             {
+                const int MaxVisibleIssues = 30;
+                var visible = issues.Take(MaxVisibleIssues).ToArray();
                 var msg = "Validation issues (Publish disabled):\n - " + string.Join(
                     "\n - ",
-                    issues.ConvertAllToStrings());
+                    visible.ConvertAllToStrings());
+                if (issues.Count > MaxVisibleIssues)
+                    msg += $"\n - ...and {issues.Count - MaxVisibleIssues} more";
                 EditorGUILayout.HelpBox(msg, MessageType.Warning);
             }
 
@@ -477,8 +487,7 @@ namespace Game.Configs.Editor
                     return;
                 }
 
-                _state.WorkingArray = array;
-                _state.SelectedItemIndex = -1;
+                _state.ReplaceWorking(array, dirty: true);
                 _state.State = EditorWindowState.Dirty;
                 _state.LastOperationResult = $"Loaded {path} into working copy.";
             }
@@ -644,7 +653,7 @@ namespace Game.Configs.Editor
             if (_state.State != EditorWindowState.Loaded && _state.State != EditorWindowState.Empty && _state.State != EditorWindowState.Dirty)
                 return false;
             // Блок при наличии validation issues — определяется по живому валидатору в OnGUI.
-            var issues = SectionValidator.Validate(_state.Section, _state.WorkingArray);
+            var issues = GetValidationIssues();
             if (issues.Count > 0) return false;
             return _state.IsDirty || _state.State == EditorWindowState.Empty;
         }
@@ -686,6 +695,17 @@ namespace Game.Configs.Editor
         }
 
         private JObject FindSelectedItem() => _state.SelectedItem;
+
+        private IReadOnlyList<ValidationIssue> GetValidationIssues()
+        {
+            if (_validationRevision == _state.ContentRevision && _validationSection == _state.Section)
+                return _validationIssues;
+
+            _validationIssues = SectionValidator.Validate(_state.Section, _state.WorkingArray);
+            _validationRevision = _state.ContentRevision;
+            _validationSection = _state.Section;
+            return _validationIssues;
+        }
 
         private static HashSet<string> CollectInvalidIds(IReadOnlyList<ValidationIssue> issues)
         {

@@ -30,6 +30,7 @@ namespace Game.Configs.Editor
         public string CurrentEtag;          // canonical (no quotes)
         public string PulledSnapshotJson;   // serialized array, как отдал сервер
         public JArray WorkingArray = new(); // parsed working
+        public int ContentRevision { get; private set; }
         public int SelectedItemIndex = -1;  // -1 = nothing selected
         public string PublishComment = string.Empty;
 
@@ -42,16 +43,8 @@ namespace Game.Configs.Editor
         public string LastError;
         public string LastOperationResult;
 
-        /// <summary>Dirty = working != pulled (по нормализованной сериализации).</summary>
-        public bool IsDirty
-        {
-            get
-            {
-                if (PulledSnapshotJson == null)
-                    return WorkingArray != null && WorkingArray.Count > 0;
-                return Serialize(WorkingArray) != Normalize(PulledSnapshotJson);
-            }
-        }
+        /// <summary>Dirty tracks intentional UI mutations; avoid serializing large sections every repaint.</summary>
+        public bool IsDirty { get; private set; }
 
         public bool IsEmpty => CurrentEtag == null && CurrentVersion == 0;
 
@@ -73,6 +66,8 @@ namespace Game.Configs.Editor
             PulledSnapshotJson = arr.ToString(Newtonsoft.Json.Formatting.None);
             WorkingArray = (JArray)arr.DeepClone();
             SelectedItemIndex = -1;
+            IsDirty = false;
+            ContentRevision++;
         }
 
         public void MarkEmpty()
@@ -82,18 +77,26 @@ namespace Game.Configs.Editor
             PulledSnapshotJson = null;
             WorkingArray = new JArray();
             SelectedItemIndex = -1;
+            IsDirty = false;
+            ContentRevision++;
+        }
+
+        public void ReplaceWorking(JArray array, bool dirty)
+        {
+            WorkingArray = array ?? new JArray();
+            SelectedItemIndex = -1;
+            IsDirty = dirty;
+            ContentRevision++;
+        }
+
+        public void MarkDirty()
+        {
+            IsDirty = true;
+            ContentRevision++;
         }
 
         public string SerializeWorking(Newtonsoft.Json.Formatting f = Newtonsoft.Json.Formatting.None)
             => WorkingArray.ToString(f);
 
-        private static string Serialize(JArray a)
-            => a == null ? "[]" : a.ToString(Newtonsoft.Json.Formatting.None);
-
-        private static string Normalize(string serialized)
-        {
-            try { return JArray.Parse(serialized).ToString(Newtonsoft.Json.Formatting.None); }
-            catch { return serialized; }
-        }
     }
 }
