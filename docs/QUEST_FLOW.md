@@ -7,7 +7,9 @@
 запроса — [ACTIVE_REQUEST_CONDITIONS.md](ACTIVE_REQUEST_CONDITIONS.md), разблокировка локаций —
 [LOCATION_UNLOCK_SYSTEM.md](LOCATION_UNLOCK_SYSTEM.md).
 
-> **Статус на 2026-07-30.** Из четырёх квестов проходим **один** (Эдди). Три блокера — в реестре ниже.
+> **Статус на 2026-09-03.** P1/P2 (нерешаемые Kids/Fact активные запросы) закрыты: рантайм грузит активные
+> запросы только из `sample_requests.json`, где Kids/Fact решаемы, а legacy `hard_requests.json` удалён.
+> Остаются блокеры P3/P4/P5 — в реестре ниже.
 
 Легенда: ✅ работает · 🟡 работает с оговоркой · 🔴 блокер
 
@@ -81,14 +83,16 @@ QuestRewardBridge (ISaveHook.BeforeSaveAsync) ──▶ IRewardGrantService
 | **Награда** | `millie_letter` (quest_item) + `fuel_canister` ×1 |
 | **Дальше** | `millie_letter` ×1 + `fuel_canister` ×2 → **Кампус** |
 
-🔴 **Блокер: ни одна Fact-книга не может получить «отлично».** Все 7 Fact-запросов в `hard_requests.json`
-идентичны по условиям — `genres contains "Fact"` **AND** `qualities contains "History"`. Качество `History`
-есть у 9 книг, все жанра Classic/Drama; у Fact-книг его нет ни у одной. Ближайшее — `Historic` (1 книга),
-то есть в контенте опечатка плюс путаница словарей: описание `req_hard_30` говорит «popular-science», а
-условие требует историю.
+✅ **Разрешено (P2 закрыт).** Исторически блокер был в legacy-файле `hard_requests.json`: все 7 Fact-запросов
+требовали `qualities contains "History"` — качества `History` в каталоге нет ни у одной книги (у Fact-книг
+есть `Historic`, 58 шт. — путаница словарей). Но рантайм активные запросы этот файл **никогда не грузил**:
+модель замаплена только на `sample_requests.json` (`[ConfigFile("sample_requests")]`), и там оба Fact-запроса
+(`req_fact_01`, `req_fact_02`) решаемы реальными Fact-книгами (14 и 11 совпадений по каталогу). Legacy-файл
+`hard_requests.json` удалён, чтобы не вводить в заблуждение.
 
-Реально лежит на Fact-книгах: `Pop Science` (5), `Non Fiction` (4), `Nature` (4), `Space` (2),
-`Historic` (1), `Biography` (1), `Political` (2), `Cooking` (1).
+Регрессию стережёт `ActiveRequestValidator` (меню `Tools → Configs → Validate Active Requests` + гейт
+`PreBuildValidationGate`) и тест `ActiveRequestSolvabilityTests`: оба ловят «голодающий» жанр, у которого ни
+одна книга не может получить `Excellent`.
 
 **Как считается зачёт** (важно при починке): засчитывается только `RecommendationTier.Excellent`
 (`SalesDayCommitService`). После GAME-22 активная продажа засчитывается в жанр, по которому прошёл
@@ -114,12 +118,12 @@ QuestRewardBridge (ISaveHook.BeforeSaveAsync) ──▶ IRewardGrantService
 «скрыть» не нужен — витрина строится **только** из лотов `shop.json` (`ShopOfferSource.BuildOffers`),
 `decors.json` её не наполняет.
 
-🔴 **Блокер, тот же по природе, что у Милли: ни одна Kids-книга не может получить «отлично».** Все 7
-Kids-запросов требуют `qualities contains "Fantasy"`. Качество `Fantasy` есть у 6 книг — все Crime/Classic;
-у Kids-книг его нет. Автор снова подставил **название жанра в слот качества**.
-
-Реально лежит на Kids-книгах: `Kids` (все 10), `Animals` (3), `Humor` (2), `Nature` (2),
-`Coming of Age` (2), `Magic` (1), `Philosophical` (1), `Contemporary` (1).
+✅ **Разрешено (P1 закрыт), той же природы, что P2.** В legacy `hard_requests.json` все 7 Kids-запросов были
+неразрешимы вдвойне: `genres contains "Horror"`/`"Tragedy"` (это вообще не жанры — их нет в `BookGenre`) плюс
+`qualities contains "Fantasy"` (такого качества в каталоге 0). Но этот файл рантаймом не грузился; живой файл
+`sample_requests.json` содержит решаемые Kids-запросы `req_kids_01`, `req_kids_02` (20 и 3 совпадения). Файл
+`hard_requests.json` удалён. Регрессию стережёт тот же `ActiveRequestValidator` + тест
+`ActiveRequestSolvabilityTests` (см. блок Милли).
 
 ---
 
@@ -180,8 +184,8 @@ dayProgress и **не на посещения локаций**. Визит фи�
 
 | # | Проблема | Влияние | Где |
 |---|---|---|---|
-| **P1** 🔴 | Все 7 Kids-запросов нерешаемы (`qualities contains "Fantasy"`) | Тара непроходима → Порт, затем Рынок и Деревня | `hard_requests.json` |
-| **P2** 🔴 | Все 7 Fact-запросов нерешаемы (`qualities contains "History"`) | Милли непроходима → Кампус | `hard_requests.json` |
+| **P1** ✅ | Kids-запросы решаемы. Неразрешимые жили в legacy `hard_requests.json`, который рантайм не грузил; живой `sample_requests.json` содержит валидные Kids-запросы. Legacy-файл удалён | — | Закрыто: `sample_requests.json` + тест `ActiveRequestSolvabilityTests` |
+| **P2** ✅ | Fact-запросы решаемы. Та же природа, что P1 — блокер был только в удалённом legacy `hard_requests.json` | — | Закрыто: `sample_requests.json` + тест `ActiveRequestSolvabilityTests` |
 | **P3** 🔴 | Открытки не выдаются | Капитан непроходим → Рынок | нет механики |
 | **P4** 🔴 | У `map` нет источника | Деревня недостижима | дизайн не определён |
 | **P5** 🟠 | `days.json` обрывается на дне 2; у дней 1–2 `activeRequestCount: 0` при `applyModifiers: false` (жёсткий override), с дня 3 берётся `SalesTrafficSettings.DefaultActiveRequestCount` = 1 | обе `activePickGenre`-задачи стартуют на ~1 запросе в день; в дни выдачи прогресс невозможен физически | `days.json` |
@@ -190,12 +194,13 @@ dayProgress и **не на посещения локаций**. Визит фи�
 | **P8** ✅ | `activePickGenre` считал `genres[0]`, а условие запроса — весь массив `genres` | двужанровая книга давала «отлично», но не засчитывалась в квест | Закрыто GAME-22: активная продажа фиксирует жанр запроса |
 | **P9** 🟡 | Открытки не списываются при сдаче квеста | предметы остаются в инвентаре | нет механики |
 
-**Порядок разбора.** P5 первым — он корень темпа для P1/P2 и вообще всей прогрессии после дня 2. Затем
-P1/P2 (правка данных, самая дешёвая), затем P3. P6–P9 — доработки.
+**Порядок разбора.** P1/P2 закрыты (миграция на `sample_requests.json` + удаление legacy `hard_requests.json`).
+Остаётся P5 (корень темпа прогрессии после дня 2), затем P3. P6–P9 — доработки.
 
 Против повторения P1/P2 стоит гейт: `Tools → Configs → Validate Active Requests` и автоматическая
-проверка на билде (`PreBuildValidationGate`, см. [BUILD.md §0](BUILD.md)). Он ловит и нерешаемый запрос, и
-«голодающий жанр», у которого ни одна книга не может получить `Excellent`.
+проверка на билде (`PreBuildValidationGate`, см. [BUILD.md §0](BUILD.md)), плюс тест
+`ActiveRequestSolvabilityTests`. Все трое ловят и нерешаемый запрос, и «голодающий жанр», у которого ни одна
+книга не может получить `Excellent`.
 
 ---
 

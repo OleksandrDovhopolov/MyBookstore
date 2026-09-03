@@ -27,9 +27,9 @@ data-driven принципам [ADR-0002](../adr/0002-config-system-architecture
 
 ## 2. Модель данных
 
-Файл `hard_requests.json` — **JSON-массив** (как все конфиги; загрузчик делает `JArray.Parse`).
+Файл `sample_requests.json` — **JSON-массив** (как все конфиги; загрузчик делает `JArray.Parse`).
 C#-модель — [`RequestDefinitionConfig`](../../Assets/Game/Features/Configs/Models/RequestDefinitionConfig.cs)
-(`[ConfigFile("hard_requests")]`), группы —
+(`[ConfigFile("sample_requests")]`), группы —
 [`RequestConditionGroup`](../../Assets/Game/Features/Configs/Models/RequestConditionGroup.cs), лист —
 [`RequestCondition`](../../Assets/Game/Features/Configs/Models/RequestCondition.cs).
 
@@ -166,7 +166,7 @@ C#-модель — [`RequestDefinitionConfig`](../../Assets/Game/Features/Confi
 Старый скоринг удалён целиком: `RequestConfig`, `IRecommendationScoringService` /
 `RecommendationScoringService`, конфиг `requests.json` и переключатель режимов (`ActiveRequestMode` /
 `ActiveRequestSourceKind`). Активная продажа работает только на `RequestDefinitionConfig` +
-`hard_requests.json`; `IActiveRequestScoringService` всегда вызывает `IBookConditionRequestEvaluator`.
+`sample_requests.json`; `IActiveRequestScoringService` всегда вызывает `IBookConditionRequestEvaluator`.
 
 Осталось как **общая** инфраструктура (не legacy-only): `RecommendationResult` / `RecommendationTier` /
 `RecommendationReason` / `ScoreBreakdown` / `RequestDifficulty` — их использует условный путь и окно
@@ -184,7 +184,7 @@ C#-модель — [`RequestDefinitionConfig`](../../Assets/Game/Features/Confi
 ## 5. Конфиг-плюмбинг
 
 - Editor/дев: `LocalFolderConfigSource` читает все `Assets/Configs/*.json` из папки — регистрация не нужна.
-- Плеер-сборка: `StreamingAssetsConfigSource` грузит по `manifest.json` — `hard_requests.json` **добавлен в
+- Плеер-сборка: `StreamingAssetsConfigSource` грузит по `manifest.json` — `sample_requests.json` **добавлен в
   манифест**. Перед релизным билдом гонять `Tools/Configs/Sync Bundled Defaults to StreamingAssets`
   (копирует `Assets/Configs/*.json` и регенерит манифест).
 - `.meta` для новых `.json` Unity сгенерит при импорте.

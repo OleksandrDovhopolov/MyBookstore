@@ -33,7 +33,7 @@ hard-валидатор вернул ошибку. Warning-проверки пи
 | `DialogueDeliveredConditionReferenceValidator` | Error | Условие `dialogueDelivered` в квесте ссылается на несуществующий `dialogueId` (или не указывает его) | Условие fail-closed → квест молча никогда не стартует |
 | `CharacterMemoryReferenceValidator` | Error | Memory без источника разблокировки; несколько источников разблокировки сразу; битый `questId`/`questChainId`; дубликаты `memory.id`; две memories на один quest/chain unlock | `CharactersService` строит обратный индекс `questId`/`chainId` по принципу last-write-wins, а memory без unlock source просто остаётся скрытой навсегда |
 | `BookBoxPoolValidator` | Error | Лот-книжная коробка, чей пул не матчит ни одной книги (или матчит меньше, чем `rolls`); лот с `rewardId` вида `book_box_*`, для которого нет правила | Правила пула читают поля `BookConfig` напрямую: если в каталоге поля нет, книга садится на C#-дефолт, пул пустеет — ни ошибки парсинга, ни битой ссылки. Так `book_box_rare_8` (`RarityWeight >= 0.6`) сломался при замене каталога на тот, где нет `rarityWeight`: все книги получили дефолтные `0.5`, и лот начал брать золото, не выдавая ничего |
-| `CollectOrphanConfigWarnings` | Warning | JSON в `Assets/Configs`, для которого нет ни одного `[ConfigFile]` | Такой файл уезжает в APK и manifest как мёртвый груз; сейчас ожидаемый пример — legacy `hard_requests.json`, живой файл запросов — `sample_requests.json` |
+| `CollectOrphanConfigWarnings` | Warning | JSON в `Assets/Configs`, для которого нет ни одного `[ConfigFile]` | Такой файл уезжает в APK и manifest как мёртвый груз. Живой файл запросов — `sample_requests.json`; legacy `hard_requests.json` удалён, orphan-warning по нему больше не ожидается |
 
 Правила общие для всех: валидаторы **чистые** (ничего не логируют и не показывают — решает вызывающий),
 читают JSON напрямую (без `IConfigsService`, которого вне Play mode нет) и переиспользуют рантаймовый код,
@@ -77,8 +77,8 @@ hard-валидатор вернул ошибку. Warning-проверки пи
 
 **Что сделать:**
 
-1. Разобраться с warning-ами orphan-config checker. Сейчас ожидаемый warning — `hard_requests.json`: живой файл
-   активных запросов мапится через `[ConfigFile("sample_requests")]`.
+1. Разобраться с warning-ами orphan-config checker. Legacy `hard_requests.json` удалён; живой файл активных
+   запросов мапится через `[ConfigFile("sample_requests")]`.
 2. Опубликовать изменённые живые секции через **`Tools → Configs → Editor Window`** в нужное окружение
    (`dev`/`prod`) либо подтвердить, что сервер уже содержит ту же версию.
 3. Запустить **`Tools → Configs → Sync Bundled Defaults to StreamingAssets`**. Оно:
@@ -240,9 +240,9 @@ FTUE — save-backed: сидирование (стартовые gold/книги
 
 ## Быстрый чеклист
 
-- [ ] Разобраться с warning по `Assets/Configs/hard_requests.json` (legacy, живой файл — `sample_requests.json`).
+- [x] Legacy `Assets/Configs/hard_requests.json` удалён; живой файл запросов — `sample_requests.json`.
 - [ ] `Tools → Configs → Sync Bundled Defaults to StreamingAssets`.
-- [ ] `Tools → Configs → Run Pre-Build Validation` — ноль ошибок; warning по `hard_requests.json` ожидаем до удаления legacy-файла.
+- [ ] `Tools → Configs → Run Pre-Build Validation` — ноль ошибок.
 - [ ] Войти в Play mode хотя бы раз — так отработают рантаймовые валидаторы (`ItemReferenceValidator`, `DecorConfigValidator`), которых нет в гейте.
 - [ ] Собрать/включить Addressables.
 - [ ] Firebase Android-конфиг на месте.

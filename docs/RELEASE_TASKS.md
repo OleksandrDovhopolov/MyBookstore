@@ -160,6 +160,29 @@ HUD integration point и назначенная кнопка настроек н
 детерминирована (FTUE-сид + правила пресета). Со дня 2 полку выбирает игрок, поэтому такие проверки там
 невозможны. Сегодня это безопасно: `passiveAttempts` есть только у записей дня 1.
 
+### Quest Flow P1/P2 — Fix Impossible Kids / Fact Active Requests
+
+Источник: [QUEST_FLOW.md → Registry P1/P2](QUEST_FLOW.md).
+
+Статус: сделано. Оказалось, что нерешаемые Kids/Fact-запросы жили только в legacy-файле `hard_requests.json`,
+который рантайм **никогда не грузил** — активные запросы мапятся только на `sample_requests.json`
+(`[ConfigFile("sample_requests")]`), а там Kids/Fact уже решаемы (Kids — 19 книг-победителей, Fact — 29 по
+живому каталогу). То есть блокер был устранён ещё миграцией на `sample_requests.json`; эта задача закрыла
+хвост — уборку legacy и защиту от регресса.
+
+Что сделано:
+- Удалён legacy `hard_requests.json` (из `Assets/Configs` и `Assets/StreamingAssets/Configs`, вычищен из
+  `manifest.json`) и все ссылки на него в коде/доках (`LocalizationKeyValidator`, комментарии моделей,
+  `QUEST_FLOW.md`, `ACTIVE_REQUEST_CONDITIONS.md`, `BUILD.md`, `TODO.md`).
+- Добавлен регресс-тест `ActiveRequestSolvabilityTests` (`Book.Sell.Tests.Editor`): гоняет тот же
+  `ActiveRequestValidator`, что и билд-гейт, по живому каталогу и требует, чтобы ни один активный запрос не
+  был нерешаем и ни один жанр не «голодал»; отдельные кейсы прямо стерегут Kids и Fact.
+- Проверено: валидатор по живому каталогу даёт 0 ошибок, `StarvedGenres` пуст; тестовая сборка компилируется
+  без ошибок. Полный прогон Test Runner — при закрытом редакторе (сейчас Unity держал lock).
+
+Осталось вне scope: `sample_requests.json` содержит по 2 Kids/Fact-запроса — для разнообразия их можно
+дописать, но на проходимость квестов это не влияет.
+
 ## Part 1 — From TODO / Existing Docs
 
 ### GAME-2 — Finish `Game.Quest` Slice
@@ -187,17 +210,6 @@ HUD integration point и назначенная кнопка настроек н
 - Убрать временную связность tutorial UI id из `GameplaySceneController`, если она создаёт риск поломки релиза.
 
 Критичность: critical. Tutorial — первый контакт игрока с игрой; сломанный Day 1 будет выглядеть как сломанный продукт.
-
-### Quest Flow P1/P2 — Fix Impossible Kids / Fact Active Requests
-
-Источник: [QUEST_FLOW.md → Registry P1/P2](QUEST_FLOW.md), [TODO.md](TODO.md).
-
-Что сделать:
-- Починить Kids-запросы, которые сейчас требуют `qualities contains "Fantasy"` и поэтому нерешаемы.
-- Починить Fact-запросы, которые сейчас требуют `qualities contains "History"` и поэтому нерешаемы.
-- Прогнать валидатор active requests и убедиться, что у каждого требуемого жанра есть решаемые книги.
-
-Критичность: critical. Тара и Милли становятся непроходимыми, а за ними блокируются локации.
 
 ### Quest Flow P3 — Add `postcard` Source
 
@@ -314,7 +326,7 @@ HUD integration point и назначенная кнопка настроек н
 Источник: [BUILD.md](BUILD.md), [TODO.md](TODO.md).
 
 Что сделать:
-- Разобраться с warning по `Assets/Configs/hard_requests.json`.
+- ~~Разобраться с warning по `Assets/Configs/hard_requests.json`~~ — legacy-файл удалён.
 - Опубликовать/синхронизировать живые configs и прогнать `Sync Bundled Defaults to StreamingAssets`.
 - Прогнать `Run Pre-Build Validation` и runtime validators через Play mode.
 - Собрать Addressables.

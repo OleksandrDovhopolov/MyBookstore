@@ -6,7 +6,7 @@ namespace Game.Configs.Models
     ///
     /// <para>See docs/ACTIVE_REQUEST_CONDITIONS.md for the model spec and the ADR to update.</para>
     ///
-    /// <para>File: sample_requests.json (JSON array). Legacy hard_requests.json remains in Assets/Configs.</para>
+    /// <para>File: sample_requests.json (JSON array). This is the sole active-request content file.</para>
     /// </summary>
     [ConfigFile("sample_requests")]
     public sealed class RequestDefinitionConfig : IConfig

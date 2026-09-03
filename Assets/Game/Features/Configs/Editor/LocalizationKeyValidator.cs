@@ -23,7 +23,6 @@ namespace Game.Configs.Editor
             "days.json",
             "decors.json",
             "dialogues.json",
-            "hard_requests.json",
             "locations.json",
             "quest_items.json",
             "quests.json",
