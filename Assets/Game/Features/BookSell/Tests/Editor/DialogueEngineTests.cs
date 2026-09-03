@@ -11,7 +11,7 @@ namespace Book.Sell.Tests.Editor
     public sealed class DialogueEngineTests
     {
         private static DialogueOptionConfig Opt(string text, string next)
-            => new() { Text = text, Next = next };
+            => new() { TextKey = text, Next = next };
 
         private static DialogueNodeConfig Node(string id, string[] lines, params DialogueOptionConfig[] options)
             => new() { NodeId = id, Lines = ToLines(lines), Options = options };
@@ -21,7 +21,7 @@ namespace Book.Sell.Tests.Editor
             if (texts == null) return System.Array.Empty<DialogueLineConfig>();
             var result = new DialogueLineConfig[texts.Length];
             for (var i = 0; i < texts.Length; i++)
-                result[i] = new DialogueLineConfig { Speaker = "x", Text = texts[i] };
+                result[i] = new DialogueLineConfig { SpeakerKey = "x", TextKey = texts[i] };
             return result;
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Localization;
 using Game.WorldHud;
 using UnityEngine;
 
@@ -152,10 +153,10 @@ namespace Book.Sell.UI.Customer
             {
                 CustomerThoughtState.Thinking => string.Empty,      // dots indicator instead of text
                 CustomerThoughtState.ThinkingNext => string.Empty,  // dots indicator instead of text
-                CustomerThoughtState.BookPicked => "Active purchase",
-                CustomerThoughtState.Comment => "Bought book",
-                CustomerThoughtState.PassiveSaleFailed => "Failed",
-                CustomerThoughtState.PurchaseCompleted => "Done shopping",
+                CustomerThoughtState.BookPicked => LocalizationLocator.GetOrKey("ui.customer.active_purchase"),
+                CustomerThoughtState.Comment => LocalizationLocator.GetOrKey("ui.customer.bought_book"),
+                CustomerThoughtState.PassiveSaleFailed => LocalizationLocator.GetOrKey("ui.customer.failed"),
+                CustomerThoughtState.PurchaseCompleted => LocalizationLocator.GetOrKey("ui.customer.done_shopping"),
                 _ => string.Empty
             };
         }

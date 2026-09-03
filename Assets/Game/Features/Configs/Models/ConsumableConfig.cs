@@ -5,7 +5,7 @@ namespace Game.Configs.Models
     public sealed class ConsumableConfig : IConfig
     {
         public string Id { get; set; }
-        public string DisplayName { get; set; }
+        public string DisplayNameKey { get; set; }
         public string DescriptionKey { get; set; }
     }
 }

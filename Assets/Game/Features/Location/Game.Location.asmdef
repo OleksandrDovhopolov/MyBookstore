@@ -13,7 +13,8 @@
         "Game.Inventory.API",
         "Game.Core.UI",
         "Infrastructure",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Game.Localization"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

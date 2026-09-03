@@ -13,8 +13,8 @@ namespace Game.Configs.Models
     {
         public string Id { get; set; }
 
-        /// <summary>Authored customer-facing request text shown in the active recommendation UI.</summary>
-        public string Description { get; set; }
+        /// <summary>Localization key for the customer-facing request text shown in the active recommendation UI.</summary>
+        public string DescriptionKey { get; set; }
 
         /// <summary>Authoring metadata: the primary genre the request was designed around. Not used by evaluation.</summary>
         public string Genre { get; set; }

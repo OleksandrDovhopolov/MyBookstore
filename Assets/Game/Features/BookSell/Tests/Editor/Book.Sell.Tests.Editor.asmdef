@@ -23,7 +23,8 @@
         "Game.Location.API",
         "Dialogue",
         "MessagePipe",
-        "Game.GameplayUI.Signals"
+        "Game.GameplayUI.Signals",
+        "Game.Localization"
     ],
     "includePlatforms": [
         "Editor"

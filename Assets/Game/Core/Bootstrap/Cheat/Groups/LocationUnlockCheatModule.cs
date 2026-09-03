@@ -4,6 +4,7 @@ using cheatModule;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
+using Game.Localization;
 using Game.LocationUnlock.API;
 using Save;
 using UnityEngine;
@@ -56,7 +57,9 @@ namespace Game.Cheat
                 if (config == null || string.IsNullOrEmpty(config.Id)) continue;
 
                 var id = config.Id;
-                var displayName = string.IsNullOrEmpty(config.DisplayName) ? id : config.DisplayName;
+                var displayName = string.IsNullOrEmpty(config.DisplayNameKey)
+                    ? id
+                    : LocalizationLocator.GetOrKey(config.DisplayNameKey);
                 var hasCost = config.UnlockCost != null && config.UnlockCost.Length > 0;
 
                 cheatsContainer.AddItem<CheatButtonItem>(item =>

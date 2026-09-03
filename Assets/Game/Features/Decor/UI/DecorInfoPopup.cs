@@ -3,6 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
+using Game.Localization;
 using Game.UI;
 using SpriteService;
 using UIShared;
@@ -16,8 +17,7 @@ namespace Game.Decor.UI
     {
         // DecorConfig has no authored flavor description yet. Placeholder shown in _descriptionLabel
         // until a Description field exists on DecorConfig (then feed config.Description here instead).
-        private const string DescriptionPlaceholder =
-            "TODO: item description. Add a Description field to DecorConfig and pass it here.";
+        private const string DescriptionPlaceholderKey = "ui.decor.description.placeholder";
 
         private IConfigsService _configs;
         private IUiSpriteProvider _sprites;
@@ -51,8 +51,11 @@ namespace Game.Decor.UI
             var config = _configs.Get<DecorConfig>(args.DecorId);
             if (config == null) return;
 
-            if (View.NameLabel != null) View.NameLabel.text = config.DisplayName ?? config.Id;
-            if (View.DescriptionLabel != null) View.DescriptionLabel.text = DescriptionPlaceholder;
+            if (View.NameLabel != null)
+                View.NameLabel.text = string.IsNullOrEmpty(config.DisplayNameKey)
+                    ? config.Id
+                    : LocalizationLocator.GetOrKey(config.DisplayNameKey);
+            if (View.DescriptionLabel != null) View.DescriptionLabel.text = LocalizationLocator.GetOrKey(DescriptionPlaceholderKey);
 
             RenderBonuses(config);
             RenderCharacteristics(config);

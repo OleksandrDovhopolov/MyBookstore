@@ -1,0 +1,17 @@
+{
+  "character.captain.name": "Captain",
+  "character.eddi.name": "Eddy",
+  "character.millie.name": "Millie",
+  "character.owner.name": "Owner",
+  "character.tara.name": "Tara",
+  "memory.captain.postcards.description": "The captain always means to send postcards home. This time, you can help.",
+  "memory.captain.postcards.title": "Postcards For The Captain",
+  "memory.eddi.intro.description": "Eddy handed over the shop and left you with a first bit of confidence.",
+  "memory.eddi.intro.title": "Eddy's Farewell",
+  "memory.millie.intro.description": "Millie left a note and a reminder that factual readers want exact answers.",
+  "memory.millie.intro.title": "Millie's Letter",
+  "memory.owner.moving_in.description": "The keys are yours, and the little bookshop finally has a new life.",
+  "memory.owner.moving_in.title": "Moving In",
+  "memory.tara.kids.description": "Tara asked for help finding stories children would love.",
+  "memory.tara.kids.title": "Tara's Request"
+}

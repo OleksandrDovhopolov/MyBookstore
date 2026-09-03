@@ -89,8 +89,8 @@ namespace Game.Decor.Services
                     orderedIds.Add(decor.Id);
                 }
 
-                if (string.IsNullOrEmpty(decor.DisplayName))
-                    report.Warnings.Add($"Decor '{decor.Id}' has empty DisplayName.");
+                if (string.IsNullOrEmpty(decor.DisplayNameKey))
+                    report.Warnings.Add($"Decor '{decor.Id}' has empty DisplayNameKey.");
 
                 if (!Enum.IsDefined(typeof(DecorPositionType), decor.PositionType))
                     report.Errors.Add($"Decor '{decor.Id}' has invalid PositionType ({(int)decor.PositionType}).");

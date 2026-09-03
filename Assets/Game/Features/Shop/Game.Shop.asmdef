@@ -17,7 +17,8 @@
         "Infrastructure",
         "Game.Core.UI",
         "Unity.TextMeshPro",
-        "Game.Rewards"
+        "Game.Rewards",
+        "Game.Localization"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

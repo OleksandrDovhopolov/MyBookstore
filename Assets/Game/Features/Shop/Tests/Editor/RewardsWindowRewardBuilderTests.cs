@@ -72,7 +72,7 @@ namespace Game.Newspaper.Tests.Editor
         public void Build_ConsumableRewards_UseConsumableDisplayName()
         {
             var configs = new FakeConfigsService(
-                consumables: new[] { new ConsumableConfig { Id = "fuel_canister", DisplayName = "Fuel Canister" } });
+                consumables: new[] { new ConsumableConfig { Id = "fuel_canister", DisplayNameKey = "Fuel Canister" } });
             var spec = new RewardSpec("quest_reward", new[]
             {
                 RewardItem.InventoryItem("fuel_canister", InventoryCategories.Consumable, 2),
@@ -92,7 +92,7 @@ namespace Game.Newspaper.Tests.Editor
         public void Build_QuestItemRewards_UseQuestItemDisplayName()
         {
             var configs = new FakeConfigsService(
-                questItems: new[] { new QuestItemConfig { Id = "millie_letter", DisplayName = "Millie Letter" } });
+                questItems: new[] { new QuestItemConfig { Id = "millie_letter", DisplayNameKey = "Millie Letter" } });
             var spec = new RewardSpec("quest_reward", new[]
             {
                 RewardItem.InventoryItem("millie_letter", InventoryCategories.QuestItem, 1)
@@ -111,7 +111,7 @@ namespace Game.Newspaper.Tests.Editor
         {
             var configs = new FakeConfigsService(
                 decors: new[] { Decor("lavender", "Lavender", "lavender") },
-                questItems: new[] { new QuestItemConfig { Id = "port_trade_permit", DisplayName = "Trade Permit" } });
+                questItems: new[] { new QuestItemConfig { Id = "port_trade_permit", DisplayNameKey = "Trade Permit" } });
             var spec = new RewardSpec("quest_reward", new[]
             {
                 RewardItem.InventoryItem("lavender", InventoryCategories.Decor, 1),
@@ -164,7 +164,7 @@ namespace Game.Newspaper.Tests.Editor
             new BookConfig { Id = id, Genres = new[] { genre } };
 
         private static DecorConfig Decor(string id, string displayName, string iconAddress) =>
-            new DecorConfig { Id = id, DisplayName = displayName, IconAddress = iconAddress };
+            new DecorConfig { Id = id, DisplayNameKey = displayName, IconAddress = iconAddress };
 
         private sealed class FakeConfigsService : IConfigsService
         {

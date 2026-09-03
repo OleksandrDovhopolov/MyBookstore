@@ -4,7 +4,7 @@ namespace Game.Configs.Models
     public sealed class LocationConfig : IConfig
     {
         public string Id { get; set; }
-        public string DisplayName { get; set; }
+        public string DisplayNameKey { get; set; }
 
         public int EntryCost { get; set; }
 

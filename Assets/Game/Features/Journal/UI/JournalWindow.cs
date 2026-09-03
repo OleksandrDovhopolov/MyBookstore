@@ -6,6 +6,7 @@ using Game.Configs;
 using Game.Configs.Models;
 using Game.Decor;
 using Game.Decor.UI;
+using Game.Localization;
 using Game.LocationUnlock.API;
 using Game.Quest.API;
 using Game.Quest.UI;
@@ -24,7 +25,7 @@ namespace Game.Journal.UI
     [Window("JournalWindow", WindowType.Page, true)]
     public sealed class JournalWindow : WindowController<JournalWindowView>
     {
-        private const string TodoDescription = "TODO: reward description";
+        private const string TodoDescriptionKey = "ui.journal.reward.description.placeholder";
 
         private readonly JournalCharactersViewModelBuilder _peopleBuilder = new();
         private readonly JournalMemoriesViewModelBuilder _memoriesBuilder = new();
@@ -261,7 +262,9 @@ namespace Game.Journal.UI
 
             try
             {
-                var description = string.IsNullOrEmpty(reward.DisplayName) ? TodoDescription : reward.DisplayName;
+                var description = string.IsNullOrEmpty(reward.DisplayName)
+                    ? LocalizationLocator.GetOrKey(TodoDescriptionKey)
+                    : reward.DisplayName;
                 var args = new ContentWidgetArgs(
                     new QuestRewardWidgetData(reward.Id, description),
                     anchor,

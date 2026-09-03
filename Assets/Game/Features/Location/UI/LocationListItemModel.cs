@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Game.Conditions.API;
 using Game.Configs.Models;
+using Game.Localization;
 using Game.LocationEntry.API;
 using Game.LocationUnlock.API;
 
@@ -62,10 +63,15 @@ namespace Game.Location.UI
             }
 
             return new LocationListItemModel(
-                config.Id, config.DisplayName, unlocked,
+                config.Id, ResolveDisplayName(config), unlocked,
                 entryCost.Total, entryCost.CurrencyId, canAffordEntry, conditions, costs,
                 !unlocked && costs != null && costs.Count > 0 && conditionsMet && costsMet);
         }
+
+        private static string ResolveDisplayName(LocationConfig config)
+            => string.IsNullOrEmpty(config?.DisplayNameKey)
+                ? config?.Id
+                : LocalizationLocator.GetOrKey(config.DisplayNameKey);
 
         private static void CollectLeaves(ConditionResult node, List<LocationConditionProgress> result)
         {

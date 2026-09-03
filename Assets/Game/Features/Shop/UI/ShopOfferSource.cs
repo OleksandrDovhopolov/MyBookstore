@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Inventory.API;
+using Game.Localization;
 using Game.Rewards.API;
 using Game.Rewards.Services;
 using Game.Shop.API;
@@ -14,9 +15,9 @@ namespace Game.Shop.UI
     {
         private const string BookOfferIconId = "book_box";
 
-        private const string NewState = "NEW!";
-        private const string SoldState = "SOLD";
-        private const string FreePrice = "FREE";
+        private const string NewStateKey = "ui.shop.offer.new";
+        private const string SoldStateKey = "ui.shop.offer.sold";
+        private const string FreePriceKey = "ui.shop.price.free";
 
         private readonly IShopService _shop;
         private readonly IConfigsService _configs;
@@ -60,7 +61,7 @@ namespace Game.Shop.UI
                     lot.Description ?? string.Empty,
                     FormatPrice(lot.Price),
                     isAvailable,
-                    isAvailable ? NewState : SoldState,
+                    LocalizationLocator.GetOrKey(isAvailable ? NewStateKey : SoldStateKey),
                     isDecor,
                     bookIconId));
             }
@@ -120,7 +121,7 @@ namespace Game.Shop.UI
 
         private static string FormatPrice(ShopPrice price)
         {
-            if (price.Amount <= 0) return FreePrice;
+            if (price.Amount <= 0) return LocalizationLocator.GetOrKey(FreePriceKey);
             return price.Amount.ToString();
         }
     }

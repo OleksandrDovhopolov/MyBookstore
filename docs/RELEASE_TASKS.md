@@ -114,6 +114,24 @@
 `descriptionKey` сейчас являются ключами будущей локализации, а `photoKey` рассчитан на будущие Addressables
 assets и до их появления показывает fallback.
 
+### REL-2 — Settings: Sound / Music + Privacy & Terms
+
+Статус: сделано. Добавлены `SettingsWindowController` / `SettingsWindowView`, Sound/Music переключатели
+через `UISwitch` и `IAudioService`, prefab `SettingsWindow`, Addressables address `SettingsWindow`,
+HUD integration point и назначенная кнопка настроек на `GameplayScene`.
+
+В окне настроек есть ссылка `Privacy Policy`, которая открывает `PrivacyLinkSettings.TermsOfUseUrl`.
+Если отдельный Terms URL пустой, `PrivacyLinkSettings` fallback-ится на `PrivacyPolicyUrl`, поэтому одна
+публичная страница может покрывать Privacy + Terms.
+
+Что важно перед релизом: сама механика ссылки готова, но URL должен быть заменён на **мой Terms / Privacy**.
+Сейчас в `BootstrapInstaller.asset` стоят тестовые чужие ссылки — это закрывается в REL-5 и обязательно
+проверяется в Build Checklist перед APK.
+
+Не вошло в REL-2:
+- Тоггл отзыва согласия на аналитику сознательно отложен в [DEF-1](#def-1--analytics-consent-withdrawal-toggle).
+- REL-11 остаётся отдельной задачей: экран первого запуска должен разделить Terms acceptance и analytics consent.
+
 ### GAME-17 — Validate Day Shelf vs Scripted Customer Scripts
 
 Статус: сделано, коммит `c1c1b1a`.
@@ -303,6 +321,8 @@ assets и до их появления показывает fallback.
 - Проверить Firebase Android config.
 - Проверить Android Player Settings: IL2CPP, ARM64, API level, keystore, scenes.
 - Проверить `BootstrapInstaller.asset`: debug off, full loading on, tutorial settings, first-day path.
+- Обязательно заменить `_privacyPolicyUrl` / `_termsOfUseUrl` на правильные ссылки на **мой Terms / Privacy**.
+  Сейчас там стоят тестовые чужие ссылки; они проходят https-проверку, но не подходят для релиза.
 - Настройки аналитики (отладочный лог и `environment`) вручную **не трогать** — они выводятся из типа сборки, см. REL-12 и [BUILD.md §5](BUILD.md).
 - Проверить FTUE на чистой установке.
 - Собрать APK и сделать smoke: старт, configs, active request, dialogue, FTUE/tutorial.
@@ -321,26 +341,6 @@ assets и до их появления показывает fallback.
 - Индикатор должен исчезать после просмотра соответствующего нового элемента.
 
 Критичность: high. Это не новая механика, а видимость уже существующей прогрессии.
-
-### REL-2 — Settings: Sound / Music + Privacy & Terms
-
-Статус: code-side ready. Добавлены `SettingsWindowController` / `SettingsWindowView`, Sound/Music toggles через
-`IAudioService`, HUD integration point и кнопка Privacy & Terms через `PrivacyLinkSettings`.
-
-Что осталось вручную:
-- Создать/назначить `SettingsWindow.prefab` с `SettingsWindowView`.
-- Добавить Addressables address ровно `SettingsWindow` в UI-группу.
-- Назначить sound/music toggles, Privacy & Terms button и close button в `WindowView._closeButtons`.
-- Назначить HUD settings button в `HudMenuButtonsView._settingsButton`.
-- Проверить, что Privacy & Terms открывает ожидаемый URL.
-
-Не делать в REL-2:
-- Не добавлять сложные графические настройки, аккаунты, cloud save UI или дополнительные toggles.
-- Не менять REL-11 consent screen.
-
-Тоггл отзыва согласия на аналитику **сознательно отложен** — вынесен в [Deferred](#deferred--сознательно-отложено), чтобы не потеряться.
-
-Критичность: medium. Желательно для APK, но не должно расширяться.
 
 ### REL-3 — English-Only Localization Configs
 
@@ -386,7 +386,7 @@ assets и до их появления показывает fallback.
 Осталось сделать:
 
 1. **Создать свою страницу Privacy + Terms.** Сейчас в `BootstrapInstaller.asset` прописаны чужие ссылки на `themergegames.com` — это домен другого проекта, и по ним игрок попадёт на политику чужого продукта. Нужна собственная публичная страница, покрывающая: кто разработчик и как с ним связаться; какие данные собираются (**анонимная геймплейная аналитика через Firebase Analytics** — прогресс по дням, квестам, локациям, покупки в игровом магазине; плюс save-данные на собственный сервер и `player_id` из `save.http.player_id.v1`; advertising ID не собирается, крашлитика выключена); зачем они нужны; третьи стороны (Firebase Analytics, Firebase Remote Config, Cloudflare R2 для Addressables, собственный config/save-сервер); сроки хранения; права пользователя и как запросить удаление данных.
-2. **Поменять ссылки в `Assets/Game/Core/Installers/Bootstrap/BootstrapInstaller.asset`** — поля `_privacyPolicyUrl` и `_termsOfUseUrl`. Если одна страница покрывает оба документа, `_termsOfUseUrl` можно оставить пустым: `PrivacyLinkSettings.TermsOfUseUrl` сам падает обратно на privacy-ссылку.
+2. **Поменять ссылки в `Assets/Game/Core/Installers/Bootstrap/BootstrapInstaller.asset`** — поля `_privacyPolicyUrl` и `_termsOfUseUrl` обязаны вести на **мой Terms / Privacy**, а не на тестовые чужие страницы. Если одна страница покрывает оба документа, `_termsOfUseUrl` можно оставить пустым: `PrivacyLinkSettings.TermsOfUseUrl` сам падает обратно на privacy-ссылку.
 3. **Обновить форму Data Safety в Google Play Console: теперь нужно декларировать сбор данных.** Раньше здесь стояло «ни advertising ID, ни сбора данных» — после ANL-1 это неверно. Декларировать: аналитика собирается, advertising ID не собирается, данные привязаны к сгенерированному идентификатору установки.
 
 Важно про пункт 2: `PrivacyLinksBuildCheck` проверяет только что URL непустой и начинается с `https://`. Нынешние чужие ссылки эту проверку **проходят**, то есть автоматика от такой ошибки не защитит — сверять домен нужно глазами перед релизной сборкой.

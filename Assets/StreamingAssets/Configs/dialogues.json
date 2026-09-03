@@ -5,15 +5,42 @@
       {
         "nodeId": "root",
         "lines": [
-          { "speaker": "Tilde", "text": "I heard you've opened a shop…" }
+          {
+            "speakerKey": "dialogue.dlg_intro_tilde.root.line_0.speaker",
+            "textKey": "dialogue.dlg_intro_tilde.root.line_0.text"
+          }
         ],
         "options": [
-          { "text": "Come on in!", "next": "warm" },
-          { "text": "We're still getting ready.", "next": "cool" }
+          {
+            "next": "warm",
+            "textKey": "dialogue.dlg_intro_tilde.root.option_0.text"
+          },
+          {
+            "next": "cool",
+            "textKey": "dialogue.dlg_intro_tilde.root.option_1.text"
+          }
         ]
       },
-      { "nodeId": "warm", "lines": [ { "speaker": "Tilde", "text": "See you then." } ], "options": [] },
-      { "nodeId": "cool", "lines": [ { "speaker": "Tilde", "text": "I understand, I'll drop by later." } ], "options": [] }
+      {
+        "nodeId": "warm",
+        "lines": [
+          {
+            "speakerKey": "dialogue.dlg_intro_tilde.warm.line_0.speaker",
+            "textKey": "dialogue.dlg_intro_tilde.warm.line_0.text"
+          }
+        ],
+        "options": []
+      },
+      {
+        "nodeId": "cool",
+        "lines": [
+          {
+            "speakerKey": "dialogue.dlg_intro_tilde.cool.line_0.speaker",
+            "textKey": "dialogue.dlg_intro_tilde.cool.line_0.text"
+          }
+        ],
+        "options": []
+      }
     ]
   },
   {
@@ -22,11 +49,20 @@
       {
         "nodeId": "root",
         "lines": [
-          { "speaker": "Guest", "text": "I need one book. Can you help?" }
+          {
+            "speakerKey": "dialogue.dlg_quest_01.root.line_0.speaker",
+            "textKey": "dialogue.dlg_quest_01.root.line_0.text"
+          }
         ],
         "options": [
-          { "text": "Of course", "next": "end" },
-          { "text": "Later", "next": "end" }
+          {
+            "next": "end",
+            "textKey": "dialogue.dlg_quest_01.root.option_0.text"
+          },
+          {
+            "next": "end",
+            "textKey": "dialogue.dlg_quest_01.root.option_1.text"
+          }
         ]
       }
     ]
@@ -38,16 +74,46 @@
         "nodeId": "root",
         "options": [],
         "lines": [
-          { "speaker": "Tilde", "text": "So this is that new shop everyone's talking about. And here I thought the rumors were exaggerating." },
-          { "speaker": "Morgan", "text": "Rumors rarely exaggerate for the better. Come in — it's quiet right now." },
-          { "speaker": "Tilde", "text": "Quiet is good. I can't stand picking books in a crowd." },
-          { "speaker": "Morgan", "text": "Then you're in luck. What are you after — something specific, or just browsing?" },
-          { "speaker": "Tilde", "text": "Just browsing, mostly. A good book usually finds me on its own." },
-          { "speaker": "Morgan", "text": "There are plenty of them here, so its chances are pretty good." },
-          { "speaker": "Tilde", "text": "I like that confidence in a shopkeeper. Usually it's in short supply." },
-          { "speaker": "Morgan", "text": "I just know my shelves. If you need anything, don't hesitate to ask." },
-          { "speaker": "Tilde", "text": "Deal. And… I'm glad you've finally opened." },
-          { "speaker": "Morgan", "text": "Thank you. Make yourself at home — this is a place you can linger in." }
+          {
+            "speakerKey": "dialogue.dlg_tilde_meet.root.line_0.speaker",
+            "textKey": "dialogue.dlg_tilde_meet.root.line_0.text"
+          },
+          {
+            "speakerKey": "dialogue.dlg_tilde_meet.root.line_1.speaker",
+            "textKey": "dialogue.dlg_tilde_meet.root.line_1.text"
+          },
+          {
+            "speakerKey": "dialogue.dlg_tilde_meet.root.line_2.speaker",
+            "textKey": "dialogue.dlg_tilde_meet.root.line_2.text"
+          },
+          {
+            "speakerKey": "dialogue.dlg_tilde_meet.root.line_3.speaker",
+            "textKey": "dialogue.dlg_tilde_meet.root.line_3.text"
+          },
+          {
+            "speakerKey": "dialogue.dlg_tilde_meet.root.line_4.speaker",
+            "textKey": "dialogue.dlg_tilde_meet.root.line_4.text"
+          },
+          {
+            "speakerKey": "dialogue.dlg_tilde_meet.root.line_5.speaker",
+            "textKey": "dialogue.dlg_tilde_meet.root.line_5.text"
+          },
+          {
+            "speakerKey": "dialogue.dlg_tilde_meet.root.line_6.speaker",
+            "textKey": "dialogue.dlg_tilde_meet.root.line_6.text"
+          },
+          {
+            "speakerKey": "dialogue.dlg_tilde_meet.root.line_7.speaker",
+            "textKey": "dialogue.dlg_tilde_meet.root.line_7.text"
+          },
+          {
+            "speakerKey": "dialogue.dlg_tilde_meet.root.line_8.speaker",
+            "textKey": "dialogue.dlg_tilde_meet.root.line_8.text"
+          },
+          {
+            "speakerKey": "dialogue.dlg_tilde_meet.root.line_9.speaker",
+            "textKey": "dialogue.dlg_tilde_meet.root.line_9.text"
+          }
         ]
       }
     ]
@@ -58,57 +124,131 @@
       {
         "nodeId": "root",
         "lines": [
-          { "speaker": "Eddy", "text": "There we go, the last signature is in place. This place is yours now." },
-          { "speaker": "Eddy", "text": "And a well-earned retirement is waiting for me. For 40 years, I made children happy with sweets right here in this very spot." }
+          {
+            "speakerKey": "dialogue.eddy1.root.line_0.speaker",
+            "textKey": "dialogue.eddy1.root.line_0.text"
+          },
+          {
+            "speakerKey": "dialogue.eddy1.root.line_1.speaker",
+            "textKey": "dialogue.eddy1.root.line_1.text"
+          }
         ],
         "options": [
-          { "text": "This was my dream", "next": "dream" },
-          { "text": "Work is work", "next": "job" }
+          {
+            "next": "dream",
+            "textKey": "dialogue.eddy1.root.option_0.text"
+          },
+          {
+            "next": "job",
+            "textKey": "dialogue.eddy1.root.option_1.text"
+          }
         ]
       },
       {
         "nodeId": "dream",
         "lines": [
-          { "speaker": "Morgan", "text": "I always dreamed of having a bookshop." },
-          { "speaker": "Eddy", "text": "It's a good thing, finding your calling in life." }
+          {
+            "speakerKey": "dialogue.eddy1.dream.line_0.speaker",
+            "textKey": "dialogue.eddy1.dream.line_0.text"
+          },
+          {
+            "speakerKey": "dialogue.eddy1.dream.line_1.speaker",
+            "textKey": "dialogue.eddy1.dream.line_1.text"
+          }
         ],
-        "options": [ { "text": "", "next": "mid" } ]
+        "options": [
+          {
+            "next": "mid",
+            "textKey": ""
+          }
+        ]
       },
       {
         "nodeId": "job",
         "lines": [
-          { "speaker": "Morgan", "text": "Work is work." },
-          { "speaker": "Eddy", "text": "That's true. But you know what they say? If you find your calling, you'll never work a day in your life!" }
+          {
+            "speakerKey": "dialogue.eddy1.job.line_0.speaker",
+            "textKey": "dialogue.eddy1.job.line_0.text"
+          },
+          {
+            "speakerKey": "dialogue.eddy1.job.line_1.speaker",
+            "textKey": "dialogue.eddy1.job.line_1.text"
+          }
         ],
-        "options": [ { "text": "", "next": "mid" } ]
+        "options": [
+          {
+            "next": "mid",
+            "textKey": ""
+          }
+        ]
       },
       {
         "nodeId": "mid",
         "lines": [
-          { "speaker": "Eddy", "text": "Though you look far too young for that. Everything can still change many times over." }
+          {
+            "speakerKey": "dialogue.eddy1.mid.line_0.speaker",
+            "textKey": "dialogue.eddy1.mid.line_0.text"
+          }
         ],
         "options": [
-          { "text": "I agree", "next": "agree" },
-          { "text": "I disagree", "next": "disagree" }
+          {
+            "next": "agree",
+            "textKey": "dialogue.eddy1.mid.option_0.text"
+          },
+          {
+            "next": "disagree",
+            "textKey": "dialogue.eddy1.mid.option_1.text"
+          }
         ]
       },
       {
         "nodeId": "agree",
-        "lines": [ { "speaker": "Morgan", "text": "That's why I came here - I'm looking for my calling." } ],
-        "options": [ { "text": "", "next": "outro" } ]
+        "lines": [
+          {
+            "speakerKey": "dialogue.eddy1.agree.line_0.speaker",
+            "textKey": "dialogue.eddy1.agree.line_0.text"
+          }
+        ],
+        "options": [
+          {
+            "next": "outro",
+            "textKey": ""
+          }
+        ]
       },
       {
         "nodeId": "disagree",
-        "lines": [ { "speaker": "Morgan", "text": "I know exactly what I want." } ],
-        "options": [ { "text": "", "next": "outro" } ]
+        "lines": [
+          {
+            "speakerKey": "dialogue.eddy1.disagree.line_0.speaker",
+            "textKey": "dialogue.eddy1.disagree.line_0.text"
+          }
+        ],
+        "options": [
+          {
+            "next": "outro",
+            "textKey": ""
+          }
+        ]
       },
       {
         "nodeId": "outro",
         "lines": [
-          { "speaker": "Eddy", "text": "Well, looks like it's time for you to open the little shop. Customers have already noticed you and are heading this way." },
-          { "speaker": "Eddy", "text": "I'll pick out something to read this evening myself, so retirement doesn't get too dull." }
+          {
+            "speakerKey": "dialogue.eddy1.outro.line_0.speaker",
+            "textKey": "dialogue.eddy1.outro.line_0.text"
+          },
+          {
+            "speakerKey": "dialogue.eddy1.outro.line_1.speaker",
+            "textKey": "dialogue.eddy1.outro.line_1.text"
+          }
         ],
-        "options": [ { "text": "Start selling", "next": "end" } ]
+        "options": [
+          {
+            "next": "end",
+            "textKey": "dialogue.eddy1.outro.option_0.text"
+          }
+        ]
       }
     ]
   },
@@ -119,8 +259,14 @@
         "nodeId": "root",
         "options": [],
         "lines": [
-          { "speaker": "Eddy", "text": "[STUB] I had one more thought about this shop." },
-          { "speaker": "Eddy", "text": "[STUB] Keep an eye on what people ask for. Patterns matter." }
+          {
+            "speakerKey": "dialogue.eddy_quest_1.root.line_0.speaker",
+            "textKey": "dialogue.eddy_quest_1.root.line_0.text"
+          },
+          {
+            "speakerKey": "dialogue.eddy_quest_1.root.line_1.speaker",
+            "textKey": "dialogue.eddy_quest_1.root.line_1.text"
+          }
         ]
       }
     ]
@@ -132,8 +278,14 @@
         "nodeId": "root",
         "options": [],
         "lines": [
-          { "speaker": "Millie", "text": "[STUB] Hi. I left a letter for you." },
-          { "speaker": "Millie", "text": "[STUB] If someone asks for facts, find them something exact." }
+          {
+            "speakerKey": "dialogue.millie1.root.line_0.speaker",
+            "textKey": "dialogue.millie1.root.line_0.text"
+          },
+          {
+            "speakerKey": "dialogue.millie1.root.line_1.speaker",
+            "textKey": "dialogue.millie1.root.line_1.text"
+          }
         ]
       }
     ]
@@ -145,8 +297,14 @@
         "nodeId": "root",
         "options": [],
         "lines": [
-          { "speaker": "Tara", "text": "[STUB] The children keep asking me for stories and I never know what to pick." },
-          { "speaker": "Tara", "text": "[STUB] Find the right one for five of them and I'll get you a berth at the port." }
+          {
+            "speakerKey": "dialogue.tara_quest_1.root.line_0.speaker",
+            "textKey": "dialogue.tara_quest_1.root.line_0.text"
+          },
+          {
+            "speakerKey": "dialogue.tara_quest_1.root.line_1.speaker",
+            "textKey": "dialogue.tara_quest_1.root.line_1.text"
+          }
         ]
       }
     ]
@@ -158,8 +316,14 @@
         "nodeId": "root",
         "options": [],
         "lines": [
-          { "speaker": "Captain", "text": "[STUB] Every port I dock at, I mean to send a card home. Never do." },
-          { "speaker": "Captain", "text": "[STUB] Bring me ten of them and I'll put a word in for you at the market." }
+          {
+            "speakerKey": "dialogue.captain_quest_1.root.line_0.speaker",
+            "textKey": "dialogue.captain_quest_1.root.line_0.text"
+          },
+          {
+            "speakerKey": "dialogue.captain_quest_1.root.line_1.speaker",
+            "textKey": "dialogue.captain_quest_1.root.line_1.text"
+          }
         ]
       }
     ]
@@ -171,9 +335,18 @@
         "nodeId": "root",
         "options": [],
         "lines": [
-          { "speaker": "Eddy", "text": "[STUB] Back already? Good - before you run off, let me show you something." },
-          { "speaker": "Eddy", "text": "[STUB] Every shopkeeper keeps a journal: your tasks, the people you meet, what to do next." },
-          { "speaker": "Eddy", "text": "[STUB] Give it a tap when you're ready - it's right there on your screen." }
+          {
+            "speakerKey": "dialogue.tutorial_hub_intro.root.line_0.speaker",
+            "textKey": "dialogue.tutorial_hub_intro.root.line_0.text"
+          },
+          {
+            "speakerKey": "dialogue.tutorial_hub_intro.root.line_1.speaker",
+            "textKey": "dialogue.tutorial_hub_intro.root.line_1.text"
+          },
+          {
+            "speakerKey": "dialogue.tutorial_hub_intro.root.line_2.speaker",
+            "textKey": "dialogue.tutorial_hub_intro.root.line_2.text"
+          }
         ]
       }
     ]

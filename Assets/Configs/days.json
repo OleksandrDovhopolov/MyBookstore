@@ -2,23 +2,26 @@
   {
     "id": "day_001",
     "dayIndex": 1,
-    "title": "Первый день у парка",
     "weatherId": "clear",
     "eventId": "exam_week",
     "customerCount": 4,
     "activeRequestCount": 0,
-    "waveSizes": [1, 3],
+    "waveSizes": [
+      1,
+      3
+    ],
     "waveGapSeconds": 2,
-    "applyModifiers": false
+    "applyModifiers": false,
+    "titleKey": "day.day_001.title"
   },
   {
     "id": "day_002",
     "dayIndex": 2,
-    "title": "Дождливое утро",
     "weatherId": "rain",
     "eventId": "",
     "customerCount": 3,
     "activeRequestCount": 0,
-    "applyModifiers": false
+    "applyModifiers": false,
+    "titleKey": "day.day_002.title"
   }
 ]

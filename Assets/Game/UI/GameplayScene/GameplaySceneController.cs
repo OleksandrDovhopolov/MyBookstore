@@ -8,6 +8,7 @@ using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
+using Game.Localization;
 using Game.Location.UI;
 using Game.LocationUnlock.API;
 using Game.Preparation.Services;
@@ -156,7 +157,7 @@ namespace GameplayUI
             {
                 var ct = View.destroyCancellationToken;
                 var context = await _session.StartOrResumeAsync(ct);
-                View.SetDayText($"Day {context.Day}");
+                View.SetDayText(LocalizationLocator.GetOrKey("ui.gameplay.day", context.Day));
 
                 if (_preparationSession != null)
                 {
@@ -373,8 +374,8 @@ namespace GameplayUI
         private string ResolveLocationDisplayName(string locationId)
         {
             if (_configs != null && _configs.TryGet<LocationConfig>(locationId, out var config)
-                                 && !string.IsNullOrEmpty(config.DisplayName))
-                return config.DisplayName;
+                                 && !string.IsNullOrEmpty(config.DisplayNameKey))
+                return LocalizationLocator.GetOrKey(config.DisplayNameKey);
             return locationId;
         }
 

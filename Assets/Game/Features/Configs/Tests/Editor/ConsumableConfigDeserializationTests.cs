@@ -20,7 +20,7 @@ namespace Game.Configs.Tests.Editor
 [
   {
     ""id"": ""fuel_canister"",
-    ""displayName"": ""Fuel Canister"",
+    ""displayNameKey"": ""consumable.fuel_canister.name"",
     ""descriptionKey"": ""consumable.fuel_canister.desc""
   }
 ]";
@@ -33,7 +33,7 @@ namespace Game.Configs.Tests.Editor
             Assert.IsNotNull(items);
             Assert.AreEqual(1, items.Length);
             Assert.AreEqual("fuel_canister", items[0].Id);
-            Assert.AreEqual("Fuel Canister", items[0].DisplayName);
+            Assert.AreEqual("consumable.fuel_canister.name", items[0].DisplayNameKey);
             Assert.AreEqual("consumable.fuel_canister.desc", items[0].DescriptionKey);
         }
 
@@ -61,6 +61,7 @@ namespace Game.Configs.Tests.Editor
 
                 var items = JsonConvert.DeserializeObject<ConsumableConfig[]>(File.ReadAllText(path));
                 var canister = items.Single(i => i.Id == "fuel_canister");
+                Assert.AreEqual("consumable.fuel_canister.name", canister.DisplayNameKey);
                 Assert.AreEqual("consumable.fuel_canister.desc", canister.DescriptionKey);
             }
         }

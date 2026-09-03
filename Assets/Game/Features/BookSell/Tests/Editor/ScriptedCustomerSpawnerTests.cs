@@ -60,7 +60,7 @@ namespace Book.Sell.Tests.Editor
                 new DialogueNodeConfig
                 {
                     NodeId = "root",
-                    Lines = new[] { new DialogueLineConfig { Speaker = "x", Text = "line" } },
+                    Lines = new[] { new DialogueLineConfig { SpeakerKey = "x", TextKey = "line" } },
                     Options = Array.Empty<DialogueOptionConfig>()
                 }
             }

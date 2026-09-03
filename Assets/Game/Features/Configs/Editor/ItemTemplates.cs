@@ -27,7 +27,7 @@ namespace Game.Configs.Editor
                 "locations" => new JObject
                 {
                     ["id"] = "",
-                    ["displayName"] = "",
+                    ["displayNameKey"] = "",
                     ["entryCost"] = 0,
                     ["locationAddress"] = "",
                     ["demandGenres"] = new JArray(),
@@ -36,6 +36,7 @@ namespace Game.Configs.Editor
                 "sample_requests" => new JObject
                 {
                     ["id"] = "",
+                    ["descriptionKey"] = "",
                     ["genre"] = "",
                     ["bookTitle"] = "",
                     ["enabled"] = true,

@@ -25,20 +25,20 @@ namespace Game.Configs.Tests.Editor
   {
     ""id"": ""dlg_intro_tilde"",
     ""nodes"": [
-      { ""nodeId"": ""root"", ""lines"": [ { ""speaker"": ""Тильда"", ""text"": ""Слышал, у вас открылась лавка…"" } ],
+      { ""nodeId"": ""root"", ""lines"": [ { ""speakerKey"": ""dialogue.intro.root.speaker"", ""textKey"": ""dialogue.intro.root.line_0"" } ],
         ""options"": [
-          { ""text"": ""Заходите!"",        ""next"": ""warm"" },
-          { ""text"": ""Мы ещё готовимся."", ""next"": ""cool"" }
+          { ""textKey"": ""dialogue.intro.root.option_0"", ""next"": ""warm"" },
+          { ""textKey"": ""dialogue.intro.root.option_1"", ""next"": ""cool"" }
         ] },
-      { ""nodeId"": ""warm"", ""lines"": [ { ""speaker"": ""Тильда"", ""text"": ""Тогда до встречи."" } ], ""options"": [] },
-      { ""nodeId"": ""cool"", ""lines"": [ { ""speaker"": ""Тильда"", ""text"": ""Понимаю, загляну позже."" } ], ""options"": [] }
+      { ""nodeId"": ""warm"", ""lines"": [ { ""speakerKey"": ""dialogue.intro.warm.speaker"", ""textKey"": ""dialogue.intro.warm.line_0"" } ], ""options"": [] },
+      { ""nodeId"": ""cool"", ""lines"": [ { ""speakerKey"": ""dialogue.intro.cool.speaker"", ""textKey"": ""dialogue.intro.cool.line_0"" } ], ""options"": [] }
     ]
   },
   {
     ""id"": ""dlg_quest_01"",
     ""nodes"": [
-      { ""nodeId"": ""root"", ""lines"": [ { ""speaker"": ""Гость"", ""text"": ""Мне нужна одна книга. Поможете?"" } ],
-        ""options"": [ { ""text"": ""Конечно"", ""next"": ""end"" }, { ""text"": ""Позже"", ""next"": ""end"" } ] }
+      { ""nodeId"": ""root"", ""lines"": [ { ""speakerKey"": ""dialogue.quest.root.speaker"", ""textKey"": ""dialogue.quest.root.line_0"" } ],
+        ""options"": [ { ""textKey"": ""dialogue.quest.root.option_0"", ""next"": ""end"" }, { ""textKey"": ""dialogue.quest.root.option_1"", ""next"": ""end"" } ] }
     ]
   }
 ]";
@@ -59,12 +59,12 @@ namespace Game.Configs.Tests.Editor
             var root = intro.Nodes[0];
             Assert.AreEqual("root", root.NodeId);
             Assert.AreEqual(1, root.Lines.Length);
-            Assert.AreEqual("Тильда", root.Lines[0].Speaker);
-            Assert.AreEqual("Слышал, у вас открылась лавка…", root.Lines[0].Text);
+            Assert.AreEqual("dialogue.intro.root.speaker", root.Lines[0].SpeakerKey);
+            Assert.AreEqual("dialogue.intro.root.line_0", root.Lines[0].TextKey);
 
             // Branch node: 2 options pointing to sibling nodes.
             Assert.AreEqual(2, root.Options.Length);
-            Assert.AreEqual("Заходите!", root.Options[0].Text);
+            Assert.AreEqual("dialogue.intro.root.option_0", root.Options[0].TextKey);
             Assert.AreEqual("warm", root.Options[0].Next);
             Assert.AreEqual("cool", root.Options[1].Next);
 

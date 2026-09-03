@@ -4,6 +4,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
+using Game.Localization;
 using Game.UI;
 using UnityEngine;
 using VContainer;
@@ -32,6 +33,7 @@ namespace Dialogue
         private const string LogPrefix = "[DialogWindow]";
 
         private IConfigsService _configs;
+        private ILocalizationService _localization;
         private Action _onCompleted;
         private DialoguePayload _payload;
         private DialogueEngine _engine;
@@ -49,7 +51,11 @@ namespace Dialogue
         private CancellationTokenSource _revealCts;
 
         [Inject]
-        public void InjectConfigs(IConfigsService configs) => _configs = configs;
+        public void InjectServices(IConfigsService configs, ILocalizationService localization)
+        {
+            _configs = configs;
+            _localization = localization;
+        }
 
         protected override void OnShowStart()
         {
@@ -173,7 +179,9 @@ namespace Dialogue
             _lineIndex++;
             var revealToken = _revealCts?.Token ?? CancellationToken.None;
 
-            var view = View.AppendLine(line?.Speaker, line?.Text, SideFor(line?.Speaker));
+            var speaker = Localize(line?.SpeakerKey);
+            var text = Localize(line?.TextKey);
+            var view = View.AppendLine(speaker, text, SideFor(speaker));
             await View.ScrollToBottomAfterLayoutAsync(revealToken);
 
             if (view != null && _revealCts != null)
@@ -198,7 +206,7 @@ namespace Dialogue
             var options = _engine.Current.Options;
             var labels = new string[options.Length];
             for (var i = 0; i < options.Length; i++)
-                labels[i] = options[i]?.Text ?? string.Empty;
+                labels[i] = Localize(options[i]?.TextKey);
 
             View.ShowOptions(labels, OnOptionPicked);
             _awaitingChoice = true;
@@ -215,8 +223,11 @@ namespace Dialogue
         {
             if (_engine == null || _engine.IsTerminal) return false;
             var options = _engine.Current.Options;
-            return options.Length == 1 && string.IsNullOrWhiteSpace(options[0]?.Text);
+            return options.Length == 1 && string.IsNullOrWhiteSpace(options[0]?.TextKey);
         }
+
+        private string Localize(string key)
+            => _localization != null ? _localization.Get(key) : LocalizationLocator.GetOrKey(key);
 
         private void AdvanceBridge()
         {

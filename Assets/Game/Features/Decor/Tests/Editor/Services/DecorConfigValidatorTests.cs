@@ -34,7 +34,7 @@ namespace Game.Decor.Tests.Editor.Services
                     new DecorConfig
                     {
                         Id = "d1",
-                        DisplayName = "Test",
+                        DisplayNameKey = "Test",
                         PositionType = DecorPositionType.Standing,
                         Size = DecorSize.Small,
                         GenreMultipliers = new[] { new DecorGenreModifier { Genre = "Fantasy", Multiplier = 1.5f } },
@@ -49,7 +49,7 @@ namespace Game.Decor.Tests.Editor.Services
         [Test]
         public void EmptyId_Errors()
         {
-            var v = Build(decors: new[] { new DecorConfig { Id = "", DisplayName = "x", PositionType = DecorPositionType.Standing, Size = DecorSize.Small } });
+            var v = Build(decors: new[] { new DecorConfig { Id = "", DisplayNameKey = "x", PositionType = DecorPositionType.Standing, Size = DecorSize.Small } });
             var report = v.Validate();
             Assert.IsTrue(report.HasErrors);
         }
@@ -59,8 +59,8 @@ namespace Game.Decor.Tests.Editor.Services
         {
             var v = Build(decors: new[]
             {
-                new DecorConfig { Id = "dup", DisplayName = "a", PositionType = DecorPositionType.Standing, Size = DecorSize.Small },
-                new DecorConfig { Id = "dup", DisplayName = "b", PositionType = DecorPositionType.Standing, Size = DecorSize.Small },
+                new DecorConfig { Id = "dup", DisplayNameKey = "a", PositionType = DecorPositionType.Standing, Size = DecorSize.Small },
+                new DecorConfig { Id = "dup", DisplayNameKey = "b", PositionType = DecorPositionType.Standing, Size = DecorSize.Small },
             });
             var report = v.Validate();
             Assert.IsTrue(report.HasErrors);
@@ -74,7 +74,7 @@ namespace Game.Decor.Tests.Editor.Services
             {
                 new DecorConfig
                 {
-                    Id = "d1", DisplayName = "x",
+                    Id = "d1", DisplayNameKey = "x",
                     PositionType = DecorPositionType.Standing, Size = DecorSize.Small,
                     GenreMultipliers = new[] { new DecorGenreModifier { Genre = "X", Multiplier = -1f } }
                 }
@@ -91,7 +91,7 @@ namespace Game.Decor.Tests.Editor.Services
                 {
                     new DecorConfig
                     {
-                        Id = "d1", DisplayName = "x",
+                        Id = "d1", DisplayNameKey = "x",
                         PositionType = DecorPositionType.Standing, Size = DecorSize.Small,
                         GenreMultipliers = new[] { new DecorGenreModifier { Genre = "Mystery", Multiplier = 1.5f } }
                     }
@@ -298,7 +298,7 @@ namespace Game.Decor.Tests.Editor.Services
             new DecorConfig
             {
                 Id = id,
-                DisplayName = id,
+                DisplayNameKey = id,
                 PositionType = DecorPositionType.Standing,
                 Size = DecorSize.Small,
                 GenreMultipliers = System.Array.Empty<DecorGenreModifier>()

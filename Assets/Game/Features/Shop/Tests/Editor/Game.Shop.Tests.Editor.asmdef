@@ -12,6 +12,7 @@
         "Game.Resources.API",
         "Game.Inventory.API",
         "Game.Decor.API",
+        "Game.Localization",
         "Infrastructure",
         "UnityEngine.TestRunner",
         "Unity.TextMeshPro",

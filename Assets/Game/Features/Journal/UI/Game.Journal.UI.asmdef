@@ -16,7 +16,8 @@
         "Game.Inventory.API",
         "Game.Rewards.API",
         "Game.Conditions.API",
-        "Game.Rewards"
+        "Game.Rewards",
+        "Game.Localization"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -98,7 +98,7 @@ namespace Book.Sell.Tests.Editor.Services
                     new LocationConfig
                     {
                         Id = locationId,
-                        DisplayName = locationId,
+                        DisplayNameKey = locationId,
                         DemandGenres = demandGenres
                     }
                 });

@@ -18,7 +18,7 @@ namespace Game.Configs.Tests.Editor
 [
   {
     ""id"": ""preset_test"",
-    ""displayName"": ""Test preset"",
+    ""displayNameKey"": ""shelf_preset.preset_test.name"",
     ""bookIds"": [""book01"", ""book02""]
   }
 ]";
@@ -31,7 +31,7 @@ namespace Game.Configs.Tests.Editor
             Assert.IsNotNull(presets);
             Assert.AreEqual(1, presets.Length);
             Assert.AreEqual("preset_test", presets[0].Id);
-            Assert.AreEqual("Test preset", presets[0].DisplayName);
+            Assert.AreEqual("shelf_preset.preset_test.name", presets[0].DisplayNameKey);
             CollectionAssert.AreEqual(new[] { "book01", "book02" }, presets[0].BookIds);
         }
 
@@ -44,7 +44,7 @@ namespace Game.Configs.Tests.Editor
                     File.ReadAllText(Path.Combine(root, "shelf_presets.json")));
                 var preset = presets.Single(p => p.Id == "preset_default_42");
 
-                Assert.AreEqual("Default 7x6", preset.DisplayName);
+                Assert.AreEqual("shelf_preset.preset_default_42.name", preset.DisplayNameKey);
                 Assert.AreEqual(42, preset.BookIds.Length);
             }
         }

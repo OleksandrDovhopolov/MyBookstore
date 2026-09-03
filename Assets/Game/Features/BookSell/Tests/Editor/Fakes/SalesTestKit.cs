@@ -53,7 +53,7 @@ namespace Book.Sell.Tests.Editor.Fakes
         public static LocationConfig Location(string id = "loc", string[] demandGenres = null)
             => new()
             {
-                Id = id, DisplayName = id,
+                Id = id, DisplayNameKey = id,
                 DemandGenres = demandGenres ?? new[] { "sci-fi" }
             };
 

@@ -1,3 +1,4 @@
+using Game.Localization;
 using TMPro;
 using UIShared;
 using UnityEngine;
@@ -17,7 +18,7 @@ namespace Game.Quest.UI
 
         public void Bind(QuestTaskItemModel model)
         {
-            if (_descriptionLabel != null) _descriptionLabel.text = model?.DescriptionKey ?? string.Empty;
+            if (_descriptionLabel != null) _descriptionLabel.text = LocalizationLocator.GetOrKey(model?.DescriptionKey);
             ApplyProgress(model != null ? model.Fill01 : 0f);
             if (_counterLabel != null)
                 _counterLabel.text = model != null ? $"{model.Current}/{model.Goal}" : string.Empty;

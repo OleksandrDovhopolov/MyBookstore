@@ -88,6 +88,7 @@ namespace Game.Bootstrap
             builder.RegisterSave();
             builder.RegisterInfrastructure();
             builder.RegisterConfigs();
+            builder.RegisterLocalization();
             builder.RegisterDayCycleServices();
             builder.RegisterUiSystem(_uiCanvasRootPrefab);
             builder.RegisterWorldHud();

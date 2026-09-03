@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Configs.Models;
+using Game.Localization;
 
 namespace Book.Sell.Domain
 {
@@ -34,15 +35,29 @@ namespace Book.Sell.Domain
         public static ActiveRequestRuntime FromCondition(
             RequestDefinitionConfig request,
             string debugText,
-            IReadOnlyList<string> requiredGenres = null)
+            IReadOnlyList<string> requiredGenres = null,
+            ILocalizationService localization = null)
         {
             if (request == null) return null;
             return new ActiveRequestRuntime(
                 request.Id,
-                string.IsNullOrWhiteSpace(request.Description) ? debugText : request.Description,
+                ResolveText(request, debugText, localization),
                 RequestDifficulty.Unknown,
                 request,
                 requiredGenres);
+        }
+
+        private static string ResolveText(
+            RequestDefinitionConfig request,
+            string debugText,
+            ILocalizationService localization)
+        {
+            if (request == null) return string.Empty;
+            if (!string.IsNullOrWhiteSpace(request.DescriptionKey))
+                return localization != null
+                    ? localization.Get(request.DescriptionKey)
+                    : LocalizationLocator.GetOrKey(request.DescriptionKey);
+            return debugText;
         }
 
         public bool MatchesProfile(IReadOnlyList<string> desiredGenres)

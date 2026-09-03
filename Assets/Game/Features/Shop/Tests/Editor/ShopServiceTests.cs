@@ -44,8 +44,8 @@ namespace Game.Shop.Tests.Editor
             {
                 Id = id,
                 StorefrontId = NewspaperShopLotIds.StorefrontBooks,
-                DisplayName = displayName ?? id,
-                Description = description ?? rewardId,
+                DisplayNameKey = displayName ?? id,
+                DescriptionKey = description ?? rewardId,
                 Price = new ShopPriceData { Currency = Gold, Amount = price },
                 RewardId = rewardId,
                 RewardItems = new RewardItemData[0],

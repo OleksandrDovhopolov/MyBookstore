@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Inventory.API;
+using Game.Localization;
 using Game.LocationEntry.API;
 using Game.LocationUnlock.API;
 using Game.Resources.API;
@@ -172,7 +173,11 @@ namespace Game.Location.UI
                 if (scrollVersion != _scrollVersion)
                     return;
 
-                var data = new LocationDemandWidgetData(config.DisplayName, genres);
+                var data = new LocationDemandWidgetData(
+                    string.IsNullOrEmpty(config.DisplayNameKey)
+                        ? config.Id
+                        : LocalizationLocator.GetOrKey(config.DisplayNameKey),
+                    genres);
                 await UIManager.ShowAsync<ContentWidgetController>(
                     new ContentWidgetArgs(
                         data,

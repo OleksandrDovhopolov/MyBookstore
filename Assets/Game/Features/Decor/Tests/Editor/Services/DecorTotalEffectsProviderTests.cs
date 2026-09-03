@@ -86,7 +86,7 @@ namespace Game.Decor.Tests.Editor.Services
             return new DecorConfig
             {
                 Id = id,
-                DisplayName = id,
+                DisplayNameKey = id,
                 PositionType = DecorPositionType.Standing,
                 Size = DecorSize.Small,
                 GenreMultipliers = genreMultipliers,

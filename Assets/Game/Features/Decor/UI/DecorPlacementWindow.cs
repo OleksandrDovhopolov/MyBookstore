@@ -7,6 +7,7 @@ using Game.Configs;
 using Game.Configs.Models;
 using Game.Decor.Services;
 using Game.Inventory.API;
+using Game.Localization;
 using Game.UI;
 using Game.UI.ContentWidget;
 using Infrastructure.Audio;
@@ -337,8 +338,8 @@ namespace Game.Decor.UI
             }
 
             return new DecorInfoWidgetData(
-                config.DisplayName ?? config.Id,
-                "TODO: item description. Add a Description field to DecorConfig and pass it here.",
+                ResolveDecorName(config),
+                LocalizationLocator.GetOrKey("ui.decor.description.placeholder"),
                 icon,
                 bonuses,
                 BuildDecorCharacteristics(config));
@@ -429,7 +430,7 @@ namespace Game.Decor.UI
             var config = string.IsNullOrEmpty(decorId) ? null : _configs.Get<DecorConfig>(decorId);
 
             if (View.SelectedDecorNameLabel != null)
-                View.SelectedDecorNameLabel.text = config != null ? config.DisplayName ?? config.Id : string.Empty;
+                View.SelectedDecorNameLabel.text = config != null ? ResolveDecorName(config) : string.Empty;
 
             if (View.SelectedDecorImage != null)
             {
@@ -857,5 +858,10 @@ namespace Game.Decor.UI
             sb.Append(". Continue?");
             return sb.ToString();
         }
+
+        private static string ResolveDecorName(DecorConfig config)
+            => string.IsNullOrEmpty(config?.DisplayNameKey)
+                ? config?.Id
+                : LocalizationLocator.GetOrKey(config.DisplayNameKey);
     }
 }

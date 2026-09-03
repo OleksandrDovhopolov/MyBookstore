@@ -50,7 +50,7 @@ namespace Game.Journal.UI.Tests.Editor
             => new()
             {
                 Id = id,
-                DisplayName = displayName
+                DisplayNameKey = displayName
             };
 
         private sealed class FakeEffects : IDecorTotalEffectsProvider

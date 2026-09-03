@@ -99,6 +99,7 @@ namespace Game.Build.Editor
             ("Active requests", CollectActiveRequestErrors),
             ("Dialogue delivered conditions", CollectDialogueDeliveredReferenceErrors),
             ("Character memories", CollectCharacterMemoryReferenceErrors),
+            ("Localization keys", CollectLocalizationKeyErrors),
             ("Book box pools", CollectBookBoxPoolErrors),
         };
 
@@ -212,6 +213,9 @@ namespace Game.Build.Editor
         private static void CollectCharacterMemoryReferenceErrors(List<string> errors)
             => errors.AddRange(CharacterMemoryReferenceValidator.Validate().Errors);
 
+        private static void CollectLocalizationKeyErrors(List<string> errors)
+            => errors.AddRange(LocalizationKeyValidator.Validate().Errors);
+
         /// <summary>
         /// A book-box shop lot whose pool matches no book takes the player's gold and returns nothing. The
         /// pool predicates read <c>BookConfig</c> fields directly, so a catalog missing a field leaves every
@@ -229,6 +233,7 @@ namespace Game.Build.Editor
             {
                 var section = Path.GetFileNameWithoutExtension(fileName);
                 if (knownSections.Contains(section)) continue;
+                if (section.StartsWith("localization_", StringComparison.OrdinalIgnoreCase)) continue;
 
                 warnings.Add(
                     $"{fileName} ships into the APK as dead weight; no [ConfigFile] maps to section '{section}'.");

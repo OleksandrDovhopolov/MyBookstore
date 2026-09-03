@@ -11,7 +11,7 @@ namespace Game.Configs.Models
     public sealed class DecorConfig : IConfig
     {
         public string Id { get; set; }
-        public string DisplayName { get; set; }
+        public string DisplayNameKey { get; set; }
         //TODO now everywhere used decor id for sprite loading via addressabbles . should delete this ? 
         public string IconAddress { get; set; }
 

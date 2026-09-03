@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Decor.UI;
+using Game.Localization;
 using Game.Rewards.UI;
 using Game.Shop;
 using Game.Shop.API;
@@ -19,7 +20,7 @@ namespace Game.Shop.UI
     [Window("NewspaperWindow", WindowType.Page, keepInCache: true)]
     public sealed class ShopWindow : WindowController<ShopWindowView>
     {
-        private const string TodoDescription = "TODO: item description";
+        private const string TodoDescriptionKey = "ui.shop.item.description.placeholder";
 
         private IShopService _shop;
         private IShopConfirmationPolicy _confirmPolicy;
@@ -238,7 +239,7 @@ namespace Game.Shop.UI
 
             try
             {
-                var data = new ShopItemWidgetData(lotId, TodoDescription);
+                var data = new ShopItemWidgetData(lotId, LocalizationLocator.GetOrKey(TodoDescriptionKey));
                 var args = new ContentWidgetArgs(
                     data,
                     anchor,
@@ -328,7 +329,7 @@ namespace Game.Shop.UI
             else if (result.Status != ShopPurchaseStatus.Success)
             {
                 if (result.Status == ShopPurchaseStatus.NotEnoughCurrency)
-                    ShowInfoWidget(ShopUiTexts.NotEnoughGold);
+                    ShowInfoWidget(LocalizationLocator.GetOrKey(ShopUiTexts.NotEnoughGold));
 
                 Debug.Log($"[NewspaperWindow] Purchase '{lotId}' failed: {result.Status}.");
             }

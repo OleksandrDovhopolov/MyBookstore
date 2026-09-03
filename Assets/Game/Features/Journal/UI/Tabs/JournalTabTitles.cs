@@ -1,16 +1,15 @@
 namespace Game.Journal.UI
 {
     /// <summary>
-    /// Titles for the Journal tab header. Plain strings for now; each value becomes a localization
-    /// id once localization lands, so this is the only place that has to change.
+    /// Localization keys for the Journal tab header.
     /// </summary>
     public static class JournalTabTitles
     {
-        public const string Memories = "Memories";
-        public const string Places = "Locations";
-        public const string Objects = "Decorations";
-        public const string People = "Characters";
-        public const string Quests = "Quests";
+        public const string Memories = "ui.journal.tab.memories";
+        public const string Places = "ui.journal.tab.locations";
+        public const string Objects = "ui.journal.tab.objects";
+        public const string People = "ui.journal.tab.characters";
+        public const string Quests = "ui.journal.tab.quests";
 
         public static string Get(JournalTab tab) => tab switch
         {

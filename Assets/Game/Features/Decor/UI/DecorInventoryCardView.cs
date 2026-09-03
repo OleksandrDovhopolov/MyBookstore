@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
+using Game.Localization;
 using SpriteService;
 using TMPro;
 using UIShared;
@@ -46,7 +47,10 @@ namespace Game.Decor.UI
             _onSelect = onSelect;
             _onInfo = onInfo;
 
-            if (_nameLabel != null) _nameLabel.text = config.DisplayName ?? config.Id;
+            if (_nameLabel != null)
+                _nameLabel.text = string.IsNullOrEmpty(config.DisplayNameKey)
+                    ? config.Id
+                    : LocalizationLocator.GetOrKey(config.DisplayNameKey);
 
             // A placed decor cannot be placed again (domain returns AlreadyPlaced), so it is not
             // selectable — only its badge and info are shown.

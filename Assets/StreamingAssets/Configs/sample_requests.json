@@ -25,7 +25,8 @@
           "value": 200
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_scarlet_01.description"
   },
   {
     "id": "req_scarlet_02",
@@ -48,7 +49,8 @@
           "value": "Classic"
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_scarlet_02.description"
   },
   {
     "id": "req_psycho_01",
@@ -73,7 +75,8 @@
           "value": 400
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_psycho_01.description"
   },
   {
     "id": "req_psycho_02",
@@ -104,7 +107,8 @@
           }
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_psycho_02.description"
   },
   {
     "id": "req_fact_01",
@@ -132,7 +136,8 @@
           }
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_fact_01.description"
   },
   {
     "id": "req_fact_02",
@@ -160,7 +165,8 @@
           "value": 500
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_fact_02.description"
   },
   {
     "id": "req_classic_01",
@@ -180,7 +186,8 @@
           "value": "Dystopia"
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_classic_01.description"
   },
   {
     "id": "req_classic_02",
@@ -208,7 +215,8 @@
           "value": 1900
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_classic_02.description"
   },
   {
     "id": "req_drama_01",
@@ -231,7 +239,8 @@
           ]
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_drama_01.description"
   },
   {
     "id": "req_drama_02",
@@ -256,7 +265,8 @@
           "value": 2015
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_drama_02.description"
   },
   {
     "id": "req_travel_01",
@@ -276,7 +286,8 @@
           "value": "Travel Guide"
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_travel_01.description"
   },
   {
     "id": "req_travel_02",
@@ -304,7 +315,8 @@
           "value": 500
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_travel_02.description"
   },
   {
     "id": "req_kids_01",
@@ -324,7 +336,8 @@
           "value": 100
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_kids_01.description"
   },
   {
     "id": "req_kids_02",
@@ -347,7 +360,8 @@
           ]
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_kids_02.description"
   },
   {
     "id": "req_fantasy_01",
@@ -370,7 +384,8 @@
           ]
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_fantasy_01.description"
   },
   {
     "id": "req_fantasy_02",
@@ -401,7 +416,8 @@
           }
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_fantasy_02.description"
   },
   {
     "id": "req_canterville_01",
@@ -428,7 +444,8 @@
           "value": "Drama"
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_canterville_01.description"
   },
   {
     "id": "req_anathem_01",
@@ -455,7 +472,8 @@
           "value": "Female Author"
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_anathem_01.description"
   },
   {
     "id": "req_fireupon_01",
@@ -490,6 +508,7 @@
           "value": "Gore"
         }
       ]
-    }
+    },
+    "descriptionKey": "request.req_fireupon_01.description"
   }
 ]

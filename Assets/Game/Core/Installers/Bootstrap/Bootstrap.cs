@@ -10,6 +10,7 @@ using Game.Configs.Remote;
 using Game.Decor;
 using Game.Ftue.Services;
 using Game.Inventory.API;
+using Game.Localization;
 using Game.LocationUnlock.API;
 using Game.LocationVisits.API;
 using Game.Privacy.Services;
@@ -62,6 +63,7 @@ namespace Game.Bootstrap
         private IAddressablesCatalogService _catalog;
         private IRemoteConfigService _remoteConfig;
         private IConfigsService _configs;
+        private ILocalizationService _localization;
         private ISaveService _save;
         private SaveSyncBootstrap _saveSync;
         private ISceneTransitionService _sceneTransition;
@@ -104,6 +106,7 @@ namespace Game.Bootstrap
             IAddressablesCatalogService catalog,
             IRemoteConfigService remoteConfig,
             IConfigsService configs,
+            ILocalizationService localization,
             ISaveService save,
             SaveSyncBootstrap saveSync,
             ISceneTransitionService sceneTransition,
@@ -129,6 +132,7 @@ namespace Game.Bootstrap
             _catalog = catalog;
             _remoteConfig = remoteConfig;
             _configs = configs;
+            _localization = localization;
             _save = save;
             _saveSync = saveSync;
             _sceneTransition = sceneTransition;
@@ -269,7 +273,8 @@ namespace Game.Bootstrap
             {
                 new LoadingGroup("phase_data_configs", LoadingGroupExecutionMode.Sequential, new ILoadingOperation[]
                 {
-                    new ConfigsWarmupOperation(_configs)
+                    new ConfigsWarmupOperation(_configs),
+                    new LocalizationWarmupOperation(_localization)
                 }),
                 new LoadingGroup("phase_data_save", LoadingGroupExecutionMode.Sequential, new ILoadingOperation[]
                 {

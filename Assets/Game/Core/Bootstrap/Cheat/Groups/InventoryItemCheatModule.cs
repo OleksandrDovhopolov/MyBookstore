@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Inventory.API;
+using Game.Localization;
 using UnityEngine;
 
 namespace Game.Cheat
@@ -85,7 +86,7 @@ namespace Game.Cheat
             {
                 var cfg = configs[i];
                 if (cfg == null || string.IsNullOrEmpty(cfg.Id)) continue;
-                items.Add(new CheatInventoryItem(cfg.Id, cfg.DisplayName));
+                items.Add(new CheatInventoryItem(cfg.Id, ResolveDisplayName(cfg.DisplayNameKey, cfg.Id)));
             }
             return items;
         }
@@ -100,7 +101,7 @@ namespace Game.Cheat
             {
                 var cfg = configs[i];
                 if (cfg == null || string.IsNullOrEmpty(cfg.Id)) continue;
-                items.Add(new CheatInventoryItem(cfg.Id, cfg.DisplayName));
+                items.Add(new CheatInventoryItem(cfg.Id, ResolveDisplayName(cfg.DisplayNameKey, cfg.Id)));
             }
             return items;
         }
@@ -115,10 +116,13 @@ namespace Game.Cheat
             {
                 var cfg = configs[i];
                 if (cfg == null || string.IsNullOrEmpty(cfg.Id)) continue;
-                items.Add(new CheatInventoryItem(cfg.Id, cfg.DisplayName));
+                items.Add(new CheatInventoryItem(cfg.Id, ResolveDisplayName(cfg.DisplayNameKey, cfg.Id)));
             }
             return items;
         }
+
+        private static string ResolveDisplayName(string key, string fallback)
+            => string.IsNullOrEmpty(key) ? fallback : LocalizationLocator.GetOrKey(key);
 
         private async UniTaskVoid AddAsync(string itemId, string categoryId)
         {
