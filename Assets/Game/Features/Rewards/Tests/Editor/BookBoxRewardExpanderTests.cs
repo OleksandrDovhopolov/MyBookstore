@@ -19,8 +19,8 @@ namespace Game.Rewards.Tests.Editor
             new BookConfig
             {
                 Id = id,
-                Title = id,
-                Author = "test",
+                TitleKey = $"book.{id}.title",
+                AuthorKey = $"book.{id}.author",
                 Genres = new[] { genre },
                 RarityWeight = rarity,
                 Qualities = new string[0]

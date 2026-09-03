@@ -21,7 +21,8 @@ namespace Game.Localization
             "dialogues",
             "quests",
             "characters",
-            "items"
+            "items",
+            "books"
         };
 
         private readonly IConfigSource _configSource;
@@ -56,7 +57,7 @@ namespace Game.Localization
             if (!string.IsNullOrWhiteSpace(key) && _missingWarnings.Add(key))
                 Debug.LogWarning($"{LogPrefix} Missing key '{key}' for locale '{CurrentLocale}'.");
 
-            return key ?? string.Empty;
+            return FormatMissingKey(key);
         }
 
         public string Get(string key, params object[] args)
@@ -159,5 +160,8 @@ namespace Game.Localization
 
         private static string NormalizeLocale(string locale)
             => string.IsNullOrWhiteSpace(locale) ? DefaultLocale : locale.Trim().ToLowerInvariant();
+
+        internal static string FormatMissingKey(string key)
+            => string.IsNullOrWhiteSpace(key) ? string.Empty : $"[`{key}`]";
     }
 }

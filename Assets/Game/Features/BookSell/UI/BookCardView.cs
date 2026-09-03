@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
+using Game.Localization;
 using SpriteService;
 using TMPro;
 using UnityEngine;
@@ -51,8 +52,8 @@ namespace Book.Sell.UI
             BookId = book.Id;
             _onClicked = onClicked;
 
-            Set(_titleLabel, book.Title);
-            Set(_authorLabel, book.Author);
+            Set(_titleLabel, LocalizationLocator.GetOrKey(book.TitleKey));
+            Set(_authorLabel, LocalizationLocator.GetOrKey(book.AuthorKey));
             Set(_genreLabel, book.PrimaryGenre);
             Set(_priceLabel, BookConfig.FixedPriceGold.ToString());
 

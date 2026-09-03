@@ -14,7 +14,7 @@ namespace Game.Configs.Editor
     /// <summary>
     /// Валидация перед Publish (§9 спеки).
     /// Общие: массив; каждый item — object; id непустой и уникальный.
-    /// Books extras: title непустой, genres[0] непустой, rarityWeight ≥ 0.
+    /// Books extras: titleKey/authorKey/descriptionKey непустые, genres[0] непустой, rarityWeight >= 0.
     /// </summary>
     internal static class SectionValidator
     {
@@ -54,9 +54,9 @@ namespace Game.Configs.Editor
 
                 if (section == "books")
                 {
-                    var title = obj["title"]?.Value<string>();
-                    if (string.IsNullOrWhiteSpace(title))
-                        issues.Add(new ValidationIssue(id, "'title' is empty."));
+                    ValidateRequiredString(obj, id, "titleKey", issues);
+                    ValidateRequiredString(obj, id, "authorKey", issues);
+                    ValidateRequiredString(obj, id, "descriptionKey", issues);
 
                     var genres = obj["genres"] as JArray;
                     var primaryGenre = genres != null && genres.Count > 0
@@ -93,6 +93,17 @@ namespace Game.Configs.Editor
             ValidateConditionGroup(id, conditions["all"], "all", issues);
             ValidateConditionGroup(id, conditions["any"], "any", issues);
             ValidateConditionGroup(id, conditions["none"], "none", issues);
+        }
+
+        private static void ValidateRequiredString(
+            JObject obj,
+            string id,
+            string field,
+            List<ValidationIssue> issues)
+        {
+            var value = obj[field]?.Value<string>();
+            if (string.IsNullOrWhiteSpace(value))
+                issues.Add(new ValidationIssue(id, $"'{field}' is empty."));
         }
 
         private static void ValidateConditionGroup(string id, JToken token, string groupName, List<ValidationIssue> issues)

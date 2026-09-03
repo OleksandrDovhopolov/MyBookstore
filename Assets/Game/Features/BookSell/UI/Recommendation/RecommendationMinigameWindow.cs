@@ -4,6 +4,7 @@ using Book.Sell.Domain;
 using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
+using Game.Localization;
 using Game.UI;
 using SpriteService;
 using TMPro;
@@ -170,10 +171,9 @@ namespace Book.Sell.UI
             SetDetailState(book != null);
             if (book == null) return;
 
-            Set(View.DetailTitle, book.Title);
-            Set(View.DetailAuthor, book.Author);
-
-            Set(View.DetailDescription, book.Description);
+            Set(View.DetailTitle, LocalizationLocator.GetOrKey(book.TitleKey));
+            Set(View.DetailAuthor, LocalizationLocator.GetOrKey(book.AuthorKey));
+            Set(View.DetailDescription, LocalizationLocator.GetOrKey(book.DescriptionKey));
             Set(View.DetailPublishDate, $"{book.Published} y");
             Set(View.DetailPageCount, $"{book.Pages} p");
 

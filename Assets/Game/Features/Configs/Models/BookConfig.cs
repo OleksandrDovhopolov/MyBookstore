@@ -14,9 +14,9 @@ namespace Game.Configs.Models
         private const string FemaleAuthorQuality = "Female Author";
 
         public string Id { get; set; }
-        public string Title { get; set; }
-        public string Author { get; set; }
-        public string Description { get; set; }
+        public string TitleKey { get; set; }
+        public string AuthorKey { get; set; }
+        public string DescriptionKey { get; set; }
 
         /// <summary>Жанры книги. Active request conditions match the full list.</summary>
         public string[] Genres { get; set; }

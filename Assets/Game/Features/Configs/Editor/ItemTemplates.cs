@@ -15,9 +15,9 @@ namespace Game.Configs.Editor
                 "books" => new JObject
                 {
                     ["id"] = "",
-                    ["title"] = "",
-                    ["author"] = "",
-                    ["description"] = "",
+                    ["titleKey"] = "",
+                    ["authorKey"] = "",
+                    ["descriptionKey"] = "",
                     ["genres"] = new JArray(),
                     ["rarityWeight"] = 0.0,
                     ["published"] = 0,

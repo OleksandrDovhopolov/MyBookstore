@@ -8,8 +8,7 @@ using Newtonsoft.Json.Linq;
 namespace Game.Configs.Editor
 {
     /// <summary>
-    /// Verifies player-facing localization keys authored in JSON configs. Books are intentionally out of
-    /// scope for INF-4/REL-3 because book content is migrated with the Excel importer in a follow-up task.
+    /// Verifies player-facing localization keys authored in JSON configs.
     /// </summary>
     public static class LocalizationKeyValidator
     {
@@ -18,6 +17,7 @@ namespace Game.Configs.Editor
         private static readonly string[] ConfigFiles =
         {
             "bookshops.json",
+            "books.json",
             "characters.json",
             "consumables.json",
             "days.json",
@@ -38,7 +38,8 @@ namespace Game.Configs.Editor
             "localization_dialogues_en.json",
             "localization_quests_en.json",
             "localization_characters_en.json",
-            "localization_items_en.json"
+            "localization_items_en.json",
+            "localization_books_en.json"
         };
 
         private static readonly HashSet<string> LocalizedFieldNames = new(StringComparer.OrdinalIgnoreCase)
@@ -47,6 +48,7 @@ namespace Game.Configs.Editor
             "roleKey",
             "descriptionKey",
             "titleKey",
+            "authorKey",
             "speakerKey",
             "textKey"
         };

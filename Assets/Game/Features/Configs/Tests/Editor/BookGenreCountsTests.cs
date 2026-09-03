@@ -94,13 +94,13 @@ namespace Game.Configs.Tests.Editor
         }
 
         [Test]
-        public void BookConfig_DeserializeNewSchema_PopulatesDescriptionGenresAndQualities()
+        public void BookConfig_DeserializeNewSchema_PopulatesLocalizationKeysGenresAndQualities()
         {
             const string json = @"{
   ""id"": ""book_001"",
-  ""title"": ""Sea Winter"",
-  ""author"": ""Ada Reed"",
-  ""description"": ""[description_book_001]"",
+  ""titleKey"": ""book.book_001.title"",
+  ""authorKey"": ""book.book_001.author"",
+  ""descriptionKey"": ""book.book_001.description"",
   ""genres"": [""Drama"", ""Classic""],
   ""rarityWeight"": 0.35,
   ""published"": 1893,
@@ -111,7 +111,9 @@ namespace Game.Configs.Tests.Editor
             var book = JsonConvert.DeserializeObject<BookConfig>(json);
 
             Assert.IsNotNull(book);
-            Assert.AreEqual("[description_book_001]", book.Description);
+            Assert.AreEqual("book.book_001.title", book.TitleKey);
+            Assert.AreEqual("book.book_001.author", book.AuthorKey);
+            Assert.AreEqual("book.book_001.description", book.DescriptionKey);
             CollectionAssert.AreEqual(new[] { "Drama", "Classic" }, book.Genres);
             CollectionAssert.AreEqual(new[] { "Female Author", "history" }, book.Qualities);
             Assert.AreEqual("Drama", book.PrimaryGenre);
@@ -124,9 +126,9 @@ namespace Game.Configs.Tests.Editor
         {
             const string json = @"{
   ""id"": ""book01"",
-  ""title"": ""Sea Winter"",
-  ""author"": ""Ada Reed"",
-  ""description"": ""[description_book_001]"",
+  ""titleKey"": ""book.book01.title"",
+  ""authorKey"": ""book.book01.author"",
+  ""descriptionKey"": ""book.book01.description"",
   ""genres"": [""Drama""],
   ""published"": 1893,
   ""pages"": 189,
@@ -144,9 +146,9 @@ namespace Game.Configs.Tests.Editor
         {
             const string json = @"{
   ""id"": ""book01"",
-  ""title"": ""Sea Winter"",
-  ""author"": ""Ada Reed"",
-  ""description"": ""[description_book_001]"",
+  ""titleKey"": ""book.book01.title"",
+  ""authorKey"": ""book.book01.author"",
+  ""descriptionKey"": ""book.book01.description"",
   ""genres"": [""Drama""],
   ""published"": 1893,
   ""pages"": 189,
@@ -179,9 +181,9 @@ namespace Game.Configs.Tests.Editor
                 Books = @"[
   {
     ""id"": ""book01"",
-    ""title"": ""Catalog"",
-    ""author"": ""Ada Reed"",
-    ""description"": ""Books catalog"",
+    ""titleKey"": ""book.book01.title"",
+    ""authorKey"": ""book.book01.author"",
+    ""descriptionKey"": ""book.book01.description"",
     ""genres"": [""Travel""],
     ""published"": 2001,
     ""pages"": 123,
@@ -197,7 +199,7 @@ namespace Game.Configs.Tests.Editor
 
             Assert.AreEqual(1, books.Count);
             Assert.AreEqual("book01", books[0].Id);
-            Assert.AreEqual("Catalog", books[0].Title);
+            Assert.AreEqual("book.book01.title", books[0].TitleKey);
         }
 
         private sealed class FakeConfigSource : IConfigSource

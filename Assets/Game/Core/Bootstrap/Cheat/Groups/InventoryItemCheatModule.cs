@@ -71,7 +71,7 @@ namespace Game.Cheat
             {
                 var cfg = configs[i];
                 if (cfg == null || string.IsNullOrEmpty(cfg.Id)) continue;
-                items.Add(new CheatInventoryItem(cfg.Id, cfg.Title));
+                items.Add(new CheatInventoryItem(cfg.Id, ResolveDisplayName(cfg.TitleKey, cfg.Id)));
             }
             return items;
         }

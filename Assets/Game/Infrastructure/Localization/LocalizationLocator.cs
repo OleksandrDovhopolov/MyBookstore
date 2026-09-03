@@ -14,9 +14,9 @@ namespace Game.Localization
         }
 
         public static string GetOrKey(string key)
-            => Service != null ? Service.Get(key) : key ?? string.Empty;
+            => Service != null ? Service.Get(key) : LocalizationService.FormatMissingKey(key);
 
         public static string GetOrKey(string key, params object[] args)
-            => Service != null ? Service.Get(key, args) : key ?? string.Empty;
+            => Service != null ? Service.Get(key, args) : LocalizationService.FormatMissingKey(key);
     }
 }

@@ -29,14 +29,14 @@ namespace Game.Localization.Tests.Editor
         }
 
         [Test]
-        public void MissingKey_ReturnsKeyAndWarns()
+        public void MissingKey_ReturnsFormattedKeyAndWarns()
         {
             var service = Service(("localization_ui_en", @"{}"));
             service.WarmupAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             LogAssert.Expect(UnityEngine.LogType.Warning, "[Localization] Missing key 'ui.missing' for locale 'en'.");
 
-            Assert.AreEqual("ui.missing", service.Get("ui.missing"));
+            Assert.AreEqual("[`ui.missing`]", service.Get("ui.missing"));
         }
 
         [Test]

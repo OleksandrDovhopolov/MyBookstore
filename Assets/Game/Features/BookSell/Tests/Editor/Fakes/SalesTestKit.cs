@@ -18,9 +18,9 @@ namespace Book.Sell.Tests.Editor.Fakes
             => new()
             {
                 Id = id,
-                Title = id,
-                Author = "author",
-                Description = $"[description_{id}]",
+                TitleKey = $"book.{id}.title",
+                AuthorKey = $"book.{id}.author",
+                DescriptionKey = $"book.{id}.description",
                 Genres = genres ?? (string.IsNullOrEmpty(genre) ? null : new[] { genre }),
                 Qualities = qualities ?? new[] { "space" }
             };

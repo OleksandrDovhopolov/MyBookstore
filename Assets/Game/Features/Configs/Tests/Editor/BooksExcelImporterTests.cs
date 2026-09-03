@@ -27,15 +27,19 @@ namespace Game.Configs.Tests.Editor
             Assert.IsTrue(result.Success, string.Join("\n", result.Errors));
             var book = (JObject)result.Books[0];
             Assert.AreEqual("book01", book.Value<string>("id"));
-            Assert.AreEqual("The Book", book.Value<string>("title"));
-            Assert.AreEqual("Ada", book.Value<string>("author"));
-            Assert.AreEqual("About books", book.Value<string>("description"));
+            Assert.AreEqual("book.book01.title", book.Value<string>("titleKey"));
+            Assert.AreEqual("book.book01.author", book.Value<string>("authorKey"));
+            Assert.AreEqual("book.book01.description", book.Value<string>("descriptionKey"));
             CollectionAssert.AreEqual(new[] { "Fantasy", "Crime" }, book["genres"].ToObject<string[]>());
             CollectionAssert.AreEqual(new[] { "Fiction", "Magic" }, book["qualities"].ToObject<string[]>());
             Assert.AreEqual(2001, book.Value<int>("published"));
             Assert.AreEqual(123, book.Value<int>("pages"));
             Assert.AreEqual("Real", book.Value<string>("fakeOrReal"));
             Assert.IsNull(book["rarityWeight"]);
+
+            Assert.AreEqual("The Book", result.Localization.Value<string>("book.book01.title"));
+            Assert.AreEqual("Ada", result.Localization.Value<string>("book.book01.author"));
+            Assert.AreEqual("About books", result.Localization.Value<string>("book.book01.description"));
         }
 
         [Test]
@@ -79,6 +83,7 @@ namespace Game.Configs.Tests.Editor
             Assert.IsFalse(result.Success);
             Assert.IsTrue(result.Errors.Any(e => e.Contains("Missing required header 'Qualities'")));
             Assert.AreEqual(0, result.Books.Count);
+            Assert.AreEqual(0, result.Localization.Count);
         }
 
         [Test]
