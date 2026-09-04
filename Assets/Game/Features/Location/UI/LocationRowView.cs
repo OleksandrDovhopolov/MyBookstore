@@ -23,6 +23,8 @@ namespace Game.Location.UI
         [SerializeField] private Button _startButton;
         [SerializeField] private Button _unlockButton;
         [SerializeField] private Button _demandInfoButton;
+        
+        [SerializeField] private Sprite _fallbackSprite;
 
         private Action<string> _onStart;
         private Action<string> _onUnlock;
@@ -121,15 +123,34 @@ namespace Game.Location.UI
                 {
                     var locationSprite = await sprites.GetSpriteAsync(locationId, ct);
                     if (ct.IsCancellationRequested) return;
-                    if (_locationImage != null) _locationImage.sprite = locationSprite;
+                    // A missing non-empty id is already warned by UiSpriteProvider; just substitute the
+                    // fallback so the slot is never blank.
+                    if (_locationImage != null)
+                        _locationImage.sprite = locationSprite != null ? locationSprite : _fallbackSprite;
                 }
 
                 foreach (var item in items)
                 {
                     if (item == null) continue;
-                    if (string.IsNullOrEmpty(item.SpriteId)) continue;
-                    var sprite = await sprites.GetSpriteAsync(item.SpriteId, ct);
-                    if (ct.IsCancellationRequested) return;
+
+                    Sprite sprite;
+                    if (string.IsNullOrEmpty(item.SpriteId))
+                    {
+                        // No sprite id to load — e.g. the soldTotal unlock condition, whose ReasonKey
+                        // resolves to no icon. UiSpriteProvider is never called for an empty id, so it logs
+                        // nothing: warn here and show the fallback instead of leaving a blank slot.
+                        sprite = _fallbackSprite;
+                        Debug.LogWarning(
+                            $"[LocationRowView] '{_locationId}': a condition/cost has no sprite id — using fallback sprite.");
+                    }
+                    else
+                    {
+                        sprite = await sprites.GetSpriteAsync(item.SpriteId, ct);
+                        if (ct.IsCancellationRequested) return;
+                        // Missing non-empty id already warned by UiSpriteProvider; just fall back.
+                        if (sprite == null) sprite = _fallbackSprite;
+                    }
+
                     if (item != null) item.SetIcon(sprite);
                 }
             }

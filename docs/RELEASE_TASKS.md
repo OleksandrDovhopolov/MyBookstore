@@ -26,6 +26,25 @@
 
 ## Done
 
+### REL-17 — Improve PreparationWindow Location Context UX
+
+Статус: сделано.
+
+Что сделано:
+- В `PreparationWindow` добавлен блок demand-жанров выбранной локации на основе `LocationConfig.DemandGenres`.
+- Для Preparation заведён отдельный `PreparationGenreIconView`; Journal UI-класс не переиспользуется между фичами.
+- `PreparationWindowView` получил отдельный `UIListPool<PreparationGenreIconView>` для demand-иконок.
+- `PreparationWindow` читает фактический `LocationId` после `StartOrResumeAsync`, рендерит demand-жанры и асинхронно догружает иконки через общий `IUiSpriteProvider`.
+- Добавлены guard'ы для отсутствующих `_configs`, `_uiSprites`, prefab/parent у пула: окно не падает до ручной prefab-провязки.
+- Ручная часть по prefab: item-префаб и `_demandGenrePool` в `PreparationWindow.prefab` провязываются в Unity Editor.
+
+Проверка:
+- Тесты не запускались.
+- `Game.Preparation` успешно скомпилирован через Visual Studio MSBuild.
+
+Критичность: medium. Это улучшает UX подготовки и помогает игроку принимать осмысленное решение перед стартом
+дня продаж.
+
 ### REL-15 — Restyle QuestView Reward Claim Button
 
 Статус: сделано.
@@ -393,6 +412,26 @@ Smoke: N владения, K на полке → «в наличии» N−K, б
 
 Проверка: `Game.Preparation`, `Book.Sell.Tests.Editor`, `GameplayUI.Tests.Editor` — 0 ошибок.
 
+### BUG-4 — Market Location Missing Sprite For SoldTotal Unlock Condition
+
+Статус: сделано (fallback-спрайт назначается в префабе `LocationRowView` вручную).
+
+Причина: у условия `soldTotal` `LocationListItemModel.ResolveSpriteId` возвращает `null` (это не жанр и не
+`visitLocation`), поэтому `SpriteId` пустой; в `LocationRowView.LoadIconsAsync` пустой id пропускался
+(`continue`), иконка скрывалась — слот пустой, без варнинга (`UiSpriteProvider` для пустого id ничего не грузит
+и не логирует).
+
+Что сделано:
+- В `LocationRowView` добавлено сериализованное поле `_fallbackSprite` (назначается в префабе).
+- `LoadIconsAsync` теперь ставит fallback везде, где спрайт не найден: пустой `SpriteId` условия/стоимости
+  (напр. `soldTotal`) и промах загрузки location/condition/cost спрайта.
+- Лог-варнинг добавляется только там, где его ещё нет — для пустого `SpriteId` (`UiSpriteProvider` уже
+  логирует промах непустого id, дубля не делаем).
+- Файл: `Assets/Game/Features/Location/UI/LocationRowView.cs`. Компиляция `Game.Location` — 0 ошибок.
+
+Smoke: открыть Market до unlock — условие `soldTotal: 200` показывается с fallback-иконкой (после назначения
+спрайта в префабе), в логе один осмысленный warning вместо пустого слота.
+
 ## TODO
 
 Единый список открытых релизных задач. Активные задачи и задачи, ожидающие внешние ресурсы, живут здесь
@@ -509,22 +548,6 @@ like …»), а не финальные под каждый конкретный
 Критичность: high (качество релизного контента). Не блокирует прохождение — debug-строка работает как
 временный fallback, но для игрока выглядит технически.
 
-### REL-17 — Improve PreparationWindow Location Context UX
-
-Что сделать:
-- В `PreparationWindow` явно показывать название выбранной локации, для которой игрок собирает полку.
-- Добавить рядом с локацией понятную подсказку/визуальный блок: какие книги или жанры продаются в этой
-  локации лучше всего.
-- Использовать реальные данные локации/баланса, а не захардкоженный текст, чтобы подсказка совпадала с
-  фактическими модификаторами продаж.
-- Сделать подачу компактной и читаемой: игрок должен быстро понять, что выгоднее выставлять именно здесь,
-  не выходя из окна подготовки.
-- Проверить manual smoke: открыть подготовку для разных локаций, увидеть корректное название локации и
-  отличающиеся рекомендации по книгам/жанрам; выбор книг работает как раньше.
-
-Критичность: medium. Это улучшает UX подготовки и помогает игроку принимать осмысленное решение перед стартом
-дня продаж.
-
 ### REL-18 — Add Unlock Item Descriptions To LocationWindow
 
 Что сделать:
@@ -539,23 +562,6 @@ like …»), а не финальные под каждый конкретный
   количеством и понятным текстовым описанием.
 
 Критичность: medium. Это улучшает UX разблокировки локаций и снижает непонятность resource requirements.
-
-### BUG-4 — Market Location Missing Sprite For SoldTotal Unlock Condition
-
-Баг: для локации Market не прогружается спрайт условия разблокировки:
-`{ "type": "soldTotal", "min": 200 }`.
-
-Что сделать:
-- Найти, какой UI/view в `LocationWindow` пытается показать sprite для unlock condition `soldTotal >= 200`.
-- Подготовить корректный спрайт для этого условия или поставить временную заглушку.
-- Зарегистрировать sprite в нужном catalog/addressables/config так, чтобы условие `soldTotal` не давало
-  missing sprite / empty icon.
-- Убедиться, что fallback-иконка используется для неизвестных condition types, если отдельного спрайта нет.
-- Проверить manual smoke: открыть Market до unlock, условие `soldTotal: 200` отображается с иконкой/заглушкой
-  и без ошибок в логе.
-
-Критичность: high. Missing sprite в unlock UI выглядит как поломанный релизный экран и мешает понять условие
-открытия Market.
 
 ### REL-19 — Clean Redis From Old Project Data
 
