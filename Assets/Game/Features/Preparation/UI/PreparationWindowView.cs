@@ -14,6 +14,7 @@ namespace Game.Preparation.UI
 
         [Header("Genre list")]
         [SerializeField] private UIListPool<PreparationGenreRowView> _genreRowPool = new();
+        [SerializeField] private UIListPool<PreparationGenreIconView> _demandGenrePool = new();
 
         [Header("Actions")]
         [SerializeField] private Button _openShopButton;
@@ -22,6 +23,7 @@ namespace Game.Preparation.UI
         public Button OpenShopButton => _openShopButton;
         public Button ResetAllButton => _resetAllButton;
         public UIListPool<PreparationGenreRowView> GenreRowPool => _genreRowPool;
+        public UIListPool<PreparationGenreIconView> DemandGenrePool => _demandGenrePool;
 
         public void SetLocation(string value) => Set(_locationLabel, value);
         public void SetSlotCount(string value) => Set(_slotCountLabel, value);
