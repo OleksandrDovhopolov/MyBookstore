@@ -183,7 +183,92 @@ HUD integration point и назначенная кнопка настроек н
 Осталось вне scope: `sample_requests.json` содержит по 2 Kids/Fact-запроса — для разнообразия их можно
 дописать, но на проходимость квестов это не влияет.
 
-## Part 1 — From TODO / Existing Docs
+### Quest Flow P3 — Add `postcard` Source
+
+Источник: [QUEST_FLOW.md → P3](QUEST_FLOW.md).
+
+Статус: сделано. Механика выдачи открыток уже была реализована; задача подтвердила это и закрыла статус.
+
+Что сделано:
+- Источник `postcard` — награда за завершение дня: `economy.json.dayCompletionRewards` (`postcard` ×1)
+  начисляется в `SalesDayCommitService.GrantDayCompletionRewardsAsync` при коммите каждого завершённого дня.
+- Идемпотентно: день в `CompletedDays` повторно не выдаёт награду.
+- Покрыто тестами (`SalesDayCommitServiceTests`: `_GrantsDayCompletionRewards_Once`,
+  `_AlreadyCompletedDay_DoesNotGrantDayRewards`, `_IgnoresInvalidDayRewardEntries`).
+- `haveItem postcard 10` достижим за 10 завершённых дней без читов.
+
+Осталось вне scope (P9): открытки не списываются при сдаче квеста (`haveItem` — проверка наличия, не расход).
+
+### Quest Flow P4 — Add `map` Source
+
+Источник: [QUEST_FLOW.md → P4](QUEST_FLOW.md).
+
+Статус: сделано. Источник `map` уже добавлен; задача подтвердила дизайн-решение и закрыла статус.
+
+Что сделано:
+- `map` (quest_item) покупается в газете: лот `newspaper_quest_item_map` в `shop.json`
+  (витрина `newspaper.consumables`, 200 gold, `Disposable` max 1) выдаёт `map` ×1.
+- `map` гейтит Деревню: `loc_village.unlockCost` = `map ×1` + `fuel_canister ×15`
+  (плюс условие `soldGenre Fantasy 150` и `soldGenre Kids 150`).
+- Деревня достижима без читов при выполнении условий.
+
+### Quest Flow P5 — Fix `days.json` / Active Request Pace
+
+Источник: [QUEST_FLOW.md → P5](QUEST_FLOW.md).
+
+Статус: сделано.
+
+Что сделано:
+- `days.json`: день 2 `activeRequestCount` `0 → 1` (день имеет `applyModifiers: false` → ровно 1 запрос).
+  День 1 оставлен `0` (обучающий).
+- `SalesTraffic.asset._defaultActiveRequestCount` `1 → 3` — значение для дней без своего `activeRequestCount`
+  (день 3+). Рантайм читает дефолт из ассета (`SalesTrafficConfig.BuildSettings()`), поэтому правился ассет;
+  C#-дефолты в `SalesTrafficConfig`/`SalesTrafficSettings` синхронизированы на 3 для консистентности.
+- Итог расписания: день 1 = 0, день 2 = 1, день 3+ = 3 активных запроса/день — темп `activePickGenre`
+  (Милли/Тара) стал реалистичным.
+
+### Quest Flow P6 — Bind Captain To Port
+
+Источник: [QUEST_FLOW.md → P6](QUEST_FLOW.md).
+
+Статус: сделано.
+
+Что сделано:
+- В `CustomerScriptConfig` добавлено необязательное поле `LocationId` (location gate; null = любая локация).
+- Скрипт `captain_quest_intro` в `customer_scripts.json` помечен `locationId: "loc_port"`.
+- `ScriptedCustomerSpawner.IsEligible` получил независимый гейт: при заданном `LocationId` скрипт eligible
+  только когда `setup.LocationId` совпадает. Обратная совместимость — скрипты без `LocationId` не изменились.
+- Тесты `ScriptedCustomerSpawnerTests`: `LocationBoundScript_Spawns_OnlyAtMatchingLocation` и
+  `LocationBoundScript_Skips_WhenDayRunsElsewhere`. Сборка тестов компилируется без ошибок.
+
+### INF-4 — Localization
+
+Статус: сделано. Добавлен лёгкий `Game.Localization` поверх текущего config pipeline без Unity Localization
+package: `ILocalizationService`, `LocalizationService`, `LocalizationWarmupOperation`, `LocalizationLocator`
+и prefab-компонент `LocalizedText` для `TMP_Text`.
+
+Что сделано:
+- Поддержан текущий релизный язык `en` и API под будущую смену языка: `CurrentLocale`, `LocaleChanged`, `SetLocale`.
+- Добавлены плоские localization configs по доменам (`ui`, `dialogues`, `quests`, `characters`, `items`, `books`), которые проходят через существующий `Assets/Configs` / `StreamingAssets` pipeline.
+- Player-facing поля в основных конфигах переведены на `*Key`; потребители UI и gameplay-экранов резолвят текст через `ILocalizationService`.
+- Missing-key поведение единое: игра не падает, показывает ключ в формате ``[`key`]`` и пишет warning.
+- Добавлены проверки ключей локализации и регрессионная защита от показа raw localization keys в основных UI/narrative surfaces.
+
+Книги технически подключены через `localization_books_en.json`, но финальные тексты книг остаются отдельной
+контентной задачей: текущие записи были импортированы как временные.
+
+### REL-3 — English-Only Localization Configs
+
+Статус: сделано. Релизный English-only слой конфигов подключён: игра использует только английский язык,
+но структура файлов и API готовы к добавлению выбора языка в настройках позже.
+
+Граница закрытия: задача закрывает технический релизный минимум English-only localization. Замена временных
+книжных текстов не считается частью технической локализации и вынесена в отдельную release content task.
+
+## TODO
+
+Единый список открытых релизных задач. Активные задачи и задачи, ожидающие внешние ресурсы, живут здесь
+в одном списке; отдельные пометки внутри задачи объясняют, почему её нельзя двигать прямо сейчас.
 
 ### GAME-2 — Finish `Game.Quest` Slice
 
@@ -210,62 +295,6 @@ HUD integration point и назначенная кнопка настроек н
 - Убрать временную связность tutorial UI id из `GameplaySceneController`, если она создаёт риск поломки релиза.
 
 Критичность: critical. Tutorial — первый контакт игрока с игрой; сломанный Day 1 будет выглядеть как сломанный продукт.
-
-### Quest Flow P3 — Add `postcard` Source
-
-Источник: [QUEST_FLOW.md → P3](QUEST_FLOW.md), [TODO.md](TODO.md).
-
-Что сделать:
-- Добавить реальный источник `postcard`, потому что Капитан требует 10 открыток.
-- Выбрать минимальную релизную механику: например, выдача за завершение дня, магазин, квестовая награда или другой уже существующий канал.
-- Проверить, что `haveItem postcard min 10` достижим без читов.
-
-Критичность: critical. Без открыток Капитан непроходим и Рынок блокируется.
-
-### Quest Flow P4 — Add `map` Source
-
-Источник: [QUEST_FLOW.md → P4](QUEST_FLOW.md), [TODO.md](TODO.md).
-
-Что сделать:
-- Добавить реальный источник `map`, потому что Деревня требует `map` для unlock.
-- Выбрать минимальный релизный источник: quest reward, shop lot или существующий reward flow.
-- Проверить, что Деревня достижима без читов при выполнении остальных условий.
-
-Критичность: critical for late progression. Без карты финальная локация недостижима.
-
-### Quest Flow P5 — Fix `days.json` / Active Request Pace
-
-Источник: [QUEST_FLOW.md → P5](QUEST_FLOW.md), [TODO.md](TODO.md).
-
-Что сделать:
-- Продлить/настроить `days.json` после дня 2.
-- Проверить `activeRequestCount`, особенно дни с hard overrides и `applyModifiers: false`.
-- Убедиться, что квесты с `activePickGenre` физически выполнимы в разумном темпе.
-
-Критичность: critical. Это корень темпа прогрессии и причина, почему P1/P2 могут оставаться невыполнимыми даже после правки данных.
-
-### Quest Flow P6 — Bind Captain To Port
-
-Источник: [QUEST_FLOW.md → P6](QUEST_FLOW.md), [TODO.md](TODO.md).
-
-Что сделать:
-- Добавить или использовать location gate для `CustomerScriptConfig`, чтобы Капитан появлялся в Порту.
-- Проверить, что `activationQuestId` и location условие не конфликтуют.
-- Покрыть сценарий тестом или валидатором scripted customer config.
-
-Критичность: high. Это не всегда технический блокер, но ломает дизайн цепочки и ожидание игрока.
-
-### INF-4 — Localization
-
-Источник: [TODO.md → INF-4](TODO.md), [LANGUAGE_POLICY.md](LANGUAGE_POLICY.md), [INPROGRESS/JOURNAL_WINDOW.md](INPROGRESS/JOURNAL_WINDOW.md).
-
-Что сделать:
-- Добавить минимальный слой локализации.
-- На релизном этапе нужен только английский язык.
-- Завести localization configs/tables, чтобы UI не показывал ключи вроде `character.eddi.name`.
-- Перевести player-facing строки, которые сейчас захардкожены или лежат как raw keys.
-
-Критичность: high. Для первого APK можно ограничиться English-only, но показывать ключи игроку нельзя.
 
 ### INF-6 — Save Module Versioning And Migrations
 
@@ -342,8 +371,6 @@ HUD integration point и назначенная кнопка настроек н
 
 Критичность: critical. Это релизный gate.
 
-## Part 2 — Release Additions
-
 ### REL-1 — Quest / Memory Appearance UI And Gameplay Button Attention
 
 Что сделать:
@@ -354,14 +381,14 @@ HUD integration point и назначенная кнопка настроек н
 
 Критичность: high. Это не новая механика, а видимость уже существующей прогрессии.
 
-### REL-3 — English-Only Localization Configs
+### CONTENT-1 — Replace Copied Book Localization Texts
 
 Что сделать:
-- Добавить конфиги локализации только для английского языка.
-- Перенести player-facing строки в localization configs.
-- Сохранить возможность будущего добавления языков без переделки UI.
+- Обновить все записи в `Assets/Configs/localization_books_en.json`: текущие тексты были скопированы из другого проекта и должны быть заменены на финальные тексты этой игры.
+- После правки синхронизировать `Assets/StreamingAssets/Configs/localization_books_en.json`.
+- Проверить Book UI и Recommendation minigame, чтобы игрок не видел временные чужие тексты.
 
-Критичность: high. Связано с INF-4, но зафиксировано как релизный минимальный scope: English only.
+Критичность: high. Это не блокирует работу localization-системы, но блокирует качественный релизный контент.
 
 ### REL-4 — Register Google Play Developer Account
 
@@ -505,15 +532,9 @@ EditMode-прогон зелёный, а список известных иск�
 
 Критичность: high before release. Не блокирует сборку APK технически, но без этого релиз собирается вслепую.
 
-## Wait Resources
-
-Задачи, упирающиеся во **внешние ресурсы**: арт, который нужно нарисовать, и контентно-балансовые
-решения, которые нужно принять. Инженерная постановка закрыта — размеры, форматы, точки подключения
-и правила зафиксированы, кода писать либо не нужно, либо тривиально мало.
-
-Пока ресурса нет, двигать нечего, поэтому такие задачи держатся отдельно от активного списка. Но они
-**остаются в релизном scope** — в отличие от [Deferred](#deferred--сознательно-отложено), где лежит
-то, что решили не делать.
+**Resource-blocked:** следующие задачи упираются во внешние ресурсы: арт, который нужно нарисовать, и
+контентно-балансовые решения, которые нужно принять. Они остаются в TODO и в релизном scope; в отличие от
+[Deferred](#deferred--сознательно-отложено), это не отложенные задачи, а задачи, ожидающие входные материалы.
 
 ### REL-7 — App Icons
 
@@ -698,7 +719,7 @@ Memories станет презентабельной только с этими 
 
 ## Deferred — сознательно отложено
 
-Задачи, которые осознанно вынесены из текущего релизного scope, но не отменены. Держим здесь, чтобы не потерялись и чтобы не всплывали заново в Part 1/Part 2.
+Задачи, которые осознанно вынесены из текущего релизного scope, но не отменены. Держим здесь, чтобы не потерялись и чтобы не всплывали заново в TODO.
 
 ### DEF-1 — Analytics Consent Withdrawal Toggle
 

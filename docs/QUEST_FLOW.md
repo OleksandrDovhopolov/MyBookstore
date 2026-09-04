@@ -7,9 +7,9 @@
 запроса — [ACTIVE_REQUEST_CONDITIONS.md](ACTIVE_REQUEST_CONDITIONS.md), разблокировка локаций —
 [LOCATION_UNLOCK_SYSTEM.md](LOCATION_UNLOCK_SYSTEM.md).
 
-> **Статус на 2026-09-03.** P1/P2 (нерешаемые Kids/Fact активные запросы) закрыты: рантайм грузит активные
-> запросы только из `sample_requests.json`, где Kids/Fact решаемы, а legacy `hard_requests.json` удалён.
-> Остаются блокеры P3/P4/P5 — в реестре ниже.
+> **Статус на 2026-09-03.** Блокеры P1–P6 закрыты: Kids/Fact активные запросы решаемы (`sample_requests.json`),
+> открытки выдаются за день (P3), у `map` есть источник в газете (P4), задан темп активных запросов
+> (день 2 = 1, дефолт = 3; P5), капитан привязан к Порту (P6). Остаются некритичные доработки P7/P9.
 
 Легенда: ✅ работает · 🟡 работает с оговоркой · 🔴 блокер
 
@@ -186,16 +186,16 @@ dayProgress и **не на посещения локаций**. Визит фи�
 |---|---|---|---|
 | **P1** ✅ | Kids-запросы решаемы. Неразрешимые жили в legacy `hard_requests.json`, который рантайм не грузил; живой `sample_requests.json` содержит валидные Kids-запросы. Legacy-файл удалён | — | Закрыто: `sample_requests.json` + тест `ActiveRequestSolvabilityTests` |
 | **P2** ✅ | Fact-запросы решаемы. Та же природа, что P1 — блокер был только в удалённом legacy `hard_requests.json` | — | Закрыто: `sample_requests.json` + тест `ActiveRequestSolvabilityTests` |
-| **P3** 🔴 | Открытки не выдаются | Капитан непроходим → Рынок | нет механики |
-| **P4** 🔴 | У `map` нет источника | Деревня недостижима | дизайн не определён |
-| **P5** 🟠 | `days.json` обрывается на дне 2; у дней 1–2 `activeRequestCount: 0` при `applyModifiers: false` (жёсткий override), с дня 3 берётся `SalesTrafficSettings.DefaultActiveRequestCount` = 1 | обе `activePickGenre`-задачи стартуют на ~1 запросе в день; в дни выдачи прогресс невозможен физически | `days.json` |
-| **P6** 🟠 | Капитан спавнится на любой локации | расхождение с ТЗ «заход в Порт» | нет `locationId` в `CustomerScriptConfig` |
+| **P3** ✅ | Открытки выдаются: `economy.json.dayCompletionRewards` (postcard ×1) начисляется за каждый завершённый день в `SalesDayCommitService.GrantDayCompletionRewardsAsync` (идемпотентно, покрыто тестами) | — | Закрыто: `economy.json` + `SalesDayCommitService` |
+| **P4** ✅ | У `map` есть источник: лот `newspaper_quest_item_map` в `shop.json` (200 gold, Disposable) выдаёт `map` (quest_item) для открытия Деревни | — | Закрыто: `shop.json` |
+| **P5** ✅ | Темп активных запросов задан: день 1 = 0, день 2 = 1 (`days.json`), день 3+ = 3 (`SalesTraffic.asset._defaultActiveRequestCount`) | — | Закрыто: `days.json` + `SalesTraffic.asset` |
+| **P6** ✅ | Капитан привязан к Порту: добавлено поле `CustomerScriptConfig.LocationId`, скрипт `captain_quest_intro` помечен `locationId: loc_port`, `ScriptedCustomerSpawner.IsEligible` фильтрует по `setup.LocationId` | — | Закрыто: `CustomerScriptConfig` + `customer_scripts.json` + `ScriptedCustomerSpawner` |
 | **P7** 🟡 | Активация по `visitLocation` с задержкой | квест появляется не в момент входа | `QuestsService.Subscribe()` |
 | **P8** ✅ | `activePickGenre` считал `genres[0]`, а условие запроса — весь массив `genres` | двужанровая книга давала «отлично», но не засчитывалась в квест | Закрыто GAME-22: активная продажа фиксирует жанр запроса |
 | **P9** 🟡 | Открытки не списываются при сдаче квеста | предметы остаются в инвентаре | нет механики |
 
-**Порядок разбора.** P1/P2 закрыты (миграция на `sample_requests.json` + удаление legacy `hard_requests.json`).
-Остаётся P5 (корень темпа прогрессии после дня 2), затем P3. P6–P9 — доработки.
+**Порядок разбора.** P1–P6 закрыты. Остаются мелкие доработки P7 (задержка активации по `visitLocation`) и
+P9 (открытки не списываются при сдаче квеста) — на проходимость цепочки не влияют.
 
 Против повторения P1/P2 стоит гейт: `Tools → Configs → Validate Active Requests` и автоматическая
 проверка на билде (`PreBuildValidationGate`, см. [BUILD.md §0](BUILD.md)), плюс тест

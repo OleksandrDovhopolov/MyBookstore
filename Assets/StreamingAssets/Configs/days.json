@@ -20,7 +20,7 @@
     "weatherId": "rain",
     "eventId": "",
     "customerCount": 3,
-    "activeRequestCount": 0,
+    "activeRequestCount": 1,
     "applyModifiers": false,
     "titleKey": "day.day_002.title"
   }

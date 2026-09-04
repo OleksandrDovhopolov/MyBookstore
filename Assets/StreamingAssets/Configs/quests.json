@@ -11,7 +11,6 @@
       "type": "dialogueDelivered",
       "dialogueId": "eddy1"
     },
-    "startsWhen": "Day 1. Customer script 'eddi_intro' brings dialogue 'eddy1'; the quest activates once that dialogue is delivered.",
     "failConditions": null,
     "tasks": [
       {
@@ -73,7 +72,6 @@
       "type": "dialogueDelivered",
       "dialogueId": "millie1"
     },
-    "startsWhen": "Day 2. Customer script 'millie_intro' brings dialogue 'millie1'; the quest activates once that dialogue is delivered.",
     "failConditions": null,
     "tasks": [
       {
@@ -114,7 +112,6 @@
       "type": "dialogueDelivered",
       "dialogueId": "tara_quest_1"
     },
-    "startsWhen": "Day 5. Customer script 'tara_quest_intro' brings dialogue 'tara_quest_1'; the quest activates once that dialogue is delivered.",
     "failConditions": null,
     "tasks": [
       {
@@ -156,7 +153,6 @@
       "locationId": "loc_port",
       "min": 1
     },
-    "startsWhen": "No fixed day - starts on the first visit to loc_port. Unlocking that location costs port_trade_permit x1 (the reward of q_tara_kids) plus fuel_canister x2, so in practice this follows q_tara_kids.",
     "failConditions": null,
     "tasks": [
       {
