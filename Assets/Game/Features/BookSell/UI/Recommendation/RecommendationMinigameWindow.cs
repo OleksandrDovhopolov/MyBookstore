@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using Book.Sell.API;
 using Book.Sell.Domain;
 using Book.Sell.Services;
@@ -6,10 +8,12 @@ using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
 using Game.Localization;
 using Game.UI;
+using Game.UI.ContentWidget;
 using SpriteService;
 using TMPro;
 using UnityEngine;
 using VContainer;
+using Object = UnityEngine.Object;
 
 namespace Book.Sell.UI
 {
@@ -29,6 +33,7 @@ namespace Book.Sell.UI
 
         private ISalesDayController _controller;
         private IUiSpriteProvider _uiSprites;
+        private readonly IBookConditionRequestEvaluator _conditionEvaluator = new BookConditionRequestEvaluator();
         private readonly List<BookCardView> _cards = new();
         private string _selectedBookId;
         private bool _subscribed;
@@ -40,6 +45,8 @@ namespace Book.Sell.UI
         // Null-safe: BookCardView.Bind skips the icon load when the provider is unavailable.
         [Inject]
         public void InjectSprites(IUiSpriteProvider uiSprites) => _uiSprites = uiSprites;
+
+        private static bool DebugToolsEnabled => Debug.isDebugBuild;
 
         protected override void OnInit()
         {
@@ -77,6 +84,13 @@ namespace Book.Sell.UI
             RenderRequest(_controller.CurrentRequest);
             PopulateShelfCards();
             ClearSelection();
+
+            // The window is keepInCache, so it is reused for every request. A previous request's
+            // resolution left Skip/ClearFocus disabled (SetSelectionActionsInteractable(false)); re-enable
+            // them on each show so the cancel/exit buttons never stay stuck off. Recommend stays off until
+            // a book is selected (the method guards it on the current selection).
+            SetSelectionActionsInteractable(true);
+
             View.Animator?.PlayRequestIntro(showShelfPanel: View.Animation is not RecommendationMinigameWindowAnimation);
 
             Subscribe();
@@ -141,6 +155,7 @@ namespace Book.Sell.UI
 
                 var available = shelfBook.State == ShelfBookState.Available && !shelf.IsReserved(shelfBook.BookId);
                 card.SetSoldOut(!available);
+                SetDebugState(card, shelfBook.Config);
 
                 _cards.Add(card);
             }
@@ -151,6 +166,55 @@ namespace Book.Sell.UI
             foreach (var card in _cards)
                 if (card != null) Object.Destroy(card.gameObject);
             _cards.Clear();
+        }
+
+        private void SetDebugState(BookCardView card, BookConfig book)
+        {
+            if (card == null) return;
+
+            var request = _controller?.CurrentRequest?.ConditionRequest;
+            var enabled = DebugToolsEnabled && request != null;
+            card.SetDebugInfo(enabled, OnBookInfoClicked);
+
+            bool? match = null;
+            if (enabled && _conditionEvaluator != null && book != null)
+                match = _conditionEvaluator.Evaluate(book, request).IsMatch;
+
+            card.SetRequestMatch(match);
+        }
+
+        private void OnBookInfoClicked(string bookId, RectTransform anchor)
+        {
+            if (string.IsNullOrEmpty(bookId) || anchor == null) return;
+
+            var book = _controller?.Shelf?.Find(bookId)?.Config;
+            if (book == null) return;
+
+            ShowBookInfoWidgetAsync(book, anchor).Forget();
+        }
+
+        private async UniTaskVoid ShowBookInfoWidgetAsync(BookConfig book, RectTransform anchor)
+        {
+            if (book == null || anchor == null || UIManager == null || View == null) return;
+
+            try
+            {
+                var data = new BookInfoWidgetData(
+                    LocalizationLocator.GetOrKey(book.TitleKey),
+                    JoinOrDash(book.Genres),
+                    JoinOrDash(book.Qualities));
+
+                await UIManager.ShowAsync<ContentWidgetController>(
+                    new ContentWidgetArgs(data, anchor, this),
+                    View.destroyCancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[RecommendationMinigameWindow] Failed to show book info widget for '{book.Id}': {e}");
+            }
         }
 
         // ---------- selection + detail ----------
@@ -348,5 +412,8 @@ namespace Book.Sell.UI
             label.text = value ?? string.Empty;
             label.maxVisibleCharacters = int.MaxValue;
         }
+
+        private static string JoinOrDash(IReadOnlyList<string> values)
+            => values == null || values.Count == 0 ? "-" : string.Join(", ", values);
     }
 }

@@ -32,12 +32,17 @@ namespace Book.Sell.UI
         [SerializeField] private Button _button;
         [SerializeField] private GameObject _selectedHighlight; // border/glow shown in the Selected state
 
+        [Header("Debug")]
+        [SerializeField] private Button _infoButton;
+        [SerializeField] private TMP_Text _matchLabel;
+
         [Header("Visual states")]
         [Tooltip("Card opacity when sold out. 1 = opaque, 0.4 = typical dim.")]
         [SerializeField] [Range(0f, 1f)] private float _soldOutAlpha = 0.4f;
         [SerializeField] private CanvasGroup _canvasGroup;      // auto-resolved in Awake if left unassigned
 
         private Action<string> _onClicked;
+        private Action<string, RectTransform> _onInfoClicked;
         private CancellationTokenSource _genreIconCts;
         public string BookId { get; private set; }
 
@@ -45,6 +50,7 @@ namespace Book.Sell.UI
         {
             if (_canvasGroup == null) _canvasGroup = GetComponent<CanvasGroup>();
             if (_button != null) _button.onClick.AddListener(OnButtonClicked);
+            if (_infoButton != null) _infoButton.onClick.AddListener(OnInfoButtonClicked);
         }
 
         public void Bind(BookConfig book, Action<string> onClicked, IUiSpriteProvider sprites)
@@ -67,6 +73,8 @@ namespace Book.Sell.UI
 
             SetSelected(false);
             SetSoldOut(false);
+            SetDebugInfo(false, null);
+            SetRequestMatch(null);
         }
 
         // Loads the book's genre sprite from Addressables by genre id (same resolution as the customer
@@ -119,11 +127,43 @@ namespace Book.Sell.UI
             if (_canvasGroup != null) _canvasGroup.alpha = soldOut ? _soldOutAlpha : 1f;
         }
 
+        public void SetDebugInfo(bool visible, Action<string, RectTransform> onInfoClicked)
+        {
+            _onInfoClicked = visible ? onInfoClicked : null;
+            if (_infoButton != null)
+                _infoButton.gameObject.SetActive(visible);
+        }
+
+        public void SetRequestMatch(bool? isMatch)
+        {
+            if (_matchLabel == null) return;
+
+            if (!isMatch.HasValue)
+            {
+                _matchLabel.gameObject.SetActive(false);
+                _matchLabel.text = string.Empty;
+                return;
+            }
+
+            _matchLabel.gameObject.SetActive(true);
+            _matchLabel.text = isMatch.Value ? "OK" : "NOT";
+            _matchLabel.color = isMatch.Value
+                ? new Color(0.2f, 0.85f, 0.35f)
+                : new Color(1f, 0.35f, 0.25f);
+        }
+
         private void OnButtonClicked() => _onClicked?.Invoke(BookId);
+
+        private void OnInfoButtonClicked()
+        {
+            if (string.IsNullOrEmpty(BookId)) return;
+            _onInfoClicked?.Invoke(BookId, transform as RectTransform);
+        }
 
         private void OnDestroy()
         {
             if (_button != null) _button.onClick.RemoveListener(OnButtonClicked);
+            if (_infoButton != null) _infoButton.onClick.RemoveListener(OnInfoButtonClicked);
             CancelGenreIconLoad();
         }
 

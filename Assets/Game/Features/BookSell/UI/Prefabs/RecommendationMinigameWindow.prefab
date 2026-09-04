@@ -738,7 +738,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5281716110955699835}
-  m_Father: {fileID: 827045810482415222}
+  m_Father: {fileID: 108449029823211639}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
@@ -1716,7 +1716,6 @@ RectTransform:
   m_Children:
   - {fileID: 5609335473836913018}
   - {fileID: 108449029823211639}
-  - {fileID: 6982028256642905168}
   m_Father: {fileID: 232416423842891161}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
@@ -1905,6 +1904,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2341399427018867958}
+  - {fileID: 6982028256642905168}
   m_Father: {fileID: 827045810482415222}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2198,6 +2198,7 @@ MonoBehaviour:
   _requestText: {fileID: 4540841737405967709}
   _shelfContainer: {fileID: 8994141112224109922}
   _bookCardPrefab: {fileID: 8081508463598319099, guid: d78b5c7cb7cfe7d41a347d5e4dd21b74, type: 3}
+  _bookInfoWidgetPrefab: {fileID: 1001000000000000005, guid: d3c289a34e6747b88dd2a0f2db93fd1f, type: 3}
   _clearFocusButton: {fileID: 1223536366896596504}
   _detailEmptyRoot: {fileID: 1256904885392187465}
   _detailSelectedRoot: {fileID: 6740937814902183116}
@@ -3442,7 +3443,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 72
+  m_fontSize: 63.75
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
