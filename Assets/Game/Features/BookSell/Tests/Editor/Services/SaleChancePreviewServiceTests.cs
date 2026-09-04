@@ -149,6 +149,7 @@ namespace Book.Sell.Tests.Editor.Services
             public UniTask<IReadOnlyDictionary<string, int>> GetGenreQuantitiesPreviewAsync(CancellationToken ct)
                 => UniTask.FromResult(_counts);
             public UniTask SetGenreQuantityAsync(string genre, int quantity, CancellationToken ct) => UniTask.CompletedTask;
+            public UniTask ResetAllAsync(CancellationToken ct) => UniTask.CompletedTask;
             public UniTask SetSelectedBookIdsAsync(IReadOnlyList<string> bookIds, CancellationToken ct) => UniTask.CompletedTask;
             public PreparationValidationResult Validate() => PreparationValidationResult.Ok();
             public UniTask<bool> ConfirmAsync(CancellationToken ct) => UniTask.FromResult(true);

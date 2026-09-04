@@ -40,6 +40,13 @@ namespace Game.Preparation.Services
         UniTask SetGenreQuantityAsync(string genre, int quantity, CancellationToken ct);
 
         /// <summary>
+        /// Сбрасывает весь текущий выбор подготовки: все квоты по жанрам → 0, SelectedBookIds очищаются.
+        /// Реальный inventory не трогается и день не подтверждается — это сброс выбора до confirm.
+        /// Ничего не делает, если сессия ещё не поднята (StartOrResumeAsync).
+        /// </summary>
+        UniTask ResetAllAsync(CancellationToken ct);
+
+        /// <summary>
         /// Sets the exact shelf book ids for authored flows. ConfirmAsync preserves these ids instead of
         /// resolving the genre quotas again.
         /// </summary>

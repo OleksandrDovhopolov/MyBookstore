@@ -57,7 +57,11 @@ namespace Game.Preparation.UI
 
         private void Refresh()
         {
-            if (_inventoryCountLabel != null) _inventoryCountLabel.text = _available.ToString();
+            // "In stock" shows what is still available to shelf = owned minus what is already on the shelf,
+            // so the number drops as the player adds copies and returns as they remove them. _available stays
+            // the owned ceiling used for clamping; the shelf label shows the selected count. The two always
+            // sum to owned. Nothing here touches real inventory — this is preparation-session math only.
+            if (_inventoryCountLabel != null) _inventoryCountLabel.text = Mathf.Max(0, _available - _quantity).ToString();
             if (_shelfCountLabel != null) _shelfCountLabel.text = _quantity.ToString();
             if (_minusButton != null) _minusButton.interactable = _quantity > 0;
             if (_plusButton != null) _plusButton.interactable = _quantity < _available && _canAddMore;

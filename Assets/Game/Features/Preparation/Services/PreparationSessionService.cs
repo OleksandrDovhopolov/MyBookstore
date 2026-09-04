@@ -139,6 +139,21 @@ namespace Game.Preparation.Services
             StateChanged?.Invoke(_state);
         }
 
+        public async UniTask ResetAllAsync(CancellationToken ct)
+        {
+            if (_state == null)
+            {
+                Debug.LogWarning($"{LogPrefix} ResetAllAsync вызван до StartOrResumeAsync.");
+                return;
+            }
+
+            _state.GenreQuantities.Clear();
+            _state.UseExplicitSelectedBookIds = false;
+            _state.SelectedBookIds = ResolveSelectedBookIds(_state.GenreQuantities);
+            await PersistAsync(ct);
+            StateChanged?.Invoke(_state);
+        }
+
         public async UniTask SetSelectedBookIdsAsync(IReadOnlyList<string> bookIds, CancellationToken ct)
         {
             if (_state == null) return;

@@ -58,6 +58,9 @@ namespace Game.Preparation.UI
 
             if (View.OpenShopButton != null)
                 View.OpenShopButton.onClick.AddListener(OnOpenShopClicked);
+
+            if (View.ResetAllButton != null)
+                View.ResetAllButton.onClick.AddListener(OnResetAllClicked);
         }
 
         protected override void OnShowStart()
@@ -88,6 +91,9 @@ namespace Game.Preparation.UI
             {
                 if (View.OpenShopButton != null)
                     View.OpenShopButton.onClick.RemoveListener(OnOpenShopClicked);
+
+                if (View.ResetAllButton != null)
+                    View.ResetAllButton.onClick.RemoveListener(OnResetAllClicked);
             }
 
             ClearRows();
@@ -179,6 +185,17 @@ namespace Game.Preparation.UI
         private async UniTaskVoid SetGenreQuantityAsync(string genre, int quantity, CancellationToken ct)
         {
             await _session.SetGenreQuantityAsync(genre, quantity, ct);
+        }
+
+        // "Reset All": clears the whole preparation selection. The service fires StateChanged, so rows,
+        // the slot counter and the Start button all refresh through OnStateChanged. Real inventory is
+        // untouched and the day is not confirmed.
+        private void OnResetAllClicked() => ResetAllAsync(_cts.Token).Forget();
+
+        private async UniTaskVoid ResetAllAsync(CancellationToken ct)
+        {
+            if (_session == null) return;
+            await _session.ResetAllAsync(ct);
         }
 
         private void OnStateChanged(PreparationSessionState state)
