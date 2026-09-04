@@ -278,6 +278,7 @@
   },
   {
     "id": "book13",
+    "rarityWeight": 0.65,
     "titleKey": "book.book13.title",
     "authorKey": "book.book13.author",
     "descriptionKey": "book.book13.description",
@@ -321,6 +322,7 @@
   },
   {
     "id": "book15",
+    "rarityWeight": 0.65,
     "titleKey": "book.book15.title",
     "authorKey": "book.book15.author",
     "descriptionKey": "book.book15.description",
@@ -362,6 +364,7 @@
   },
   {
     "id": "book17",
+    "rarityWeight": 0.65,
     "titleKey": "book.book17.title",
     "authorKey": "book.book17.author",
     "descriptionKey": "book.book17.description",
@@ -405,6 +408,7 @@
   },
   {
     "id": "book19",
+    "rarityWeight": 0.65,
     "titleKey": "book.book19.title",
     "authorKey": "book.book19.author",
     "descriptionKey": "book.book19.description",
@@ -425,6 +429,7 @@
   },
   {
     "id": "book20",
+    "rarityWeight": 0.65,
     "titleKey": "book.book20.title",
     "authorKey": "book.book20.author",
     "descriptionKey": "book.book20.description",
@@ -452,6 +457,7 @@
   },
   {
     "id": "book21",
+    "rarityWeight": 0.65,
     "titleKey": "book.book21.title",
     "authorKey": "book.book21.author",
     "descriptionKey": "book.book21.description",
@@ -472,6 +478,7 @@
   },
   {
     "id": "book22",
+    "rarityWeight": 0.65,
     "titleKey": "book.book22.title",
     "authorKey": "book.book22.author",
     "descriptionKey": "book.book22.description",
@@ -492,6 +499,7 @@
   },
   {
     "id": "book23",
+    "rarityWeight": 0.65,
     "titleKey": "book.book23.title",
     "authorKey": "book.book23.author",
     "descriptionKey": "book.book23.description",
@@ -514,6 +522,7 @@
   },
   {
     "id": "book24",
+    "rarityWeight": 0.65,
     "titleKey": "book.book24.title",
     "authorKey": "book.book24.author",
     "descriptionKey": "book.book24.description",
@@ -534,6 +543,7 @@
   },
   {
     "id": "book25",
+    "rarityWeight": 0.65,
     "titleKey": "book.book25.title",
     "authorKey": "book.book25.author",
     "descriptionKey": "book.book25.description",
@@ -561,6 +571,7 @@
   },
   {
     "id": "book26",
+    "rarityWeight": 0.65,
     "titleKey": "book.book26.title",
     "authorKey": "book.book26.author",
     "descriptionKey": "book.book26.description",
@@ -583,6 +594,7 @@
   },
   {
     "id": "book27",
+    "rarityWeight": 0.65,
     "titleKey": "book.book27.title",
     "authorKey": "book.book27.author",
     "descriptionKey": "book.book27.description",
@@ -604,6 +616,7 @@
   },
   {
     "id": "book28",
+    "rarityWeight": 0.65,
     "titleKey": "book.book28.title",
     "authorKey": "book.book28.author",
     "descriptionKey": "book.book28.description",
@@ -628,6 +641,7 @@
   },
   {
     "id": "book29",
+    "rarityWeight": 0.65,
     "titleKey": "book.book29.title",
     "authorKey": "book.book29.author",
     "descriptionKey": "book.book29.description",
@@ -646,6 +660,7 @@
   },
   {
     "id": "book30",
+    "rarityWeight": 0.65,
     "titleKey": "book.book30.title",
     "authorKey": "book.book30.author",
     "descriptionKey": "book.book30.description",
@@ -690,6 +705,7 @@
   },
   {
     "id": "book32",
+    "rarityWeight": 0.65,
     "titleKey": "book.book32.title",
     "authorKey": "book.book32.author",
     "descriptionKey": "book.book32.description",
@@ -712,6 +728,7 @@
   },
   {
     "id": "book33",
+    "rarityWeight": 0.65,
     "titleKey": "book.book33.title",
     "authorKey": "book.book33.author",
     "descriptionKey": "book.book33.description",
@@ -735,6 +752,7 @@
   },
   {
     "id": "book34",
+    "rarityWeight": 0.65,
     "titleKey": "book.book34.title",
     "authorKey": "book.book34.author",
     "descriptionKey": "book.book34.description",
@@ -760,6 +778,7 @@
   },
   {
     "id": "book35",
+    "rarityWeight": 0.65,
     "titleKey": "book.book35.title",
     "authorKey": "book.book35.author",
     "descriptionKey": "book.book35.description",
@@ -783,6 +802,7 @@
   },
   {
     "id": "book36",
+    "rarityWeight": 0.65,
     "titleKey": "book.book36.title",
     "authorKey": "book.book36.author",
     "descriptionKey": "book.book36.description",

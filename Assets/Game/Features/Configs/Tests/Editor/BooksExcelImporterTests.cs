@@ -35,11 +35,99 @@ namespace Game.Configs.Tests.Editor
             Assert.AreEqual(2001, book.Value<int>("published"));
             Assert.AreEqual(123, book.Value<int>("pages"));
             Assert.AreEqual("Real", book.Value<string>("fakeOrReal"));
-            Assert.IsNull(book["rarityWeight"]);
+            Assert.AreEqual(0.5d, book.Value<double>("rarityWeight"));
 
             Assert.AreEqual("The Book", result.Localization.Value<string>("book.book01.title"));
             Assert.AreEqual("Ada", result.Localization.Value<string>("book.book01.author"));
             Assert.AreEqual("About books", result.Localization.Value<string>("book.book01.description"));
+        }
+
+        [Test]
+        public void ConvertRows_ReadsRarityWeightColumn()
+        {
+            var result = BooksExcelImporter.ConvertRows(new[]
+            {
+                Row(2,
+                    ("Title", "Rare Book"),
+                    ("Description", "Description"),
+                    ("Published", 2001d),
+                    ("Pages", 123d),
+                    ("Author", "Ada"),
+                    ("Genres", "Fantasy"),
+                    ("Qualities", "Magic"),
+                    ("Fake or Real", "Real"),
+                    ("RarityWeight", 0.75d))
+            });
+
+            Assert.IsTrue(result.Success, string.Join("\n", result.Errors));
+            Assert.AreEqual(0.75d, ((JObject)result.Books[0]).Value<double>("rarityWeight"));
+        }
+
+        [Test]
+        public void ConvertRows_ReadsRarityAlias()
+        {
+            var result = BooksExcelImporter.ConvertRows(new[]
+            {
+                Row(2,
+                    ("Title", "Rare Book"),
+                    ("Description", "Description"),
+                    ("Published", 2001d),
+                    ("Pages", 123d),
+                    ("Author", "Ada"),
+                    ("Genres", "Fantasy"),
+                    ("Qualities", "Magic"),
+                    ("Fake or Real", "Real"),
+                    ("Rarity", "0.7"))
+            });
+
+            Assert.IsTrue(result.Success, string.Join("\n", result.Errors));
+            Assert.AreEqual(0.7d, ((JObject)result.Books[0]).Value<double>("rarityWeight"));
+        }
+
+        [Test]
+        public void ConvertRows_RarityWeightColumnWinsOverRarityAlias()
+        {
+            var result = BooksExcelImporter.ConvertRows(new[]
+            {
+                Row(2,
+                    ("Title", "Rare Book"),
+                    ("Description", "Description"),
+                    ("Published", 2001d),
+                    ("Pages", 123d),
+                    ("Author", "Ada"),
+                    ("Genres", "Fantasy"),
+                    ("Qualities", "Magic"),
+                    ("Fake or Real", "Real"),
+                    ("RarityWeight", 0.8d),
+                    ("Rarity", 0.6d))
+            });
+
+            Assert.IsTrue(result.Success, string.Join("\n", result.Errors));
+            Assert.AreEqual(0.8d, ((JObject)result.Books[0]).Value<double>("rarityWeight"));
+        }
+
+        [Test]
+        public void ConvertRows_InvalidRarity_SkipsRowWithWarning()
+        {
+            var result = BooksExcelImporter.ConvertRows(new[]
+            {
+                Row(2,
+                    ("Title", "Bad Rarity"),
+                    ("Description", "Description"),
+                    ("Published", 2001d),
+                    ("Pages", 123d),
+                    ("Author", "Ada"),
+                    ("Genres", "Fantasy"),
+                    ("Qualities", "Magic"),
+                    ("Fake or Real", "Real"),
+                    ("RarityWeight", "very rare"))
+            });
+
+            Assert.IsTrue(result.Success, string.Join("\n", result.Errors));
+            Assert.AreEqual(0, result.Books.Count);
+            Assert.AreEqual(1, result.Warnings.Count);
+            Assert.IsTrue(result.Warnings[0].Contains("Row 2 'Bad Rarity' skipped"));
+            Assert.IsTrue(result.Warnings[0].Contains("RarityWeight is not numeric"));
         }
 
         [Test]

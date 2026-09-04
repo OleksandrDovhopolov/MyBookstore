@@ -23,6 +23,29 @@
     "descriptionKey": "shop.newspaper_decor_vintage_globe.description"
   },
   {
+    "id": "newspaper_decor_harper_castle_donation_box",
+    "storefrontId": "newspaper.decor",
+    "price": {
+      "currency": "gold",
+      "amount": 50
+    },
+    "rewardId": "decor_harper_castle_donation_box",
+    "rewardItems": [
+      {
+        "id": "harper_castle_donation_box",
+        "category": "decor",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
+    ],
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_decor_harper_castle_donation_box.name",
+    "descriptionKey": "shop.newspaper_decor_harper_castle_donation_box.description"
+  },
+  {
     "id": "newspaper_decor_coffee_pot",
     "storefrontId": "newspaper.decor",
     "price": {

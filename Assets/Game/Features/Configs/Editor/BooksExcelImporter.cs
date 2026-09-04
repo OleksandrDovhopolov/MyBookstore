@@ -96,6 +96,7 @@ namespace Game.Configs.Editor
                 var pages = ReadRequiredInt(row, "Pages", rowErrors);
                 var genres = ReadGenres(row, rowErrors);
                 var qualities = ReadStringList(row, "Qualities", rowErrors);
+                var rarityWeight = ReadOptionalNumber(row, rowErrors, "RarityWeight", "Rarity");
 
                 if (rowErrors.Count > 0)
                 {
@@ -117,6 +118,7 @@ namespace Game.Configs.Editor
                     ["descriptionKey"] = descriptionKey,
                     ["genres"] = new JArray(genres),
                     ["qualities"] = new JArray(qualities),
+                    ["rarityWeight"] = rarityWeight,
                     ["published"] = published,
                     ["pages"] = pages,
                     ["fakeOrReal"] = fakeOrReal
@@ -195,6 +197,31 @@ namespace Game.Configs.Editor
 
             errors.Add($"{header} is not numeric.");
             return 0;
+        }
+
+        private static double ReadOptionalNumber(BooksExcelRow row, List<string> errors, params string[] headers)
+        {
+            const double defaultValue = 0.5d;
+            for (var i = 0; i < headers.Length; i++)
+            {
+                var header = headers[i];
+                var value = row.Get(header);
+                if (value == null || string.IsNullOrWhiteSpace(value.ToString()))
+                    continue;
+
+                if (value is double d) return d;
+                if (value is float f) return f;
+                if (value is int intValue) return intValue;
+                if (value is long longValue) return longValue;
+
+                if (double.TryParse(value.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed))
+                    return parsed;
+
+                errors.Add($"{header} is not numeric.");
+                return defaultValue;
+            }
+
+            return defaultValue;
         }
 
         private static int ReadIntegerNumber(double value, string header, List<string> errors)

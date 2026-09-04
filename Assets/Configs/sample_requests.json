@@ -30,7 +30,7 @@
   },
   {
     "id": "req_scarlet_02",
-    "genre": "Crime",
+    "genre": "Classic",
     "bookTitle": "A Study in Scarlet",
     "enabled": true,
     "conditions": {

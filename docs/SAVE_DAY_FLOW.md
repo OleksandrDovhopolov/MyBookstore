@@ -57,6 +57,11 @@ The list is decentralized by design. New persisted features should add their
 own keys and keep the DTO/version local to the owning feature or its API
 assembly.
 
+`SaveService` also logs a soft per-module warning at 5 KB. The `inventory`
+module can legitimately cross that line as the player accumulates unique books;
+that warning is a growth signal, not corruption, while the full save payload
+remains under the current 30 KB envelope limit.
+
 ---
 
 ## Current Day Flow
