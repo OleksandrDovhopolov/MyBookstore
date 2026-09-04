@@ -197,7 +197,7 @@ HUD integration point и назначенная кнопка настроек н
   `_AlreadyCompletedDay_DoesNotGrantDayRewards`, `_IgnoresInvalidDayRewardEntries`).
 - `haveItem postcard 10` достижим за 10 завершённых дней без читов.
 
-Осталось вне scope (P9): открытки не списываются при сдаче квеста (`haveItem` — проверка наличия, не расход).
+Связанное P9 закрыто отдельно: открытки списываются при сдаче квеста Капитана через `QuestConfig.Costs`.
 
 ### Quest Flow P4 — Add `map` Source
 
@@ -389,6 +389,30 @@ package: `ILocalizationService`, `LocalizationService`, `LocalizationWarmupOpera
 - Проверить Book UI и Recommendation minigame, чтобы игрок не видел временные чужие тексты.
 
 Критичность: high. Это не блокирует работу localization-системы, но блокирует качественный релизный контент.
+
+### CONTENT-2 — Active Request Descriptions
+
+Контекст: активный запрос (мини-игра рекомендации) сейчас показывает **техническую debug-строку** условий
+(напр. «A Study in Scarlet: ALL: genres contains Crime; publicationYear between …; pages ≤ 200»), а не
+человеческий текст. Это сделано намеренно: локализация (коммит `49fc9b9`) уже завела поле
+`RequestDefinitionConfig.DescriptionKey`, проставила ключи в `sample_requests.json` и тексты в
+`localization_quests_en.json`, но текущие тексты — временные/шаблонные (типа «I'm looking for a Crime book
+like …»), а не финальные под каждый конкретный запрос. Поэтому вывод переключён обратно на debug-строку
+флагом `ActiveRequestRuntime.UseLocalizedDescriptions = false` (`Assets/Game/Features/BookSell/Domain/ActiveRequestRuntime.cs`).
+Ничего не удалялось — ключи и loc-тексты сохранены.
+
+Что сделать:
+- Продумать логику подачи текста запроса: он должен читаемо и по-человечески описывать, что хочет покупатель,
+  и сходиться с фактическими условиями (`conditions`) запроса — под каждый из ~19 запросов в
+  `sample_requests.json` (жанр/качества/годы/страницы, референсная книга `bookTitle`).
+- Написать финальный текст под каждый `descriptionKey` в `localization_quests_en.json` (ключи `request.*.description`).
+- Переключить `ActiveRequestRuntime.UseLocalizedDescriptions` в `true` (или убрать флаг и debug-fallback,
+  когда тексты готовы) — тогда UI начнёт показывать человеческое описание вместо технической строки.
+- Синхронизировать `Assets/StreamingAssets/Configs/localization_quests_en.json`.
+- Проверить Recommendation minigame: игрок видит осмысленный текст запроса, а не дамп условий.
+
+Критичность: high (качество релизного контента). Не блокирует прохождение — debug-строка работает как
+временный fallback, но для игрока выглядит технически.
 
 ### REL-4 — Register Google Play Developer Account
 

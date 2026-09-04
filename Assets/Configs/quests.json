@@ -179,6 +179,12 @@
         "amount": 1
       }
     ],
+    "costs": [
+      {
+        "itemId": "postcard",
+        "amount": 10
+      }
+    ],
     "worldEffects": []
   }
 ]

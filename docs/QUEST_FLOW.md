@@ -1,15 +1,16 @@
 # Quest Flow — фактический путь всех квестов
 
 Что реально происходит от появления персонажа до разблокировки локации, по каждому из четырёх квестов
-в `Assets/Configs/quests.json`, и где путь сейчас рвётся.
+в `Assets/Configs/quests.json`, и какие оговорки остаются.
 
 Это документ **состояния**, не спека. Спека механики — [QUESTS.md](QUESTS.md), модель условий активного
 запроса — [ACTIVE_REQUEST_CONDITIONS.md](ACTIVE_REQUEST_CONDITIONS.md), разблокировка локаций —
 [LOCATION_UNLOCK_SYSTEM.md](LOCATION_UNLOCK_SYSTEM.md).
 
-> **Статус на 2026-09-03.** Блокеры P1–P6 закрыты: Kids/Fact активные запросы решаемы (`sample_requests.json`),
+> **Статус на 2026-09-04.** Блокеры P1–P6 закрыты: Kids/Fact активные запросы решаемы (`sample_requests.json`),
 > открытки выдаются за день (P3), у `map` есть источник в газете (P4), задан темп активных запросов
-> (день 2 = 1, дефолт = 3; P5), капитан привязан к Порту (P6). Остаются некритичные доработки P7/P9.
+> (день 2 = 1, дефолт = 3; P5), капитан привязан к Порту (P6), открытки списываются при сдаче
+> квеста Капитана (P9). Остаётся некритичная доработка P7.
 
 Легенда: ✅ работает · 🟡 работает с оговоркой · 🔴 блокер
 
@@ -127,7 +128,7 @@ QuestRewardBridge (ISaveHook.BeforeSaveAsync) ──▶ IRewardGrantService
 
 ---
 
-## 4. Капитан — `q_captain_postcards` 🔴
+## 4. Капитан — `q_captain_postcards` 🟡
 
 | | |
 |---|---|
@@ -139,23 +140,14 @@ QuestRewardBridge (ISaveHook.BeforeSaveAsync) ──▶ IRewardGrantService
 
 ✅ Корабль выдаётся только квестом — в `shop.json` лота нет.
 ✅ `soldTotal` для Рынка существует и зарегистрирован (`SoldTotalConditionFactory`).
-
-🔴 **Блокер: открытки никто не выдаёт.** Предмет `postcard` заведён в `consumables.json` (категория
-`consumable` = Stack, поэтому `GetCount` считает штуки и `min: 10` отработает), но механики «1 открытка за
-завершение игрового дня» не существует. Валидатор ссылок это и сообщает:
-`Item 'postcard' (consumable) is not granted by any quest reward or shop lot`.
-
-🟠 **Капитан появится не обязательно в Порту.** У `CustomerScriptConfig` нет поля локации — `IsEligible`
-требует ровно одно из `dayIndex` / `activationQuestId` и локацию не учитывает. Он придёт на первом
-отыгранном дне после активации квеста, на любой локации.
+✅ Открытки выдаются за завершение дня: `economy.json.dayCompletionRewards` (`postcard` ×1).
+✅ Капитан привязан к Порту через `CustomerScriptConfig.LocationId`.
+✅ Открытки списываются при сдаче квеста: `q_captain_postcards.costs` требует `postcard` ×10, а
+`QuestRewardGranter` списывает cost один раз после успешной выдачи награды.
 
 🟡 **Активация с задержкой.** `QuestsService.Subscribe()` подписан на sales / decor / inventory /
 dayProgress и **не на посещения локаций**. Визит фиксируется при входе, но квест активируется на следующей
 переоценке — практически в тот же день при первой продаже.
-
-🟡 **Открытки не списываются.** «Собрать для него 10 открыток» — `haveItem` только проверяет наличие.
-Механики «отдать предметы за квест» нет (списание есть только у `unlockCost` локаций). После награды
-10 открыток останутся в инвентаре. `CanBeReset` = `false`, так что потратить их позже задачу не откатит.
 
 ---
 
@@ -166,8 +158,8 @@ dayProgress и **не на посещения локаций**. Визит фи�
 | **Парк** | — | — | — | ✅ открыт сразу |
 | **Кампус** | `millie_letter` ×1, `fuel_canister` ×2 | — | Милли | 🔴 упирается в P2 |
 | **Порт** | `port_trade_permit` ×1, `fuel_canister` ×2 | — | Тара | 🔴 упирается в P1 |
-| **Рынок** | `captain_recommendation` ×1, `fuel_canister` ×5 | `soldTotal` 200 | Капитан | 🔴 упирается в P3 |
-| **Деревня** | `map` ×1, `fuel_canister` ×15 | `soldGenre` Fantasy 150, Kids 150 | — | 🔴 у `map` нет источника |
+| **Рынок** | `captain_recommendation` ×1, `fuel_canister` ×5 | `soldTotal` 200 | Капитан | ✅ достижим |
+| **Деревня** | `map` ×1, `fuel_canister` ×15 | `soldGenre` Fantasy 150, Kids 150 | — | ✅ достижима |
 
 Канистры покупаются в магазине — лот `newspaper_consumable_fuel_canister`, витрина
 `newspaper.consumables`, `limit.mode: Unlimited` (для Деревни нужно 15, `Disposable` сделал бы её
@@ -192,10 +184,10 @@ dayProgress и **не на посещения локаций**. Визит фи�
 | **P6** ✅ | Капитан привязан к Порту: добавлено поле `CustomerScriptConfig.LocationId`, скрипт `captain_quest_intro` помечен `locationId: loc_port`, `ScriptedCustomerSpawner.IsEligible` фильтрует по `setup.LocationId` | — | Закрыто: `CustomerScriptConfig` + `customer_scripts.json` + `ScriptedCustomerSpawner` |
 | **P7** 🟡 | Активация по `visitLocation` с задержкой | квест появляется не в момент входа | `QuestsService.Subscribe()` |
 | **P8** ✅ | `activePickGenre` считал `genres[0]`, а условие запроса — весь массив `genres` | двужанровая книга давала «отлично», но не засчитывалась в квест | Закрыто GAME-22: активная продажа фиксирует жанр запроса |
-| **P9** 🟡 | Открытки не списываются при сдаче квеста | предметы остаются в инвентаре | нет механики |
+| **P9** ✅ | Открытки списываются при сдаче квеста Капитана через `QuestConfig.Costs` и `QuestRewardGranter` | — | Закрыто: `quests.json` + `QuestRewardGranter` |
 
-**Порядок разбора.** P1–P6 закрыты. Остаются мелкие доработки P7 (задержка активации по `visitLocation`) и
-P9 (открытки не списываются при сдаче квеста) — на проходимость цепочки не влияют.
+**Порядок разбора.** P1–P6 и P9 закрыты. Остаётся мелкая доработка P7 (задержка активации по
+`visitLocation`) — на проходимость цепочки она не влияет.
 
 Против повторения P1/P2 стоит гейт: `Tools → Configs → Validate Active Requests` и автоматическая
 проверка на билде (`PreBuildValidationGate`, см. [BUILD.md §0](BUILD.md)), плюс тест
