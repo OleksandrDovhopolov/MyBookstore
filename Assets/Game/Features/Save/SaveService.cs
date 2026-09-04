@@ -138,15 +138,21 @@ namespace Save
                 if (!_data.Modules.TryGetValue(moduleKey, out var payload) || payload.Json == null)
                     return null;
 
-                //TODO check bug 
-                /*
-                 * When loading saves written before this change, ModulePayload.Json deserializes as a JValue string containing the old escaped module JSON;
-                 * calling ToObject<T>() on that string tries to convert the string itself into the DTO and fails instead of deserializing the inner JSON.
-                 * This breaks existing saved modules such as inventory/resources/shop on upgrade,
-                 * despite the new ModulePayload comment claiming legacy string payloads remain readable;
-                 * handle JTokenType.String by deserializing the contained string before falling back to ToObject<T>().
-                 */
-                return payload.Json.ToObject<T>();
+                try
+                {
+                    return payload.Json.ToObject<T>();
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning(
+                        $"[SaveService] Module '{moduleKey}' v{payload.Version} cannot be deserialized as {typeof(T).Name}; " +
+                        $"returning default. {ex.GetType().Name}: {ex.Message}");
+                    return null;
+                }
             }
             finally
             {

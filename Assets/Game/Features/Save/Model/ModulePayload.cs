@@ -5,8 +5,8 @@ namespace Save.Model
     /// <summary>
     /// Per-module payload wrapper inside SaveData. <see cref="Json"/> stores the module's state as a
     /// <see cref="JToken"/> so that the outer SaveData serializer emits the inner object inline
-    /// (a nested JSON object), not as an escaped string. Legacy saves where Json was a string are
-    /// still readable — see <c>SaveService.GetModuleAsync</c>.
+    /// (a nested JSON object), not as an escaped string. Invalid or legacy-shaped module payloads
+    /// are handled by <c>SaveService.GetModuleAsync</c> as a graceful default fallback.
     /// </summary>
     public sealed class ModulePayload
     {
