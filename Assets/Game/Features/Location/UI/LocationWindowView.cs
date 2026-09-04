@@ -18,6 +18,7 @@ namespace Game.Location.UI
         [SerializeField] private ScrollRect _scrollRect;
         [SerializeField] private UIListPool<LocationRowView> _rowPool = new();
         [SerializeField] private LocationDemandWidgetView _demandWidgetPrefab;
+        [SerializeField] private LocationRequirementInfoWidgetView _requirementInfoWidgetPrefab;
 
         private Action _onScrolled;
         private Vector2 _lastContentPosition;
@@ -33,10 +34,15 @@ namespace Game.Location.UI
 
             if (_demandWidgetPrefab != null)
                 WidgetRegistry.Register<LocationDemandWidgetData>(_demandWidgetPrefab);
+            if (_requirementInfoWidgetPrefab != null)
+                WidgetRegistry.Register<LocationRequirementInfoWidgetData>(_requirementInfoWidgetPrefab);
         }
 
         public void Render(IReadOnlyList<LocationListItemModel> models, Action<string> onStart, Action<string> onUnlock,
-            Action<string, RectTransform> onDemandInfo, Action onScrolled, IUiSpriteProvider sprites)
+            Action<string, RectTransform> onDemandInfo,
+            Action<LocationRequirementRef, RectTransform> onRequirementInfo,
+            Action onScrolled,
+            IUiSpriteProvider sprites)
         {
             _onScrolled = onScrolled;
             _rowPool.DisableAll();
@@ -47,7 +53,7 @@ namespace Game.Location.UI
                 {
                     var model = models[i];
                     if (model == null) continue;
-                    _rowPool.GetNext().Bind(model, onStart, onUnlock, onDemandInfo, sprites);
+                    _rowPool.GetNext().Bind(model, onStart, onUnlock, onDemandInfo, onRequirementInfo, sprites);
                 }
             }
 

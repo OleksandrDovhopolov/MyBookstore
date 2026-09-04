@@ -13,7 +13,8 @@ namespace Game.UI.ContentWidget
     public enum ContentWidgetPlacementMode
     {
         Auto,
-        HorizontalOnly
+        HorizontalOnly,
+        VerticalOnly
     }
 
     public readonly struct ContentWidgetPlacementResult
@@ -128,10 +129,26 @@ namespace Game.UI.ContentWidget
                 };
             }
 
-            var clampedZoneRatio = Mathf.Clamp(verticalZoneRatio, 0f, 0.5f);
             var verticalPosition = parentRect.height > 0f
                 ? Mathf.Clamp01((anchorCenterY - parentRect.yMin) / parentRect.height)
                 : 0.5f;
+
+            if (mode == ContentWidgetPlacementMode.VerticalOnly)
+            {
+                return verticalPosition <= 0.5f
+                    ? new[]
+                    {
+                        ContentWidgetPlacementSide.Above,
+                        ContentWidgetPlacementSide.Below
+                    }
+                    : new[]
+                    {
+                        ContentWidgetPlacementSide.Below,
+                        ContentWidgetPlacementSide.Above
+                    };
+            }
+
+            var clampedZoneRatio = Mathf.Clamp(verticalZoneRatio, 0f, 0.5f);
 
             if (verticalPosition <= clampedZoneRatio)
             {

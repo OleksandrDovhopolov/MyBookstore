@@ -29,6 +29,7 @@ namespace Game.Location.UI
         private Action<string> _onStart;
         private Action<string> _onUnlock;
         private Action<string, RectTransform> _onDemandInfo;
+        private Action<LocationRequirementRef, RectTransform> _onRequirementInfo;
         private string _locationId;
         private CancellationTokenSource _iconCts;
 
@@ -50,11 +51,13 @@ namespace Game.Location.UI
             Action<string> onStart,
             Action<string> onUnlock,
             Action<string, RectTransform> onDemandInfo,
+            Action<LocationRequirementRef, RectTransform> onRequirementInfo,
             IUiSpriteProvider sprites)
         {
             _onStart = onStart;
             _onUnlock = onUnlock;
             _onDemandInfo = onDemandInfo;
+            _onRequirementInfo = onRequirementInfo;
             _locationId = model.LocationId;
 
             if (_nameLabel != null) _nameLabel.text = model.DisplayName;
@@ -84,7 +87,7 @@ namespace Game.Location.UI
             if (conditions != null)
             {
                 for (var i = 0; i < conditions.Count; i++)
-                    _conditionsPool.GetNext().Bind(conditions[i]);
+                    _conditionsPool.GetNext().Bind(conditions[i], _onRequirementInfo);
             }
 
             _conditionsPool.DisableNonActive();
@@ -97,7 +100,7 @@ namespace Game.Location.UI
             if (costs != null)
             {
                 for (var i = 0; i < costs.Count; i++)
-                    _costsPool.GetNext().Bind(costs[i]);
+                    _costsPool.GetNext().Bind(costs[i], _onRequirementInfo);
             }
 
             _costsPool.DisableNonActive();
@@ -164,6 +167,7 @@ namespace Game.Location.UI
             _onStart = null;
             _onUnlock = null;
             _onDemandInfo = null;
+            _onRequirementInfo = null;
             _locationId = null;
             CancelIconLoad();
             if (_locationImage != null) _locationImage.sprite = null;

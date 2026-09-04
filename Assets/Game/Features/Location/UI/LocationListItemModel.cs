@@ -87,7 +87,12 @@ namespace Game.Location.UI
 
             var labelKey = ExtractLastSegment(node.ReasonKey);
             result.Add(new LocationConditionProgress(
-                labelKey, node.Current, node.Target, node.IsMet, ResolveSpriteId(node.ReasonKey, labelKey)));
+                labelKey,
+                node.Current,
+                node.Target,
+                node.IsMet,
+                ResolveSpriteId(node.ReasonKey, labelKey),
+                node.ReasonKey));
         }
 
         private static bool IsNoRequirement(string reasonKey)

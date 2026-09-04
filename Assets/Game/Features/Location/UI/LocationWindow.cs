@@ -113,7 +113,14 @@ namespace Game.Location.UI
                     _unlock?.GetCost(config.Id)));
             }
 
-            View.Render(_models, OnStartClicked, OnUnlockClicked, OnDemandInfoClicked, OnLocationsScrolled, _uiSprites);
+            View.Render(
+                _models,
+                OnStartClicked,
+                OnUnlockClicked,
+                OnDemandInfoClicked,
+                OnRequirementInfoClicked,
+                OnLocationsScrolled,
+                _uiSprites);
         }
 
         private void OnStartClicked(string locationId)
@@ -127,6 +134,9 @@ namespace Game.Location.UI
 
         private void OnDemandInfoClicked(string locationId, RectTransform anchor)
             => ShowDemandWidgetAsync(locationId, anchor).Forget();
+
+        private void OnRequirementInfoClicked(LocationRequirementRef requirement, RectTransform anchor)
+            => ShowRequirementInfoWidgetAsync(requirement, anchor).Forget();
 
         private void OnLocationsScrolled()
         {
@@ -184,6 +194,33 @@ namespace Game.Location.UI
                         anchor,
                         this,
                         placementMode: ContentWidgetPlacementMode.HorizontalOnly),
+                    ct);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        private async UniTaskVoid ShowRequirementInfoWidgetAsync(LocationRequirementRef requirement, RectTransform anchor)
+        {
+            if (anchor == null || _configs == null || UIManager == null)
+                return;
+
+            try
+            {
+                var scrollVersion = _scrollVersion;
+                var ct = View != null ? View.destroyCancellationToken : CancellationToken.None;
+                var data = LocationRequirementHintResolver.Resolve(_configs, requirement);
+
+                if (ct.IsCancellationRequested || anchor == null || scrollVersion != _scrollVersion)
+                    return;
+
+                await UIManager.ShowAsync<ContentWidgetController>(
+                    new ContentWidgetArgs(
+                        data,
+                        anchor,
+                        this,
+                        placementMode: ContentWidgetPlacementMode.VerticalOnly),
                     ct);
             }
             catch (OperationCanceledException)
