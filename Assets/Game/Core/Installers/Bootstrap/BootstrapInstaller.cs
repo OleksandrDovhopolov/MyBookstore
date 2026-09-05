@@ -59,12 +59,9 @@ namespace Game.Bootstrap
         [SerializeField] private FirstDayEntryMode _firstDayEntry = FirstDayEntryMode.Location;
 
         [Header("Privacy (REL-5)")]
-        [Tooltip("Public privacy policy URL opened from the first-run consent screen. " +
+        [Tooltip("Public legal URL covering both Privacy Policy and Terms of Use, opened from privacy links. " +
                  "RELEASE BLOCKER: must be a live https URL — PrivacyLinksBuildCheck fails the build otherwise.")]
         [SerializeField] private string _privacyPolicyUrl = "";
-
-        [Tooltip("Public terms of use URL. Leave empty when one page covers both privacy and terms.")]
-        [SerializeField] private string _termsOfUseUrl = "";
 
 #if UNITY_EDITOR
         [Header("Debug Start (Editor only)")]
@@ -84,7 +81,7 @@ namespace Game.Bootstrap
             builder.RegisterGameLoading();
             builder.RegisterGameFlow(_gameFlowSettings);
             builder.RegisterGameAnalytics(_analyticsConfig, _analyticsRoutingConfig, _analyticsMappingConfig);
-            builder.RegisterConsent(_privacyPolicyUrl, _termsOfUseUrl);
+            builder.RegisterConsent(_privacyPolicyUrl);
             builder.RegisterSave();
             builder.RegisterInfrastructure();
             builder.RegisterConfigs();

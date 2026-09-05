@@ -11,9 +11,9 @@ namespace Game.Bootstrap
     // in phase_technical_init — long before SaveDataLoadOperation in phase_data_load.
     public static class ConsentVContainerBindings
     {
-        public static void RegisterConsent(this IContainerBuilder builder, string privacyUrl, string termsUrl)
+        public static void RegisterConsent(this IContainerBuilder builder, string privacyUrl)
         {
-            builder.RegisterInstance(new PrivacyLinkSettings(privacyUrl, termsUrl));
+            builder.RegisterInstance(new PrivacyLinkSettings(privacyUrl));
             builder.Register<IConsentStore, PlayerPrefsConsentStore>(Lifetime.Singleton);
             builder.Register<ConsentService>(Lifetime.Singleton)
                 .As<IAnalyticsConsentService>()

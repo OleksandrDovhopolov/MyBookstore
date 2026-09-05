@@ -23,7 +23,7 @@ namespace Game.Bootstrap.Tests.Editor
             builder.RegisterInstance<ICharactersService>(new FakeCharactersService());
             builder.RegisterInstance<ILocationUnlockService>(new FakeLocationUnlockService());
             builder.RegisterInstance<IDecorPlacementService>(new FakeDecorPlacementService());
-            builder.RegisterConsent(string.Empty, string.Empty);
+            builder.RegisterConsent(string.Empty);
             builder.RegisterSave();
             builder.RegisterGameAnalytics(null, null, null);
 

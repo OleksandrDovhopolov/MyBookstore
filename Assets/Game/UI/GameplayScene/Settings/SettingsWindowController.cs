@@ -66,7 +66,7 @@ namespace GameplayUI
         {
             if (!_links.HasPrivacyPolicyUrl) return;
 
-            Application.OpenURL(_links.TermsOfUseUrl);
+            Application.OpenURL(_links.PrivacyPolicyUrl);
         }
     }
 }

@@ -25,6 +25,5 @@ MonoBehaviour:
   _startWelcomeWindow: 1
   _firstDayEntry: 1
   _privacyPolicyUrl: https://mybookstore-legal.netlify.app/
-  _termsOfUseUrl:
   _useDebugFeatures: 0
   _skipFullLoading: 0
