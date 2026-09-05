@@ -1,6 +1,6 @@
 using System;
 using Game.UI;
-using TMPro;
+using GameplayUI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,11 +17,10 @@ namespace Game.Privacy
 
         [Header("Consent")]
         [SerializeField] private Button _continueButton;
-        [SerializeField] private Toggle _analyticsToggle;
+        [SerializeField] private UISwitch _analyticsSwitch;
         [SerializeField] private Button _privacyLinkButton;
-        [SerializeField] private TextMeshProUGUI _bodyText;
 
-        public bool AnalyticsConsent => _analyticsToggle != null && _analyticsToggle.isOn;
+        public bool AnalyticsConsent => _analyticsSwitch != null && _analyticsSwitch.IsOn;
 
         protected override void Awake()
         {
@@ -48,9 +47,9 @@ namespace Game.Privacy
 
         public void SetAnalyticsConsent(bool on)
         {
-            if (_analyticsToggle != null)
+            if (_analyticsSwitch != null)
             {
-                _analyticsToggle.SetIsOnWithoutNotify(on);
+                _analyticsSwitch.SetIsOnWithoutNotify(on);
             }
         }
 
@@ -62,12 +61,5 @@ namespace Game.Privacy
             }
         }
 
-        public void SetTexts(string body)
-        {
-            if (_bodyText != null)
-            {
-                _bodyText.text = body;
-            }
-        }
     }
 }

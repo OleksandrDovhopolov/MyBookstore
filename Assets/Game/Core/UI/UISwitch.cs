@@ -20,15 +20,16 @@ namespace GameplayUI
         [SerializeField] private Sprite _inactivePointer;
         [SerializeField] private TMP_Text _activeText;
         [SerializeField] private TMP_Text _inactiveText;
-        
 
         private const float OffsetX = 40f;
-        
+
         private float _startX;
         private bool _isActive;
 
         private Action<bool> _setter;
         private Func<bool> _getter;
+
+        public bool IsOn => _isActive;
 
         private void Awake()
         {
@@ -52,7 +53,7 @@ namespace GameplayUI
             _isActive = !_isActive;
 
             UpdateVisual(true);
-            
+
             _setter?.Invoke(_isActive);
         }
 
@@ -76,7 +77,7 @@ namespace GameplayUI
                 _inactiveText.text = inactiveString;
             }
         }
-        
+
         private void UpdateVisual(bool isAnimated)
         {
             _bgImage.sprite = _isActive ? _activeBG : _inactiveBG;

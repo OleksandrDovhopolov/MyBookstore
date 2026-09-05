@@ -25,13 +25,6 @@ namespace Game.Privacy
     [Window("ConsentWindow", WindowType.Popup, keepInCache: false)]
     public sealed class ConsentWindowController : WindowController<ConsentWindowView>
     {
-        private const string BodyText =
-            "By selecting Continue, you accept our Terms of Use and acknowledge our Privacy Policy." +
-            "\n\n" +
-            "We use anonymous gameplay analytics to understand whether players get through the first day, " +
-            "how the daily shop loop performs, and where progression stalls. We do not collect advertising ID. " +
-            "You can turn analytics off with the toggle here before continuing.";
-
         private IConsentGateService _gate;
         private PrivacyLinkSettings _links;
 
@@ -47,7 +40,6 @@ namespace Game.Privacy
             View.ContinueClick += OnContinueClicked;
             View.PrivacyLinkClick += OnPrivacyLinkClicked;
             View.SetAnalyticsConsent(true);
-            View.SetTexts(BodyText);
 
             // Degrade rather than brick the boot: an unconfigured URL hides the link. The build-time
             // PrivacyLinksBuildCheck is what actually stops a release from shipping without one.
