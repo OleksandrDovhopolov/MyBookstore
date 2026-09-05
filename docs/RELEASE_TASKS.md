@@ -26,6 +26,43 @@
 
 ## Done
 
+### REL-19 — Clean Redis From Old Project Data
+
+Статус: сделано. Redis очищен от мусора старых проектов; в Redis остались только сейвы игроков.
+
+Что сделано:
+- Найден Redis instance/environment, который используется текущим проектом для save/config/backend данных.
+- Проверены key prefixes/namespaces текущего проекта и старых проектов, чтобы не удалить рабочие данные.
+- Удалены мусорные ключи старых проектов из Redis.
+- После очистки проверено, что текущий проект не получает stale data от старых проектов.
+
+Критичность была high: старые Redis-данные могли ломать тестирование, маскировать реальные save/config ошибки
+и подмешивать состояние от прошлых проектов.
+
+### REL-11 — Split Terms Acceptance From Analytics Consent
+
+Статус: сделано.
+
+Что сделано:
+- First-run `ConsentWindow` больше не смешивает принятие Terms/Privacy и согласие на аналитику в одном
+  бинарном `Accept/Decline` решении.
+- Окно использует одну кнопку **Continue**: она принимает Terms/Privacy и закрывает consent gate.
+- Согласие на аналитику вынесено в отдельный checked toggle `Send anonymous analytics`; выключенный toggle
+  записывает `analytics: false`, но не мешает продолжить игру.
+- `ConsentWindowController` пишет решение через
+  `RecordDecision(analytics: View.AnalyticsConsent, attribution: false, personalizedAds: false)` и больше
+  не использует `AcceptAll()` в first-run flow.
+- `ConsentPolicy.Version` поднят до `3`, чтобы старые records версии `2` показали обновлённый экран ещё раз.
+- Сервисный слой, `ConsentGateOperation` и double lockout в analytics pipeline не менялись.
+
+Проверка:
+- Тесты не запускались.
+- Статически проверено, что старые `AcceptClick` / `DeclineClick` / `_acceptButton` / `_declineButton`
+  больше не используются в `Assets/Game`.
+
+Важно: analytics toggle оставлен включённым по умолчанию по принятому продуктному решению. Если релиз пойдёт
+в ЕЭЗ/UK, этот default нужно пересмотреть вместе с GDPR/PECR риском.
+
 ### REL-17 — Improve PreparationWindow Location Context UX
 
 Статус: сделано.
@@ -187,7 +224,7 @@ HUD integration point и назначенная кнопка настроек н
 
 Не вошло в REL-2:
 - Тоггл отзыва согласия на аналитику сознательно отложен в [DEF-1](#def-1--analytics-consent-withdrawal-toggle).
-- REL-11 остаётся отдельной задачей: экран первого запуска должен разделить Terms acceptance и analytics consent.
+- REL-11 закрыта отдельной задачей: экран первого запуска разделяет Terms acceptance и analytics consent.
 
 ### GAME-17 — Validate Day Shelf vs Scripted Customer Scripts
 
@@ -469,6 +506,10 @@ Smoke: открыть Market до unlock — условие `soldTotal: 200` п�
 - Прогнать `Run Pre-Build Validation` и runtime validators через Play mode.
 - Собрать Addressables.
 - Проверить Firebase Android config.
+- Настроить/проверить billing safety для Firebase Remote Config / Firebase project и Cloudflare: budget
+  alerts, spending limits/usage caps где доступны, лимиты запросов/egress, уведомления на почту. Раньше
+  приходили инвойсы на `$0`, но перед релизом нужно убедиться, что проект не сможет незаметно уйти в
+  платные списания или долги.
 - Проверить Android Player Settings: IL2CPP, ARM64, API level, keystore, scenes.
 - Проверить `BootstrapInstaller.asset`: debug off, full loading on, tutorial settings, first-day path.
 - Обязательно заменить `_privacyPolicyUrl` / `_termsOfUseUrl` на правильные ссылки на **мой Terms / Privacy**.
@@ -514,21 +555,6 @@ like …»), а не финальные под каждый конкретный
 Критичность: high (качество релизного контента). Не блокирует прохождение — debug-строка работает как
 временный fallback, но для игрока выглядит технически.
 
-### REL-19 — Clean Redis From Old Project Data
-
-Что сделать:
-- Найти Redis instance/environment, который используется текущим проектом для save/config/backend данных.
-- Составить список key prefixes/namespaces текущего проекта и старых проектов, чтобы не удалить рабочие данные.
-- Сделать backup/snapshot или другой rollback-путь перед очисткой.
-- Удалить мусорные ключи старых проектов из Redis.
-- После очистки проверить, что текущий проект всё ещё загружает save/config данные и не получает stale data
-  от старых проектов.
-- Зафиксировать процедуру/команды очистки в internal notes или deploy checklist, чтобы повторить её перед
-  релизом без риска.
-
-Критичность: high. Старые Redis-данные могут ломать тестирование, маскировать реальные save/config ошибки и
-подмешивать состояние от прошлых проектов.
-
 ### REL-4 — Register Google Play Developer Account
 
 Что сделать:
@@ -559,7 +585,7 @@ like …»), а не финальные под каждый конкретный
 
 Остаётся незакрытым путь **отзыва** согласия — вынесен в DEF-1 и сознательно отложен. По UK GDPR отозвать согласие должно быть так же просто, как его дать; сейчас после решения на первом экране передумать нельзя.
 
-Также сам экран будет переработан в REL-11: Terms и согласие на аналитику разделяются на одну кнопку Continue плюс отдельный переключатель.
+Также сам экран уже переработан в REL-11: Terms и согласие на аналитику разделены на одну кнопку Continue плюс отдельный переключатель.
 
 Осталось сделать:
 
@@ -597,28 +623,6 @@ like …»), а не финальные под каждый конкретный
 - Не добавлять новые decor-механики сверх уже существующих modifiers/ownership/placement, если они не блокируют релиз.
 
 Критичность: high. Декор уже влияет на прогрессию/магазин, игроку нужен понятный способ им управлять.
-
-### REL-11 — Split Terms Acceptance From Analytics Consent
-
-Сейчас экран первого запуска смешивает две разные по смыслу вещи в одном решении: принятие Terms of Use (это договор — «прими или не пользуйся» здесь законно) и согласие на аналитику (это отдельная правовая категория, где нужен реальный выбор). Из-за слияния кнопки Accept/Decline получились равнозначными, хотя отказ от Terms и отказ от аналитики — разные вещи.
-
-Что сделать:
-- Переделать `ConsentWindow` на одну основную кнопку **Continue**, которая принимает Terms и закрывает окно.
-- Согласие на аналитику вынести на этом же экране в отдельный переключатель/чекбокс рядом с текстом.
-- Убрать кнопку Decline: её роль берёт на себя выключенный переключатель аналитики.
-- Определить и зафиксировать дефолт переключателя (см. «Открытый вопрос» ниже).
-- Вызывать `RecordDecision(analytics: <состояние тоггла>, attribution: false, personalizedAds: false)` вместо нынешних `AcceptAll()` / `RecordDecision(false, false, false)`.
-- Переписать `BodyText`: отдельно про Terms, отдельно про аналитику и что она отключается тут же.
-- Поднять `ConsentPolicy.Version` до 3 — формулировка и модель решения меняются, старые записи нужно аннулировать.
-
-Что менять **не** нужно:
-- `ConsentService.RecordDecision(analytics, attribution, personalizedAds)` уже принимает три независимых флага — API изначально спроектирован под покатегорийное согласие, сейчас используются только «всё true» и «всё false». Инфраструктуру дописывать не придётся.
-- Двойная блокировка при отказе (`CanSendAnalytics` + guard в `CompositeAnalyticsService.Initialize()`) работает как есть и продолжит работать: выключенный тоггл даст ровно тот же путь, что нынешний Decline.
-- `ConsentGateOperation` не трогать — он по-прежнему `isCritical: true` и ждёт закрытия окна.
-
-Открытый вопрос, решить до реализации: дефолт переключателя. Включённый по умолчанию даёт заметно больше данных, но для ЕЭЗ/UK предвыбранное согласие не считается действительным. Выключенный по умолчанию безопаснее юридически и дешевле в поддержке. Решение зависит от географии релиза (страны распространения в Play Console) — если ЕЭЗ и UK из листинга исключены, расклад другой.
-
-Критичность: high before store release. Не блокирует сборку APK, но должно быть закрыто до публикации вместе с REL-5.
 
 ### REL-14 — Fix Failing EditMode Tests
 
@@ -907,6 +911,9 @@ Memories станет презентабельной только с этими 
 ### GAME-10 — Finish Tutorial Release Slice
 
 Источник: [TODO.md → GAME-10](TODO.md), [INPROGRESS/TUTORIAL_SYSTEM.md](INPROGRESS/TUTORIAL_SYSTEM.md).
+
+Статус: отложено после первого релиза. В первом релизе отдельный tutorial slice не делаем: базовое
+обучение и объяснение механик будут закрыты через диалоги.
 
 Что сделать:
 - Добавить debug/cheat поддержку: list, force-run, force-complete, reset, replay Day 1 через сброс `ftue.*`.

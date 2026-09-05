@@ -24,7 +24,7 @@ MonoBehaviour:
   _analyticsMappingConfig: {fileID: 11400000, guid: 5a1f969069c0e474c914cabf3aec89ae, type: 2}
   _startWelcomeWindow: 1
   _firstDayEntry: 1
-  _privacyPolicyUrl: https://themergegames.com/privacypolicy.html
-  _termsOfUseUrl: https://themergegames.com/termsofuse.html
+  _privacyPolicyUrl: https://mybookstore-legal.netlify.app/
+  _termsOfUseUrl:
   _useDebugFeatures: 0
   _skipFullLoading: 0
