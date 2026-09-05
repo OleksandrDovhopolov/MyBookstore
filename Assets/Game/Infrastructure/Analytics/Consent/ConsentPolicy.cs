@@ -13,6 +13,6 @@ namespace Analytics
     /// </summary>
     public static class ConsentPolicy
     {
-        public const int Version = 2;
+        public const int Version = 3;
     }
 }

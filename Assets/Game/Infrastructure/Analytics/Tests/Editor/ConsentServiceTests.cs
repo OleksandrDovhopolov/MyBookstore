@@ -75,6 +75,18 @@ namespace AnalyticsTests.Editor
         }
 
         [Test]
+        public void IsDecisionRequired_Rel11PreviousPolicyVersion_ReturnsTrue()
+        {
+            var store = FakeConsentStore.WithRecord(
+                new ConsentRecord(2, true, false, false, DateTime.UtcNow.Ticks));
+
+            var service = new ConsentService(store);
+
+            Assert.That(service.PolicyVersion, Is.EqualTo(3));
+            Assert.That(service.IsDecisionRequired, Is.True);
+        }
+
+        [Test]
         public void CanSendAnalytics_StoredPolicyVersionIsOlder_ReturnsFalse()
         {
             // Consent granted against an older policy must not carry over — it is revoked until the

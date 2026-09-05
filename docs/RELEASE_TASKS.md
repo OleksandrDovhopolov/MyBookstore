@@ -432,24 +432,32 @@ Smoke: N владения, K на полке → «в наличии» N−K, б
 Smoke: открыть Market до unlock — условие `soldTotal: 200` показывается с fallback-иконкой (после назначения
 спрайта в префабе), в логе один осмысленный warning вместо пустого слота.
 
+### REL-18 — Add Unlock Item Descriptions To LocationWindow
+
+Статус: сделано.
+
+Элемент требования разблокировки в `LocationWindow` теперь кликабельный и по клику открывает виджет с
+подсказкой «где взять / как выполнить», вычисленной по реальным данным. Виджет — на общем `ContentWidget`-ядре,
+без зависимостей на Shop/Inventory-фичи.
+
+Что сделано:
+- `LocationConditionItemView` стал кнопкой (`_button` + колбэк `Action<LocationRequirementRef, RectTransform>`);
+  для cost-предмета передаётся itemId, для условия — reasonKey.
+- Новый Location-виджет: `LocationRequirementInfoWidgetData` / `LocationRequirementInfoWidgetView` (+ префаб),
+  показывается через `ContentWidgetController`; закрытие — close-кнопкой (`RequestClose`) и при закрытии окна.
+- `LocationRequirementHintResolver`: источник предмета по реальным данным — скан `QuestConfig.Rewards` +
+  `ShopConfig.RewardItems` → quest/shop/both/unknown; для условий — подсказка по типу (soldTotal/soldGenre/visitLocation).
+- Новый режим размещения `ContentWidgetPlacementMode.VerticalOnly` — виджет строго сверху/снизу над кликнутым.
+- Локализация: 12 ключей `location.req.*` в `localization_ui_en.json` (+ StreamingAssets-копия).
+- Никаких ссылок на Shop/Inventory-фичи — `ShopConfig`/`QuestConfig` читаются как Configs-модели через `IConfigsService`.
+
+Проверка: `Game.Location` — 0 ошибок; loc-ключи синхронизированы. Финальная вёрстка префабов виджета и Button
+на элементе — в Editor.
+
 ## TODO
 
-Единый список открытых релизных задач. Активные задачи и задачи, ожидающие внешние ресурсы, живут здесь
-в одном списке; отдельные пометки внутри задачи объясняют, почему её нельзя двигать прямо сейчас.
-
-### GAME-10 — Finish Tutorial Release Slice
-
-Источник: [TODO.md → GAME-10](TODO.md), [INPROGRESS/TUTORIAL_SYSTEM.md](INPROGRESS/TUTORIAL_SYSTEM.md).
-
-Что сделать:
-- Добавить debug/cheat поддержку: list, force-run, force-complete, reset, replay Day 1 через сброс `ftue.*`.
-- Добавить editor/EditMode validation для tutorial target ids, `TutorialTargetTag`, quest ids и `quests.json`.
-- Tutorial-аналитика: инфраструктура готова (ANL-1), `TutorialAnalyticsSteps` уже шлёт `tutorial_checkpoint`. Расширять не нужно.
-- Закрыть устойчивость Day 1: корректный resume посреди дня и cancel-path.
-- Проверить player-facing skip и pointer/highlight только там, где это нужно для релизного первого опыта.
-- Убрать временную связность tutorial UI id из `GameplaySceneController`, если она создаёт риск поломки релиза.
-
-Критичность: critical. Tutorial — первый контакт игрока с игрой; сломанный Day 1 будет выглядеть как сломанный продукт.
+Единый список открытых релизных задач. Задачи, ожидающие внешние ресурсы, вынесены в
+[Wait For Resources](#wait-for-resources) ниже.
 
 ### Build Checklist For APK
 
@@ -482,48 +490,6 @@ Smoke: открыть Market до unlock — условие `soldTotal: 200` п�
 
 Критичность: high. Это не новая механика, а видимость уже существующей прогрессии.
 
-### BUG-3 — Captain Quest Opens With Missing Ship Addressable
-
-Баг: при открытии квеста капитана в логе появляется ошибка Addressables:
-`UnityEngine.AddressableAssets.InvalidKeyException: No Location found for Key=ship`.
-
-Что сделать:
-- Найти, кто при открытии квеста капитана пытается загрузить Addressables key `ship`.
-- Проверить конфиг квеста/награды/иконки: это должен быть валидный address, либо ссылка должна идти через
-  правильный item/sprite catalog, если `ship` является item id, а не addressable sprite key.
-- Исправить загрузку так, чтобы `QuestView` не пытался грузить несуществующий Addressables key.
-- Если для корабля нужна иконка/спрайт в UI награды, добавить корректный Addressables asset/address и
-  синхронизировать bundled defaults при необходимости.
-- Добавить config validation или regression test, который ловит невалидные sprite/address keys для quest UI.
-- Проверить manual smoke: открыть квест капитана, ошибок `InvalidKeyException` в логе нет, reward/icon UI
-  отображается корректно.
-
-Критичность: high. Ошибка в логе появляется на релизном quest flow и может скрывать реальные проблемы UI.
-
-### CONTENT-3 — Create Final Captain Sprite And Remove Old Placeholder
-
-Что сделать:
-- Создать финальный спрайт капитана в стиле игры.
-- Заменить текущий старый/placeholder-спрайт, который сейчас подгружается для капитана.
-- Обновить ссылку в config/prefab/addressables так, чтобы captain dialogue / quest flow использовал новый
-  sprite.
-- Удалить старый спрайт капитана из проекта и Addressables, если он больше нигде не используется.
-- Проверить зависимости перед удалением: старый ассет не должен оставаться в configs, prefabs, scripts или
-  Addressables groups.
-- Проверить manual smoke: встретить капитана / открыть его квест, увидеть новый спрайт, в логе нет missing
-  reference / Addressables ошибок.
-
-Критичность: medium. Это content polish для заметного персонажа релизного flow.
-
-### CONTENT-1 — Replace Copied Book Localization Texts
-
-Что сделать:
-- Обновить все записи в `Assets/Configs/localization_books_en.json`: текущие тексты были скопированы из другого проекта и должны быть заменены на финальные тексты этой игры.
-- После правки синхронизировать `Assets/StreamingAssets/Configs/localization_books_en.json`.
-- Проверить Book UI и Recommendation minigame, чтобы игрок не видел временные чужие тексты.
-
-Критичность: high. Это не блокирует работу localization-системы, но блокирует качественный релизный контент.
-
 ### CONTENT-2 — Active Request Descriptions
 
 Контекст: активный запрос (мини-игра рекомендации) сейчас показывает **техническую debug-строку** условий
@@ -547,21 +513,6 @@ like …»), а не финальные под каждый конкретный
 
 Критичность: high (качество релизного контента). Не блокирует прохождение — debug-строка работает как
 временный fallback, но для игрока выглядит технически.
-
-### REL-18 — Add Unlock Item Descriptions To LocationWindow
-
-Что сделать:
-- В `LocationWindow` для каждого view предмета, нужного для разблокировки локации, добавить текстовое описание
-  через отдельный виджет/label.
-- Описание должно объяснять игроку, что это за предмет и зачем он нужен для unlock, а не показывать только
-  иконку/количество.
-- Подтягивать текст из localization/config data, чтобы не хардкодить строки в prefab/controller.
-- Проверить состояния: предмет есть в достаточном количестве, предмета не хватает, предмет неизвестен/нет
-  иконки — описание всё равно не ломает layout.
-- Проверить manual smoke: открыть окно заблокированной локации, увидеть все required items с иконкой,
-  количеством и понятным текстовым описанием.
-
-Критичность: medium. Это улучшает UX разблокировки локаций и снижает непонятность resource requirements.
 
 ### REL-19 — Clean Redis From Old Project Data
 
@@ -720,9 +671,53 @@ EditMode-прогон зелёный, а список известных иск�
 
 Критичность: high before release. Не блокирует сборку APK технически, но без этого релиз собирается вслепую.
 
-**Resource-blocked:** следующие задачи упираются во внешние ресурсы: арт, который нужно нарисовать, и
-контентно-балансовые решения, которые нужно принять. Они остаются в TODO и в релизном scope; в отличие от
-[Deferred](#deferred--сознательно-отложено), это не отложенные задачи, а задачи, ожидающие входные материалы.
+## Wait For Resources
+
+Следующие задачи упираются во внешние ресурсы: арт, который нужно нарисовать, тексты, которые нужно
+подготовить или заменить, и контентно-балансовые решения, которые нужно принять. Это не
+[Deferred](#deferred--сознательно-отложено): задачи остаются в релизном scope, но ждут входные материалы.
+
+### BUG-3 — Captain Quest Opens With Missing Ship Addressable
+
+Баг: при открытии квеста капитана в логе появляется ошибка Addressables:
+`UnityEngine.AddressableAssets.InvalidKeyException: No Location found for Key=ship`.
+
+Что сделать:
+- Найти, кто при открытии квеста капитана пытается загрузить Addressables key `ship`.
+- Проверить конфиг квеста/награды/иконки: это должен быть валидный address, либо ссылка должна идти через
+  правильный item/sprite catalog, если `ship` является item id, а не addressable sprite key.
+- Исправить загрузку так, чтобы `QuestView` не пытался грузить несуществующий Addressables key.
+- Если для корабля нужна иконка/спрайт в UI награды, добавить корректный Addressables asset/address и
+  синхронизировать bundled defaults при необходимости.
+- Добавить config validation или regression test, который ловит невалидные sprite/address keys для quest UI.
+- Проверить manual smoke: открыть квест капитана, ошибок `InvalidKeyException` в логе нет, reward/icon UI
+  отображается корректно.
+
+Критичность: high. Ошибка в логе появляется на релизном quest flow и может скрывать реальные проблемы UI.
+
+### CONTENT-3 — Create Final Captain Sprite And Remove Old Placeholder
+
+Что сделать:
+- Создать финальный спрайт капитана в стиле игры.
+- Заменить текущий старый/placeholder-спрайт, который сейчас подгружается для капитана.
+- Обновить ссылку в config/prefab/addressables так, чтобы captain dialogue / quest flow использовал новый
+  sprite.
+- Удалить старый спрайт капитана из проекта и Addressables, если он больше нигде не используется.
+- Проверить зависимости перед удалением: старый ассет не должен оставаться в configs, prefabs, scripts или
+  Addressables groups.
+- Проверить manual smoke: встретить капитана / открыть его квест, увидеть новый спрайт, в логе нет missing
+  reference / Addressables ошибок.
+
+Критичность: medium. Это content polish для заметного персонажа релизного flow.
+
+### CONTENT-1 — Replace Copied Book Localization Texts
+
+Что сделать:
+- Обновить все записи в `Assets/Configs/localization_books_en.json`: текущие тексты были скопированы из другого проекта и должны быть заменены на финальные тексты этой игры.
+- После правки синхронизировать `Assets/StreamingAssets/Configs/localization_books_en.json`.
+- Проверить Book UI и Recommendation minigame, чтобы игрок не видел временные чужие тексты.
+
+Критичность: high. Это не блокирует работу localization-системы, но блокирует качественный релизный контент.
 
 ### REL-7 — App Icons
 
@@ -908,6 +903,20 @@ Memories станет презентабельной только с этими 
 ## Deferred — сознательно отложено
 
 Задачи, которые осознанно вынесены из текущего релизного scope, но не отменены. Держим здесь, чтобы не потерялись и чтобы не всплывали заново в TODO.
+
+### GAME-10 — Finish Tutorial Release Slice
+
+Источник: [TODO.md → GAME-10](TODO.md), [INPROGRESS/TUTORIAL_SYSTEM.md](INPROGRESS/TUTORIAL_SYSTEM.md).
+
+Что сделать:
+- Добавить debug/cheat поддержку: list, force-run, force-complete, reset, replay Day 1 через сброс `ftue.*`.
+- Добавить editor/EditMode validation для tutorial target ids, `TutorialTargetTag`, quest ids и `quests.json`.
+- Tutorial-аналитика: инфраструктура готова (ANL-1), `TutorialAnalyticsSteps` уже шлёт `tutorial_checkpoint`. Расширять не нужно.
+- Закрыть устойчивость Day 1: корректный resume посреди дня и cancel-path.
+- Проверить player-facing skip и pointer/highlight только там, где это нужно для релизного первого опыта.
+- Убрать временную связность tutorial UI id из `GameplaySceneController`, если она создаёт риск поломки релиза.
+
+Критичность: critical. Tutorial — первый контакт игрока с игрой; сломанный Day 1 будет выглядеть как сломанный продукт.
 
 ### DEF-1 — Analytics Consent Withdrawal Toggle
 

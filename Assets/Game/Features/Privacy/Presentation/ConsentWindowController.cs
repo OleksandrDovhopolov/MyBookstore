@@ -26,9 +26,11 @@ namespace Game.Privacy
     public sealed class ConsentWindowController : WindowController<ConsentWindowView>
     {
         private const string BodyText =
+            "By selecting Continue, you accept our Terms of Use and acknowledge our Privacy Policy." +
+            "\n\n" +
             "We use anonymous gameplay analytics to understand whether players get through the first day, " +
             "how the daily shop loop performs, and where progression stalls. We do not collect advertising ID. " +
-            "You can continue with analytics enabled or decline analytics for this release.";
+            "You can turn analytics off with the toggle here before continuing.";
 
         private IConsentGateService _gate;
         private PrivacyLinkSettings _links;
@@ -42,9 +44,9 @@ namespace Game.Privacy
 
         protected override void OnInit()
         {
-            View.AcceptClick += OnAcceptClicked;
-            View.DeclineClick += OnDeclineClicked;
+            View.ContinueClick += OnContinueClicked;
             View.PrivacyLinkClick += OnPrivacyLinkClicked;
+            View.SetAnalyticsConsent(true);
             View.SetTexts(BodyText);
 
             // Degrade rather than brick the boot: an unconfigured URL hides the link. The build-time
@@ -60,16 +62,14 @@ namespace Game.Privacy
 
         protected override void OnShowStart()
         {
-            View.SetAcceptInteractable(true);
-            View.SetDeclineInteractable(true);
+            View.SetContinueInteractable(true);
         }
 
         protected override void OnDispose()
         {
             if (View == null) return;
 
-            View.AcceptClick -= OnAcceptClicked;
-            View.DeclineClick -= OnDeclineClicked;
+            View.ContinueClick -= OnContinueClicked;
             View.PrivacyLinkClick -= OnPrivacyLinkClicked;
         }
 
@@ -80,25 +80,14 @@ namespace Game.Privacy
             Application.OpenURL(_links.PrivacyPolicyUrl);
         }
 
-        private void OnAcceptClicked()
+        private void OnContinueClicked()
         {
             // Guard against a double tap while the close animation plays.
-            View.SetAcceptInteractable(false);
-            View.SetDeclineInteractable(false);
+            View.SetContinueInteractable(false);
 
             // Persist BEFORE closing: ConsentGateOperation re-checks IsDecisionRequired once the window
             // closes, and would otherwise race the write.
-            _gate.AcceptAll();
-
-            CloseAsync(View.destroyCancellationToken).Forget();
-        }
-
-        private void OnDeclineClicked()
-        {
-            View.SetAcceptInteractable(false);
-            View.SetDeclineInteractable(false);
-
-            _gate.RecordDecision(analytics: false, attribution: false, personalizedAds: false);
+            _gate.RecordDecision(analytics: View.AnalyticsConsent, attribution: false, personalizedAds: false);
 
             CloseAsync(View.destroyCancellationToken).Forget();
         }
