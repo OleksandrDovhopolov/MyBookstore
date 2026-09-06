@@ -84,7 +84,7 @@ namespace Game.LocationUnlock.Tests.Editor
 
             Assert.AreEqual(LocationUnlockState.Locked, h.Service.GetStatus(LocA).State);
             Assert.IsFalse(h.Service.IsUnlocked(LocA));
-            CollectionAssert.DoesNotContain(h.Repo.Stored.UnlockedIds, LocA);
+            Assert.That(h.Repo.Stored.UnlockedIds ?? new List<string>(), Does.Not.Contain(LocA));
         }
 
         [Test]
@@ -213,7 +213,7 @@ namespace Game.LocationUnlock.Tests.Editor
             Assert.IsNull(unlockedArg);
             Assert.IsFalse(h.Service.IsUnlocked(LocA));
             CollectionAssert.Contains(changed, LocA);
-            CollectionAssert.DoesNotContain(h.Repo.Stored.UnlockedIds, LocA);
+            Assert.That(h.Repo.Stored.UnlockedIds ?? new List<string>(), Does.Not.Contain(LocA));
         }
 
         [Test]

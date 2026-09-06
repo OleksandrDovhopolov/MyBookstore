@@ -75,7 +75,7 @@ namespace Game.Location.Tests.Editor
                 var binder = new LocationContextBinder(fallback);
                 binder.Bind(new TestContext(isBound: true, laneAnchors: Array.Empty<Transform>()));
 
-                Assert.That(binder.LaneAnchors, Has.Count.EqualTo(1));
+                Assert.That(binder.LaneAnchors.Count, Is.EqualTo(1));
                 Assert.That(binder.LaneAnchors[0], Is.SameAs(fallbackLane.transform));
             }
             finally
@@ -94,7 +94,7 @@ namespace Game.Location.Tests.Editor
                 var binder = new LocationContextBinder(fallback);
                 binder.Bind(new TestContext(isBound: true, bubbleSlots: Array.Empty<Transform>()));
 
-                Assert.That(binder.BubbleSlots, Has.Count.EqualTo(1));
+                Assert.That(binder.BubbleSlots.Count, Is.EqualTo(1));
                 Assert.That(binder.BubbleSlots[0], Is.SameAs(fallbackSlot.transform));
             }
             finally
@@ -114,7 +114,7 @@ namespace Game.Location.Tests.Editor
                 var binder = new LocationContextBinder(fallback);
                 binder.Bind(new TestContext(isBound: true, bubbleSlots: new[] { primarySlot.transform }));
 
-                Assert.That(binder.BubbleSlots, Has.Count.EqualTo(1));
+                Assert.That(binder.BubbleSlots.Count, Is.EqualTo(1));
                 Assert.That(binder.BubbleSlots[0], Is.SameAs(primarySlot.transform));
             }
             finally

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Game.Rewards.Editor;
@@ -44,7 +45,7 @@ namespace Game.Rewards.Tests.Editor
 
         private static string BookJson(string id, string genre, double? rarity)
             => rarity.HasValue
-                ? $@"{{""id"":""{id}"",""title"":""{id}"",""genres"":[""{genre}""],""rarityWeight"":{rarity.Value}}}"
+                ? $@"{{""id"":""{id}"",""title"":""{id}"",""genres"":[""{genre}""],""rarityWeight"":{rarity.Value.ToString(CultureInfo.InvariantCulture)}}}"
                 : $@"{{""id"":""{id}"",""title"":""{id}"",""genres"":[""{genre}""]}}";
 
         private static string Errors(BookBoxPoolValidationReport report)

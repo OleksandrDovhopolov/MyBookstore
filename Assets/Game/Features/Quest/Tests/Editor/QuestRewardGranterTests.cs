@@ -158,11 +158,13 @@ namespace Game.Quest.Tests.Editor
 
             granter.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
             var failed = granter.TryGrantAsync("q1", CancellationToken.None).GetAwaiter().GetResult();
-            var retried = granter.TryGrantAsync("q1", CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.IsFalse(failed.Success);
             Assert.AreEqual("grant_failed", failed.FailureReason);
             Assert.AreEqual(0, inventory.RemoveCalls);
+
+            var retried = granter.TryGrantAsync("q1", CancellationToken.None).GetAwaiter().GetResult();
+
             Assert.IsTrue(retried.Success);
             Assert.AreEqual(0, inventory.GetCount("postcard"));
             Assert.AreEqual(1, inventory.RemoveCalls);

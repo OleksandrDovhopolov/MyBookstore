@@ -80,7 +80,9 @@ namespace Game.Tutorial.Tests.Editor
             await UniTask.Yield();
             cts.Cancel();
 
-            Assert.ThrowsAsync<OperationCanceledException>(async () => await task);
+            Assert.That(
+                async () => await task,
+                Throws.InstanceOf<OperationCanceledException>());
         }
 
         private static DialogWindow CreateShownDialogWindow()

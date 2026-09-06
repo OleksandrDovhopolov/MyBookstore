@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.DayCycle.Day;
@@ -76,7 +77,7 @@ namespace Game.Tutorial.Tests.Editor
             };
             var ui = new FakeUIManager();
             var sequence = new TutorialHub(new FakeDayProgress(), ui, shop: shop);
-            var step = (TutorialAsyncActionStep)sequence.GetSteps()[5];
+            var step = sequence.GetSteps().OfType<TutorialAsyncActionStep>().Single();
 
             await step.ExecuteAsync(CancellationToken.None);
 
@@ -99,7 +100,7 @@ namespace Game.Tutorial.Tests.Editor
             };
             var ui = new FakeUIManager();
             var sequence = new TutorialHub(new FakeDayProgress(), ui, shop: shop);
-            var step = (TutorialAsyncActionStep)sequence.GetSteps()[5];
+            var step = sequence.GetSteps().OfType<TutorialAsyncActionStep>().Single();
 
             LogAssert.Expect(
                 LogType.Warning,
