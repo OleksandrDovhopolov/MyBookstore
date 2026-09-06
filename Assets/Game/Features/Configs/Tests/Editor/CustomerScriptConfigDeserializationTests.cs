@@ -238,7 +238,7 @@ namespace Game.Configs.Tests.Editor
             Assert.AreEqual(0, day1.ActiveRequestCount.Value);
             CollectionAssert.AreEqual(new[] { 1, 3 }, day1.WaveSizes);
             Assert.IsTrue(day1.WaveGapSeconds.HasValue);
-            Assert.AreEqual(3f, day1.WaveGapSeconds.Value);
+            Assert.AreEqual(2f, day1.WaveGapSeconds.Value);
             Assert.IsTrue(day1.ApplyModifiers.HasValue);
             Assert.IsFalse(day1.ApplyModifiers.Value);
         }

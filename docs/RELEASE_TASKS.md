@@ -63,6 +63,26 @@
 Важно: analytics toggle оставлен включённым по умолчанию по принятому продуктному решению. Если релиз пойдёт
 в ЕЭЗ/UK, этот default нужно пересмотреть вместе с GDPR/PECR риском.
 
+### REL-5 — GDPR Consent On First Launch
+
+Статус: сделано. First-launch consent flow готов; разделение Terms/Privacy и согласия на аналитику закрыто
+в [REL-11](#rel-11--split-terms-acceptance-from-analytics-consent).
+
+Что сделано:
+- `ConsentGateOperation` показывает окно первого запуска в `phase_technical_init` до первого обращения к
+  Firebase.
+- `ConsentService` + `PlayerPrefsConsentStore` хранят решение в PlayerPrefs (`consent.*.v1`), чтобы consent
+  читался до загрузки сейва.
+- Дефолты consent-категорий — deny, а версия consent policy перепоказывает окно при изменении условий.
+- Android-манифест запрещает автоматический сбор Firebase до явного решения игрока; `AD_ID` удалён.
+- `PrivacyLinksBuildCheck` защищает сборку от пустой/non-https privacy-ссылки.
+- `ConsentWindow` заведён в Addressables под адресом `ConsentWindow`, а `Tools/Privacy/Reset Consent`
+  позволяет перепроверять первый запуск без сброса остальных PlayerPrefs.
+- После REL-11 окно использует кнопку **Continue** для Terms/Privacy и отдельный toggle для аналитики.
+
+Критичность была critical before store release: аналитика реально собирается только после consent, а первый
+запуск больше не смешивает принятие Terms и согласие на аналитику в одно бинарное решение.
+
 ### REL-17 — Improve PreparationWindow Location Context UX
 
 Статус: сделано.
@@ -563,39 +583,6 @@ like …»), а не финальные под каждый конкретный
 - Зафиксировать, какие данные/ассеты нужны для store listing.
 
 Критичность: critical for release. Это внешняя задача, без неё публикация в Google Play невозможна.
-
-### REL-5 — GDPR Consent On First Launch
-
-Статус: код и UI готовы, включая Accept/Decline (см. ANL-1). Осталось только контентно-юридическое — своя страница, правильные ссылки и Data Safety (см. «Осталось сделать» в конце).
-
-Что сделано:
-- `ConsentGateOperation` показывает окно первого запуска в `phase_technical_init` — после `AddressablesUpdateOperation`, до `RemoteConfigInitOperation`, то есть до первого обращения к Firebase.
-- `ConsentService` + `PlayerPrefsConsentStore` хранят решение в PlayerPrefs (`consent.*.v1`). PlayerPrefs, а не `ISaveService`, потому что решение нужно читать задолго до `SaveDataLoadOperation`.
-- Дефолты — deny по всем категориям. Бамп `ConsentPolicy.Version` перепоказывает окно и до повторного согласия обнуляет ранее выданные флаги.
-- `IInteractiveLoadingOperation` приостанавливает 60-секундный глобальный дедлайн загрузки, пока окно открыто, иначе игрок получал бы ложный экран «проверьте интернет».
-- Android-манифест: `firebase_analytics_collection_enabled=false`, `firebase_crashlytics_collection_enabled=false`, `google_analytics_adid_collection_enabled=false`, `google_analytics_ssaid_collection_enabled=false`; `AD_ID` снимается через `tools:node="remove"`. Флаг аналитики остаётся `false` намеренно: сбор включается из кода (`SetAnalyticsCollectionEnabled(true)`) только после согласия, поэтому до решения игрока не собирается ничего.
-- `PrivacyLinksBuildCheck` роняет сборку, если на `BootstrapInstaller` не задан https-URL политики.
-- Префаб `Assets/Game/Features/Privacy/ConsentWindow.prefab` собран и заведён в Addressables-группу `UI` под адресом `ConsentWindow`. Окно открывается.
-- `Tools/Privacy/Reset Consent` чистит только ключи `consent.*`, чтобы можно было перепроверять первый запуск, не сбрасывая звук и player id.
-
-Согласие как согласие, а не уведомление (закрыто в ANL-1):
-- Экран получил **Accept/Decline** и честный текст: аналитика собирается, advertising ID — нет. Прежняя формулировка «we do not collect analytics» и единственная кнопка Continue больше не соответствовали коду и были бы недействительным согласием по UK GDPR/PECR.
-- `ConsentPolicy.Version` поднят до 2, поэтому записи согласия, выданные под старым текстом, аннулированы и игрок будет спрошен заново.
-- Decline блокирует всё: события отбрасываются по `CanSendAnalytics`, а `CompositeAnalyticsService.Initialize()` не поднимает Firebase вообще — манифестный `firebase_analytics_collection_enabled=false` остаётся в силе, и не собираются даже автоматические события Firebase.
-
-Остаётся незакрытым путь **отзыва** согласия — вынесен в DEF-1 и сознательно отложен. По UK GDPR отозвать согласие должно быть так же просто, как его дать; сейчас после решения на первом экране передумать нельзя.
-
-Также сам экран уже переработан в REL-11: Terms и согласие на аналитику разделены на одну кнопку Continue плюс отдельный переключатель.
-
-Осталось сделать:
-
-1. **Создать свою страницу Privacy + Terms.** Сейчас в `BootstrapInstaller.asset` прописаны чужие ссылки на `themergegames.com` — это домен другого проекта, и по ним игрок попадёт на политику чужого продукта. Нужна собственная публичная страница, покрывающая: кто разработчик и как с ним связаться; какие данные собираются (**анонимная геймплейная аналитика через Firebase Analytics** — прогресс по дням, квестам, локациям, покупки в игровом магазине; плюс save-данные на собственный сервер и `player_id` из `save.http.player_id.v1`; advertising ID не собирается, крашлитика выключена); зачем они нужны; третьи стороны (Firebase Analytics, Firebase Remote Config, Cloudflare R2 для Addressables, собственный config/save-сервер); сроки хранения; права пользователя и как запросить удаление данных.
-2. **Поменять ссылки в `Assets/Game/Core/Installers/Bootstrap/BootstrapInstaller.asset`** — поля `_privacyPolicyUrl` и `_termsOfUseUrl` обязаны вести на **мой Terms / Privacy**, а не на тестовые чужие страницы. Если одна страница покрывает оба документа, `_termsOfUseUrl` можно оставить пустым: `PrivacyLinkSettings.TermsOfUseUrl` сам падает обратно на privacy-ссылку.
-3. **Обновить форму Data Safety в Google Play Console: теперь нужно декларировать сбор данных.** Раньше здесь стояло «ни advertising ID, ни сбора данных» — после ANL-1 это неверно. Декларировать: аналитика собирается, advertising ID не собирается, данные привязаны к сгенерированному идентификатору установки.
-
-Важно про пункт 2: `PrivacyLinksBuildCheck` проверяет только что URL непустой и начинается с `https://`. Нынешние чужие ссылки эту проверку **проходят**, то есть автоматика от такой ошибки не защитит — сверять домен нужно глазами перед релизной сборкой.
-
-Критичность: critical before store release — и выше, чем раньше: аналитика теперь реально собирается, поэтому расхождение между политикой, формой Data Safety и фактическим поведением стало настоящим, а не гипотетическим.
 
 ### REL-6 — App Signing
 

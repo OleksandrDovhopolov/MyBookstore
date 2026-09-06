@@ -10,7 +10,8 @@ namespace Game.DayCycle.Tests.Editor
         private static DayConfig Day1() => new()
         {
             Id = "day_001",
-            DayIndex = 1
+            DayIndex = 1,
+            TitleKey = "day.day_001.title"
         };
 
         private static MorningContextResolver ResolverWith(params DayConfig[] days)
@@ -27,7 +28,7 @@ namespace Game.DayCycle.Tests.Editor
 
             Assert.AreEqual(1, ctx.Day);
             Assert.AreEqual("day_001", ctx.DayId);
-            Assert.AreEqual("Первый день у парка", ctx.Title);
+            Assert.AreEqual("day.day_001.title", ctx.Title);
         }
 
         [Test]

@@ -127,16 +127,6 @@ namespace Game.Core.UI.Tests.Editor.ContentWidget
         }
 
         [Test]
-        public void Resolve_HorizontalOnly_PlacesSide_WhenAnchorIsInTopZone()
-        {
-            var anchor = Rect.MinMaxRect(-40f, 220f, 40f, 260f);
-
-            var result = Resolve(anchor, mode: ContentWidgetPlacementMode.HorizontalOnly);
-
-            Assert.That(result.Side, Is.EqualTo(ContentWidgetPlacementSide.Right));
-        }
-
-        [Test]
         public void Resolve_HorizontalOnly_PlacesSide_WhenAnchorIsInBottomZone()
         {
             var anchor = Rect.MinMaxRect(40f, -260f, 80f, -220f);

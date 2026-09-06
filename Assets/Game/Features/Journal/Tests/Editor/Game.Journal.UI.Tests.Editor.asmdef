@@ -10,6 +10,7 @@
         "Game.LocationUnlock.API",
         "Game.Quest.API",
         "Configs",
+        "Game.Localization",
         "Save",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

@@ -58,7 +58,8 @@ namespace Game.Inventory.Services
             // }
             // return result;
 
-            await UniTask.Yield(ct);
+            ct.ThrowIfCancellationRequested();
+            await UniTask.CompletedTask;
             return InventoryUseResult.Ok(consume: false, message: "use disabled — info-only mode");
         }
     }
