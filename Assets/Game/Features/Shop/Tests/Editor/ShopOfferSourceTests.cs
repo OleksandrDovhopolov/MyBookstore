@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Inventory.API;
+using Game.Localization;
 using Game.Rewards.API;
 using Game.Shop.API;
 using Game.Shop.UI;
@@ -15,6 +16,21 @@ namespace Game.Shop.Tests.Editor
 {
     public sealed class ShopOfferSourceTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+            LocalizationLocator.SetService(new FakeLocalization(
+                ("ui.shop.offer.new", "NEW!"),
+                ("ui.shop.offer.sold", "SOLD"),
+                ("ui.shop.price.free", "FREE")));
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            LocalizationLocator.SetService(null);
+        }
+
         [Test]
         public void GetOffers_FiltersByStorefrontAndFormatsStateAndPrice()
         {
@@ -140,6 +156,43 @@ namespace Game.Shop.Tests.Editor
                 Amount = 1,
                 Kind = RewardKind.InventoryItem,
             };
+
+        private sealed class FakeLocalization : ILocalizationService
+        {
+            private readonly Dictionary<string, string> _texts;
+
+            public FakeLocalization(params (string key, string value)[] texts)
+            {
+                _texts = texts.ToDictionary(
+                    text => text.key,
+                    text => text.value,
+                    StringComparer.Ordinal);
+            }
+
+            public string CurrentLocale => "en";
+            public event Action<string> LocaleChanged;
+
+            public UniTask WarmupAsync(CancellationToken ct) => UniTask.CompletedTask;
+
+            public string Get(string key)
+                => _texts.TryGetValue(key, out var value)
+                    ? value
+                    : FormatMissingKey(key);
+
+            public string Get(string key, params object[] args)
+                => args == null || args.Length == 0
+                    ? Get(key)
+                    : string.Format(System.Globalization.CultureInfo.InvariantCulture, Get(key), args);
+
+            public bool TryGet(string key, out string value)
+                => _texts.TryGetValue(key, out value);
+
+            public void SetLocale(string locale)
+                => LocaleChanged?.Invoke(CurrentLocale);
+
+            private static string FormatMissingKey(string key)
+                => string.IsNullOrWhiteSpace(key) ? string.Empty : $"[`{key}`]";
+        }
 
         private sealed class FakeShopService : IShopService
         {

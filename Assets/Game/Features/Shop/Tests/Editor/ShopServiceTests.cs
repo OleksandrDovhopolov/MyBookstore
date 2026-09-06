@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using Game.Configs.Models;
+using Game.Localization;
 using Game.Rewards.API;
 using Game.Rewards.Services;
 using Game.Shop.API;
@@ -103,7 +106,16 @@ namespace Game.Shop.Tests.Editor
                 rewardSpecs ?? new ShopConfigRewardSpecProvider(h.Configs),
                 h.Configs,
                 h.Inventory,
-                h.Day);
+                h.Day,
+                new FakeLocalization(
+                    ("shop.test.small.name", "Small Book Box"),
+                    ("shop.test.small.description", "5 random books"),
+                    ("shop.test.medium.name", "Medium Book Box"),
+                    ("shop.test.medium.description", "10 random books"),
+                    ("shop.test.large.name", "Large Book Box"),
+                    ("shop.test.large.description", "15 random books"),
+                    ("shop.test.rare.name", "Rare Book Box"),
+                    ("shop.test.rare.description", "8 rare books")));
             if (runAfterLoad)
                 h.Svc.AfterLoadAsync(CancellationToken.None).GetAwaiter().GetResult();
             return h;
@@ -133,10 +145,10 @@ namespace Game.Shop.Tests.Editor
         {
             var lots = new[]
             {
-                BookLot(NewspaperShopLotIds.BookBoxGeneral5, "book_box_general_5", 15, "Small Book Box", "5 random books"),
-                BookLot(NewspaperShopLotIds.BookBoxGeneral10, "book_box_general_10", 28, "Medium Book Box", "10 random books"),
-                BookLot(NewspaperShopLotIds.BookBoxCommon15, "book_box_common_15", 40, "Large Book Box", "15 random books"),
-                BookLot(NewspaperShopLotIds.BookBoxRare8, "book_box_rare_8", 55, "Rare Book Box", "8 rare books"),
+                BookLot(NewspaperShopLotIds.BookBoxGeneral5, "book_box_general_5", 15, "shop.test.small.name", "shop.test.small.description"),
+                BookLot(NewspaperShopLotIds.BookBoxGeneral10, "book_box_general_10", 28, "shop.test.medium.name", "shop.test.medium.description"),
+                BookLot(NewspaperShopLotIds.BookBoxCommon15, "book_box_common_15", 40, "shop.test.large.name", "shop.test.large.description"),
+                BookLot(NewspaperShopLotIds.BookBoxRare8, "book_box_rare_8", 55, "shop.test.rare.name", "shop.test.rare.description"),
                 BookLot(NewspaperShopLotIds.BookBoxGenreClassic, "book_box_genre_classic_8"),
                 BookLot(NewspaperShopLotIds.BookBoxGenreCrime, "book_box_genre_crime_8"),
                 BookLot(NewspaperShopLotIds.BookBoxGenreDrama, "book_box_genre_drama_8"),
@@ -486,6 +498,43 @@ namespace Game.Shop.Tests.Editor
                 spec = null;
                 return false;
             }
+        }
+
+        private sealed class FakeLocalization : ILocalizationService
+        {
+            private readonly Dictionary<string, string> _texts;
+
+            public FakeLocalization(params (string key, string value)[] texts)
+            {
+                _texts = texts.ToDictionary(
+                    text => text.key,
+                    text => text.value,
+                    StringComparer.Ordinal);
+            }
+
+            public string CurrentLocale => "en";
+            public event Action<string> LocaleChanged;
+
+            public UniTask WarmupAsync(CancellationToken ct) => UniTask.CompletedTask;
+
+            public string Get(string key)
+                => _texts.TryGetValue(key, out var value)
+                    ? value
+                    : FormatMissingKey(key);
+
+            public string Get(string key, params object[] args)
+                => args == null || args.Length == 0
+                    ? Get(key)
+                    : string.Format(System.Globalization.CultureInfo.InvariantCulture, Get(key), args);
+
+            public bool TryGet(string key, out string value)
+                => _texts.TryGetValue(key, out value);
+
+            public void SetLocale(string locale)
+                => LocaleChanged?.Invoke(CurrentLocale);
+
+            private static string FormatMissingKey(string key)
+                => string.IsNullOrWhiteSpace(key) ? string.Empty : $"[`{key}`]";
         }
     }
 }

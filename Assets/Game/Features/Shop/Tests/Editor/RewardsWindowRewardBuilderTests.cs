@@ -63,7 +63,7 @@ namespace Game.Newspaper.Tests.Editor
 
             Assert.AreEqual(1, rewards.Count);
             Assert.AreEqual("vintage_globe", rewards[0].ResourceId);
-            Assert.AreEqual("Vintage Globe", rewards[0].DisplayName);
+            Assert.AreEqual("[`Vintage Globe`]", rewards[0].DisplayName);
             Assert.AreEqual(InventoryCategories.Decor, rewards[0].Category);
             Assert.AreEqual(1, rewards[0].Amount);
         }
@@ -83,7 +83,7 @@ namespace Game.Newspaper.Tests.Editor
 
             Assert.AreEqual(1, rewards.Count);
             Assert.AreEqual("fuel_canister", rewards[0].ResourceId);
-            Assert.AreEqual("Fuel Canister", rewards[0].DisplayName);
+            Assert.AreEqual("[`Fuel Canister`]", rewards[0].DisplayName);
             Assert.AreEqual(InventoryCategories.Consumable, rewards[0].Category);
             Assert.AreEqual(3, rewards[0].Amount);
         }
@@ -102,7 +102,7 @@ namespace Game.Newspaper.Tests.Editor
 
             Assert.AreEqual(1, rewards.Count);
             Assert.AreEqual("millie_letter", rewards[0].ResourceId);
-            Assert.AreEqual("Millie Letter", rewards[0].DisplayName);
+            Assert.AreEqual("[`Millie Letter`]", rewards[0].DisplayName);
             Assert.AreEqual(InventoryCategories.QuestItem, rewards[0].Category);
         }
 
