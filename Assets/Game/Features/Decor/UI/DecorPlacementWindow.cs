@@ -54,9 +54,8 @@ namespace Game.Decor.UI
         private bool _firstRender;
         private bool _useContentWidgetForInfo = false;
 
-        // Slot-first inventory filter: when set, RenderInventory shows only decor of this PositionType.
-        // Stage 1 keeps the filter type-only by design.
-        private DecorPositionType? _slotTypeFilter;
+        // Slot-first inventory filter: when set, RenderInventory shows only decor that fits this slot.
+        private DecorSlot _slotFilter;
 
         [Inject]
         public void InjectServices(
@@ -105,7 +104,7 @@ namespace Game.Decor.UI
             // Clean, non-animated re-sync on every open.
             _placedDecorBySlot.Clear();
             CancelPreviewIconLoad();
-            _slotTypeFilter = null;
+            _slotFilter = null;
             _previewDecorId = null;
             _previewPointId = null;
             _replaceOriginalDecorId = null;
@@ -213,9 +212,9 @@ namespace Game.Decor.UI
             {
                 var config = _configs.Get<DecorConfig>(item.ItemId);
                 if (config == null) continue;
-                // Slot-first filter: hide decor that doesn't match the clicked slot's type. Checked
+                // Slot-first filter: hide decor that doesn't fit the clicked slot. Checked
                 // before GetNext() so a hidden card never consumes a pooled view.
-                if (_slotTypeFilter.HasValue && config.PositionType != _slotTypeFilter.Value) continue;
+                if (_slotFilter != null && !IsDecorCompatibleWithSlot(config, _slotFilter)) continue;
                 var placed = !string.IsNullOrEmpty(FindPlacedSlot(item.ItemId));
                 var card = pool.GetNext();
                 card.Bind(config, placed, selectable, _sprites, OnCardSelect, OnCardInfo);
@@ -510,12 +509,12 @@ namespace Game.Decor.UI
         // The full-screen backdrop is the reset point for preview, filters, dimming, and tools.
         private void OnBackdropClicked() => CancelPreview();
 
-        // Slot-first filter: show only inventory decor of the clicked slot's PositionType. Null-safe
+        // Slot-first filter: show only inventory decor that fits the clicked slot. Null-safe
         // against a prefab/config mismatch; re-renders the inventory to apply immediately.
         private void TrySetSlotFilter(string slotId)
         {
             if (!BuildSlotMap().TryGetValue(slotId, out var slot) || slot == null) return;
-            _slotTypeFilter = slot.PositionType;
+            _slotFilter = slot;
             RenderInventory();
         }
 
@@ -596,7 +595,7 @@ namespace Game.Decor.UI
             if (config == null) return false;
             return BuildSlotMap().TryGetValue(slotId, out var slot)
                 && slot != null
-                && slot.PositionType == config.PositionType;
+                && IsDecorCompatibleWithSlot(config, slot);
         }
 
         private void OnMarkerClicked(DecorSlotAnchorView anchor)
@@ -658,7 +657,7 @@ namespace Game.Decor.UI
             _previewPointId = null;
             _replaceOriginalDecorId = null;
             _replaceOriginalSprite = null;
-            _slotTypeFilter = null;
+            _slotFilter = null;
             _applyInProgress = false;
 
             DeselectCards();
@@ -679,7 +678,7 @@ namespace Game.Decor.UI
             _previewPointId = null;
             _replaceOriginalDecorId = null;
             _replaceOriginalSprite = null;
-            _slotTypeFilter = null;
+            _slotFilter = null;
             _applyInProgress = false;
 
             DeselectCards();
@@ -768,7 +767,7 @@ namespace Game.Decor.UI
                 else
                 {
                     var operation = isReplace ? "Replace" : "Place";
-                    Debug.Log($"[DecorPlacementWindow] {operation} '{decorId}' -> '{pointId}' failed: {result}");
+                    Debug.LogWarning($"[DecorPlacementWindow] {operation} '{decorId}' -> '{pointId}' failed: {result}");
                     RestoreApplyIfPreviewStillActive(decorId, pointId);
                 }
             }
@@ -811,13 +810,19 @@ namespace Game.Decor.UI
 
         private Dictionary<string, DecorSlot> BuildSlotMap()
         {
-            var map = new Dictionary<string, DecorSlot>();
+            var map = new Dictionary<string, DecorSlot>(StringComparer.OrdinalIgnoreCase);
             var shop = _configs.Get<BookShopConfig>(DecorPlacementService.HardcodedBookShopId);
             if (shop?.DecorSlots == null) return map;
             foreach (var slot in shop.DecorSlots)
                 if (slot != null && !string.IsNullOrEmpty(slot.Id)) map[slot.Id] = slot;
             return map;
         }
+
+        private static bool IsDecorCompatibleWithSlot(DecorConfig config, DecorSlot slot)
+            => config != null
+               && slot != null
+               && config.PositionType == slot.PositionType
+               && (int)config.Size <= (int)slot.MaxSize;
 
         private DecorSlotAnchorView FindAnchor(string slotId)
         {

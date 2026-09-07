@@ -92,6 +92,7 @@ namespace Game.Decor.UI
             if (_placedDecorImage != null)
             {
                 _placedDecorImage.sprite = sprite;
+                _placedDecorImage.preserveAspect = true;
                 _placedDecorImage.gameObject.SetActive(true);
                 _placedDecorImage.transform.localScale = Vector3.one;
             }
@@ -112,6 +113,7 @@ namespace Game.Decor.UI
             if (_placedDecorImage != null)
             {
                 _placedDecorImage.sprite = sprite;
+                _placedDecorImage.preserveAspect = true;
                 _placedDecorImage.gameObject.SetActive(true);
                 _placedDecorImage.transform.localScale = Vector3.one;
             }

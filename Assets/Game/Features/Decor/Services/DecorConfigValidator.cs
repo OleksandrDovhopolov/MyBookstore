@@ -54,6 +54,7 @@ namespace Game.Decor.Services
             var report = new ValidationReport();
             var decorIds = ValidateDecors(report);
             ValidateBookShops(report);
+            ValidateDecorSlotCoverage(report);
             var decorReferences = CollectDecorReferences();
             var decorIdSet = new HashSet<string>(decorIds, StringComparer.OrdinalIgnoreCase);
             ValidateDecorReferences(report, decorIdSet, decorReferences);
@@ -168,6 +169,61 @@ namespace Game.Decor.Services
             }
         }
 
+        private void ValidateDecorSlotCoverage(ValidationReport report)
+        {
+            var decors = _configs.GetAll<DecorConfig>();
+            var shops = _configs.GetAll<BookShopConfig>();
+            var slots = new List<(string ShopId, DecorSlot Slot)>();
+
+            for (var i = 0; i < shops.Count; i++)
+            {
+                var shop = shops[i];
+                if (shop?.DecorSlots == null) continue;
+
+                for (var j = 0; j < shop.DecorSlots.Length; j++)
+                {
+                    var slot = shop.DecorSlots[j];
+                    if (!IsValidSlotForCoverage(slot)) continue;
+                    slots.Add((shop.Id, slot));
+
+                    var hasFittingDecor = false;
+                    for (var k = 0; k < decors.Count; k++)
+                    {
+                        var decor = decors[k];
+                        if (IsValidDecorForCoverage(decor) && IsDecorCompatibleWithSlot(decor, slot))
+                        {
+                            hasFittingDecor = true;
+                            break;
+                        }
+                    }
+
+                    if (!hasFittingDecor)
+                        report.Errors.Add(
+                            $"BookShop '{shop.Id}' slot '{slot.Id}' has no fitting DecorConfig for {slot.PositionType} <= {slot.MaxSize}.");
+                }
+            }
+
+            for (var i = 0; i < decors.Count; i++)
+            {
+                var decor = decors[i];
+                if (!IsValidDecorForCoverage(decor)) continue;
+
+                var fitsAnySlot = false;
+                for (var j = 0; j < slots.Count; j++)
+                {
+                    if (IsDecorCompatibleWithSlot(decor, slots[j].Slot))
+                    {
+                        fitsAnySlot = true;
+                        break;
+                    }
+                }
+
+                if (!fitsAnySlot)
+                    report.Warnings.Add(
+                        $"Decor '{decor.Id}' fits no BookShop slot for {decor.PositionType} / {decor.Size} — it cannot be placed.");
+            }
+        }
+
         private HashSet<string> CollectKnownGenres()
         {
             var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -237,6 +293,22 @@ namespace Game.Decor.Services
         private static bool IsDecorReward(string id, string category) =>
             !string.IsNullOrEmpty(id)
             && string.Equals(category, InventoryCategories.Decor, StringComparison.OrdinalIgnoreCase);
+
+        private static bool IsValidDecorForCoverage(DecorConfig decor)
+            => decor != null
+               && !string.IsNullOrEmpty(decor.Id)
+               && Enum.IsDefined(typeof(DecorPositionType), decor.PositionType)
+               && Enum.IsDefined(typeof(DecorSize), decor.Size);
+
+        private static bool IsValidSlotForCoverage(DecorSlot slot)
+            => slot != null
+               && !string.IsNullOrEmpty(slot.Id)
+               && Enum.IsDefined(typeof(DecorPositionType), slot.PositionType)
+               && Enum.IsDefined(typeof(DecorSize), slot.MaxSize);
+
+        private static bool IsDecorCompatibleWithSlot(DecorConfig decor, DecorSlot slot)
+            => decor.PositionType == slot.PositionType
+               && (int)decor.Size <= (int)slot.MaxSize;
 
         private static void ValidateDecorReferences(
             ValidationReport report,

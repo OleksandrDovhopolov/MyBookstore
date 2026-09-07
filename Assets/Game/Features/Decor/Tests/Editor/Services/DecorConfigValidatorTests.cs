@@ -294,14 +294,111 @@ namespace Game.Decor.Tests.Editor.Services
             Assert.IsFalse(warnings.Contains("unreachable"), warnings);
         }
 
+        [Test]
+        public void SlotWithoutFittingDecor_Errors()
+        {
+            var v = Build(
+                decors: new[] { Decor("wall_small", DecorPositionType.Wall, DecorSize.Small) },
+                shops: new[]
+                {
+                    Shop("shop1", Slot("hanging_small", DecorPositionType.Hanging, DecorSize.Small))
+                });
+
+            var report = v.Validate();
+
+            Assert.IsTrue(report.HasErrors);
+            var errors = string.Join("|", report.Errors);
+            StringAssert.Contains("hanging_small", errors);
+            StringAssert.Contains("no fitting DecorConfig", errors);
+        }
+
+        [Test]
+        public void DecorWithoutFittingSlot_Warns()
+        {
+            var v = Build(
+                decors: new[] { Decor("hanging_medium", DecorPositionType.Hanging, DecorSize.Medium) },
+                shops: new[]
+                {
+                    Shop("shop1", Slot("hanging_small", DecorPositionType.Hanging, DecorSize.Small))
+                });
+
+            var report = v.Validate();
+
+            Assert.IsTrue(report.HasWarnings);
+            var warnings = string.Join("|", report.Warnings);
+            StringAssert.Contains("hanging_medium", warnings);
+            StringAssert.Contains("fits no BookShop slot", warnings);
+        }
+
+        [Test]
+        public void SlotCoverage_UsesPositionTypeAndSizeLimit()
+        {
+            var v = Build(
+                decors: new[]
+                {
+                    Decor("standing_medium", DecorPositionType.Standing, DecorSize.Medium),
+                    Decor("hanging_small", DecorPositionType.Hanging, DecorSize.Small)
+                },
+                shops: new[]
+                {
+                    Shop(
+                        "shop1",
+                        Slot("standing_small", DecorPositionType.Standing, DecorSize.Small),
+                        Slot("hanging_small", DecorPositionType.Hanging, DecorSize.Small))
+                });
+
+            var report = v.Validate();
+
+            var errors = string.Join("|", report.Errors);
+            StringAssert.Contains("standing_small", errors);
+            Assert.IsFalse(errors.Contains("hanging_small"), errors);
+        }
+
+        [Test]
+        public void FittingSlotAndDecor_NoCoverageFindings()
+        {
+            var v = Build(
+                decors: new[] { Decor("standing_small", DecorPositionType.Standing, DecorSize.Small) },
+                shops: new[]
+                {
+                    Shop("shop1", Slot("standing_medium", DecorPositionType.Standing, DecorSize.Medium))
+                });
+
+            var report = v.Validate();
+
+            var errors = string.Join("|", report.Errors);
+            var warnings = string.Join("|", report.Warnings);
+            Assert.IsFalse(errors.Contains("no fitting DecorConfig"), errors);
+            Assert.IsFalse(warnings.Contains("fits no BookShop slot"), warnings);
+        }
+
         private static DecorConfig Decor(string id) =>
+            Decor(id, DecorPositionType.Standing, DecorSize.Small);
+
+        private static DecorConfig Decor(string id, DecorPositionType positionType, DecorSize size) =>
             new DecorConfig
             {
                 Id = id,
                 DisplayNameKey = id,
-                PositionType = DecorPositionType.Standing,
-                Size = DecorSize.Small,
+                PositionType = positionType,
+                Size = size,
                 GenreMultipliers = System.Array.Empty<DecorGenreModifier>()
+            };
+
+        private static BookShopConfig Shop(string id, params DecorSlot[] slots) =>
+            new BookShopConfig
+            {
+                Id = id,
+                DisplayNameKey = id,
+                DecorSlots = slots
+            };
+
+        private static DecorSlot Slot(string id, DecorPositionType positionType, DecorSize maxSize) =>
+            new DecorSlot
+            {
+                Id = id,
+                PositionType = positionType,
+                MaxSize = maxSize
             };
 
         private static ShopConfig Lot(

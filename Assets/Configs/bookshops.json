@@ -18,27 +18,12 @@
         "maxSize": "Medium"
       },
       {
-        "id": "hang_1",
+        "id": "hang_main",
         "positionType": "Hanging",
         "maxSize": "Small"
       },
       {
-        "id": "hang_2",
-        "positionType": "Hanging",
-        "maxSize": "Small"
-      },
-      {
-        "id": "hang_3",
-        "positionType": "Hanging",
-        "maxSize": "Small"
-      },
-      {
-        "id": "wall_left",
-        "positionType": "Wall",
-        "maxSize": "Large"
-      },
-      {
-        "id": "wall_right",
+        "id": "wall_main",
         "positionType": "Wall",
         "maxSize": "Large"
       }

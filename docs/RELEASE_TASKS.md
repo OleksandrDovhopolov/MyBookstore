@@ -26,6 +26,18 @@
 
 ## Done
 
+### REL-1 — Quest / Memory Appearance UI And Gameplay Button Attention
+
+Статус: сделано.
+
+Что сделано:
+- Добавлено player-facing появление нового квеста и нового memory.
+- Добавлена анимация в кнопку на `GameplayScene`, ведущую в Journal/Quest UI.
+- Добавлен индикатор "есть новое" для новых quest/memory элементов.
+- Индикатор исчезает после просмотра соответствующего нового элемента.
+
+Критичность была high: это делает уже существующую прогрессию видимой для игрока.
+
 ### REL-14 — Fix Failing EditMode Tests
 
 Статус: сделано. EditMode-тесты приведены в рабочее состояние перед релизной сборкой.
@@ -553,16 +565,6 @@ Smoke: открыть Market до unlock — условие `soldTotal: 200` п�
 - Проверить на чистой установке оба пути согласия: Accept → события видны в Firebase DebugView; Decline → в логе нет ни одного `[Analytics] Sent`, в DebugView тишина.
 
 Критичность: critical. Это релизный gate.
-
-### REL-1 — Quest / Memory Appearance UI And Gameplay Button Attention
-
-Что сделать:
-- Добавить player-facing появление нового квеста и нового memory.
-- Добавить анимацию в кнопку на `GameplayScene`, ведущую в Journal/Quest UI.
-- Добавить восклицательный знак или другой индикатор "есть новое".
-- Индикатор должен исчезать после просмотра соответствующего нового элемента.
-
-Критичность: high. Это не новая механика, а видимость уже существующей прогрессии.
 
 ### CONTENT-2 — Active Request Descriptions
 
