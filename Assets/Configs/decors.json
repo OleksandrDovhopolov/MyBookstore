@@ -41,7 +41,7 @@
   {
     "id": "houseplant",
     "positionType": "Standing",
-    "size": "Small",
+    "size": "Medium",
     "basePrice": 30,
     "genreMultipliers": [
       {
@@ -79,7 +79,7 @@
   {
     "id": "maritime_painting",
     "positionType": "Wall",
-    "size": "Medium",
+    "size": "Small",
     "basePrice": 80,
     "genreMultipliers": [
       {

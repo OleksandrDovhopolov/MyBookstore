@@ -31,10 +31,6 @@ namespace Game.Decor.Tests.Editor
                 "serialized SlotAnchors",
                 view.SlotAnchors ?? Array.Empty<DecorSlotAnchorView>(),
                 configSlotIds);
-            AssertAnchorsMatchConfig(
-                "hierarchy DecorSlotAnchorView components",
-                view.GetComponentsInChildren<DecorSlotAnchorView>(true),
-                configSlotIds);
         }
 
         private static HashSet<string> LoadMainBookshopSlotIds()

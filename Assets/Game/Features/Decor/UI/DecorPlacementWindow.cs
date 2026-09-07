@@ -196,7 +196,7 @@ namespace Game.Decor.UI
             }
             if (ct.IsCancellationRequested || anchor == null) return;
 
-            anchor.SetPlaced(sprite);
+            anchor.SetPlaced(sprite, ResolveSizeFactor(decorId));
             if (animate) anchor.PlayPlaceTween();
         }
 
@@ -371,11 +371,12 @@ namespace Game.Decor.UI
 
             _previewDecorId = decorId;
             _applyInProgress = false;
+
+            HideHud();
             _state = State.Preview;
 
             SelectInventoryCard(decorId);
             ApplySelectedPointAvailability(_previewPointId);
-            SetButtonVisible(View.RemoveButton, false, false);
             ShowPreviewActions();
             SetApplyInteractable(true);
             LoadPreviewSpriteAsync(decorId, _previewPointId).Forget();
@@ -703,7 +704,7 @@ namespace Game.Decor.UI
             if (_placement == null || !string.Equals(_placement.GetDecorInSlot(_previewPointId), _replaceOriginalDecorId, StringComparison.OrdinalIgnoreCase)) return;
 
             var anchor = FindAnchor(_previewPointId);
-            if (anchor != null) anchor.SetPlaced(_replaceOriginalSprite);
+            if (anchor != null) anchor.SetPlaced(_replaceOriginalSprite, ResolveSizeFactor(_replaceOriginalDecorId));
         }
 
         private async UniTaskVoid LoadPreviewSpriteAsync(string decorId, string pointId)
@@ -727,7 +728,7 @@ namespace Game.Decor.UI
 
             var anchor = FindAnchor(pointId);
             if (anchor == null) return;
-            anchor.SetPreview(sprite);
+            anchor.SetPreview(sprite, ResolveSizeFactor(decorId));
         }
 
         private void CancelPreviewIconLoad()
@@ -816,6 +817,16 @@ namespace Game.Decor.UI
             foreach (var slot in shop.DecorSlots)
                 if (slot != null && !string.IsNullOrEmpty(slot.Id)) map[slot.Id] = slot;
             return map;
+        }
+
+        private float ResolveSizeFactor(string decorId)
+        {
+            return !string.IsNullOrEmpty(decorId)
+                   && _configs != null
+                   && _configs.TryGet<DecorConfig>(decorId, out var config)
+                   && config != null
+                ? DecorSizeVisualScale.Factor(config.Size)
+                : DecorSizeVisualScale.LargeFactor;
         }
 
         private static bool IsDecorCompatibleWithSlot(DecorConfig config, DecorSlot slot)
