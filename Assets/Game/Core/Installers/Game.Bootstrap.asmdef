@@ -54,7 +54,8 @@
         "Game.Tutorial.API",
         "Game.Tutorial.Content",
         "Game.GameplayUI.Signals",
-        "Game.Localization"
+        "Game.Localization",
+        "Game.Journal.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

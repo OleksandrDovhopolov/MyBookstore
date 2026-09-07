@@ -91,6 +91,9 @@ namespace Game.Journal.UI
             IUiSpriteProvider sprites)
             => _questsPage?.Render(models, onClaim, onRewardInfo, sprites);
 
+        public void SetTabBadge(JournalTab tab, bool on)
+            => _tabBar?.SetBadge(tab, on);
+
         public void Clear()
         {
             _peoplePage?.Clear();

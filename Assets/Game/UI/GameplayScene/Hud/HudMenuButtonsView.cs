@@ -19,6 +19,7 @@ namespace GameplayUI
         [SerializeField] private Button _inventoryButton;
         [SerializeField] private Button _shopButton;
         [SerializeField] private Button _settingsButton;
+        [SerializeField] private GameObject _journalBadge;
 
         private IHudWindowLauncher _launcher;
         private bool _opening;
@@ -85,6 +86,12 @@ namespace GameplayUI
         }
 
         public void SetStartButtonActive(bool active) => SetButtonInteractable(_startDayButton, active);
+
+        public void SetJournalBadge(bool on)
+        {
+            if (_journalBadge != null)
+                _journalBadge.SetActive(on);
+        }
 
         private void OnStartDayButtonClicked() => StartDayClicked?.Invoke();
         private void OnDecorButtonClicked() => OpenAsync<DecorPlacementWindow>().Forget();

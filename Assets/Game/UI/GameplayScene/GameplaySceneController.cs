@@ -8,6 +8,7 @@ using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
+using Game.Journal.UI;
 using Game.Localization;
 using Game.Location.UI;
 using Game.LocationUnlock.API;
@@ -38,6 +39,7 @@ namespace GameplayUI
         private IConfigsService _configs;
         private IUiSpriteProvider _uiSprites;
         private IGameFlowService _gameFlow;
+        private IJournalAttentionService _journalAttention;
 
         // True once the window has loaded all the data it needs to display (currently the genre sprites).
         public bool IsDataReady { get; private set; }
@@ -72,7 +74,8 @@ namespace GameplayUI
             ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
             ISubscriber<GameplayLocationGoldEarnedChanged> locationGoldEarnedSubscriber = null,
             IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null,
-            ISubscriber<TutorialStepChanged> tutorialStepSubscriber = null)
+            ISubscriber<TutorialStepChanged> tutorialStepSubscriber = null,
+            IJournalAttentionService journalAttention = null)
         {
             _uiSprites = uiSprites;
             _dayProgress = dayProgress;
@@ -87,6 +90,7 @@ namespace GameplayUI
             _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
             _genreBookCountsRequestPublisher = genreBookCountsRequestPublisher;
             _tutorialStepSubscriber = tutorialStepSubscriber;
+            _journalAttention = journalAttention;
         }
 
         protected override void OnInit()
@@ -115,6 +119,12 @@ namespace GameplayUI
 
             if (_gameFlow != null)
                 _gameFlow.LocationLoadedChanged += OnLocationLoadedChanged;
+
+            if (_journalAttention != null)
+            {
+                _journalAttention.Changed += RefreshJournalBadge;
+                RefreshJournalBadge();
+            }
         }
 
         protected override void OnShowStart()
@@ -213,6 +223,9 @@ namespace GameplayUI
 
             if (_gameFlow != null)
                 _gameFlow.LocationLoadedChanged -= OnLocationLoadedChanged;
+
+            if (_journalAttention != null)
+                _journalAttention.Changed -= RefreshJournalBadge;
         }
 
         private void SetSceneButtonsInteractable(bool interactable)
@@ -234,6 +247,11 @@ namespace GameplayUI
         {
             View?.SetPanelShown(AnimatedShowHidePanel.PanelId.GenreBookCounts, loaded);
             View?.SetGoldCounterMode(loaded);
+        }
+
+        private void RefreshJournalBadge()
+        {
+            View?.MenuButtons?.SetJournalBadge(_journalAttention != null && _journalAttention.HasAnyUnseen);
         }
 
         private void OnStartGameClicked() => StartGameAsync().Forget();

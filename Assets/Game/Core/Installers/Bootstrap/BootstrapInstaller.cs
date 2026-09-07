@@ -107,6 +107,7 @@ namespace Game.Bootstrap
             builder.RegisterQuest();               // in-memory quest lifecycle over the condition engine (ISaveHook init)
             builder.RegisterTutorial(_tutorialOverlaySettings, _tutorialSettings, _tutorialAutoStart); // forced-step tutorial engine + overlay + "tutorialCompleted" (ISaveHook init)
             builder.RegisterCharacters();          // read-side character/memory projection over quests (ISaveHook init)
+            builder.RegisterJournalAttention();    // central Journal/HUD "new item" attention state (ISaveHook init)
             builder.RegisterFtue(_startWelcomeWindow);
             builder.RegisterFirstDayEntry(_firstDayEntry);
             builder.RegisterBookSellSharedState(); // ISalesShelfStateService — общий для хаба и локации

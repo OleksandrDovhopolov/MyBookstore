@@ -42,6 +42,7 @@ namespace Game.Journal.UI
         private IDecorTotalEffectsProvider _decorEffects;
         private IQuestsService _quests;
         private IQuestRewardGranter _questGranter;
+        private IJournalAttentionService _attention;
         private IUiSpriteProvider _sprites;
         private Action<string> _onQuestClaim;
         private Action<QuestRewardItemModel, RectTransform> _onRewardInfo;
@@ -62,6 +63,7 @@ namespace Game.Journal.UI
             IDecorTotalEffectsProvider decorEffects = null,
             IQuestsService quests = null,
             IQuestRewardGranter questGranter = null,
+            IJournalAttentionService attention = null,
             IUiSpriteProvider sprites = null)
         {
             _characters = characters;
@@ -71,6 +73,7 @@ namespace Game.Journal.UI
             _decorEffects = decorEffects;
             _quests = quests;
             _questGranter = questGranter;
+            _attention = attention;
             _sprites = sprites;
         }
 
@@ -87,6 +90,9 @@ namespace Game.Journal.UI
             ApplyWindowArgs();
             View.TabSelected += OnTabSelected;
             View.QuestsScrolled += HideRewardInfoWidget;
+
+            if (_attention != null)
+                _attention.Changed += RefreshTabBadges;
 
             if (_characters != null)
             {
@@ -115,7 +121,8 @@ namespace Game.Journal.UI
 
             RenderAll();
             View.SelectTab(_activeTab);
-            MarkMemoriesSeenIfActive();
+            RefreshTabBadges();
+            MarkActiveTabSeen();
         }
 
         protected override void OnHideStart(bool isClosed)
@@ -123,6 +130,9 @@ namespace Game.Journal.UI
             View.TabSelected -= OnTabSelected;
             View.QuestsScrolled -= HideRewardInfoWidget;
             HideRewardInfoWidget();
+
+            if (_attention != null)
+                _attention.Changed -= RefreshTabBadges;
 
             if (_characters != null)
             {
@@ -164,7 +174,7 @@ namespace Game.Journal.UI
         {
             _activeTab = tab;
             HideRewardInfoWidget();
-            MarkMemoriesSeenIfActive();
+            MarkActiveTabSeen();
         }
 
         private void OnCharacterDiscovered(ICharacter _)
@@ -338,10 +348,50 @@ namespace Game.Journal.UI
             => _locations == null
                || _locations.GetStatus(locationId)?.State == LocationUnlockState.Unlocked;
 
-        private void MarkMemoriesSeenIfActive()
+        private void RefreshTabBadges()
         {
-            if (_activeTab != JournalTab.Memories) return;
-            _characters?.MarkAllMemoriesSeen();
+            SetTabBadge(JournalTab.Quests, JournalAttentionCategory.Quests);
+            SetTabBadge(JournalTab.Places, JournalAttentionCategory.Places);
+            SetTabBadge(JournalTab.People, JournalAttentionCategory.People);
+            SetTabBadge(JournalTab.Memories, JournalAttentionCategory.Memories);
+            View.SetTabBadge(JournalTab.Objects, false);
+        }
+
+        private void SetTabBadge(JournalTab tab, JournalAttentionCategory category)
+            => View.SetTabBadge(tab, _attention != null && _attention.HasUnseen(category));
+
+        private void MarkActiveTabSeen()
+        {
+            if (_attention != null && TryGetAttentionCategory(_activeTab, out var category))
+            {
+                _attention.MarkSeen(category);
+                return;
+            }
+
+            if (_attention == null && _activeTab == JournalTab.Memories)
+                _characters?.MarkAllMemoriesSeen();
+        }
+
+        private static bool TryGetAttentionCategory(JournalTab tab, out JournalAttentionCategory category)
+        {
+            switch (tab)
+            {
+                case JournalTab.Quests:
+                    category = JournalAttentionCategory.Quests;
+                    return true;
+                case JournalTab.Places:
+                    category = JournalAttentionCategory.Places;
+                    return true;
+                case JournalTab.People:
+                    category = JournalAttentionCategory.People;
+                    return true;
+                case JournalTab.Memories:
+                    category = JournalAttentionCategory.Memories;
+                    return true;
+                default:
+                    category = default;
+                    return false;
+            }
         }
 
         private void ApplyWindowArgs()
