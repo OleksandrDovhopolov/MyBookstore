@@ -26,6 +26,45 @@
 
 ## Done
 
+### BUG-3 — Captain Quest Opens With Missing Ship Addressable
+
+Статус: сделано. Причина оказалась не в квесте: спрайты грузятся по id предмета, который напрямую
+используется как Addressables-адрес, а у корабля адрес записи был `Ship` вместо `ship` — ключи
+регистрозависимы.
+
+Что сделано:
+- Найден источник: `UiSpriteProvider.GetSpriteAsync(id)` вызывает `ProdAddressablesWrapper.LoadAsync<Sprite>(id)`,
+  то есть id предмета и есть Addressables-адрес; весь декор-UI передаёт туда `decorId`.
+- Адрес ассета `Ship.png` переименован в `ship` и совпал с id декора — `InvalidKeyException` в quest reward UI
+  больше не воспроизводится.
+- Попутно выяснилось, что `DecorConfig.IconAddress` не читался нигде в продакшн-коде: поле удалено из модели
+  и из `decors.json`, фактический контракт «Addressables-адрес == id декора» зафиксирован комментарием в
+  `DecorConfig`.
+- Удалён декор `harper_castle_donation_box`, у которого вообще не было спрайта (белая карточка в магазине):
+  убран из `decors.json`, из лота `newspaper_decor_harper_castle_donation_box` в `shop.json` и из
+  `localization_items_en.json`; bundled defaults синхронизированы.
+- Проверено, что `ship` выдаётся квестом `q_captain_postcards`, а не магазином, и что все 16 декораций
+  остаются достижимыми (магазин или квест).
+
+Не вошло в реализацию: config validation / regression test на невалидные sprite-address keys для quest UI.
+Логичное место — строка в `PreBuildValidationGate.Validators` рядом с `BookBoxPoolValidator` и
+`LocalizationKeyValidator`.
+
+Критичность была high: ошибка появлялась на релизном quest flow и могла скрывать реальные проблемы UI.
+
+### CONTENT-3 — Create Final Captain Sprite And Remove Old Placeholder
+
+Статус: сделано, коммиты `839387a`, `c1323b1`.
+
+Что сделано:
+- Добавлен финальный спрайт капитана: `Characters/Captain.png` и `Characters/Avatar/Captain.png` в
+  `Assets/Game/Features/Location/Sprites/`.
+- В Addressables заведён адрес `captain_avatar`, поэтому аватар грузится общим `UiSpriteProvider` по ключу,
+  как остальные портреты.
+- Старый placeholder-спрайт заменён.
+
+Критичность была medium: content polish для заметного персонажа релизного flow.
+
 ### REL-1 — Quest / Memory Appearance UI And Gameplay Button Attention
 
 Статус: сделано.
@@ -631,39 +670,6 @@ like …»), а не финальные под каждый конкретный
 Следующие задачи упираются во внешние ресурсы: арт, который нужно нарисовать, тексты, которые нужно
 подготовить или заменить, и контентно-балансовые решения, которые нужно принять. Это не
 [Deferred](#deferred--сознательно-отложено): задачи остаются в релизном scope, но ждут входные материалы.
-
-### BUG-3 — Captain Quest Opens With Missing Ship Addressable
-
-Баг: при открытии квеста капитана в логе появляется ошибка Addressables:
-`UnityEngine.AddressableAssets.InvalidKeyException: No Location found for Key=ship`.
-
-Что сделать:
-- Найти, кто при открытии квеста капитана пытается загрузить Addressables key `ship`.
-- Проверить конфиг квеста/награды/иконки: это должен быть валидный address, либо ссылка должна идти через
-  правильный item/sprite catalog, если `ship` является item id, а не addressable sprite key.
-- Исправить загрузку так, чтобы `QuestView` не пытался грузить несуществующий Addressables key.
-- Если для корабля нужна иконка/спрайт в UI награды, добавить корректный Addressables asset/address и
-  синхронизировать bundled defaults при необходимости.
-- Добавить config validation или regression test, который ловит невалидные sprite/address keys для quest UI.
-- Проверить manual smoke: открыть квест капитана, ошибок `InvalidKeyException` в логе нет, reward/icon UI
-  отображается корректно.
-
-Критичность: high. Ошибка в логе появляется на релизном quest flow и может скрывать реальные проблемы UI.
-
-### CONTENT-3 — Create Final Captain Sprite And Remove Old Placeholder
-
-Что сделать:
-- Создать финальный спрайт капитана в стиле игры.
-- Заменить текущий старый/placeholder-спрайт, который сейчас подгружается для капитана.
-- Обновить ссылку в config/prefab/addressables так, чтобы captain dialogue / quest flow использовал новый
-  sprite.
-- Удалить старый спрайт капитана из проекта и Addressables, если он больше нигде не используется.
-- Проверить зависимости перед удалением: старый ассет не должен оставаться в configs, prefabs, scripts или
-  Addressables groups.
-- Проверить manual smoke: встретить капитана / открыть его квест, увидеть новый спрайт, в логе нет missing
-  reference / Addressables ошибок.
-
-Критичность: medium. Это content polish для заметного персонажа релизного flow.
 
 ### CONTENT-1 — Replace Copied Book Localization Texts
 

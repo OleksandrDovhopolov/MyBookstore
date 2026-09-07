@@ -305,7 +305,20 @@
     "positionType": "Standing",
     "size": "Medium",
     "basePrice": 0,
-    "genreMultipliers": [],
+    "genreMultipliers": [
+      {
+        "genre": "Travel",
+        "multiplier": 1.4
+      },
+      {
+        "genre": "Fantasy",
+        "multiplier": 1.2
+      },
+      {
+        "genre": "Fact",
+        "multiplier": 1.2
+      }
+    ],
     "atmosphereTags": [
       "sea",
       "travel"
