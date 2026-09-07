@@ -12,8 +12,9 @@ namespace Game.Configs.Models
     {
         public string Id { get; set; }
         public string DisplayNameKey { get; set; }
-        //TODO now everywhere used decor id for sprite loading via addressabbles . should delete this ? 
-        public string IconAddress { get; set; }
+
+        // Sprites are loaded from Addressables by the decor Id itself (see UiSpriteProvider), so there is
+        // no separate icon address: the Addressables entry for a decor sprite must be addressed by its Id.
 
         // Placement constraints
         public DecorPositionType PositionType { get; set; }

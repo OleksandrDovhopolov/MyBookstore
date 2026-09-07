@@ -1,7 +1,6 @@
 [
   {
     "id": "vintage_globe",
-    "iconAddress": "Decor/VintageGlobe",
     "positionType": "Standing",
     "size": "Small",
     "basePrice": 50,
@@ -24,7 +23,6 @@
   },
   {
     "id": "coffee_pot",
-    "iconAddress": "Decor/CoffeePot",
     "positionType": "Standing",
     "size": "Small",
     "basePrice": 50,
@@ -42,7 +40,6 @@
   },
   {
     "id": "houseplant",
-    "iconAddress": "Decor/Houseplant",
     "positionType": "Standing",
     "size": "Small",
     "basePrice": 30,
@@ -64,7 +61,6 @@
   },
   {
     "id": "old_lamp",
-    "iconAddress": "Decor/OldLamp",
     "positionType": "Hanging",
     "size": "Small",
     "basePrice": 40,
@@ -82,7 +78,6 @@
   },
   {
     "id": "maritime_painting",
-    "iconAddress": "Decor/MaritimePainting",
     "positionType": "Wall",
     "size": "Medium",
     "basePrice": 80,
@@ -100,7 +95,6 @@
   },
   {
     "id": "chinese_vase",
-    "iconAddress": "Decor/ChineseVase",
     "positionType": "Standing",
     "size": "Medium",
     "basePrice": 90,
@@ -123,7 +117,6 @@
   },
   {
     "id": "gas_lighter",
-    "iconAddress": "Decor/GasLighter",
     "positionType": "Hanging",
     "size": "Small",
     "basePrice": 60,
@@ -145,7 +138,6 @@
   },
   {
     "id": "green_flower",
-    "iconAddress": "Decor/GreenFlower",
     "positionType": "Standing",
     "size": "Small",
     "basePrice": 35,
@@ -167,7 +159,6 @@
   },
   {
     "id": "green_menu",
-    "iconAddress": "Decor/GreenMenu",
     "positionType": "Standing",
     "size": "Medium",
     "basePrice": 100,
@@ -181,7 +172,6 @@
   },
   {
     "id": "lavender",
-    "iconAddress": "Decor/Lavender",
     "positionType": "Standing",
     "size": "Medium",
     "basePrice": 55,
@@ -205,7 +195,6 @@
   },
   {
     "id": "little_cactus",
-    "iconAddress": "Decor/LittleCactus",
     "positionType": "Standing",
     "size": "Small",
     "basePrice": 25,
@@ -227,7 +216,6 @@
   },
   {
     "id": "pocket_clock",
-    "iconAddress": "Decor/PocketClock",
     "positionType": "Wall",
     "size": "Small",
     "basePrice": 70,
@@ -249,7 +237,6 @@
   },
   {
     "id": "table_frame",
-    "iconAddress": "Decor/TableFrame",
     "positionType": "Standing",
     "size": "Small",
     "basePrice": 45,
@@ -271,7 +258,6 @@
   },
   {
     "id": "tifany_lamp",
-    "iconAddress": "Decor/TifanyLamp",
     "positionType": "Standing",
     "size": "Medium",
     "basePrice": 120,
@@ -295,7 +281,6 @@
   },
   {
     "id": "wite_flower",
-    "iconAddress": "Decor/WiteFlower",
     "positionType": "Standing",
     "size": "Small",
     "basePrice": 40,
@@ -316,21 +301,7 @@
     "displayNameKey": "decor.wite_flower.name"
   },
   {
-    "id": "harper_castle_donation_box",
-    "iconAddress": "Decor/HarperCastleDonationBox",
-    "positionType": "Standing",
-    "size": "Small",
-    "basePrice": 0,
-    "genreMultipliers": [],
-    "atmosphereTags": [
-      "charity",
-      "counter"
-    ],
-    "displayNameKey": "decor.harper_castle_donation_box.name"
-  },
-  {
     "id": "ship",
-    "iconAddress": "Decor/Ship",
     "positionType": "Standing",
     "size": "Medium",
     "basePrice": 0,

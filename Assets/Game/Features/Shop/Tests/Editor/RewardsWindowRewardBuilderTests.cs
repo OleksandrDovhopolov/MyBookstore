@@ -48,7 +48,7 @@ namespace Game.Newspaper.Tests.Editor
         public void Build_DecorReward_EmitsDecorAndSkipsResource()
         {
             var configs = new FakeConfigsService(
-                decors: new[] { Decor("vintage_globe", "Vintage Globe", "Decor/VintageGlobe") });
+                decors: new[] { Decor("vintage_globe", "Vintage Globe") });
             var spec = new RewardSpec("decor_reward", new[]
             {
                 RewardItem.InventoryItem("vintage_globe", InventoryCategories.Decor, 1),
@@ -110,7 +110,7 @@ namespace Game.Newspaper.Tests.Editor
         public void Build_MixedDecorAndQuestItem_EmitsCardsForBoth()
         {
             var configs = new FakeConfigsService(
-                decors: new[] { Decor("lavender", "Lavender", "lavender") },
+                decors: new[] { Decor("lavender", "Lavender") },
                 questItems: new[] { new QuestItemConfig { Id = "port_trade_permit", DisplayNameKey = "Trade Permit" } });
             var spec = new RewardSpec("quest_reward", new[]
             {
@@ -163,8 +163,8 @@ namespace Game.Newspaper.Tests.Editor
         private static BookConfig Book(string id, string genre) =>
             new BookConfig { Id = id, Genres = new[] { genre } };
 
-        private static DecorConfig Decor(string id, string displayName, string iconAddress) =>
-            new DecorConfig { Id = id, DisplayNameKey = displayName, IconAddress = iconAddress };
+        private static DecorConfig Decor(string id, string displayName) =>
+            new DecorConfig { Id = id, DisplayNameKey = displayName };
 
         private sealed class FakeConfigsService : IConfigsService
         {
