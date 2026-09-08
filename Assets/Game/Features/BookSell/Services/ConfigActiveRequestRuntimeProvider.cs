@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Book.Sell.Domain;
 using Game.Configs;
 using Game.Configs.Models;
-using Game.Localization;
 using UnityEngine;
 using VContainer;
 
@@ -15,7 +14,7 @@ namespace Book.Sell.Services
         private readonly IConfigsService _configs;
         private readonly IBookConditionRequestEvaluator _conditionEvaluator;
         private readonly IActiveRequestGenreResolver _genreResolver;
-        private readonly ILocalizationService _localization;
+        private readonly IActiveRequestTextComposer _textComposer;
 
         public ConfigActiveRequestRuntimeProvider(
             IConfigsService configs,
@@ -37,12 +36,12 @@ namespace Book.Sell.Services
             IConfigsService configs,
             IBookConditionRequestEvaluator conditionEvaluator,
             IActiveRequestGenreResolver genreResolver,
-            ILocalizationService localization)
+            IActiveRequestTextComposer textComposer)
         {
             _configs = configs ?? throw new System.ArgumentNullException(nameof(configs));
             _conditionEvaluator = conditionEvaluator ?? throw new System.ArgumentNullException(nameof(conditionEvaluator));
             _genreResolver = genreResolver ?? throw new System.ArgumentNullException(nameof(genreResolver));
-            _localization = localization;
+            _textComposer = textComposer ?? new LexiconActiveRequestTextComposer(configs, conditionEvaluator, null);
         }
 
         public IReadOnlyList<ActiveRequestRuntime> GetRequests()
@@ -62,9 +61,8 @@ namespace Book.Sell.Services
 
                 requests.Add(ActiveRequestRuntime.FromCondition(
                     request,
-                    _conditionEvaluator.BuildDebugText(request),
-                    _genreResolver.Resolve(request),
-                    _localization));
+                    _textComposer.Compose(request),
+                    _genreResolver.Resolve(request)));
             }
 
             return requests;

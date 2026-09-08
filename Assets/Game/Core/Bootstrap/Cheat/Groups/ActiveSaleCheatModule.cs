@@ -32,6 +32,7 @@ namespace Game.Cheat
         private readonly IConfigsService _configs;
         private readonly IBookConditionRequestEvaluator _evaluator = new BookConditionRequestEvaluator();
         private readonly IActiveRequestGenreResolver _genreResolver = new ConditionActiveRequestGenreResolver();
+        private readonly IActiveRequestTextComposer _textComposer;
 
         private ShelfPresetConfig _activePreset;
         private bool _useFullCatalog;
@@ -40,6 +41,10 @@ namespace Game.Cheat
         {
             _uiManager = uiManager ?? throw new ArgumentNullException(nameof(uiManager));
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
+
+            // The cheat runs outside the sales-day scope, so the composer is new-ed here and resolves
+            // localization through the locator.
+            _textComposer = new LexiconActiveRequestTextComposer(_configs, _evaluator, null);
         }
 
         public void Initialize(ICheatsContainer cheatsContainer)
@@ -68,7 +73,7 @@ namespace Game.Cheat
             {
                 var runtime = ActiveRequestRuntime.FromCondition(
                     cfg,
-                    _evaluator.BuildDebugText(cfg),
+                    _textComposer.Compose(cfg),
                     _genreResolver.Resolve(cfg));
 
                 var bookIds = ResolveShelfBookIds();

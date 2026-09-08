@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Game.Configs.Models;
-using Game.Localization;
 
 namespace Book.Sell.Domain
 {
@@ -31,39 +30,21 @@ namespace Book.Sell.Domain
         public RequestDefinitionConfig ConditionRequest { get; }
         public IReadOnlyList<string> RequiredGenres { get; }
 
-        // Пока false: активный запрос показывает техническую debug-строку условий, а не человеческое
-        // описание. DescriptionKey в sample_requests.json и тексты в localization_quests_en.json НАМЕРЕННО
-        // сохранены — их подключит задача CONTENT-2 (Active Request Descriptions), где под каждый запрос
-        // готовится реальный текст со своей логикой. Тогда флаг переключается в true.
-        private static readonly bool UseLocalizedDescriptions = false;
-
-        // debugText — текущий отображаемый текст запроса (техническая строка условий). См. флаг выше.
+        // text — готовая строка для игрока, собранная IActiveRequestTextComposer из conditions запроса.
+        // Техническая debug-строка (IBookConditionRequestEvaluator.BuildDebugText) сюда больше не попадает:
+        // она осталась инструментом валидатора и чит-панели.
         public static ActiveRequestRuntime FromCondition(
             RequestDefinitionConfig request,
-            string debugText,
-            IReadOnlyList<string> requiredGenres = null,
-            ILocalizationService localization = null)
+            string text,
+            IReadOnlyList<string> requiredGenres = null)
         {
             if (request == null) return null;
             return new ActiveRequestRuntime(
                 request.Id,
-                ResolveText(request, debugText, localization),
+                text,
                 RequestDifficulty.Unknown,
                 request,
                 requiredGenres);
-        }
-
-        private static string ResolveText(
-            RequestDefinitionConfig request,
-            string debugText,
-            ILocalizationService localization)
-        {
-            if (request == null) return string.Empty;
-            if (UseLocalizedDescriptions && !string.IsNullOrWhiteSpace(request.DescriptionKey))
-                return localization != null
-                    ? localization.Get(request.DescriptionKey)
-                    : LocalizationLocator.GetOrKey(request.DescriptionKey);
-            return debugText;
         }
 
         public bool MatchesProfile(IReadOnlyList<string> desiredGenres)

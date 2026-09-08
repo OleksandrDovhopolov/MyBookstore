@@ -677,34 +677,41 @@ Smoke: открыть Market до unlock — условие `soldTotal: 200` п�
 Проверка: `Game.Location` — 0 ошибок; loc-ключи синхронизированы. Финальная вёрстка префабов виджета и Button
 на элементе — в Editor.
 
+### CONTENT-2 — Active Request Descriptions
+
+Статус: сделано. Активный запрос показывает человеческий текст, собранный из его же `conditions`,
+а не техническую debug-строку.
+
+Что сделано:
+- Композитор `LexiconActiveRequestTextComposer` (`Assets/Game/Features/BookSell/Services/`) собирает
+  предложение из слотов opener / lead / core / constraint / exclusion / anchor.
+- Лексикон `Assets/Configs/request_phrases.json` (57 записей, модель `RequestPhraseConfig`) хранит только
+  loc-ключи; 83 строки `request.*` — в `localization_quests_en.json`. 38 терминов покрывают все листья 19 запросов.
+- Сколько условий озвучивать, решает жёсткость запроса (число подходящих книг в каталоге): tight ≤ 5 —
+  всё, medium 6–15 — без открытых числовых полос, loose > 15 — без числовых вовсе.
+- Обёртка выбирается детерминированно по FNV-1a от `request.Id`: текст запроса стабилен, ничего не
+  перекатывается после reload дня.
+- `ActiveRequestRuntime.UseLocalizedDescriptions` и debug-fallback удалены; `BuildDebugText` остался
+  инструментом `ActiveRequestValidator` и чит-панели.
+- Контент: `req_anathem_01` — исключение `none: Female Author` заменено на `none: Gore` (непроизносимая
+  формулировка). У `req_fact_01` сохранён ручной `descriptionKey` — полное название референсной книги не
+  влезает в баббл. С остальных 18 запросов `descriptionKey` снят, чтобы override не перекрывал композитор.
+- `LocalizationKeyValidator` проверяет `request_phrases.json` (поля `positiveKey` / `negativeKey`);
+  `request_phrases.json` добавлен в манифест StreamingAssets.
+- Тесты: `LexiconActiveRequestTextComposerTests` (юниты) и `ActiveRequestTextContentTests` (прогон живого
+  контента: у каждого enabled-запроса читаемый текст без дампа условий и сырых loc-ключей).
+
+Спека и фактический вывод по всем 19 запросам:
+[docs/INPROGRESS/ACTIVE_REQUEST_TEXT_COMPOSER.md](INPROGRESS/ACTIVE_REQUEST_TEXT_COMPOSER.md).
+
+Осознанно вынесено:
+- `bookId` в `RequestDefinitionConfig` вместо свободной строки `BookTitle` + проверка якоря в
+  `ActiveRequestValidator` — отдельной задачей.
+
 ## TODO
 
 Единый список открытых релизных задач. Задачи, ожидающие внешние ресурсы, вынесены в
 [Wait For Resources](#wait-for-resources) ниже.
-
-### CONTENT-2 — Active Request Descriptions
-
-Контекст: активный запрос (мини-игра рекомендации) сейчас показывает **техническую debug-строку** условий
-(напр. «A Study in Scarlet: ALL: genres contains Crime; publicationYear between …; pages ≤ 200»), а не
-человеческий текст. Это сделано намеренно: локализация (коммит `49fc9b9`) уже завела поле
-`RequestDefinitionConfig.DescriptionKey`, проставила ключи в `sample_requests.json` и тексты в
-`localization_quests_en.json`, но текущие тексты — временные/шаблонные (типа «I'm looking for a Crime book
-like …»), а не финальные под каждый конкретный запрос. Поэтому вывод переключён обратно на debug-строку
-флагом `ActiveRequestRuntime.UseLocalizedDescriptions = false` (`Assets/Game/Features/BookSell/Domain/ActiveRequestRuntime.cs`).
-Ничего не удалялось — ключи и loc-тексты сохранены.
-
-Что сделать:
-- Продумать логику подачи текста запроса: он должен читаемо и по-человечески описывать, что хочет покупатель,
-  и сходиться с фактическими условиями (`conditions`) запроса — под каждый из ~19 запросов в
-  `sample_requests.json` (жанр/качества/годы/страницы, референсная книга `bookTitle`).
-- Написать финальный текст под каждый `descriptionKey` в `localization_quests_en.json` (ключи `request.*.description`).
-- Переключить `ActiveRequestRuntime.UseLocalizedDescriptions` в `true` (или убрать флаг и debug-fallback,
-  когда тексты готовы) — тогда UI начнёт показывать человеческое описание вместо технической строки.
-- Синхронизировать `Assets/StreamingAssets/Configs/localization_quests_en.json`.
-- Проверить Recommendation minigame: игрок видит осмысленный текст запроса, а не дамп условий.
-
-Критичность: high (качество релизного контента). Не блокирует прохождение — debug-строка работает как
-временный fallback, но для игрока выглядит технически.
 
 ### REL-4 — Register Google Play Developer Account
 
