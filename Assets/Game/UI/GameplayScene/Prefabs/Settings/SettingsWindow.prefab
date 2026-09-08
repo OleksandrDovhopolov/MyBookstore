@@ -3145,6 +3145,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SwitchMusic (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 3825655533682711524, guid: 37a6df95d07d1334cab460e11997d583, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

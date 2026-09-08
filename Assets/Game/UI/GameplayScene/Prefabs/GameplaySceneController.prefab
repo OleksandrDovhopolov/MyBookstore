@@ -310,6 +310,7 @@ GameObject:
   - component: {fileID: 7019156521376605561}
   - component: {fileID: 2394337630828576687}
   - component: {fileID: 7057538616850030870}
+  - component: {fileID: 8022049739481314654}
   m_Layer: 5
   m_Name: MapButton
   m_TagString: Untagged
@@ -446,6 +447,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _targetId: hub.start_day_button
+--- !u!114 &8022049739481314654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3386706372339271053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 726222852bfcdc04bacf45f7c2703acb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _click: {fileID: 8300000, guid: 90e4b3afb548f0848880fc9391386b43, type: 3}
+  _volumeScale: 1
 --- !u!1 &3694352249716092182
 GameObject:
   m_ObjectHideFlags: 0
@@ -460,6 +475,7 @@ GameObject:
   - component: {fileID: 3177370888927879381}
   - component: {fileID: 4977401761963635104}
   - component: {fileID: 1767409122630705910}
+  - component: {fileID: 80215659163375679}
   m_Layer: 5
   m_Name: DecorationButton
   m_TagString: Untagged
@@ -581,7 +597,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 726222852bfcdc04bacf45f7c2703acb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _click: {fileID: 0}
+  _click: {fileID: 8300000, guid: 90e4b3afb548f0848880fc9391386b43, type: 3}
   _volumeScale: 1
 --- !u!114 &1767409122630705910
 MonoBehaviour:
@@ -597,6 +613,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _duration: 0.18
   _animationRoot: {fileID: 4747217440814267962}
+--- !u!114 &80215659163375679
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3694352249716092182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 726222852bfcdc04bacf45f7c2703acb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _click: {fileID: 0}
+  _volumeScale: 1
 --- !u!1 &3985756644399642812
 GameObject:
   m_ObjectHideFlags: 0
@@ -611,6 +641,7 @@ GameObject:
   - component: {fileID: 4019847306785035049}
   - component: {fileID: 8844666588115431566}
   - component: {fileID: 6969321747951809745}
+  - component: {fileID: 4435248254091391043}
   m_Layer: 5
   m_Name: JournalButton
   m_TagString: Untagged
@@ -748,6 +779,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _targetId: hub.journal_button
+--- !u!114 &4435248254091391043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3985756644399642812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 726222852bfcdc04bacf45f7c2703acb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _click: {fileID: 8300000, guid: 90e4b3afb548f0848880fc9391386b43, type: 3}
+  _volumeScale: 1
 --- !u!1 &4150261628942656636
 GameObject:
   m_ObjectHideFlags: 0
@@ -1302,6 +1347,7 @@ GameObject:
   - component: {fileID: 8269742606334865237}
   - component: {fileID: 8969747713596478819}
   - component: {fileID: 4856029251129438686}
+  - component: {fileID: 2492947019190658158}
   m_Layer: 5
   m_Name: ShopButton
   m_TagString: Untagged
@@ -1423,7 +1469,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 726222852bfcdc04bacf45f7c2703acb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _click: {fileID: 0}
+  _click: {fileID: 8300000, guid: 90e4b3afb548f0848880fc9391386b43, type: 3}
   _volumeScale: 1
 --- !u!114 &4856029251129438686
 MonoBehaviour:
@@ -1439,6 +1485,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _duration: 0.18
   _animationRoot: {fileID: 3299678343223764277}
+--- !u!114 &2492947019190658158
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6570731412062725759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 726222852bfcdc04bacf45f7c2703acb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _click: {fileID: 0}
+  _volumeScale: 1
 --- !u!1 &6625410665682273124
 GameObject:
   m_ObjectHideFlags: 0
@@ -1452,6 +1512,7 @@ GameObject:
   - component: {fileID: 8328964500804660836}
   - component: {fileID: 365812381857529584}
   - component: {fileID: 1382762596110265485}
+  - component: {fileID: 3321282388772997294}
   m_Layer: 5
   m_Name: InventoryButton
   m_TagString: Untagged
@@ -1575,6 +1636,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _duration: 0.18
   _animationRoot: {fileID: 7150803009687266710}
+--- !u!114 &3321282388772997294
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6625410665682273124}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 726222852bfcdc04bacf45f7c2703acb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _click: {fileID: 8300000, guid: 90e4b3afb548f0848880fc9391386b43, type: 3}
+  _volumeScale: 1
 --- !u!1 &6694657807105102510
 GameObject:
   m_ObjectHideFlags: 0
