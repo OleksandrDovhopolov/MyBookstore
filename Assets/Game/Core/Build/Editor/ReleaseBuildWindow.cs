@@ -39,6 +39,7 @@ namespace Game.Build.Editor
         private AndroidPackageFormat _format = AndroidPackageFormat.APK;
         private string _outputFolder = DefaultOutputFolder;
         private string _keystorePassword = string.Empty;
+        private bool _autoIncrementVersionCode = true;
         private Vector2 _scroll;
         private bool _isBusy;
         private string _status;
@@ -85,7 +86,22 @@ namespace Game.Build.Editor
             _outputFolder = EditorGUILayout.TextField("Output Folder", string.IsNullOrWhiteSpace(_outputFolder)
                 ? DefaultOutputFolder
                 : _outputFolder);
+
+            if (_variant == BuildVariant.Prod && _format == AndroidPackageFormat.AAB)
+            {
+                _autoIncrementVersionCode = EditorGUILayout.Toggle("Auto-increment versionCode", _autoIncrementVersionCode);
+                EditorGUILayout.HelpBox(
+                    "Google Play requires a higher versionCode for every uploaded AAB. Enabled only for Prod + AAB so local Dev/APK builds do not burn version numbers.",
+                    MessageType.None);
+            }
         }
+
+        /// <summary>
+        /// versionCode is only bumped for Prod AAB builds — the artifacts that actually get uploaded to
+        /// Google Play, which rejects a reused code. Dev/APK builds are local throwaways and keep the number.
+        /// </summary>
+        private bool ShouldAutoIncrementVersionCode()
+            => _variant == BuildVariant.Prod && _format == AndroidPackageFormat.AAB && _autoIncrementVersionCode;
 
         private void DrawKeystoreSection()
         {
@@ -134,6 +150,8 @@ namespace Game.Build.Editor
                 EditorGUILayout.TextField("Architectures", PlayerSettings.Android.targetArchitectures.ToString());
                 EditorGUILayout.TextField("Min SDK", PlayerSettings.Android.minSdkVersion.ToString());
                 EditorGUILayout.TextField("Target SDK", PlayerSettings.Android.targetSdkVersion.ToString());
+                EditorGUILayout.TextField("Version Name", PlayerSettings.bundleVersion);
+                EditorGUILayout.IntField("Version Code", PlayerSettings.Android.bundleVersionCode);
                 EditorGUILayout.IntField("Enabled Scenes", GetEnabledScenes().Length);
             }
 
@@ -179,6 +197,12 @@ namespace Game.Build.Editor
                           $"Format: {_format}\n" +
                           $"Output: {outputPath}\n" +
                           $"Signing: {(_variant == BuildVariant.Prod ? PlayerSettings.Android.keyaliasName : "Unity debug keystore")}";
+
+            if (ShouldAutoIncrementVersionCode())
+            {
+                var current = PlayerSettings.Android.bundleVersionCode;
+                summary += $"\nVersion Code: {current} -> {current + 1}";
+            }
 
             if (!EditorUtility.DisplayDialog("Start Android Build?", summary, "Build", "Cancel"))
             {
@@ -313,6 +337,13 @@ namespace Game.Build.Editor
             PlayerSettings.Android.useCustomKeystore = true;
             PlayerSettings.Android.keystorePass = _keystorePassword;
             PlayerSettings.Android.keyaliasPass = _keystorePassword;
+
+            if (ShouldAutoIncrementVersionCode())
+            {
+                // Bump before the build so the produced AAB carries the new code. A failed build leaves a
+                // gap in the sequence, which Google Play accepts — it only requires strictly increasing.
+                PlayerSettings.Android.bundleVersionCode += 1;
+            }
         }
 
         private static string[] GetEnabledScenes()
