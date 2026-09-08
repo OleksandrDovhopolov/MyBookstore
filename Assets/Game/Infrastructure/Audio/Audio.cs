@@ -13,16 +13,25 @@ namespace Infrastructure.Audio
         private static IAudioService _service;
 
         public static bool IsAvailable => _service != null;
+        public static AudioCatalog Catalog { get; private set; }
 
         public static void Bind(IAudioService service)
         {
             _service = service;
         }
 
+        public static void BindCatalog(AudioCatalog catalog)
+        {
+            Catalog = catalog;
+        }
+
         public static void Clear(IAudioService service = null)
         {
             if (service == null || ReferenceEquals(_service, service))
+            {
                 _service = null;
+                Catalog = null;
+            }
         }
 
         public static void SetVolume(AudioChannelId channel, float volume)
@@ -38,6 +47,11 @@ namespace Infrastructure.Audio
         public static void PlayMusic(AudioClip clip, bool loop = true, bool restartIfSame = false)
         {
             _service?.PlayMusic(clip, loop, restartIfSame);
+        }
+
+        public static UniTask PlayMusicFadedAsync(AudioClip clip, float fadeSeconds, CancellationToken ct, bool loop = true)
+        {
+            return _service?.PlayMusicFadedAsync(clip, fadeSeconds, ct, loop) ?? UniTask.CompletedTask;
         }
 
         public static UniTask PlayMusicAsync(

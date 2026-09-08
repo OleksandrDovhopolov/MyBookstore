@@ -23,14 +23,16 @@ namespace Game.UI
 
         private void OnEnable()
         {
-            if (_open != null)
-                Audio.PlayUi(_open);
+            var clip = _open != null ? _open : Audio.Catalog?.WindowOpen;
+            if (clip != null)
+                Audio.PlayUi(clip);
         }
 
         private void OnDisable()
         {
-            if (_close != null)
-                Audio.PlayUi(_close);
+            var clip = _close != null ? _close : Audio.Catalog?.WindowClose;
+            if (clip != null)
+                Audio.PlayUi(clip);
         }
     }
 }

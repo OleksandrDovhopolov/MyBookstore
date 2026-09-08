@@ -3,6 +3,7 @@ using Game.Bootstrap.Loading;
 using Game.Ftue.Services;
 using Game.Tutorial.Presentation;
 using Game.UI;
+using Infrastructure.Audio;
 using Infrastructure.ResourceAnimations;
 using SpriteService;
 using UnityEngine;
@@ -32,6 +33,10 @@ namespace Game.Bootstrap
         [Header("Resource Animations")]
         [Tooltip("Shared settings for flying resource UI animations.")]
         [SerializeField] private ResourceAnimationSettings _resourceAnimationSettings;
+
+        [Header("Audio")]
+        [Tooltip("Default UI sounds and hub/location music. Null keeps audio startup as a no-op.")]
+        [SerializeField] private AudioCatalog _audioCatalog;
 
         [Header("Tutorial")]
         [Tooltip("Overlay settings for the tutorial engine (blackout/pointer/text panel).")]
@@ -83,10 +88,11 @@ namespace Game.Bootstrap
             builder.RegisterGameAnalytics(_analyticsConfig, _analyticsRoutingConfig, _analyticsMappingConfig);
             builder.RegisterConsent(_privacyPolicyUrl);
             builder.RegisterSave();
-            builder.RegisterInfrastructure();
+            builder.RegisterInfrastructure(_audioCatalog);
             builder.RegisterConfigs();
             builder.RegisterLocalization();
             builder.RegisterDayCycleServices();
+            builder.RegisterMusicDirector();
             builder.RegisterUiSystem(_uiCanvasRootPrefab);
             builder.RegisterWorldHud();
             builder.RegisterInventory();

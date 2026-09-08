@@ -45,7 +45,7 @@ namespace GameplayUI.Tests.Editor
         }
 
         [Test]
-        public void MusicToggle_OnlyWritesMusic()
+        public void MusicToggle_WritesMusicAndAmbient()
         {
             var audio = new FakeAudioService();
 
@@ -53,9 +53,10 @@ namespace GameplayUI.Tests.Editor
             SettingsAudioToggleAdapter.SetMusicEnabled(audio, true);
 
             CollectionAssert.AreEqual(
-                new[] { AudioChannelId.Music, AudioChannelId.Music },
+                new[] { AudioChannelId.Music, AudioChannelId.Ambient, AudioChannelId.Music, AudioChannelId.Ambient },
                 audio.WrittenChannels);
             Assert.AreEqual(1f, audio.GetVolume(AudioChannelId.Music));
+            Assert.AreEqual(1f, audio.GetVolume(AudioChannelId.Ambient));
         }
 
         [Test]
@@ -74,6 +75,24 @@ namespace GameplayUI.Tests.Editor
             audio.SetVolume(AudioChannelId.Sfx, 0f);
             audio.SetVolume(AudioChannelId.Ui, 1f);
             Assert.IsTrue(SettingsAudioToggleAdapter.IsSoundEnabled(audio));
+        }
+
+        [Test]
+        public void MusicEnabled_IsTrueWhenEitherMusicOrAmbientIsAudible()
+        {
+            var audio = new FakeAudioService();
+
+            audio.SetVolume(AudioChannelId.Music, 0f);
+            audio.SetVolume(AudioChannelId.Ambient, 0f);
+            Assert.IsFalse(SettingsAudioToggleAdapter.IsMusicEnabled(audio));
+
+            audio.SetVolume(AudioChannelId.Music, 1f);
+            audio.SetVolume(AudioChannelId.Ambient, 0f);
+            Assert.IsTrue(SettingsAudioToggleAdapter.IsMusicEnabled(audio));
+
+            audio.SetVolume(AudioChannelId.Music, 0f);
+            audio.SetVolume(AudioChannelId.Ambient, 1f);
+            Assert.IsTrue(SettingsAudioToggleAdapter.IsMusicEnabled(audio));
         }
 
         [Test]
@@ -168,6 +187,7 @@ namespace GameplayUI.Tests.Editor
                 => _volumes.TryGetValue(channel, out var volume) ? volume : 0f;
 
             public void PlayMusic(AudioClip clip, bool loop = true, bool restartIfSame = false) { }
+            public UniTask PlayMusicFadedAsync(AudioClip clip, float fadeSeconds, CancellationToken ct, bool loop = true) => UniTask.CompletedTask;
             public UniTask PlayMusicAsync(string address, CancellationToken ct, bool loop = true, bool restartIfSame = false) => UniTask.CompletedTask;
             public void StopMusic() { }
             public void PlaySfx(AudioClip clip, float volumeScale = 1f) { }

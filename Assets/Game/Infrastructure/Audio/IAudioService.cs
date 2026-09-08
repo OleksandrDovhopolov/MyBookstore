@@ -12,6 +12,7 @@ namespace Infrastructure.Audio
         float GetVolume(AudioChannelId channel);
 
         void PlayMusic(AudioClip clip, bool loop = true, bool restartIfSame = false);
+        UniTask PlayMusicFadedAsync(AudioClip clip, float fadeSeconds, CancellationToken ct, bool loop = true);
         UniTask PlayMusicAsync(string address, CancellationToken ct, bool loop = true, bool restartIfSame = false);
         void StopMusic();
         bool IsMusicPlaying { get; }

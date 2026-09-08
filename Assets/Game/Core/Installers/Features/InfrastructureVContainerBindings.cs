@@ -14,7 +14,7 @@ namespace Game.Bootstrap
     // Ports here are consumed by any feature that needs to issue HTTP via Game.Http commands.
     public static class InfrastructureVContainerBindings
     {
-        public static void RegisterInfrastructure(this IContainerBuilder builder)
+        public static void RegisterInfrastructure(this IContainerBuilder builder, AudioCatalog audioCatalog = null)
         {
             builder.Register<LoggerSettingsService>(
                 _ => new LoggerSettingsService(UnityEngine.Resources.Load<LoggerSettings>("LoggerSettings")),
@@ -47,6 +47,14 @@ namespace Game.Bootstrap
             builder.Register<IAudioSettingsStore, PlayerPrefsAudioSettingsStore>(Lifetime.Singleton);
             builder.Register<IAudioClipLoader, AddressablesAudioClipLoader>(Lifetime.Singleton);
             builder.Register<IAudioService, AudioService>(Lifetime.Singleton);
+            if (audioCatalog != null)
+            {
+                builder.RegisterInstance(audioCatalog);
+            }
+            else
+            {
+                Debug.LogWarning("[Audio] AudioCatalog is not assigned on BootstrapInstaller — audio defaults are disabled.");
+            }
 
             // TODO: Auth token provider
             // builder.Register<IAuthTokenProvider, JwtAuthTokenProvider>(Lifetime.Singleton);
@@ -60,6 +68,7 @@ namespace Game.Bootstrap
                 ResourceCounterTargets.Bind(resolver.Resolve<IResourceCounterTargetRegistry>());
                 resolver.Resolve<ResourceCounterHudPresenter>().Start();
                 Audio.Bind(resolver.Resolve<IAudioService>());
+                Audio.BindCatalog(audioCatalog);
             });
         }
     }
