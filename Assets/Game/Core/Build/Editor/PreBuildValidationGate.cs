@@ -79,6 +79,10 @@ namespace Game.Build.Editor
                 "OK");
         }
 
+        /// <summary>Returns hard validation errors without logging or showing UI.</summary>
+        public static IReadOnlyList<string> CollectErrors()
+            => Collect().Errors;
+
         /// <summary>
         /// The registry of everything the gate enforces. Adding a check means adding one row here and
         /// nothing else — the runner, the message prefix, the menu and the failure path are shared.

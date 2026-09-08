@@ -26,6 +26,41 @@
 
 ## Done
 
+### REL-6 — App Signing
+
+Статус: сделано. Release-сборка подписывается собственным keystore; проверено вручную в Unity.
+
+Что сделано:
+- Создан release keystore `user.keystore` **вне репозитория** (`G:\MyBookstore\Key\user.keystore`), в git не
+  попадает — по правилу [SERVICES/SECRETS.md](SERVICES/SECRETS.md).
+- В `Project Settings → Player → Publishing Settings` подключён Custom Keystore с alias; проверено, что release
+  build подписывается этим ключом, а не debug-ключом.
+- Пароли keystore/key, alias и сам ключ (в виде base64) сохранены в менеджере паролей Bitwarden как единственный
+  читаемый бэкап — GitHub Secrets значения обратно не отдаёт.
+- Секретные файлы и пароли в репозиторий не коммитятся.
+
+Осознанно вынесено:
+- **Google Play App Signing** пока не включаем — решение отложено до момента публикации в Play Console (REL-4).
+  Сейчас keystore выступает как полноценный app-signing ключ; при включении App Signing он станет upload-ключом.
+- **Заливка секретов в GitHub Actions Secrets для CI-подписи** отложена в [DEF-5](#def-5--ci-apk-signing-via-github-secrets):
+  пока APK собирается локально из Unity, CI-подпись не нужна.
+
+Критичность была critical for APK/Play release.
+
+### REL-8 — Add Sounds
+
+Статус: сделано.
+
+Что сделано:
+- Закрыта кодовая инфраструктура: `AudioCatalog`, музыка хаб/день, fade, fallback для UI-кликов/окон.
+- Закрыты SFX-хуки для минимального релизного набора: покупки, blocked/error, unlock location, decor
+  place/remove, пассивная продажа, excellent-рекомендация, journal badge notification, rewards popup,
+  dialogue line, day completion reward и count-up золота.
+- Настройки работают по правилу `Sound = Sfx + Ui`, `Music = Music + Ambient`.
+- В редакторе назначены клипы в `AudioCatalog.asset`, кнопки и окна подключены к audio-компонентам.
+
+Критичность была medium: звук важен для ощущения законченного продукта, но scope оставался минимальным.
+
 ### REL-9 — Finish Decorations Release UX
 
 Статус: сделано, коммиты `907af61`, `a75defa`. Из двух путей выбран первый — доработка сценовой выкладки,
@@ -617,14 +652,23 @@ Smoke: открыть Market до unlock — условие `soldTotal: 200` п�
 - Прогнать `Run Pre-Build Validation` и runtime validators через Play mode.
 - Собрать Addressables.
 - Проверить Firebase Android config.
-- Настроить/проверить billing safety для Firebase Remote Config / Firebase project и Cloudflare: budget
-  alerts, spending limits/usage caps где доступны, лимиты запросов/egress, уведомления на почту. Раньше
-  приходили инвойсы на `$0`, но перед релизом нужно убедиться, что проект не сможет незаметно уйти в
-  платные списания или долги.
+- ~~Billing safety~~ — сделано:
+  - **Firebase — закрыто фактом плана.** Проект `mybookstore-13b53` на бесплатном плане **Spark**, billing
+    account не привязан («This project has no billing account»), «Product costs are not available for the
+    Spark plan». На Spark ресурсы ограничены квотами и при превышении сервис **отключается, а не
+    тарифицируется** — списать деньги нельзя by design. **Не переходить на Blaze**, пока не понадобится
+    платная фича (Firestore/Cloud Functions/Cloud Storage); при переходе сразу завести budget alert в
+    Google Cloud Billing.
+  - **Cloudflare R2 — budget alert поставлен.** Billing Budget Alert на **$10** с уведомлением на
+    `bobakgamestudio@gmail.com` (Cloudflare Dashboard → Manage account → Notifications). Это единственное
+    место с реальным биллингом (storage + Class A/B operations; egress бесплатный). Алерт только уведомляет,
+    авто-cutoff у Cloudflare нет; расход смотреть в R2 → Overview.
 - Проверить Android Player Settings: IL2CPP, ARM64, API level, keystore, scenes.
 - Проверить `BootstrapInstaller.asset`: debug off, full loading on, tutorial settings, first-day path.
-- Обязательно заменить `_privacyPolicyUrl` / `_termsOfUseUrl` на правильные ссылки на **мой Terms / Privacy**.
-  Сейчас там стоят тестовые чужие ссылки; они проходят https-проверку, но не подходят для релиза.
+- ~~Заменить `_privacyPolicyUrl` / `_termsOfUseUrl` на правильные ссылки на **мой Terms / Privacy**~~ —
+  сделано: в `BootstrapInstaller.asset` стоит собственный `_privacyPolicyUrl:
+  https://mybookstore-legal.netlify.app/`. Отдельного Terms URL нет — `PrivacyLinkSettings` фолбэком
+  использует Privacy URL и для Terms, одна страница покрывает оба.
 - Настройки аналитики (отладочный лог и `environment`) вручную **не трогать** — они выводятся из типа сборки, см. REL-12 и [BUILD.md §5](BUILD.md).
 - Проверить FTUE на чистой установке.
 - Собрать APK и сделать smoke: старт, configs, active request, dialogue, FTUE/tutorial.
@@ -664,31 +708,6 @@ like …»), а не финальные под каждый конкретный
 - Зафиксировать, какие данные/ассеты нужны для store listing.
 
 Критичность: critical for release. Это внешняя задача, без неё публикация в Google Play невозможна.
-
-### REL-6 — App Signing
-
-Что сделать:
-- Подготовить keystore/signing config для Android.
-- Убедиться, что release build подписывается корректно.
-- Не коммитить секретные файлы и пароли; следовать [SERVICES/SECRETS.md](SERVICES/SECRETS.md).
-
-Критичность: critical for APK/Play release.
-
-### REL-8 — Add Sounds
-
-Текущее состояние:
-- Кодовая инфраструктура закрыта: `AudioCatalog`, музыка хаб/день, fade, fallback для UI-кликов/окон.
-- Кодовые SFX-хуки закрыты для минимального релизного набора: покупки, blocked/error, unlock location,
-  декор place/remove, пассивная продажа, excellent-рекомендация, journal badge notification, rewards popup,
-  dialogue line, day completion reward и count-up золота.
-- Настройки работают по правилу `Sound = Sfx + Ui`, `Music = Music + Ambient`.
-
-Что осталось сделать в редакторе:
-- Назначить все клипы в `AudioCatalog.asset`.
-- Навесить `UiButtonClickAudio` на shared-кнопки, где компонента ещё нет.
-- Навесить `WindowAudio` на префабы окон; кодовый fallback уже есть, но компонент должен стоять на view root.
-
-Критичность: medium. Важно для ощущения продукта, но scope должен быть минимальным.
 
 ## Wait For Resources
 
@@ -976,6 +995,25 @@ Memories станет презентабельной только с этими 
 Почему отложено: до первого релиза продовых сейвов нет, все module versions стартуют с `1`, а pre-release сейвы
 стираются локально и на сервере. Задача становится обязательной до первого изменения формата save-модуля после
 релиза.
+
+### DEF-5 — CI APK Signing Via GitHub Secrets
+
+Автоматическая подпись APK/AAB в CI. Изначально часть [REL-6](#rel-6--app-signing), вынесена отдельно —
+**сейчас делать не будем**, потому что релизная сборка идёт локально из Unity, а не через CI.
+
+Источник: [SERVICES/SECRETS.md §4](SERVICES/SECRETS.md) («CI Secrets»).
+
+Что потребуется, когда возьмём:
+- Залить в GitHub Actions Secrets репозитория `OleksandrDovhopolov/MyBookstore`:
+  `ANDROID_KEYSTORE_BASE64` (base64 из `G:\MyBookstore\Key\user.keystore`), `KEYSTORE_PASSWORD`,
+  `KEY_ALIAS`, `KEY_ALIAS_PASSWORD`. Значения — из записи Bitwarden `MyBookstore Android Keystore`.
+- В build-workflow декодировать base64 обратно в keystore-файл перед `Unity -batchmode -build...` и передать
+  пути/пароли в Android build настройки.
+- Проверить, что секреты не логируются (GitHub маскирует, но не выводить их явно).
+
+Почему отложено: CI-пайплайна для сборки APK пока нет. Ручной GitHub Secrets заводить нет смысла, пока
+подпись делается в Unity локально. Значения уже безопасно лежат в Bitwarden, так что данные не потеряются.
+Задача становится нужной, когда подключим автоматическую сборку/деплой APK.
 
 ## Explicitly Not Release Scope Unless Reclassified
 

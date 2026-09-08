@@ -10,6 +10,10 @@
 > [SERVICES/SECRETS.md](SERVICES/SECRETS.md), [BOOTSTRAP_AND_LOADING.md](BOOTSTRAP_AND_LOADING.md),
 > [ACTIVE_REQUEST_CONDITIONS.md](ACTIVE_REQUEST_CONDITIONS.md).
 
+Быстрый путь для локальной Android-сборки: **Tools → Build → Release Build Window**. Окно выставляет Dev/Prod
+режим, синхронизирует bundled configs, запускает pre-build validation, собирает Addressables и затем APK/AAB.
+Smoke/FTUE/consent-проверки после установки остаются ручными.
+
 ---
 
 ## 0. Автоматический гейт — `PreBuildValidationGate`

@@ -4,7 +4,8 @@
     "references": [
         "Book.Sell.Editor",
         "Configs.Editor",
-        "Game.Rewards.Editor"
+        "Game.Rewards.Editor",
+        "Unity.Addressables.Editor"
     ],
     "includePlatforms": [
         "Editor"
