@@ -7,7 +7,7 @@ namespace Game.SalesStats.API
     {
         public const string State = "sales_stats";
 
-        // v3 adds ExcellentPicksByGenre. Older saves load cleanly (missing maps => empty).
-        public const int StateSchemaVersion = 3;
+        // Release baseline: all pre-release saves are wiped, so the public schema starts at v1.
+        public const int StateSchemaVersion = 1;
     }
 }

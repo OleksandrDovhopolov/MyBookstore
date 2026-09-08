@@ -1,7 +1,6 @@
 [
   {
     "id": "preset_default_42",
-    "displayName": "Default 7x6",
     "bookIds": [
       "book165",
       "book92",
@@ -45,6 +44,7 @@
       "book170",
       "book341",
       "book427"
-    ]
+    ],
+    "displayNameKey": "shelf_preset.preset_default_42.name"
   }
 ]

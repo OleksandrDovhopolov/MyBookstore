@@ -18,6 +18,7 @@ namespace Game.Configs.Editor
         public const string MenuPath = "Tools/Configs/Import Books Excel to Books JSON";
         public const string SheetName = "Books";
         public const string DefaultOutputPath = "Assets/Configs/books.json";
+        public const string DefaultLocalizationOutputPath = "Assets/Configs/localization_books_en.json";
 
         private const string LogPrefix = "[BooksExcelImporter]";
 
@@ -50,7 +51,8 @@ namespace Game.Configs.Editor
                 Debug.LogWarning($"{LogPrefix} {warning}");
 
             WriteJson(DefaultOutputPath, result.Books);
-            Debug.Log($"{LogPrefix} Imported {result.Books.Count} book(s) to {DefaultOutputPath}.");
+            WriteJson(DefaultLocalizationOutputPath, result.Localization);
+            Debug.Log($"{LogPrefix} Imported {result.Books.Count} book(s) to {DefaultOutputPath} and {DefaultLocalizationOutputPath}.");
             SyncBundledDefaultsMenu.Sync();
         }
 
@@ -74,12 +76,13 @@ namespace Game.Configs.Editor
             var errors = new List<string>();
             var warnings = new List<string>();
             var books = new JArray();
+            var localization = new JObject();
             if (rows == null || rows.Count == 0)
                 return BooksExcelImportResult.Failed("Sheet 'Books' contains no data rows.");
 
             ValidateHeaders(rows, errors);
             if (errors.Count > 0)
-                return new BooksExcelImportResult(books, errors, warnings);
+                return new BooksExcelImportResult(books, localization, errors, warnings);
 
             var index = 1;
             foreach (var row in rows)
@@ -93,6 +96,7 @@ namespace Game.Configs.Editor
                 var pages = ReadRequiredInt(row, "Pages", rowErrors);
                 var genres = ReadGenres(row, rowErrors);
                 var qualities = ReadStringList(row, "Qualities", rowErrors);
+                var rarityWeight = ReadOptionalNumber(row, rowErrors, "RarityWeight", "Rarity");
 
                 if (rowErrors.Count > 0)
                 {
@@ -101,22 +105,32 @@ namespace Game.Configs.Editor
                     continue;
                 }
 
+                var id = $"book{index:00}";
+                var titleKey = $"book.{id}.title";
+                var authorKey = $"book.{id}.author";
+                var descriptionKey = $"book.{id}.description";
+
                 books.Add(new JObject
                 {
-                    ["id"] = $"book{index:00}",
-                    ["title"] = title,
-                    ["author"] = author,
-                    ["description"] = description,
+                    ["id"] = id,
+                    ["titleKey"] = titleKey,
+                    ["authorKey"] = authorKey,
+                    ["descriptionKey"] = descriptionKey,
                     ["genres"] = new JArray(genres),
                     ["qualities"] = new JArray(qualities),
+                    ["rarityWeight"] = rarityWeight,
                     ["published"] = published,
                     ["pages"] = pages,
                     ["fakeOrReal"] = fakeOrReal
                 });
+
+                localization[titleKey] = title;
+                localization[authorKey] = author;
+                localization[descriptionKey] = description;
                 index++;
             }
 
-            return new BooksExcelImportResult(books, errors, warnings);
+            return new BooksExcelImportResult(books, localization, errors, warnings);
         }
 
         private static string FormatSkippedRowWarning(
@@ -133,13 +147,13 @@ namespace Game.Configs.Editor
             return $"Row {row.RowNumber} '{title}' skipped: {string.Join("; ", reasons)}";
         }
 
-        private static void WriteJson(string outputPath, JArray books)
+        private static void WriteJson(string outputPath, JToken json)
         {
             var directory = Path.GetDirectoryName(outputPath);
             if (!string.IsNullOrEmpty(directory))
                 Directory.CreateDirectory(directory);
 
-            File.WriteAllText(outputPath, books.ToString(Formatting.Indented));
+            File.WriteAllText(outputPath, json.ToString(Formatting.Indented));
             AssetDatabase.Refresh();
         }
 
@@ -183,6 +197,31 @@ namespace Game.Configs.Editor
 
             errors.Add($"{header} is not numeric.");
             return 0;
+        }
+
+        private static double ReadOptionalNumber(BooksExcelRow row, List<string> errors, params string[] headers)
+        {
+            const double defaultValue = 0.5d;
+            for (var i = 0; i < headers.Length; i++)
+            {
+                var header = headers[i];
+                var value = row.Get(header);
+                if (value == null || string.IsNullOrWhiteSpace(value.ToString()))
+                    continue;
+
+                if (value is double d) return d;
+                if (value is float f) return f;
+                if (value is int intValue) return intValue;
+                if (value is long longValue) return longValue;
+
+                if (double.TryParse(value.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed))
+                    return parsed;
+
+                errors.Add($"{header} is not numeric.");
+                return defaultValue;
+            }
+
+            return defaultValue;
         }
 
         private static int ReadIntegerNumber(double value, string header, List<string> errors)
@@ -383,21 +422,24 @@ namespace Game.Configs.Editor
     {
         public BooksExcelImportResult(
             JArray books,
+            JObject localization,
             IReadOnlyList<string> errors,
             IReadOnlyList<string> warnings = null)
         {
             Books = books ?? new JArray();
+            Localization = localization ?? new JObject();
             Errors = errors ?? Array.Empty<string>();
             Warnings = warnings ?? Array.Empty<string>();
         }
 
         public JArray Books { get; }
+        public JObject Localization { get; }
         public IReadOnlyList<string> Errors { get; }
         public IReadOnlyList<string> Warnings { get; }
         public bool Success => Errors.Count == 0;
 
         public static BooksExcelImportResult Failed(string error)
-            => new(new JArray(), new[] { error });
+            => new(new JArray(), new JObject(), new[] { error });
     }
 
     public sealed class BooksExcelRow

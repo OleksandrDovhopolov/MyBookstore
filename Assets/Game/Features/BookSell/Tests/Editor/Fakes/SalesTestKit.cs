@@ -18,9 +18,9 @@ namespace Book.Sell.Tests.Editor.Fakes
             => new()
             {
                 Id = id,
-                Title = id,
-                Author = "author",
-                Description = $"[description_{id}]",
+                TitleKey = $"book.{id}.title",
+                AuthorKey = $"book.{id}.author",
+                DescriptionKey = $"book.{id}.description",
                 Genres = genres ?? (string.IsNullOrEmpty(genre) ? null : new[] { genre }),
                 Qualities = qualities ?? new[] { "space" }
             };
@@ -53,7 +53,7 @@ namespace Book.Sell.Tests.Editor.Fakes
         public static LocationConfig Location(string id = "loc", string[] demandGenres = null)
             => new()
             {
-                Id = id, DisplayName = id,
+                Id = id, DisplayNameKey = id,
                 DemandGenres = demandGenres ?? new[] { "sci-fi" }
             };
 

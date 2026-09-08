@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Inventory.API;
+using Game.Localization;
 using Game.Quest.API;
 using Game.Rewards.API;
 
@@ -129,17 +130,17 @@ namespace Game.Quest.UI
             if (string.Equals(reward.Category, InventoryCategories.Consumable, StringComparison.OrdinalIgnoreCase)
                 && _configs.TryGet<ConsumableConfig>(reward.Id, out var consumable)
                 && consumable != null)
-                return consumable.DisplayName;
+                return LocalizationLocator.GetOrKey(consumable.DisplayNameKey);
 
             if (string.Equals(reward.Category, InventoryCategories.QuestItem, StringComparison.OrdinalIgnoreCase)
                 && _configs.TryGet<QuestItemConfig>(reward.Id, out var questItem)
                 && questItem != null)
-                return questItem.DisplayName;
+                return LocalizationLocator.GetOrKey(questItem.DisplayNameKey);
 
             if (string.Equals(reward.Category, InventoryCategories.Decor, StringComparison.OrdinalIgnoreCase)
                 && _configs.TryGet<DecorConfig>(reward.Id, out var decor)
                 && decor != null)
-                return decor.DisplayName;
+                return LocalizationLocator.GetOrKey(decor.DisplayNameKey);
 
             return reward.Id;
         }

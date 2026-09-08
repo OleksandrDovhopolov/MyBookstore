@@ -45,7 +45,7 @@ namespace GameplayUI.Tests.Editor
         }
 
         [Test]
-        public void MusicToggle_OnlyWritesMusic()
+        public void MusicToggle_WritesMusicAndAmbient()
         {
             var audio = new FakeAudioService();
 
@@ -53,9 +53,10 @@ namespace GameplayUI.Tests.Editor
             SettingsAudioToggleAdapter.SetMusicEnabled(audio, true);
 
             CollectionAssert.AreEqual(
-                new[] { AudioChannelId.Music, AudioChannelId.Music },
+                new[] { AudioChannelId.Music, AudioChannelId.Ambient, AudioChannelId.Music, AudioChannelId.Ambient },
                 audio.WrittenChannels);
             Assert.AreEqual(1f, audio.GetVolume(AudioChannelId.Music));
+            Assert.AreEqual(1f, audio.GetVolume(AudioChannelId.Ambient));
         }
 
         [Test]
@@ -77,17 +78,35 @@ namespace GameplayUI.Tests.Editor
         }
 
         [Test]
-        public void SetSoundAndMusic_DoNotFireToggleEvents()
+        public void MusicEnabled_IsTrueWhenEitherMusicOrAmbientIsAudible()
+        {
+            var audio = new FakeAudioService();
+
+            audio.SetVolume(AudioChannelId.Music, 0f);
+            audio.SetVolume(AudioChannelId.Ambient, 0f);
+            Assert.IsFalse(SettingsAudioToggleAdapter.IsMusicEnabled(audio));
+
+            audio.SetVolume(AudioChannelId.Music, 1f);
+            audio.SetVolume(AudioChannelId.Ambient, 0f);
+            Assert.IsTrue(SettingsAudioToggleAdapter.IsMusicEnabled(audio));
+
+            audio.SetVolume(AudioChannelId.Music, 0f);
+            audio.SetVolume(AudioChannelId.Ambient, 1f);
+            Assert.IsTrue(SettingsAudioToggleAdapter.IsMusicEnabled(audio));
+        }
+
+        [Test]
+        public void SetSoundAndMusic_DoNotFireSwitchEvents()
         {
             var root = new GameObject("SettingsWindowViewTests");
             root.SetActive(false);
             try
             {
                 var view = root.AddComponent<SettingsWindowView>();
-                var soundToggle = CreateChildToggle(root.transform, "Sound");
-                var musicToggle = CreateChildToggle(root.transform, "Music");
-                SetPrivateField(view, "_soundToggle", soundToggle);
-                SetPrivateField(view, "_musicToggle", musicToggle);
+                var soundSwitch = CreateChildSwitch(root.transform, "Sound");
+                var musicSwitch = CreateChildSwitch(root.transform, "Music");
+                SetPrivateField(view, "_soundSwitch", soundSwitch);
+                SetPrivateField(view, "_musicSwitch", musicSwitch);
 
                 root.SetActive(true);
 
@@ -110,11 +129,21 @@ namespace GameplayUI.Tests.Editor
             }
         }
 
-        private static Toggle CreateChildToggle(Transform parent, string name)
+        private static UISwitch CreateChildSwitch(Transform parent, string name)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent);
-            return go.AddComponent<Toggle>();
+            var bgImage = go.AddComponent<Image>();
+            var button = go.AddComponent<Button>();
+            var pointer = new GameObject("Pointer").AddComponent<Image>();
+            pointer.transform.SetParent(go.transform);
+
+            var uiSwitch = go.AddComponent<UISwitch>();
+            SetPrivateField(uiSwitch, "_bgImage", bgImage);
+            SetPrivateField(uiSwitch, "_switchPointer", pointer);
+            SetPrivateField(uiSwitch, "_button", button);
+
+            return uiSwitch;
         }
 
         private static void SetPrivateField(object target, string name, object value)
@@ -158,6 +187,7 @@ namespace GameplayUI.Tests.Editor
                 => _volumes.TryGetValue(channel, out var volume) ? volume : 0f;
 
             public void PlayMusic(AudioClip clip, bool loop = true, bool restartIfSame = false) { }
+            public UniTask PlayMusicFadedAsync(AudioClip clip, float fadeSeconds, CancellationToken ct, bool loop = true) => UniTask.CompletedTask;
             public UniTask PlayMusicAsync(string address, CancellationToken ct, bool loop = true, bool restartIfSame = false) => UniTask.CompletedTask;
             public void StopMusic() { }
             public void PlaySfx(AudioClip clip, float volumeScale = 1f) { }

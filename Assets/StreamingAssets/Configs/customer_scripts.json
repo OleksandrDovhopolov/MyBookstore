@@ -30,6 +30,7 @@
   {
     "id": "captain_quest_intro",
     "activationQuestId": "q_captain_postcards",
+    "locationId": "loc_port",
     "characterId": "captain",
     "dialogueId": "captain_quest_1"
   },

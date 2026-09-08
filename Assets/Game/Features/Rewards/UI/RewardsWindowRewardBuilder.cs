@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Inventory.API;
+using Game.Localization;
 using Game.Rewards.API;
 using UnityEngine;
 
@@ -185,7 +186,7 @@ namespace Game.Rewards.UI
                 result.Add(new RewardSpecResource
                 {
                     ResourceId = decor.Id,
-                    DisplayName = decor.DisplayName,
+                    DisplayName = ResolveDisplayName(decor.DisplayNameKey, decor.Id),
                     Kind = RewardKind.InventoryItem,
                     Category = InventoryCategories.Decor,
                     Amount = amount,
@@ -215,10 +216,13 @@ namespace Game.Rewards.UI
 
             return config switch
             {
-                ConsumableConfig consumable => consumable.DisplayName,
-                QuestItemConfig questItem => questItem.DisplayName,
+                ConsumableConfig consumable => ResolveDisplayName(consumable.DisplayNameKey, id),
+                QuestItemConfig questItem => ResolveDisplayName(questItem.DisplayNameKey, id),
                 _ => id
             };
         }
+
+        private static string ResolveDisplayName(string key, string fallback)
+            => string.IsNullOrEmpty(key) ? fallback : LocalizationLocator.GetOrKey(key);
     }
 }

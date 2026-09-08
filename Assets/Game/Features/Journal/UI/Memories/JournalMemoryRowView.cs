@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Localization;
 using SpriteService;
 using TMPro;
 using UIShared;
@@ -25,8 +26,8 @@ namespace Game.Journal.UI
         {
             ApplyLayout(imageLeft);
 
-            if (_titleLabel != null) _titleLabel.text = model.TitleKey;
-            if (_descriptionLabel != null) _descriptionLabel.text = model.DescriptionKey;
+            if (_titleLabel != null) _titleLabel.text = LocalizationLocator.GetOrKey(model.TitleKey);
+            if (_descriptionLabel != null) _descriptionLabel.text = LocalizationLocator.GetOrKey(model.DescriptionKey);
 
             CancelPhotoLoad();
             SetPhoto(_photoFallback);

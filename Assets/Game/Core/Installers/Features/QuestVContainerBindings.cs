@@ -7,8 +7,8 @@ namespace Game.Bootstrap
 {
     // Registered in: BootstrapInstaller (GlobalLifetimeScope) — must be global so its ISaveHook is
     // registered before SaveDataLoadOperation (Bootstrap.Construct force-constructs it). Resolves from
-    // the same scope: ISaveService, IConfigsService, IConditionParser, and (optional) ISalesStatsService,
-    // IDecorPlacementService, IInventoryService, IDayProgressService — the data sources it re-evaluates on.
+    // the same scope: ISaveService, IConfigsService, IConditionParser, IRewardGrantService, IInventoryService,
+    // and optional quest data sources such as ISalesStatsService, IDecorPlacementService, and IDayProgressService.
     public static class QuestVContainerBindings
     {
         public static void RegisterQuest(this IContainerBuilder builder)

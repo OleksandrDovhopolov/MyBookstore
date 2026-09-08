@@ -131,6 +131,85 @@ namespace Game.Inventory.Tests.Editor
         }
 
         [Test]
+        public void Error_WhenQuestCostReferencesUnknownItem()
+        {
+            var configs = new FakeConfigsService()
+                .Set(new QuestConfig
+                {
+                    Id = "q_captain",
+                    Costs = new[] { QuestCost("ghost_postcard", 10) }
+                });
+
+            var report = new ItemReferenceValidator(configs).Validate();
+
+            Assert.IsTrue(report.HasErrors);
+            Assert.IsTrue(report.Errors.Any(e => e.Contains("ghost_postcard") && e.Contains("q_captain")),
+                $"Expected an unknown-item error for quest cost. Got: {report.FormatErrors()}");
+        }
+
+        [Test]
+        public void Error_WhenQuestCostAmountIsNotPositive()
+        {
+            var configs = new FakeConfigsService()
+                .Set(new ConsumableConfig { Id = "postcard" })
+                .Set(new EconomyConfig
+                {
+                    Id = EconomyConfig.SingletonId,
+                    DayCompletionRewards = new[]
+                    {
+                        new RewardItemData
+                        {
+                            Id = "postcard",
+                            Category = InventoryCategories.Consumable,
+                            Amount = 1,
+                            Kind = RewardKind.InventoryItem
+                        }
+                    }
+                })
+                .Set(new QuestConfig
+                {
+                    Id = "q_captain",
+                    Costs = new[] { QuestCost("postcard", 0) }
+                });
+
+            var report = new ItemReferenceValidator(configs).Validate();
+
+            Assert.IsTrue(report.Errors.Any(e => e.Contains("q_captain") && e.Contains("expected a positive number")),
+                $"Expected an amount error for quest cost. Got: {report.FormatErrors()}");
+        }
+
+        [Test]
+        public void NoIssues_WhenQuestCostReferencesReachableItem()
+        {
+            var configs = new FakeConfigsService()
+                .Set(new ConsumableConfig { Id = "postcard" })
+                .Set(new EconomyConfig
+                {
+                    Id = EconomyConfig.SingletonId,
+                    DayCompletionRewards = new[]
+                    {
+                        new RewardItemData
+                        {
+                            Id = "postcard",
+                            Category = InventoryCategories.Consumable,
+                            Amount = 1,
+                            Kind = RewardKind.InventoryItem
+                        }
+                    }
+                })
+                .Set(new QuestConfig
+                {
+                    Id = "q_captain",
+                    Costs = new[] { QuestCost("postcard", 10) }
+                });
+
+            var report = new ItemReferenceValidator(configs).Validate();
+
+            CollectionAssert.IsEmpty(report.Errors);
+            CollectionAssert.IsEmpty(report.Warnings);
+        }
+
+        [Test]
         public void Error_WhenGrantDeclaresWrongCategory()
         {
             var configs = new FakeConfigsService()
@@ -281,6 +360,9 @@ namespace Game.Inventory.Tests.Editor
         // ----- helpers -----
 
         private static LocationUnlockCostConfig Cost(string itemId, int amount)
+            => new() { ItemId = itemId, Amount = amount };
+
+        private static QuestCostConfig QuestCost(string itemId, int amount)
             => new() { ItemId = itemId, Amount = amount };
 
         private static QuestConfig GrantingQuest(string questId, string itemId, string category)

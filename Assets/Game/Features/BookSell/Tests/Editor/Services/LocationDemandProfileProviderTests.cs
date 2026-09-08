@@ -204,12 +204,21 @@ namespace Book.Sell.Tests.Editor.Services
                 location.DemandGenres,
                 StringComparer.OrdinalIgnoreCase);
 
-            /* >1000 use only in batch mode */
-            //const int profiles = 10000;
-            const int profiles = 10;
+            const int profiles = 50;
+            const int expectedSlotsPerProfile = 2;
+            var expectedTotalSlots = profiles * expectedSlotsPerProfile;
+            var expectedDemandSlots = (int)Math.Round(expected * expectedTotalSlots);
+            var demandRoll = Math.Max(0d, expected - 0.001d);
+            var rolls = Enumerable.Range(0, expectedTotalSlots)
+                .Select(i => i < expectedDemandSlots ? demandRoll : expected)
+                .ToArray();
+            var ranges = Enumerable.Repeat(0, expectedTotalSlots).ToArray();
+
             var demandSlots = 0;
             var totalSlots = 0;
-            var random = new SeededSalesRandom(12345);
+            var random = new FakeSalesRandom()
+                .EnqueueDouble(rolls)
+                .EnqueueRangeIndex(ranges);
             for (var i = 0; i < profiles; i++)
             {
                 var profile = provider.Create(setup, random);

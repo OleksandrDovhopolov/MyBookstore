@@ -15,7 +15,8 @@
         "Infrastructure",
         "Unity.TextMeshPro",
         "Game.Core.UI",
-        "DOTween.Modules"
+        "DOTween.Modules",
+        "Game.Localization"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

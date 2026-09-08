@@ -7,6 +7,7 @@ using Book.Sell.Services;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
+using Game.Localization;
 using Game.WorldHud;
 using SpriteService;
 using UnityEngine;
@@ -117,7 +118,10 @@ namespace Book.Sell.UI.Customer
                 case CustomerPhase.InMinigame:
                     // Phase 0: book sprite is null (placeholder); BookPicked still shows the book sub-view
                     // so we can verify the state-machine plumbing.
-                    await EnsureBubbleAsync(customer, CustomerThoughtState.BookPicked, "Active purchase");
+                    await EnsureBubbleAsync(
+                        customer,
+                        CustomerThoughtState.BookPicked,
+                        LocalizationLocator.GetOrKey("ui.customer.active_purchase"));
                     break;
 
                 case CustomerPhase.Leaving:
@@ -200,7 +204,10 @@ namespace Book.Sell.UI.Customer
 
         private void OnCustomerPurchaseCompleted(Domain.Customer customer, int purchasedBookCount)
         {
-            EnsureBubbleAsync(customer, CustomerThoughtState.PurchaseCompleted, $"Bought {purchasedBookCount} books").Forget();
+            EnsureBubbleAsync(
+                customer,
+                CustomerThoughtState.PurchaseCompleted,
+                LocalizationLocator.GetOrKey("ui.customer.bought_books", purchasedBookCount)).Forget();
         }
 
         private void OnCustomerThoughtBubbleHidden(Domain.Customer customer)
@@ -216,10 +223,10 @@ namespace Book.Sell.UI.Customer
         private void OnCustomerCommented(Domain.Customer customer, CustomerCommentPayload payload)
         {
             var text = !string.IsNullOrEmpty(payload.TextKey)
-                ? payload.TextKey
+                ? LocalizationLocator.GetOrKey(payload.TextKey)
                 : !string.IsNullOrEmpty(payload.Genre)
-                    ? $"Nice {payload.Genre} pick"
-                    : "Nice pick";
+                    ? LocalizationLocator.GetOrKey("ui.customer.nice_genre_pick", payload.Genre)
+                    : LocalizationLocator.GetOrKey("ui.customer.nice_pick");
             EnsureBubbleAsync(customer, CustomerThoughtState.Comment, text).Forget();
         }
 

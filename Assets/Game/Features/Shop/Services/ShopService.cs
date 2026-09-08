@@ -7,6 +7,7 @@ using Game.Configs;
 using Game.Configs.Models;
 using Game.Decor;
 using Game.Inventory.API;
+using Game.Localization;
 using Game.Resources.API;
 using Game.Rewards.API;
 using Game.Shop.API;
@@ -34,6 +35,7 @@ namespace Game.Shop.Services
         private readonly IConfigsService _configs;
         private readonly IInventoryService _inventory;
         private readonly ICurrentDayProvider _dayProvider;
+        private readonly ILocalizationService _localization;
 
         private readonly Dictionary<string, ShopLot> _lotsById = new(StringComparer.Ordinal);
         private readonly Dictionary<string, List<ShopLot>> _lotsByStorefront = new(StringComparer.Ordinal);
@@ -51,7 +53,8 @@ namespace Game.Shop.Services
             IShopRewardSpecProvider rewardSpecs,
             IConfigsService configs,
             IInventoryService inventory,
-            ICurrentDayProvider dayProvider)
+            ICurrentDayProvider dayProvider,
+            ILocalizationService localization = null)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -61,6 +64,7 @@ namespace Game.Shop.Services
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
             _dayProvider = dayProvider ?? throw new ArgumentNullException(nameof(dayProvider));
+            _localization = localization;
 
             save.RegisterHook(this);
         }
@@ -322,8 +326,8 @@ namespace Game.Shop.Services
                     price,
                     cfg.RewardId ?? cfg.Id,
                     limit,
-                    cfg.DisplayName,
-                    cfg.Description);
+                    ResolveText(cfg.DisplayNameKey, cfg.Id),
+                    ResolveText(cfg.DescriptionKey, string.Empty));
                 _lotsById[lot.LotId] = lot;
 
                 if (!_lotsByStorefront.TryGetValue(lot.StorefrontId, out var list))
@@ -356,5 +360,10 @@ namespace Game.Shop.Services
 
             return false;
         }
+
+        private string ResolveText(string key, string fallback)
+            => !string.IsNullOrEmpty(key)
+                ? (_localization != null ? _localization.Get(key) : LocalizationLocator.GetOrKey(key))
+                : fallback;
     }
 }

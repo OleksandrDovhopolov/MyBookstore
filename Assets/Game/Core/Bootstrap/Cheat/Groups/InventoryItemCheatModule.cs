@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Inventory.API;
+using Game.Localization;
 using UnityEngine;
 
 namespace Game.Cheat
@@ -42,6 +43,11 @@ namespace Game.Cheat
             string group,
             IReadOnlyList<CheatInventoryItem> items)
         {
+            // "Grant everything" shortcut first, so it stays on top of the per-item buttons.
+            cheatsContainer.AddItem<CheatButtonItem>(item =>
+                item.OnClick($"+ALL ({items.Count})", () => AddAllAsync(categoryId, items).Forget())
+                    .WithGroup(group));
+
             for (var i = 0; i < items.Count; i++)
             {
                 var entry = items[i];
@@ -70,7 +76,7 @@ namespace Game.Cheat
             {
                 var cfg = configs[i];
                 if (cfg == null || string.IsNullOrEmpty(cfg.Id)) continue;
-                items.Add(new CheatInventoryItem(cfg.Id, cfg.Title));
+                items.Add(new CheatInventoryItem(cfg.Id, ResolveDisplayName(cfg.TitleKey, cfg.Id)));
             }
             return items;
         }
@@ -85,7 +91,7 @@ namespace Game.Cheat
             {
                 var cfg = configs[i];
                 if (cfg == null || string.IsNullOrEmpty(cfg.Id)) continue;
-                items.Add(new CheatInventoryItem(cfg.Id, cfg.DisplayName));
+                items.Add(new CheatInventoryItem(cfg.Id, ResolveDisplayName(cfg.DisplayNameKey, cfg.Id)));
             }
             return items;
         }
@@ -100,7 +106,7 @@ namespace Game.Cheat
             {
                 var cfg = configs[i];
                 if (cfg == null || string.IsNullOrEmpty(cfg.Id)) continue;
-                items.Add(new CheatInventoryItem(cfg.Id, cfg.DisplayName));
+                items.Add(new CheatInventoryItem(cfg.Id, ResolveDisplayName(cfg.DisplayNameKey, cfg.Id)));
             }
             return items;
         }
@@ -115,15 +121,47 @@ namespace Game.Cheat
             {
                 var cfg = configs[i];
                 if (cfg == null || string.IsNullOrEmpty(cfg.Id)) continue;
-                items.Add(new CheatInventoryItem(cfg.Id, cfg.DisplayName));
+                items.Add(new CheatInventoryItem(cfg.Id, ResolveDisplayName(cfg.DisplayNameKey, cfg.Id)));
             }
             return items;
         }
+
+        private static string ResolveDisplayName(string key, string fallback)
+            => string.IsNullOrEmpty(key) ? fallback : LocalizationLocator.GetOrKey(key);
 
         private async UniTaskVoid AddAsync(string itemId, string categoryId)
         {
             await _inventory.AddAsync(itemId, categoryId, 1, _ct);
             Debug.Log($"{LogTag} Added 1 '{itemId}' ({categoryId}).");
+        }
+
+        /// <summary>
+        /// Grants the whole catalog in one shot. Already-owned entries need no filtering here: for a Unique
+        /// category <c>InventoryService.ApplyAdd</c> is idempotent (an existing id yields no change), and
+        /// <see cref="IInventoryService.AddBatchAsync"/> persists once for the whole batch instead of per item.
+        /// </summary>
+        private async UniTaskVoid AddAllAsync(string categoryId, IReadOnlyList<CheatInventoryItem> items)
+        {
+            var batch = new List<InventoryItem>(items.Count);
+            for (var i = 0; i < items.Count; i++)
+            {
+                var id = items[i].Id;
+                if (string.IsNullOrEmpty(id)) continue;
+                batch.Add(new InventoryItem(id, categoryId, 1));
+            }
+
+            if (batch.Count == 0)
+            {
+                Debug.Log($"{LogTag} Nothing to grant for '{categoryId}' — catalog is empty.");
+                return;
+            }
+
+            var before = _inventory.GetByCategory(categoryId).Count;
+            await _inventory.AddBatchAsync(batch, _ct);
+            var granted = _inventory.GetByCategory(categoryId).Count - before;
+
+            Debug.Log($"{LogTag} Granted all '{categoryId}': +{granted} new, " +
+                      $"{batch.Count - granted} already owned (skipped).");
         }
 
         private async UniTaskVoid RemoveAsync(string itemId)

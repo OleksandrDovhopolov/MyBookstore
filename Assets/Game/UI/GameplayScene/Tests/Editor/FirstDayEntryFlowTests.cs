@@ -276,6 +276,8 @@ namespace GameplayUI.Tests.Editor
             public UniTask SetGenreQuantityAsync(string genre, int quantity, CancellationToken ct)
                 => UniTask.CompletedTask;
 
+            public UniTask ResetAllAsync(CancellationToken ct) => UniTask.CompletedTask;
+
             public UniTask SetSelectedBookIdsAsync(IReadOnlyList<string> bookIds, CancellationToken ct)
             {
                 SelectedBookIds = bookIds?.ToArray() ?? Array.Empty<string>();

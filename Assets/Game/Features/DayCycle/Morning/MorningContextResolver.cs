@@ -47,7 +47,8 @@ namespace Game.DayCycle.Morning
             return new MorningDayContext
             {
                 Day = dayIndex,
-                DayId = config.Id
+                DayId = config.Id,
+                Title = config.TitleKey
             };
         }
 

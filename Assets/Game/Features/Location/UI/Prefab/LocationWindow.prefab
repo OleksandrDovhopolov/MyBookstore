@@ -361,6 +361,7 @@ MonoBehaviour:
     prefab: {fileID: 8710052847750835185, guid: 8f3e4e82c2cad524a88c555eae6de877, type: 3}
     parent: {fileID: 766977940136660962}
   _demandWidgetPrefab: {fileID: 2002000000000000007, guid: cdb7b517f4c2407ba2b0687e7cd00e7d, type: 3}
+  _requirementInfoWidgetPrefab: {fileID: -4253782238446868267, guid: 2ee1207feb2e57540b2d8b7da3efb941, type: 3}
 --- !u!1 &6531542957837241978
 GameObject:
   m_ObjectHideFlags: 0

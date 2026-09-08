@@ -22,7 +22,8 @@
         "Game.Conditions.API",
         "Game.Quest.API",
         "Game.GameplayUI.Signals",
-        "Dialogue"
+        "Dialogue",
+        "Game.Localization"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

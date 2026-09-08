@@ -63,6 +63,58 @@ namespace Infrastructure.Audio.Tests.Editor
         }
 
         [Test]
+        public void PlayMusicFaded_ZeroFade_PlaysAtChannelVolume()
+        {
+            var service = NewService();
+            service.SetVolume(AudioChannelId.Master, 0.5f);
+            service.SetVolume(AudioChannelId.Music, 0.5f);
+
+            service.PlayMusicFadedAsync(CreateClip("music"), 0f, CancellationToken.None)
+                .GetAwaiter()
+                .GetResult();
+
+            var root = GetRoot(service);
+            Assert.NotNull(root);
+            Assert.AreEqual(0.25f, root.MusicSource.volume, 0.0001f);
+
+            service.Dispose();
+        }
+
+        [Test]
+        public void PlayMusic_ResetsFadeScale()
+        {
+            var service = NewService();
+            service.SetVolume(AudioChannelId.Master, 0.5f);
+            service.SetVolume(AudioChannelId.Music, 0.5f);
+            SetMusicFadeScale(service, 0.3f);
+
+            service.PlayMusic(CreateClip("music"));
+
+            var root = GetRoot(service);
+            Assert.AreEqual(1f, GetMusicFadeScale(service), 0.0001f);
+            Assert.AreEqual(0.25f, root.MusicSource.volume, 0.0001f);
+
+            service.Dispose();
+        }
+
+        [Test]
+        public void ApplyVolumes_MultipliesMusicByFadeScale()
+        {
+            var service = NewService();
+            service.PlayMusic(CreateClip("music"));
+            service.SetVolume(AudioChannelId.Master, 0.5f);
+            service.SetVolume(AudioChannelId.Music, 0.5f);
+            SetMusicFadeScale(service, 0.5f);
+
+            service.SetVolume(AudioChannelId.Ui, 1f);
+
+            var root = GetRoot(service);
+            Assert.AreEqual(0.125f, root.MusicSource.volume, 0.0001f);
+
+            service.Dispose();
+        }
+
+        [Test]
         public async Task PlayMusicAsync_SameAddress_UsesCachedClip()
         {
             var loader = new FakeClipLoader();
@@ -154,6 +206,18 @@ namespace Infrastructure.Audio.Tests.Editor
         {
             var field = typeof(AudioService).GetField("_root", BindingFlags.Instance | BindingFlags.NonPublic);
             return (AudioRoot)field.GetValue(service);
+        }
+
+        private static float GetMusicFadeScale(AudioService service)
+        {
+            var field = typeof(AudioService).GetField("_musicFadeScale", BindingFlags.Instance | BindingFlags.NonPublic);
+            return (float)field.GetValue(service);
+        }
+
+        private static void SetMusicFadeScale(AudioService service, float scale)
+        {
+            var field = typeof(AudioService).GetField("_musicFadeScale", BindingFlags.Instance | BindingFlags.NonPublic);
+            field.SetValue(service, scale);
         }
 
         private sealed class FakeSettingsStore : IAudioSettingsStore

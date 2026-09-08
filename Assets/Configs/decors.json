@@ -1,216 +1,328 @@
 [
   {
     "id": "vintage_globe",
-    "displayName": "Vintage Globe",
-    "iconAddress": "Decor/VintageGlobe",
     "positionType": "Standing",
     "size": "Small",
     "basePrice": 50,
     "genreMultipliers": [
-      { "genre": "Fantasy", "multiplier": 1.5 },
-      { "genre": "Fact", "multiplier": 1.2 }
+      {
+        "genre": "Fantasy",
+        "multiplier": 1.5
+      },
+      {
+        "genre": "Fact",
+        "multiplier": 1.2
+      }
     ],
     "customerTrafficPercentDelta": 0.1,
-    "atmosphereTags": ["wood", "study"]
+    "atmosphereTags": [
+      "wood",
+      "study"
+    ],
+    "displayNameKey": "decor.vintage_globe.name"
   },
   {
     "id": "coffee_pot",
-    "displayName": "Coffee Pot",
-    "iconAddress": "Decor/CoffeePot",
     "positionType": "Standing",
     "size": "Small",
     "basePrice": 50,
     "genreMultipliers": [
-      { "genre": "Classic", "multiplier": 1.3 }
+      {
+        "genre": "Classic",
+        "multiplier": 1.3
+      }
     ],
-    "atmosphereTags": ["coffee", "warm"]
+    "atmosphereTags": [
+      "coffee",
+      "warm"
+    ],
+    "displayNameKey": "decor.coffee_pot.name"
   },
   {
     "id": "houseplant",
-    "displayName": "Houseplant",
-    "iconAddress": "Decor/Houseplant",
     "positionType": "Standing",
-    "size": "Small",
+    "size": "Medium",
     "basePrice": 30,
     "genreMultipliers": [
-      { "genre": "Drama", "multiplier": 1.2 },
-      { "genre": "Classic", "multiplier": 1.2 }
+      {
+        "genre": "Drama",
+        "multiplier": 1.2
+      },
+      {
+        "genre": "Classic",
+        "multiplier": 1.2
+      }
     ],
-    "atmosphereTags": ["green", "fresh"]
+    "atmosphereTags": [
+      "green",
+      "fresh"
+    ],
+    "displayNameKey": "decor.houseplant.name"
   },
   {
     "id": "old_lamp",
-    "displayName": "Old Lamp",
-    "iconAddress": "Decor/OldLamp",
     "positionType": "Hanging",
     "size": "Small",
     "basePrice": 40,
     "genreMultipliers": [
-      { "genre": "Crime", "multiplier": 1.3 }
+      {
+        "genre": "Crime",
+        "multiplier": 1.3
+      }
     ],
-    "atmosphereTags": ["wood", "warm"]
+    "atmosphereTags": [
+      "wood",
+      "warm"
+    ],
+    "displayNameKey": "decor.old_lamp.name"
   },
   {
     "id": "maritime_painting",
-    "displayName": "Maritime Painting",
-    "iconAddress": "Decor/MaritimePainting",
     "positionType": "Wall",
-    "size": "Medium",
+    "size": "Small",
     "basePrice": 80,
     "genreMultipliers": [
-      { "genre": "Fantasy", "multiplier": 1.4 }
+      {
+        "genre": "Fantasy",
+        "multiplier": 1.4
+      }
     ],
-    "atmosphereTags": ["sea", "salt"]
+    "atmosphereTags": [
+      "sea",
+      "salt"
+    ],
+    "displayNameKey": "decor.maritime_painting.name"
   },
   {
     "id": "chinese_vase",
-    "displayName": "Chinese Vase",
-    "iconAddress": "Decor/ChineseVase",
     "positionType": "Standing",
     "size": "Medium",
     "basePrice": 90,
     "genreMultipliers": [
-      { "genre": "Travel", "multiplier": 1.4 },
-      { "genre": "Fact", "multiplier": 1.2 }
+      {
+        "genre": "Travel",
+        "multiplier": 1.4
+      },
+      {
+        "genre": "Fact",
+        "multiplier": 1.2
+      }
     ],
     "customerTrafficPercentDelta": 0.05,
-    "atmosphereTags": ["porcelain", "oriental"]
+    "atmosphereTags": [
+      "porcelain",
+      "oriental"
+    ],
+    "displayNameKey": "decor.chinese_vase.name"
   },
   {
     "id": "gas_lighter",
-    "displayName": "Gas Lantern",
-    "iconAddress": "Decor/GasLighter",
     "positionType": "Hanging",
     "size": "Small",
     "basePrice": 60,
     "genreMultipliers": [
-      { "genre": "Crime", "multiplier": 1.4 },
-      { "genre": "Drama", "multiplier": 1.2 }
+      {
+        "genre": "Crime",
+        "multiplier": 1.4
+      },
+      {
+        "genre": "Drama",
+        "multiplier": 1.2
+      }
     ],
-    "atmosphereTags": ["warm", "vintage"]
+    "atmosphereTags": [
+      "warm",
+      "vintage"
+    ],
+    "displayNameKey": "decor.gas_lighter.name"
   },
   {
     "id": "green_flower",
-    "displayName": "Green Flower Pot",
-    "iconAddress": "Decor/GreenFlower",
     "positionType": "Standing",
     "size": "Small",
     "basePrice": 35,
     "genreMultipliers": [
-      { "genre": "Drama", "multiplier": 1.2 },
-      { "genre": "Classic", "multiplier": 1.2 }
+      {
+        "genre": "Drama",
+        "multiplier": 1.2
+      },
+      {
+        "genre": "Classic",
+        "multiplier": 1.2
+      }
     ],
-    "atmosphereTags": ["green", "fresh"]
+    "atmosphereTags": [
+      "green",
+      "fresh"
+    ],
+    "displayNameKey": "decor.green_flower.name"
   },
   {
     "id": "green_menu",
-    "displayName": "Street Sign",
-    "iconAddress": "Decor/GreenMenu",
     "positionType": "Standing",
     "size": "Medium",
     "basePrice": 100,
     "genreMultipliers": [],
     "customerTrafficPercentDelta": 0.2,
-    "atmosphereTags": ["sign", "street"]
+    "atmosphereTags": [
+      "sign",
+      "street"
+    ],
+    "displayNameKey": "decor.green_menu.name"
   },
   {
     "id": "lavender",
-    "displayName": "Lavender Pot",
-    "iconAddress": "Decor/Lavender",
     "positionType": "Standing",
     "size": "Medium",
     "basePrice": 55,
     "genreMultipliers": [
-      { "genre": "Drama", "multiplier": 1.3 },
-      { "genre": "Classic", "multiplier": 1.2 }
+      {
+        "genre": "Drama",
+        "multiplier": 1.3
+      },
+      {
+        "genre": "Classic",
+        "multiplier": 1.2
+      }
     ],
     "customerTrafficPercentDelta": 0.05,
-    "atmosphereTags": ["green", "fresh", "calm"]
+    "atmosphereTags": [
+      "green",
+      "fresh",
+      "calm"
+    ],
+    "displayNameKey": "decor.lavender.name"
   },
   {
     "id": "little_cactus",
-    "displayName": "Little Cactus",
-    "iconAddress": "Decor/LittleCactus",
     "positionType": "Standing",
     "size": "Small",
     "basePrice": 25,
     "genreMultipliers": [
-      { "genre": "Kids", "multiplier": 1.3 },
-      { "genre": "Travel", "multiplier": 1.2 }
+      {
+        "genre": "Kids",
+        "multiplier": 1.3
+      },
+      {
+        "genre": "Travel",
+        "multiplier": 1.2
+      }
     ],
-    "atmosphereTags": ["green", "desert"]
+    "atmosphereTags": [
+      "green",
+      "desert"
+    ],
+    "displayNameKey": "decor.little_cactus.name"
   },
   {
     "id": "pocket_clock",
-    "displayName": "Pocket Clock",
-    "iconAddress": "Decor/PocketClock",
     "positionType": "Wall",
     "size": "Small",
     "basePrice": 70,
     "genreMultipliers": [
-      { "genre": "Crime", "multiplier": 1.4 },
-      { "genre": "Fact", "multiplier": 1.2 }
+      {
+        "genre": "Crime",
+        "multiplier": 1.4
+      },
+      {
+        "genre": "Fact",
+        "multiplier": 1.2
+      }
     ],
-    "atmosphereTags": ["brass", "vintage"]
+    "atmosphereTags": [
+      "brass",
+      "vintage"
+    ],
+    "displayNameKey": "decor.pocket_clock.name"
   },
   {
     "id": "table_frame",
-    "displayName": "Table Frame",
-    "iconAddress": "Decor/TableFrame",
     "positionType": "Standing",
     "size": "Small",
     "basePrice": 45,
     "genreMultipliers": [
-      { "genre": "Classic", "multiplier": 1.2 },
-      { "genre": "Drama", "multiplier": 1.2 }
+      {
+        "genre": "Classic",
+        "multiplier": 1.2
+      },
+      {
+        "genre": "Drama",
+        "multiplier": 1.2
+      }
     ],
-    "atmosphereTags": ["wood", "study"]
+    "atmosphereTags": [
+      "wood",
+      "study"
+    ],
+    "displayNameKey": "decor.table_frame.name"
   },
   {
     "id": "tifany_lamp",
-    "displayName": "Tiffany Lamp",
-    "iconAddress": "Decor/TifanyLamp",
     "positionType": "Standing",
     "size": "Medium",
     "basePrice": 120,
     "genreMultipliers": [
-      { "genre": "Fantasy", "multiplier": 1.4 },
-      { "genre": "Classic", "multiplier": 1.3 }
+      {
+        "genre": "Fantasy",
+        "multiplier": 1.4
+      },
+      {
+        "genre": "Classic",
+        "multiplier": 1.3
+      }
     ],
     "customerTrafficPercentDelta": 0.1,
-    "atmosphereTags": ["warm", "glass", "cozy"]
+    "atmosphereTags": [
+      "warm",
+      "glass",
+      "cozy"
+    ],
+    "displayNameKey": "decor.tifany_lamp.name"
   },
   {
     "id": "wite_flower",
-    "displayName": "White Flower Bouquet",
-    "iconAddress": "Decor/WiteFlower",
     "positionType": "Standing",
     "size": "Small",
     "basePrice": 40,
     "genreMultipliers": [
-      { "genre": "Kids", "multiplier": 1.2 },
-      { "genre": "Drama", "multiplier": 1.2 }
+      {
+        "genre": "Kids",
+        "multiplier": 1.2
+      },
+      {
+        "genre": "Drama",
+        "multiplier": 1.2
+      }
     ],
-    "atmosphereTags": ["fresh", "flowers"]
-  },
-  {
-    "id": "harper_castle_donation_box",
-    "displayName": "Harper Castle Donation Box",
-    "iconAddress": "Decor/HarperCastleDonationBox",
-    "positionType": "Standing",
-    "size": "Small",
-    "basePrice": 0,
-    "genreMultipliers": [],
-    "atmosphereTags": ["charity", "counter"]
+    "atmosphereTags": [
+      "fresh",
+      "flowers"
+    ],
+    "displayNameKey": "decor.wite_flower.name"
   },
   {
     "id": "ship",
-    "displayName": "Корабль",
-    "iconAddress": "Decor/Ship",
     "positionType": "Standing",
     "size": "Medium",
     "basePrice": 0,
-    "genreMultipliers": [],
-    "atmosphereTags": ["sea", "travel"]
+    "genreMultipliers": [
+      {
+        "genre": "Travel",
+        "multiplier": 1.4
+      },
+      {
+        "genre": "Fantasy",
+        "multiplier": 1.2
+      },
+      {
+        "genre": "Fact",
+        "multiplier": 1.2
+      }
+    ],
+    "atmosphereTags": [
+      "sea",
+      "travel"
+    ],
+    "displayNameKey": "decor.ship.name"
   }
 ]

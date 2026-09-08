@@ -9,6 +9,7 @@ using cheatModule;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
+using Game.Localization;
 using Game.UI;
 using UnityEngine;
 
@@ -226,7 +227,9 @@ namespace Game.Cheat
         }
 
         private static string DisplayName(ShelfPresetConfig preset)
-            => string.IsNullOrWhiteSpace(preset?.DisplayName) ? preset?.Id ?? "<unnamed>" : preset.DisplayName;
+            => string.IsNullOrWhiteSpace(preset?.DisplayNameKey)
+                ? preset?.Id ?? "<unnamed>"
+                : LocalizationLocator.GetOrKey(preset.DisplayNameKey);
 
         private static int CountBookIds(ShelfPresetConfig preset)
             => preset?.BookIds?.Length ?? 0;

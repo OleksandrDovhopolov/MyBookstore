@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
+using Game.Configs;
 using Game.Configs.Models;
 using Game.LocationEntry.API;
 using Game.Preparation.Domain;
@@ -23,6 +24,7 @@ namespace Game.Preparation.UI
         private IPreparationSessionService _session;
         private IGameFlowService _gameFlow;
         private IUiSpriteProvider _uiSprites;
+        private IConfigsService _configs;
         private ILocationEntryCostCalculator _entryCost;
         private IResourcesService _resources;
         private IPublisher<GameplayGenreBookCountsChanged> _genreCountsPublisher;
@@ -40,6 +42,7 @@ namespace Game.Preparation.UI
             IPreparationSessionService session,
             IGameFlowService gameFlow,
             IUiSpriteProvider uiSprites,
+            IConfigsService configs = null,
             ILocationEntryCostCalculator entryCost = null,
             IResourcesService resources = null,
             IPublisher<GameplayGenreBookCountsChanged> genreCountsPublisher = null)
@@ -47,6 +50,7 @@ namespace Game.Preparation.UI
             _session = session;
             _gameFlow = gameFlow;
             _uiSprites = uiSprites;
+            _configs = configs;
             _entryCost = entryCost;
             _resources = resources;
             _genreCountsPublisher = genreCountsPublisher;
@@ -58,6 +62,9 @@ namespace Game.Preparation.UI
 
             if (View.OpenShopButton != null)
                 View.OpenShopButton.onClick.AddListener(OnOpenShopClicked);
+
+            if (View.ResetAllButton != null)
+                View.ResetAllButton.onClick.AddListener(OnResetAllClicked);
         }
 
         protected override void OnShowStart()
@@ -88,6 +95,9 @@ namespace Game.Preparation.UI
             {
                 if (View.OpenShopButton != null)
                     View.OpenShopButton.onClick.RemoveListener(OnOpenShopClicked);
+
+                if (View.ResetAllButton != null)
+                    View.ResetAllButton.onClick.RemoveListener(OnResetAllClicked);
             }
 
             ClearRows();
@@ -117,8 +127,10 @@ namespace Game.Preparation.UI
             var locationId = (Arguments as PreparationWindowArgs)?.LocationId;
             var items = await _session.StartOrResumeAsync(ct, locationId);
             Render(items);
+            RenderDemandGenres(_session.CurrentState?.LocationId ?? locationId);
             OnStateChanged(_session.CurrentState);
             LoadGenreIconsAsync(ct).Forget();
+            LoadDemandGenreIconsAsync(ct).Forget();
         }
 
         // Грузим иконки жанров по id (= имя жанра) через общий кэширующий провайдер и раздаём строкам.
@@ -167,9 +179,61 @@ namespace Game.Preparation.UI
             pool.DisableNonActive();
         }
 
+        private void RenderDemandGenres(string locationId)
+        {
+            var pool = View?.DemandGenrePool;
+            pool?.DisableAll();
+
+            if (pool == null || pool.Prefab == null || pool.Parent == null) return;
+            if (_configs == null || string.IsNullOrEmpty(locationId)) return;
+
+            var genres = _configs.Get<LocationConfig>(locationId)?.DemandGenres;
+            if (genres != null)
+            {
+                for (var i = 0; i < genres.Length; i++)
+                {
+                    var genre = genres[i];
+                    if (string.IsNullOrEmpty(genre)) continue;
+                    pool.GetNext().Bind(genre, null);
+                }
+            }
+
+            pool.DisableNonActive();
+        }
+
+        private async UniTaskVoid LoadDemandGenreIconsAsync(CancellationToken ct)
+        {
+            if (_uiSprites == null) return;
+
+            var pool = View?.DemandGenrePool;
+            if (pool == null || pool.Prefab == null || pool.Parent == null) return;
+
+            var items = pool.ActiveElements().ToList();
+            if (items == null || items.Count == 0) return;
+
+            try
+            {
+                foreach (var item in items)
+                {
+                    if (item == null) continue;
+
+                    var genre = item.Genre;
+                    if (string.IsNullOrEmpty(genre)) continue;
+
+                    var sprite = await _uiSprites.GetSpriteAsync(genre, ct);
+                    if (ct.IsCancellationRequested) return;
+                    if (item != null && item.Genre == genre) item.SetIcon(sprite);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
         private void ClearRows()
         {
             View?.GenreRowPool?.DisableAll();
+            View?.DemandGenrePool?.DisableAll();
             _rows.Clear();
         }
 
@@ -179,6 +243,17 @@ namespace Game.Preparation.UI
         private async UniTaskVoid SetGenreQuantityAsync(string genre, int quantity, CancellationToken ct)
         {
             await _session.SetGenreQuantityAsync(genre, quantity, ct);
+        }
+
+        // "Reset All": clears the whole preparation selection. The service fires StateChanged, so rows,
+        // the slot counter and the Start button all refresh through OnStateChanged. Real inventory is
+        // untouched and the day is not confirmed.
+        private void OnResetAllClicked() => ResetAllAsync(_cts.Token).Forget();
+
+        private async UniTaskVoid ResetAllAsync(CancellationToken ct)
+        {
+            if (_session == null) return;
+            await _session.ResetAllAsync(ct);
         }
 
         private void OnStateChanged(PreparationSessionState state)

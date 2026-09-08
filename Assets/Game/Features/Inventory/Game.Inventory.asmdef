@@ -13,7 +13,8 @@
         "Infrastructure",
         "Game.Decor",
         "Game.Decor.API",
-        "Game.Rewards.API"
+        "Game.Rewards.API",
+        "Game.Localization"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

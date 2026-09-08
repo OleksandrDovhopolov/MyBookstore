@@ -167,6 +167,12 @@ namespace Book.Sell.Services
 
         private bool IsEligible(CustomerScriptConfig script, SalesSessionSetup setup)
         {
+            // Optional location gate, independent of the day/quest scheduling below: a script bound to a
+            // location (e.g. the captain at loc_port) never spawns while the day runs elsewhere.
+            if (!string.IsNullOrWhiteSpace(script.LocationId)
+                && !string.Equals(script.LocationId, setup.LocationId, StringComparison.OrdinalIgnoreCase))
+                return false;
+
             var hasDay = script.DayIndex.HasValue;
             var hasQuest = !string.IsNullOrWhiteSpace(script.ActivationQuestId);
             if (hasDay == hasQuest)

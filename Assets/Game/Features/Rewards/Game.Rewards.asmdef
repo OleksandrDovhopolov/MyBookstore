@@ -10,7 +10,8 @@
         "Unity.TextMeshPro",
         "Infrastructure",
         "Game.Core.UI",
-        "VContainer"
+        "VContainer",
+        "Game.Localization"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

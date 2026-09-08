@@ -1,6 +1,6 @@
 using System;
 using Game.UI;
-using TMPro;
+using GameplayUI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,32 +8,27 @@ namespace Game.Privacy
 {
     /// <summary>
     /// View for the first-run privacy notice. Deliberately has no close button: the prefab's
-    /// WindowView._closeButtons array must stay empty so Accept/Decline are the only ways out.
+    /// WindowView._closeButtons array must stay empty so Continue is the only way out.
     /// </summary>
     public class ConsentWindowView : WindowView
     {
-        public event Action AcceptClick;
-        public event Action DeclineClick;
+        public event Action ContinueClick;
         public event Action PrivacyLinkClick;
 
         [Header("Consent")]
-        [SerializeField] private Button _acceptButton;
-        [SerializeField] private Button _declineButton;
+        [SerializeField] private Button _continueButton;
+        [SerializeField] private UISwitch _analyticsSwitch;
         [SerializeField] private Button _privacyLinkButton;
-        [SerializeField] private TextMeshProUGUI _bodyText;
+
+        public bool AnalyticsConsent => _analyticsSwitch != null && _analyticsSwitch.IsOn;
 
         protected override void Awake()
         {
             base.Awake();
 
-            if (_acceptButton != null)
+            if (_continueButton != null)
             {
-                _acceptButton.onClick.AddListener(() => AcceptClick?.Invoke());
-            }
-
-            if (_declineButton != null)
-            {
-                _declineButton.onClick.AddListener(() => DeclineClick?.Invoke());
+                _continueButton.onClick.AddListener(() => ContinueClick?.Invoke());
             }
 
             if (_privacyLinkButton != null)
@@ -42,19 +37,19 @@ namespace Game.Privacy
             }
         }
 
-        public void SetAcceptInteractable(bool interactable)
+        public void SetContinueInteractable(bool interactable)
         {
-            if (_acceptButton != null)
+            if (_continueButton != null)
             {
-                _acceptButton.interactable = interactable;
+                _continueButton.interactable = interactable;
             }
         }
 
-        public void SetDeclineInteractable(bool interactable)
+        public void SetAnalyticsConsent(bool on)
         {
-            if (_declineButton != null)
+            if (_analyticsSwitch != null)
             {
-                _declineButton.interactable = interactable;
+                _analyticsSwitch.SetIsOnWithoutNotify(on);
             }
         }
 
@@ -66,12 +61,5 @@ namespace Game.Privacy
             }
         }
 
-        public void SetTexts(string body)
-        {
-            if (_bodyText != null)
-            {
-                _bodyText.text = body;
-            }
-        }
     }
 }

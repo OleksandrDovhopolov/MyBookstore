@@ -3,8 +3,11 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
+using Game.Rewards.API;
 using Game.UI;
+using Infrastructure.Audio;
 using SpriteService;
+using UnityEngine;
 using VContainer;
 
 namespace Game.Rewards.UI
@@ -19,6 +22,7 @@ namespace Game.Rewards.UI
         private IConfigsService _configs;
         private IUiSpriteProvider _uiSprites;
         private CancellationTokenSource _cts;
+        private RewardSpec _lastSoundedRewardSpec;
 
         [Inject]
         public void InjectServices(IConfigsService configs, IUiSpriteProvider uiSprites)
@@ -55,6 +59,11 @@ namespace Game.Rewards.UI
 
             var rewards = RewardsWindowRewardBuilder.Build(args.Granted, _configs);
             View.SetReward(rewards);
+            if (rewards.Count > 0 && !ReferenceEquals(_lastSoundedRewardSpec, args.Granted))
+            {
+                PlayUi(Audio.Catalog?.RewardReceived);
+                _lastSoundedRewardSpec = args.Granted;
+            }
             LoadRewardIconsAsync(_cts.Token).Forget();
         }
 
@@ -91,6 +100,11 @@ namespace Game.Rewards.UI
             {
                 // window closed / re-applied mid-load — ok
             }
+        }
+
+        private static void PlayUi(AudioClip clip)
+        {
+            if (clip != null) Audio.PlayUi(clip);
         }
     }
 }

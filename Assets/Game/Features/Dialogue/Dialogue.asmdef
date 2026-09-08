@@ -7,7 +7,8 @@
         "GUID:fc2ecadb68662da45aba0010e453f3b5",
         "GUID:592655c071f1c97439e7b758b869950d",
         "GUID:b0214a6008ed146ff8f122a6a9c2f6cc",
-        "GUID:99a9ef6cd8fd6384ab674ce7f716e0b3"
+        "GUID:99a9ef6cd8fd6384ab674ce7f716e0b3",
+        "Game.Localization"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

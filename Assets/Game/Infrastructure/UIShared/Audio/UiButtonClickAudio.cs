@@ -26,8 +26,9 @@ namespace Game.UI
 
         private void Play()
         {
-            if (_click != null)
-                Audio.PlayUi(_click, _volumeScale);
+            var clip = _click != null ? _click : Audio.Catalog?.ButtonClick;
+            if (clip != null)
+                Audio.PlayUi(clip, _volumeScale);
         }
     }
 }

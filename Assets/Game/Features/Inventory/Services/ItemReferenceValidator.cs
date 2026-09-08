@@ -19,10 +19,11 @@ namespace Game.Inventory.Services
     /// runtime; this catches it up front instead.
     /// <para>
     /// Catalog = quest_items.json + consumables.json + decors.json + books.json. References are collected
-    /// from quest rewards, shop lots, economy day-completion rewards, <see cref="LocationConfig.UnlockCost"/>, and every
-    /// <c>haveItem</c> node inside a condition tree. Awaits <see cref="IConfigsService.WarmupAsync"/> first
-    /// so configs are loaded regardless of entry-point registration order. In Editor errors throw to block
-    /// Play mode; in runtime builds they are logged and the broken reference stays broken downstream.
+    /// from quest rewards, quest costs, shop lots, economy day-completion rewards,
+    /// <see cref="LocationConfig.UnlockCost"/>, and every <c>haveItem</c> node inside a condition tree.
+    /// Awaits <see cref="IConfigsService.WarmupAsync"/> first so configs are loaded regardless of
+    /// entry-point registration order. In Editor errors throw to block Play mode; in runtime builds they
+    /// are logged and the broken reference stays broken downstream.
     /// </para>
     /// </summary>
     public sealed class ItemReferenceValidator : IAsyncStartable
@@ -152,6 +153,28 @@ namespace Game.Inventory.Services
                             continue;
 
                         references.Add(ItemReference.Grant(reward.Id, reward.Category, $"{origin} reward"));
+                    }
+                }
+
+                if (quest.Costs != null)
+                {
+                    for (var j = 0; j < quest.Costs.Length; j++)
+                    {
+                        var cost = quest.Costs[j];
+                        if (cost == null)
+                        {
+                            report.Errors.Add($"{origin} cost entry #{j} is null.");
+                            continue;
+                        }
+
+                        if (cost.Amount <= 0)
+                        {
+                            report.Errors.Add(
+                                $"{origin} cost for '{cost.ItemId}' has amount {cost.Amount}; " +
+                                "expected a positive number.");
+                        }
+
+                        references.Add(ItemReference.Require(cost.ItemId, $"{origin} cost"));
                     }
                 }
 

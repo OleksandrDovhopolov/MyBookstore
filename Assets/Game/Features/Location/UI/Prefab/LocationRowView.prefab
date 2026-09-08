@@ -1012,6 +1012,7 @@ MonoBehaviour:
   _startButton: {fileID: 8970228731539583102}
   _unlockButton: {fileID: 2200923110122082420}
   _demandInfoButton: {fileID: 4404400000000000005}
+  _fallbackSprite: {fileID: 5090832681758481446, guid: 02a45f2b64fd3154f9c19772c63ade3d, type: 3}
 --- !u!222 &5904386963206094992
 CanvasRenderer:
   m_ObjectHideFlags: 0

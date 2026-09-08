@@ -10,7 +10,7 @@ namespace Game.Configs.Models
     public sealed class BookShopConfig : IConfig
     {
         public string Id { get; set; }
-        public string DisplayName { get; set; }
+        public string DisplayNameKey { get; set; }
 
         /// <summary>Decor placement slots on this bookshop. Slot accepts a decor only when both
         /// PositionType and MaxSize are compatible.</summary>

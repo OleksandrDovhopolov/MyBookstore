@@ -431,7 +431,7 @@
     [adr/0006-passive-sales-requested-genre.md](adr/0006-passive-sales-requested-genre.md) не трогать.
   - **Баланс v2:** после плейтеста решить, хватает ли строгого `Excellent/Failed` и фиксированной награды
     `10` gold, или нужен частичный балл / гибрид «условия как фильтр + оценка выбора» / authored
-    `reward`/`difficulty` в `hard_requests.json`.
+    `reward`/`difficulty` в `sample_requests.json`.
   - **Escape-hatch для сложных формул:** если появится запрос вида `(A AND B) OR (C AND D)`, добавить
     точечный raw-JSON/расширенный condition для конкретного запроса, не усложняя базовую плоскую схему.
   - **Новые типы условий только под контент:** `authorSex`, `size`, `price`, `rarity`, `country`, `language`

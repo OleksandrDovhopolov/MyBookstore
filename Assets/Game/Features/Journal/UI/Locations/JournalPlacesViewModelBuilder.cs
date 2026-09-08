@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Configs.Models;
+using Game.Localization;
 
 namespace Game.Journal.UI
 {
@@ -18,7 +19,9 @@ namespace Game.Journal.UI
                 if (config == null || string.IsNullOrEmpty(config.Id)) continue;
                 result.Add(new JournalPlaceItemModel(
                     config.Id,
-                    string.IsNullOrEmpty(config.DisplayName) ? config.Id : config.DisplayName,
+                    string.IsNullOrEmpty(config.DisplayNameKey)
+                        ? config.Id
+                        : LocalizationLocator.GetOrKey(config.DisplayNameKey),
                     isUnlocked?.Invoke(config.Id) ?? true,
                     ResolveDemandGenres(config.DemandGenres)));
             }

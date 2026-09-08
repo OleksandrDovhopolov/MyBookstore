@@ -15,9 +15,9 @@ namespace Game.Configs.Editor
                 "books" => new JObject
                 {
                     ["id"] = "",
-                    ["title"] = "",
-                    ["author"] = "",
-                    ["description"] = "",
+                    ["titleKey"] = "",
+                    ["authorKey"] = "",
+                    ["descriptionKey"] = "",
                     ["genres"] = new JArray(),
                     ["rarityWeight"] = 0.0,
                     ["published"] = 0,
@@ -27,7 +27,7 @@ namespace Game.Configs.Editor
                 "locations" => new JObject
                 {
                     ["id"] = "",
-                    ["displayName"] = "",
+                    ["displayNameKey"] = "",
                     ["entryCost"] = 0,
                     ["locationAddress"] = "",
                     ["demandGenres"] = new JArray(),
@@ -36,6 +36,7 @@ namespace Game.Configs.Editor
                 "sample_requests" => new JObject
                 {
                     ["id"] = "",
+                    ["descriptionKey"] = "",
                     ["genre"] = "",
                     ["bookTitle"] = "",
                     ["enabled"] = true,

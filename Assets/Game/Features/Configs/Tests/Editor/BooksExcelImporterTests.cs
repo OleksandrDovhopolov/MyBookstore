@@ -27,15 +27,107 @@ namespace Game.Configs.Tests.Editor
             Assert.IsTrue(result.Success, string.Join("\n", result.Errors));
             var book = (JObject)result.Books[0];
             Assert.AreEqual("book01", book.Value<string>("id"));
-            Assert.AreEqual("The Book", book.Value<string>("title"));
-            Assert.AreEqual("Ada", book.Value<string>("author"));
-            Assert.AreEqual("About books", book.Value<string>("description"));
+            Assert.AreEqual("book.book01.title", book.Value<string>("titleKey"));
+            Assert.AreEqual("book.book01.author", book.Value<string>("authorKey"));
+            Assert.AreEqual("book.book01.description", book.Value<string>("descriptionKey"));
             CollectionAssert.AreEqual(new[] { "Fantasy", "Crime" }, book["genres"].ToObject<string[]>());
             CollectionAssert.AreEqual(new[] { "Fiction", "Magic" }, book["qualities"].ToObject<string[]>());
             Assert.AreEqual(2001, book.Value<int>("published"));
             Assert.AreEqual(123, book.Value<int>("pages"));
             Assert.AreEqual("Real", book.Value<string>("fakeOrReal"));
-            Assert.IsNull(book["rarityWeight"]);
+            Assert.AreEqual(0.5d, book.Value<double>("rarityWeight"));
+
+            Assert.AreEqual("The Book", result.Localization.Value<string>("book.book01.title"));
+            Assert.AreEqual("Ada", result.Localization.Value<string>("book.book01.author"));
+            Assert.AreEqual("About books", result.Localization.Value<string>("book.book01.description"));
+        }
+
+        [Test]
+        public void ConvertRows_ReadsRarityWeightColumn()
+        {
+            var result = BooksExcelImporter.ConvertRows(new[]
+            {
+                Row(2,
+                    ("Title", "Rare Book"),
+                    ("Description", "Description"),
+                    ("Published", 2001d),
+                    ("Pages", 123d),
+                    ("Author", "Ada"),
+                    ("Genres", "Fantasy"),
+                    ("Qualities", "Magic"),
+                    ("Fake or Real", "Real"),
+                    ("RarityWeight", 0.75d))
+            });
+
+            Assert.IsTrue(result.Success, string.Join("\n", result.Errors));
+            Assert.AreEqual(0.75d, ((JObject)result.Books[0]).Value<double>("rarityWeight"));
+        }
+
+        [Test]
+        public void ConvertRows_ReadsRarityAlias()
+        {
+            var result = BooksExcelImporter.ConvertRows(new[]
+            {
+                Row(2,
+                    ("Title", "Rare Book"),
+                    ("Description", "Description"),
+                    ("Published", 2001d),
+                    ("Pages", 123d),
+                    ("Author", "Ada"),
+                    ("Genres", "Fantasy"),
+                    ("Qualities", "Magic"),
+                    ("Fake or Real", "Real"),
+                    ("Rarity", "0.7"))
+            });
+
+            Assert.IsTrue(result.Success, string.Join("\n", result.Errors));
+            Assert.AreEqual(0.7d, ((JObject)result.Books[0]).Value<double>("rarityWeight"));
+        }
+
+        [Test]
+        public void ConvertRows_RarityWeightColumnWinsOverRarityAlias()
+        {
+            var result = BooksExcelImporter.ConvertRows(new[]
+            {
+                Row(2,
+                    ("Title", "Rare Book"),
+                    ("Description", "Description"),
+                    ("Published", 2001d),
+                    ("Pages", 123d),
+                    ("Author", "Ada"),
+                    ("Genres", "Fantasy"),
+                    ("Qualities", "Magic"),
+                    ("Fake or Real", "Real"),
+                    ("RarityWeight", 0.8d),
+                    ("Rarity", 0.6d))
+            });
+
+            Assert.IsTrue(result.Success, string.Join("\n", result.Errors));
+            Assert.AreEqual(0.8d, ((JObject)result.Books[0]).Value<double>("rarityWeight"));
+        }
+
+        [Test]
+        public void ConvertRows_InvalidRarity_SkipsRowWithWarning()
+        {
+            var result = BooksExcelImporter.ConvertRows(new[]
+            {
+                Row(2,
+                    ("Title", "Bad Rarity"),
+                    ("Description", "Description"),
+                    ("Published", 2001d),
+                    ("Pages", 123d),
+                    ("Author", "Ada"),
+                    ("Genres", "Fantasy"),
+                    ("Qualities", "Magic"),
+                    ("Fake or Real", "Real"),
+                    ("RarityWeight", "very rare"))
+            });
+
+            Assert.IsTrue(result.Success, string.Join("\n", result.Errors));
+            Assert.AreEqual(0, result.Books.Count);
+            Assert.AreEqual(1, result.Warnings.Count);
+            Assert.IsTrue(result.Warnings[0].Contains("Row 2 'Bad Rarity' skipped"));
+            Assert.IsTrue(result.Warnings[0].Contains("RarityWeight is not numeric"));
         }
 
         [Test]
@@ -79,6 +171,7 @@ namespace Game.Configs.Tests.Editor
             Assert.IsFalse(result.Success);
             Assert.IsTrue(result.Errors.Any(e => e.Contains("Missing required header 'Qualities'")));
             Assert.AreEqual(0, result.Books.Count);
+            Assert.AreEqual(0, result.Localization.Count);
         }
 
         [Test]

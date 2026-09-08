@@ -17,6 +17,7 @@ namespace Game.Configs.Tests.Editor
 
             Assert.IsNotNull(requests);
             Assert.Greater(requests.Length, 0);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(requests[0].DescriptionKey));
             Assert.IsFalse(string.IsNullOrWhiteSpace(requests[0].BookTitle));
             Assert.IsNotNull(requests[0].Conditions);
             Assert.IsNotNull(requests[0].Conditions.All);
@@ -31,6 +32,7 @@ namespace Game.Configs.Tests.Editor
                 SampleRequests = @"[
   {
     ""id"": ""sample"",
+    ""descriptionKey"": ""request.sample.description"",
     ""genre"": ""Travel"",
     ""bookTitle"": ""Sample Book"",
     ""enabled"": true,

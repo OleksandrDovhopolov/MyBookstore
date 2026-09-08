@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Game.Localization;
 using Game.Rewards.UI;
 using Game.UI;
 using TMPro;
@@ -36,7 +37,7 @@ namespace Game.DayCycle.Results.UI
             if (_dayText == null)
                 return;
 
-            _dayText.text = day > 0 ? $"Day {day}" : string.Empty;
+            _dayText.text = day > 0 ? LocalizationLocator.GetOrKey("ui.results.day", day) : string.Empty;
         }
 
         public void SetSoldGenres(IReadOnlyList<RewardSpecResource> soldGenres)

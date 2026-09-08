@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Localization;
 using Game.Quest.API;
 using Game.Rewards.UI;
 using Game.UI;
@@ -64,7 +65,9 @@ namespace Game.Quest.UI
 
                 if (result.Granted?.Items != null && result.Granted.Items.Count > 0 && _ui != null)
                 {
-                    await _ui.ShowAsync<RewardsWindow>(new RewardsWindowArgs(result.Granted, "Quest reward"), token);
+                    await _ui.ShowAsync<RewardsWindow>(
+                        new RewardsWindowArgs(result.Granted, LocalizationLocator.GetOrKey("ui.quest.reward.title")),
+                        token);
                 }
             }
             catch (OperationCanceledException)

@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93f8f1e983db46e8a06ea4d3813a9d5e, type: 3}
+  m_Name: AudioCatalog
+  m_EditorClassIdentifier: 
+  _buttonClick: {fileID: 8300000, guid: 1b16053fb3c832b438b2cf75a251ef83, type: 3}
+  _windowOpen: {fileID: 8300000, guid: 6f27a0d606338354d87b54d50efc8bd7, type: 3}
+  _windowClose: {fileID: 0}
+  _purchaseSuccess: {fileID: 8300000, guid: 18ee91475d2e6f64a80ebf07f42d0a13, type: 3}
+  _actionBlocked: {fileID: 8300000, guid: cd9e63fd84d19fe4a8be26d5b2beec5e, type: 3}
+  _decorPlace: {fileID: 8300000, guid: d87fd5877fbe94a42828e9b56915617d, type: 3}
+  _decorRemove: {fileID: 8300000, guid: 94c51a626bbee0e47b6da474292e5a79, type: 3}
+  _currencyGained: {fileID: 8300000, guid: 1705f2a556aae2046825557f66d4bc32, type: 3}
+  _bookSold: {fileID: 8300000, guid: f978724a8017f90448f12a93e8eb583f, type: 3}
+  _newJournalEntry: {fileID: 8300000, guid: 659c96be94c07284cbd0aefe89263d85, type: 3}
+  _rewardReceived: {fileID: 8300000, guid: 1e220dc89ba20f347be93341b6670165, type: 3}
+  _locationDiscovered: {fileID: 8300000, guid: 2ce992f4d764ebd4bbd6af78cd2f02d9, type: 3}
+  _dialogueLine: {fileID: 8300000, guid: 2154f87f8e5bb764195a761286398f00, type: 3}
+  _dayCompletionItem: {fileID: 8300000, guid: 25397d47cdb5326458e18fae68607be7, type: 3}
+  _hubMusic: {fileID: 8300000, guid: a2c1dca7765af15478e563e90a11780e, type: 3}
+  _salesDayMusic:
+  - {fileID: 8300000, guid: 1062a06747724ca4784022fce926a8a8, type: 3}
+  - {fileID: 8300000, guid: 3d90eed9f755d974fbf6af8680751834, type: 3}
+  _musicFadeSeconds: 0.6

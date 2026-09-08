@@ -26,6 +26,191 @@
 
 ## Done
 
+### REL-9 — Finish Decorations Release UX
+
+Статус: сделано, коммиты `907af61`, `a75defa`. Из двух путей выбран первый — доработка сценовой выкладки,
+а не замена на UI-список: превью, подсветка целей, замена и анимации уже были написаны, список обесценил бы
+их и превратил бы обустройство магазина в форму настроек.
+
+Что сделано:
+- Магазин сведён к 5 ячейкам под фактический каталог: 3 напольные (`cart_table_1/2/3`), 1 подвесная
+  (`hang_main`), 1 настенная (`wall_main`). Раньше в `bookshops.json` было 8 слотов, из них 5 не имели
+  якорей в префабе и были недостижимы, а третью подвесную ячейку нечем было заполнить в принципе —
+  подвесного декора всего два, а предметы уникальны.
+- В `DecorPlacementWindow.prefab` заведены все 5 якорей с корректными `_slotId` и прописаны в
+  сериализованный массив `_slotAnchors` (без этого слот молча не рендерится).
+- `preserveAspect` проставляется в коде при выдаче спрайта — декор больше не растягивается под бокс.
+- Относительный размер: `DecorSizeVisualScale` (Small 0.6 / Medium 0.8 / Large 1.0) множится на авторенный
+  бокс слота через `sizeDelta`, а не `localScale` — поэтому не конфликтует с анимацией появления.
+- В UI начал учитываться `maxSize` ячейки: фильтр инвентаря и подсветка целей используют
+  `IsDecorCompatibleWithSlot` (тип + размер) вместо проверки одного `PositionType`. Раньше сервис отбивал
+  оверсайз через `SizeMismatch`, а UI об этом не знал и показывал недопустимые цели.
+- Выбор другого предмета при занятой ячейке убирает панель слота целиком (`EnterReplacePreview` → `HideHud`).
+- Защита от регрессий: `DecorConfigValidator.ValidateDecorSlotCoverage` ловит ячейку, которую нечем
+  заполнить, и декор, которому не подходит ни одна ячейка; EditMode-тест
+  `DecorPlacementWindowSlotAnchorTests` сверяет `_slotId` якорей с `bookshops.json` в обе стороны и
+  ловит дубли/пустые id.
+
+Критичность была high: декор влияет на прогрессию и магазин, игроку нужен понятный способ им управлять.
+
+### BUG-3 — Captain Quest Opens With Missing Ship Addressable
+
+Статус: сделано. Причина оказалась не в квесте: спрайты грузятся по id предмета, который напрямую
+используется как Addressables-адрес, а у корабля адрес записи был `Ship` вместо `ship` — ключи
+регистрозависимы.
+
+Что сделано:
+- Найден источник: `UiSpriteProvider.GetSpriteAsync(id)` вызывает `ProdAddressablesWrapper.LoadAsync<Sprite>(id)`,
+  то есть id предмета и есть Addressables-адрес; весь декор-UI передаёт туда `decorId`.
+- Адрес ассета `Ship.png` переименован в `ship` и совпал с id декора — `InvalidKeyException` в quest reward UI
+  больше не воспроизводится.
+- Попутно выяснилось, что `DecorConfig.IconAddress` не читался нигде в продакшн-коде: поле удалено из модели
+  и из `decors.json`, фактический контракт «Addressables-адрес == id декора» зафиксирован комментарием в
+  `DecorConfig`.
+- Удалён декор `harper_castle_donation_box`, у которого вообще не было спрайта (белая карточка в магазине):
+  убран из `decors.json`, из лота `newspaper_decor_harper_castle_donation_box` в `shop.json` и из
+  `localization_items_en.json`; bundled defaults синхронизированы.
+- Проверено, что `ship` выдаётся квестом `q_captain_postcards`, а не магазином, и что все 16 декораций
+  остаются достижимыми (магазин или квест).
+
+Не вошло в реализацию: config validation / regression test на невалидные sprite-address keys для quest UI.
+Логичное место — строка в `PreBuildValidationGate.Validators` рядом с `BookBoxPoolValidator` и
+`LocalizationKeyValidator`.
+
+Критичность была high: ошибка появлялась на релизном quest flow и могла скрывать реальные проблемы UI.
+
+### CONTENT-3 — Create Final Captain Sprite And Remove Old Placeholder
+
+Статус: сделано, коммиты `839387a`, `c1323b1`.
+
+Что сделано:
+- Добавлен финальный спрайт капитана: `Characters/Captain.png` и `Characters/Avatar/Captain.png` в
+  `Assets/Game/Features/Location/Sprites/`.
+- В Addressables заведён адрес `captain_avatar`, поэтому аватар грузится общим `UiSpriteProvider` по ключу,
+  как остальные портреты.
+- Старый placeholder-спрайт заменён.
+
+Критичность была medium: content polish для заметного персонажа релизного flow.
+
+### REL-1 — Quest / Memory Appearance UI And Gameplay Button Attention
+
+Статус: сделано.
+
+Что сделано:
+- Добавлено player-facing появление нового квеста и нового memory.
+- Добавлена анимация в кнопку на `GameplayScene`, ведущую в Journal/Quest UI.
+- Добавлен индикатор "есть новое" для новых quest/memory элементов.
+- Индикатор исчезает после просмотра соответствующего нового элемента.
+
+Критичность была high: это делает уже существующую прогрессию видимой для игрока.
+
+### REL-14 — Fix Failing EditMode Tests
+
+Статус: сделано. EditMode-тесты приведены в рабочее состояние перед релизной сборкой.
+
+Что сделано:
+- Зафиксирован и разобран список падавших EditMode-тестов.
+- Исправлены причины падений: компиляционные расхождения тестовых фейков, устаревшие ожидания и реальные
+  регрессии, если они были найдены.
+- Красный тестовый прогон больше не маскирует новые поломки перед APK.
+
+Критичность была high before release: EditMode-тесты остаются автоматической защитой логики, которую не
+покрывает `PreBuildValidationGate`.
+
+### REL-19 — Clean Redis From Old Project Data
+
+Статус: сделано. Redis очищен от мусора старых проектов; в Redis остались только сейвы игроков.
+
+Что сделано:
+- Найден Redis instance/environment, который используется текущим проектом для save/config/backend данных.
+- Проверены key prefixes/namespaces текущего проекта и старых проектов, чтобы не удалить рабочие данные.
+- Удалены мусорные ключи старых проектов из Redis.
+- После очистки проверено, что текущий проект не получает stale data от старых проектов.
+
+Критичность была high: старые Redis-данные могли ломать тестирование, маскировать реальные save/config ошибки
+и подмешивать состояние от прошлых проектов.
+
+### REL-11 — Split Terms Acceptance From Analytics Consent
+
+Статус: сделано.
+
+Что сделано:
+- First-run `ConsentWindow` больше не смешивает принятие Terms/Privacy и согласие на аналитику в одном
+  бинарном `Accept/Decline` решении.
+- Окно использует одну кнопку **Continue**: она принимает Terms/Privacy и закрывает consent gate.
+- Согласие на аналитику вынесено в отдельный checked toggle `Send anonymous analytics`; выключенный toggle
+  записывает `analytics: false`, но не мешает продолжить игру.
+- `ConsentWindowController` пишет решение через
+  `RecordDecision(analytics: View.AnalyticsConsent, attribution: false, personalizedAds: false)` и больше
+  не использует `AcceptAll()` в first-run flow.
+- `ConsentPolicy.Version` поднят до `3`, чтобы старые records версии `2` показали обновлённый экран ещё раз.
+- Сервисный слой, `ConsentGateOperation` и double lockout в analytics pipeline не менялись.
+
+Проверка:
+- Тесты не запускались.
+- Статически проверено, что старые `AcceptClick` / `DeclineClick` / `_acceptButton` / `_declineButton`
+  больше не используются в `Assets/Game`.
+
+Важно: analytics toggle оставлен включённым по умолчанию по принятому продуктному решению. Если релиз пойдёт
+в ЕЭЗ/UK, этот default нужно пересмотреть вместе с GDPR/PECR риском.
+
+### REL-5 — GDPR Consent On First Launch
+
+Статус: сделано. First-launch consent flow готов; разделение Terms/Privacy и согласия на аналитику закрыто
+в [REL-11](#rel-11--split-terms-acceptance-from-analytics-consent).
+
+Что сделано:
+- `ConsentGateOperation` показывает окно первого запуска в `phase_technical_init` до первого обращения к
+  Firebase.
+- `ConsentService` + `PlayerPrefsConsentStore` хранят решение в PlayerPrefs (`consent.*.v1`), чтобы consent
+  читался до загрузки сейва.
+- Дефолты consent-категорий — deny, а версия consent policy перепоказывает окно при изменении условий.
+- Android-манифест запрещает автоматический сбор Firebase до явного решения игрока; `AD_ID` удалён.
+- `PrivacyLinksBuildCheck` защищает сборку от пустой/non-https privacy-ссылки.
+- `ConsentWindow` заведён в Addressables под адресом `ConsentWindow`, а `Tools/Privacy/Reset Consent`
+  позволяет перепроверять первый запуск без сброса остальных PlayerPrefs.
+- После REL-11 окно использует кнопку **Continue** для Terms/Privacy и отдельный toggle для аналитики.
+
+Критичность была critical before store release: аналитика реально собирается только после consent, а первый
+запуск больше не смешивает принятие Terms и согласие на аналитику в одно бинарное решение.
+
+### REL-17 — Improve PreparationWindow Location Context UX
+
+Статус: сделано.
+
+Что сделано:
+- В `PreparationWindow` добавлен блок demand-жанров выбранной локации на основе `LocationConfig.DemandGenres`.
+- Для Preparation заведён отдельный `PreparationGenreIconView`; Journal UI-класс не переиспользуется между фичами.
+- `PreparationWindowView` получил отдельный `UIListPool<PreparationGenreIconView>` для demand-иконок.
+- `PreparationWindow` читает фактический `LocationId` после `StartOrResumeAsync`, рендерит demand-жанры и асинхронно догружает иконки через общий `IUiSpriteProvider`.
+- Добавлены guard'ы для отсутствующих `_configs`, `_uiSprites`, prefab/parent у пула: окно не падает до ручной prefab-провязки.
+- Ручная часть по prefab: item-префаб и `_demandGenrePool` в `PreparationWindow.prefab` провязываются в Unity Editor.
+
+Проверка:
+- Тесты не запускались.
+- `Game.Preparation` успешно скомпилирован через Visual Studio MSBuild.
+
+Критичность: medium. Это улучшает UX подготовки и помогает игроку принимать осмысленное решение перед стартом
+дня продаж.
+
+### REL-15 — Restyle QuestView Reward Claim Button
+
+Статус: сделано.
+
+Проблема: кнопка получения награды в `QuestView` визуально не подходила к стилю окна и выбивалась из
+остального Journal/Quest UI.
+
+Что сделано:
+- Найдена view/prefab-кнопка, которая отвечает за claim награды в `QuestView`.
+- Обновлён визуальный стиль кнопки так, чтобы она совпадала с текущим стилем Journal/Quest UI: размер,
+  цвет, шрифт, иконка/текст, состояния normal/hover/pressed/disabled.
+- Проверено, что кнопка всё ещё явно читается как основное действие для квеста в состоянии ReadyToAward.
+- Проверены состояния: квест не готов к награде — кнопка скрыта/disabled как сейчас; квест готов —
+  кнопка доступна; после claim — больше не предлагает получить награду.
+
+Критичность: medium. Это visual polish, но на релизном Journal/Quest экране прежняя кнопка выглядела
+незаконченно.
+
 ### ANL-1 — Minimal Release Analytics (Firebase)
 
 Статус: сделано и проверено на устройстве, коммит `e3cdd8e7`. **Дальнейшее расширение аналитики вне релизного scope** — новые события не добавляем.
@@ -45,6 +230,26 @@
 ### INF-8 — Force Construct `CharactersService`
 
 Статус: сделано. `Bootstrap.cs` форс-конструирует `ICharactersService` через `Construct(...)` до `SaveDataLoadOperation`, save-хук регистрируется, `AfterLoadAsync` отрабатывает — Journal наполняется. Задача оставалась в списке по инерции; проверено при аудите аналитики.
+
+### INF-6 — Save Module Versioning Release Baseline
+
+Статус: сделано. Полноценное чтение версий и миграции вынесены в [DEF-4](#def-4--save-module-version-reading--migrations);
+для релизного baseline закрыт минимальный риск перед первым APK.
+
+Что сделано:
+- Все pre-release save module schema versions сброшены к `1`: `characters`, `quests`, `sales_stats`.
+- `SaveService.CurrentSchemaVersion` оставлен `1`; `ConsentPolicy.Version` не тронут, потому что это PlayerPrefs
+  policy для согласия, а не save-модуль.
+- `SaveService.GetModuleAsync<T>` теперь мягко деградирует при битом/несовместимом module payload: пишет
+  warning и возвращает `null`, чтобы caller поднял дефолт только этого модуля.
+- Контракт сохранён: missing/null module возвращает `null`, `payload.Version` пока не сравнивается, чтение не
+  мутирует save и не запускает миграции.
+- Добавлены EditMode-тесты `SaveServiceTests` на broken payload, сохранность соседнего модуля и счастливый
+  путь structured payload.
+
+Ручной release step: перед APK всё ещё нужно стереть тестовые сейвы локально (`Tools → Save → Delete Save Files`)
+и на сервере (`Tools → Save → Reset Player Server Save`). После релиза первый schema bump любого модуля нельзя
+делать без DEF-4.
 
 ### REL-12 — Turn Off Analytics Debug Logging For Release
 
@@ -114,6 +319,24 @@
 `descriptionKey` сейчас являются ключами будущей локализации, а `photoKey` рассчитан на будущие Addressables
 assets и до их появления показывает fallback.
 
+### REL-2 — Settings: Sound / Music + Privacy & Terms
+
+Статус: сделано. Добавлены `SettingsWindowController` / `SettingsWindowView`, Sound/Music переключатели
+через `UISwitch` и `IAudioService`, prefab `SettingsWindow`, Addressables address `SettingsWindow`,
+HUD integration point и назначенная кнопка настроек на `GameplayScene`.
+
+В окне настроек есть ссылка `Privacy Policy`, которая открывает `PrivacyLinkSettings.TermsOfUseUrl`.
+Если отдельный Terms URL пустой, `PrivacyLinkSettings` fallback-ится на `PrivacyPolicyUrl`, поэтому одна
+публичная страница может покрывать Privacy + Terms.
+
+Что важно перед релизом: сама механика ссылки готова, но URL должен быть заменён на **мой Terms / Privacy**.
+Сейчас в `BootstrapInstaller.asset` стоят тестовые чужие ссылки — это закрывается в REL-5 и обязательно
+проверяется в Build Checklist перед APK.
+
+Не вошло в REL-2:
+- Тоггл отзыва согласия на аналитику сознательно отложен в [DEF-1](#def-1--analytics-consent-withdrawal-toggle).
+- REL-11 закрыта отдельной задачей: экран первого запуска разделяет Terms acceptance и analytics consent.
+
 ### GAME-17 — Validate Day Shelf vs Scripted Customer Scripts
 
 Статус: сделано, коммит `c1c1b1a`.
@@ -142,167 +365,266 @@ assets и до их появления показывает fallback.
 детерминирована (FTUE-сид + правила пресета). Со дня 2 полку выбирает игрок, поэтому такие проверки там
 невозможны. Сегодня это безопасно: `passiveAttempts` есть только у записей дня 1.
 
-## Part 1 — From TODO / Existing Docs
-
-### GAME-2 — Finish `Game.Quest` Slice
-
-Источник: [TODO.md → GAME-2](TODO.md).
-
-Что сделать:
-- Собрать реальную цепочку квестов на боевом конфиге вместо заглушки.
-- Доделать `JournalWindow` в части, необходимой для отображения текущих квестов/персонажей/прогресса.
-- Сверить поведение квестов с [adr/0007-quest-system.md](adr/0007-quest-system.md).
-- Награды и permanent effects оставить в GAME-3, если без них нельзя завершить релизный путь.
-
-Критичность: critical. Без квестового слайса прогрессия и контентная дуга не ощущаются завершёнными.
-
-### GAME-10 — Finish Tutorial Release Slice
-
-Источник: [TODO.md → GAME-10](TODO.md), [INPROGRESS/TUTORIAL_SYSTEM.md](INPROGRESS/TUTORIAL_SYSTEM.md).
-
-Что сделать:
-- Добавить debug/cheat поддержку: list, force-run, force-complete, reset, replay Day 1 через сброс `ftue.*`.
-- Добавить editor/EditMode validation для tutorial target ids, `TutorialTargetTag`, quest ids и `quests.json`.
-- Tutorial-аналитика: инфраструктура готова (ANL-1), `TutorialAnalyticsSteps` уже шлёт `tutorial_checkpoint`. Расширять не нужно.
-- Закрыть устойчивость Day 1: корректный resume посреди дня и cancel-path.
-- Проверить player-facing skip и pointer/highlight только там, где это нужно для релизного первого опыта.
-- Убрать временную связность tutorial UI id из `GameplaySceneController`, если она создаёт риск поломки релиза.
-
-Критичность: critical. Tutorial — первый контакт игрока с игрой; сломанный Day 1 будет выглядеть как сломанный продукт.
-
 ### Quest Flow P1/P2 — Fix Impossible Kids / Fact Active Requests
 
-Источник: [QUEST_FLOW.md → Registry P1/P2](QUEST_FLOW.md), [TODO.md](TODO.md).
+Источник: [QUEST_FLOW.md → Registry P1/P2](QUEST_FLOW.md).
 
-Что сделать:
-- Починить Kids-запросы, которые сейчас требуют `qualities contains "Fantasy"` и поэтому нерешаемы.
-- Починить Fact-запросы, которые сейчас требуют `qualities contains "History"` и поэтому нерешаемы.
-- Прогнать валидатор active requests и убедиться, что у каждого требуемого жанра есть решаемые книги.
+Статус: сделано. Оказалось, что нерешаемые Kids/Fact-запросы жили только в legacy-файле `hard_requests.json`,
+который рантайм **никогда не грузил** — активные запросы мапятся только на `sample_requests.json`
+(`[ConfigFile("sample_requests")]`), а там Kids/Fact уже решаемы (Kids — 19 книг-победителей, Fact — 29 по
+живому каталогу). То есть блокер был устранён ещё миграцией на `sample_requests.json`; эта задача закрыла
+хвост — уборку legacy и защиту от регресса.
 
-Критичность: critical. Тара и Милли становятся непроходимыми, а за ними блокируются локации.
+Что сделано:
+- Удалён legacy `hard_requests.json` (из `Assets/Configs` и `Assets/StreamingAssets/Configs`, вычищен из
+  `manifest.json`) и все ссылки на него в коде/доках (`LocalizationKeyValidator`, комментарии моделей,
+  `QUEST_FLOW.md`, `ACTIVE_REQUEST_CONDITIONS.md`, `BUILD.md`, `TODO.md`).
+- Добавлен регресс-тест `ActiveRequestSolvabilityTests` (`Book.Sell.Tests.Editor`): гоняет тот же
+  `ActiveRequestValidator`, что и билд-гейт, по живому каталогу и требует, чтобы ни один активный запрос не
+  был нерешаем и ни один жанр не «голодал»; отдельные кейсы прямо стерегут Kids и Fact.
+- Проверено: валидатор по живому каталогу даёт 0 ошибок, `StarvedGenres` пуст; тестовая сборка компилируется
+  без ошибок. Полный прогон Test Runner — при закрытом редакторе (сейчас Unity держал lock).
+
+Осталось вне scope: `sample_requests.json` содержит по 2 Kids/Fact-запроса — для разнообразия их можно
+дописать, но на проходимость квестов это не влияет.
 
 ### Quest Flow P3 — Add `postcard` Source
 
-Источник: [QUEST_FLOW.md → P3](QUEST_FLOW.md), [TODO.md](TODO.md).
+Источник: [QUEST_FLOW.md → P3](QUEST_FLOW.md).
 
-Что сделать:
-- Добавить реальный источник `postcard`, потому что Капитан требует 10 открыток.
-- Выбрать минимальную релизную механику: например, выдача за завершение дня, магазин, квестовая награда или другой уже существующий канал.
-- Проверить, что `haveItem postcard min 10` достижим без читов.
+Статус: сделано. Механика выдачи открыток уже была реализована; задача подтвердила это и закрыла статус.
 
-Критичность: critical. Без открыток Капитан непроходим и Рынок блокируется.
+Что сделано:
+- Источник `postcard` — награда за завершение дня: `economy.json.dayCompletionRewards` (`postcard` ×1)
+  начисляется в `SalesDayCommitService.GrantDayCompletionRewardsAsync` при коммите каждого завершённого дня.
+- Идемпотентно: день в `CompletedDays` повторно не выдаёт награду.
+- Покрыто тестами (`SalesDayCommitServiceTests`: `_GrantsDayCompletionRewards_Once`,
+  `_AlreadyCompletedDay_DoesNotGrantDayRewards`, `_IgnoresInvalidDayRewardEntries`).
+- `haveItem postcard 10` достижим за 10 завершённых дней без читов.
+
+Связанное P9 закрыто отдельно: открытки списываются при сдаче квеста Капитана через `QuestConfig.Costs`.
 
 ### Quest Flow P4 — Add `map` Source
 
-Источник: [QUEST_FLOW.md → P4](QUEST_FLOW.md), [TODO.md](TODO.md).
+Источник: [QUEST_FLOW.md → P4](QUEST_FLOW.md).
 
-Что сделать:
-- Добавить реальный источник `map`, потому что Деревня требует `map` для unlock.
-- Выбрать минимальный релизный источник: quest reward, shop lot или существующий reward flow.
-- Проверить, что Деревня достижима без читов при выполнении остальных условий.
+Статус: сделано. Источник `map` уже добавлен; задача подтвердила дизайн-решение и закрыла статус.
 
-Критичность: critical for late progression. Без карты финальная локация недостижима.
+Что сделано:
+- `map` (quest_item) покупается в газете: лот `newspaper_quest_item_map` в `shop.json`
+  (витрина `newspaper.consumables`, 200 gold, `Disposable` max 1) выдаёт `map` ×1.
+- `map` гейтит Деревню: `loc_village.unlockCost` = `map ×1` + `fuel_canister ×15`
+  (плюс условие `soldGenre Fantasy 150` и `soldGenre Kids 150`).
+- Деревня достижима без читов при выполнении условий.
 
 ### Quest Flow P5 — Fix `days.json` / Active Request Pace
 
-Источник: [QUEST_FLOW.md → P5](QUEST_FLOW.md), [TODO.md](TODO.md).
+Источник: [QUEST_FLOW.md → P5](QUEST_FLOW.md).
 
-Что сделать:
-- Продлить/настроить `days.json` после дня 2.
-- Проверить `activeRequestCount`, особенно дни с hard overrides и `applyModifiers: false`.
-- Убедиться, что квесты с `activePickGenre` физически выполнимы в разумном темпе.
+Статус: сделано.
 
-Критичность: critical. Это корень темпа прогрессии и причина, почему P1/P2 могут оставаться невыполнимыми даже после правки данных.
+Что сделано:
+- `days.json`: день 2 `activeRequestCount` `0 → 1` (день имеет `applyModifiers: false` → ровно 1 запрос).
+  День 1 оставлен `0` (обучающий).
+- `SalesTraffic.asset._defaultActiveRequestCount` `1 → 3` — значение для дней без своего `activeRequestCount`
+  (день 3+). Рантайм читает дефолт из ассета (`SalesTrafficConfig.BuildSettings()`), поэтому правился ассет;
+  C#-дефолты в `SalesTrafficConfig`/`SalesTrafficSettings` синхронизированы на 3 для консистентности.
+- Итог расписания: день 1 = 0, день 2 = 1, день 3+ = 3 активных запроса/день — темп `activePickGenre`
+  (Милли/Тара) стал реалистичным.
 
 ### Quest Flow P6 — Bind Captain To Port
 
-Источник: [QUEST_FLOW.md → P6](QUEST_FLOW.md), [TODO.md](TODO.md).
+Источник: [QUEST_FLOW.md → P6](QUEST_FLOW.md).
 
-Что сделать:
-- Добавить или использовать location gate для `CustomerScriptConfig`, чтобы Капитан появлялся в Порту.
-- Проверить, что `activationQuestId` и location условие не конфликтуют.
-- Покрыть сценарий тестом или валидатором scripted customer config.
+Статус: сделано.
 
-Критичность: high. Это не всегда технический блокер, но ломает дизайн цепочки и ожидание игрока.
+Что сделано:
+- В `CustomerScriptConfig` добавлено необязательное поле `LocationId` (location gate; null = любая локация).
+- Скрипт `captain_quest_intro` в `customer_scripts.json` помечен `locationId: "loc_port"`.
+- `ScriptedCustomerSpawner.IsEligible` получил независимый гейт: при заданном `LocationId` скрипт eligible
+  только когда `setup.LocationId` совпадает. Обратная совместимость — скрипты без `LocationId` не изменились.
+- Тесты `ScriptedCustomerSpawnerTests`: `LocationBoundScript_Spawns_OnlyAtMatchingLocation` и
+  `LocationBoundScript_Skips_WhenDayRunsElsewhere`. Сборка тестов компилируется без ошибок.
 
 ### INF-4 — Localization
 
-Источник: [TODO.md → INF-4](TODO.md), [LANGUAGE_POLICY.md](LANGUAGE_POLICY.md), [INPROGRESS/JOURNAL_WINDOW.md](INPROGRESS/JOURNAL_WINDOW.md).
+Статус: сделано. Добавлен лёгкий `Game.Localization` поверх текущего config pipeline без Unity Localization
+package: `ILocalizationService`, `LocalizationService`, `LocalizationWarmupOperation`, `LocalizationLocator`
+и prefab-компонент `LocalizedText` для `TMP_Text`.
 
-Что сделать:
-- Добавить минимальный слой локализации.
-- На релизном этапе нужен только английский язык.
-- Завести localization configs/tables, чтобы UI не показывал ключи вроде `character.eddi.name`.
-- Перевести player-facing строки, которые сейчас захардкожены или лежат как raw keys.
+Что сделано:
+- Поддержан текущий релизный язык `en` и API под будущую смену языка: `CurrentLocale`, `LocaleChanged`, `SetLocale`.
+- Добавлены плоские localization configs по доменам (`ui`, `dialogues`, `quests`, `characters`, `items`, `books`), которые проходят через существующий `Assets/Configs` / `StreamingAssets` pipeline.
+- Player-facing поля в основных конфигах переведены на `*Key`; потребители UI и gameplay-экранов резолвят текст через `ILocalizationService`.
+- Missing-key поведение единое: игра не падает, показывает ключ в формате ``[`key`]`` и пишет warning.
+- Добавлены проверки ключей локализации и регрессионная защита от показа raw localization keys в основных UI/narrative surfaces.
 
-Критичность: high. Для первого APK можно ограничиться English-only, но показывать ключи игроку нельзя.
+Книги технически подключены через `localization_books_en.json`, но финальные тексты книг остаются отдельной
+контентной задачей: текущие записи были импортированы как временные.
 
-### INF-6 — Save Module Versioning And Migrations
+### REL-3 — English-Only Localization Configs
 
-Источник: [TODO.md → INF-6](TODO.md), [SAVE_DAY_FLOW.md](SAVE_DAY_FLOW.md).
+Статус: сделано. Релизный English-only слой конфигов подключён: игра использует только английский язык,
+но структура файлов и API готовы к добавлению выбора языка в настройках позже.
 
-Раньше задача объединяла две вещи разной срочности. Перенос `ISaveService` в инфраструктурный слой
-вынесен отдельно в [DEF-2](#def-2--move-isaveservice-to-infrastructure-layer) — это рефакторинг слоёв,
-он ничего не чинит для игрока. Здесь остаётся только версионирование и миграции, то есть реальный риск
-потери прогресса.
+Граница закрытия: задача закрывает технический релизный минимум English-only localization. Замена временных
+книжных текстов не считается частью технической локализации и вынесена в отдельную release content task.
 
-Делается **отдельной итерацией**, не в общем потоке релизных правок.
+### GAME-2 — Finish `Game.Quest` Slice
 
-#### Исходная позиция: все текущие сейвы — тестовые
+Источник: [TODO.md → GAME-2](TODO.md), [adr/0007-quest-system.md](adr/0007-quest-system.md).
 
-Перед релизом все сейвы сбрасываются, поэтому **мигрировать не с чего** и все версии схем стартуют с `1`.
-Сейчас выше единицы ровно три модуля, остальные уже на `1`:
+Статус: сделано. Слайс `Game.Quest` реализован и покрыт тестами; все четыре квеста проходимы (проверено
+вручную). Блокеры проходимости (Quest Flow P1–P6, P9) закрыты отдельными задачами.
 
-| Модуль | Константа | Сейчас | Станет |
-|---|---|---|---|
-| `characters` | `CharactersSaveKeys.StateSchemaVersion` | 2 | 1 |
-| `quests` | `QuestsSaveKeys.StateSchemaVersion` | 4 | 1 |
-| `sales_stats` | `SalesStatsSaveKeys.StateSchemaVersion` | 3 | 1 |
+Что сделано (по подпунктам задачи):
+- Реальная цепочка квестов на боевом конфиге: `QuestsService` грузит живой `quests.json` через
+  `GetAll<QuestConfig>()`, 4 квеста (Эдди→Милли→Тара→Капитан) прошиты, заглушки нет.
+- `JournalWindow` доделан: страницы квестов (с claim-flow награды), персонажей, воспоминаний, локаций, объектов.
+- Поведение сверено с ADR-0007: квесты построены поверх `Game.Conditions`; есть юнит- и интеграционные тесты
+  (`QuestsServiceTests`, `QuestsServiceSaveTests`, `QuestRewardGranterTests`, `QuestConditionsCompositionTests` и др.).
+- Награды реализованы (`QuestClaimFlow` → `QuestRewardGranter`).
 
-Конверт `SaveService.CurrentSchemaVersion` уже `1`.
+Границы / вынесено:
+- **Permanent world-effects** (`QuestConfig.worldEffects`) не реализованы (`QuestsService` только сигналит) —
+  осознанно оставлено в **GAME-3**, как и предусмотрено формулировкой GAME-2; контент их не использует
+  (у всех квестов `worldEffects: []`).
+- Описание награды в информ-виджете Journal пока показывает плейсхолдер-ключ
+  `ui.journal.reward.description.placeholder`, когда у награды нет `DisplayName` — мелкий контентный хвост,
+  на проходимость не влияет.
+- Точность/темп попадания активных запросов под `activePickGenre` — вопрос тюнинга баланса, вне GAME-2.
 
-Два предостережения к сбросу:
+### BUG-1 — Active Request Window Close/Cancel Buttons Stay Disabled
 
-- **Сейвы живут на сервере**, не только локально: `POST /api/v1/save/global` на Railway. Локального
-  `Tools → Save → Delete Save Files` недостаточно — нужен и серверный сброс через
-  `Tools → Save → Reset Player Server Save`.
-- **`ConsentPolicy.Version` не трогать.** Это не save-модуль, он живёт в PlayerPrefs и отвечает за
-  аннулирование старых записей согласия. Сбрасывать его вместе с сейвами нельзя — попадёт под общую
-  гребёнку «везде поставим 1» и обнулит смысл бампа из REL-11.
+Статус: сделано.
 
-#### Что собственно сделать
+Причина: окно `RecommendationMinigameWindow` — `keepInCache`, инстанс переиспользуется для каждого запроса.
+При резолве/скипе `SetSelectionActionsInteractable(false)` гасил `SkipButton`/`ClearFocusButton`, а `OnShowStart`
+их заново не включал (звал только `ClearSelection()`), поэтому состояние `interactable=false` протекало в
+следующий показ.
 
-- Зафиксировать схему версионирования: где хранится версия модуля, как сервис решает, что данные старые,
-  и что делает при неизвестной/будущей версии (важнее, чем кажется: игрок может откатиться на старый APK).
-- Сделать точку подключения миграции для модуля — чтобы фича могла объявить «из v1 в v2» рядом со своей
-  моделью, не трогая ядро Save (это следует из [ADR-0001](adr/0001-save-data-modular-payload.md), где ядро
-  намеренно не знает о данных фич).
-- Определить поведение при **провале** миграции: сбросить модуль к дефолту или уронить загрузку. Для
-  одного модуля из четырнадцати ронять весь сейв почти наверняка неверно.
-- Сбросить три константы выше к `1` и вычистить тестовые сейвы локально и на сервере.
-- Покрыть тестом хотя бы один сквозной путь: сохранение на v1 → чтение кодом, ожидающим v2.
+Что сделано:
+- В `OnShowStart` после `ClearSelection()` добавлен `SetSelectionActionsInteractable(true)` — при каждом показе
+  Skip/ClearFocus снова активны; `RecommendButton` остаётся выключенным до выбора книги, временная блокировка
+  во время обработки (`_resolutionPending`) не затронута.
+- Файл: `Assets/Game/Features/BookSell/UI/Recommendation/RecommendationMinigameWindow.cs`. Компиляция `Book.Sell` — 0 ошибок.
 
-#### Когда это становится срочным
+Smoke: открыть active request → Skip/Close → открыть снова → обе кнопки доступны; во время резолва они
+по-прежнему временно гаснут.
 
-После публикации сейвы игроков стереть нельзя. Пока все версии `1` и схемы не менялись, риска нет —
-но механизм обязан существовать **до первого изменения схемы любого модуля после релиза**. Практически
-это значит: не блокер самого APK, но блокер первого же обновления, которое трогает формат данных.
+### DEBUG-1 — Active Request Book Parameters Debug Button
 
-Критичность: high, но не блокирует релизную сборку — при условии, что сброс сейвов действительно сделан
-и версии выставлены в `1`.
+Статус: сделано.
+
+Что сделано:
+- В `RecommendationMinigameWindow` добавлен dev-only debug UI под `Debug.isDebugBuild`: на карточках книг
+  появляется info-кнопка и метка `OK` / `NOT` по текущему active request.
+- Info-кнопка открывает `ContentWidget` с названием книги, `genres` и `qualities`; клик по виджету закрывает его.
+- Обычная витрина продаж не затронута: `BookCardView.Bind` сбрасывает debug UI в скрытое состояние, а
+  включение происходит только из active request minigame.
+- `IBookConditionRequestEvaluator` не расширялся; match считается через существующий `Evaluate(...).IsMatch`.
+  Окно использует локальный stateless `BookConditionRequestEvaluator`, потому что window factory живёт в
+  глобальном UI scope и не видит location-scoped BookSell-регистрации.
+
+Проверка: прямая компиляция `Book.Sell` через Roslyn `csc` — 0 ошибок. Unity Editor batchmode не запускался,
+потому что проект уже открыт в другом Unity-инстансе; тесты по задаче не запускались намеренно.
+
+### BUG-2 — PreparationWindow Available Book Count Ignores Selected Books
+
+Статус: сделано.
+
+Причина: строка жанра `PreparationGenreRowView.Refresh()` печатала в лейбл «в наличии» полный owned-потолок
+(`_available`) и не вычитала выставленное (`_quantity`), поэтому число не уменьшалось при добавлении книг на полку.
+
+Что сделано:
+- В `Refresh()` лейбл «в наличии» теперь показывает остаток `Mathf.Max(0, _available - _quantity)`; `_shelfCountLabel`
+  = выбрано, их сумма = owned. Обновляется вживую (`StateChanged → SetState → Refresh`).
+- Реальный inventory до confirm не трогается; `_available` остаётся потолком для клампа, «+» гаснет при остатке 0.
+- Файл: `Assets/Game/Features/Preparation/UI/PreparationGenreRowView.cs`. Двойного счёта по мультижанровым книгам
+  нет — доступность считается по `PrimaryGenre`.
+
+Smoke: N владения, K на полке → «в наличии» N−K, больше N не даёт, снятие восстанавливает.
+
+### REL-16 — Add Reset All Button To PreparationWindow
+
+Статус: сделано (логика; кнопка в префабе `PreparationWindow` провязывается вручную).
+
+Что сделано:
+- `IPreparationSessionService.ResetAllAsync(ct)` + реализация в `PreparationSessionService`: очищает
+  `GenreQuantities`, `UseExplicitSelectedBookIds=false`, `SelectedBookIds → пусто`, `PersistAsync`, `StateChanged`.
+  Реальный inventory не трогается, день не подтверждается.
+- `PreparationWindowView`: поле `_resetAllButton` + `ResetAllButton`.
+- `PreparationWindow`: подписка/отписка в `OnInit`/`OnDispose` + `OnResetAllClicked → _session.ResetAllAsync`.
+  После сброса `OnStateChanged` обновляет строки (0), счётчик `0/N` и Start (недоступен при 0).
+- Обновлены два тест-фейка `IPreparationSessionService` (`FakePreparationSession`, `FakePreparation`).
+
+Проверка: `Game.Preparation`, `Book.Sell.Tests.Editor`, `GameplayUI.Tests.Editor` — 0 ошибок.
+
+### BUG-4 — Market Location Missing Sprite For SoldTotal Unlock Condition
+
+Статус: сделано (fallback-спрайт назначается в префабе `LocationRowView` вручную).
+
+Причина: у условия `soldTotal` `LocationListItemModel.ResolveSpriteId` возвращает `null` (это не жанр и не
+`visitLocation`), поэтому `SpriteId` пустой; в `LocationRowView.LoadIconsAsync` пустой id пропускался
+(`continue`), иконка скрывалась — слот пустой, без варнинга (`UiSpriteProvider` для пустого id ничего не грузит
+и не логирует).
+
+Что сделано:
+- В `LocationRowView` добавлено сериализованное поле `_fallbackSprite` (назначается в префабе).
+- `LoadIconsAsync` теперь ставит fallback везде, где спрайт не найден: пустой `SpriteId` условия/стоимости
+  (напр. `soldTotal`) и промах загрузки location/condition/cost спрайта.
+- Лог-варнинг добавляется только там, где его ещё нет — для пустого `SpriteId` (`UiSpriteProvider` уже
+  логирует промах непустого id, дубля не делаем).
+- Файл: `Assets/Game/Features/Location/UI/LocationRowView.cs`. Компиляция `Game.Location` — 0 ошибок.
+
+Smoke: открыть Market до unlock — условие `soldTotal: 200` показывается с fallback-иконкой (после назначения
+спрайта в префабе), в логе один осмысленный warning вместо пустого слота.
+
+### REL-18 — Add Unlock Item Descriptions To LocationWindow
+
+Статус: сделано.
+
+Элемент требования разблокировки в `LocationWindow` теперь кликабельный и по клику открывает виджет с
+подсказкой «где взять / как выполнить», вычисленной по реальным данным. Виджет — на общем `ContentWidget`-ядре,
+без зависимостей на Shop/Inventory-фичи.
+
+Что сделано:
+- `LocationConditionItemView` стал кнопкой (`_button` + колбэк `Action<LocationRequirementRef, RectTransform>`);
+  для cost-предмета передаётся itemId, для условия — reasonKey.
+- Новый Location-виджет: `LocationRequirementInfoWidgetData` / `LocationRequirementInfoWidgetView` (+ префаб),
+  показывается через `ContentWidgetController`; закрытие — close-кнопкой (`RequestClose`) и при закрытии окна.
+- `LocationRequirementHintResolver`: источник предмета по реальным данным — скан `QuestConfig.Rewards` +
+  `ShopConfig.RewardItems` → quest/shop/both/unknown; для условий — подсказка по типу (soldTotal/soldGenre/visitLocation).
+- Новый режим размещения `ContentWidgetPlacementMode.VerticalOnly` — виджет строго сверху/снизу над кликнутым.
+- Локализация: 12 ключей `location.req.*` в `localization_ui_en.json` (+ StreamingAssets-копия).
+- Никаких ссылок на Shop/Inventory-фичи — `ShopConfig`/`QuestConfig` читаются как Configs-модели через `IConfigsService`.
+
+Проверка: `Game.Location` — 0 ошибок; loc-ключи синхронизированы. Финальная вёрстка префабов виджета и Button
+на элементе — в Editor.
+
+## TODO
+
+Единый список открытых релизных задач. Задачи, ожидающие внешние ресурсы, вынесены в
+[Wait For Resources](#wait-for-resources) ниже.
 
 ### Build Checklist For APK
 
 Источник: [BUILD.md](BUILD.md), [TODO.md](TODO.md).
 
 Что сделать:
-- Разобраться с warning по `Assets/Configs/hard_requests.json`.
+- ~~Разобраться с warning по `Assets/Configs/hard_requests.json`~~ — legacy-файл удалён.
 - Опубликовать/синхронизировать живые configs и прогнать `Sync Bundled Defaults to StreamingAssets`.
 - Прогнать `Run Pre-Build Validation` и runtime validators через Play mode.
 - Собрать Addressables.
 - Проверить Firebase Android config.
+- Настроить/проверить billing safety для Firebase Remote Config / Firebase project и Cloudflare: budget
+  alerts, spending limits/usage caps где доступны, лимиты запросов/egress, уведомления на почту. Раньше
+  приходили инвойсы на `$0`, но перед релизом нужно убедиться, что проект не сможет незаметно уйти в
+  платные списания или долги.
 - Проверить Android Player Settings: IL2CPP, ARM64, API level, keystore, scenes.
 - Проверить `BootstrapInstaller.asset`: debug off, full loading on, tutorial settings, first-day path.
+- Обязательно заменить `_privacyPolicyUrl` / `_termsOfUseUrl` на правильные ссылки на **мой Terms / Privacy**.
+  Сейчас там стоят тестовые чужие ссылки; они проходят https-проверку, но не подходят для релиза.
 - Настройки аналитики (отладочный лог и `environment`) вручную **не трогать** — они выводятся из типа сборки, см. REL-12 и [BUILD.md §5](BUILD.md).
 - Проверить FTUE на чистой установке.
 - Собрать APK и сделать smoke: старт, configs, active request, dialogue, FTUE/tutorial.
@@ -310,46 +632,29 @@ assets и до их появления показывает fallback.
 
 Критичность: critical. Это релизный gate.
 
-## Part 2 — Release Additions
+### CONTENT-2 — Active Request Descriptions
 
-### REL-1 — Quest / Memory Appearance UI And Gameplay Button Attention
-
-Что сделать:
-- Добавить player-facing появление нового квеста и нового memory.
-- Добавить анимацию в кнопку на `GameplayScene`, ведущую в Journal/Quest UI.
-- Добавить восклицательный знак или другой индикатор "есть новое".
-- Индикатор должен исчезать после просмотра соответствующего нового элемента.
-
-Критичность: high. Это не новая механика, а видимость уже существующей прогрессии.
-
-### REL-2 — Settings: Sound / Music + Privacy & Terms
-
-Статус: code-side ready. Добавлены `SettingsWindowController` / `SettingsWindowView`, Sound/Music toggles через
-`IAudioService`, HUD integration point и кнопка Privacy & Terms через `PrivacyLinkSettings`.
-
-Что осталось вручную:
-- Создать/назначить `SettingsWindow.prefab` с `SettingsWindowView`.
-- Добавить Addressables address ровно `SettingsWindow` в UI-группу.
-- Назначить sound/music toggles, Privacy & Terms button и close button в `WindowView._closeButtons`.
-- Назначить HUD settings button в `HudMenuButtonsView._settingsButton`.
-- Проверить, что Privacy & Terms открывает ожидаемый URL.
-
-Не делать в REL-2:
-- Не добавлять сложные графические настройки, аккаунты, cloud save UI или дополнительные toggles.
-- Не менять REL-11 consent screen.
-
-Тоггл отзыва согласия на аналитику **сознательно отложен** — вынесен в [Deferred](#deferred--сознательно-отложено), чтобы не потеряться.
-
-Критичность: medium. Желательно для APK, но не должно расширяться.
-
-### REL-3 — English-Only Localization Configs
+Контекст: активный запрос (мини-игра рекомендации) сейчас показывает **техническую debug-строку** условий
+(напр. «A Study in Scarlet: ALL: genres contains Crime; publicationYear between …; pages ≤ 200»), а не
+человеческий текст. Это сделано намеренно: локализация (коммит `49fc9b9`) уже завела поле
+`RequestDefinitionConfig.DescriptionKey`, проставила ключи в `sample_requests.json` и тексты в
+`localization_quests_en.json`, но текущие тексты — временные/шаблонные (типа «I'm looking for a Crime book
+like …»), а не финальные под каждый конкретный запрос. Поэтому вывод переключён обратно на debug-строку
+флагом `ActiveRequestRuntime.UseLocalizedDescriptions = false` (`Assets/Game/Features/BookSell/Domain/ActiveRequestRuntime.cs`).
+Ничего не удалялось — ключи и loc-тексты сохранены.
 
 Что сделать:
-- Добавить конфиги локализации только для английского языка.
-- Перенести player-facing строки в localization configs.
-- Сохранить возможность будущего добавления языков без переделки UI.
+- Продумать логику подачи текста запроса: он должен читаемо и по-человечески описывать, что хочет покупатель,
+  и сходиться с фактическими условиями (`conditions`) запроса — под каждый из ~19 запросов в
+  `sample_requests.json` (жанр/качества/годы/страницы, референсная книга `bookTitle`).
+- Написать финальный текст под каждый `descriptionKey` в `localization_quests_en.json` (ключи `request.*.description`).
+- Переключить `ActiveRequestRuntime.UseLocalizedDescriptions` в `true` (или убрать флаг и debug-fallback,
+  когда тексты готовы) — тогда UI начнёт показывать человеческое описание вместо технической строки.
+- Синхронизировать `Assets/StreamingAssets/Configs/localization_quests_en.json`.
+- Проверить Recommendation minigame: игрок видит осмысленный текст запроса, а не дамп условий.
 
-Критичность: high. Связано с INF-4, но зафиксировано как релизный минимальный scope: English only.
+Критичность: high (качество релизного контента). Не блокирует прохождение — debug-строка работает как
+временный fallback, но для игрока выглядит технически.
 
 ### REL-4 — Register Google Play Developer Account
 
@@ -359,39 +664,6 @@ assets и до их появления показывает fallback.
 - Зафиксировать, какие данные/ассеты нужны для store listing.
 
 Критичность: critical for release. Это внешняя задача, без неё публикация в Google Play невозможна.
-
-### REL-5 — GDPR Consent On First Launch
-
-Статус: код и UI готовы, включая Accept/Decline (см. ANL-1). Осталось только контентно-юридическое — своя страница, правильные ссылки и Data Safety (см. «Осталось сделать» в конце).
-
-Что сделано:
-- `ConsentGateOperation` показывает окно первого запуска в `phase_technical_init` — после `AddressablesUpdateOperation`, до `RemoteConfigInitOperation`, то есть до первого обращения к Firebase.
-- `ConsentService` + `PlayerPrefsConsentStore` хранят решение в PlayerPrefs (`consent.*.v1`). PlayerPrefs, а не `ISaveService`, потому что решение нужно читать задолго до `SaveDataLoadOperation`.
-- Дефолты — deny по всем категориям. Бамп `ConsentPolicy.Version` перепоказывает окно и до повторного согласия обнуляет ранее выданные флаги.
-- `IInteractiveLoadingOperation` приостанавливает 60-секундный глобальный дедлайн загрузки, пока окно открыто, иначе игрок получал бы ложный экран «проверьте интернет».
-- Android-манифест: `firebase_analytics_collection_enabled=false`, `firebase_crashlytics_collection_enabled=false`, `google_analytics_adid_collection_enabled=false`, `google_analytics_ssaid_collection_enabled=false`; `AD_ID` снимается через `tools:node="remove"`. Флаг аналитики остаётся `false` намеренно: сбор включается из кода (`SetAnalyticsCollectionEnabled(true)`) только после согласия, поэтому до решения игрока не собирается ничего.
-- `PrivacyLinksBuildCheck` роняет сборку, если на `BootstrapInstaller` не задан https-URL политики.
-- Префаб `Assets/Game/Features/Privacy/ConsentWindow.prefab` собран и заведён в Addressables-группу `UI` под адресом `ConsentWindow`. Окно открывается.
-- `Tools/Privacy/Reset Consent` чистит только ключи `consent.*`, чтобы можно было перепроверять первый запуск, не сбрасывая звук и player id.
-
-Согласие как согласие, а не уведомление (закрыто в ANL-1):
-- Экран получил **Accept/Decline** и честный текст: аналитика собирается, advertising ID — нет. Прежняя формулировка «we do not collect analytics» и единственная кнопка Continue больше не соответствовали коду и были бы недействительным согласием по UK GDPR/PECR.
-- `ConsentPolicy.Version` поднят до 2, поэтому записи согласия, выданные под старым текстом, аннулированы и игрок будет спрошен заново.
-- Decline блокирует всё: события отбрасываются по `CanSendAnalytics`, а `CompositeAnalyticsService.Initialize()` не поднимает Firebase вообще — манифестный `firebase_analytics_collection_enabled=false` остаётся в силе, и не собираются даже автоматические события Firebase.
-
-Остаётся незакрытым путь **отзыва** согласия — вынесен в DEF-1 и сознательно отложен. По UK GDPR отозвать согласие должно быть так же просто, как его дать; сейчас после решения на первом экране передумать нельзя.
-
-Также сам экран будет переработан в REL-11: Terms и согласие на аналитику разделяются на одну кнопку Continue плюс отдельный переключатель.
-
-Осталось сделать:
-
-1. **Создать свою страницу Privacy + Terms.** Сейчас в `BootstrapInstaller.asset` прописаны чужие ссылки на `themergegames.com` — это домен другого проекта, и по ним игрок попадёт на политику чужого продукта. Нужна собственная публичная страница, покрывающая: кто разработчик и как с ним связаться; какие данные собираются (**анонимная геймплейная аналитика через Firebase Analytics** — прогресс по дням, квестам, локациям, покупки в игровом магазине; плюс save-данные на собственный сервер и `player_id` из `save.http.player_id.v1`; advertising ID не собирается, крашлитика выключена); зачем они нужны; третьи стороны (Firebase Analytics, Firebase Remote Config, Cloudflare R2 для Addressables, собственный config/save-сервер); сроки хранения; права пользователя и как запросить удаление данных.
-2. **Поменять ссылки в `Assets/Game/Core/Installers/Bootstrap/BootstrapInstaller.asset`** — поля `_privacyPolicyUrl` и `_termsOfUseUrl`. Если одна страница покрывает оба документа, `_termsOfUseUrl` можно оставить пустым: `PrivacyLinkSettings.TermsOfUseUrl` сам падает обратно на privacy-ссылку.
-3. **Обновить форму Data Safety в Google Play Console: теперь нужно декларировать сбор данных.** Раньше здесь стояло «ни advertising ID, ни сбора данных» — после ANL-1 это неверно. Декларировать: аналитика собирается, advertising ID не собирается, данные привязаны к сгенерированному идентификатору установки.
-
-Важно про пункт 2: `PrivacyLinksBuildCheck` проверяет только что URL непустой и начинается с `https://`. Нынешние чужие ссылки эту проверку **проходят**, то есть автоматика от такой ошибки не защитит — сверять домен нужно глазами перед релизной сборкой.
-
-Критичность: critical before store release — и выше, чем раньше: аналитика теперь реально собирается, поэтому расхождение между политикой, формой Data Safety и фактическим поведением стало настоящим, а не гипотетическим.
 
 ### REL-6 — App Signing
 
@@ -404,104 +676,34 @@ assets и до их появления показывает fallback.
 
 ### REL-8 — Add Sounds
 
-Что сделать:
-- Добавить минимальный набор звуков в проект.
-- Приоритет: UI clicks, quest/memory notification, purchase/sale feedback, error/blocked action.
-- Подключить через существующий audio layer, без расширения до большой audio-системы.
+Текущее состояние:
+- Кодовая инфраструктура закрыта: `AudioCatalog`, музыка хаб/день, fade, fallback для UI-кликов/окон.
+- Кодовые SFX-хуки закрыты для минимального релизного набора: покупки, blocked/error, unlock location,
+  декор place/remove, пассивная продажа, excellent-рекомендация, journal badge notification, rewards popup,
+  dialogue line, day completion reward и count-up золота.
+- Настройки работают по правилу `Sound = Sfx + Ui`, `Music = Music + Ambient`.
+
+Что осталось сделать в редакторе:
+- Назначить все клипы в `AudioCatalog.asset`.
+- Навесить `UiButtonClickAudio` на shared-кнопки, где компонента ещё нет.
+- Навесить `WindowAudio` на префабы окон; кодовый fallback уже есть, но компонент должен стоять на view root.
 
 Критичность: medium. Важно для ощущения продукта, но scope должен быть минимальным.
 
-### REL-9 — Finish Decorations Release UX
+## Wait For Resources
+
+Следующие задачи упираются во внешние ресурсы: арт, который нужно нарисовать, тексты, которые нужно
+подготовить или заменить, и контентно-балансовые решения, которые нужно принять. Это не
+[Deferred](#deferred--сознательно-отложено): задачи остаются в релизном scope, но ждут входные материалы.
+
+### CONTENT-1 — Replace Copied Book Localization Texts
 
 Что сделать:
-- Принять решение: расширить текущую сцену выбора декораций или заменить на простое UI окно включения/выключения предметов.
-- Для релиза выбрать самый короткий путь, который позволяет игроку понятно включать/выключать owned decor.
-- Не добавлять новые decor-механики сверх уже существующих modifiers/ownership/placement, если они не блокируют релиз.
+- Обновить все записи в `Assets/Configs/localization_books_en.json`: текущие тексты были скопированы из другого проекта и должны быть заменены на финальные тексты этой игры.
+- После правки синхронизировать `Assets/StreamingAssets/Configs/localization_books_en.json`.
+- Проверить Book UI и Recommendation minigame, чтобы игрок не видел временные чужие тексты.
 
-Критичность: high. Декор уже влияет на прогрессию/магазин, игроку нужен понятный способ им управлять.
-
-### REL-11 — Split Terms Acceptance From Analytics Consent
-
-Сейчас экран первого запуска смешивает две разные по смыслу вещи в одном решении: принятие Terms of Use (это договор — «прими или не пользуйся» здесь законно) и согласие на аналитику (это отдельная правовая категория, где нужен реальный выбор). Из-за слияния кнопки Accept/Decline получились равнозначными, хотя отказ от Terms и отказ от аналитики — разные вещи.
-
-Что сделать:
-- Переделать `ConsentWindow` на одну основную кнопку **Continue**, которая принимает Terms и закрывает окно.
-- Согласие на аналитику вынести на этом же экране в отдельный переключатель/чекбокс рядом с текстом.
-- Убрать кнопку Decline: её роль берёт на себя выключенный переключатель аналитики.
-- Определить и зафиксировать дефолт переключателя (см. «Открытый вопрос» ниже).
-- Вызывать `RecordDecision(analytics: <состояние тоггла>, attribution: false, personalizedAds: false)` вместо нынешних `AcceptAll()` / `RecordDecision(false, false, false)`.
-- Переписать `BodyText`: отдельно про Terms, отдельно про аналитику и что она отключается тут же.
-- Поднять `ConsentPolicy.Version` до 3 — формулировка и модель решения меняются, старые записи нужно аннулировать.
-
-Что менять **не** нужно:
-- `ConsentService.RecordDecision(analytics, attribution, personalizedAds)` уже принимает три независимых флага — API изначально спроектирован под покатегорийное согласие, сейчас используются только «всё true» и «всё false». Инфраструктуру дописывать не придётся.
-- Двойная блокировка при отказе (`CanSendAnalytics` + guard в `CompositeAnalyticsService.Initialize()`) работает как есть и продолжит работать: выключенный тоггл даст ровно тот же путь, что нынешний Decline.
-- `ConsentGateOperation` не трогать — он по-прежнему `isCritical: true` и ждёт закрытия окна.
-
-Открытый вопрос, решить до реализации: дефолт переключателя. Включённый по умолчанию даёт заметно больше данных, но для ЕЭЗ/UK предвыбранное согласие не считается действительным. Выключенный по умолчанию безопаснее юридически и дешевле в поддержке. Решение зависит от географии релиза (страны распространения в Play Console) — если ЕЭЗ и UK из листинга исключены, расклад другой.
-
-Критичность: high before store release. Не блокирует сборку APK, но должно быть закрыто до публикации вместе с REL-5.
-
-### REL-14 — Fix Failing EditMode Tests
-
-Состояние: около **20 тестов не проходят**. Конкретный список не зафиксирован — это первое, что нужно сделать.
-
-Почему это релизная задача, а не «технический долг на потом»: `PreBuildValidationGate` проверяет только
-контент (конфиги, StreamingAssets, активные запросы), логику он не трогает. EditMode-тесты — единственная
-автоматическая защита от регрессий перед сборкой APK. Пока они красные, невозможно отличить новую поломку
-от давно известной, то есть защита фактически выключена. Перед релизом это надо закрыть.
-
-Масштаб для оценки: 29 тестовых сборок, 162 файла с тестами.
-
-#### Шаг 1. Зафиксировать список
-
-Без него задача не решается — «примерно двадцать» не позволяет ни оценить работу, ни отследить прогресс.
-В редакторе: `Window → General → Test Runner → EditMode`.
-
-Машиночитаемый список удобнее получить в batch mode (**Unity должен быть закрыт**, иначе упрётся в
-`Temp/UnityLockfile`):
-
-```
-"C:\Program Files\Unity\Hub\Editor\6000.0.76f1\Editor\Unity.exe" -runTests -batchmode -projectPath "C:\Projects\MyBookstore" -testPlatform EditMode -testResults "C:\Temp\results.xml"
-```
-
-Результат — NUnit XML со списком упавших тестов и текстом ошибок. Его и приложить к задаче.
-
-#### Шаг 2. Разделить по природе
-
-Двадцать «упавших» тестов — почти наверняка **не** двадцать независимых проблем. Сначала разложить:
-
-- **Сборка не компилируется.** Если тестовая asmdef не собралась, Test Runner помечает непройденными
-  **все** её тесты разом. Один пропущенный член интерфейса в фейке даёт десяток «падений». Проверять
-  в первую очередь: недавно в `ISalesDayController` добавился `DayStarted`, а в `IDecorPlacementService` —
-  типизированное событие смены декора; у обоих по несколько фейков в тестах.
-- **Упавшие ассерты.** Настоящие расхождения ожидания и поведения — их и разбирать по существу.
-- **Нестабильные.** Падают через раз: зависимость от порядка выполнения, от статики, переживающей
-  перезапуск домена, от реального времени. Помечать отдельно, чинить иначе.
-
-#### Шаг 3. По каждому — решение
-
-Для каждого падения явно ответить: **сломан прод** или **устарел тест**. Первое — баг, чинить код.
-Второе — обновить ожидание вместе с комментарием, почему поведение изменилось намеренно.
-
-Чего не делать: удалять или помечать `[Ignore]` тесты, чтобы получить зелёный прогон. Так теряется именно
-та информация, ради которой задача и заводится.
-
-#### Готово, когда
-
-EditMode-прогон зелёный, а список известных исключений либо пуст, либо явно записан здесь с причиной.
-
-Критичность: high before release. Не блокирует сборку APK технически, но без этого релиз собирается вслепую.
-
-## Wait Resources
-
-Задачи, упирающиеся во **внешние ресурсы**: арт, который нужно нарисовать, и контентно-балансовые
-решения, которые нужно принять. Инженерная постановка закрыта — размеры, форматы, точки подключения
-и правила зафиксированы, кода писать либо не нужно, либо тривиально мало.
-
-Пока ресурса нет, двигать нечего, поэтому такие задачи держатся отдельно от активного списка. Но они
-**остаются в релизном scope** — в отличие от [Deferred](#deferred--сознательно-отложено), где лежит
-то, что решили не делать.
+Критичность: high. Это не блокирует работу localization-системы, но блокирует качественный релизный контент.
 
 ### REL-7 — App Icons
 
@@ -686,7 +888,24 @@ Memories станет презентабельной только с этими 
 
 ## Deferred — сознательно отложено
 
-Задачи, которые осознанно вынесены из текущего релизного scope, но не отменены. Держим здесь, чтобы не потерялись и чтобы не всплывали заново в Part 1/Part 2.
+Задачи, которые осознанно вынесены из текущего релизного scope, но не отменены. Держим здесь, чтобы не потерялись и чтобы не всплывали заново в TODO.
+
+### GAME-10 — Finish Tutorial Release Slice
+
+Источник: [TODO.md → GAME-10](TODO.md), [INPROGRESS/TUTORIAL_SYSTEM.md](INPROGRESS/TUTORIAL_SYSTEM.md).
+
+Статус: отложено после первого релиза. В первом релизе отдельный tutorial slice не делаем: базовое
+обучение и объяснение механик будут закрыты через диалоги.
+
+Что сделать:
+- Добавить debug/cheat поддержку: list, force-run, force-complete, reset, replay Day 1 через сброс `ftue.*`.
+- Добавить editor/EditMode validation для tutorial target ids, `TutorialTargetTag`, quest ids и `quests.json`.
+- Tutorial-аналитика: инфраструктура готова (ANL-1), `TutorialAnalyticsSteps` уже шлёт `tutorial_checkpoint`. Расширять не нужно.
+- Закрыть устойчивость Day 1: корректный resume посреди дня и cancel-path.
+- Проверить player-facing skip и pointer/highlight только там, где это нужно для релизного первого опыта.
+- Убрать временную связность tutorial UI id из `GameplaySceneController`, если она создаёт риск поломки релиза.
+
+Критичность: critical. Tutorial — первый контакт игрока с игрой; сломанный Day 1 будет выглядеть как сломанный продукт.
 
 ### DEF-1 — Analytics Consent Withdrawal Toggle
 
@@ -705,12 +924,13 @@ Memories станет презентабельной только с этими 
 
 Почему отложено: это перенос между слоями, а не исправление. Для игрока не меняется ничего, риска для
 релиза не создаёт, а по «Scope Rule» этого файла попадает в «архитектурные улучшения на будущее».
-Срочная половина исходной задачи — версионирование и миграции — осталась в [INF-6](#inf-6--save-module-versioning-and-migrations).
+Срочная release-baseline часть исходной задачи закрыта в [INF-6](#inf-6--save-module-versioning-release-baseline);
+полный механизм миграций вынесен в [DEF-4](#def-4--save-module-version-reading--migrations).
 
 Что учесть, когда возьмём:
 - Перенос затрагивает четырнадцать save-модулей сразу, каждый со своим `ISaveHook` — это широкий, но
   механический диф; опасен не сложностью, а объёмом.
-- Разумно делать **после** INF-6, а не до: сначала зафиксировать контракт версий и миграций, потом
+- Разумно делать **после** DEF-4, а не до: сначала зафиксировать контракт версий и миграций, потом
   переносить готовый контракт. В обратном порядке придётся трогать одни и те же файлы дважды.
 - Связано с [DEF-3](#def-3--replace-manual-save-hook-force-construction) — там же убирается ручное
   форс-конструирование save-aware сервисов. Две задачи стоит планировать одной итерацией.
@@ -735,6 +955,27 @@ Memories станет презентабельной только с этими 
 
 Риск отсрочки принят при условии: до релиза не удалять текущие force-construction поля в `Bootstrap`, не добавлять
 новые save-aware сервисы без явной eager-регистрации и не менять порядок bootstrap/load.
+
+### DEF-4 — Save Module Version Reading & Migrations
+
+Полный механизм чтения версий save-модулей и feature-side миграций. Исходно был срочной половиной INF-6,
+но для первого релиза отложен после сброса pre-release сейвов и schema baseline `v1`.
+
+Источник: [INF-6](#inf-6--save-module-versioning-release-baseline), [SAVE_DAY_FLOW.md](SAVE_DAY_FLOW.md),
+[adr/0001-save-data-modular-payload.md](adr/0001-save-data-modular-payload.md).
+
+Что потребуется, когда возьмём:
+- Заставить загрузку читать `ModulePayload.Version` и сравнивать её с ожидаемой версией конкретного модуля.
+- Добавить feature-side точку подключения миграций: фича объявляет миграции рядом со своей save-моделью и регистрирует их
+  в DI, а ядро Save остаётся agnostic к внутренним DTO.
+- Определить failure policy: при провале миграции или future version сбрасывать один модуль к дефолту, а не
+  ронять весь save.
+- Типизированно обработать legacy string payload, который сейчас попадает в graceful-default fallback.
+- Покрыть тестами `v1 -> v2`, провал миграции, future version и сохранность остальных модулей.
+
+Почему отложено: до первого релиза продовых сейвов нет, все module versions стартуют с `1`, а pre-release сейвы
+стираются локально и на сервере. Задача становится обязательной до первого изменения формата save-модуля после
+релиза.
 
 ## Explicitly Not Release Scope Unless Reclassified
 

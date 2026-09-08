@@ -15,6 +15,7 @@ namespace UIShared
     {
         [SerializeField] private TEnum _tab;
         [SerializeField] private Toggle _toggle;
+        [SerializeField] private GameObject _badge;
 
         private ITabButtonVisual[] _visuals;
 
@@ -43,6 +44,12 @@ namespace UIShared
 
             for (var i = 0; i < _visuals.Length; i++)
                 _visuals[i]?.ApplySelected(selected);
+        }
+
+        public void SetBadge(bool on)
+        {
+            if (_badge != null)
+                _badge.SetActive(on);
         }
 
         private void OnValueChanged(bool value)

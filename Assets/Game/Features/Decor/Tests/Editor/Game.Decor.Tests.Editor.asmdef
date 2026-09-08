@@ -15,7 +15,8 @@
         "Game.Conditions.API",
         "Game.Conditions",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "Game.Core.UI"
     ],
     "includePlatforms": [
         "Editor"

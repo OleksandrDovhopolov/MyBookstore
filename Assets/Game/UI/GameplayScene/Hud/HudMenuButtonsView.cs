@@ -5,6 +5,7 @@ using Game.Inventory.UI;
 using Game.Journal.UI;
 using Game.Shop.UI;
 using Game.UI;
+using Infrastructure.Audio;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,9 +20,12 @@ namespace GameplayUI
         [SerializeField] private Button _inventoryButton;
         [SerializeField] private Button _shopButton;
         [SerializeField] private Button _settingsButton;
+        [SerializeField] private GameObject _journalBadge;
 
         private IHudWindowLauncher _launcher;
         private bool _opening;
+        private bool _journalBadgeInitialized;
+        private bool _journalBadgeOn;
 
         public event Action StartDayClicked;
 
@@ -86,6 +90,24 @@ namespace GameplayUI
 
         public void SetStartButtonActive(bool active) => SetButtonInteractable(_startDayButton, active);
 
+        public void SetJournalBadge(bool on)
+        {
+            if (_journalBadge != null)
+                _journalBadge.SetActive(on);
+
+            if (!_journalBadgeInitialized)
+            {
+                _journalBadgeInitialized = true;
+                _journalBadgeOn = on;
+                return;
+            }
+
+            if (!_journalBadgeOn && on)
+                PlayUi(Audio.Catalog?.NewJournalEntry);
+
+            _journalBadgeOn = on;
+        }
+
         private void OnStartDayButtonClicked() => StartDayClicked?.Invoke();
         private void OnDecorButtonClicked() => OpenAsync<DecorPlacementWindow>().Forget();
         private void OnJournalButtonClicked() => OpenAsync<JournalWindow>().Forget();
@@ -122,6 +144,11 @@ namespace GameplayUI
 
             button.interactable = value;
             button.gameObject.SetActive(value);
+        }
+
+        private static void PlayUi(AudioClip clip)
+        {
+            if (clip != null) Audio.PlayUi(clip);
         }
     }
 }

@@ -4,6 +4,9 @@
     "references": [
         "UniTask",
         "Game.Bootstrap",
+        "Infrastructure",
+        "DayCycle",
+        "Game.Bootstrap.Loading",
         "Analytics",
         "VContainer",
         "Book.Sell",

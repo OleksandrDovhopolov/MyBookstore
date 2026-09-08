@@ -20,7 +20,8 @@
         "Game.Inventory",
         "Game.Decor",
         "Dialogue",
-        "Game.Shop"
+        "Game.Shop",
+        "Game.Localization"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

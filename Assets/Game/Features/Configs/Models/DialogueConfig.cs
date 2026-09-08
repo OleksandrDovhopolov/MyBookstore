@@ -32,17 +32,17 @@ namespace Game.Configs.Models
 
     public sealed class DialogueLineConfig
     {
-        /// <summary>Speaker display name (MVP: raw text; a character id + localization later).</summary>
-        public string Speaker { get; set; }
+        /// <summary>Localization key for the speaker display name.</summary>
+        public string SpeakerKey { get; set; }
 
-        /// <summary>Raw reply text (MVP: raw; localization key later).</summary>
-        public string Text { get; set; }
+        /// <summary>Localization key for this reply.</summary>
+        public string TextKey { get; set; }
     }
 
     public sealed class DialogueOptionConfig
     {
-        /// <summary>Raw button text for this option (MVP: raw; localization key later).</summary>
-        public string Text { get; set; }
+        /// <summary>Localization key for this option. Empty means invisible bridge option.</summary>
+        public string TextKey { get; set; }
 
         /// <summary>Target <see cref="DialogueNodeConfig.NodeId"/>, or <c>"end"</c>/empty = terminal. An
         /// unresolvable non-"end" target is a content error (engine/validator warns) — NOT treated as terminal.</summary>

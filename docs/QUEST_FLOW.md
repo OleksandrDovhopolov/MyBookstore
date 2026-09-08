@@ -1,13 +1,16 @@
 # Quest Flow — фактический путь всех квестов
 
 Что реально происходит от появления персонажа до разблокировки локации, по каждому из четырёх квестов
-в `Assets/Configs/quests.json`, и где путь сейчас рвётся.
+в `Assets/Configs/quests.json`, и какие оговорки остаются.
 
 Это документ **состояния**, не спека. Спека механики — [QUESTS.md](QUESTS.md), модель условий активного
 запроса — [ACTIVE_REQUEST_CONDITIONS.md](ACTIVE_REQUEST_CONDITIONS.md), разблокировка локаций —
 [LOCATION_UNLOCK_SYSTEM.md](LOCATION_UNLOCK_SYSTEM.md).
 
-> **Статус на 2026-07-30.** Из четырёх квестов проходим **один** (Эдди). Три блокера — в реестре ниже.
+> **Статус на 2026-09-04.** Блокеры P1–P6 закрыты: Kids/Fact активные запросы решаемы (`sample_requests.json`),
+> открытки выдаются за день (P3), у `map` есть источник в газете (P4), задан темп активных запросов
+> (день 2 = 1, дефолт = 3; P5), капитан привязан к Порту (P6), открытки списываются при сдаче
+> квеста Капитана (P9). Остаётся некритичная доработка P7.
 
 Легенда: ✅ работает · 🟡 работает с оговоркой · 🔴 блокер
 
@@ -81,14 +84,16 @@ QuestRewardBridge (ISaveHook.BeforeSaveAsync) ──▶ IRewardGrantService
 | **Награда** | `millie_letter` (quest_item) + `fuel_canister` ×1 |
 | **Дальше** | `millie_letter` ×1 + `fuel_canister` ×2 → **Кампус** |
 
-🔴 **Блокер: ни одна Fact-книга не может получить «отлично».** Все 7 Fact-запросов в `hard_requests.json`
-идентичны по условиям — `genres contains "Fact"` **AND** `qualities contains "History"`. Качество `History`
-есть у 9 книг, все жанра Classic/Drama; у Fact-книг его нет ни у одной. Ближайшее — `Historic` (1 книга),
-то есть в контенте опечатка плюс путаница словарей: описание `req_hard_30` говорит «popular-science», а
-условие требует историю.
+✅ **Разрешено (P2 закрыт).** Исторически блокер был в legacy-файле `hard_requests.json`: все 7 Fact-запросов
+требовали `qualities contains "History"` — качества `History` в каталоге нет ни у одной книги (у Fact-книг
+есть `Historic`, 58 шт. — путаница словарей). Но рантайм активные запросы этот файл **никогда не грузил**:
+модель замаплена только на `sample_requests.json` (`[ConfigFile("sample_requests")]`), и там оба Fact-запроса
+(`req_fact_01`, `req_fact_02`) решаемы реальными Fact-книгами (14 и 11 совпадений по каталогу). Legacy-файл
+`hard_requests.json` удалён, чтобы не вводить в заблуждение.
 
-Реально лежит на Fact-книгах: `Pop Science` (5), `Non Fiction` (4), `Nature` (4), `Space` (2),
-`Historic` (1), `Biography` (1), `Political` (2), `Cooking` (1).
+Регрессию стережёт `ActiveRequestValidator` (меню `Tools → Configs → Validate Active Requests` + гейт
+`PreBuildValidationGate`) и тест `ActiveRequestSolvabilityTests`: оба ловят «голодающий» жанр, у которого ни
+одна книга не может получить `Excellent`.
 
 **Как считается зачёт** (важно при починке): засчитывается только `RecommendationTier.Excellent`
 (`SalesDayCommitService`). После GAME-22 активная продажа засчитывается в жанр, по которому прошёл
@@ -114,16 +119,16 @@ QuestRewardBridge (ISaveHook.BeforeSaveAsync) ──▶ IRewardGrantService
 «скрыть» не нужен — витрина строится **только** из лотов `shop.json` (`ShopOfferSource.BuildOffers`),
 `decors.json` её не наполняет.
 
-🔴 **Блокер, тот же по природе, что у Милли: ни одна Kids-книга не может получить «отлично».** Все 7
-Kids-запросов требуют `qualities contains "Fantasy"`. Качество `Fantasy` есть у 6 книг — все Crime/Classic;
-у Kids-книг его нет. Автор снова подставил **название жанра в слот качества**.
-
-Реально лежит на Kids-книгах: `Kids` (все 10), `Animals` (3), `Humor` (2), `Nature` (2),
-`Coming of Age` (2), `Magic` (1), `Philosophical` (1), `Contemporary` (1).
+✅ **Разрешено (P1 закрыт), той же природы, что P2.** В legacy `hard_requests.json` все 7 Kids-запросов были
+неразрешимы вдвойне: `genres contains "Horror"`/`"Tragedy"` (это вообще не жанры — их нет в `BookGenre`) плюс
+`qualities contains "Fantasy"` (такого качества в каталоге 0). Но этот файл рантаймом не грузился; живой файл
+`sample_requests.json` содержит решаемые Kids-запросы `req_kids_01`, `req_kids_02` (20 и 3 совпадения). Файл
+`hard_requests.json` удалён. Регрессию стережёт тот же `ActiveRequestValidator` + тест
+`ActiveRequestSolvabilityTests` (см. блок Милли).
 
 ---
 
-## 4. Капитан — `q_captain_postcards` 🔴
+## 4. Капитан — `q_captain_postcards` 🟡
 
 | | |
 |---|---|
@@ -135,23 +140,14 @@ Kids-запросов требуют `qualities contains "Fantasy"`. Качес�
 
 ✅ Корабль выдаётся только квестом — в `shop.json` лота нет.
 ✅ `soldTotal` для Рынка существует и зарегистрирован (`SoldTotalConditionFactory`).
-
-🔴 **Блокер: открытки никто не выдаёт.** Предмет `postcard` заведён в `consumables.json` (категория
-`consumable` = Stack, поэтому `GetCount` считает штуки и `min: 10` отработает), но механики «1 открытка за
-завершение игрового дня» не существует. Валидатор ссылок это и сообщает:
-`Item 'postcard' (consumable) is not granted by any quest reward or shop lot`.
-
-🟠 **Капитан появится не обязательно в Порту.** У `CustomerScriptConfig` нет поля локации — `IsEligible`
-требует ровно одно из `dayIndex` / `activationQuestId` и локацию не учитывает. Он придёт на первом
-отыгранном дне после активации квеста, на любой локации.
+✅ Открытки выдаются за завершение дня: `economy.json.dayCompletionRewards` (`postcard` ×1).
+✅ Капитан привязан к Порту через `CustomerScriptConfig.LocationId`.
+✅ Открытки списываются при сдаче квеста: `q_captain_postcards.costs` требует `postcard` ×10, а
+`QuestRewardGranter` списывает cost один раз после успешной выдачи награды.
 
 🟡 **Активация с задержкой.** `QuestsService.Subscribe()` подписан на sales / decor / inventory /
 dayProgress и **не на посещения локаций**. Визит фиксируется при входе, но квест активируется на следующей
 переоценке — практически в тот же день при первой продаже.
-
-🟡 **Открытки не списываются.** «Собрать для него 10 открыток» — `haveItem` только проверяет наличие.
-Механики «отдать предметы за квест» нет (списание есть только у `unlockCost` локаций). После награды
-10 открыток останутся в инвентаре. `CanBeReset` = `false`, так что потратить их позже задачу не откатит.
 
 ---
 
@@ -162,8 +158,8 @@ dayProgress и **не на посещения локаций**. Визит фи�
 | **Парк** | — | — | — | ✅ открыт сразу |
 | **Кампус** | `millie_letter` ×1, `fuel_canister` ×2 | — | Милли | 🔴 упирается в P2 |
 | **Порт** | `port_trade_permit` ×1, `fuel_canister` ×2 | — | Тара | 🔴 упирается в P1 |
-| **Рынок** | `captain_recommendation` ×1, `fuel_canister` ×5 | `soldTotal` 200 | Капитан | 🔴 упирается в P3 |
-| **Деревня** | `map` ×1, `fuel_canister` ×15 | `soldGenre` Fantasy 150, Kids 150 | — | 🔴 у `map` нет источника |
+| **Рынок** | `captain_recommendation` ×1, `fuel_canister` ×5 | `soldTotal` 200 | Капитан | ✅ достижим |
+| **Деревня** | `map` ×1, `fuel_canister` ×15 | `soldGenre` Fantasy 150, Kids 150 | — | ✅ достижима |
 
 Канистры покупаются в магазине — лот `newspaper_consumable_fuel_canister`, витрина
 `newspaper.consumables`, `limit.mode: Unlimited` (для Деревни нужно 15, `Disposable` сделал бы её
@@ -180,22 +176,23 @@ dayProgress и **не на посещения локаций**. Визит фи�
 
 | # | Проблема | Влияние | Где |
 |---|---|---|---|
-| **P1** 🔴 | Все 7 Kids-запросов нерешаемы (`qualities contains "Fantasy"`) | Тара непроходима → Порт, затем Рынок и Деревня | `hard_requests.json` |
-| **P2** 🔴 | Все 7 Fact-запросов нерешаемы (`qualities contains "History"`) | Милли непроходима → Кампус | `hard_requests.json` |
-| **P3** 🔴 | Открытки не выдаются | Капитан непроходим → Рынок | нет механики |
-| **P4** 🔴 | У `map` нет источника | Деревня недостижима | дизайн не определён |
-| **P5** 🟠 | `days.json` обрывается на дне 2; у дней 1–2 `activeRequestCount: 0` при `applyModifiers: false` (жёсткий override), с дня 3 берётся `SalesTrafficSettings.DefaultActiveRequestCount` = 1 | обе `activePickGenre`-задачи стартуют на ~1 запросе в день; в дни выдачи прогресс невозможен физически | `days.json` |
-| **P6** 🟠 | Капитан спавнится на любой локации | расхождение с ТЗ «заход в Порт» | нет `locationId` в `CustomerScriptConfig` |
+| **P1** ✅ | Kids-запросы решаемы. Неразрешимые жили в legacy `hard_requests.json`, который рантайм не грузил; живой `sample_requests.json` содержит валидные Kids-запросы. Legacy-файл удалён | — | Закрыто: `sample_requests.json` + тест `ActiveRequestSolvabilityTests` |
+| **P2** ✅ | Fact-запросы решаемы. Та же природа, что P1 — блокер был только в удалённом legacy `hard_requests.json` | — | Закрыто: `sample_requests.json` + тест `ActiveRequestSolvabilityTests` |
+| **P3** ✅ | Открытки выдаются: `economy.json.dayCompletionRewards` (postcard ×1) начисляется за каждый завершённый день в `SalesDayCommitService.GrantDayCompletionRewardsAsync` (идемпотентно, покрыто тестами) | — | Закрыто: `economy.json` + `SalesDayCommitService` |
+| **P4** ✅ | У `map` есть источник: лот `newspaper_quest_item_map` в `shop.json` (200 gold, Disposable) выдаёт `map` (quest_item) для открытия Деревни | — | Закрыто: `shop.json` |
+| **P5** ✅ | Темп активных запросов задан: день 1 = 0, день 2 = 1 (`days.json`), день 3+ = 3 (`SalesTraffic.asset._defaultActiveRequestCount`) | — | Закрыто: `days.json` + `SalesTraffic.asset` |
+| **P6** ✅ | Капитан привязан к Порту: добавлено поле `CustomerScriptConfig.LocationId`, скрипт `captain_quest_intro` помечен `locationId: loc_port`, `ScriptedCustomerSpawner.IsEligible` фильтрует по `setup.LocationId` | — | Закрыто: `CustomerScriptConfig` + `customer_scripts.json` + `ScriptedCustomerSpawner` |
 | **P7** 🟡 | Активация по `visitLocation` с задержкой | квест появляется не в момент входа | `QuestsService.Subscribe()` |
 | **P8** ✅ | `activePickGenre` считал `genres[0]`, а условие запроса — весь массив `genres` | двужанровая книга давала «отлично», но не засчитывалась в квест | Закрыто GAME-22: активная продажа фиксирует жанр запроса |
-| **P9** 🟡 | Открытки не списываются при сдаче квеста | предметы остаются в инвентаре | нет механики |
+| **P9** ✅ | Открытки списываются при сдаче квеста Капитана через `QuestConfig.Costs` и `QuestRewardGranter` | — | Закрыто: `quests.json` + `QuestRewardGranter` |
 
-**Порядок разбора.** P5 первым — он корень темпа для P1/P2 и вообще всей прогрессии после дня 2. Затем
-P1/P2 (правка данных, самая дешёвая), затем P3. P6–P9 — доработки.
+**Порядок разбора.** P1–P6 и P9 закрыты. Остаётся мелкая доработка P7 (задержка активации по
+`visitLocation`) — на проходимость цепочки она не влияет.
 
 Против повторения P1/P2 стоит гейт: `Tools → Configs → Validate Active Requests` и автоматическая
-проверка на билде (`PreBuildValidationGate`, см. [BUILD.md §0](BUILD.md)). Он ловит и нерешаемый запрос, и
-«голодающий жанр», у которого ни одна книга не может получить `Excellent`.
+проверка на билде (`PreBuildValidationGate`, см. [BUILD.md §0](BUILD.md)), плюс тест
+`ActiveRequestSolvabilityTests`. Все трое ловят и нерешаемый запрос, и «голодающий жанр», у которого ни одна
+книга не может получить `Excellent`.
 
 ---
 

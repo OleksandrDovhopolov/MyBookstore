@@ -4,11 +4,13 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Decor.UI;
+using Game.Localization;
 using Game.Rewards.UI;
 using Game.Shop;
 using Game.Shop.API;
 using Game.UI;
 using Game.UI.ContentWidget;
+using Infrastructure.Audio;
 using SpriteService;
 using UIShared;
 using UnityEngine;
@@ -19,7 +21,7 @@ namespace Game.Shop.UI
     [Window("NewspaperWindow", WindowType.Page, keepInCache: true)]
     public sealed class ShopWindow : WindowController<ShopWindowView>
     {
-        private const string TodoDescription = "TODO: item description";
+        private const string TodoDescriptionKey = "ui.shop.item.description.placeholder";
 
         private IShopService _shop;
         private IShopConfirmationPolicy _confirmPolicy;
@@ -238,7 +240,7 @@ namespace Game.Shop.UI
 
             try
             {
-                var data = new ShopItemWidgetData(lotId, TodoDescription);
+                var data = new ShopItemWidgetData(lotId, LocalizationLocator.GetOrKey(TodoDescriptionKey));
                 var args = new ContentWidgetArgs(
                     data,
                     anchor,
@@ -317,6 +319,7 @@ namespace Game.Shop.UI
             if (result.Status == ShopPurchaseStatus.Success)
             {
                 UpdatePurchasedCard(lotId);
+                PlaySfx(Audio.Catalog?.PurchaseSuccess);
 
                 if (result.Granted != null && result.Granted.Items.Count > 0)
                 {
@@ -327,8 +330,10 @@ namespace Game.Shop.UI
             }
             else if (result.Status != ShopPurchaseStatus.Success)
             {
+                PlaySfx(Audio.Catalog?.ActionBlocked);
+
                 if (result.Status == ShopPurchaseStatus.NotEnoughCurrency)
-                    ShowInfoWidget(ShopUiTexts.NotEnoughGold);
+                    ShowInfoWidget(LocalizationLocator.GetOrKey(ShopUiTexts.NotEnoughGold));
 
                 Debug.Log($"[NewspaperWindow] Purchase '{lotId}' failed: {result.Status}.");
             }
@@ -350,6 +355,11 @@ namespace Game.Shop.UI
 
             if (TryGetCurrentOffer(lotId, out var offer))
                 card.UpdateOfferState(offer);
+        }
+
+        private static void PlaySfx(AudioClip clip)
+        {
+            if (clip != null) Audio.PlaySfx(clip);
         }
 
         private bool TryGetCurrentOffer(string lotId, out ShopOffer offer)

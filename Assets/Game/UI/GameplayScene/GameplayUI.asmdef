@@ -22,7 +22,8 @@
         "Game.Journal.UI",
         "Game.Inventory",
         "Game.Shop",
-        "Game.Privacy"
+        "Game.Privacy",
+        "Game.Localization"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

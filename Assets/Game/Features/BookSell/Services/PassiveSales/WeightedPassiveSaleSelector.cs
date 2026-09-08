@@ -79,7 +79,7 @@ namespace Book.Sell.Services
                 return null;
             }
 
-            Debug.Log($"{LogPrefix} winner genre={pickedGenre} ({winners.Count} genre(s) passed) → book={book.BookId} \"{book.Config?.Title}\" rarity={EffectiveWeight(book):F3} price={BookConfig.FixedPriceGold}");
+            Debug.Log($"{LogPrefix} winner genre={pickedGenre} ({winners.Count} genre(s) passed) → book={book.BookId} \"{book.Config?.TitleKey}\" rarity={EffectiveWeight(book):F3} price={BookConfig.FixedPriceGold}");
 
             return new PassiveSaleCandidate(
                 book,

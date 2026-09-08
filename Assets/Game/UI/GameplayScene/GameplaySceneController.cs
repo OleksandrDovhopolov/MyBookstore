@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
@@ -7,6 +8,8 @@ using Game.Configs;
 using Game.Configs.Models;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
+using Game.Journal.UI;
+using Game.Localization;
 using Game.Location.UI;
 using Game.LocationUnlock.API;
 using Game.Preparation.Services;
@@ -36,6 +39,7 @@ namespace GameplayUI
         private IConfigsService _configs;
         private IUiSpriteProvider _uiSprites;
         private IGameFlowService _gameFlow;
+        private IJournalAttentionService _journalAttention;
 
         // True once the window has loaded all the data it needs to display (currently the genre sprites).
         public bool IsDataReady { get; private set; }
@@ -70,7 +74,8 @@ namespace GameplayUI
             ISubscriber<GameplayGenreBookCountsChanged> genreBookCountsSubscriber = null,
             ISubscriber<GameplayLocationGoldEarnedChanged> locationGoldEarnedSubscriber = null,
             IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null,
-            ISubscriber<TutorialStepChanged> tutorialStepSubscriber = null)
+            ISubscriber<TutorialStepChanged> tutorialStepSubscriber = null,
+            IJournalAttentionService journalAttention = null)
         {
             _uiSprites = uiSprites;
             _dayProgress = dayProgress;
@@ -85,6 +90,7 @@ namespace GameplayUI
             _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
             _genreBookCountsRequestPublisher = genreBookCountsRequestPublisher;
             _tutorialStepSubscriber = tutorialStepSubscriber;
+            _journalAttention = journalAttention;
         }
 
         protected override void OnInit()
@@ -113,6 +119,12 @@ namespace GameplayUI
 
             if (_gameFlow != null)
                 _gameFlow.LocationLoadedChanged += OnLocationLoadedChanged;
+
+            if (_journalAttention != null)
+            {
+                _journalAttention.Changed += RefreshJournalBadge;
+                RefreshJournalBadge();
+            }
         }
 
         protected override void OnShowStart()
@@ -155,7 +167,7 @@ namespace GameplayUI
             {
                 var ct = View.destroyCancellationToken;
                 var context = await _session.StartOrResumeAsync(ct);
-                View.SetDayText($"Day {context.Day}");
+                View.SetDayText(LocalizationLocator.GetOrKey("ui.gameplay.day", context.Day));
 
                 if (_preparationSession != null)
                 {
@@ -211,6 +223,9 @@ namespace GameplayUI
 
             if (_gameFlow != null)
                 _gameFlow.LocationLoadedChanged -= OnLocationLoadedChanged;
+
+            if (_journalAttention != null)
+                _journalAttention.Changed -= RefreshJournalBadge;
         }
 
         private void SetSceneButtonsInteractable(bool interactable)
@@ -232,6 +247,11 @@ namespace GameplayUI
         {
             View?.SetPanelShown(AnimatedShowHidePanel.PanelId.GenreBookCounts, loaded);
             View?.SetGoldCounterMode(loaded);
+        }
+
+        private void RefreshJournalBadge()
+        {
+            View?.MenuButtons?.SetJournalBadge(_journalAttention != null && _journalAttention.HasAnyUnseen);
         }
 
         private void OnStartGameClicked() => StartGameAsync().Forget();
@@ -372,8 +392,8 @@ namespace GameplayUI
         private string ResolveLocationDisplayName(string locationId)
         {
             if (_configs != null && _configs.TryGet<LocationConfig>(locationId, out var config)
-                                 && !string.IsNullOrEmpty(config.DisplayName))
-                return config.DisplayName;
+                                 && !string.IsNullOrEmpty(config.DisplayNameKey))
+                return LocalizationLocator.GetOrKey(config.DisplayNameKey);
             return locationId;
         }
 
@@ -394,6 +414,15 @@ namespace GameplayUI
         public async UniTask OpenAsync<TWindow>(WindowArgs args = null)
             where TWindow : class, IWindowController, new()
         {
+            // A widget (or the HUD itself) opens on top of the HUD without replacing its context, so it
+            // leaves the panels up — and must not become a hide owner either: a still-open widget would
+            // otherwise keep the panels down after every real owner has released them.
+            if (KeepsHudPanelsVisible<TWindow>())
+            {
+                await ShowKeepingPanelsAsync<TWindow>(args);
+                return;
+            }
+
             try
             {
                 await View.HideAnimatedPanelsAsync();
@@ -417,6 +446,28 @@ namespace GameplayUI
                 ShowPanelsIfNoOwnersLeft();
             }
         }
+
+        private async UniTask ShowKeepingPanelsAsync<TWindow>(WindowArgs args)
+            where TWindow : class, IWindowController, new()
+        {
+            try
+            {
+                await UIManager.ShowAsync<TWindow>(args, View.destroyCancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[GameplaySceneController] Failed to open {typeof(TWindow).Name}: {e}");
+            }
+        }
+
+        // Mirrors the [Window] lookup UIManager.ShowAsync does. A type without the attribute throws
+        // there anyway, so it just falls through to the regular panel-hiding path.
+        private static bool KeepsHudPanelsVisible<TWindow>()
+            => typeof(TWindow).GetCustomAttribute<WindowAttribute>()?.Type
+                is WindowType.Widget or WindowType.HUD;
 
         // Hides the HUD panels until the returned lease is disposed. Used by flows that open more than
         // one window in sequence, where per-window ownership would leave a gap between them.

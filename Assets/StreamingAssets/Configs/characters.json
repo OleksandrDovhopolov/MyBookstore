@@ -1,10 +1,15 @@
 [
   {
     "id": "eddi",
-    "displayNameKey": "Eddy",
+    "displayNameKey": "character.eddi.name",
     "portraitKey": "eddi",
-    "favoriteGenres": ["Fact", "Travel"],
-    "discoveryQuestIds": ["q_intro_eddi"],
+    "favoriteGenres": [
+      "Fact",
+      "Travel"
+    ],
+    "discoveryQuestIds": [
+      "q_intro_eddi"
+    ],
     "memories": [
       {
         "id": "mem_eddi_intro",
@@ -19,10 +24,16 @@
   },
   {
     "id": "millie",
-    "displayNameKey": "Millie",
+    "displayNameKey": "character.millie.name",
     "portraitKey": "millie",
-    "favoriteGenres": ["Drama", "Crime", "Classic"],
-    "discoveryQuestIds": ["q_intro_millie"],
+    "favoriteGenres": [
+      "Drama",
+      "Crime",
+      "Classic"
+    ],
+    "discoveryQuestIds": [
+      "q_intro_millie"
+    ],
     "memories": [
       {
         "id": "mem_millie_intro",
@@ -37,10 +48,15 @@
   },
   {
     "id": "tara",
-    "displayNameKey": "Tara",
+    "displayNameKey": "character.tara.name",
     "portraitKey": "tara",
-    "favoriteGenres": ["Fantasy", "Kids"],
-    "discoveryQuestIds": ["q_tara_kids"],
+    "favoriteGenres": [
+      "Fantasy",
+      "Kids"
+    ],
+    "discoveryQuestIds": [
+      "q_tara_kids"
+    ],
     "memories": [
       {
         "id": "mem_tara_kids",
@@ -55,10 +71,15 @@
   },
   {
     "id": "captain",
-    "displayNameKey": "Captain",
+    "displayNameKey": "character.captain.name",
     "portraitKey": "captain",
-    "favoriteGenres": ["Crime", "Travel"],
-    "discoveryQuestIds": ["q_captain_postcards"],
+    "favoriteGenres": [
+      "Crime",
+      "Travel"
+    ],
+    "discoveryQuestIds": [
+      "q_captain_postcards"
+    ],
     "memories": [
       {
         "id": "mem_captain_postcards",

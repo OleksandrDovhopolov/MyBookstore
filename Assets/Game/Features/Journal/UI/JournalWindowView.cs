@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Game.Localization;
 using Game.Quest.UI;
 using Game.UI;
 using Game.UI.ContentWidget;
@@ -68,7 +69,7 @@ namespace Game.Journal.UI
             _activeTab = tab;
 
             if (_tabTitleLabel != null)
-                _tabTitleLabel.text = JournalTabTitles.Get(tab);
+                _tabTitleLabel.text = LocalizationLocator.GetOrKey(JournalTabTitles.Get(tab));
         }
 
         public void RenderPeople(IReadOnlyList<JournalCharacterItemModel> models, IUiSpriteProvider sprites)
@@ -89,6 +90,9 @@ namespace Game.Journal.UI
             Action<QuestRewardItemModel, RectTransform> onRewardInfo,
             IUiSpriteProvider sprites)
             => _questsPage?.Render(models, onClaim, onRewardInfo, sprites);
+
+        public void SetTabBadge(JournalTab tab, bool on)
+            => _tabBar?.SetBadge(tab, on);
 
         public void Clear()
         {

@@ -48,7 +48,7 @@ namespace Game.Newspaper.Tests.Editor
         public void Build_DecorReward_EmitsDecorAndSkipsResource()
         {
             var configs = new FakeConfigsService(
-                decors: new[] { Decor("vintage_globe", "Vintage Globe", "Decor/VintageGlobe") });
+                decors: new[] { Decor("vintage_globe", "Vintage Globe") });
             var spec = new RewardSpec("decor_reward", new[]
             {
                 RewardItem.InventoryItem("vintage_globe", InventoryCategories.Decor, 1),
@@ -63,7 +63,7 @@ namespace Game.Newspaper.Tests.Editor
 
             Assert.AreEqual(1, rewards.Count);
             Assert.AreEqual("vintage_globe", rewards[0].ResourceId);
-            Assert.AreEqual("Vintage Globe", rewards[0].DisplayName);
+            Assert.AreEqual("[`Vintage Globe`]", rewards[0].DisplayName);
             Assert.AreEqual(InventoryCategories.Decor, rewards[0].Category);
             Assert.AreEqual(1, rewards[0].Amount);
         }
@@ -72,7 +72,7 @@ namespace Game.Newspaper.Tests.Editor
         public void Build_ConsumableRewards_UseConsumableDisplayName()
         {
             var configs = new FakeConfigsService(
-                consumables: new[] { new ConsumableConfig { Id = "fuel_canister", DisplayName = "Fuel Canister" } });
+                consumables: new[] { new ConsumableConfig { Id = "fuel_canister", DisplayNameKey = "Fuel Canister" } });
             var spec = new RewardSpec("quest_reward", new[]
             {
                 RewardItem.InventoryItem("fuel_canister", InventoryCategories.Consumable, 2),
@@ -83,7 +83,7 @@ namespace Game.Newspaper.Tests.Editor
 
             Assert.AreEqual(1, rewards.Count);
             Assert.AreEqual("fuel_canister", rewards[0].ResourceId);
-            Assert.AreEqual("Fuel Canister", rewards[0].DisplayName);
+            Assert.AreEqual("[`Fuel Canister`]", rewards[0].DisplayName);
             Assert.AreEqual(InventoryCategories.Consumable, rewards[0].Category);
             Assert.AreEqual(3, rewards[0].Amount);
         }
@@ -92,7 +92,7 @@ namespace Game.Newspaper.Tests.Editor
         public void Build_QuestItemRewards_UseQuestItemDisplayName()
         {
             var configs = new FakeConfigsService(
-                questItems: new[] { new QuestItemConfig { Id = "millie_letter", DisplayName = "Millie Letter" } });
+                questItems: new[] { new QuestItemConfig { Id = "millie_letter", DisplayNameKey = "Millie Letter" } });
             var spec = new RewardSpec("quest_reward", new[]
             {
                 RewardItem.InventoryItem("millie_letter", InventoryCategories.QuestItem, 1)
@@ -102,7 +102,7 @@ namespace Game.Newspaper.Tests.Editor
 
             Assert.AreEqual(1, rewards.Count);
             Assert.AreEqual("millie_letter", rewards[0].ResourceId);
-            Assert.AreEqual("Millie Letter", rewards[0].DisplayName);
+            Assert.AreEqual("[`Millie Letter`]", rewards[0].DisplayName);
             Assert.AreEqual(InventoryCategories.QuestItem, rewards[0].Category);
         }
 
@@ -110,8 +110,8 @@ namespace Game.Newspaper.Tests.Editor
         public void Build_MixedDecorAndQuestItem_EmitsCardsForBoth()
         {
             var configs = new FakeConfigsService(
-                decors: new[] { Decor("lavender", "Lavender", "lavender") },
-                questItems: new[] { new QuestItemConfig { Id = "port_trade_permit", DisplayName = "Trade Permit" } });
+                decors: new[] { Decor("lavender", "Lavender") },
+                questItems: new[] { new QuestItemConfig { Id = "port_trade_permit", DisplayNameKey = "Trade Permit" } });
             var spec = new RewardSpec("quest_reward", new[]
             {
                 RewardItem.InventoryItem("lavender", InventoryCategories.Decor, 1),
@@ -163,8 +163,8 @@ namespace Game.Newspaper.Tests.Editor
         private static BookConfig Book(string id, string genre) =>
             new BookConfig { Id = id, Genres = new[] { genre } };
 
-        private static DecorConfig Decor(string id, string displayName, string iconAddress) =>
-            new DecorConfig { Id = id, DisplayName = displayName, IconAddress = iconAddress };
+        private static DecorConfig Decor(string id, string displayName) =>
+            new DecorConfig { Id = id, DisplayNameKey = displayName };
 
         private sealed class FakeConfigsService : IConfigsService
         {

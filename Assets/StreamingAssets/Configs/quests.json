@@ -7,33 +7,56 @@
     "titleKey": "quest.q_intro_eddi.title",
     "descriptionKey": "quest.q_intro_eddi.desc",
     "nextQuestIds": [],
-    "activationConditions": { "type": "dialogueDelivered", "dialogueId": "eddy1" },
-    "startsWhen": "Day 1. Customer script 'eddi_intro' brings dialogue 'eddy1'; the quest activates once that dialogue is delivered.",
+    "activationConditions": {
+      "type": "dialogueDelivered",
+      "dialogueId": "eddy1"
+    },
     "failConditions": null,
     "tasks": [
       {
         "id": 1,
         "descriptionKey": "task.q_intro_eddi_sell_crime",
-        "completionConditions": { "type": "soldGenre", "genre": "Crime", "min": 10 }
+        "completionConditions": {
+          "type": "soldGenre",
+          "genre": "Crime",
+          "min": 10
+        }
       },
       {
         "id": 2,
         "descriptionKey": "task.q_intro_eddi_sell_drama",
-        "completionConditions": { "type": "soldGenre", "genre": "Drama", "min": 10 }
+        "completionConditions": {
+          "type": "soldGenre",
+          "genre": "Drama",
+          "min": 10
+        }
       },
       {
         "id": 3,
         "descriptionKey": "task.q_intro_eddi_sell_classic",
-        "completionConditions": { "type": "soldGenre", "genre": "Classic", "min": 10 }
+        "completionConditions": {
+          "type": "soldGenre",
+          "genre": "Classic",
+          "min": 10
+        }
       },
       {
         "id": 4,
         "descriptionKey": "task.q_intro_eddi_sell_fantasy",
-        "completionConditions": { "type": "soldGenre", "genre": "Fantasy", "min": 15 }
+        "completionConditions": {
+          "type": "soldGenre",
+          "genre": "Fantasy",
+          "min": 15
+        }
       }
     ],
     "rewards": [
-      { "kind": "InventoryItem", "id": "fuel_canister", "category": "consumable", "amount": 2 }
+      {
+        "kind": "InventoryItem",
+        "id": "fuel_canister",
+        "category": "consumable",
+        "amount": 2
+      }
     ],
     "worldEffects": []
   },
@@ -45,19 +68,35 @@
     "titleKey": "quest.q_intro_millie.title",
     "descriptionKey": "quest.q_intro_millie.desc",
     "nextQuestIds": [],
-    "activationConditions": { "type": "dialogueDelivered", "dialogueId": "millie1" },
-    "startsWhen": "Day 2. Customer script 'millie_intro' brings dialogue 'millie1'; the quest activates once that dialogue is delivered.",
+    "activationConditions": {
+      "type": "dialogueDelivered",
+      "dialogueId": "millie1"
+    },
     "failConditions": null,
     "tasks": [
       {
         "id": 1,
         "descriptionKey": "task.q_intro_millie_pick_science",
-        "completionConditions": { "type": "activePickGenre", "genre": "Fact", "min": 5 }
+        "completionConditions": {
+          "type": "activePickGenre",
+          "genre": "Fact",
+          "min": 5
+        }
       }
     ],
     "rewards": [
-      { "kind": "InventoryItem", "id": "millie_letter", "category": "quest_item", "amount": 1 },
-      { "kind": "InventoryItem", "id": "fuel_canister", "category": "consumable", "amount": 1 }
+      {
+        "kind": "InventoryItem",
+        "id": "millie_letter",
+        "category": "quest_item",
+        "amount": 1
+      },
+      {
+        "kind": "InventoryItem",
+        "id": "fuel_canister",
+        "category": "consumable",
+        "amount": 1
+      }
     ],
     "worldEffects": []
   },
@@ -69,19 +108,35 @@
     "titleKey": "quest.q_tara_kids.title",
     "descriptionKey": "quest.q_tara_kids.desc",
     "nextQuestIds": [],
-    "activationConditions": { "type": "dialogueDelivered", "dialogueId": "tara_quest_1" },
-    "startsWhen": "Day 5. Customer script 'tara_quest_intro' brings dialogue 'tara_quest_1'; the quest activates once that dialogue is delivered.",
+    "activationConditions": {
+      "type": "dialogueDelivered",
+      "dialogueId": "tara_quest_1"
+    },
     "failConditions": null,
     "tasks": [
       {
         "id": 1,
         "descriptionKey": "task.q_tara_kids_pick_kids",
-        "completionConditions": { "type": "activePickGenre", "genre": "Kids", "min": 5 }
+        "completionConditions": {
+          "type": "activePickGenre",
+          "genre": "Kids",
+          "min": 5
+        }
       }
     ],
     "rewards": [
-      { "kind": "InventoryItem", "id": "port_trade_permit", "category": "quest_item", "amount": 1 },
-      { "kind": "InventoryItem", "id": "lavender", "category": "decor", "amount": 1 }
+      {
+        "kind": "InventoryItem",
+        "id": "port_trade_permit",
+        "category": "quest_item",
+        "amount": 1
+      },
+      {
+        "kind": "InventoryItem",
+        "id": "lavender",
+        "category": "decor",
+        "amount": 1
+      }
     ],
     "worldEffects": []
   },
@@ -93,19 +148,42 @@
     "titleKey": "quest.q_captain_postcards.title",
     "descriptionKey": "quest.q_captain_postcards.desc",
     "nextQuestIds": [],
-    "activationConditions": { "type": "visitLocation", "locationId": "loc_port", "min": 1 },
-    "startsWhen": "No fixed day - starts on the first visit to loc_port. Unlocking that location costs port_trade_permit x1 (the reward of q_tara_kids) plus fuel_canister x2, so in practice this follows q_tara_kids.",
+    "activationConditions": {
+      "type": "visitLocation",
+      "locationId": "loc_port",
+      "min": 1
+    },
     "failConditions": null,
     "tasks": [
       {
         "id": 1,
         "descriptionKey": "task.q_captain_postcards_collect",
-        "completionConditions": { "type": "haveItem", "itemId": "postcard", "min": 10 }
+        "completionConditions": {
+          "type": "haveItem",
+          "itemId": "postcard",
+          "min": 10
+        }
       }
     ],
     "rewards": [
-      { "kind": "InventoryItem", "id": "captain_recommendation", "category": "quest_item", "amount": 1 },
-      { "kind": "InventoryItem", "id": "ship", "category": "decor", "amount": 1 }
+      {
+        "kind": "InventoryItem",
+        "id": "captain_recommendation",
+        "category": "quest_item",
+        "amount": 1
+      },
+      {
+        "kind": "InventoryItem",
+        "id": "ship",
+        "category": "decor",
+        "amount": 1
+      }
+    ],
+    "costs": [
+      {
+        "itemId": "postcard",
+        "amount": 10
+      }
     ],
     "worldEffects": []
   }

@@ -31,12 +31,14 @@ namespace Book.Sell.Tests.Editor
             string dialogueId = null,
             string characterId = null,
             ScriptedPassivePurchaseConfig[] attempts = null,
-            bool activeRequest = false)
+            bool activeRequest = false,
+            string locationId = null)
             => new()
             {
                 Id = id,
                 DayIndex = dayIndex,
                 ActivationQuestId = activationQuestId,
+                LocationId = locationId,
                 DialogueId = dialogueId,
                 CharacterId = characterId,
                 ActiveRequest = activeRequest,
@@ -60,7 +62,7 @@ namespace Book.Sell.Tests.Editor
                 new DialogueNodeConfig
                 {
                     NodeId = "root",
-                    Lines = new[] { new DialogueLineConfig { Speaker = "x", Text = "line" } },
+                    Lines = new[] { new DialogueLineConfig { SpeakerKey = "x", TextKey = "line" } },
                     Options = Array.Empty<DialogueOptionConfig>()
                 }
             }
@@ -228,6 +230,38 @@ namespace Book.Sell.Tests.Editor
             Assert.AreEqual(1, customers.Count, "Quest script replaces the regular slot.");
             Assert.AreEqual("script_eddi_intro", customers[0].Id);
             Assert.AreEqual("eddi", customers[0].CharacterId);
+        }
+
+        [Test]
+        public void LocationBoundScript_Spawns_OnlyAtMatchingLocation()
+        {
+            var configs = ConfigsWithEddi(Script("eddi_intro", dayIndex: null,
+                activationQuestId: "q_intro_eddi", dialogueId: "eddy1", characterId: "eddi",
+                attempts: EddiAttempts(), locationId: "loc_port"));
+            var quests = new FakeQuestsService(("q_intro_eddi", QuestState.Active));
+            var inner = new StubCustomerSpawner(new List<Customer> { Passive("inner_1") });
+            var portSetup = new SalesSessionSetup(1, "loc_port", new[] { "book_fact", "book_travel" });
+
+            var customers = Spawner(inner, configs, quests).BuildCustomers(portSetup, Tuning, new FakeSalesRandom());
+
+            Assert.AreEqual(1, customers.Count, "Location-bound script replaces the slot at its location.");
+            Assert.AreEqual("script_eddi_intro", customers[0].Id);
+        }
+
+        [Test]
+        public void LocationBoundScript_Skips_WhenDayRunsElsewhere()
+        {
+            var configs = ConfigsWithEddi(Script("eddi_intro", dayIndex: null,
+                activationQuestId: "q_intro_eddi", dialogueId: "eddy1", characterId: "eddi",
+                attempts: EddiAttempts(), locationId: "loc_port"));
+            var quests = new FakeQuestsService(("q_intro_eddi", QuestState.Active));
+            var inner = new StubCustomerSpawner(new List<Customer> { Passive("inner_1") });
+
+            // DayOneSetup runs at "loc", not "loc_port" — the quest is Active but the location gate blocks it.
+            var customers = Spawner(inner, configs, quests).BuildCustomers(DayOneSetup, Tuning, new FakeSalesRandom());
+
+            Assert.AreEqual(1, customers.Count);
+            Assert.AreEqual("inner_1", customers[0].Id);
         }
 
         [Test]

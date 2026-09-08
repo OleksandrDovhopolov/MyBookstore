@@ -20,8 +20,8 @@ namespace Game.Configs.Tests.Editor
 [
   {
     ""id"": ""millie_letter"",
-    ""displayName"": ""Millie Letter"",
-    ""descriptionKey"": ""questItem.millie_letter.desc""
+    ""displayNameKey"": ""quest_item.millie_letter.name"",
+    ""descriptionKey"": ""quest_item.millie_letter.desc""
   }
 ]";
 
@@ -33,8 +33,8 @@ namespace Game.Configs.Tests.Editor
             Assert.IsNotNull(items);
             Assert.AreEqual(1, items.Length);
             Assert.AreEqual("millie_letter", items[0].Id);
-            Assert.AreEqual("Millie Letter", items[0].DisplayName);
-            Assert.AreEqual("questItem.millie_letter.desc", items[0].DescriptionKey);
+            Assert.AreEqual("quest_item.millie_letter.name", items[0].DisplayNameKey);
+            Assert.AreEqual("quest_item.millie_letter.desc", items[0].DescriptionKey);
         }
 
         [Test]
@@ -48,7 +48,7 @@ namespace Game.Configs.Tests.Editor
 
             var letter = service.Get<QuestItemConfig>("millie_letter");
             Assert.IsNotNull(letter);
-            Assert.AreEqual("questItem.millie_letter.desc", letter.DescriptionKey);
+            Assert.AreEqual("quest_item.millie_letter.desc", letter.DescriptionKey);
         }
 
         [Test]
@@ -61,7 +61,8 @@ namespace Game.Configs.Tests.Editor
 
                 var items = JsonConvert.DeserializeObject<QuestItemConfig[]>(File.ReadAllText(path));
                 var letter = items.Single(i => i.Id == "millie_letter");
-                Assert.AreEqual("questItem.millie_letter.desc", letter.DescriptionKey);
+                Assert.AreEqual("quest_item.millie_letter.name", letter.DisplayNameKey);
+                Assert.AreEqual("quest_item.millie_letter.desc", letter.DescriptionKey);
             }
         }
 

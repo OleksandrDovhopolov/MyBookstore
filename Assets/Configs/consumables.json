@@ -1,12 +1,12 @@
 [
   {
     "id": "fuel_canister",
-    "displayName": "Fuel Canister",
-    "descriptionKey": "consumable.fuel_canister.desc"
+    "descriptionKey": "consumable.fuel_canister.desc",
+    "displayNameKey": "consumable.fuel_canister.name"
   },
   {
     "id": "postcard",
-    "displayName": "Postcard",
-    "descriptionKey": "consumable.postcard.desc"
+    "descriptionKey": "consumable.postcard.desc",
+    "displayNameKey": "consumable.postcard.name"
   }
 ]

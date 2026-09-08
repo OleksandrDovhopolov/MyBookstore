@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Decor;
+using Game.Localization;
 
 namespace Game.Journal.UI
 {
@@ -33,7 +34,9 @@ namespace Game.Journal.UI
                 if (!configs.TryGet<DecorConfig>(id, out var config) || config == null) continue;
                 result.Add(new JournalObjectItemModel(
                     id,
-                    string.IsNullOrEmpty(config.DisplayName) ? id : config.DisplayName));
+                    string.IsNullOrEmpty(config.DisplayNameKey)
+                        ? id
+                        : LocalizationLocator.GetOrKey(config.DisplayNameKey)));
             }
 
             return result;
@@ -58,7 +61,7 @@ namespace Game.Journal.UI
                     case DecorEffectKind.GenreSaleChance:
                         if (string.IsNullOrEmpty(total.Subject)) continue;
                         result.Add(new JournalBonusItemModel(
-                            $"{percentText} {total.Subject} sale chance",
+                            $"{percentText} {total.Subject} {LocalizationLocator.GetOrKey("ui.decor.bonus.sale_chance")}",
                             percentText,
                             total.Percent >= 0f,
                             total.Subject));

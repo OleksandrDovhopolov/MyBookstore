@@ -1,4 +1,5 @@
 using Game.UI;
+using Game.UI.ContentWidget;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,6 +29,7 @@ namespace Book.Sell.UI
         [Header("Shelf (grid)")]
         [SerializeField] private Transform _shelfContainer;
         [SerializeField] private BookCardView _bookCardPrefab;
+        [SerializeField] private BookInfoWidgetView _bookInfoWidgetPrefab;
         [SerializeField] private Button _clearFocusButton;      // Transparent/background button for clearing book focus
 
         [Header("Book detail — no book selected")]
@@ -76,5 +78,12 @@ namespace Book.Sell.UI
         public GameObject FailResultObject => _failResultObject;
         public TMP_Text EmotionLabel => _emotionLabel;
         public Button FinishButton => _finishButton;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            if (_bookInfoWidgetPrefab != null)
+                WidgetRegistry.Register<BookInfoWidgetData>(_bookInfoWidgetPrefab);
+        }
     }
 }

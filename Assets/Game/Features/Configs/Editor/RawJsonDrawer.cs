@@ -13,17 +13,16 @@ namespace Game.Configs.Editor
     {
         private string _buffer = string.Empty;
         private string _lastError;
-        private string _lastSyncedFrom; // working snapshot, на основе которого собран buffer
+        private int _lastSyncedRevision = -1;
         private Vector2 _scroll;
 
         public void Sync(SectionState state)
         {
             // Пересинхронизировать буфер, если working изменился (например, после Pull).
-            var current = state.SerializeWorking(Newtonsoft.Json.Formatting.Indented);
-            if (_lastSyncedFrom == null || _lastSyncedFrom != current)
+            if (_lastSyncedRevision != state.ContentRevision)
             {
-                _buffer = current;
-                _lastSyncedFrom = current;
+                _buffer = state.SerializeWorking(Newtonsoft.Json.Formatting.Indented);
+                _lastSyncedRevision = state.ContentRevision;
                 _lastError = null;
             }
         }
@@ -76,10 +75,10 @@ namespace Game.Configs.Editor
                 _lastError = "Cannot apply: JSON parse error.";
                 return;
             }
-            state.WorkingArray = arr;
+            state.ReplaceWorking(arr, dirty: true);
             // обновим anchor, чтобы повторный Sync не затёр пользовательскую правку
-            _lastSyncedFrom = state.SerializeWorking(Newtonsoft.Json.Formatting.Indented);
-            _buffer = _lastSyncedFrom;
+            _lastSyncedRevision = state.ContentRevision;
+            _buffer = state.SerializeWorking(Newtonsoft.Json.Formatting.Indented);
             _lastError = null;
         }
 

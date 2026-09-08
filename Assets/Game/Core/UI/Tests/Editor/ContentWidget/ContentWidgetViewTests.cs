@@ -45,12 +45,12 @@ namespace Game.Core.UI.Tests.Editor.ContentWidget
         [UnityTest]
         public IEnumerator ShowContentView_AutoClosesAfterDelay()
         {
-            using var fixture = ContentWidgetFixture.Create(autoCloseDelaySeconds: 0.01f);
+            using var fixture = ContentWidgetFixture.Create(autoCloseDelaySeconds: 0.02f);
             var closed = false;
             fixture.View.CloseClick += () => closed = true;
 
             fixture.Show(new TestWidgetData());
-            yield return new WaitForSeconds(0.05f);
+            yield return WaitUntilOrTimeout(() => closed, 1f);
 
             Assert.IsTrue(closed);
         }
@@ -110,20 +110,26 @@ namespace Game.Core.UI.Tests.Editor.ContentWidget
         [UnityTest]
         public IEnumerator ShowContentView_CancelsPreviousAutoCloseTimer()
         {
-            using var fixture = ContentWidgetFixture.Create(autoCloseDelaySeconds: 0.05f);
-            var closed = false;
-            fixture.View.CloseClick += () => closed = true;
+            using var fixture = ContentWidgetFixture.Create(autoCloseDelaySeconds: 0.2f);
+            var closeCount = 0;
+            fixture.View.CloseClick += () => closeCount++;
 
             fixture.Show(new TestWidgetData());
-            yield return new WaitForSeconds(0.03f);
-
+            fixture.SetAutoCloseDelay(0.5f);
             fixture.Show(new TestWidgetData());
-            yield return new WaitForSeconds(0.03f);
+            yield return new WaitForSecondsRealtime(0.25f);
 
-            Assert.IsFalse(closed);
+            Assert.AreEqual(0, closeCount);
 
-            yield return new WaitForSeconds(0.04f);
-            Assert.IsTrue(closed);
+            yield return WaitUntilOrTimeout(() => closeCount > 0, 1f);
+            Assert.AreEqual(1, closeCount);
+        }
+
+        private static IEnumerator WaitUntilOrTimeout(System.Func<bool> predicate, float timeoutSeconds)
+        {
+            var deadline = Time.realtimeSinceStartup + timeoutSeconds;
+            while (!predicate() && Time.realtimeSinceStartup < deadline)
+                yield return null;
         }
 
         private sealed class ContentWidgetFixture : System.IDisposable
@@ -203,6 +209,11 @@ namespace Game.Core.UI.Tests.Editor.ContentWidget
             public void Show(TestWidgetData data, ContentWidgetPlacementMode placementMode)
             {
                 View.ShowContentView(data, Anchor, autoCloseEnabled: true, placementMode: placementMode);
+            }
+
+            public void SetAutoCloseDelay(float seconds)
+            {
+                SetSerializedField(View, "_autoCloseDelaySeconds", seconds);
             }
 
             public void Dispose()

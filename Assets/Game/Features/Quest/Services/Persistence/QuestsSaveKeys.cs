@@ -5,7 +5,7 @@ namespace Game.Quest.Services.Persistence
     {
         public const string State = "quests";
 
-        // v4 stores readable task DTOs with string enum states and inline compact sales baselines.
-        public const int StateSchemaVersion = 4;
+        // Release baseline: all pre-release saves are wiped, so the public schema starts at v1.
+        public const int StateSchemaVersion = 1;
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Localization;
 using SpriteService;
 using TMPro;
 using UIShared;
@@ -17,7 +18,7 @@ namespace Game.Decor.UI
     public sealed class DecorBonusItemView : MonoBehaviour, ICleanup
     {
         // Appended after "{percent} {genre}" to form the full bonus line.
-        private const string DescriptionSuffix = "sale chance";
+        private const string DescriptionSuffixKey = "ui.decor.bonus.sale_chance";
 
         [SerializeField] private Image _icon;
         [SerializeField] private TextMeshProUGUI _descriptionLabel;
@@ -40,7 +41,8 @@ namespace Game.Decor.UI
 
         private void Apply(string genre, string percent, Color percentColor)
         {
-            if (_descriptionLabel != null) _descriptionLabel.text = $"{percent} {genre} {DescriptionSuffix}";
+            if (_descriptionLabel != null)
+                _descriptionLabel.text = $"{percent} {genre} {LocalizationLocator.GetOrKey(DescriptionSuffixKey)}";
             if (_percentLabel != null)
             {
                 _percentLabel.text = percent;

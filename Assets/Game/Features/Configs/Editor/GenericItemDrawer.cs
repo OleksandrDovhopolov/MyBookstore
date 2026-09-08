@@ -14,22 +14,24 @@ namespace Game.Configs.Editor
     {
         private readonly HashSet<string> _expanded = new();
 
-        public void Draw(JObject item)
+        public bool Draw(JObject item)
         {
-            if (item == null) return;
-            DrawObject(item, "$");
+            if (item == null) return false;
+            return DrawObject(item, "$");
         }
 
-        private void DrawObject(JObject obj, string path)
+        private bool DrawObject(JObject obj, string path)
         {
+            var changed = false;
             foreach (var prop in obj.Properties())
             {
                 var childPath = path + "." + prop.Name;
-                DrawValue(prop.Name, prop.Value, childPath, v => prop.Value = v);
+                changed |= DrawValue(prop.Name, prop.Value, childPath, v => prop.Value = v);
             }
+            return changed;
         }
 
-        private void DrawValue(string label, JToken token, string path, System.Action<JToken> replace)
+        private bool DrawValue(string label, JToken token, string path, System.Action<JToken> replace)
         {
             switch (token.Type)
             {
@@ -37,35 +39,39 @@ namespace Game.Configs.Editor
                     {
                         var cur = token.Value<string>() ?? string.Empty;
                         var next = EditorGUILayout.TextField(label, cur);
-                        if (next != cur) replace(new JValue(next));
-                        break;
+                        if (next == cur) return false;
+                        replace(new JValue(next));
+                        return true;
                     }
                 case JTokenType.Integer:
                     {
                         var cur = token.Value<long>();
                         var next = EditorGUILayout.LongField(label, cur);
-                        if (next != cur) replace(new JValue(next));
-                        break;
+                        if (next == cur) return false;
+                        replace(new JValue(next));
+                        return true;
                     }
                 case JTokenType.Float:
                     {
                         var cur = token.Value<double>();
                         // Unity EditorGUILayout.DoubleField есть в новых версиях; FloatField проще и хватает для конфигов.
                         var next = EditorGUILayout.FloatField(label, (float)cur);
-                        if (!Mathf.Approximately(next, (float)cur)) replace(new JValue((double)next));
-                        break;
+                        if (Mathf.Approximately(next, (float)cur)) return false;
+                        replace(new JValue((double)next));
+                        return true;
                     }
                 case JTokenType.Boolean:
                     {
                         var cur = token.Value<bool>();
                         var next = EditorGUILayout.Toggle(label, cur);
-                        if (next != cur) replace(new JValue(next));
-                        break;
+                        if (next == cur) return false;
+                        replace(new JValue(next));
+                        return true;
                     }
                 case JTokenType.Null:
                     {
                         EditorGUILayout.LabelField(label, "null (edit in Raw JSON)");
-                        break;
+                        return false;
                     }
                 case JTokenType.Object:
                     {
@@ -78,13 +84,14 @@ namespace Game.Configs.Editor
                         if (nowOpen)
                         {
                             using (new EditorGUI.IndentLevelScope())
-                                DrawObject((JObject)token, path);
+                                return DrawObject((JObject)token, path);
                         }
-                        break;
+                        return false;
                     }
                 case JTokenType.Array:
                     {
                         var arr = (JArray)token;
+                        var changed = false;
                         var open = _expanded.Contains(path);
                         var nowOpen = EditorGUILayout.Foldout(open, $"{label}  [ {arr.Count} ]", true);
                         if (nowOpen != open)
@@ -97,14 +104,14 @@ namespace Game.Configs.Editor
                                 for (var i = 0; i < arr.Count; i++)
                                 {
                                     var idx = i; // capture
-                                    DrawValue($"[{idx}]", arr[idx], path + "[" + idx + "]", v => arr[idx] = v);
+                                    changed |= DrawValue($"[{idx}]", arr[idx], path + "[" + idx + "]", v => arr[idx] = v);
                                 }
                         }
-                        break;
+                        return changed;
                     }
                 default:
                     EditorGUILayout.LabelField(label, token.Type.ToString());
-                    break;
+                    return false;
             }
         }
     }

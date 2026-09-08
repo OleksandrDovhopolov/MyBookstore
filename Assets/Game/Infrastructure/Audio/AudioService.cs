@@ -19,6 +19,8 @@ namespace Infrastructure.Audio
         private AudioRoot _root;
         private bool _muted;
         private bool _disposed;
+        private float _musicFadeScale = 1f;
+        private CancellationTokenSource _musicFadeCts;
 
         public AudioService(IAudioSettingsStore settingsStore, IAudioClipLoader clipLoader)
         {
@@ -77,7 +79,11 @@ namespace Infrastructure.Audio
 
         public void PlayMusic(AudioClip clip, bool loop = true, bool restartIfSame = false)
         {
-            if (_disposed || clip == null) return;
+            if (_disposed) return;
+
+            CancelMusicFade();
+            _musicFadeScale = 1f;
+            if (clip == null) return;
 
             var source = Root()?.MusicSource;
             if (source == null) return;
@@ -85,8 +91,62 @@ namespace Infrastructure.Audio
 
             source.clip = clip;
             source.loop = loop;
-            source.volume = ChannelVolume(AudioChannelId.Music);
+            source.volume = ChannelVolume(AudioChannelId.Music) * _musicFadeScale;
             source.Play();
+        }
+
+        public async UniTask PlayMusicFadedAsync(
+            AudioClip clip, float fadeSeconds, CancellationToken ct, bool loop = true)
+        {
+            if (_disposed) return;
+            if (ct.IsCancellationRequested) return;
+
+            if (fadeSeconds <= 0f)
+            {
+                if (clip != null)
+                    PlayMusic(clip, loop);
+                else
+                    StopMusic();
+                return;
+            }
+
+            var source = clip == null ? _root?.MusicSource : Root()?.MusicSource;
+            if (source == null) return;
+            if (clip != null && source.clip == clip && source.isPlaying) return;
+
+            var fadeCts = StartMusicFade(ct);
+            var token = fadeCts.Token;
+
+            try
+            {
+                if (source.isPlaying && _musicFadeScale > 0f)
+                    await FadeMusicToAsync(0f, fadeSeconds, token);
+                else
+                    SetMusicFadeScale(0f);
+
+                if (clip == null)
+                {
+                    StopMusicInternal();
+                    SetMusicFadeScale(1f);
+                    return;
+                }
+
+                token.ThrowIfCancellationRequested();
+                source.clip = clip;
+                source.loop = loop;
+                source.Play();
+                await FadeMusicToAsync(1f, fadeSeconds, token);
+            }
+            catch (OperationCanceledException) when (_disposed || token.IsCancellationRequested)
+            {
+            }
+            finally
+            {
+                if (ReferenceEquals(_musicFadeCts, fadeCts))
+                    _musicFadeCts = null;
+
+                fadeCts.Dispose();
+            }
         }
 
         public async UniTask PlayMusicAsync(
@@ -98,6 +158,13 @@ namespace Infrastructure.Audio
         }
 
         public void StopMusic()
+        {
+            CancelMusicFade();
+            _musicFadeScale = 1f;
+            StopMusicInternal();
+        }
+
+        private void StopMusicInternal()
         {
             if (_root == null || _root.MusicSource == null) return;
             _root.MusicSource.Stop();
@@ -209,6 +276,7 @@ namespace Infrastructure.Audio
             if (_disposed) return;
             _disposed = true;
             _disposeCts.Cancel();
+            CancelMusicFade();
             Audio.Clear(this);
 
             StopAll();
@@ -296,10 +364,48 @@ namespace Infrastructure.Audio
         private void ApplyVolumes()
         {
             if (_root == null) return;
-            if (_root.MusicSource != null) _root.MusicSource.volume = ChannelVolume(AudioChannelId.Music);
+            if (_root.MusicSource != null) _root.MusicSource.volume = ChannelVolume(AudioChannelId.Music) * _musicFadeScale;
             if (_root.AmbientSource != null) _root.AmbientSource.volume = ChannelVolume(AudioChannelId.Ambient);
             if (_root.SfxSource != null) _root.SfxSource.volume = 1f;
             if (_root.UiSource != null) _root.UiSource.volume = 1f;
+        }
+
+        private CancellationTokenSource StartMusicFade(CancellationToken ct)
+        {
+            CancelMusicFade();
+            _musicFadeCts = CancellationTokenSource.CreateLinkedTokenSource(ct, _disposeCts.Token);
+            return _musicFadeCts;
+        }
+
+        private void CancelMusicFade()
+        {
+            if (_musicFadeCts == null) return;
+
+            _musicFadeCts.Cancel();
+            _musicFadeCts.Dispose();
+            _musicFadeCts = null;
+        }
+
+        private async UniTask FadeMusicToAsync(float targetScale, float fadeSeconds, CancellationToken ct)
+        {
+            var startScale = _musicFadeScale;
+            var elapsed = 0f;
+
+            while (elapsed < fadeSeconds)
+            {
+                ct.ThrowIfCancellationRequested();
+                elapsed += Time.unscaledDeltaTime;
+                SetMusicFadeScale(Mathf.Lerp(startScale, targetScale, Mathf.Clamp01(elapsed / fadeSeconds)));
+                await UniTask.Yield(PlayerLoopTiming.Update, ct);
+            }
+
+            SetMusicFadeScale(targetScale);
+        }
+
+        private void SetMusicFadeScale(float scale)
+        {
+            _musicFadeScale = Mathf.Clamp01(scale);
+            ApplyVolumes();
         }
 
         private float ChannelVolume(AudioChannelId channel)

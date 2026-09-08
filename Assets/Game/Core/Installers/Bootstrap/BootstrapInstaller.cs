@@ -3,6 +3,7 @@ using Game.Bootstrap.Loading;
 using Game.Ftue.Services;
 using Game.Tutorial.Presentation;
 using Game.UI;
+using Infrastructure.Audio;
 using Infrastructure.ResourceAnimations;
 using SpriteService;
 using UnityEngine;
@@ -33,6 +34,10 @@ namespace Game.Bootstrap
         [Tooltip("Shared settings for flying resource UI animations.")]
         [SerializeField] private ResourceAnimationSettings _resourceAnimationSettings;
 
+        [Header("Audio")]
+        [Tooltip("Default UI sounds and hub/location music. Null keeps audio startup as a no-op.")]
+        [SerializeField] private AudioCatalog _audioCatalog;
+
         [Header("Tutorial")]
         [Tooltip("Overlay settings for the tutorial engine (blackout/pointer/text panel).")]
         [SerializeField] private TutorialOverlaySettings _tutorialOverlaySettings;
@@ -59,12 +64,9 @@ namespace Game.Bootstrap
         [SerializeField] private FirstDayEntryMode _firstDayEntry = FirstDayEntryMode.Location;
 
         [Header("Privacy (REL-5)")]
-        [Tooltip("Public privacy policy URL opened from the first-run consent screen. " +
+        [Tooltip("Public legal URL covering both Privacy Policy and Terms of Use, opened from privacy links. " +
                  "RELEASE BLOCKER: must be a live https URL — PrivacyLinksBuildCheck fails the build otherwise.")]
         [SerializeField] private string _privacyPolicyUrl = "";
-
-        [Tooltip("Public terms of use URL. Leave empty when one page covers both privacy and terms.")]
-        [SerializeField] private string _termsOfUseUrl = "";
 
 #if UNITY_EDITOR
         [Header("Debug Start (Editor only)")]
@@ -84,11 +86,13 @@ namespace Game.Bootstrap
             builder.RegisterGameLoading();
             builder.RegisterGameFlow(_gameFlowSettings);
             builder.RegisterGameAnalytics(_analyticsConfig, _analyticsRoutingConfig, _analyticsMappingConfig);
-            builder.RegisterConsent(_privacyPolicyUrl, _termsOfUseUrl);
+            builder.RegisterConsent(_privacyPolicyUrl);
             builder.RegisterSave();
-            builder.RegisterInfrastructure();
+            builder.RegisterInfrastructure(_audioCatalog);
             builder.RegisterConfigs();
+            builder.RegisterLocalization();
             builder.RegisterDayCycleServices();
+            builder.RegisterMusicDirector();
             builder.RegisterUiSystem(_uiCanvasRootPrefab);
             builder.RegisterWorldHud();
             builder.RegisterInventory();
@@ -109,6 +113,7 @@ namespace Game.Bootstrap
             builder.RegisterQuest();               // in-memory quest lifecycle over the condition engine (ISaveHook init)
             builder.RegisterTutorial(_tutorialOverlaySettings, _tutorialSettings, _tutorialAutoStart); // forced-step tutorial engine + overlay + "tutorialCompleted" (ISaveHook init)
             builder.RegisterCharacters();          // read-side character/memory projection over quests (ISaveHook init)
+            builder.RegisterJournalAttention();    // central Journal/HUD "new item" attention state (ISaveHook init)
             builder.RegisterFtue(_startWelcomeWindow);
             builder.RegisterFirstDayEntry(_firstDayEntry);
             builder.RegisterBookSellSharedState(); // ISalesShelfStateService — общий для хаба и локации

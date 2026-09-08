@@ -256,7 +256,7 @@ MonoBehaviour:
   _closeButtons: []
   _container: {fileID: 7981710755319481082}
   _contentContainer: {fileID: 0}
-  _verticalOffset: 100
+  _verticalOffset: 0
   _horizontalOffset: -100
   _edgePadding: 16
   _verticalZoneRatio: 0.2

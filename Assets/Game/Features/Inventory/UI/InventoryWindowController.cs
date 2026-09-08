@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using Game.Decor;
 using Game.Decor.UI;
 using Game.Inventory.API;
+using Game.Localization;
 using Game.UI;
 using Game.UI.ContentWidget;
 using SpriteService;
@@ -16,7 +17,7 @@ namespace Game.Inventory.UI
     [Window("InventoryWindow", WindowType.Page)]
     public sealed class InventoryWindowController : WindowController<InventoryWindowView>
     {
-        private const string TodoDescription = "TODO: item description";
+        private const string TodoDescriptionKey = "ui.inventory.item.description.placeholder";
 
         private IInventoryService _inventory;
         private IUiSpriteProvider _sprites;
@@ -91,7 +92,7 @@ namespace Game.Inventory.UI
 
             try
             {
-                var data = new InventoryItemWidgetData(itemId, TodoDescription);
+                var data = new InventoryItemWidgetData(itemId, LocalizationLocator.GetOrKey(TodoDescriptionKey));
                 var args = new ContentWidgetArgs(
                     data,
                     anchor,

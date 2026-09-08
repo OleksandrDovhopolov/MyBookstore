@@ -39,7 +39,10 @@ namespace Game.Decor.UI
         [SerializeField, Min(0f)] private float _removeDuration = 0.2f;
 
         private Sequence _activeTween;
+        private Vector2 _baseBoxSize;
+        private bool _hasBaseBoxSize;
         private const float DefaultUnavailableAlpha = 0.35f;
+        private const float MinSizeFactor = 0.05f;
 
         public string SlotId => _slotId;
 
@@ -54,6 +57,7 @@ namespace Game.Decor.UI
         private void Awake()
         {
             if (_availabilityGroup == null) TryGetComponent(out _availabilityGroup);
+            EnsureBaseBoxSize();
 
             if (_markerButton != null) _markerButton.onClick.AddListener(RaiseMarkerClicked);
             if (_placedButton != null) _placedButton.onClick.AddListener(RaisePlacedClicked);
@@ -69,6 +73,7 @@ namespace Game.Decor.UI
 
             if (_placedDecorImage != null)
             {
+                RestoreBaseBoxSize();
                 _placedDecorImage.sprite = null;
                 _placedDecorImage.gameObject.SetActive(false);
             }
@@ -80,7 +85,7 @@ namespace Game.Decor.UI
         }
 
         /// <summary>Occupied slot: show the decor sprite (fully visible), hide the marker.</summary>
-        public void SetPlaced(Sprite sprite)
+        public void SetPlaced(Sprite sprite, float sizeFactor)
         {
             KillActiveTween();
             SetAvailabilityVisual(true);
@@ -91,7 +96,9 @@ namespace Game.Decor.UI
 
             if (_placedDecorImage != null)
             {
+                ApplySizeFactor(sizeFactor);
                 _placedDecorImage.sprite = sprite;
+                _placedDecorImage.preserveAspect = true;
                 _placedDecorImage.gameObject.SetActive(true);
                 _placedDecorImage.transform.localScale = Vector3.one;
             }
@@ -101,7 +108,7 @@ namespace Game.Decor.UI
 
         /// <summary>Temporary UI-only preview for an empty slot. It looks placed, but cannot open the
         /// occupied-slot HUD and is not committed until the controller applies it.</summary>
-        public void SetPreview(Sprite sprite)
+        public void SetPreview(Sprite sprite, float sizeFactor)
         {
             KillActiveTween();
             SetAvailabilityVisual(true);
@@ -111,7 +118,9 @@ namespace Game.Decor.UI
 
             if (_placedDecorImage != null)
             {
+                ApplySizeFactor(sizeFactor);
                 _placedDecorImage.sprite = sprite;
+                _placedDecorImage.preserveAspect = true;
                 _placedDecorImage.gameObject.SetActive(true);
                 _placedDecorImage.transform.localScale = Vector3.one;
             }
@@ -201,6 +210,30 @@ namespace Game.Decor.UI
 
         private Tween AlphaTween(float value, float duration) =>
             DOTween.To(() => _placedGroup.alpha, a => _placedGroup.alpha = a, value, duration);
+
+        private void ApplySizeFactor(float factor)
+        {
+            if (_placedDecorImage == null) return;
+
+            EnsureBaseBoxSize();
+            _placedDecorImage.rectTransform.sizeDelta = _baseBoxSize * Mathf.Max(factor, MinSizeFactor);
+        }
+
+        private void RestoreBaseBoxSize()
+        {
+            if (_placedDecorImage == null) return;
+
+            EnsureBaseBoxSize();
+            _placedDecorImage.rectTransform.sizeDelta = _baseBoxSize;
+        }
+
+        private void EnsureBaseBoxSize()
+        {
+            if (_hasBaseBoxSize || _placedDecorImage == null) return;
+
+            _baseBoxSize = _placedDecorImage.rectTransform.sizeDelta;
+            _hasBaseBoxSize = true;
+        }
 
         private static void SetScale(Transform target, float value) =>
             target.localScale = new Vector3(value, value, value);

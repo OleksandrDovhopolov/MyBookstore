@@ -24,7 +24,7 @@ namespace Book.Sell.Services
         [Tooltip("Сколько покупателей приходят с активным запросом в день, у которого нет своего " +
                  "activeRequestCount в days.json. Размер каталога requests.json на это НЕ влияет — " +
                  "он лишь пул, из которого делается выборка.")]
-        [SerializeField] private int _defaultActiveRequestCount = 1;
+        [SerializeField] private int _defaultActiveRequestCount = 3;
 
         [SerializeField] private int _minActiveRequestCount = 0;
         [SerializeField] private int _maxActiveRequestCount = 50;

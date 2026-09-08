@@ -5,6 +5,7 @@ namespace Game.Configs.Models
     {
         public string Id { get; set; }
         public int DayIndex { get; set; }
+        public string TitleKey { get; set; }
 
         /// <summary>
         /// Regular customers scheduled for this day. Consumed by the customer traffic resolver

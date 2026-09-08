@@ -7,17 +7,32 @@ using Game.Configs;
 using Game.Configs.Models;
 using Game.Decor;
 using Game.Journal.UI;
+using Game.Localization;
 using NUnit.Framework;
 
 namespace Game.Journal.UI.Tests.Editor
 {
     public sealed class JournalObjectsViewModelBuilderTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+            LocalizationLocator.SetService(new FakeLocalization(
+                ("decor.d1.name", "Decor One"),
+                ("ui.decor.bonus.sale_chance", "sale chance")));
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            LocalizationLocator.SetService(null);
+        }
+
         [Test]
         public void Build_MapsActiveDecorAndSkipsMissingConfig()
         {
             var configs = new FakeConfigs();
-            configs.SetAll(new[] { Decor("d1", "Decor One") });
+            configs.SetAll(new[] { Decor("d1", "decor.d1.name") });
 
             var model = new JournalObjectsViewModelBuilder().Build(
                 new[] { "d1", "missing" },
@@ -50,8 +65,45 @@ namespace Game.Journal.UI.Tests.Editor
             => new()
             {
                 Id = id,
-                DisplayName = displayName
+                DisplayNameKey = displayName
             };
+
+        private sealed class FakeLocalization : ILocalizationService
+        {
+            private readonly Dictionary<string, string> _texts;
+
+            public FakeLocalization(params (string key, string value)[] texts)
+            {
+                _texts = texts.ToDictionary(
+                    text => text.key,
+                    text => text.value,
+                    StringComparer.Ordinal);
+            }
+
+            public string CurrentLocale => "en";
+            public event Action<string> LocaleChanged;
+
+            public UniTask WarmupAsync(CancellationToken ct) => UniTask.CompletedTask;
+
+            public string Get(string key)
+                => _texts.TryGetValue(key, out var value)
+                    ? value
+                    : FormatMissingKey(key);
+
+            public string Get(string key, params object[] args)
+                => args == null || args.Length == 0
+                    ? Get(key)
+                    : string.Format(System.Globalization.CultureInfo.InvariantCulture, Get(key), args);
+
+            public bool TryGet(string key, out string value)
+                => _texts.TryGetValue(key, out value);
+
+            public void SetLocale(string locale)
+                => LocaleChanged?.Invoke(CurrentLocale);
+
+            private static string FormatMissingKey(string key)
+                => string.IsNullOrWhiteSpace(key) ? string.Empty : $"[`{key}`]";
+        }
 
         private sealed class FakeEffects : IDecorTotalEffectsProvider
         {

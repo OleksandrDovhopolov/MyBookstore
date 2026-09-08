@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Localization;
 using SpriteService;
 using TMPro;
 using UIShared;
@@ -26,7 +27,7 @@ namespace Game.Journal.UI
 
         public void Bind(JournalCharacterItemModel model, IUiSpriteProvider sprites)
         {
-            if (_nameLabel != null) _nameLabel.text = model.DisplayNameKey;
+            if (_nameLabel != null) _nameLabel.text = LocalizationLocator.GetOrKey(model.DisplayNameKey);
             RenderGenres(model.Locked ? null : model.FavoriteGenres, sprites);
 
             CancelPortraitLoad();

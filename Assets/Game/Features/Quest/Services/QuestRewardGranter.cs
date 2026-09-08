@@ -4,6 +4,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
+using Game.Inventory.API;
 using Game.Quest.API;
 using Game.Rewards.API;
 using Save;
@@ -21,6 +22,7 @@ namespace Game.Quest.Services
         private readonly IConfigsService _configs;
         private readonly IQuestsService _quests;
         private readonly IRewardGrantService _rewards;
+        private readonly IInventoryService _inventory;
         private readonly HashSet<string> _granted = new(StringComparer.Ordinal);
         private readonly HashSet<string> _inFlight = new(StringComparer.Ordinal);
 
@@ -28,12 +30,14 @@ namespace Game.Quest.Services
             ISaveService save,
             IConfigsService configs,
             IQuestsService quests,
-            IRewardGrantService rewards)
+            IRewardGrantService rewards,
+            IInventoryService inventory)
         {
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _quests = quests ?? throw new ArgumentNullException(nameof(quests));
             _rewards = rewards ?? throw new ArgumentNullException(nameof(rewards));
+            _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
 
             _save.RegisterHook(this);
         }
@@ -92,24 +96,49 @@ namespace Game.Quest.Services
                 if (!TryBuildSpec(quest, out var spec))
                     return QuestRewardGrantResult.Fail("invalid_spec");
 
-                if (spec.Items.Count == 0)
+                var granted = spec;
+
+                if (spec.Items.Count > 0)
                 {
-                    _granted.Add(questId);
-                    await SaveLedgerAsync(ct);
-                    return QuestRewardGrantResult.Ok(spec);
+                    var result = await _rewards.GrantAsync(spec, Source(questId), ct);
+                    if (!result.Success)
+                        return QuestRewardGrantResult.Fail(result.FailureReason);
+
+                    granted = result.Granted;
                 }
 
-                var result = await _rewards.GrantAsync(spec, Source(questId), ct);
-                if (!result.Success)
-                    return QuestRewardGrantResult.Fail(result.FailureReason);
+                await ConsumeCostsAsync(quest, ct);
 
                 _granted.Add(questId);
                 await SaveLedgerAsync(ct);
-                return QuestRewardGrantResult.Ok(result.Granted);
+                return QuestRewardGrantResult.Ok(granted);
             }
             finally
             {
                 _inFlight.Remove(questId);
+            }
+        }
+
+        private async UniTask ConsumeCostsAsync(QuestConfig quest, CancellationToken ct)
+        {
+            var costs = quest.Costs;
+            if (costs == null || costs.Length == 0) return;
+
+            for (var i = 0; i < costs.Length; i++)
+            {
+                var cost = costs[i];
+                if (cost == null) continue;
+                if (string.IsNullOrEmpty(cost.ItemId) || cost.Amount <= 0)
+                {
+                    Debug.LogError($"{LogPrefix} quest '{quest.Id}' has invalid cost id/amount.");
+                    continue;
+                }
+
+                if (!await _inventory.RemoveAsync(cost.ItemId, cost.Amount, ct))
+                {
+                    Debug.LogError(
+                        $"{LogPrefix} failed to consume cost '{cost.ItemId}' x{cost.Amount} for quest '{quest.Id}'.");
+                }
             }
         }
 

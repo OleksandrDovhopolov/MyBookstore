@@ -13,6 +13,9 @@ namespace Game.Configs.Editor
     /// </summary>
     internal sealed class ItemListPanel
     {
+        private const float RowHeight = 20f;
+        private const int VisibleRowBuffer = 80;
+
         private string _search = string.Empty;
         private Vector2 _scroll;
 
@@ -22,27 +25,38 @@ namespace Game.Configs.Editor
             DrawSearch();
             DrawButtons(state);
 
+            var visibleItems = BuildVisibleItems(state);
             _scroll = EditorGUILayout.BeginScrollView(_scroll, GUILayout.ExpandHeight(true));
 
-            for (var i = 0; i < state.WorkingArray.Count; i++)
+            var firstVisible = Mathf.Clamp(Mathf.FloorToInt(_scroll.y / RowHeight), 0, visibleItems.Count);
+            var drawCount = Mathf.Min(VisibleRowBuffer, visibleItems.Count - firstVisible);
+            var skippedBefore = firstVisible;
+            var skippedAfter = visibleItems.Count - firstVisible - drawCount;
+
+            if (skippedBefore > 0)
+                GUILayout.Space(skippedBefore * RowHeight);
+
+            for (var j = 0; j < drawCount; j++)
             {
+                var i = visibleItems[firstVisible + j];
                 if (state.WorkingArray[i] is not JObject item)
                     continue;
 
                 var id = item["id"]?.Value<string>() ?? string.Empty;
-                if (!Matches(id, item)) continue;
-
                 var isSelected = i == state.SelectedItemIndex;
                 var invalid = !string.IsNullOrEmpty(id) && invalidIds != null && invalidIds.Contains(id);
                 var rowLabel = BuildRowLabel(id, item, invalid);
 
                 var style = isSelected ? Selected : Normal;
-                if (GUILayout.Button(rowLabel, style, GUILayout.ExpandWidth(true)))
+                if (GUILayout.Button(rowLabel, style, GUILayout.ExpandWidth(true), GUILayout.Height(RowHeight)))
                 {
                     state.SelectedItemIndex = i;
                     GUI.FocusControl(null);
                 }
             }
+
+            if (skippedAfter > 0)
+                GUILayout.Space(skippedAfter * RowHeight);
 
             EditorGUILayout.EndScrollView();
         }
@@ -79,6 +93,22 @@ namespace Game.Configs.Editor
             return !string.IsNullOrEmpty(second) && second.IndexOf(_search, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
+        private List<int> BuildVisibleItems(SectionState state)
+        {
+            var result = new List<int>(state.WorkingArray.Count);
+            for (var i = 0; i < state.WorkingArray.Count; i++)
+            {
+                if (state.WorkingArray[i] is not JObject item)
+                    continue;
+
+                var id = item["id"]?.Value<string>() ?? string.Empty;
+                if (Matches(id, item))
+                    result.Add(i);
+            }
+
+            return result;
+        }
+
         private static string BuildRowLabel(string id, JObject item, bool invalid)
         {
             var second = SecondaryField(item);
@@ -103,6 +133,7 @@ namespace Game.Configs.Editor
             var item = ItemTemplates.Create(state.Section);
             state.WorkingArray.Add(item);
             state.SelectedItemIndex = state.WorkingArray.Count - 1;
+            state.MarkDirty();
         }
 
         private static void DuplicateItem(SectionState state)
@@ -113,6 +144,7 @@ namespace Game.Configs.Editor
             copy["id"] = string.Empty; // §8.5 recommended: ГД явно задаёт новый id
             state.WorkingArray.Add(copy);
             state.SelectedItemIndex = state.WorkingArray.Count - 1;
+            state.MarkDirty();
         }
 
         private static void DeleteItem(SectionState state)
@@ -130,6 +162,7 @@ namespace Game.Configs.Editor
             state.SelectedItemIndex = idx < state.WorkingArray.Count
                 ? idx
                 : (state.WorkingArray.Count > 0 ? state.WorkingArray.Count - 1 : -1);
+            state.MarkDirty();
         }
 
         private static GUIStyle _normal;

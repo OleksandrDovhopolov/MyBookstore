@@ -708,7 +708,7 @@ namespace Book.Sell.Tests.Editor
             c.Tick(0.1f);
             Assert.AreEqual(1, SpawnedCount(customers), "First wave should contain only Eddi's slot.");
 
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < 5; i++)
                 c.Tick(0.1f);
 
             Assert.AreEqual(1, SpawnedCount(customers), "Second wave should wait for the configured gap.");

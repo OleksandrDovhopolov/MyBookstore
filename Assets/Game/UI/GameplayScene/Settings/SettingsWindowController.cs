@@ -7,7 +7,7 @@ using VContainer;
 
 namespace GameplayUI
 {
-    [Window("SettingsWindow", WindowType.Popup)]
+    [Window("SettingsWindow", WindowType.Widget)]
     public sealed class SettingsWindowController : WindowController<SettingsWindowView>
     {
         private const string LogPrefix = "[Settings]";
@@ -66,7 +66,7 @@ namespace GameplayUI
         {
             if (!_links.HasPrivacyPolicyUrl) return;
 
-            Application.OpenURL(_links.TermsOfUseUrl);
+            Application.OpenURL(_links.PrivacyPolicyUrl);
         }
     }
 }

@@ -1,7 +1,6 @@
 [
   {
     "id": "loc_park",
-    "displayName": "Park",
     "entryCost": 0,
     "locationAddress": "location/park",
     "demandGenres": [
@@ -9,42 +8,54 @@
       "Kids",
       "Classic"
     ],
-    "customerTrafficPercentDelta": 0
+    "customerTrafficPercentDelta": 0,
+    "displayNameKey": "location.loc_park.name"
   },
   {
     "id": "loc_campus",
-    "displayName": "Campus",
     "entryCost": 0,
     "locationAddress": "location/campus",
     "unlockCost": [
-      { "itemId": "millie_letter", "amount": 1 },
-      { "itemId": "fuel_canister", "amount": 2 }
+      {
+        "itemId": "millie_letter",
+        "amount": 1
+      },
+      {
+        "itemId": "fuel_canister",
+        "amount": 2
+      }
     ],
     "demandGenres": [
       "Fantasy",
       "Fact",
       "Classic"
     ],
-    "customerTrafficPercentDelta": 0.2
+    "customerTrafficPercentDelta": 0.2,
+    "displayNameKey": "location.loc_campus.name"
   },
   {
     "id": "loc_port",
-    "displayName": "Port",
     "entryCost": 0,
     "locationAddress": "location/port",
     "unlockCost": [
-      { "itemId": "port_trade_permit", "amount": 1 },
-      { "itemId": "fuel_canister", "amount": 2 }
+      {
+        "itemId": "port_trade_permit",
+        "amount": 1
+      },
+      {
+        "itemId": "fuel_canister",
+        "amount": 2
+      }
     ],
     "demandGenres": [
       "Travel",
       "Crime"
     ],
-    "customerTrafficPercentDelta": 0
+    "customerTrafficPercentDelta": 0,
+    "displayNameKey": "location.loc_port.name"
   },
   {
     "id": "loc_market",
-    "displayName": "Market",
     "entryCost": 0,
     "locationAddress": "location/market",
     "unlock": {
@@ -56,18 +67,24 @@
       ]
     },
     "unlockCost": [
-      { "itemId": "captain_recommendation", "amount": 1 },
-      { "itemId": "fuel_canister", "amount": 5 }
+      {
+        "itemId": "captain_recommendation",
+        "amount": 1
+      },
+      {
+        "itemId": "fuel_canister",
+        "amount": 5
+      }
     ],
     "demandGenres": [
       "Crime",
       "Classic"
     ],
-    "customerTrafficPercentDelta": 0
+    "customerTrafficPercentDelta": 0,
+    "displayNameKey": "location.loc_market.name"
   },
   {
     "id": "loc_village",
-    "displayName": "Village",
     "entryCost": 0,
     "locationAddress": "location/village",
     "unlock": {
@@ -85,13 +102,20 @@
       ]
     },
     "unlockCost": [
-      { "itemId": "map", "amount": 1 },
-      { "itemId": "fuel_canister", "amount": 15 }
+      {
+        "itemId": "map",
+        "amount": 1
+      },
+      {
+        "itemId": "fuel_canister",
+        "amount": 15
+      }
     ],
     "demandGenres": [
       "Fantasy",
       "Travel"
     ],
-    "customerTrafficPercentDelta": 0
+    "customerTrafficPercentDelta": 0,
+    "displayNameKey": "location.loc_village.name"
   }
 ]

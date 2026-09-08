@@ -8,7 +8,7 @@ namespace Game.Configs.Models
     public sealed class ShelfPresetConfig : IConfig
     {
         public string Id { get; set; }
-        public string DisplayName { get; set; }
+        public string DisplayNameKey { get; set; }
         public string[] BookIds { get; set; }
     }
 }

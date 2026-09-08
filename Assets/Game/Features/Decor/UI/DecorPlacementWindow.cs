@@ -7,6 +7,7 @@ using Game.Configs;
 using Game.Configs.Models;
 using Game.Decor.Services;
 using Game.Inventory.API;
+using Game.Localization;
 using Game.UI;
 using Game.UI.ContentWidget;
 using Infrastructure.Audio;
@@ -53,9 +54,8 @@ namespace Game.Decor.UI
         private bool _firstRender;
         private bool _useContentWidgetForInfo = false;
 
-        // Slot-first inventory filter: when set, RenderInventory shows only decor of this PositionType.
-        // Stage 1 keeps the filter type-only by design.
-        private DecorPositionType? _slotTypeFilter;
+        // Slot-first inventory filter: when set, RenderInventory shows only decor that fits this slot.
+        private DecorSlot _slotFilter;
 
         [Inject]
         public void InjectServices(
@@ -104,7 +104,7 @@ namespace Game.Decor.UI
             // Clean, non-animated re-sync on every open.
             _placedDecorBySlot.Clear();
             CancelPreviewIconLoad();
-            _slotTypeFilter = null;
+            _slotFilter = null;
             _previewDecorId = null;
             _previewPointId = null;
             _replaceOriginalDecorId = null;
@@ -196,7 +196,7 @@ namespace Game.Decor.UI
             }
             if (ct.IsCancellationRequested || anchor == null) return;
 
-            anchor.SetPlaced(sprite);
+            anchor.SetPlaced(sprite, ResolveSizeFactor(decorId));
             if (animate) anchor.PlayPlaceTween();
         }
 
@@ -212,9 +212,9 @@ namespace Game.Decor.UI
             {
                 var config = _configs.Get<DecorConfig>(item.ItemId);
                 if (config == null) continue;
-                // Slot-first filter: hide decor that doesn't match the clicked slot's type. Checked
+                // Slot-first filter: hide decor that doesn't fit the clicked slot. Checked
                 // before GetNext() so a hidden card never consumes a pooled view.
-                if (_slotTypeFilter.HasValue && config.PositionType != _slotTypeFilter.Value) continue;
+                if (_slotFilter != null && !IsDecorCompatibleWithSlot(config, _slotFilter)) continue;
                 var placed = !string.IsNullOrEmpty(FindPlacedSlot(item.ItemId));
                 var card = pool.GetNext();
                 card.Bind(config, placed, selectable, _sprites, OnCardSelect, OnCardInfo);
@@ -337,8 +337,8 @@ namespace Game.Decor.UI
             }
 
             return new DecorInfoWidgetData(
-                config.DisplayName ?? config.Id,
-                "TODO: item description. Add a Description field to DecorConfig and pass it here.",
+                ResolveDecorName(config),
+                LocalizationLocator.GetOrKey("ui.decor.description.placeholder"),
                 icon,
                 bonuses,
                 BuildDecorCharacteristics(config));
@@ -371,11 +371,12 @@ namespace Game.Decor.UI
 
             _previewDecorId = decorId;
             _applyInProgress = false;
+
+            HideHud();
             _state = State.Preview;
 
             SelectInventoryCard(decorId);
             ApplySelectedPointAvailability(_previewPointId);
-            SetButtonVisible(View.RemoveButton, false, false);
             ShowPreviewActions();
             SetApplyInteractable(true);
             LoadPreviewSpriteAsync(decorId, _previewPointId).Forget();
@@ -429,7 +430,7 @@ namespace Game.Decor.UI
             var config = string.IsNullOrEmpty(decorId) ? null : _configs.Get<DecorConfig>(decorId);
 
             if (View.SelectedDecorNameLabel != null)
-                View.SelectedDecorNameLabel.text = config != null ? config.DisplayName ?? config.Id : string.Empty;
+                View.SelectedDecorNameLabel.text = config != null ? ResolveDecorName(config) : string.Empty;
 
             if (View.SelectedDecorImage != null)
             {
@@ -509,12 +510,12 @@ namespace Game.Decor.UI
         // The full-screen backdrop is the reset point for preview, filters, dimming, and tools.
         private void OnBackdropClicked() => CancelPreview();
 
-        // Slot-first filter: show only inventory decor of the clicked slot's PositionType. Null-safe
+        // Slot-first filter: show only inventory decor that fits the clicked slot. Null-safe
         // against a prefab/config mismatch; re-renders the inventory to apply immediately.
         private void TrySetSlotFilter(string slotId)
         {
             if (!BuildSlotMap().TryGetValue(slotId, out var slot) || slot == null) return;
-            _slotTypeFilter = slot.PositionType;
+            _slotFilter = slot;
             RenderInventory();
         }
 
@@ -532,7 +533,7 @@ namespace Game.Decor.UI
             {
                 // Visual (remove tween → SetEmpty) is handled by PlacementChanged → Render diff.
                 await _placement.UnplaceAsync(slotId, _cts.Token);
-                PlayUi(View != null ? View.RemoveClip : null);
+                PlaySfx(View != null ? View.RemoveClip : null, Audio.Catalog?.DecorRemove);
             }
             catch (System.OperationCanceledException) { }
         }
@@ -595,7 +596,7 @@ namespace Game.Decor.UI
             if (config == null) return false;
             return BuildSlotMap().TryGetValue(slotId, out var slot)
                 && slot != null
-                && slot.PositionType == config.PositionType;
+                && IsDecorCompatibleWithSlot(config, slot);
         }
 
         private void OnMarkerClicked(DecorSlotAnchorView anchor)
@@ -657,7 +658,7 @@ namespace Game.Decor.UI
             _previewPointId = null;
             _replaceOriginalDecorId = null;
             _replaceOriginalSprite = null;
-            _slotTypeFilter = null;
+            _slotFilter = null;
             _applyInProgress = false;
 
             DeselectCards();
@@ -678,7 +679,7 @@ namespace Game.Decor.UI
             _previewPointId = null;
             _replaceOriginalDecorId = null;
             _replaceOriginalSprite = null;
-            _slotTypeFilter = null;
+            _slotFilter = null;
             _applyInProgress = false;
 
             DeselectCards();
@@ -703,7 +704,7 @@ namespace Game.Decor.UI
             if (_placement == null || !string.Equals(_placement.GetDecorInSlot(_previewPointId), _replaceOriginalDecorId, StringComparison.OrdinalIgnoreCase)) return;
 
             var anchor = FindAnchor(_previewPointId);
-            if (anchor != null) anchor.SetPlaced(_replaceOriginalSprite);
+            if (anchor != null) anchor.SetPlaced(_replaceOriginalSprite, ResolveSizeFactor(_replaceOriginalDecorId));
         }
 
         private async UniTaskVoid LoadPreviewSpriteAsync(string decorId, string pointId)
@@ -727,7 +728,7 @@ namespace Game.Decor.UI
 
             var anchor = FindAnchor(pointId);
             if (anchor == null) return;
-            anchor.SetPreview(sprite);
+            anchor.SetPreview(sprite, ResolveSizeFactor(decorId));
         }
 
         private void CancelPreviewIconLoad()
@@ -762,12 +763,12 @@ namespace Game.Decor.UI
                     : await _placement.PlaceAsync(decorId, pointId, _cts.Token);
                 if (result == DecorPlacementResult.Success)
                 {
-                    PlayUi(View != null ? View.PlaceClip : null);
+                    PlaySfx(View != null ? View.PlaceClip : null, Audio.Catalog?.DecorPlace);
                 }
                 else
                 {
                     var operation = isReplace ? "Replace" : "Place";
-                    Debug.Log($"[DecorPlacementWindow] {operation} '{decorId}' -> '{pointId}' failed: {result}");
+                    Debug.LogWarning($"[DecorPlacementWindow] {operation} '{decorId}' -> '{pointId}' failed: {result}");
                     RestoreApplyIfPreviewStillActive(decorId, pointId);
                 }
             }
@@ -786,11 +787,11 @@ namespace Game.Decor.UI
             ShowPreviewActions();
         }
 
-        // Null-safe: no-op if the clip is unassigned or the audio service is not bound. Assigning a
-        // clip in the inspector is enough to make it play — no code change needed.
-        private static void PlayUi(AudioClip clip)
+        // Null-safe: no-op if both the override and fallback are unassigned or the audio service is not bound.
+        private static void PlaySfx(AudioClip clip, AudioClip fallback)
         {
-            if (clip != null) Audio.PlayUi(clip);
+            var resolved = clip != null ? clip : fallback;
+            if (resolved != null) Audio.PlaySfx(resolved);
         }
 
         private void DeselectCards()
@@ -810,13 +811,29 @@ namespace Game.Decor.UI
 
         private Dictionary<string, DecorSlot> BuildSlotMap()
         {
-            var map = new Dictionary<string, DecorSlot>();
+            var map = new Dictionary<string, DecorSlot>(StringComparer.OrdinalIgnoreCase);
             var shop = _configs.Get<BookShopConfig>(DecorPlacementService.HardcodedBookShopId);
             if (shop?.DecorSlots == null) return map;
             foreach (var slot in shop.DecorSlots)
                 if (slot != null && !string.IsNullOrEmpty(slot.Id)) map[slot.Id] = slot;
             return map;
         }
+
+        private float ResolveSizeFactor(string decorId)
+        {
+            return !string.IsNullOrEmpty(decorId)
+                   && _configs != null
+                   && _configs.TryGet<DecorConfig>(decorId, out var config)
+                   && config != null
+                ? DecorSizeVisualScale.Factor(config.Size)
+                : DecorSizeVisualScale.LargeFactor;
+        }
+
+        private static bool IsDecorCompatibleWithSlot(DecorConfig config, DecorSlot slot)
+            => config != null
+               && slot != null
+               && config.PositionType == slot.PositionType
+               && (int)config.Size <= (int)slot.MaxSize;
 
         private DecorSlotAnchorView FindAnchor(string slotId)
         {
@@ -857,5 +874,10 @@ namespace Game.Decor.UI
             sb.Append(". Continue?");
             return sb.ToString();
         }
+
+        private static string ResolveDecorName(DecorConfig config)
+            => string.IsNullOrEmpty(config?.DisplayNameKey)
+                ? config?.Id
+                : LocalizationLocator.GetOrKey(config.DisplayNameKey);
     }
 }

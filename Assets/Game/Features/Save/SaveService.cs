@@ -138,15 +138,21 @@ namespace Save
                 if (!_data.Modules.TryGetValue(moduleKey, out var payload) || payload.Json == null)
                     return null;
 
-                //TODO check bug 
-                /*
-                 * When loading saves written before this change, ModulePayload.Json deserializes as a JValue string containing the old escaped module JSON;
-                 * calling ToObject<T>() on that string tries to convert the string itself into the DTO and fails instead of deserializing the inner JSON.
-                 * This breaks existing saved modules such as inventory/resources/shop on upgrade,
-                 * despite the new ModulePayload comment claiming legacy string payloads remain readable;
-                 * handle JTokenType.String by deserializing the contained string before falling back to ToObject<T>().
-                 */
-                return payload.Json.ToObject<T>();
+                try
+                {
+                    return payload.Json.ToObject<T>();
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning(
+                        $"[SaveService] Module '{moduleKey}' v{payload.Version} cannot be deserialized as {typeof(T).Name}; " +
+                        $"returning default. {ex.GetType().Name}: {ex.Message}");
+                    return null;
+                }
             }
             finally
             {
@@ -316,7 +322,7 @@ namespace Save
             var over = total > limitBytes;
             var msg = $"[SaveService] Payload total={total}B (limit={limitBytes}B, {(over ? "OVER" : "ok")}), modules={data.Modules.Count}";
             if (over) Debug.LogWarning(msg);
-            else Debug.Log(msg);
+            else if (Debug.isDebugBuild) Debug.Log(msg);
 
             if (data.Modules.Count <= 0) return;
             const int moduleLimit = 5120;
@@ -327,7 +333,7 @@ namespace Save
                     : Encoding.UTF8.GetByteCount(kvp.Value.Json.ToString(Formatting.None));
                 var moduleMsg = $"[SaveService]   module='{kvp.Key}' v{kvp.Value?.Version} = {size}B";
                 if (size > moduleLimit) Debug.LogWarning(moduleMsg + " (OVER 5KB)");
-                else Debug.Log(moduleMsg);
+                else if (Debug.isDebugBuild) Debug.Log(moduleMsg);
             }
         }
 

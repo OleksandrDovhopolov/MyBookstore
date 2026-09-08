@@ -7,20 +7,13 @@ namespace Game.Privacy.Services
     public sealed class PrivacyLinkSettings
     {
         private readonly string _privacyPolicyUrl;
-        private readonly string _termsOfUseUrl;
 
-        public PrivacyLinkSettings(string privacyPolicyUrl, string termsOfUseUrl)
+        public PrivacyLinkSettings(string privacyPolicyUrl)
         {
             _privacyPolicyUrl = privacyPolicyUrl;
-            _termsOfUseUrl = termsOfUseUrl;
         }
 
         public string PrivacyPolicyUrl => _privacyPolicyUrl;
-
-        /// <summary>Falls back to the privacy policy URL when a combined page covers both documents.</summary>
-        public string TermsOfUseUrl => string.IsNullOrWhiteSpace(_termsOfUseUrl)
-            ? _privacyPolicyUrl
-            : _termsOfUseUrl;
 
         public bool HasPrivacyPolicyUrl => !string.IsNullOrWhiteSpace(_privacyPolicyUrl);
     }

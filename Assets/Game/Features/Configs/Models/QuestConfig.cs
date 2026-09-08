@@ -39,6 +39,15 @@ namespace Game.Configs.Models
 
         public QuestRewardConfig[] Rewards { get; set; }
 
+        /// <summary>Items consumed once when quest rewards are granted. Null/empty = free claim.</summary>
+        public QuestCostConfig[] Costs { get; set; }
+
         public QuestWorldEffectConfig[] WorldEffects { get; set; }
+    }
+
+    public sealed class QuestCostConfig
+    {
+        public string ItemId { get; set; }
+        public int Amount { get; set; }
     }
 }

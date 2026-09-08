@@ -48,6 +48,23 @@ namespace UIShared
             }
         }
 
+        public void SetBadge(TEnum tab, bool on)
+        {
+            if (_buttons == null)
+                return;
+
+            var comparer = EqualityComparer<TEnum>.Default;
+            for (var i = 0; i < _buttons.Length; i++)
+            {
+                var button = _buttons[i];
+                if (button != null && comparer.Equals(button.Tab, tab))
+                {
+                    button.SetBadge(on);
+                    return;
+                }
+            }
+        }
+
         private void OnButtonSelected(TEnum tab)
         {
             SelectTab(tab);

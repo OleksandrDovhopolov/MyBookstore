@@ -2,311 +2,560 @@
   {
     "id": "newspaper_decor_vintage_globe",
     "storefrontId": "newspaper.decor",
-    "displayName": "Vintage Globe",
-    "description": "A charming counter accent",
-    "price": { "currency": "gold", "amount": 0 },
+    "price": {
+      "currency": "gold",
+      "amount": 0
+    },
     "rewardId": "decor_vintage_globe",
     "rewardItems": [
-      { "id": "vintage_globe", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "vintage_globe",
+        "category": "decor",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_decor_vintage_globe.name",
+    "descriptionKey": "shop.newspaper_decor_vintage_globe.description"
   },
   {
     "id": "newspaper_decor_coffee_pot",
     "storefrontId": "newspaper.decor",
-    "displayName": "Coffee Machine",
-    "description": "A cozy upgrade for long reading days",
-    "price": { "currency": "gold", "amount": 50 },
+    "price": {
+      "currency": "gold",
+      "amount": 50
+    },
     "rewardId": "decor_coffee_pot",
     "rewardItems": [
-      { "id": "coffee_pot", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "coffee_pot",
+        "category": "decor",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_decor_coffee_pot.name",
+    "descriptionKey": "shop.newspaper_decor_coffee_pot.description"
   },
   {
     "id": "newspaper_decor_chinese_vase",
     "storefrontId": "newspaper.decor",
-    "displayName": "Chinese Vase",
-    "description": "A decorative upgrade for the bookshop",
-    "price": { "currency": "gold", "amount": 90 },
+    "price": {
+      "currency": "gold",
+      "amount": 90
+    },
     "rewardId": "decor_chinese_vase",
     "rewardItems": [
-      { "id": "chinese_vase", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "chinese_vase",
+        "category": "decor",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_decor_chinese_vase.name",
+    "descriptionKey": "shop.newspaper_decor_chinese_vase.description"
   },
   {
     "id": "newspaper_decor_gas_lighter",
     "storefrontId": "newspaper.decor",
-    "displayName": "Gas Lantern",
-    "description": "A decorative upgrade for the bookshop",
-    "price": { "currency": "gold", "amount": 60 },
+    "price": {
+      "currency": "gold",
+      "amount": 60
+    },
     "rewardId": "decor_gas_lighter",
     "rewardItems": [
-      { "id": "gas_lighter", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "gas_lighter",
+        "category": "decor",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_decor_gas_lighter.name",
+    "descriptionKey": "shop.newspaper_decor_gas_lighter.description"
   },
   {
     "id": "newspaper_decor_green_flower",
     "storefrontId": "newspaper.decor",
-    "displayName": "Green Flower Pot",
-    "description": "A decorative upgrade for the bookshop",
-    "price": { "currency": "gold", "amount": 35 },
+    "price": {
+      "currency": "gold",
+      "amount": 35
+    },
     "rewardId": "decor_green_flower",
     "rewardItems": [
-      { "id": "green_flower", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "green_flower",
+        "category": "decor",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_decor_green_flower.name",
+    "descriptionKey": "shop.newspaper_decor_green_flower.description"
   },
   {
     "id": "newspaper_decor_green_menu",
     "storefrontId": "newspaper.decor",
-    "displayName": "Street Sign",
-    "description": "A decorative upgrade for the bookshop",
-    "price": { "currency": "gold", "amount": 100 },
+    "price": {
+      "currency": "gold",
+      "amount": 100
+    },
     "rewardId": "decor_green_menu",
     "rewardItems": [
-      { "id": "green_menu", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "green_menu",
+        "category": "decor",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_decor_green_menu.name",
+    "descriptionKey": "shop.newspaper_decor_green_menu.description"
   },
   {
     "id": "newspaper_decor_little_cactus",
     "storefrontId": "newspaper.decor",
-    "displayName": "Little Cactus",
-    "description": "A decorative upgrade for the bookshop",
-    "price": { "currency": "gold", "amount": 25 },
+    "price": {
+      "currency": "gold",
+      "amount": 25
+    },
     "rewardId": "decor_little_cactus",
     "rewardItems": [
-      { "id": "little_cactus", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "little_cactus",
+        "category": "decor",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_decor_little_cactus.name",
+    "descriptionKey": "shop.newspaper_decor_little_cactus.description"
   },
   {
     "id": "newspaper_decor_pocket_clock",
     "storefrontId": "newspaper.decor",
-    "displayName": "Pocket Clock",
-    "description": "A decorative upgrade for the bookshop",
-    "price": { "currency": "gold", "amount": 70 },
+    "price": {
+      "currency": "gold",
+      "amount": 70
+    },
     "rewardId": "decor_pocket_clock",
     "rewardItems": [
-      { "id": "pocket_clock", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "pocket_clock",
+        "category": "decor",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_decor_pocket_clock.name",
+    "descriptionKey": "shop.newspaper_decor_pocket_clock.description"
   },
   {
     "id": "newspaper_decor_table_frame",
     "storefrontId": "newspaper.decor",
-    "displayName": "Table Frame",
-    "description": "A decorative upgrade for the bookshop",
-    "price": { "currency": "gold", "amount": 45 },
+    "price": {
+      "currency": "gold",
+      "amount": 45
+    },
     "rewardId": "decor_table_frame",
     "rewardItems": [
-      { "id": "table_frame", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "table_frame",
+        "category": "decor",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_decor_table_frame.name",
+    "descriptionKey": "shop.newspaper_decor_table_frame.description"
   },
   {
     "id": "newspaper_decor_tifany_lamp",
     "storefrontId": "newspaper.decor",
-    "displayName": "Tiffany Lamp",
-    "description": "A decorative upgrade for the bookshop",
-    "price": { "currency": "gold", "amount": 120 },
+    "price": {
+      "currency": "gold",
+      "amount": 120
+    },
     "rewardId": "decor_tifany_lamp",
     "rewardItems": [
-      { "id": "tifany_lamp", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "tifany_lamp",
+        "category": "decor",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_decor_tifany_lamp.name",
+    "descriptionKey": "shop.newspaper_decor_tifany_lamp.description"
   },
   {
     "id": "newspaper_decor_wite_flower",
     "storefrontId": "newspaper.decor",
-    "displayName": "White Flower Bouquet",
-    "description": "A decorative upgrade for the bookshop",
-    "price": { "currency": "gold", "amount": 40 },
+    "price": {
+      "currency": "gold",
+      "amount": 40
+    },
     "rewardId": "decor_wite_flower",
     "rewardItems": [
-      { "id": "wite_flower", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "wite_flower",
+        "category": "decor",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_decor_wite_flower.name",
+    "descriptionKey": "shop.newspaper_decor_wite_flower.description"
   },
   {
     "id": "newspaper_box_general_5",
     "storefrontId": "newspaper.books",
-    "displayName": "Small Book Box",
-    "description": "5 random books from all genres",
-    "price": { "currency": "gold", "amount": 15 },
+    "price": {
+      "currency": "gold",
+      "amount": 15
+    },
     "rewardId": "book_box_general_5",
     "rewardItems": [],
-    "limit": { "mode": "Daily", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Daily",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_box_general_5.name",
+    "descriptionKey": "shop.newspaper_box_general_5.description"
   },
   {
     "id": "newspaper_box_general_10",
     "storefrontId": "newspaper.books",
-    "displayName": "Medium Book Box",
-    "description": "10 random books from all genres",
-    "price": { "currency": "gold", "amount": 28 },
+    "price": {
+      "currency": "gold",
+      "amount": 28
+    },
     "rewardId": "book_box_general_10",
     "rewardItems": [],
-    "limit": { "mode": "Daily", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Daily",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_box_general_10.name",
+    "descriptionKey": "shop.newspaper_box_general_10.description"
   },
   {
     "id": "newspaper_book_common_15",
     "storefrontId": "newspaper.books",
-    "displayName": "Large Book Box",
-    "description": "15 random books from all genres",
-    "price": { "currency": "gold", "amount": 40 },
+    "price": {
+      "currency": "gold",
+      "amount": 40
+    },
     "rewardId": "book_box_common_15",
     "rewardItems": [],
-    "limit": { "mode": "Daily", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Daily",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_book_common_15.name",
+    "descriptionKey": "shop.newspaper_book_common_15.description"
   },
   {
     "id": "newspaper_book_rare_8",
     "storefrontId": "newspaper.books",
-    "displayName": "Rare Book Box",
-    "description": "8 rare books from all genres",
-    "price": { "currency": "gold", "amount": 55 },
+    "price": {
+      "currency": "gold",
+      "amount": 55
+    },
     "rewardId": "book_box_rare_8",
     "rewardItems": [],
-    "limit": { "mode": "Daily", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Daily",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_book_rare_8.name",
+    "descriptionKey": "shop.newspaper_book_rare_8.description"
   },
   {
     "id": "newspaper_box_genre_classic",
     "storefrontId": "newspaper.books",
-    "displayName": "Classic Book Box",
-    "description": "8 Classic books",
-    "price": { "currency": "gold", "amount": 45 },
+    "price": {
+      "currency": "gold",
+      "amount": 45
+    },
     "rewardId": "book_box_genre_classic_8",
     "rewardItems": [],
-    "limit": { "mode": "Daily", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Daily",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_box_genre_classic.name",
+    "descriptionKey": "shop.newspaper_box_genre_classic.description"
   },
   {
     "id": "newspaper_box_genre_crime",
     "storefrontId": "newspaper.books",
-    "displayName": "Crime Book Box",
-    "description": "8 Crime books",
-    "price": { "currency": "gold", "amount": 45 },
+    "price": {
+      "currency": "gold",
+      "amount": 45
+    },
     "rewardId": "book_box_genre_crime_8",
     "rewardItems": [],
-    "limit": { "mode": "Daily", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Daily",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_box_genre_crime.name",
+    "descriptionKey": "shop.newspaper_box_genre_crime.description"
   },
   {
     "id": "newspaper_box_genre_drama",
     "storefrontId": "newspaper.books",
-    "displayName": "Drama Book Box",
-    "description": "8 Drama books",
-    "price": { "currency": "gold", "amount": 45 },
+    "price": {
+      "currency": "gold",
+      "amount": 45
+    },
     "rewardId": "book_box_genre_drama_8",
     "rewardItems": [],
-    "limit": { "mode": "Daily", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Daily",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_box_genre_drama.name",
+    "descriptionKey": "shop.newspaper_box_genre_drama.description"
   },
   {
     "id": "newspaper_box_genre_fact",
     "storefrontId": "newspaper.books",
-    "displayName": "Fact Book Box",
-    "description": "8 Fact books",
-    "price": { "currency": "gold", "amount": 45 },
+    "price": {
+      "currency": "gold",
+      "amount": 45
+    },
     "rewardId": "book_box_genre_fact_8",
     "rewardItems": [],
-    "limit": { "mode": "Daily", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Daily",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_box_genre_fact.name",
+    "descriptionKey": "shop.newspaper_box_genre_fact.description"
   },
   {
     "id": "newspaper_box_genre_fantasy",
     "storefrontId": "newspaper.books",
-    "displayName": "Fantasy Book Box",
-    "description": "8 Fantasy books",
-    "price": { "currency": "gold", "amount": 45 },
+    "price": {
+      "currency": "gold",
+      "amount": 45
+    },
     "rewardId": "book_box_genre_fantasy_8",
     "rewardItems": [],
-    "limit": { "mode": "Daily", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Daily",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_box_genre_fantasy.name",
+    "descriptionKey": "shop.newspaper_box_genre_fantasy.description"
   },
   {
     "id": "newspaper_box_genre_kids",
     "storefrontId": "newspaper.books",
-    "displayName": "Kids Book Box",
-    "description": "8 Kids books",
-    "price": { "currency": "gold", "amount": 45 },
+    "price": {
+      "currency": "gold",
+      "amount": 45
+    },
     "rewardId": "book_box_genre_kids_8",
     "rewardItems": [],
-    "limit": { "mode": "Daily", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Daily",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_box_genre_kids.name",
+    "descriptionKey": "shop.newspaper_box_genre_kids.description"
   },
   {
     "id": "newspaper_box_genre_travel",
     "storefrontId": "newspaper.books",
-    "displayName": "Travel Book Box",
-    "description": "8 Travel books",
-    "price": { "currency": "gold", "amount": 45 },
+    "price": {
+      "currency": "gold",
+      "amount": 45
+    },
     "rewardId": "book_box_genre_travel_8",
     "rewardItems": [],
-    "limit": { "mode": "Daily", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Daily",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_box_genre_travel.name",
+    "descriptionKey": "shop.newspaper_box_genre_travel.description"
   },
   {
     "id": "newspaper_consumable_fuel_canister",
     "storefrontId": "newspaper.consumables",
-    "displayName": "Fuel Canister",
-    "description": "A useful supply for opening new routes",
-    "price": { "currency": "gold", "amount": 20 },
+    "price": {
+      "currency": "gold",
+      "amount": 20
+    },
     "rewardId": "consumable_fuel_canister",
     "rewardItems": [
-      { "id": "fuel_canister", "category": "consumable", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "fuel_canister",
+        "category": "consumable",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Unlimited" }
+    "limit": {
+      "mode": "Unlimited"
+    },
+    "displayNameKey": "shop.newspaper_consumable_fuel_canister.name",
+    "descriptionKey": "shop.newspaper_consumable_fuel_canister.description"
   },
   {
     "id": "newspaper_quest_item_map",
     "storefrontId": "newspaper.consumables",
-    "displayName": "Map",
-    "description": "Route to the village. You cannot get there without it.",
-    "price": { "currency": "gold", "amount": 200 },
+    "price": {
+      "currency": "gold",
+      "amount": 200
+    },
     "rewardId": "quest_item_map",
     "rewardItems": [
-      { "id": "map", "category": "quest_item", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "map",
+        "category": "quest_item",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.newspaper_quest_item_map.name",
+    "descriptionKey": "shop.newspaper_quest_item_map.description"
   },
   {
     "id": "tutorial_book_box_heartfelt",
     "storefrontId": "tutorial",
-    "displayName": "Tutorial Book Box",
-    "description": "A free book box from the tutorial",
-    "price": { "currency": "gold", "amount": 0 },
+    "price": {
+      "currency": "gold",
+      "amount": 0
+    },
     "rewardId": "book_box_genre_heartfelt_1",
     "rewardItems": [],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.tutorial_book_box_heartfelt.name",
+    "descriptionKey": "shop.tutorial_book_box_heartfelt.description"
   },
-
   {
     "id": "classic_decor_old_lamp",
     "storefrontId": "newspaper.decor",
-    "displayName": "Old lamp",
-    "price": { "currency": "gold", "amount": 75 },
+    "price": {
+      "currency": "gold",
+      "amount": 75
+    },
     "rewardId": "decor_old_lamp",
     "rewardItems": [
-      { "id": "old_lamp", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "old_lamp",
+        "category": "decor",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.classic_decor_old_lamp.name",
+    "descriptionKey": "shop.classic_decor_old_lamp.description"
   },
   {
     "id": "classic_decor_houseplant",
     "storefrontId": "newspaper.decor",
-    "displayName": "Houseplant",
-    "price": { "currency": "gold", "amount": 60 },
+    "price": {
+      "currency": "gold",
+      "amount": 60
+    },
     "rewardId": "decor_houseplant",
     "rewardItems": [
-      { "id": "houseplant", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "houseplant",
+        "category": "decor",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.classic_decor_houseplant.name",
+    "descriptionKey": "shop.classic_decor_houseplant.description"
   },
   {
     "id": "classic_decor_maritime_painting",
-    "displayName": "Maritime painting",
     "storefrontId": "newspaper.decor",
-    "price": { "currency": "gold", "amount": 90 },
+    "price": {
+      "currency": "gold",
+      "amount": 90
+    },
     "rewardId": "decor_maritime_painting",
     "rewardItems": [
-      { "id": "maritime_painting", "category": "decor", "amount": 1, "kind": "InventoryItem" }
+      {
+        "id": "maritime_painting",
+        "category": "decor",
+        "amount": 1,
+        "kind": "InventoryItem"
+      }
     ],
-    "limit": { "mode": "Disposable", "maxPurchases": 1 }
+    "limit": {
+      "mode": "Disposable",
+      "maxPurchases": 1
+    },
+    "displayNameKey": "shop.classic_decor_maritime_painting.name",
+    "descriptionKey": "shop.classic_decor_maritime_painting.description"
   }
 ]

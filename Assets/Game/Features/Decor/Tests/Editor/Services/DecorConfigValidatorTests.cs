@@ -34,7 +34,7 @@ namespace Game.Decor.Tests.Editor.Services
                     new DecorConfig
                     {
                         Id = "d1",
-                        DisplayName = "Test",
+                        DisplayNameKey = "Test",
                         PositionType = DecorPositionType.Standing,
                         Size = DecorSize.Small,
                         GenreMultipliers = new[] { new DecorGenreModifier { Genre = "Fantasy", Multiplier = 1.5f } },
@@ -49,7 +49,7 @@ namespace Game.Decor.Tests.Editor.Services
         [Test]
         public void EmptyId_Errors()
         {
-            var v = Build(decors: new[] { new DecorConfig { Id = "", DisplayName = "x", PositionType = DecorPositionType.Standing, Size = DecorSize.Small } });
+            var v = Build(decors: new[] { new DecorConfig { Id = "", DisplayNameKey = "x", PositionType = DecorPositionType.Standing, Size = DecorSize.Small } });
             var report = v.Validate();
             Assert.IsTrue(report.HasErrors);
         }
@@ -59,8 +59,8 @@ namespace Game.Decor.Tests.Editor.Services
         {
             var v = Build(decors: new[]
             {
-                new DecorConfig { Id = "dup", DisplayName = "a", PositionType = DecorPositionType.Standing, Size = DecorSize.Small },
-                new DecorConfig { Id = "dup", DisplayName = "b", PositionType = DecorPositionType.Standing, Size = DecorSize.Small },
+                new DecorConfig { Id = "dup", DisplayNameKey = "a", PositionType = DecorPositionType.Standing, Size = DecorSize.Small },
+                new DecorConfig { Id = "dup", DisplayNameKey = "b", PositionType = DecorPositionType.Standing, Size = DecorSize.Small },
             });
             var report = v.Validate();
             Assert.IsTrue(report.HasErrors);
@@ -74,7 +74,7 @@ namespace Game.Decor.Tests.Editor.Services
             {
                 new DecorConfig
                 {
-                    Id = "d1", DisplayName = "x",
+                    Id = "d1", DisplayNameKey = "x",
                     PositionType = DecorPositionType.Standing, Size = DecorSize.Small,
                     GenreMultipliers = new[] { new DecorGenreModifier { Genre = "X", Multiplier = -1f } }
                 }
@@ -91,7 +91,7 @@ namespace Game.Decor.Tests.Editor.Services
                 {
                     new DecorConfig
                     {
-                        Id = "d1", DisplayName = "x",
+                        Id = "d1", DisplayNameKey = "x",
                         PositionType = DecorPositionType.Standing, Size = DecorSize.Small,
                         GenreMultipliers = new[] { new DecorGenreModifier { Genre = "Mystery", Multiplier = 1.5f } }
                     }
@@ -294,14 +294,111 @@ namespace Game.Decor.Tests.Editor.Services
             Assert.IsFalse(warnings.Contains("unreachable"), warnings);
         }
 
+        [Test]
+        public void SlotWithoutFittingDecor_Errors()
+        {
+            var v = Build(
+                decors: new[] { Decor("wall_small", DecorPositionType.Wall, DecorSize.Small) },
+                shops: new[]
+                {
+                    Shop("shop1", Slot("hanging_small", DecorPositionType.Hanging, DecorSize.Small))
+                });
+
+            var report = v.Validate();
+
+            Assert.IsTrue(report.HasErrors);
+            var errors = string.Join("|", report.Errors);
+            StringAssert.Contains("hanging_small", errors);
+            StringAssert.Contains("no fitting DecorConfig", errors);
+        }
+
+        [Test]
+        public void DecorWithoutFittingSlot_Warns()
+        {
+            var v = Build(
+                decors: new[] { Decor("hanging_medium", DecorPositionType.Hanging, DecorSize.Medium) },
+                shops: new[]
+                {
+                    Shop("shop1", Slot("hanging_small", DecorPositionType.Hanging, DecorSize.Small))
+                });
+
+            var report = v.Validate();
+
+            Assert.IsTrue(report.HasWarnings);
+            var warnings = string.Join("|", report.Warnings);
+            StringAssert.Contains("hanging_medium", warnings);
+            StringAssert.Contains("fits no BookShop slot", warnings);
+        }
+
+        [Test]
+        public void SlotCoverage_UsesPositionTypeAndSizeLimit()
+        {
+            var v = Build(
+                decors: new[]
+                {
+                    Decor("standing_medium", DecorPositionType.Standing, DecorSize.Medium),
+                    Decor("hanging_small", DecorPositionType.Hanging, DecorSize.Small)
+                },
+                shops: new[]
+                {
+                    Shop(
+                        "shop1",
+                        Slot("standing_small", DecorPositionType.Standing, DecorSize.Small),
+                        Slot("hanging_small", DecorPositionType.Hanging, DecorSize.Small))
+                });
+
+            var report = v.Validate();
+
+            var errors = string.Join("|", report.Errors);
+            StringAssert.Contains("standing_small", errors);
+            Assert.IsFalse(errors.Contains("hanging_small"), errors);
+        }
+
+        [Test]
+        public void FittingSlotAndDecor_NoCoverageFindings()
+        {
+            var v = Build(
+                decors: new[] { Decor("standing_small", DecorPositionType.Standing, DecorSize.Small) },
+                shops: new[]
+                {
+                    Shop("shop1", Slot("standing_medium", DecorPositionType.Standing, DecorSize.Medium))
+                });
+
+            var report = v.Validate();
+
+            var errors = string.Join("|", report.Errors);
+            var warnings = string.Join("|", report.Warnings);
+            Assert.IsFalse(errors.Contains("no fitting DecorConfig"), errors);
+            Assert.IsFalse(warnings.Contains("fits no BookShop slot"), warnings);
+        }
+
         private static DecorConfig Decor(string id) =>
+            Decor(id, DecorPositionType.Standing, DecorSize.Small);
+
+        private static DecorConfig Decor(string id, DecorPositionType positionType, DecorSize size) =>
             new DecorConfig
             {
                 Id = id,
-                DisplayName = id,
-                PositionType = DecorPositionType.Standing,
-                Size = DecorSize.Small,
+                DisplayNameKey = id,
+                PositionType = positionType,
+                Size = size,
                 GenreMultipliers = System.Array.Empty<DecorGenreModifier>()
+            };
+
+        private static BookShopConfig Shop(string id, params DecorSlot[] slots) =>
+            new BookShopConfig
+            {
+                Id = id,
+                DisplayNameKey = id,
+                DecorSlots = slots
+            };
+
+        private static DecorSlot Slot(string id, DecorPositionType positionType, DecorSize maxSize) =>
+            new DecorSlot
+            {
+                Id = id,
+                PositionType = positionType,
+                MaxSize = maxSize
             };
 
         private static ShopConfig Lot(

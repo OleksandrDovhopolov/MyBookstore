@@ -5,7 +5,7 @@ namespace Game.Characters.Services.Persistence
     {
         public const string State = "characters";
 
-        // v2: adds flat SeenMemoryIds for Journal notification tracking.
-        public const int StateSchemaVersion = 2;
+        // Release baseline: all pre-release saves are wiped, so the public schema starts at v1.
+        public const int StateSchemaVersion = 1;
     }
 }

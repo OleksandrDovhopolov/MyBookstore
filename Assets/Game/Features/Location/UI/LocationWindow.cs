@@ -5,11 +5,13 @@ using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
 using Game.Inventory.API;
+using Game.Localization;
 using Game.LocationEntry.API;
 using Game.LocationUnlock.API;
 using Game.Resources.API;
 using Game.UI;
 using Game.UI.ContentWidget;
+using Infrastructure.Audio;
 using SpriteService;
 using UnityEngine;
 using VContainer;
@@ -112,7 +114,14 @@ namespace Game.Location.UI
                     _unlock?.GetCost(config.Id)));
             }
 
-            View.Render(_models, OnStartClicked, OnUnlockClicked, OnDemandInfoClicked, OnLocationsScrolled, _uiSprites);
+            View.Render(
+                _models,
+                OnStartClicked,
+                OnUnlockClicked,
+                OnDemandInfoClicked,
+                OnRequirementInfoClicked,
+                OnLocationsScrolled,
+                _uiSprites);
         }
 
         private void OnStartClicked(string locationId)
@@ -126,6 +135,9 @@ namespace Game.Location.UI
 
         private void OnDemandInfoClicked(string locationId, RectTransform anchor)
             => ShowDemandWidgetAsync(locationId, anchor).Forget();
+
+        private void OnRequirementInfoClicked(LocationRequirementRef requirement, RectTransform anchor)
+            => ShowRequirementInfoWidgetAsync(requirement, anchor).Forget();
 
         private void OnLocationsScrolled()
         {
@@ -172,7 +184,11 @@ namespace Game.Location.UI
                 if (scrollVersion != _scrollVersion)
                     return;
 
-                var data = new LocationDemandWidgetData(config.DisplayName, genres);
+                var data = new LocationDemandWidgetData(
+                    string.IsNullOrEmpty(config.DisplayNameKey)
+                        ? config.Id
+                        : LocalizationLocator.GetOrKey(config.DisplayNameKey),
+                    genres);
                 await UIManager.ShowAsync<ContentWidgetController>(
                     new ContentWidgetArgs(
                         data,
@@ -186,11 +202,46 @@ namespace Game.Location.UI
             }
         }
 
+        private async UniTaskVoid ShowRequirementInfoWidgetAsync(LocationRequirementRef requirement, RectTransform anchor)
+        {
+            if (anchor == null || _configs == null || UIManager == null)
+                return;
+
+            try
+            {
+                var scrollVersion = _scrollVersion;
+                var ct = View != null ? View.destroyCancellationToken : CancellationToken.None;
+                var data = LocationRequirementHintResolver.Resolve(_configs, requirement);
+
+                if (ct.IsCancellationRequested || anchor == null || scrollVersion != _scrollVersion)
+                    return;
+
+                await UIManager.ShowAsync<ContentWidgetController>(
+                    new ContentWidgetArgs(
+                        data,
+                        anchor,
+                        this,
+                        placementMode: ContentWidgetPlacementMode.VerticalOnly),
+                    ct);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
         private async UniTaskVoid UnlockAsync(string locationId)
         {
             if (_unlock == null || string.IsNullOrEmpty(locationId)) return;
-            await _unlock.TryUnlockAsync(locationId, default);
+            var result = await _unlock.TryUnlockAsync(locationId, default);
+            PlaySfx(result == UnlockResult.Ok
+                ? Audio.Catalog?.LocationDiscovered
+                : Audio.Catalog?.ActionBlocked);
             Render();
+        }
+
+        private static void PlaySfx(AudioClip clip)
+        {
+            if (clip != null) Audio.PlaySfx(clip);
         }
     }
 }
