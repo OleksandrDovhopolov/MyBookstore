@@ -10,6 +10,7 @@ using Game.Shop;
 using Game.Shop.API;
 using Game.UI;
 using Game.UI.ContentWidget;
+using Infrastructure.Audio;
 using SpriteService;
 using UIShared;
 using UnityEngine;
@@ -318,6 +319,7 @@ namespace Game.Shop.UI
             if (result.Status == ShopPurchaseStatus.Success)
             {
                 UpdatePurchasedCard(lotId);
+                PlaySfx(Audio.Catalog?.PurchaseSuccess);
 
                 if (result.Granted != null && result.Granted.Items.Count > 0)
                 {
@@ -328,6 +330,8 @@ namespace Game.Shop.UI
             }
             else if (result.Status != ShopPurchaseStatus.Success)
             {
+                PlaySfx(Audio.Catalog?.ActionBlocked);
+
                 if (result.Status == ShopPurchaseStatus.NotEnoughCurrency)
                     ShowInfoWidget(LocalizationLocator.GetOrKey(ShopUiTexts.NotEnoughGold));
 
@@ -351,6 +355,11 @@ namespace Game.Shop.UI
 
             if (TryGetCurrentOffer(lotId, out var offer))
                 card.UpdateOfferState(offer);
+        }
+
+        private static void PlaySfx(AudioClip clip)
+        {
+            if (clip != null) Audio.PlaySfx(clip);
         }
 
         private bool TryGetCurrentOffer(string lotId, out ShopOffer offer)

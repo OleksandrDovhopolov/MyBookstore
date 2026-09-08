@@ -9,6 +9,7 @@ using Game.Configs.Models;
 using Game.Localization;
 using Game.UI;
 using Game.UI.ContentWidget;
+using Infrastructure.Audio;
 using SpriteService;
 using TMPro;
 using UnityEngine;
@@ -316,6 +317,8 @@ namespace Book.Sell.UI
             _resultShown = true;
             _resolutionPending = true;
             SetSelectionActionsInteractable(false);
+            if (result?.Tier == RecommendationTier.Excellent)
+                PlaySfx(Audio.Catalog?.BookSold);
 
             var emotion = EmotionFor(result?.Tier ?? RecommendationTier.Skipped);
             if (View.Animator != null)
@@ -415,5 +418,10 @@ namespace Book.Sell.UI
 
         private static string JoinOrDash(IReadOnlyList<string> values)
             => values == null || values.Count == 0 ? "-" : string.Join(", ", values);
+
+        private static void PlaySfx(AudioClip clip)
+        {
+            if (clip != null) Audio.PlaySfx(clip);
+        }
     }
 }

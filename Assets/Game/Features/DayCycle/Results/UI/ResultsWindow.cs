@@ -12,6 +12,7 @@ using Game.Resources.API;
 using Game.Rewards.API;
 using Game.Rewards.UI;
 using Game.UI;
+using Infrastructure.Audio;
 using Infrastructure.ResourceAnimations;
 using MessagePipe;
 using SpriteService;
@@ -32,6 +33,7 @@ namespace Game.DayCycle.Results.UI
         private CancellationTokenSource _cts;
         private bool _subscribed;
         private ResultsSummary _summary;
+        private int _dayCompletionSoundDay;
 
         [Inject]
         public void InjectServices(
@@ -116,7 +118,14 @@ namespace Game.DayCycle.Results.UI
             View.SetDay(summary?.Day ?? 0);
             View.SetEarnedGold(summary?.GoldEarned ?? 0);
             var rewards = BuildSoldGenreRewards(summary);
-            rewards.AddRange(BuildDayCompletionRewards());
+            var dayCompletionRewards = BuildDayCompletionRewards();
+            if (dayCompletionRewards.Count > 0 && summary != null && _dayCompletionSoundDay != summary.Day)
+            {
+                PlaySfx(Audio.Catalog?.DayCompletionItem);
+                _dayCompletionSoundDay = summary.Day;
+            }
+
+            rewards.AddRange(dayCompletionRewards);
             View.SetSoldGenres(rewards);
             LoadSoldGenreIconsAsync(_cts.Token).Forget();
 
@@ -273,6 +282,11 @@ namespace Game.DayCycle.Results.UI
         private static void SetActive(GameObject target, bool active)
         {
             if (target != null) target.SetActive(active);
+        }
+
+        private static void PlaySfx(AudioClip clip)
+        {
+            if (clip != null) Audio.PlaySfx(clip);
         }
     }
 }

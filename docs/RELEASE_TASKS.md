@@ -676,10 +676,17 @@ like …»), а не финальные под каждый конкретный
 
 ### REL-8 — Add Sounds
 
-Что сделать:
-- Добавить минимальный набор звуков в проект.
-- Приоритет: UI clicks, quest/memory notification, purchase/sale feedback, error/blocked action.
-- Подключить через существующий audio layer, без расширения до большой audio-системы.
+Текущее состояние:
+- Кодовая инфраструктура закрыта: `AudioCatalog`, музыка хаб/день, fade, fallback для UI-кликов/окон.
+- Кодовые SFX-хуки закрыты для минимального релизного набора: покупки, blocked/error, unlock location,
+  декор place/remove, пассивная продажа, excellent-рекомендация, journal badge notification, rewards popup,
+  dialogue line, day completion reward и count-up золота.
+- Настройки работают по правилу `Sound = Sfx + Ui`, `Music = Music + Ambient`.
+
+Что осталось сделать в редакторе:
+- Назначить все клипы в `AudioCatalog.asset`.
+- Навесить `UiButtonClickAudio` на shared-кнопки, где компонента ещё нет.
+- Навесить `WindowAudio` на префабы окон; кодовый fallback уже есть, но компонент должен стоять на view root.
 
 Критичность: medium. Важно для ощущения продукта, но scope должен быть минимальным.
 

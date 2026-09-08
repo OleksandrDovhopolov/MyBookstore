@@ -533,7 +533,7 @@ namespace Game.Decor.UI
             {
                 // Visual (remove tween → SetEmpty) is handled by PlacementChanged → Render diff.
                 await _placement.UnplaceAsync(slotId, _cts.Token);
-                PlayUi(View != null ? View.RemoveClip : null);
+                PlaySfx(View != null ? View.RemoveClip : null, Audio.Catalog?.DecorRemove);
             }
             catch (System.OperationCanceledException) { }
         }
@@ -763,7 +763,7 @@ namespace Game.Decor.UI
                     : await _placement.PlaceAsync(decorId, pointId, _cts.Token);
                 if (result == DecorPlacementResult.Success)
                 {
-                    PlayUi(View != null ? View.PlaceClip : null);
+                    PlaySfx(View != null ? View.PlaceClip : null, Audio.Catalog?.DecorPlace);
                 }
                 else
                 {
@@ -787,11 +787,11 @@ namespace Game.Decor.UI
             ShowPreviewActions();
         }
 
-        // Null-safe: no-op if the clip is unassigned or the audio service is not bound. Assigning a
-        // clip in the inspector is enough to make it play — no code change needed.
-        private static void PlayUi(AudioClip clip)
+        // Null-safe: no-op if both the override and fallback are unassigned or the audio service is not bound.
+        private static void PlaySfx(AudioClip clip, AudioClip fallback)
         {
-            if (clip != null) Audio.PlayUi(clip);
+            var resolved = clip != null ? clip : fallback;
+            if (resolved != null) Audio.PlaySfx(resolved);
         }
 
         private void DeselectCards()

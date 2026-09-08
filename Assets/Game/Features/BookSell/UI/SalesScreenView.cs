@@ -10,6 +10,7 @@ using Game.Configs;
 using Game.DayCycle.Results.UI;
 using Game.Configs.Models;
 using Game.UI;
+using Infrastructure.Audio;
 using MessagePipe;
 using UnityEngine;
 using VContainer;
@@ -93,6 +94,7 @@ namespace Book.Sell.UI
             _controller.DayReadyToClose += OnDayReadyToClose;
             _controller.DayCompleted += OnDayCompleted;
             _controller.ShelfChanged += OnShelfChanged;
+            _controller.PassiveSaleHappened += OnPassiveSaleHappened;
 
             StartDayFlowAsync(_cts.Token).Forget();
         }
@@ -134,6 +136,11 @@ namespace Book.Sell.UI
         private void OnShelfChanged()
         {
             PublishGenreBookCounts();
+        }
+
+        private void OnPassiveSaleHappened(PassiveSaleEvent _)
+        {
+            PlaySfx(Audio.Catalog?.BookSold);
         }
 
         private void PublishGenreBookCounts()
@@ -288,10 +295,16 @@ namespace Book.Sell.UI
                 _controller.DayReadyToClose -= OnDayReadyToClose;
                 _controller.DayCompleted -= OnDayCompleted;
                 _controller.ShelfChanged -= OnShelfChanged;
+                _controller.PassiveSaleHappened -= OnPassiveSaleHappened;
             }
 
             _cts.Cancel();
             _cts.Dispose();
+        }
+
+        private static void PlaySfx(AudioClip clip)
+        {
+            if (clip != null) Audio.PlaySfx(clip);
         }
     }
 }

@@ -11,6 +11,7 @@ using Game.LocationUnlock.API;
 using Game.Resources.API;
 using Game.UI;
 using Game.UI.ContentWidget;
+using Infrastructure.Audio;
 using SpriteService;
 using UnityEngine;
 using VContainer;
@@ -231,8 +232,16 @@ namespace Game.Location.UI
         private async UniTaskVoid UnlockAsync(string locationId)
         {
             if (_unlock == null || string.IsNullOrEmpty(locationId)) return;
-            await _unlock.TryUnlockAsync(locationId, default);
+            var result = await _unlock.TryUnlockAsync(locationId, default);
+            PlaySfx(result == UnlockResult.Ok
+                ? Audio.Catalog?.LocationDiscovered
+                : Audio.Catalog?.ActionBlocked);
             Render();
+        }
+
+        private static void PlaySfx(AudioClip clip)
+        {
+            if (clip != null) Audio.PlaySfx(clip);
         }
     }
 }

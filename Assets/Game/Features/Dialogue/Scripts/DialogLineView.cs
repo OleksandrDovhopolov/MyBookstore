@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using Infrastructure.Audio;
 using TMPro;
 using UIShared;
 using UnityEngine;
@@ -80,6 +81,8 @@ namespace Dialogue
         /// </summary>
         public async UniTask RevealAsync(CancellationToken ct)
         {
+            PlayUi(Audio.Catalog?.DialogueLine);
+
             try
             {
                 await PlayAppearAsync(ct);
@@ -190,6 +193,11 @@ namespace Dialogue
 
             if (_bubbleCanvasGroup != null) _bubbleCanvasGroup.alpha = 1f;
             if (_bubble != null) _bubble.localScale = Vector3.one;
+        }
+
+        private static void PlayUi(AudioClip clip)
+        {
+            if (clip != null) Audio.PlayUi(clip);
         }
     }
 }

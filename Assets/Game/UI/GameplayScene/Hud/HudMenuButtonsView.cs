@@ -5,6 +5,7 @@ using Game.Inventory.UI;
 using Game.Journal.UI;
 using Game.Shop.UI;
 using Game.UI;
+using Infrastructure.Audio;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,6 +24,8 @@ namespace GameplayUI
 
         private IHudWindowLauncher _launcher;
         private bool _opening;
+        private bool _journalBadgeInitialized;
+        private bool _journalBadgeOn;
 
         public event Action StartDayClicked;
 
@@ -91,6 +94,18 @@ namespace GameplayUI
         {
             if (_journalBadge != null)
                 _journalBadge.SetActive(on);
+
+            if (!_journalBadgeInitialized)
+            {
+                _journalBadgeInitialized = true;
+                _journalBadgeOn = on;
+                return;
+            }
+
+            if (!_journalBadgeOn && on)
+                PlayUi(Audio.Catalog?.NewJournalEntry);
+
+            _journalBadgeOn = on;
         }
 
         private void OnStartDayButtonClicked() => StartDayClicked?.Invoke();
@@ -129,6 +144,11 @@ namespace GameplayUI
 
             button.interactable = value;
             button.gameObject.SetActive(value);
+        }
+
+        private static void PlayUi(AudioClip clip)
+        {
+            if (clip != null) Audio.PlayUi(clip);
         }
     }
 }

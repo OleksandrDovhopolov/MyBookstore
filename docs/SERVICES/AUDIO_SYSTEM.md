@@ -124,18 +124,44 @@ Import settings:
 
 ## 5. Каталог и фолбэки
 
-`AudioCatalog` содержит прямые ссылки `AudioClip`, без Addressables-группы:
+`AudioCatalog` содержит прямые ссылки `AudioClip`, без Addressables-группы. Это общий runtime-реестр
+повторяемых звуков, которые вызываются из кода и назначаются вручную в `AudioCatalog.asset`.
 
 - UI defaults: `ButtonClick`, `WindowOpen`, `WindowClose`;
+- gameplay SFX: покупки, ошибки, декор, продажи, уведомления, награды, диалог;
 - музыка: `HubMusic`, массив `SalesDayMusic`, `MusicFadeSeconds`;
 - `GetSalesDayMusic(day)` выбирает `(day - 1) % SalesDayMusic.Length`; пустой массив возвращает `null`.
 
 Статический фасад `Audio` хранит привязанный каталог (`Audio.Catalog`) рядом с `IAudioService`.
 `UiButtonClickAudio` и `WindowAudio` сначала используют клип из своего serialized-поля, а если оно
-пустое, берут дефолт из каталога. Это не вводит глобальный `SoundId`: каталог задаёт только общий
-дефолт для повторяющихся UI-звуков, а особые звуки остаются ссылкой на ассет в месте воспроизведения.
+пустое, берут дефолт из каталога. `DecorPlacementWindow` работает так же для place/remove: serialized
+поле на view остаётся override, каталог даёт общий fallback.
 
-Без сервиса, без каталога или без клипа оба компонента остаются no-op.
+Это не вводит глобальный `SoundId`: каталог задаёт дефолты для повторяющихся событий, а особые звуки
+остаются ссылкой на ассет в месте воспроизведения.
+
+Правило канала: окна/кнопки/диалоговые реплики используют `Audio.PlayUi`; игровые события
+(покупка, продажа, декор, валюта, разблокировка, итоги дня) используют `Audio.PlaySfx`.
+Оба канала выключаются тумблером Sound.
+
+| Поле каталога | Событие | Код |
+|---|---|---|
+| `ButtonClick` | дефолт клика по UI-кнопке | `UiButtonClickAudio` |
+| `WindowOpen` | дефолт открытия окна | `WindowAudio` |
+| `WindowClose` | дефолт закрытия окна | `WindowAudio` |
+| `PurchaseSuccess` | успешная покупка лота | `ShopWindow.TryBuyAsync` |
+| `ActionBlocked` | неуспешная покупка или unlock | `ShopWindow.TryBuyAsync`, `LocationWindow.UnlockAsync` |
+| `DecorPlace` | декор поставлен или заменён | `DecorPlacementWindow.ApplyAsync` |
+| `DecorRemove` | декор снят | `DecorPlacementWindow.RemoveAsync` |
+| `CurrencyGained` | старт count-up золота после итогов дня | `ResourceCounterHudPresenter.AnimateCountUpInternalAsync` |
+| `BookSold` | пассивная продажа или excellent-рекомендация | `SalesScreenView`, `RecommendationMinigameWindow.OnResolved` |
+| `NewJournalEntry` | бейдж журнала перешёл `false -> true` | `HudMenuButtonsView.SetJournalBadge` |
+| `RewardReceived` | popup наград показал непустую награду | `RewardsWindow.ApplyArgsToView` |
+| `LocationDiscovered` | игрок успешно разблокировал локацию | `LocationWindow.UnlockAsync` |
+| `DialogueLine` | появилась новая реплика | `DialogLineView.RevealAsync` |
+| `DayCompletionItem` | итоги дня показали reward за завершение | `ResultsWindow.OnSummaryReady` |
+
+Без сервиса, без каталога или без клипа все вызовы остаются no-op.
 
 ---
 
@@ -235,11 +261,10 @@ builder.RegisterBuildCallback(resolver =>
 
 ## 11. Что ещё не сделано / следующий шаг
 
-Инфраструктура закрыта: пустой каталог и отсутствие клипов оставляют игру без звука и без
-исключений. Дальше остаётся ручная редакторская работа и фичевые хуки:
+Инфраструктура и кодовые SFX-хуки закрыты: пустой каталог и отсутствие клипов оставляют игру без
+звука и без исключений. Дальше остаётся ручная редакторская работа:
 
-1. импортировать реальные клипы в `Assets/Game/Audio/{Music,Ui,Sfx}`;
-2. создать `AudioCatalog.asset`, назначить клипы и повесить каталог на `BootstrapInstaller.asset`;
-3. навесить `UiButtonClickAudio` / `WindowAudio` на нужные shared-префабы и окна;
-4. отдельным шагом добавить фичевые SFX-хуки: магазин, награды, диалог, монеты, новый квест,
-   открытка и другие уникальные события.
+1. назначить все клипы в `AudioCatalog.asset`;
+2. навесить `UiButtonClickAudio` на shared-кнопки, где компонента ещё нет;
+3. навесить `WindowAudio` на префабы окон: сейчас open/close fallback есть в коде, но компонент
+   должен присутствовать на view root окна.

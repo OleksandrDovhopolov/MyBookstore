@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Resources.API;
+using Infrastructure.Audio;
 using MessagePipe;
+using UnityEngine;
 
 namespace UIShared
 {
@@ -133,6 +135,7 @@ namespace UIShared
             // otherwise the SetAmountImmediate below would yank the counter back to the old value on
             // every coin. The guard clears in finally, so the next day's pack runs again.
             if (!_countUpInProgress.Add(resourceId)) return;
+            PlaySfx(Audio.Catalog?.CurrencyGained);
 
             var finalAmount = Math.Max(0, _resources?.GetAmount(resourceId) ?? 0);
 
@@ -206,6 +209,11 @@ namespace UIShared
             => change.Delta > 0
                && !string.IsNullOrEmpty(change.Reason)
                && change.Reason.StartsWith(SalesDayReasonPrefix, StringComparison.Ordinal);
+
+        private static void PlaySfx(AudioClip clip)
+        {
+            if (clip != null) Audio.PlaySfx(clip);
+        }
 
         private sealed class CountUpHandler : IMessageHandler<ResourceCounterCountUpRequested>
         {
