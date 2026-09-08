@@ -47,6 +47,46 @@
 
 Критичность была critical for APK/Play release.
 
+### Build Checklist For APK
+
+Статус: сделано на текущем этапе — dev-сборка APK успешно прошла через новое build-окно. Оставшиеся
+device-side проверки (prod smoke / FTUE / consent) сознательно закрываются вместе с публикацией
+([REL-4](#rel-4--register-google-play-developer-account)), а не блокируют сам APK.
+
+Источник: [BUILD.md](BUILD.md), [TODO.md](TODO.md).
+
+Что сделано:
+- **Пайплайн сборки автоматизирован** editor-окном `Tools/Build/Release Build Window`
+  ([ReleaseBuildWindow.cs](../Assets/Game/Core/Build/Editor/ReleaseBuildWindow.cs), коммит `75965646`
+  + доработка versionCode). По кнопке Dev/Prod оно: переключает таргет на Android, ставит
+  Development-флаг и APK/AAB, гоняет `SyncBundledDefaultsMenu.Sync()`, `PreBuildValidationGate.CollectErrors()`
+  (fail-fast), `AddressableAssetSettings.BuildPlayerContent()`, затем `BuildPipeline.BuildPlayer()` по
+  включённым сценам. Ручные шаги «синк configs / Run Pre-Build Validation / собрать Addressables /
+  проверить Player Settings» больше не держатся в голове.
+- **Dev vs Prod**: Dev — Development build + Unity debug-подпись; Prod — release build, форс IL2CPP + ARM64,
+  подпись release keystore (пароль из session-поля или env `ANDROID_KEYSTORE_PASSWORD`, очищается после сборки).
+- **versionCode**: авто-инкремент `bundleVersionCode` только для **Prod + AAB** (артефакт, который реально
+  уходит в Play; Play отклоняет повторный код). Dev/APK номер не жгут. Ручной bump перед каждой заливкой в
+  Play больше не нужен.
+- **Billing safety — закрыто.** Firebase на бесплатном **Spark** (billing account не привязан, списать нельзя
+  by design; не переходить на Blaze без нужды). Cloudflare R2 — Billing Budget Alert на **$10** на
+  `bobakgamestudio@gmail.com`.
+- **Privacy/Terms URL** — свой `https://mybookstore-legal.netlify.app/` в `BootstrapInstaller.asset`
+  (одна страница покрывает Privacy + Terms через fallback `PrivacyLinkSettings`).
+- **Аналитика dev/prod** выводится из типа сборки автоматически (REL-12), окно её не трогает.
+- **Warning по `hard_requests.json`** — снят (legacy-файл удалён ранее).
+- **Дубли permission в манифесте** (`INTERNET` / `ACCESS_NETWORK_STATE`) убраны из
+  `Assets/Plugins/Android/AndroidManifest.xml` — Unity/Firebase добавляют их сами, Unity-мёрджер больше не варнит.
+
+Оставшиеся ручные device-side проверки (к моменту публикации, вместе с REL-4):
+- Собрать **Prod** APK/AAB и smoke на устройстве: старт, configs, active request, dialogue, FTUE/tutorial.
+- FTUE на чистой установке.
+- Оба пути согласия на чистой установке: Accept → события в Firebase DebugView; Decline → в логе ни одного
+  `[Analytics] Sent`, в DebugView тишина.
+- Подтвердить на реальном Prod-бинаре IL2CPP/ARM64 (dev-сборка их не форсит — возможен другой backend).
+
+Критичность была critical: это релизный gate.
+
 ### REL-8 — Add Sounds
 
 Статус: сделано.
@@ -641,40 +681,6 @@ Smoke: открыть Market до unlock — условие `soldTotal: 200` п�
 
 Единый список открытых релизных задач. Задачи, ожидающие внешние ресурсы, вынесены в
 [Wait For Resources](#wait-for-resources) ниже.
-
-### Build Checklist For APK
-
-Источник: [BUILD.md](BUILD.md), [TODO.md](TODO.md).
-
-Что сделать:
-- ~~Разобраться с warning по `Assets/Configs/hard_requests.json`~~ — legacy-файл удалён.
-- Опубликовать/синхронизировать живые configs и прогнать `Sync Bundled Defaults to StreamingAssets`.
-- Прогнать `Run Pre-Build Validation` и runtime validators через Play mode.
-- Собрать Addressables.
-- Проверить Firebase Android config.
-- ~~Billing safety~~ — сделано:
-  - **Firebase — закрыто фактом плана.** Проект `mybookstore-13b53` на бесплатном плане **Spark**, billing
-    account не привязан («This project has no billing account»), «Product costs are not available for the
-    Spark plan». На Spark ресурсы ограничены квотами и при превышении сервис **отключается, а не
-    тарифицируется** — списать деньги нельзя by design. **Не переходить на Blaze**, пока не понадобится
-    платная фича (Firestore/Cloud Functions/Cloud Storage); при переходе сразу завести budget alert в
-    Google Cloud Billing.
-  - **Cloudflare R2 — budget alert поставлен.** Billing Budget Alert на **$10** с уведомлением на
-    `bobakgamestudio@gmail.com` (Cloudflare Dashboard → Manage account → Notifications). Это единственное
-    место с реальным биллингом (storage + Class A/B operations; egress бесплатный). Алерт только уведомляет,
-    авто-cutoff у Cloudflare нет; расход смотреть в R2 → Overview.
-- Проверить Android Player Settings: IL2CPP, ARM64, API level, keystore, scenes.
-- Проверить `BootstrapInstaller.asset`: debug off, full loading on, tutorial settings, first-day path.
-- ~~Заменить `_privacyPolicyUrl` / `_termsOfUseUrl` на правильные ссылки на **мой Terms / Privacy**~~ —
-  сделано: в `BootstrapInstaller.asset` стоит собственный `_privacyPolicyUrl:
-  https://mybookstore-legal.netlify.app/`. Отдельного Terms URL нет — `PrivacyLinkSettings` фолбэком
-  использует Privacy URL и для Terms, одна страница покрывает оба.
-- Настройки аналитики (отладочный лог и `environment`) вручную **не трогать** — они выводятся из типа сборки, см. REL-12 и [BUILD.md §5](BUILD.md).
-- Проверить FTUE на чистой установке.
-- Собрать APK и сделать smoke: старт, configs, active request, dialogue, FTUE/tutorial.
-- Проверить на чистой установке оба пути согласия: Accept → события видны в Firebase DebugView; Decline → в логе нет ни одного `[Analytics] Sent`, в DebugView тишина.
-
-Критичность: critical. Это релизный gate.
 
 ### CONTENT-2 — Active Request Descriptions
 
