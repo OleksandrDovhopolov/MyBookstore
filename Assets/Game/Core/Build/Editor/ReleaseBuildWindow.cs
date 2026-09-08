@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using Game.Configs.Editor;
 using UnityEditor;
-using UnityEditor.AddressableAssets.Build;
-using UnityEditor.AddressableAssets.Settings;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -283,14 +281,13 @@ namespace Game.Build.Editor
                     throw new BuildFailedException(BuildValidationErrorMessage(validationErrors));
                 }
 
-                SetStatus("Building Addressables content...", MessageType.Info);
-                AddressableAssetSettings.BuildPlayerContent(out AddressablesPlayerBuildResult addressablesResult);
-                if (!string.IsNullOrWhiteSpace(addressablesResult.Error))
-                {
-                    throw new BuildFailedException("Addressables build failed: " + addressablesResult.Error);
-                }
-
-                SetStatus("Building Android player...", MessageType.Info);
+                // Addressables content is deliberately NOT built here. AddressableAssetSettings has
+                // "Build Addressables on Player Build" enabled, so BuildPlayer below rebuilds the bundles
+                // through Addressables' own build callback. Calling BuildPlayerContent() here as well
+                // produced two content builds per click. Leaving it to the callback also keeps a plain
+                // Unity "Build" safe — it cannot ship stale bundles. PreBuildValidationGate still runs
+                // first (callbackOrder 0, ahead of Addressables' 1000), so content errors surface early.
+                SetStatus("Building Android player (Addressables content builds with it)...", MessageType.Info);
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? DefaultOutputFolder);
 
                 var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
