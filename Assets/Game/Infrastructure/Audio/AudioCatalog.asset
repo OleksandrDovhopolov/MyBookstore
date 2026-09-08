@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93f8f1e983db46e8a06ea4d3813a9d5e, type: 3}
   m_Name: AudioCatalog
   m_EditorClassIdentifier: 
-  _buttonClick: {fileID: 0}
-  _windowOpen: {fileID: 0}
+  _buttonClick: {fileID: 8300000, guid: 1b16053fb3c832b438b2cf75a251ef83, type: 3}
+  _windowOpen: {fileID: 8300000, guid: 6f27a0d606338354d87b54d50efc8bd7, type: 3}
   _windowClose: {fileID: 0}
-  _hubMusic: {fileID: 0}
+  _hubMusic: {fileID: 8300000, guid: a2c1dca7765af15478e563e90a11780e, type: 3}
   _salesDayMusic:
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 8300000, guid: 1062a06747724ca4784022fce926a8a8, type: 3}
+  - {fileID: 8300000, guid: 3d90eed9f755d974fbf6af8680751834, type: 3}
   _musicFadeSeconds: 0.6

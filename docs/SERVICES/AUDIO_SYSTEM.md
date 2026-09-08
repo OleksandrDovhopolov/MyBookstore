@@ -99,19 +99,26 @@ Sync-методы принимают готовый `AudioClip` и игнори�
 ```text
 Assets/Game/Audio/
 ├── README.md
-├── Music/   # home1.mp3, sell_day_1.mp3, sell_day_2.mp3
-├── Ui/      # click_button.wav, pop_up, bubble, error_sound ...
-└── Sfx/     # Buy.wav, put_object, take_object, soft_currency_gained ...
+├── Music/   # home.mp3, sell_day_1.mp3, sell_day_2.mp3
+├── Ui/      # пока пусто
+└── Sfx/     # click_buttom.wav, pop_up.ogg, Buy.wav, error_sound.ogg, notification.ogg,
+             # put_object.ogg, take_object.ogg, sell_click.ogg, soft_currency_gained.ogg,
+             # reward_main.ogg, jingle_new_discovery.ogg, tap_dialog.ogg, chest_item.ogg
 ```
+
+Разделение `Ui/` и `Sfx/` пока не соблюдается: клики и попапы лежат в `Sfx/`. На код это не влияет
+(`AudioCatalog` ссылается на ассеты по guid), но при следующем пополнении звуки стоит разложить.
 
 Import settings:
 
-- музыка: `Load Type: Streaming`, `Compression Format: Vorbis`, `Preload Audio Data: off`;
+- музыка: `Load Type: Streaming`, `Compression Format: Vorbis`, `Preload Audio Data: off`,
+  `Load In Background: on`;
 - короткие UI/SFX: `Load Type: Decompress On Load`, `Compression Format: PCM` или `ADPCM`.
 
-`AudioCatalog.asset` создаётся вручную через `Create > Game > Audio > Audio Catalog`, кладётся в
-`Assets/Game/Audio/` и назначается на `BootstrapInstaller.asset`. Код обязан работать и при
-неназначенном каталоге.
+`AudioCatalog.asset` лежит рядом со своим скриптом — `Assets/Game/Infrastructure/Audio/AudioCatalog.asset` —
+и назначается на `BootstrapInstaller.asset` (поле `_audioCatalog`). Код обязан работать и при
+неназначенном каталоге: тогда `RegisterInfrastructure` пишет предупреждение, а вся аудио-система
+остаётся no-op.
 
 ---
 

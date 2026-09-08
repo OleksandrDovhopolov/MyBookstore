@@ -16,6 +16,7 @@ MonoBehaviour:
   _gameFlowSettings: {fileID: 11400000, guid: 32fcefb14dcd8074caba55bdcb1ae0d3, type: 2}
   _uiSpriteCatalog: {fileID: 11400000, guid: 8c0cfc98d85764fdb892f085b67ca784, type: 2}
   _resourceAnimationSettings: {fileID: 11400000, guid: 959256b9332690b4aa86371672da5694, type: 2}
+  _audioCatalog: {fileID: 11400000, guid: b8778de9426bf8b4c9ecf9322684faff, type: 2}
   _tutorialOverlaySettings: {fileID: 11400000, guid: 4c49e495dbedfee479dd51430ae5cb26, type: 2}
   _tutorialSettings: {fileID: 11400000, guid: 8afa7b5d5b179c546a31c24a51dcee6e, type: 2}
   _tutorialAutoStart: 0
