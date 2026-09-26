@@ -1,0 +1,409 @@
+[
+  {
+    "id": "genre.classic",
+    "kind": "term",
+    "type": "genres",
+    "value": "Classic",
+    "positiveKey": "request.term.genre.classic.pos",
+    "negativeKey": "request.term.genre.classic.neg"
+  },
+  {
+    "id": "genre.crime",
+    "kind": "term",
+    "type": "genres",
+    "value": "Crime",
+    "positiveKey": "request.term.genre.crime.pos",
+    "negativeKey": "request.term.genre.crime.neg"
+  },
+  {
+    "id": "genre.drama",
+    "kind": "term",
+    "type": "genres",
+    "value": "Drama",
+    "positiveKey": "request.term.genre.drama.pos",
+    "negativeKey": "request.term.genre.drama.neg"
+  },
+  {
+    "id": "genre.fact",
+    "kind": "term",
+    "type": "genres",
+    "value": "Fact",
+    "positiveKey": "request.term.genre.fact.pos",
+    "negativeKey": "request.term.genre.fact.neg"
+  },
+  {
+    "id": "genre.fantasy",
+    "kind": "term",
+    "type": "genres",
+    "value": "Fantasy",
+    "positiveKey": "request.term.genre.fantasy.pos",
+    "negativeKey": "request.term.genre.fantasy.neg"
+  },
+  {
+    "id": "genre.kids",
+    "kind": "term",
+    "type": "genres",
+    "value": "Kids",
+    "positiveKey": "request.term.genre.kids.pos",
+    "negativeKey": "request.term.genre.kids.neg"
+  },
+  {
+    "id": "genre.travel",
+    "kind": "term",
+    "type": "genres",
+    "value": "Travel",
+    "positiveKey": "request.term.genre.travel.pos",
+    "negativeKey": "request.term.genre.travel.neg"
+  },
+  {
+    "id": "quality.academic",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Academic",
+    "positiveKey": "request.term.quality.academic.pos",
+    "negativeKey": "request.term.quality.academic.neg"
+  },
+  {
+    "id": "quality.biography",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Biography",
+    "positiveKey": "request.term.quality.biography.pos",
+    "negativeKey": "request.term.quality.biography.neg"
+  },
+  {
+    "id": "quality.detective",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Detective",
+    "positiveKey": "request.term.quality.detective.pos",
+    "negativeKey": "request.term.quality.detective.neg"
+  },
+  {
+    "id": "quality.dry",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Dry",
+    "positiveKey": "request.term.quality.dry.pos",
+    "negativeKey": "request.term.quality.dry.neg"
+  },
+  {
+    "id": "quality.dystopia",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Dystopia",
+    "positiveKey": "request.term.quality.dystopia.pos",
+    "negativeKey": "request.term.quality.dystopia.neg"
+  },
+  {
+    "id": "quality.female_author",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Female Author",
+    "positiveKey": "request.term.quality.female_author.pos"
+  },
+  {
+    "id": "quality.gore",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Gore",
+    "positiveKey": "request.term.quality.gore.pos",
+    "negativeKey": "request.term.quality.gore.neg"
+  },
+  {
+    "id": "quality.graphic_novel",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Graphic Novel",
+    "positiveKey": "request.term.quality.graphic_novel.pos",
+    "negativeKey": "request.term.quality.graphic_novel.neg"
+  },
+  {
+    "id": "quality.historic",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Historic",
+    "positiveKey": "request.term.quality.historic.pos",
+    "negativeKey": "request.term.quality.historic.neg"
+  },
+  {
+    "id": "quality.horror",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Horror",
+    "positiveKey": "request.term.quality.horror.pos",
+    "negativeKey": "request.term.quality.horror.neg"
+  },
+  {
+    "id": "quality.magic",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Magic",
+    "positiveKey": "request.term.quality.magic.pos",
+    "negativeKey": "request.term.quality.magic.neg"
+  },
+  {
+    "id": "quality.mystery",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Mystery",
+    "positiveKey": "request.term.quality.mystery.pos",
+    "negativeKey": "request.term.quality.mystery.neg"
+  },
+  {
+    "id": "quality.poetry",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Poetry",
+    "positiveKey": "request.term.quality.poetry.pos",
+    "negativeKey": "request.term.quality.poetry.neg"
+  },
+  {
+    "id": "quality.pop_science",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Pop Science",
+    "positiveKey": "request.term.quality.pop_science.pos",
+    "negativeKey": "request.term.quality.pop_science.neg"
+  },
+  {
+    "id": "quality.romance",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Romance",
+    "positiveKey": "request.term.quality.romance.pos",
+    "negativeKey": "request.term.quality.romance.neg"
+  },
+  {
+    "id": "quality.series",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Series",
+    "positiveKey": "request.term.quality.series.pos",
+    "negativeKey": "request.term.quality.series.neg"
+  },
+  {
+    "id": "quality.space",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Space",
+    "positiveKey": "request.term.quality.space.pos",
+    "negativeKey": "request.term.quality.space.neg"
+  },
+  {
+    "id": "quality.tragic",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Tragic",
+    "positiveKey": "request.term.quality.tragic.pos",
+    "negativeKey": "request.term.quality.tragic.neg"
+  },
+  {
+    "id": "quality.travel_guide",
+    "kind": "term",
+    "type": "qualities",
+    "value": "Travel Guide",
+    "positiveKey": "request.term.quality.travel_guide.pos",
+    "negativeKey": "request.term.quality.travel_guide.neg"
+  },
+  {
+    "id": "quality.ya",
+    "kind": "term",
+    "type": "qualities",
+    "value": "YA",
+    "positiveKey": "request.term.quality.ya.pos",
+    "negativeKey": "request.term.quality.ya.neg"
+  },
+  {
+    "id": "pages.lt100",
+    "kind": "band",
+    "type": "pages",
+    "operator": "less",
+    "value": 100,
+    "positiveKey": "request.band.pages.lt100"
+  },
+  {
+    "id": "pages.lte200",
+    "kind": "band",
+    "type": "pages",
+    "operator": "lessOrEqual",
+    "value": 200,
+    "positiveKey": "request.band.pages.lte200"
+  },
+  {
+    "id": "pages.300_500",
+    "kind": "band",
+    "type": "pages",
+    "operator": "between",
+    "min": 300,
+    "max": 500,
+    "positiveKey": "request.band.pages.300_500"
+  },
+  {
+    "id": "pages.gt400",
+    "kind": "band",
+    "type": "pages",
+    "operator": "greater",
+    "value": 400,
+    "positiveKey": "request.band.pages.gt400"
+  },
+  {
+    "id": "pages.gt500",
+    "kind": "band",
+    "type": "pages",
+    "operator": "greater",
+    "value": 500,
+    "positiveKey": "request.band.pages.gt500"
+  },
+  {
+    "id": "pages.550_650",
+    "kind": "band",
+    "type": "pages",
+    "operator": "between",
+    "min": 550,
+    "max": 650,
+    "positiveKey": "request.band.pages.550_650"
+  },
+  {
+    "id": "pages.700_900",
+    "kind": "band",
+    "type": "pages",
+    "operator": "between",
+    "min": 700,
+    "max": 900,
+    "positiveKey": "request.band.pages.700_900"
+  },
+  {
+    "id": "year.lt1900",
+    "kind": "band",
+    "type": "publicationYear",
+    "operator": "less",
+    "value": 1900,
+    "positiveKey": "request.band.year.lt1900"
+  },
+  {
+    "id": "year.1850_1900",
+    "kind": "band",
+    "type": "publicationYear",
+    "operator": "between",
+    "min": 1850,
+    "max": 1900,
+    "positiveKey": "request.band.year.1850_1900"
+  },
+  {
+    "id": "year.1990_2000",
+    "kind": "band",
+    "type": "publicationYear",
+    "operator": "between",
+    "min": 1990,
+    "max": 2000,
+    "positiveKey": "request.band.year.1990_2000"
+  },
+  {
+    "id": "year.gt2015",
+    "kind": "band",
+    "type": "publicationYear",
+    "operator": "greater",
+    "value": 2015,
+    "positiveKey": "request.band.year.gt2015"
+  },
+  {
+    "id": "combo.fantasy_space",
+    "kind": "combo",
+    "terms": [
+      "genre.fantasy",
+      "quality.space"
+    ],
+    "positiveKey": "request.combo.fantasy_space"
+  },
+  {
+    "id": "opener.none",
+    "kind": "opener",
+    "positiveKey": "request.opener.none"
+  },
+  {
+    "id": "opener.sooo",
+    "kind": "opener",
+    "positiveKey": "request.opener.sooo"
+  },
+  {
+    "id": "opener.quick",
+    "kind": "opener",
+    "positiveKey": "request.opener.quick"
+  },
+  {
+    "id": "opener.rain",
+    "kind": "opener",
+    "positiveKey": "request.opener.rain"
+  },
+  {
+    "id": "opener.bus",
+    "kind": "opener",
+    "positiveKey": "request.opener.bus"
+  },
+  {
+    "id": "opener.feet",
+    "kind": "opener",
+    "positiveKey": "request.opener.feet"
+  },
+  {
+    "id": "opener.turn",
+    "kind": "opener",
+    "positiveKey": "request.opener.turn"
+  },
+  {
+    "id": "opener.kid",
+    "kind": "opener",
+    "positiveKey": "request.opener.kid"
+  },
+  {
+    "id": "opener.brief",
+    "kind": "opener",
+    "positiveKey": "request.opener.brief"
+  },
+  {
+    "id": "lead.after",
+    "kind": "lead",
+    "positiveKey": "request.lead.after"
+  },
+  {
+    "id": "lead.like",
+    "kind": "lead",
+    "positiveKey": "request.lead.like"
+  },
+  {
+    "id": "lead.looking",
+    "kind": "lead",
+    "positiveKey": "request.lead.looking"
+  },
+  {
+    "id": "lead.want",
+    "kind": "lead",
+    "positiveKey": "request.lead.want"
+  },
+  {
+    "id": "anchor.like",
+    "kind": "anchor",
+    "positiveKey": "request.anchor.like"
+  },
+  {
+    "id": "anchor.anything",
+    "kind": "anchor",
+    "positiveKey": "request.anchor.anything"
+  },
+  {
+    "id": "anchor.favourite",
+    "kind": "anchor",
+    "positiveKey": "request.anchor.favourite"
+  },
+  {
+    "id": "anchor.think",
+    "kind": "anchor",
+    "positiveKey": "request.anchor.think"
+  },
+  {
+    "id": "anchor.sort",
+    "kind": "anchor",
+    "positiveKey": "request.anchor.sort"
+  }
+]
