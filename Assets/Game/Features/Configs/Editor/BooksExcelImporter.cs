@@ -20,6 +20,9 @@ namespace Game.Configs.Editor
         public const string DefaultOutputPath = "Assets/Configs/books.json";
         public const string DefaultLocalizationOutputPath = "Assets/Configs/localization_books_en.json";
 
+        /// <summary>Rewritten descriptions waiting to be applied — see <see cref="BookDescriptionDraftConfig"/>.</summary>
+        public const string DraftsPath = "Assets/Configs/book_descriptions_v2.json";
+
         private const string LogPrefix = "[BooksExcelImporter]";
 
         private static readonly string[] RequiredHeaders =
@@ -37,6 +40,8 @@ namespace Game.Configs.Editor
         [MenuItem(MenuPath)]
         public static void ImportFromMenu()
         {
+            if (!ConfirmOverwritingRewrittenDescriptions()) return;
+
             var path = EditorUtility.OpenFilePanel("Import Books Excel", string.Empty, "xlsx");
             if (string.IsNullOrEmpty(path)) return;
 
@@ -54,6 +59,56 @@ namespace Game.Configs.Editor
             WriteJson(DefaultLocalizationOutputPath, result.Localization);
             Debug.Log($"{LogPrefix} Imported {result.Books.Count} book(s) to {DefaultOutputPath} and {DefaultLocalizationOutputPath}.");
             SyncBundledDefaultsMenu.Sync();
+        }
+
+        /// <summary>
+        /// The Excel sheet is the original seed of the catalogue, not the source of truth for text any more:
+        /// descriptions are being rewritten in place (CONTENT-1). This import rewrites
+        /// <see cref="DefaultLocalizationOutputPath"/> wholesale from the sheet's Description column and
+        /// syncs StreamingAssets in the same call, so an absent-minded re-import would wipe the rewrite
+        /// with no trace. Make that cost explicit instead.
+        /// </summary>
+        private static bool ConfirmOverwritingRewrittenDescriptions()
+        {
+            var rewritten = CountRewrittenDescriptions();
+            if (rewritten == 0) return true;
+
+            return EditorUtility.DisplayDialog(
+                "Import Books Excel",
+                $"{rewritten} description(s) have been rewritten in {DraftsPath}.\n\n" +
+                "Importing rebuilds every description from the Excel sheet and overwrites " +
+                "localization_books_en.json, discarding that work.\n\n" +
+                "Import anyway?",
+                "Import anyway",
+                "Cancel");
+        }
+
+        private static int CountRewrittenDescriptions()
+        {
+            if (!File.Exists(DraftsPath)) return 0;
+
+            try
+            {
+                var drafts = JsonConvert.DeserializeObject<List<BookDescriptionDraftConfig>>(
+                    File.ReadAllText(DraftsPath));
+                if (drafts == null) return 0;
+
+                var count = 0;
+                foreach (var draft in drafts)
+                {
+                    if (!string.IsNullOrWhiteSpace(draft?.New))
+                        count++;
+                }
+
+                return count;
+            }
+            catch (Exception ex)
+            {
+                // An unreadable drafts file is not a reason to block the import, but the operator should
+                // know the guard could not check anything.
+                Debug.LogWarning($"{LogPrefix} Could not read {DraftsPath} to check for rewritten text: {ex.Message}");
+                return 0;
+            }
         }
 
         public static BooksExcelImportResult ConvertWorkbook(string xlsxPath)

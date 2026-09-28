@@ -147,6 +147,7 @@ Build читает `prod`. Dev доступен только через ручн
 | Реализация | `Assets/Game/Features/Configs/ConfigsService.cs` |
 | Кэш | `Assets/Game/Features/Configs/ConfigCache.cs` |
 | Базовый контракт конфига | `Assets/Game/Features/Configs/IConfig.cs`, `ConfigFileAttribute.cs` |
+| Исключение записей из каталога | `Assets/Game/Features/Configs/ICatalogExcludable.cs` (реализует `BookConfig`: `fakeOrReal: "Fake"` не попадает в каталог) |
 | Источник: локальная папка | `Assets/Game/Features/Configs/LocalFolderConfigSource.cs` |
 | Источник: StreamingAssets (bundled в build) | `Assets/Game/Features/Configs/StreamingAssetsConfigSource.cs` |
 | Bundled defaults (копии + манифест) | `Assets/StreamingAssets/Configs/*.json` + `manifest.json` |

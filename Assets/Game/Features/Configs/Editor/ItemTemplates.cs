@@ -1,3 +1,4 @@
+using Game.Configs.Models;
 using Newtonsoft.Json.Linq;
 
 namespace Game.Configs.Editor
@@ -52,6 +53,15 @@ namespace Game.Configs.Editor
                     ["startUtc"] = "",
                     ["endUtc"] = "",
                     ["rewardMultiplier"] = 1.0
+                },
+                "book_descriptions_v2" => new JObject
+                {
+                    ["id"] = "",
+                    ["batch"] = 1,
+                    ["status"] = BookDescriptionDraftConfig.StatusDraft,
+                    ["titleAtDraft"] = "",
+                    ["authorAtDraft"] = "",
+                    ["new"] = ""
                 },
                 _ => new JObject { ["id"] = "" }
             };

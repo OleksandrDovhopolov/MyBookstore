@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Game.Configs.Models;
 using Newtonsoft.Json.Linq;
 
 namespace Game.Configs.Editor
@@ -74,9 +75,38 @@ namespace Game.Configs.Editor
                 {
                     ValidateHardRequest(id, obj, issues);
                 }
+
+                if (section == "book_descriptions_v2")
+                {
+                    ValidateDescriptionDraft(id, obj, issues);
+                }
             }
 
             return issues;
+        }
+
+        /// <summary>
+        /// Shape only — the content rules (length, clean-room checks, anchors still matching the catalogue)
+        /// live in BookDescriptionDraftValidator, which has books.json and localization in hand.
+        /// </summary>
+        private static void ValidateDescriptionDraft(string id, JObject obj, List<ValidationIssue> issues)
+        {
+            ValidateRequiredString(obj, id, "new", issues);
+            ValidateRequiredString(obj, id, "titleAtDraft", issues);
+            ValidateRequiredString(obj, id, "authorAtDraft", issues);
+
+            var status = obj["status"]?.Value<string>();
+            if (!BookDescriptionDraftConfig.IsAllowedStatus(status))
+            {
+                issues.Add(new ValidationIssue(
+                    id,
+                    $"'status' must be one of {string.Join(", ", BookDescriptionDraftConfig.AllowedStatuses)} " +
+                    $"but was '{status}'."));
+            }
+
+            var batch = obj["batch"]?.Value<int?>() ?? 0;
+            if (batch <= 0)
+                issues.Add(new ValidationIssue(id, "'batch' must be a positive number."));
         }
 
         private static void ValidateHardRequest(string id, JObject obj, List<ValidationIssue> issues)

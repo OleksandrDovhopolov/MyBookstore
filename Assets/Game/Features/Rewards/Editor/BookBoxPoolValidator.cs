@@ -42,8 +42,12 @@ namespace Game.Rewards.Editor
             var shopPath = ConfigPath<ShopConfig>(configsDir, report);
             if (booksPath == null || shopPath == null) return report;
 
-            if (!TryLoad<BookConfig>(booksPath, report, out var books)) return report;
+            if (!TryLoad<BookConfig>(booksPath, report, out var loadedBooks)) return report;
             if (!TryLoad<ShopConfig>(shopPath, report, out var lots)) return report;
+
+            // Reading the file directly means the excluded entries are still in hand; drop them so a pool
+            // is validated against the catalogue the game builds (see BookConfig.IsExcludedFromCatalog).
+            var books = loadedBooks.Where(book => book != null && !book.IsExcludedFromCatalog).ToList();
 
             report.BookCount = books.Count;
             report.BooksPath = booksPath;

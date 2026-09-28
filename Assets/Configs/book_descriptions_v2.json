@@ -1,0 +1,380 @@
+[
+  {
+    "id": "book165",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Nineteen Eighty-Four",
+    "authorAtDraft": "George Orwell",
+    "old": "A classic of dystopian social science fiction, for good reason. Totalitarianism, mass surveillance, and state oppression of nonconformity - 1984 has got them all.",
+    "new": "Orwell's dystopia of a state that edits the past and polices thought, told through one clerk who starts keeping a diary. Bleak, exact, and still the standard reference for how surveillance feels from inside."
+  },
+  {
+    "id": "book92",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Emma",
+    "authorAtDraft": "Jane Austen",
+    "old": "In this comedy of manners from Austen, socialite Emma is very confident in her matchmaking skills. But when will she learn that not everyone appreciates her meddling?",
+    "new": "Austen's comedy of a clever young woman who arranges everyone's marriages except her own, and misreads nearly every signal along the way. Sharp social observation with a warm ending."
+  },
+  {
+    "id": "book229",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "The Canterville Ghost",
+    "authorAtDraft": "Oscar Wilde",
+    "old": "Wilde's first published story is a classic ghost tale with lots of humour. Because what could be more fun than a bold American family moving into an estate haunted by an English aristocrat?",
+    "new": "A short, funny ghost story in which an American family moves into an English manor and refuses to be frightened, leaving the resident spectre thoroughly defeated. Wilde at his lightest."
+  },
+  {
+    "id": "book38",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Animal Farm",
+    "authorAtDraft": "George Orwell",
+    "old": "The allegorical tale of anthropomorphic farm animals, who overthrow the farmer's rule over them and attempt to lead the farm themselves. It is one of the most important pieces of 20th-century political satire, asking: What happens after the revolution?",
+    "new": "Farm animals overthrow their owner and build a republic of their own, which slowly reinvents everything they rebelled against. A short, cold political fable that leaves no one comfortable."
+  },
+  {
+    "id": "book123",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "The Hobbit; The Lord of the Rings #0",
+    "authorAtDraft": "J.R.R. Tolkien",
+    "old": "You never know what'll happen when you step outside your front door. Especially if a wizard left his mark on said door. Bilbo leaves his creature comforts behind to seek adventure with a company of dwarves, and winds up bringing home the worst souvenir possible.",
+    "new": "A comfortable hobbit is talked into joining thirteen dwarves on a long walk toward a dragon's hoard. Light on its feet, full of riddles and songs, and the doorway into everything written after it."
+  },
+  {
+    "id": "book118",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Gulliver's Travels",
+    "authorAtDraft": "Jonathan Swift",
+    "old": "Through the various travels of Gulliver, this proto-science fiction novel satirises the political environment of England and the travelogues popular during its colonial expansions.",
+    "new": "A ship's surgeon keeps washing ashore in places that run on absurd principles: tiny empires at war over eggs, giants, and scholars who have lost the thread. Satire dressed as a travel journal."
+  },
+  {
+    "id": "book18",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Study in Scarlet",
+    "authorAtDraft": "Arthur Conan Doyle",
+    "old": "In this first appearance of the eccentric detective Sherlock Holmes and his partner Dr Watson, the pair take out the old magnifying glass to solve a murder case in Victorian London.",
+    "new": "The case that introduces Sherlock Holmes to a wounded army doctor looking for lodgings, and to a body in an empty Brixton house. The first of the detective stories that set the shape for all of them."
+  },
+  {
+    "id": "book31",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "American Psycho",
+    "authorAtDraft": "Bret Easton Ellis",
+    "old": "American Psycho details the increasingly dark and violent stream-of-consciousness of a young, rich, narcissistic yuppie working on Wall Street in 90s Manhattan. Contains graphic descriptions of gore and violence.",
+    "new": "A Manhattan investment banker narrates his restaurant reservations, his skincare routine and his murders in the same flat voice. A brutal satire of the 1980s that is not for every shelf."
+  },
+  {
+    "id": "book13",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Good Girl's Guide to Murder",
+    "authorAtDraft": "Holly Jackson",
+    "old": "Everyone in her small town believes the case to be solved. But when young Pippa starts digging up the details of a murder from years past for her final school project, she discovers secrets yet untold.",
+    "new": "A sixth-form student reopens the closed case of a classmate's death for her school project and finds the town's tidy version does not hold. Interview transcripts, maps and one twist after another."
+  },
+  {
+    "id": "book26",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "After the Funeral",
+    "authorAtDraft": "Agatha Christie",
+    "old": "Usually, death precedes a funeral. But with this English family, things go awry quickly, and only Detective Poirot can help them find out who dun did it now.",
+    "new": "A remark at a family funeral suggests the old man's death was not natural, and Poirot goes to work among relatives who all needed the money. Classic Christie misdirection in a country house."
+  },
+  {
+    "id": "book85",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Death on the Nile",
+    "authorAtDraft": "Agatha Christie",
+    "old": "Detective Poirot is keeping to the background on his Egyptian vacation to carefully observe the mystery unfolding before him. Everyone had a motive, but who is cold-blooded enough to be the killer?",
+    "new": "A honeymoon cruise down the Nile ends with a shot in a locked cabin and a boat full of passengers who had reason to fire it. Poirot works the case between Aswan and Abu Simbel."
+  },
+  {
+    "id": "book112",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Gone Girl",
+    "authorAtDraft": "Gillian Flynn",
+    "old": "Following the blossoming relationship of Nick and Amy, we flash forward to their fifth wedding anniversary, where Amy has suddenly disappeared... Has Nick become a man capable of killing his wife?",
+    "new": "A wife disappears on the couple's fifth anniversary and the husband's account of the marriage stops matching her diary. A thriller that keeps moving the ground under the reader."
+  },
+  {
+    "id": "book42",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Ariel",
+    "authorAtDraft": "Sylvia Plath",
+    "old": "A collection of poems, some tender, some despairing, some nihilistic, and so much more. Written in the last three years before Plath's death and published posthumously.",
+    "new": "The late poems Plath left in a folder, published after her death: short, controlled, furious pieces about motherhood, fathers and survival. A slim collection with nothing spare in it."
+  },
+  {
+    "id": "book56",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Better Than the Movies",
+    "authorAtDraft": "Lynn Painter",
+    "old": "Liz is on a quest for a teen love story like in the movies. Can her annoying neighbour Wes really help her go to prom with her crush? And why does he have to be so attractive?",
+    "new": "A teenager enlists the neighbour she cannot stand to help her land the childhood crush who just moved back to town. A romantic comedy that knows exactly which films it is quoting."
+  },
+  {
+    "id": "book55",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Beloved",
+    "authorAtDraft": "Toni Morrison",
+    "old": "An unrivalled piece of gothic historical fiction by Toni Morrison, a master of magical realism. Beloved tells a story about the trauma of slavery and how past hurt can linger like a ghost.",
+    "new": "Years after escaping slavery, a woman in Ohio is visited by a young stranger who seems to be the daughter she lost. A haunting written as history that refuses to stay in the past."
+  },
+  {
+    "id": "book61",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Catcher in the Rye, The",
+    "authorAtDraft": "JD Salinger",
+    "old": "Holden Caulfield thinks you're a phony. A disaffected teenager travels around 1950's New York City after he's expelled from school. A literary classic with pages of casually-written monologues lamenting alienation, depression, and the inauthenticity of adults.",
+    "new": "Three days in New York with a teenager who has just been thrown out of another school and cannot stand anyone's pretending, least of all his own. The voice that defined the coming-of-age novel."
+  },
+  {
+    "id": "book76",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Conversations with Friends",
+    "authorAtDraft": "Sally Rooney",
+    "old": "This novel follows Frances as she navigates the complex relationships with her best friend and ex-girlfriend, Bobbi, and an older married couple, Nick and Melissa. A piercing exploration of blurred boundaries of intimacy and the struggles of one's identity.",
+    "new": "Two Dublin students who used to date perform their poetry and drift into the orbit of an older married couple. Attraction, class and self-deception, all in very plain sentences."
+  },
+  {
+    "id": "book57",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Call Me by Your Name",
+    "authorAtDraft": "André Aciman",
+    "old": "Their big age gap seems to be unable to deter Elio and Oliver from their obsession with each other, and they experience the highs and lows of a gay summer romance in 1980s Italy.",
+    "new": "A summer on the Italian coast where a seventeen-year-old and his father's visiting scholar circle each other for six weeks. Sensual, precise, and told from years of looking back."
+  },
+  {
+    "id": "book08",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Design Patterns; Elements of Reusable Object-Oriented Software",
+    "authorAtDraft": "E. Gamma, R. Helm, R. Johnson, J. Vlissides",
+    "old": "The classic reference for object-oriented programming, written by the legendary Gang of Four: a catalogue of reusable solutions to that solve common problems and make your code cleaner, reusable, and future-proof",
+    "new": "A reference catalogue of twenty-three recurring solutions to problems in object-oriented software, each set out with structure, consequences and sample code in a dry, methodical style built for consulting rather than reading through."
+  },
+  {
+    "id": "book16",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Short History of Nearly Everything",
+    "authorAtDraft": "Bill Bryson",
+    "old": "From atoms to galaxies, this popular science book takes readers on a wild journey through the past, uncovering the secrets of our fascinating universe. For all of those readers out there who are interested in nearly everything.",
+    "new": "Bryson sets out to understand how the universe, the planet and life on it came to be, and reports back on the science and the quarrelsome people who worked it out. Long, funny and genuinely clear."
+  },
+  {
+    "id": "book05",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "84, Charing Cross Road",
+    "authorAtDraft": "Helene Hanff",
+    "old": "An epistolary memoir about a friendship that develops over a shared love of books. A lighthearted, humorous collection of letters between a bookseller in London and a writer in New York City, desperate to fill gaps in her collection.",
+    "new": "A slim exchange of letters between a sharp-tongued New York reader and the staff of a London antiquarian bookshop, warm and quietly funny, following twenty years of book hunting across an ocean."
+  },
+  {
+    "id": "book124",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Homage to Catalonia",
+    "authorAtDraft": "George Orwell",
+    "old": "An exceptionally observant, vivid, and often witty journalistic work turned memoir by George Orwell, wherein he tells of his time fighting fascists in the Spanish Civil War.",
+    "new": "Orwell's account of the months he spent fighting in the Spanish Civil War, from freezing trenches to the street battles between factions on his own side. First-hand political history."
+  },
+  {
+    "id": "book64",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Chemical Chaos; Horrible Science",
+    "authorAtDraft": "Nick Arnold & Tony De Saulles",
+    "old": "Chemistry is confusing, and chemistry lessons are boring. Fret not! For this book is not about the bits you learn in school—but the funny bits, the fascinating bits and the bits that end up in blasts and bangs and dodgy discoveries!",
+    "new": "Chemistry for younger readers, delivered through explosions, awful smells and cartoons of scientists who tasted things they should not have. Part of the series that made science gross on purpose."
+  },
+  {
+    "id": "book23",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Ace; What Asexuality Reveals About Desire, Society and the Meaning of Sex",
+    "authorAtDraft": "Angela Chen",
+    "old": "What does it mean to be asexual? Reimagine human connection by exploring intersections of identity, sexuality and culture through a collection of critiques, reflections and conversations with community.",
+    "new": "Chen interviews asexual people and uses what they say to question the assumptions everyone else carries about desire, romance and consent. Reported non-fiction that reads like a long conversation."
+  },
+  {
+    "id": "book12",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Game of Thrones",
+    "authorAtDraft": "George R. R. Martin",
+    "old": "Stern lords, ambitious ladies, rising queens, and underestimated bastards. This book kicks off an epic fantasy saga full of tragedy, twists, and undead. Winter is coming, and so is the drama!",
+    "new": "Noble houses manoeuvre for a throne while winter and something older gather in the north. Chapter by chapter it changes narrators, and it kills characters the reader has learned to rely on."
+  },
+  {
+    "id": "book07",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Deepness in the Sky",
+    "authorAtDraft": "Vernor Vinge",
+    "old": "An interstellar trade conflict unfolds between two rivalling powers in this epic and thought-provoking sci-fi prequel. A dramatic modern classic of speculative sci-fi!",
+    "new": "Set countless centuries ahead, it follows rival human fleets and a civilization of alien spiders orbiting a star that goes dark, building a cold, patient epic of scheming, translation and betrayal."
+  },
+  {
+    "id": "book10",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Fire Upon the Deep",
+    "authorAtDraft": "Vernor Vinge",
+    "old": "Buckle up for an epic space adventure that kicks off the Zones of Thought series and introduces a mind-bending future thousands of years from now.",
+    "new": "An ancient malevolence wakes at the top of the galaxy while two human children are stranded on a world of pack-minded aliens. Big, patient space opera about minds that are not built like ours."
+  },
+  {
+    "id": "book33",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Anathem",
+    "authorAtDraft": "Neal Stephenson",
+    "old": "What happens when all of the planet's intellectuals are shut off from the rest of the world, left to ponder existence without ever experiencing it? Find out in this epic and ambitious sci-fi page-turner.",
+    "new": "Scholars live cloistered from the world outside their walls until something appears in the sky that only they can interpret. Nine hundred pages of mathematics, monastic routine and slow revelation."
+  },
+  {
+    "id": "book20",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Wrinkle in Time",
+    "authorAtDraft": "Madeleine L'Engle",
+    "old": "This \"science fantasy\" adventure starts off the classic Time Quintet series where three young heroes travel through time and space and face matters of good and evil.",
+    "new": "Three children follow three strange women across folds in space to find a missing scientist and the darkness holding him. Science fiction for younger readers with a philosophical streak."
+  },
+  {
+    "id": "book46",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Artemis Fowl",
+    "authorAtDraft": "Eoin Colfer",
+    "old": "When criminally inclined teenager Artemis tries to restore his family's fortune, he accidentally messes with the wrong fairies. Suddenly, he finds himself amidst a folk of high-tech fae.",
+    "new": "A twelve-year-old criminal mastermind kidnaps a fairy officer to ransom back his family's fortune, and discovers the fairies have better technology than he does. Fast, funny heist fantasy."
+  },
+  {
+    "id": "book108",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Frog and Toad Together",
+    "authorAtDraft": "Arnold Lobel",
+    "old": "Oh, to garden, bike, and go on adventures with your soulmate! While these short stories might strictly qualify as children's literature, who doesn't yearn for the life of Frog and Toad?",
+    "new": "Five short stories about two friends, a garden that will not grow, a list of things to do and a jar of cookies nobody can leave alone. Gentle early reading with a great deal of patience in it."
+  },
+  {
+    "id": "book269",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "The Invention of Hugo Cabret",
+    "authorAtDraft": "Brian Selznick",
+    "old": "A mysterious tale about a young boy living in a Paris train station. With sparse pages of text, the story is told mostly through black-and-white illustrations, theatrically revealing tiny details of each scene-and Hugo's secret invention- one frame at a time .",
+    "new": "An orphan living in the walls of a Paris train station winds the clocks and guards a broken automaton. Half the story is told in pencil drawings that run for pages without a word."
+  },
+  {
+    "id": "book62",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Charlie and the Chocolate Factory",
+    "authorAtDraft": "Roald Dahl",
+    "old": "Only five lucky winners of a golden ticket will be allowed to discover the true goings-on in Willy Wonka's magical chocolate factory. Join them in this illustrated children's tale.",
+    "new": "Five children win a tour of the most secretive sweet factory in the world, and only one of them pays attention to the rules. Dahl at his most inventive and least forgiving."
+  },
+  {
+    "id": "book63",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Charlotte's Web",
+    "authorAtDraft": "E. B. White",
+    "old": "When a clever spider and a radiant pig become friends, what could stand in their way? A charming children's classic with beautiful illustrations.",
+    "new": "A spring pig is saved from the smokehouse by a barn spider who knows how to write, and how to spend what time she has. A farmyard story that does not pretend death away."
+  },
+  {
+    "id": "book94",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Fantastic Mr Fox",
+    "authorAtDraft": "Roald Dahl",
+    "old": "A clever fox and his family set out to outsmart their farming neighbours in this charmingly illustrated classic children's novel.",
+    "new": "Three angry farmers dig up a hillside to get at one fox, and the fox tunnels his way into all three of their storehouses instead. Short, sly and entirely on the animals' side."
+  },
+  {
+    "id": "book101",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Five on a Treasure Island",
+    "authorAtDraft": "Enid Blyton",
+    "old": "A childhood adventure with five friends, a shipwreck, and a hidden treasure. The first in the classic Famous Five series of children's mystery novels.",
+    "new": "Four cousins and a dog spend the holidays on a small island with a wreck, a ruined castle and a map nobody has followed to the end. The first of the summer-adventure mysteries."
+  },
+  {
+    "id": "book01",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "1,000 Places to See Before You Die",
+    "authorAtDraft": "Patricia Schultz",
+    "old": "This original bucket list contains a wide variety of stunning places around the globe! A must-have in every globetrotter's library, even if it's purely aspirational.",
+    "new": "A globe-spanning catalogue of beaches, ruins, festivals and back roads, written for browsing rather than reading straight through. Each entry is a short, practical sketch of somewhere worth the journey."
+  },
+  {
+    "id": "book340",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Tramp Abroad",
+    "authorAtDraft": "Mark Twain",
+    "old": "An unserious, humorous, mix of real and fictional accounts of travel across Europe. Exaggerated events, his struggle with the German language, and other tales color his journey.",
+    "new": "Twain walks across Europe, mostly by raft, carriage and other people's effort, and reports on Alpine climbing, German opera and the local habits with a straight face. Long and very funny."
+  },
+  {
+    "id": "book87",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Down Under",
+    "authorAtDraft": "Bill Bryson",
+    "old": "An entertaining yet educational travelogue exploring a Sunburned Country , also known as Australia. Marvel about the country's people, history, landscape, flora and fauna.",
+    "new": "Bryson crosses Australia by train and hire car, cheerfully catalogues everything there that can kill a visitor, and keeps stopping to explain how strange the history is."
+  },
+  {
+    "id": "book170",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Notes From A Small Island",
+    "authorAtDraft": "Bill Bryson",
+    "old": "After two decades in Britain, this American author isn't afraid to draw his conclusions about the small, weird, lovely island that had become his second home.",
+    "new": "A farewell tour of Britain on public transport before moving away, taking in seaside towns out of season, misread timetables and an affection that keeps breaking through the complaining."
+  },
+  {
+    "id": "book341",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "The Travels of Marco Polo",
+    "authorAtDraft": "Marco Polo",
+    "old": "In this totally real travelogue from the 13th century, we follow the author's self-insert — conveniently named Marco Polo — on his legendary travels from Venice to Beijing.",
+    "new": "The thirteenth-century account of a Venetian merchant's years on the road to the court of Kublai Khan, with cities, customs and trade routes described for readers who had no other source."
+  },
+  {
+    "id": "book427",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Walk in the Woods",
+    "authorAtDraft": "Bill Bryson",
+    "old": "The tale of two men in their forties, with countless blisters and a questionable map, on the Appalachian Trail. Get to know the area's history, ecology, and people in this hilarious exploration of the great outdoors.",
+    "new": "Two badly prepared middle-aged men set out to hike the Appalachian Trail end to end, and the attempt turns into a history of the forest they keep failing to cross. Funny and often rueful."
+  }
+]
