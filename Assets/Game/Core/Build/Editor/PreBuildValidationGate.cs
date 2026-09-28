@@ -114,6 +114,7 @@ namespace Game.Build.Editor
         private static readonly (string Name, Action<List<string>> Run)[] SoftValidators =
         {
             ("Orphan configs", CollectOrphanConfigWarnings),
+            ("Book description drafts", CollectBookDescriptionDraftWarnings),
         };
 
         private static ValidationReport Collect()
@@ -227,6 +228,19 @@ namespace Game.Build.Editor
         /// </summary>
         private static void CollectBookBoxPoolErrors(List<string> errors)
             => errors.AddRange(BookBoxPoolValidator.Validate().Errors);
+
+        /// <summary>
+        /// Warning level, not error: the drafts are authoring material outside Assets/ that no build reads.
+        /// It earns a row anyway because a draft marked applied whose text is not in localization means a
+        /// shipped build is serving something nobody reviewed, and nothing else would say so.
+        /// </summary>
+        private static void CollectBookDescriptionDraftWarnings(List<string> warnings)
+        {
+            if (!File.Exists(BookDescriptionDraftValidator.DraftsPath)) return;
+
+            var report = BookDescriptionDraftValidator.Validate();
+            warnings.AddRange(report.Errors);
+        }
 
         private static void CollectOrphanConfigWarnings(List<string> warnings)
         {

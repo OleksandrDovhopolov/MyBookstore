@@ -1,0 +1,380 @@
+[
+  {
+    "id": "book165",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Nineteen Eighty-Four",
+    "authorAtDraft": "George Orwell",
+    "new": "Winston Smith rewrites yesterday's newspapers for a living, and falls in love anyway. The bleakest thing on the shelf, still quoted in every argument about power, and it offers no way out.",
+    "recognized": true
+  },
+  {
+    "id": "book92",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Emma",
+    "authorAtDraft": "Jane Austen",
+    "new": "Emma Woodhouse arranges everyone else's marriages with perfect confidence and no self-knowledge whatsoever. Wickedly funny about a comfortable village, and it ends as warmly as you hope.",
+    "recognized": true
+  },
+  {
+    "id": "book229",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "The Canterville Ghost",
+    "authorAtDraft": "Oscar Wilde",
+    "new": "An American family buys an English manor and refuses to be frightened by the resident spectre, who takes it badly. Ninety-odd pages of impeccable mischief with a surprisingly tender ending.",
+    "recognized": true
+  },
+  {
+    "id": "book38",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Animal Farm",
+    "authorAtDraft": "George Orwell",
+    "new": "The livestock throw out the farmer and write their own commandments, then watch the pigs quietly edit them. Short, cold and merciless about how a revolution eats itself. Nobody gets a happy field.",
+    "recognized": true
+  },
+  {
+    "id": "book123",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "The Hobbit; The Lord of the Rings #0",
+    "authorAtDraft": "J.R.R. Tolkien",
+    "new": "Bilbo Baggins is bullied out of his comfortable hole by thirteen dwarves and a wizard with an agenda. Cosy, funny, full of songs, and the doorway to everything Middle-earth becomes later.",
+    "recognized": true
+  },
+  {
+    "id": "book118",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Gulliver's Travels",
+    "authorAtDraft": "Jonathan Swift",
+    "new": "Shipwreck by shipwreck, a ship's surgeon washes up among giants, tiny warring courtiers and talking horses. Straight-faced comedy from 1726 that is really a very rude joke about governments.",
+    "recognized": true
+  },
+  {
+    "id": "book18",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Study in Scarlet",
+    "authorAtDraft": "Arthur Conan Doyle",
+    "new": "Two men share rooms on Baker Street, and one of them can read a stranger's whole history off his boots. The case that starts the most famous partnership in crime, with a corpse and no wound.",
+    "recognized": true
+  },
+  {
+    "id": "book31",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "American Psycho",
+    "authorAtDraft": "Bret Easton Ellis",
+    "new": "A Wall Street banker itemises his suits, his business cards and his murders in the same flat voice. Genuinely sickening satire, not for the squeamish, and hard to shake once it is finished.",
+    "recognized": true
+  },
+  {
+    "id": "book13",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Good Girl's Guide to Murder",
+    "authorAtDraft": "Holly Jackson",
+    "new": "Pip picks a five-year-old murder case for her school project, mostly because she refuses to believe the boy everyone blames did it. Interview logs, teenage nerve, and a floor that keeps dropping.",
+    "recognized": true
+  },
+  {
+    "id": "book26",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "After the Funeral",
+    "authorAtDraft": "Agatha Christie",
+    "new": "The relatives gather for the will, someone says the old man was murdered, and within a day she is dead too. Poirot sorts the family's polite lies into order, and the answer will annoy you beautifully.",
+    "recognized": true
+  },
+  {
+    "id": "book85",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Death on the Nile",
+    "authorAtDraft": "Agatha Christie",
+    "new": "Heat, a pleasure steamer full of grudges, and a honeymoon that ends with a shot in the night. Poirot works through the passenger list while Egypt slides past the windows. Clever, and rather sad.",
+    "recognized": true
+  },
+  {
+    "id": "book112",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Gone Girl",
+    "authorAtDraft": "Gillian Flynn",
+    "new": "A wife vanishes on the morning of her fifth anniversary, and her husband keeps saying the wrong thing on camera. Two accounts, one marriage, and the ground shifts hard about halfway through.",
+    "recognized": true
+  },
+  {
+    "id": "book42",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Ariel",
+    "authorAtDraft": "Sylvia Plath",
+    "new": "Late poems written at four in the morning, brilliant and furious and entirely unwilling to be comforted. Slim, difficult, and the collection that changed what a poem was allowed to sound like.",
+    "recognized": true
+  },
+  {
+    "id": "book56",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Better Than the Movies",
+    "authorAtDraft": "Lynn Painter",
+    "new": "Liz will put up with the neighbour she cannot stand if it gets her a date with her childhood crush. Romantic comedy logic, a soundtrack running in the margins, and a heart that sneaks up on her.",
+    "recognized": true
+  },
+  {
+    "id": "book55",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Beloved",
+    "authorAtDraft": "Toni Morrison",
+    "new": "A house outside Cincinnati is haunted by what slavery did, and by a young woman who turns up at the gate with no past. Ferocious, grief-soaked and not remotely comfortable. Read it slowly.",
+    "recognized": true
+  },
+  {
+    "id": "book61",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Catcher in the Rye, The",
+    "authorAtDraft": "JD Salinger",
+    "new": "Kicked out of school again, a sixteen-year-old wanders New York for three days telling you exactly who is a phony and nothing at all about himself. Funny, exhausting, and sadder than it admits.",
+    "recognized": true
+  },
+  {
+    "id": "book76",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Conversations with Friends",
+    "authorAtDraft": "Sally Rooney",
+    "new": "Two student poets, a married couple who collect them, and email threads sharper than anything anyone says aloud. Cool, precise and quietly devastating about wanting to be chosen.",
+    "recognized": true
+  },
+  {
+    "id": "book57",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Call Me by Your Name",
+    "authorAtDraft": "André Aciman",
+    "new": "One Italian summer, a visiting scholar in the spare room, and a seventeen-year-old who notices everything and says nothing. Sun-drunk, aching prose about a season that does not come back.",
+    "recognized": true
+  },
+  {
+    "id": "book08",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Design Patterns; Elements of Reusable Object-Oriented Software",
+    "authorAtDraft": "E. Gamma, R. Helm, R. Johnson, J. Vlissides",
+    "new": "Twenty-three recurring solutions to problems every programmer meets twice, named and catalogued so a team can argue in shorthand. Dry as chalk, and still on the desk of everyone who builds software.",
+    "recognized": true
+  },
+  {
+    "id": "book16",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Short History of Nearly Everything",
+    "authorAtDraft": "Bill Bryson",
+    "new": "How big is the universe, how old are the rocks, and which lunatics worked it out? Six hundred pages of cheerful science writing that makes geology sound like very good village gossip.",
+    "recognized": true
+  },
+  {
+    "id": "book05",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "84, Charing Cross Road",
+    "authorAtDraft": "Helene Hanff",
+    "new": "Twenty years of letters between a broke New York writer and a very correct London bookshop, mostly about secondhand editions and eventually about everything else. Short, wry, and it will get you.",
+    "recognized": true
+  },
+  {
+    "id": "book124",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Homage to Catalonia",
+    "authorAtDraft": "George Orwell",
+    "new": "A volunteer's account of the Spanish war from the trenches, and then from the wrong side of a purge. Lice, boredom, courage and betrayal, reported plainly by a man who was shot through the throat.",
+    "recognized": true
+  },
+  {
+    "id": "book64",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Chemical Chaos; Horrible Science",
+    "authorAtDraft": "Nick Arnold & Tony De Saulles",
+    "new": "Acids, explosions and the genuinely disgusting history of chemistry, delivered with cartoons and no dignity whatsoever. Science smuggled in past the gag reflex, and children swallow it whole.",
+    "recognized": true
+  },
+  {
+    "id": "book23",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Ace; What Asexuality Reveals About Desire, Society and the Meaning of Sex",
+    "authorAtDraft": "Angela Chen",
+    "new": "Interviews and reporting on what asexuality actually is, and what a culture assuming everyone wants sex gets wrong about consent, romance and loneliness. Clear, generous and quietly radical.",
+    "recognized": true
+  },
+  {
+    "id": "book12",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Game of Thrones",
+    "authorAtDraft": "George R. R. Martin",
+    "new": "Seven kingdoms, one throne, and a dozen families willing to spend their children on it. Eight hundred pages of cold politics with dragons at the edges, and nobody is safe for being likeable.",
+    "recognized": true
+  },
+  {
+    "id": "book07",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Deepness in the Sky",
+    "authorAtDraft": "Vernor Vinge",
+    "new": "Two human fleets circle a world of spider-like people racing through their own industrial revolution, and only one fleet means them well. Vast, patient, and full of genuinely strange wonder.",
+    "recognized": true
+  },
+  {
+    "id": "book10",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Fire Upon the Deep",
+    "authorAtDraft": "Vernor Vinge",
+    "new": "An old evil wakes in the high reaches of the galaxy, while two marooned children fall in among sword-carrying pack creatures on a medieval world. Enormous, strange, and worth every page.",
+    "recognized": true
+  },
+  {
+    "id": "book33",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Anathem",
+    "authorAtDraft": "Neal Stephenson",
+    "new": "Monks of mathematics live behind walls and keep time with clockwork rites, until something appears in the sky and they are sent out. Dense, invented vocabulary, and a puzzle that widens into worlds.",
+    "recognized": true
+  },
+  {
+    "id": "book20",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Wrinkle in Time",
+    "authorAtDraft": "Madeleine L'Engle",
+    "new": "Meg is bad at school, furious, and the only one who can fetch her father back from a planet where every house is identical. Three peculiar old women, a fold in space, and love as the last weapon.",
+    "recognized": true
+  },
+  {
+    "id": "book46",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Artemis Fowl",
+    "authorAtDraft": "Eoin Colfer",
+    "new": "A twelve-year-old criminal mastermind kidnaps a fairy for ransom and learns that the fairies have better weapons than he does. Fast, cheeky, and the opening round of a very long feud.",
+    "recognized": true
+  },
+  {
+    "id": "book108",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Frog and Toad Together",
+    "authorAtDraft": "Arnold Lobel",
+    "new": "Five small stories about two amphibian friends: a list of things to do, a garden that refuses to hurry, and a plate of cookies that must be dealt with. Sixty-four pages of perfect gentle nonsense.",
+    "recognized": true
+  },
+  {
+    "id": "book269",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "The Invention of Hugo Cabret",
+    "authorAtDraft": "Brian Selznick",
+    "new": "An orphan winds the clocks of a Paris station, steals parts for a broken automaton, and stumbles onto a filmmaker everyone forgot. Half the story is told in pencil drawings, and the pages fly.",
+    "recognized": true
+  },
+  {
+    "id": "book62",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Charlie and the Chocolate Factory",
+    "authorAtDraft": "Roald Dahl",
+    "new": "Five golden tickets, one sweet factory nobody has entered in years, and four children who richly deserve what happens to them. Charlie deserves better, and gets it. Delicious and slightly cruel.",
+    "recognized": true
+  },
+  {
+    "id": "book63",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Charlotte's Web",
+    "authorAtDraft": "E. B. White",
+    "new": "Wilbur the pig has one winter to live, until the spider over his doorway starts writing advertisements for him in her web. Warm, funny barnyard company, and honest about goodbyes.",
+    "recognized": true
+  },
+  {
+    "id": "book94",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Fantastic Mr Fox",
+    "authorAtDraft": "Roald Dahl",
+    "new": "Three horrible farmers dig up a whole hillside to get at one fox, who simply digs better. Ninety-six pages of thieving, feasting and nerve, with the animals walking off with dinner.",
+    "recognized": true
+  },
+  {
+    "id": "book101",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Five on a Treasure Island",
+    "authorAtDraft": "Enid Blyton",
+    "new": "Four cousins, one extremely good dog, and an island with a wrecked ship and a map nobody else has read properly. Picnics, dungeons and villains who never stood a chance. First of many summers.",
+    "recognized": true
+  },
+  {
+    "id": "book01",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "1,000 Places to See Before You Die",
+    "authorAtDraft": "Patricia Schultz",
+    "new": "Nearly a thousand pages of markets, reefs, hill towns and hotel terraces worth crossing a continent for, each with the practical details attached. Dangerous to leave open near a bank account.",
+    "recognized": true
+  },
+  {
+    "id": "book340",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Tramp Abroad",
+    "authorAtDraft": "Mark Twain",
+    "new": "Walking tour of Germany and the Alps, conducted mostly by raft, carriage and any transport that is not walking. Dated in places, still very funny about mountains, opera and the German language.",
+    "recognized": true
+  },
+  {
+    "id": "book87",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Down Under",
+    "authorAtDraft": "Bill Bryson",
+    "new": "Australia by train, beer and rented car: a country with a lovely temperament and more creatures that can kill you than anywhere else. Affectionate, funny, and stuffed with alarming history.",
+    "recognized": true
+  },
+  {
+    "id": "book170",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "Notes From A Small Island",
+    "authorAtDraft": "Bill Bryson",
+    "new": "A farewell lap around Britain by bus and footpath, arguing with hotel breakfasts and admiring the drizzle. Fond and very rude about the same places, often in the same sentence.",
+    "recognized": true
+  },
+  {
+    "id": "book341",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "The Travels of Marco Polo",
+    "authorAtDraft": "Marco Polo",
+    "new": "Dictated in a Genoese prison: caravans to the court of the Great Khan, cities of a size Europe refused to believe, and the occasional dragon. Wildly unreliable, and wildly worth the trip.",
+    "recognized": true
+  },
+  {
+    "id": "book427",
+    "batch": 1,
+    "status": "draft",
+    "titleAtDraft": "A Walk in the Woods",
+    "authorAtDraft": "Bill Bryson",
+    "new": "Two unfit friends set out to walk two thousand miles of the Appalachian Trail with the wrong gear and no plan at all. Bears, snack food, forest history, and a great deal of complaining.",
+    "recognized": true
+  }
+]

@@ -20,8 +20,8 @@ namespace Game.Configs.Editor
         public const string DefaultOutputPath = "Assets/Configs/books.json";
         public const string DefaultLocalizationOutputPath = "Assets/Configs/localization_books_en.json";
 
-        /// <summary>Rewritten descriptions waiting to be applied — see <see cref="BookDescriptionDraftConfig"/>.</summary>
-        public const string DraftsPath = "Assets/Configs/book_descriptions_v2.json";
+        /// <summary>Rewritten descriptions waiting to be applied — see <see cref="BookDescriptionDraft"/>.</summary>
+        public const string DraftsPath = "docs/content/book_descriptions.json";
 
         private const string LogPrefix = "[BooksExcelImporter]";
 
@@ -89,7 +89,7 @@ namespace Game.Configs.Editor
 
             try
             {
-                var drafts = JsonConvert.DeserializeObject<List<BookDescriptionDraftConfig>>(
+                var drafts = JsonConvert.DeserializeObject<List<BookDescriptionDraft>>(
                     File.ReadAllText(DraftsPath));
                 if (drafts == null) return 0;
 
