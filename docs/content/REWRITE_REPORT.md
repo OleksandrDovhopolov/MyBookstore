@@ -10,10 +10,10 @@ are in the batch files linked below.
 ## Overall
 
 - seed archive: 663 rows (620 in the catalogue, 43 excluded)
-- rewritten: 90 of 620 catalogue books
-- remaining: 530
-- validator: 0 error(s), 5 warning(s)
-- written without knowing the book: book350, book600, book606, book35, book29
+- rewritten: 205 of 620 catalogue books
+- remaining: 415
+- validator: 0 error(s), 10 warning(s)
+- written without knowing the book: book350, book600, book606, book35, book29, book355, book11, book359, book423, book468
 
 ## Batches
 
@@ -22,6 +22,9 @@ are in the batch files linked below.
 | 1 | 42 | draft 42 | [batches/REWRITE_REPORT_batch_01.md](batches/REWRITE_REPORT_batch_01.md) |
 | 2 | 35 | draft 35 | [batches/REWRITE_REPORT_batch_02.md](batches/REWRITE_REPORT_batch_02.md) |
 | 3 | 13 | draft 13 | [batches/REWRITE_REPORT_batch_03.md](batches/REWRITE_REPORT_batch_03.md) |
+| 4 | 34 | draft 34 | [batches/REWRITE_REPORT_batch_04.md](batches/REWRITE_REPORT_batch_04.md) |
+| 5 | 41 | draft 41 | [batches/REWRITE_REPORT_batch_05.md](batches/REWRITE_REPORT_batch_05.md) |
+| 6 | 40 | draft 40 | [batches/REWRITE_REPORT_batch_06.md](batches/REWRITE_REPORT_batch_06.md) |
 
 ## Tone devices by batch
 
@@ -33,15 +36,16 @@ All three are allowed and wanted; strict third person is what made the first pas
 | 1 | 1 (seeded 10) | 0 (seeded 5) | 5 (seeded 5) |
 | 2 | 0 (seeded 15) | 0 (seeded 6) | 6 (seeded 5) |
 | 3 | 1 (seeded 2) | 0 (seeded 7) | 3 (seeded 7) |
+| 4 | 0 (seeded 6) | 0 (seeded 9) | 4 (seeded 5) |
+| 5 | 1 (seeded 9) | 0 (seeded 12) | 2 (seeded 9) |
+| 6 | 0 (seeded 8) | 1 (seeded 9) | 1 (seeded 1) |
 
 ## Remaining by primary genre
 
 | genre | books left |
 |---|---|
 | Classic | 87 |
-| Crime | 81 |
 | Drama | 112 |
 | Fact | 92 |
 | Fantasy | 124 |
-| Kids | 34 |
 

@@ -808,5 +808,1040 @@
     "authorAtDraft": "Peggy Rathmann",
     "new": "The zookeeper says goodnight, the gorilla lifts his keys, and the whole zoo tiptoes home to bed behind him. Almost wordless, endlessly rereadable, and small children spot the balloon before you do.",
     "recognized": true
+  },
+  {
+    "id": "book117",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Gregor the Overlander",
+    "authorAtDraft": "Suzanne Collins",
+    "new": "Doing the laundry ends with an eleven-year-old and his toddler sister dropping through a grate into a subterranean world of giant bats and warring rats, where a prophecy is waiting with his name in it.",
+    "recognized": true
+  },
+  {
+    "id": "book122",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Heidi",
+    "authorAtDraft": "Johanna Spyri",
+    "new": "An orphan is handed to a gruff grandfather high in the Alps, thrives among goats and mountain air, then is carried off to a city house that cannot hold her. Warm, old-fashioned, and sure of its happy ending.",
+    "recognized": true
+  },
+  {
+    "id": "book135",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "James and the Giant Peach",
+    "authorAtDraft": "Roald Dahl",
+    "new": "Two horrible aunts, a handful of spilled magic, and a peach that grows bigger than a house. Inside it wait a spider, a grasshopper and a centipede, and one lonely boy finally has a family worth sailing off with.",
+    "recognized": true
+  },
+  {
+    "id": "book140",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Kiki's Delivery Service",
+    "authorAtDraft": "Eiko Kadono",
+    "new": "Thirteen is the age a young witch must leave home for a year, so off she flies with a talkative black cat and one useful skill. Setting up a delivery service in a seaside town turns out to be the harder trick.",
+    "recognized": true
+  },
+  {
+    "id": "book158",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Momo; or, The Grey Gentlemen",
+    "authorAtDraft": "Michael Ende",
+    "new": "Grey gentlemen in grey hats are talking a town into saving its time, and only a girl living in a ruined amphitheatre notices what is being stolen. Fable-shaped, with a tortoise who spells out the future.",
+    "recognized": true
+  },
+  {
+    "id": "book194",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Sky Island",
+    "authorAtDraft": "L. Frank Baum",
+    "new": "Two children and an old sailor lift off under a magic umbrella and land clean off the map, on an island split between a blue half and a pink half that cannot abide each other. Sunny, silly nonsense throughout.",
+    "recognized": true
+  },
+  {
+    "id": "book197",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Small Spaces; (Book 1)",
+    "authorAtDraft": "Katherine Arden",
+    "new": "The school bus stalls in the fog on the way back from a farm, the scarecrows in the fields have moved, and a stopped watch spells out advice: keep to small spaces. Genuinely frightening, and only the first.",
+    "recognized": true
+  },
+  {
+    "id": "book205",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "The Bad Beginning; (A Series of Unfortunate Events)",
+    "authorAtDraft": "Lemony Snicket",
+    "new": "Three clever orphans, one enormous fortune, and a guardian with a single eyebrow and theatrical ambitions. The narrator warns you off every few pages, which is of course why the next twelve books exist.",
+    "recognized": true
+  },
+  {
+    "id": "book262",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "The Happy Prince and Other Tales",
+    "authorAtDraft": "Oscar Wilde",
+    "new": "Piece by piece, a gilded statue and the swallow who stayed too late in the season give away everything they have. Five short fairy tales, sharp-witted on the surface and quietly heartbreaking underneath.",
+    "recognized": true
+  },
+  {
+    "id": "book264",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Hatchet",
+    "authorAtDraft": "Gary Paulsen",
+    "new": "The pilot dies mid-flight and a thirteen-year-old puts the little plane down in a Canadian lake with nothing useful but the hatchet on his belt. Fire, fish, a moose, and the slow arithmetic of staying alive.",
+    "recognized": true
+  },
+  {
+    "id": "book265",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "The Hidden Staircase; (Nancy Drew #2)",
+    "authorAtDraft": "Carolyn Keene",
+    "new": "Two elderly sisters report creaking floors, odd music and vanishing valuables in their old mansion, so the teenage detective packs a bag and goes looking for the passage behind it all. Brisk, tidy, vintage.",
+    "recognized": true
+  },
+  {
+    "id": "book268",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "The Invasion; (Animorphs #1)",
+    "authorAtDraft": "K. A. Applegate",
+    "new": "A shortcut across a construction site puts five kids in front of a dying alien, who hands them the power to become any animal they touch. The parasites already walking among them will not expect a hawk.",
+    "recognized": true
+  },
+  {
+    "id": "book281",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "The Little Prince",
+    "authorAtDraft": "Antoine de Saint-Exupéry",
+    "new": "Stranded in the desert, a pilot meets a small traveller who has left his planet and his one rose behind and is working his way from world to world. A fox explains love to him, and the ending does not soften it.",
+    "recognized": true
+  },
+  {
+    "id": "book282",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "The Lorax",
+    "authorAtDraft": "Dr. Seuss",
+    "new": "Truffula trees fall, smog rises, and a small mossy creature speaks for the trees while nobody listens. Bouncing rhyme and invented words carrying a blunt lesson about what a factory does to a forest.",
+    "recognized": true
+  },
+  {
+    "id": "book306",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "The Neverending Story",
+    "authorAtDraft": "Michael Ende",
+    "new": "Hiding in a school attic with a stolen book, a bullied boy finds the world inside it being eaten by Nothing. Long, strange and layered, with a second half about getting every wish you ever asked for.",
+    "recognized": true
+  },
+  {
+    "id": "book314",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "A Place to Hang the Moon",
+    "authorAtDraft": "Kate Albus",
+    "new": "Three orphaned siblings are evacuated out of wartime London with a private plan: find not simply a billet but somebody to keep them. Book-loving, warm-hearted, and headed exactly where you hope it is headed.",
+    "recognized": true
+  },
+  {
+    "id": "book353",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "The Yellow Fairy Book",
+    "authorAtDraft": "L. B. Alleyne & A. Lang",
+    "new": "Dozens of tales gathered from Norse, Russian, Hungarian and Native American sources, with emperors, witches and talking birds among them. One volume of the coloured series that shaped the fairy-tale shelf.",
+    "recognized": true
+  },
+  {
+    "id": "book355",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Theodora Hendrix and the Curious Case of the Cursed Beetle",
+    "authorAtDraft": "Jordan Kopy",
+    "new": "Monsters, curses and a beetle that plainly should have been left alone. Recent middle-grade spookiness, long enough to last a week of bedtimes, and creepy in the cheerful way rather than the sleepless way.",
+    "recognized": false
+  },
+  {
+    "id": "book356",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "There's A Ghost In This House",
+    "authorAtDraft": "Oliver Jeffers",
+    "new": "A girl gives you a tour of her house, certain that a ghost lives somewhere in it, while tracing-paper overlays keep showing exactly what she misses. A picture book that turns page-turning into the joke.",
+    "recognized": true
+  },
+  {
+    "id": "book386",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Where the Wild Things Are",
+    "authorAtDraft": "Maurice Sendak",
+    "new": "Sent to bed without supper in his wolf suit, a boy sails off to be crowned king of some very toothy monsters. Ten sentences, enormous pictures, and a last page about supper still being warm.",
+    "recognized": true
+  },
+  {
+    "id": "book428",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Alice's Adventures in Wonderland",
+    "authorAtDraft": "Lewis Carroll",
+    "new": "Follow a waistcoated rabbit down a hole and the rules stop applying: a caterpillar on a hookah, a tea party with no end, a queen who sentences first. Nonsense logic, verse and riddles, none of it dated.",
+    "recognized": true
+  },
+  {
+    "id": "book463",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "The Eleventh Hour; A Curious Mystery",
+    "authorAtDraft": "Graeme Base",
+    "new": "An elephant throws an eleventh birthday party for eleven animal guests, and someone eats the feast before the clock strikes. Rhyming verse over densely coded pictures, with the solution sealed at the back.",
+    "recognized": true
+  },
+  {
+    "id": "book472",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "How Winston Delivered Christmas; A Christmas Story in Twenty-Four-and-a-Half Chapters",
+    "authorAtDraft": "Alex T. Smith",
+    "new": "One small mouse finds a letter addressed to Father Christmas and decides it simply must be delivered. Twenty-four and a half chapters, one per December day, with crafts and recipes tucked in between them.",
+    "recognized": true
+  },
+  {
+    "id": "book495",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Matilda",
+    "authorAtDraft": "Roald Dahl",
+    "new": "Her parents treat reading as a disease and her headmistress throws children by the pigtails, but a small girl with a library card and a peculiar talent behind her eyes evens the score. Wickedly funny revenge.",
+    "recognized": true
+  },
+  {
+    "id": "book497",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Miss Peregrine's Home for Peculiar Children",
+    "authorAtDraft": "Ransom Riggs",
+    "new": "After his grandfather dies raving about monsters, a teenager follows the old photographs to a ruined house on a Welsh island where the same day keeps repeating. Built around genuinely eerie found snapshots.",
+    "recognized": true
+  },
+  {
+    "id": "book513",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Peter Pan in Kensington Gardens",
+    "authorAtDraft": "J. M. Barrie",
+    "new": "Before the pirates and the crocodile, Peter was a week-old baby who flew out of the nursery window and settled in among the birds and fairies of a London park. Lyrical, wistful, stranger than the play it became.",
+    "recognized": true
+  },
+  {
+    "id": "book522",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Stormbreaker",
+    "authorAtDraft": "Anthony Horowitz",
+    "new": "His uncle dies in a car crash that was nothing of the kind, and a fourteen-year-old discovers the holiday hobbies he was taught were spy training all along. Gadgets, a billionaire, a first mission. Book one.",
+    "recognized": true
+  },
+  {
+    "id": "book538",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "The House with a Clock in Its Walls",
+    "authorAtDraft": "John Bellairs",
+    "new": "The shabby uncle who takes in an orphaned boy turns out to be a wizard, and something ticks inside the plaster of his mansion, counting toward a very bad end. Creaky, gothic, and pitched at nervous readers.",
+    "recognized": true
+  },
+  {
+    "id": "book550",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "The Scarecrow of Oz",
+    "authorAtDraft": "L. Frank Baum",
+    "new": "Swallowed by a whirlpool, a girl and her sailor friend wash up on the road to Jinxland, where a nasty king rules and a princess has had her heart frozen. The straw-stuffed hero arrives to sort it out.",
+    "recognized": true
+  },
+  {
+    "id": "book553",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "The Snowy Day",
+    "authorAtDraft": "Ezra Jack Keats",
+    "new": "Snow overnight, and a boy in a red snowsuit goes out to make tracks, knock the drifts off a tree and save a snowball in his pocket. Collage pictures, very few words, perfect for the smallest listeners.",
+    "recognized": true
+  },
+  {
+    "id": "book566",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Z for Zachariah",
+    "authorAtDraft": "Robert C. O'Brian",
+    "new": "After the war a teenage girl farms the sheltered valley she believes is the last living place on earth, until smoke shows on the ridge and a stranger in a safe suit walks in. A diary that tightens page by page.",
+    "recognized": true
+  },
+  {
+    "id": "book582",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Hello Lighthouse",
+    "authorAtDraft": "Sophie Blackall",
+    "new": "Inside a round tower on a rock, a keeper trims the wick, fills the log and waits out fog and ice while his family grows. Watercolours built for the shape of the page, and a quiet look at work being made obsolete.",
+    "recognized": true
+  },
+  {
+    "id": "book618",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "The Boy, The Mole, The Fox and The Horse; (Book 1)",
+    "authorAtDraft": "Charlie Mackesy",
+    "new": "Four unlikely friends wander a bare landscape and talk about kindness, fear and cake. Handwritten lines under ink and watercolour drawings, meant to be opened anywhere rather than read straight through.",
+    "recognized": true
+  },
+  {
+    "id": "book658",
+    "batch": 4,
+    "status": "draft",
+    "titleAtDraft": "Dragon Ball; Volume 1",
+    "authorAtDraft": "Akira Toriyama",
+    "new": "Seven magic orbs scattered across the world will summon a dragon who grants a wish. A girl hunting them falls in with a boy who has a monkey tail and startling strength. Slapstick, tournaments, a long run ahead.",
+    "recognized": true
+  },
+  {
+    "id": "book11",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "A Fire Upon the Deep",
+    "authorAtDraft": "James Lovegrove & Nancy Holder",
+    "new": "Wrongdoing, wisecracks and a caper unfolding a long way from any police station. Light company for one evening, one entry in a longer run, and generous enough to send you off grinning rather than grim.",
+    "recognized": false
+  },
+  {
+    "id": "book47",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "As Good As Dead",
+    "authorAtDraft": "Holly Jackson",
+    "new": "Pip has closed cases before, and now somebody is posting her taunts that quote one of them. The third turn of a small-town series where the sleuth is the one coming apart, and the bill for asking questions finally arrives.",
+    "recognized": true
+  },
+  {
+    "id": "book58",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Camp Damascus",
+    "authorAtDraft": "Chuck Tingle",
+    "new": "America's most effective conversion camp boasts a spotless success rate, and Rose is beginning to see what it actually costs. Queer horror with teeth, furious at the institution, and still willing to grant its heroine daylight.",
+    "recognized": true
+  },
+  {
+    "id": "book80",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Dark Places",
+    "authorAtDraft": "Gillian Flynn",
+    "new": "Libby Day survived the night her family was slaughtered and testified against her own brother. Broke and out of sympathy years later, she takes money from murder hobbyists to go back and check. Mean, bleak, unputdownable.",
+    "recognized": true
+  },
+  {
+    "id": "book83",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Death Note; Volume 1",
+    "authorAtDraft": "Tsugumi Ohba",
+    "new": "Bored and brilliant, a top student finds a notebook that kills anyone whose name he writes in it, and decides the world needs pruning. First volume of a manga duel between a boy with a god complex and the detective reading his moves.",
+    "recognized": true
+  },
+  {
+    "id": "book90",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Dreamer's Pool; Blackthorn & Grim #1",
+    "authorAtDraft": "Juliet Marillier",
+    "new": "Sprung from a filthy cell on the condition that she help anyone who asks, a bitter healer and her silent giant of a companion reach a woodland where a prince's bride is not quite who she was. Old Ireland, quiet magic, book one.",
+    "recognized": true
+  },
+  {
+    "id": "book91",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Dry; (Aaron Falk #1)",
+    "authorAtDraft": "Jane Harper",
+    "new": "Two years without rain, and a farming town buries a family it half believes shot itself. The federal investigator who comes home for the funeral left under a cloud of his own. Dust, grudges, and a whodunnit that keeps its cards.",
+    "recognized": true
+  },
+  {
+    "id": "book109",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Full Dark, No Stars",
+    "authorAtDraft": "Stephen King",
+    "new": "Four novellas about ordinary people who step over a line and then have to live in the room with it: a farmer, a novelist, a bargain too good to refuse, a wife who finds something in the garage. Plain-spoken, no comfort offered.",
+    "recognized": true
+  },
+  {
+    "id": "book113",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Good Girl, Bad Blood",
+    "authorAtDraft": "Holly Jackson",
+    "new": "Done with detective work and having said so publicly, Pip picks it up again when a friend's brother vanishes and the police shrug. A missing-person hunt told through her podcast, with school, guilt and growing up crowding in.",
+    "recognized": true
+  },
+  {
+    "id": "book125",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Home Before Dark",
+    "authorAtDraft": "Riley Sager",
+    "new": "Her father got rich writing about the house that drove the family out in the night. The house is hers now, she is certain the book was a lie, and she has come back with tools. Chapters of that old bestseller sit between hers.",
+    "recognized": true
+  },
+  {
+    "id": "book128",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "If We Were Villains",
+    "authorAtDraft": "M. L. Rio",
+    "new": "Ten years served, and the actor walks out ready to tell a retired detective what really happened at the Shakespeare conservatory. Seven fourth-year students, one death, and verse doing the work of confession. Theatrical and doomed.",
+    "recognized": true
+  },
+  {
+    "id": "book130",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "In Cold Blood",
+    "authorAtDraft": "Truman Capote",
+    "new": "Two killers, a farmhouse in Holcomb, Kansas, and a family shot in their own beds: the reporting that followed invented a genre. Neighbours, lawmen and the long wait on death row, set down with awful calm. True crime before the term.",
+    "recognized": true
+  },
+  {
+    "id": "book132",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Inheritance Games",
+    "authorAtDraft": "Jennifer Lynn Barnes",
+    "new": "Why would a billionaire leave everything to a schoolgirl he never met? To find out she has to live in his mansion with the grandsons he cut off. Riddles in the panelling, four furious heirs, and a series that enjoys withholding.",
+    "recognized": true
+  },
+  {
+    "id": "book133",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "It",
+    "authorAtDraft": "Stephen King",
+    "new": "Derry, Maine eats its children on a schedule, and seven misfits are the only ones who notice. Decades later the phone rings and they go back. Over a thousand pages of friendship, memory, and something wearing a clown suit.",
+    "recognized": true
+  },
+  {
+    "id": "book137",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Julie Chan is Dead",
+    "authorAtDraft": "Liann Zhang",
+    "new": "Her twin sister was famous, beloved online, and is now dead on the floor of a spotless apartment. Stepping into that life looks easier than explaining it. Fast, nasty satire of influencer sainthood with a body underneath.",
+    "recognized": true
+  },
+  {
+    "id": "book156",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Misery",
+    "authorAtDraft": "Stephen King",
+    "new": "Waking from a crash in a stranger's spare room with his legs ruined, a novelist learns that his rescuer has read everything he ever wrote and hated how the last one ended. Two people, one typewriter, and nobody coming up the road.",
+    "recognized": true
+  },
+  {
+    "id": "book161",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Murder on the Orient Express",
+    "authorAtDraft": "Agatha Christie",
+    "new": "Snowdrifts halt the train somewhere in the Balkans, a passenger is found stabbed behind a bolted door, and every traveller in the carriage has a tidy alibi. The Belgian works the corridor. Famous ending, best reached cold.",
+    "recognized": true
+  },
+  {
+    "id": "book171",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "One Of Us Is Lying",
+    "authorAtDraft": "Karen M. McManus",
+    "new": "Five students walk into detention and only four walk out. Each survivor had something the dead boy was about to publish, and the whole school is delighted to speculate. Four narrators, all of them lying about something.",
+    "recognized": true
+  },
+  {
+    "id": "book176",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Pet Sematary",
+    "authorAtDraft": "Stephen King",
+    "new": "Behind the children's pet graveyard in the Maine woods lies older ground that returns what you bury, not quite as it went in. A father learns this, then finds a reason to use it. Grief written as horror, and merciless with it.",
+    "recognized": true
+  },
+  {
+    "id": "book178",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Red Dragon",
+    "authorAtDraft": "Thomas Harris",
+    "new": "Coaxed out of retirement, a profiler hunts a killer who works through whole families by moonlight, and the only mind that can help belongs to the man who nearly finished him. Empathy as an occupational injury. Where Lecter begins.",
+    "recognized": true
+  },
+  {
+    "id": "book203",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Anxious People",
+    "authorAtDraft": "Fredrik Backman",
+    "new": "A bank robbery goes wrong and the robber ends up holding an apartment viewing hostage, which turns out to be eight strangers who badly needed an excuse to talk. Warm, funny, far more curious about people than about the crime.",
+    "recognized": true
+  },
+  {
+    "id": "book206",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Bait and Witch; (Witch Way Librarian Mysteries #1)",
+    "authorAtDraft": "Angela M. Sanders",
+    "new": "Exiled to a tiny Oregon town after saying the wrong thing in Washington, a librarian discovers the books whisper to her and that someone in the woods has died. Cosy magic, small-town suspicion, and the start of a series.",
+    "recognized": true
+  },
+  {
+    "id": "book213",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Battle Royale",
+    "authorAtDraft": "Koushun Takami",
+    "new": "Ninth-graders wake on an island wearing metal collars, with orders to kill one another until one is left. Forty-two classmates, three days, and a government that files the whole thing as research. Long, brutal, and relentless.",
+    "recognized": true
+  },
+  {
+    "id": "book216",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Big Sleep",
+    "authorAtDraft": "Raymond Chandler",
+    "new": "Blackmail is the job a dying general hires the private eye for, and it opens onto every rotten thing his daughters have touched. Los Angeles in the rain, a plot knotted past untying, and sentences worth every bit of the trouble.",
+    "recognized": true
+  },
+  {
+    "id": "book221",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Bleak House",
+    "authorAtDraft": "Charles Dickens",
+    "new": "Fog, and a lawsuit that has outlived its litigants, while a great lady's past comes up the drive and a police inspector starts asking questions. Vast, furious at the courts, and ancestor to every detective novel written since.",
+    "recognized": true
+  },
+  {
+    "id": "book231",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Cask of Amontillado",
+    "authorAtDraft": "Edgar Allan Poe",
+    "new": "An insult demands payment, and the man who received it has been patient about the arrangements. Carnival overhead, damp catacombs below, a rare sherry promised at the end of the passage. Barely thirty pages of smiling malice.",
+    "recognized": true
+  },
+  {
+    "id": "book243",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Curious Incident of the Dog in the Night-Time",
+    "authorAtDraft": "Mark Haddon",
+    "new": "Somebody has killed the neighbour's dog with a garden fork, so the fifteen-year-old who finds it opens an investigation, Holmes-fashion. Prime numbers for chapter headings, and a narrator constitutionally unable to lie.",
+    "recognized": true
+  },
+  {
+    "id": "book254",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Eyes of Darkness",
+    "authorAtDraft": "Dean Koontz",
+    "new": "One year after burying her son, a Las Vegas producer starts finding messages insisting he is not dead. Grief, a cruel hoax, or something worse behind a government fence in the mountains. Brisk, paranoid, built for one sitting.",
+    "recognized": true
+  },
+  {
+    "id": "book255",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Fall of the House of Usher",
+    "authorAtDraft": "Edgar Allan Poe",
+    "new": "Invited to a crumbling house that appears to be ill along with its owner, a visitor finds Roderick Usher nerve-flayed and his sister fading. Dread as architecture, and this edition pads the doom out with more tales and verse.",
+    "recognized": true
+  },
+  {
+    "id": "book256",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "Famous Last Words",
+    "authorAtDraft": "Gillian McAllister",
+    "new": "An ordinary morning ends with her husband named on the news as a hostage-taker, leaving behind a note she cannot read straight. Years of not knowing, a negotiator who never let go, and a reason that keeps shifting shape.",
+    "recognized": true
+  },
+  {
+    "id": "book275",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Last Time I Lied",
+    "authorAtDraft": "Riley Sager",
+    "new": "Three girls walked out of their cabin one night at summer camp and never came back. The one left behind has spent fifteen years painting them, and now the camp reopens and she takes the job. Lake, woods, Two Truths and a Lie.",
+    "recognized": true
+  },
+  {
+    "id": "book278",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Lighthouse Mystery; The Boxcar Children #8",
+    "authorAtDraft": "Gertrude Chandler Warner",
+    "new": "Summer in a cottage beside a working lighthouse, and the Alden children start noticing what the grown-ups have not: odd lights, odd noises, a stray in need of feeding. Tidy, gentle detective work, finished in an afternoon.",
+    "recognized": true
+  },
+  {
+    "id": "book283",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Lost Symbol",
+    "authorAtDraft": "Dan Brown",
+    "new": "Summoned to Washington to give a lecture, the symbologist arrives to find his mentor taken and a Masonic riddle pinned to the ransom. Capitol crypts, a tattooed fanatic, one very long night of chases and impromptu seminars.",
+    "recognized": true
+  },
+  {
+    "id": "book291",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Maid; Molly the Maid #1",
+    "authorAtDraft": "Nita Prose",
+    "new": "Molly cleans hotel suites to a standard nobody asked for, reads people badly, and finds a wealthy guest extremely dead in his bed. Suspicion lands on whoever touched everything. Funny, kind, and a proper puzzle underneath.",
+    "recognized": true
+  },
+  {
+    "id": "book297",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Murder at the Vicarage",
+    "authorAtDraft": "Agatha Christie",
+    "new": "The least-liked man in St Mary Mead is shot in the vicar's study, and half the village would take credit. Enter an elderly spinster who gardens, listens, and is never wrong. Village crime's sharpest knitter, making her debut.",
+    "recognized": true
+  },
+  {
+    "id": "book298",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Murder of Roger Ackroyd (Hercule Poirot Series)",
+    "authorAtDraft": "Agatha Christie",
+    "new": "Village gossip about a widow's death turns serious when the squire of King's Abbot is found stabbed behind a locked door. The retired Belgian next door sets down his marrows. The most argued-over solution in crime, and it plays fair.",
+    "recognized": true
+  },
+  {
+    "id": "book299",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Mysterious Affair at Styles",
+    "authorAtDraft": "Agatha Christie",
+    "new": "The mistress of Styles Court dies of strychnine in a house full of relatives who all stood to gain, and the little Belgian refugee in the village turns out to have been a policeman. Where Poirot starts, with the war still on.",
+    "recognized": true
+  },
+  {
+    "id": "book300",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Mysterious Benedict Society; The Mysterious Benedict Society #1",
+    "authorAtDraft": "Trenton Lee Stewart",
+    "new": "Answer an odd little newspaper advert, pass some very strange tests, and four gifted children find themselves sent undercover into a boarding school that is broadcasting something at the world. Codes, gadgets and proper villainy.",
+    "recognized": true
+  },
+  {
+    "id": "book322",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Shining",
+    "authorAtDraft": "Stephen King",
+    "new": "Winter caretaker at a grand empty hotel sounds like the fresh start a drinking writer needs, and his small son already knows better. Months of snow, a boiler wanting attention, and a building with an appetite for families.",
+    "recognized": true
+  },
+  {
+    "id": "book323",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Silence of the Lambs",
+    "authorAtDraft": "Thomas Harris",
+    "new": "A trainee agent is sent to trade scraps of her own history with a caged psychiatrist, because he may know who is skinning women in the Midwest. Two interrogations running at once, only one of them official. Still the benchmark.",
+    "recognized": true
+  },
+  {
+    "id": "book335",
+    "batch": 5,
+    "status": "draft",
+    "titleAtDraft": "The Tell-Tale Heart",
+    "authorAtDraft": "Edgar Allan Poe",
+    "new": "The narrator would like it understood that he is not mad, merely sharp of hearing, and that the old man's clouded eye left him no choice at all. Thirty pages of murder told by the least trustworthy voice in the language.",
+    "recognized": true
+  },
+  {
+    "id": "book349",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Woman in White",
+    "authorAtDraft": "Wilkie Collins",
+    "new": "Midnight on a lonely road, one stranger dressed in white, and an inheritance worth ruining a woman for. Sworn testimonies fit slowly together: Victorian sensation at full pitch, cruel in places and tender in others.",
+    "recognized": true
+  },
+  {
+    "id": "book354",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Yellowface",
+    "authorAtDraft": "R.F. Kuang",
+    "new": "Publishing is a small world, and a stolen manuscript is a very loud secret. Sharp, gossipy, horribly funny satire that keeps twisting the knife about who gets to tell whose story, and who gets paid for it.",
+    "recognized": true
+  },
+  {
+    "id": "book359",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "This Book Will Bury Me",
+    "authorAtDraft": "Ashley Winstead",
+    "new": "Long, dark and deliberately nasty contemporary crime, heavy on dread and worse, for readers who want a mystery that keeps twisting and never once flinches at the ugly parts.",
+    "recognized": false
+  },
+  {
+    "id": "book367",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "True Crime Story",
+    "authorAtDraft": "Joseph Knox",
+    "new": "One student vanishes from a Manchester tower block, and the case resurfaces years later as interviews, emails and flat contradictions. Assembled like a real documentary, which is what makes it unsettling.",
+    "recognized": true
+  },
+  {
+    "id": "book374",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Unmaking of June Farrow",
+    "authorAtDraft": "Adrienne Young",
+    "new": "June inherits the family flower farm and the family affliction: voices, a door nobody else can see, and a mother who disappeared without explanation. Half missing-person case, half love story across time.",
+    "recognized": true
+  },
+  {
+    "id": "book376",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Unusual Suspects; The Sisters Grimm #2",
+    "authorAtDraft": "Michael Buckley, Peter Ferguson (Illustrator)",
+    "new": "Two sisters go undercover at a school where the teachers stepped straight out of old fairy tales, one of them now extremely dead and something enormous stirring underground. Funny, fast and crawling with monsters.",
+    "recognized": true
+  },
+  {
+    "id": "book380",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Vera Wong's Unsolicited Advice for Murderers; Vera Wong #1",
+    "authorAtDraft": "Jesse Q. Sutanto",
+    "new": "Vera runs a tea shop nobody visits, finds a dead man on the floor, quietly pockets the evidence and invites the suspects round for oolong. Nosy, bossy and completely delightful cozy sleuthing.",
+    "recognized": true
+  },
+  {
+    "id": "book383",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Violets Are Blue",
+    "authorAtDraft": "James Patterson",
+    "new": "Bodies drained of blood in the Pacific Northwest, killers who believe they are vampires, and a Washington detective who cannot shake the taunts of an old enemy. Grim, quick, built for one sitting.",
+    "recognized": true
+  },
+  {
+    "id": "book418",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Topdog/Underdog",
+    "authorAtDraft": "Suzan-Lori Parks",
+    "new": "Two brothers, one rented room, a deck of cards and a hustle neither can quite leave alone. A short, savage, wickedly funny play about money, blood ties and the con that never stops paying.",
+    "recognized": true
+  },
+  {
+    "id": "book423",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Cream Tea Killer",
+    "authorAtDraft": "Judy Leigh",
+    "new": "Cozy crime with a tearoom appetite: light, brisk, gently nosy, and part of a series that treats a killing as something to be sorted out over a warm scone and a very strong pot of tea.",
+    "recognized": false
+  },
+  {
+    "id": "book431",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "All She Was Worth",
+    "authorAtDraft": "Miyuki Miyabe",
+    "new": "Sick leave gives a Tokyo detective time to look for a relative's missing fiancee, and the trail runs through debt, borrowed names and lives bought secondhand. Japanese crime writing at its quietest and most furious.",
+    "recognized": true
+  },
+  {
+    "id": "book433",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "All Your Twisted Secrets",
+    "authorAtDraft": "Diana Urban",
+    "new": "Six teenagers, one locked room, a syringe on the table and a note demanding that one of them die before the timer runs down. Sharp teen suspense that keeps cutting back to how they all got invited.",
+    "recognized": true
+  },
+  {
+    "id": "book445",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Carrie",
+    "authorAtDraft": "Stephen King",
+    "new": "Inquest transcripts, letters and survivor statements circle one small-town catastrophe and the bullied girl at its centre, whose strange power nobody believed in until it was far too late.",
+    "recognized": true
+  },
+  {
+    "id": "book446",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Case Closed; One and the Same? (Vol. 3)",
+    "authorAtDraft": "Gosho Aoyama",
+    "new": "A teenage detective trapped in a child's body keeps cracking cases nobody will let him take credit for. Compact, fairly clued puzzles in comic form, this volume built around a problem of look-alikes.",
+    "recognized": true
+  },
+  {
+    "id": "book451",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Cemetery Boys",
+    "authorAtDraft": "Aiden Thomas",
+    "new": "Yadriel wants his family to accept him as a brujo, so he summons a spirit to prove it and gets the wrong ghost entirely: a loud, charming boy who refuses to move on until his own death is explained.",
+    "recognized": true
+  },
+  {
+    "id": "book453",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Chalk Man",
+    "authorAtDraft": "C.J. Tudor",
+    "new": "Chalk figures on the pavement were a private code between friends one long summer, until one of them pointed the way to a body in the woods. Decades later the drawings start again. Nasty, nostalgic, dread-soaked.",
+    "recognized": true
+  },
+  {
+    "id": "book468",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Ghost Stories; From the Grave",
+    "authorAtDraft": "Collection",
+    "new": "Short, shivery tales gathered for one dark evening: a slim collection that prefers atmosphere and unanswered questions to tidy explanations, and can be finished before the candle burns down.",
+    "recognized": false
+  },
+  {
+    "id": "book478",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "If Tomorrow Comes",
+    "authorAtDraft": "Sidney Sheldon",
+    "new": "Framed, imprisoned and stripped of everything, Tracy Whitney leaves that cell with a talent for elaborate revenge and a taste for other people's jewels. Big, glossy, propulsive caper storytelling.",
+    "recognized": true
+  },
+  {
+    "id": "book489",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Library Book",
+    "authorAtDraft": "Susan Orlean",
+    "new": "Fire gutted the Los Angeles Central Library and the arson case never quite closed. Part investigation, part civic history, part ode to what libraries hold and to the people who would rather they burned.",
+    "recognized": true
+  },
+  {
+    "id": "book500",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Mousetrap and Other Plays",
+    "authorAtDraft": "Agatha Christie",
+    "new": "Eight stage whodunnits in one brick of a book, headed by the snowed-in guesthouse thriller still running in London. Curtain-line reveals that generations of audiences have politely refused to spoil.",
+    "recognized": true
+  },
+  {
+    "id": "book526",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Adventures of Sherlock Holmes",
+    "authorAtDraft": "Arthur Conan Doyle",
+    "new": "Twelve short cases out of the Baker Street rooms: a scandalous photograph, a red-headed clerk, a band of speckled dread. The template every detective story since has been politely stealing from.",
+    "recognized": true
+  },
+  {
+    "id": "book533",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Girl Who Played with Fire",
+    "authorAtDraft": "Stieg Larsson",
+    "new": "Three bodies, a magazine investigation into trafficking about to go to print, and a hunted young hacker the whole of Sweden has decided is guilty. Second in the trilogy, and it runs harder than the first.",
+    "recognized": true
+  },
+  {
+    "id": "book536",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Greenglass House; Book 1",
+    "authorAtDraft": "Kate Milford & Jaime Zollars",
+    "new": "Winter at a smugglers' inn should be quiet, but guests keep arriving, small things keep vanishing, and the innkeepers' son teams up with a stranger to work out which of the stories are true.",
+    "recognized": true
+  },
+  {
+    "id": "book541",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Listen for the Lie",
+    "authorAtDraft": "Amy Tintera",
+    "new": "Everyone back home is certain Lucy killed her best friend. Lucy cannot remember that night at all, and now a true crime podcaster has arrived to dig the whole thing up. Wry, mean, very hard to put down.",
+    "recognized": true
+  },
+  {
+    "id": "book546",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Outsider",
+    "authorAtDraft": "Stephen King",
+    "new": "Everything says the beloved coach murdered a child, and everything says he was somewhere else entirely. Both sets of evidence hold up. Procedural at first, then quietly, horribly frightening.",
+    "recognized": true
+  },
+  {
+    "id": "book551",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Shadow of the Wind",
+    "authorAtDraft": "Carlos Ruiz Zafón",
+    "new": "In postwar Barcelona a boy adopts a forgotten novel and finds that someone has been burning every copy of its author's work. A labyrinth of bookshops, ruined mansions, old cruelties and first love.",
+    "recognized": true
+  },
+  {
+    "id": "book552",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Silent Patient",
+    "authorAtDraft": "Alex Michaelides",
+    "new": "Her husband is shot dead, and the painter who did it never speaks again. Years into her confinement a psychotherapist talks his way onto the ward, certain he can reach her. Clean, cold, engineered to blindside you.",
+    "recognized": true
+  },
+  {
+    "id": "book557",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Strange Case of Dr. Jekyll and Mr. Hyde",
+    "authorAtDraft": "Robert Louis Stevenson",
+    "new": "Respectable London hides plenty, and a lawyer pulling at a friend's strange will finds a brutish young man who stands to benefit from it. Slim, feverish horror about what the decent self keeps in the cellar.",
+    "recognized": true
+  },
+  {
+    "id": "book559",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Westing Game",
+    "authorAtDraft": "Ellen Raskin",
+    "new": "Sixteen tenants of a new apartment tower are named heirs to a millionaire's fortune, paired off at random and handed clues that make no sense alone. A puzzle that plays completely fair. Bring paper!",
+    "recognized": true
+  },
+  {
+    "id": "book563",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Unexpected Mrs. Pollifax; Mrs. Pollifax #1",
+    "authorAtDraft": "Dorothy Gilman",
+    "new": "A New Jersey widow bored with her garden club volunteers as a spy, and to everyone's alarm the agency says yes. The simple errand abroad goes wrong at once: charming, dated and thoroughly game.",
+    "recognized": true
+  },
+  {
+    "id": "book594",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Codename Villanelle",
+    "authorAtDraft": "Luke Jennings",
+    "new": "An assassin with expensive taste and no conscience, and the intelligence officer who starts noticing a pattern nobody above her will admit exists. Lean, cold chase fiction, opening a short series.",
+    "recognized": true
+  },
+  {
+    "id": "book603",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Surgeon",
+    "authorAtDraft": "Tess Gerritsen",
+    "new": "Boston has a killer copying a dead man's methods, and the surgeon who survived the original is the one person who understands what is coming. Clinical, bloody, and the start of a long partnership.",
+    "recognized": true
+  },
+  {
+    "id": "book604",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Taking of Annie Thorne",
+    "authorAtDraft": "C.J Tudor",
+    "new": "Returning to the pit village he swore never to see again, a teacher takes the only job going, in the place where his sister vanished as a child and came home not quite herself. Bleak and brilliantly creepy.",
+    "recognized": true
+  },
+  {
+    "id": "book612",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "We Solve Murders; Book 1",
+    "authorAtDraft": "Richard Osman",
+    "new": "Retired and happiest in his armchair, a private investigator is hauled off by his globe-trotting bodyguard daughter-in-law, and the bodies and the money follow. Warm, quick and extremely quotable.",
+    "recognized": true
+  },
+  {
+    "id": "book617",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Boy's Life",
+    "authorAtDraft": "Robert R. McCammon",
+    "new": "One Alabama spring a milk round ends with a car sinking into a bottomless lake and a murdered man strapped inside. A long, magic-soaked memory of boyhood where wonder and horror share a street.",
+    "recognized": true
+  },
+  {
+    "id": "book625",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "The Bullet That Missed; A Thursday Murder Club Mystery #3",
+    "authorAtDraft": "Richard Osman",
+    "new": "Four pensioners from a retirement village cannot let go of a cold case out of local television, a body never found and a fortune unaccounted for. Third outing for the club, and one of them is being blackmailed.",
+    "recognized": true
+  },
+  {
+    "id": "book629",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Escape from Mr. Lemoncello's Library; Mr. Lemoncello's Library #1",
+    "authorAtDraft": "Chris Grabenstein",
+    "new": "Twelve lucky kids win a lock-in at the most extravagant library ever built, then learn the only way out is hidden somewhere in the shelves. Puzzles, games and book jokes at sprinting speed.",
+    "recognized": true
+  },
+  {
+    "id": "book652",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Thornhill",
+    "authorAtDraft": "Pam Smy",
+    "new": "Two girls, two eras, one shuttered children's home. A diary tells one half and wordless drawings tell the other, closing in on what happened behind those gates. Illustrated, spare and genuinely eerie.",
+    "recognized": true
+  },
+  {
+    "id": "book653",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Three Bags Full; Sheep Detective Story #1",
+    "authorAtDraft": "Leonie Swann & Anthea Bell",
+    "new": "George the shepherd is found dead in his own meadow, so his flock sets out to investigate, led by the cleverest sheep in Ireland. Sheep logic applied to human wickedness, and far funnier than it sounds.",
+    "recognized": true
+  },
+  {
+    "id": "book667",
+    "batch": 6,
+    "status": "draft",
+    "titleAtDraft": "Monster; Volume 1",
+    "authorAtDraft": "Naoki Urasawa",
+    "new": "Two patients, one surgeon, a single choice, and a lifetime spent paying for it. Cold adult suspense in comic form, set in Germany, opening a series that turns very, very dark.",
+    "recognized": true
   }
 ]
