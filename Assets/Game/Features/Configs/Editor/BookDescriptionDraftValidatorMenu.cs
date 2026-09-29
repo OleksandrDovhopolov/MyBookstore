@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,10 +12,10 @@ namespace Game.Configs.Editor
     ///
     /// <list type="bullet">
     /// <item><description><b>Validate</b> — errors and warnings only, for iterating on a batch.</description></item>
-    /// <item><description><b>Report</b> — regenerates <see cref="BookDescriptionRewriteReport.OutputPath"/>:
-    /// the change journal, with each rewrite next to the text it replaces and next to the metadata it has to
-    /// agree with. Whether a description actually signals its genre is a judgement call, so the report puts
-    /// the facts in front of the reviewer instead of pretending to automate it.</description></item>
+    /// <item><description><b>Report</b> — regenerates the change journal: a one-page summary plus one file per
+    /// batch, each rewrite next to the text it replaces and next to the metadata it has to agree with.
+    /// Whether a description actually signals its genre is a judgement call, so the report puts the facts in
+    /// front of the reviewer instead of pretending to automate it.</description></item>
     /// </list>
     /// </summary>
     public static class BookDescriptionDraftValidatorMenu
@@ -45,26 +48,58 @@ namespace Game.Configs.Editor
         [MenuItem(ReportMenuPath)]
         public static void Report()
         {
-            string markdown;
+            IReadOnlyDictionary<string, string> files;
             try
             {
-                markdown = BookDescriptionRewriteReport.Build();
+                files = BookDescriptionRewriteReport.BuildAll();
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Debug.LogError($"{LogPrefix} Could not build the report: {ex.Message}");
                 return;
             }
 
-            var path = BookDescriptionRewriteReport.OutputPath;
-            var directory = Path.GetDirectoryName(path);
-            if (!string.IsNullOrEmpty(directory))
-                Directory.CreateDirectory(directory);
+            foreach (var file in files)
+            {
+                var directory = Path.GetDirectoryName(file.Key);
+                if (!string.IsNullOrEmpty(directory))
+                    Directory.CreateDirectory(directory);
 
-            File.WriteAllText(path, markdown);
+                File.WriteAllText(file.Key, file.Value);
+            }
 
-            Debug.Log($"{LogPrefix} Wrote {path} ({markdown.Length} chars). Read it for the per-book changes.");
-            EditorUtility.DisplayDialog("Book Descriptions", $"Report written to\n{path}", "OK");
+            // A batch file for a batch that no longer exists would keep reporting books that moved or were
+            // dropped. Removing it here keeps the committed journal equal to a fresh run, which is what the
+            // parity test checks.
+            var removed = DeleteStaleBatchFiles(files.Keys);
+
+            Debug.Log($"{LogPrefix} Wrote {files.Count} report file(s): {string.Join(", ", files.Keys)}"
+                      + (removed.Count > 0 ? $"; removed stale {string.Join(", ", removed)}" : string.Empty));
+
+            EditorUtility.DisplayDialog(
+                "Book Descriptions",
+                $"Report written:\n{string.Join("\n", files.Keys)}",
+                "OK");
+        }
+
+        private static List<string> DeleteStaleBatchFiles(IEnumerable<string> written)
+        {
+            var removed = new List<string>();
+            if (!Directory.Exists(BookDescriptionRewriteReport.BatchDirectory)) return removed;
+
+            var keep = new HashSet<string>(written, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var path in Directory.GetFiles(
+                         BookDescriptionRewriteReport.BatchDirectory,
+                         BookDescriptionRewriteReport.BatchFilePrefix + "*.md"))
+            {
+                if (keep.Contains(path.Replace('\\', '/'))) continue;
+
+                File.Delete(path);
+                removed.Add(Path.GetFileName(path));
+            }
+
+            return removed;
         }
     }
 }

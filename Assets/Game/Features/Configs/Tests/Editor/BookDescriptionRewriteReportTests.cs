@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Linq;
 using Game.Configs.Editor;
 using NUnit.Framework;
 
@@ -14,16 +16,48 @@ namespace Game.Configs.Tests.Editor
         [Test]
         public void CommittedReport_MatchesAFreshRun()
         {
-            var path = BookDescriptionRewriteReport.OutputPath;
-            Assert.IsTrue(File.Exists(path), $"{path} not found. Run Tools/Configs/Report Book Descriptions Batch.");
+            var expected = BookDescriptionRewriteReport.BuildAll();
 
-            var committed = Normalize(File.ReadAllText(path));
-            var regenerated = Normalize(BookDescriptionRewriteReport.Build());
+            foreach (var file in expected)
+            {
+                Assert.IsTrue(
+                    File.Exists(file.Key),
+                    $"{file.Key} is missing. Run Tools/Configs/Report Book Descriptions Batch.");
 
-            Assert.AreEqual(
-                regenerated,
-                committed,
-                $"{path} is out of date. Run Tools/Configs/Report Book Descriptions Batch and commit the result.");
+                Assert.AreEqual(
+                    Normalize(file.Value),
+                    Normalize(File.ReadAllText(file.Key)),
+                    $"{file.Key} is out of date. Run Tools/Configs/Report Book Descriptions Batch and commit the result.");
+            }
+        }
+
+        /// <summary>
+        /// A batch file left behind after its batch was renumbered or dropped keeps describing books that
+        /// moved, and nothing else would notice.
+        /// </summary>
+        [Test]
+        public void NoStaleBatchFiles()
+        {
+            Assert.IsTrue(
+                Directory.Exists(BookDescriptionRewriteReport.BatchDirectory),
+                $"{BookDescriptionRewriteReport.BatchDirectory} not found.");
+
+            var expected = BookDescriptionRewriteReport.BuildAll().Keys
+                .Select(path => Path.GetFileName(path))
+                .ToArray();
+
+            var present = Directory
+                .GetFiles(
+                    BookDescriptionRewriteReport.BatchDirectory,
+                    BookDescriptionRewriteReport.BatchFilePrefix + "*.md")
+                .Select(Path.GetFileName)
+                .ToArray();
+
+            var stale = present.Where(name => !expected.Contains(name, StringComparer.OrdinalIgnoreCase)).ToArray();
+
+            Assert.IsEmpty(
+                stale,
+                $"Stale batch report(s): {string.Join(", ", stale)}. Re-run Tools/Configs/Report Book Descriptions Batch.");
         }
 
         /// <summary>

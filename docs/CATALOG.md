@@ -47,6 +47,7 @@
 |---|---|---|
 | ✅ [LANGUAGE_POLICY.md](LANGUAGE_POLICY.md) | Язык в коде — **только English** (комментарии, XML-doc, логи, исключения, TODO, видимые строки). RU допустим в `docs/INPROGRESS`, `docs/archive`, reference-заметках и в game-content JSON. Применяется по мере касания кода, без массового рефактора. | Действует на весь `Assets/**/*.cs`. |
 | ✅ [ASMDEF_RULES.md](ASMDEF_RULES.md) | Организация `.asmdef`: слои (Domain → Application → Presentation → Facade, плюс API/Tests), **направление зависимостей строго вниз**, `noEngineReferences`/`autoReferenced`, именование, матрица зависимостей фич, типичные ошибки, чеклист. | Задаёт правило, на котором стоит маркер 🧱 (инфраструктура не зависит от фич). Фичи ссылаются друг на друга только через `.API`. |
+| ✅ [content/BOOK_DESCRIPTION_STYLE.md](content/BOOK_DESCRIPTION_STYLE.md) | Правила письма описаний книг: тон (тепло, ирония, обращение к читателю — можно; первое лицо и шутки про автора — нельзя), обязательный сигнал жанра и качества, длина, запрещённые символы, правило чистой комнаты и флаг `recognized`. Вставляется в промпт дословно; числа зеркалят константы `BookDescriptionDraftValidator`, C# — авторитетный (проверяется тестом). | Процесс — [RELEASE_TASKS.md](RELEASE_TASKS.md) §CONTENT-1. Проверки — `Tools/Configs/Validate Book Descriptions`, гейт [BUILD.md](BUILD.md). |
 
 ---
 
@@ -152,6 +153,7 @@
 |---|---|
 | ⏳ [TODO.md](TODO.md) | Рабочий список задач (Геймплей/Инфраструктура/Визуал). Источник истины по задачам — Notion. |
 | ✅ [BUILD.md](BUILD.md) | Подготовка к player-сборке (APK). Автоматический гейт `PreBuildValidationGate` (валит билд при рассинхроне StreamingAssets/manifest и при нерешаемых активных запросах) + ручной чеклист: Addressables, Firebase, Android Player Settings, флаги `BootstrapInstaller.asset`. | [SERVICES/CONFIG_CACHE_SYSTEM.md](SERVICES/CONFIG_CACHE_SYSTEM.md), [SERVICES/ADDRESSABLES.md](SERVICES/ADDRESSABLES.md), [ACTIVE_REQUEST_CONDITIONS.md](ACTIVE_REQUEST_CONDITIONS.md) |
+| 🤖 [content/REWRITE_REPORT.md](content/REWRITE_REPORT.md) + `content/batches/REWRITE_REPORT_batch_NN.md` | **Генерируемый** журнал рерайта описаний книг: сводка (остаток по жанрам, тональные приёмы по батчам) и файл на батч с построчным «было → стало». Руками не править — `Tools/Configs/Report Book Descriptions Batch` перегенерирует, тест сверяет побайтово. | Правила — [content/BOOK_DESCRIPTION_STYLE.md](content/BOOK_DESCRIPTION_STYLE.md), процесс — [RELEASE_TASKS.md](RELEASE_TASKS.md) §CONTENT-1 |
 
 ---
 
