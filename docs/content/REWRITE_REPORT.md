@@ -10,15 +10,18 @@ are in the batch files linked below.
 ## Overall
 
 - seed archive: 663 rows (620 in the catalogue, 43 excluded)
-- rewritten: 42 of 620 catalogue books
-- remaining: 578
-- validator: 0 error(s), 0 warning(s)
+- rewritten: 90 of 620 catalogue books
+- remaining: 530
+- validator: 0 error(s), 5 warning(s)
+- written without knowing the book: book350, book600, book606, book35, book29
 
 ## Batches
 
 | batch | books | statuses | detail |
 |---|---|---|---|
 | 1 | 42 | draft 42 | [batches/REWRITE_REPORT_batch_01.md](batches/REWRITE_REPORT_batch_01.md) |
+| 2 | 35 | draft 35 | [batches/REWRITE_REPORT_batch_02.md](batches/REWRITE_REPORT_batch_02.md) |
+| 3 | 13 | draft 13 | [batches/REWRITE_REPORT_batch_03.md](batches/REWRITE_REPORT_batch_03.md) |
 
 ## Tone devices by batch
 
@@ -28,16 +31,17 @@ All three are allowed and wanted; strict third person is what made the first pas
 | batch | rhetorical question | exclamation | addresses the reader |
 |---|---|---|---|
 | 1 | 1 (seeded 10) | 0 (seeded 5) | 5 (seeded 5) |
+| 2 | 0 (seeded 15) | 0 (seeded 6) | 6 (seeded 5) |
+| 3 | 1 (seeded 2) | 0 (seeded 7) | 3 (seeded 7) |
 
 ## Remaining by primary genre
 
 | genre | books left |
 |---|---|
-| Classic | 92 |
-| Crime | 87 |
-| Drama | 123 |
-| Fact | 95 |
-| Fantasy | 129 |
-| Kids | 36 |
-| Travel | 16 |
+| Classic | 87 |
+| Crime | 81 |
+| Drama | 112 |
+| Fact | 92 |
+| Fantasy | 124 |
+| Kids | 34 |
 

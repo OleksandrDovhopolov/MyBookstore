@@ -376,5 +376,437 @@
     "authorAtDraft": "Bill Bryson",
     "new": "Two unfit friends set out to walk two thousand miles of the Appalachian Trail with the wrong gear and no plan at all. Bears, snack food, forest history, and a great deal of complaining.",
     "recognized": true
+  },
+  {
+    "id": "book82",
+    "batch": 3,
+    "status": "draft",
+    "titleAtDraft": "Death in Yellowstone; Accidents and Foolhardiness in the First National Park",
+    "authorAtDraft": "Lee H. Whittlesey",
+    "new": "Bears, bison, cliffs and above all the scalding springs: a park historian catalogues every way Yellowstone has killed a visitor, most of them avoidable. Grisly, meticulous, and the best argument ever made for staying on the boardwalk.",
+    "recognized": true
+  },
+  {
+    "id": "book350",
+    "batch": 3,
+    "status": "draft",
+    "titleAtDraft": "Women Travel Solo; 30 Inspiring Stories of Adventure, Curiosity and the Power of Self-Discovery",
+    "authorAtDraft": "Various Authors",
+    "new": "Thirty women, thirty solo departures, and thirty accounts of what curiosity does to a person who goes alone. Warm, brisk company for anyone still talking themselves into booking the ticket.",
+    "recognized": false
+  },
+  {
+    "id": "book443",
+    "batch": 3,
+    "status": "draft",
+    "titleAtDraft": "Blue Highways; The Travel Trilogy #1",
+    "authorAtDraft": "William Least Heat-Moon",
+    "new": "Back roads once printed in blue on old maps carry a man in a van around the whole edge of America, stopping wherever someone will talk. First of a trilogy, and still the measure for slow travel done properly.",
+    "recognized": true
+  },
+  {
+    "id": "book464",
+    "batch": 3,
+    "status": "draft",
+    "titleAtDraft": "Elsewhere; One Woman, One Rucksack, One Lifetime of Travel",
+    "authorAtDraft": "Rosita Boland",
+    "new": "One rucksack, decades of departures, and a reporter's eye for the strangers who turn up when you travel alone. A memoir assembled from single journeys, each carrying its own weight of wonder and loss.",
+    "recognized": true
+  },
+  {
+    "id": "book498",
+    "batch": 3,
+    "status": "draft",
+    "titleAtDraft": "Mont-Saint-Michel and Chartres",
+    "authorAtDraft": "Henry Adams",
+    "new": "Two great churches, read as the mind of an age: stone, glass and the cult of the Virgin taken as seriously as any philosophy. Dense, rapturous, closer to a long poem about medieval faith than to a guidebook.",
+    "recognized": true
+  },
+  {
+    "id": "book527",
+    "batch": 3,
+    "status": "draft",
+    "titleAtDraft": "The Book of Tea",
+    "authorAtDraft": "Okakura Kakuzo",
+    "new": "Why should a bowl of tea explain a whole civilisation? Because the tearoom holds its art, its manners and its quiet. A slim classic written to show the West what it had been too busy to notice.",
+    "recognized": true
+  },
+  {
+    "id": "book556",
+    "batch": 3,
+    "status": "draft",
+    "titleAtDraft": "The Stones of Venice",
+    "authorAtDraft": "John Ruskin",
+    "new": "Every capital and arch in Venice put on trial, with Gothic craftsmanship acquitted and the Renaissance found guilty of killing the joy of the workman. Learned, opinionated, unhurried; one volume of a larger survey.",
+    "recognized": true
+  },
+  {
+    "id": "book600",
+    "batch": 3,
+    "status": "draft",
+    "titleAtDraft": "Bookworm; A Memoir of Childhood Reading",
+    "authorAtDraft": "Jen Campbell",
+    "new": "Growing up is retold here through the books that did the raising, one shelf at a time. Funny, fond and easy company, the kind of memoir that keeps nudging you towards a reread.",
+    "recognized": false
+  },
+  {
+    "id": "book606",
+    "batch": 3,
+    "status": "draft",
+    "titleAtDraft": "Happily Ever After Cookbook; Original Recipes for Book Lovers",
+    "authorAtDraft": "Various Authors",
+    "new": "Recipes built for readers, to be cooked with one hand and a novel propped open under the other. Slim, cheerful and deeply niche: exactly the gift for the friend whose kitchen doubles as a library.",
+    "recognized": false
+  },
+  {
+    "id": "book607",
+    "batch": 3,
+    "status": "draft",
+    "titleAtDraft": "Cook As You Are; Recipes for Real Life, Hungry Cooks and Messy Kitchens",
+    "authorAtDraft": "Ruby Tandoh",
+    "new": "Cooking for the tired, the broke and the easily overwhelmed, with no lecture about doing it properly. Generous, unfussy recipes and a flat refusal to make anyone feel bad about a messy kitchen.",
+    "recognized": true
+  },
+  {
+    "id": "book608",
+    "batch": 3,
+    "status": "draft",
+    "titleAtDraft": "Cook Korean!; A Comic Book with Recipes",
+    "authorAtDraft": "Robin Ha",
+    "new": "Kimchi, bibimbap and banchan taught in comic panels, every step drawn rather than described. Bright, funny and unexpectedly practical, whether or not you have cooked Korean food before.",
+    "recognized": true
+  },
+  {
+    "id": "book609",
+    "batch": 3,
+    "status": "draft",
+    "titleAtDraft": "A Cook's Tour; Global Adventures in Extreme Cuisines",
+    "authorAtDraft": "Anthony Bourdain",
+    "new": "Chasing the perfect meal from Portugal to Vietnam, eating whatever the locals eat and arguing with anyone who calls it extreme. Restless, profane, and better on why people cook than most cookbooks manage.",
+    "recognized": true
+  },
+  {
+    "id": "book648",
+    "batch": 3,
+    "status": "draft",
+    "titleAtDraft": "An Age of License; A Travelogue (#1)",
+    "authorAtDraft": "Lucy Knisley",
+    "new": "Drawn on the road: a young cartoonist takes a European book tour and turns the trains, cheese, flirtations and low-grade panic about the future into panels. Light, honest, and first of her travel comics.",
+    "recognized": true
+  },
+  {
+    "id": "book06",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "A Dance With Dragons",
+    "authorAtDraft": "George R. R. Martin",
+    "new": "Thousands of pages of armies crawling toward each other across two continents, with magic waking in the cold places and nobody safe from one chapter to the next. Epic in the exhausting, blood-soaked sense.",
+    "recognized": true
+  },
+  {
+    "id": "book49",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Assassin's Apprentice; The Farseer Trilogy Book One",
+    "authorAtDraft": "Robin Hobb",
+    "new": "Taken in as the king's unacknowledged grandson, a boy is schooled in poisons, politics and a bond with animals nobody at court will admit exists. First of a long apprenticeship in growing up hard.",
+    "recognized": true
+  },
+  {
+    "id": "book17",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "A Storm of Swords",
+    "authorAtDraft": "George R. R. Martin",
+    "new": "War splits into a dozen smaller wars, crowns change hands faster than anyone can swear loyalty, and magic keeps creeping in at the edges. Bleak, enormous, and the volume that teaches you not to get attached.",
+    "recognized": true
+  },
+  {
+    "id": "book27",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Alanna; The First Adventure (The Song of the Lioness #1)",
+    "authorAtDraft": "Tamora Pierce",
+    "new": "Swapping places with her twin, a girl cuts her hair, calls herself Alan and starts the brutal business of page training, unwanted magic gift and all. Brisk, stubborn, and the opening of a knighthood.",
+    "recognized": true
+  },
+  {
+    "id": "book32",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Among the Hidden; (The Shadow Children #1)",
+    "authorAtDraft": "Margaret Peterson Haddix",
+    "new": "Third children are illegal, so Luke lives in an attic and watches the world through a vent, until a face in a neighbour's window changes what hiding costs. Short, tense, best not read before bed.",
+    "recognized": true
+  },
+  {
+    "id": "book19",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "A Time to Kill",
+    "authorAtDraft": "John Grisham",
+    "new": "In a Mississippi town a father answers an unspeakable crime himself, and the lawyer defending him must sell that to a jury while the streets outside pick sides. Ugly, angry, impossible to read neutrally.",
+    "recognized": true
+  },
+  {
+    "id": "book28",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Alias Grace",
+    "authorAtDraft": "Margaret Atwood",
+    "new": "Convicted of murder as a servant girl, Grace Marks tells her story to a doctor who wants her mind mapped, and every telling shifts a little. Slippery, patient historical crime that never lets you settle.",
+    "recognized": true
+  },
+  {
+    "id": "book36",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Angels & Demons",
+    "authorAtDraft": "Dan Brown",
+    "new": "Vatican City has hours to live, a stolen canister ticking somewhere beneath it, and a symbologist chasing an old brotherhood's markers across Rome at a dead sprint. Daft, propulsive, paced like a chase.",
+    "recognized": true
+  },
+  {
+    "id": "book02",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "11/22/63",
+    "authorAtDraft": "Stephen King",
+    "new": "Behind a diner's pantry lies a door into the past, and the schoolteacher who steps through means to stop an assassination. Long, tender, and shrewd about how hard history shoves back when you shove it.",
+    "recognized": true
+  },
+  {
+    "id": "book03",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "1st to Die",
+    "authorAtDraft": "James Patterson",
+    "new": "Newlyweds are being murdered in San Francisco, and the homicide inspector on the case builds her own off-books team of four women to crack it. Short chapters, fast pulse, first of a very long series.",
+    "recognized": true
+  },
+  {
+    "id": "book102",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Five Survive",
+    "authorAtDraft": "Holly Jackson",
+    "new": "Six teenagers, one stranded motorhome, and a shooter out in the dark who says nobody leaves until a secret gets confessed. One night, told almost in real time, and the friend group will not survive it whole.",
+    "recognized": true
+  },
+  {
+    "id": "book30",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Amadeus",
+    "authorAtDraft": "Peter Shaffer",
+    "new": "Onstage, an aging court composer confesses a lifetime of envy: he alone recognised the giggling, vulgar young genius, and he hated God for the choice. Wickedly funny about being merely competent.",
+    "recognized": true
+  },
+  {
+    "id": "book34",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Ancillary Justice; Imperial Radch #1",
+    "authorAtDraft": "Ann Leckie",
+    "new": "What is left of a warship's mind walks around in a single borrowed body, carrying a grudge against an empire that thinks in centuries. Cold, strange, and quietly furious about who counts as a person.",
+    "recognized": true
+  },
+  {
+    "id": "book35",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "And The World Spins Anyway",
+    "authorAtDraft": "Georgie Jones",
+    "new": "Barely more than a hundred pages of poems and quiet reflection, fond of weather and open ground, content to sit with a question rather than settle it. Gentle reading for an evening with nowhere to be.",
+    "recognized": false
+  },
+  {
+    "id": "book04",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "The 7 Stages of Grieving",
+    "authorAtDraft": "Wesley Enoch & Deborah Mailman",
+    "new": "One performer, seven movements, and a grief that belongs to a whole people rather than to one funeral. Australian Indigenous theatre mixing poetry, history and plain fury, all inside eighty pages.",
+    "recognized": true
+  },
+  {
+    "id": "book119",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Hamlet",
+    "authorAtDraft": "William Shakespeare",
+    "new": "The ghost on the battlements names a murderer, and the prince who hears it thinks himself half to death before he moves. Still the sharpest thing ever written about grief, doubt and the price of delay.",
+    "recognized": true
+  },
+  {
+    "id": "book120",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Hamnet",
+    "authorAtDraft": "Maggie O'Farrell",
+    "new": "Plague comes to a Warwickshire household, and the mother at its centre, herb-wise and half-feared by her neighbours, cannot keep it from her son. Grief written so closely it aches, with a play waiting after.",
+    "recognized": true
+  },
+  {
+    "id": "book121",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Heartstopper; Volume 1",
+    "authorAtDraft": "Alice Oseman",
+    "new": "Two schoolboys get seated together in form and one of them falls hard, drawn in soft pencil with leaves tumbling across the panels. Sweet, queer, low-stakes comics, and the start of something ongoing.",
+    "recognized": true
+  },
+  {
+    "id": "book127",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "If Not, Winter; (Fragments of Sappho)",
+    "authorAtDraft": "Sappho, transl. by A. Carson",
+    "new": "Every surviving scrap of Sappho, brackets and all, with the gaps left visible so the silence does its share of the work. Desire in fragments, and somehow more devastating for everything that burned away.",
+    "recognized": true
+  },
+  {
+    "id": "book138",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Julius Caesar",
+    "authorAtDraft": "William Shakespeare",
+    "new": "Honourable men talk themselves into a knife, then find that killing a ruler was the easy half. Cold, argumentative political theatre, plus the finest funeral speech ever used to turn a crowd.",
+    "recognized": true
+  },
+  {
+    "id": "book14",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "A Room of One's Own",
+    "authorAtDraft": "Virginia Woolf",
+    "new": "Money and a door that locks: the two things Woolf says a woman needs before she can write, argued in lectures that wander, joke, then land like a verdict. Slim, and still waiting for a decent answer.",
+    "recognized": true
+  },
+  {
+    "id": "book141",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "King Stakh's Wild Hunt",
+    "authorAtDraft": "Uladzimir Karatkievich",
+    "new": "Out on the marshes a decaying manor shelters the last heiress of a cursed line, and the phantom riders of the old legend are already stirring. Belarusian gothic, thick with fog and cleverly plotted.",
+    "recognized": true
+  },
+  {
+    "id": "book44",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Around the World in Eighty Days",
+    "authorAtDraft": "Jules Verne",
+    "new": "An English gentleman bets his fortune that trains and steamers can carry him round the globe on schedule, then sets off with a bewildered French valet. Brisk, funny, and charmingly dated about the world.",
+    "recognized": true
+  },
+  {
+    "id": "book24",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "The Acts of King Arthur and His Noble Knights",
+    "authorAtDraft": "John Steinbeck",
+    "new": "Malory's knights are turned back into men who sweat, doubt and argue, in a retelling its author never lived to finish. Scholarly, affectionate, and strange in the best way for lovers of the old Arthur.",
+    "recognized": true
+  },
+  {
+    "id": "book25",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "The Adventures of Huckleberry Finn; Adventures of Tom and Huck #2",
+    "authorAtDraft": "Mark Twain",
+    "new": "Down the Mississippi on a raft go a runaway boy and a runaway man, dodging frauds, feuds and the boy's own conscience. Funny, uncomfortable, and argued over in classrooms ever since.",
+    "recognized": true
+  },
+  {
+    "id": "book100",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Five Little Peppers and How They Grew; Five Little Peppers #1",
+    "authorAtDraft": "Margaret Sidney Porter",
+    "new": "Five children and their widowed mother keep a cheerful house on almost nothing, and mend, scheme and sing their way through every setback. Sentimental, cosy, wholly of its century, and first of many.",
+    "recognized": true
+  },
+  {
+    "id": "book107",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "The Forgotten Beasts of Eld",
+    "authorAtDraft": "Patricia A. McKillip",
+    "new": "On a lonely mountain a wizard's daughter keeps company with legendary beasts and wants nothing at all from people, until a baby is left in her arms. Lyrical, fierce, and quietly clear about what vengeance costs.",
+    "recognized": true
+  },
+  {
+    "id": "book15",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Rosalind Franklin; The Dark Lady of DNA",
+    "authorAtDraft": "Brenda Maddox",
+    "new": "The crystallographer whose images made the double helix possible, and whose credit went elsewhere, gets a careful full-length life here. Science, snobbery and X-ray film, with no rush to sainthood.",
+    "recognized": true
+  },
+  {
+    "id": "book22",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Abridgment of Murray's English Grammar",
+    "authorAtDraft": "Lindley Murray",
+    "new": "Parsing, punctuation and the parts of speech, laid out for schoolrooms two centuries ago in the flattest voice imaginable. Arid, gloriously obsolete, and a treat if you collect such things.",
+    "recognized": true
+  },
+  {
+    "id": "book29",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Alvar Aalto",
+    "authorAtDraft": "Alvar Aalto",
+    "new": "Slim, specialist and unapologetic about it: a mid-century account of one architect's work and the working life behind it. If modern buildings are your thing, here is a quiet afternoon well spent.",
+    "recognized": false
+  },
+  {
+    "id": "book134",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Italian Villas and Their Gardens",
+    "authorAtDraft": "Edith Wharton",
+    "new": "Villa by villa through Italy, measuring terraces, cypress walks and water stairs with an eye that cares about proportion rather than pretty flowers. Exacting, unsentimental, and a gardener's dream of an itinerary.",
+    "recognized": true
+  },
+  {
+    "id": "book136",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Journey to the Centre of the Earth",
+    "authorAtDraft": "Jules Verne",
+    "new": "Down a volcano in Iceland go a professor, his reluctant nephew and an unflappable guide, following a coded parchment toward the basement of the world. Wildly unscientific, and wildly good fun.",
+    "recognized": true
+  },
+  {
+    "id": "book177",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Rambles in Germany and Italy; in 1840, 1842, and 1843",
+    "authorAtDraft": "Mary Shelley",
+    "new": "Letters home from a widow travelling the continent with her grown son, taking in galleries, lakes, politics and her own long memories. Unhurried, particular, and far more personal than most such journals of its day.",
+    "recognized": true
+  },
+  {
+    "id": "book104",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Flower Fables",
+    "authorAtDraft": "Louisa May Alcott",
+    "new": "Flower fairies, elves and small moral errands in the woods, written to amuse one child long before her author was famous. Sweet, slight, occasionally preachy, and a curiosity worth the shelf space.",
+    "recognized": true
+  },
+  {
+    "id": "book114",
+    "batch": 2,
+    "status": "draft",
+    "titleAtDraft": "Good Night, Gorilla",
+    "authorAtDraft": "Peggy Rathmann",
+    "new": "The zookeeper says goodnight, the gorilla lifts his keys, and the whole zoo tiptoes home to bed behind him. Almost wordless, endlessly rereadable, and small children spot the balloon before you do.",
+    "recognized": true
   }
 ]
