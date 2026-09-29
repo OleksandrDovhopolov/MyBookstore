@@ -8,9 +8,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book37 — Angels in America; A Gay Fantasia on National Themes · Tony Kushner
 
-- draft
+- applied
 - genres: Drama, Classic, Fantasy
-- qualities: Mature Reading, Fiction, Historic, Magic, Nature, Play, Political, Queer, Romance, Folklore, Happy Ending, Philosophical, Tragic
+- qualities: Age Rating Mature, Fiction, Historic, Magic, Nature, Play, Political, Queer, Romance, Folklore, Happy Ending, Philosophical, Tragic
 - published 1991, 304 pages
 - length: 189 -> 212 (+23)
 - longest shared run with the replaced text: 1 word(s)
@@ -23,7 +23,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book50 — Asterios Polyp · David Mazzucchelli
 
-- draft
+- applied
 - genres: Drama, Travel
 - qualities: Fiction, Graphic Novel, Humour, Light Reading, Romance, Happy Ending, Manga, Tragic, Contemporary
 - published 2009, 324 pages
@@ -38,7 +38,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book52 — Atmosphere · Taylor Jenkins Reid
 
-- draft
+- applied
 - genres: Drama
 - qualities: Contemporary, Female Author, Fiction, Historic, Light Reading, Romance, Space
 - published 2025, 352 pages
@@ -53,7 +53,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book60 — Cat's Eye · Margaret Atwood
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Female Author, Coming of Age, Tragic, Novel
 - published 1988, 445 pages
@@ -68,7 +68,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book70 — Chocolat; Book 1 · Joanne Harris
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Light Reading, Magic, Nature, Political, Romance, Series, Female Author, Happy Ending, Novel, Philosophical
 - published 1999, 306 pages
@@ -83,7 +83,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book72 — Clap When You Land · Elizabeth Acevedo
 
-- draft
+- applied
 - genres: Drama
 - qualities: Contemporary, Coming of Age, Female Author, Fiction, Poetry, Queer, YA
 - published 2020, 417 pages
@@ -98,7 +98,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book73 — Cleopatra and Frankenstein · Coco Mellors
 
-- draft
+- applied
 - genres: Drama
 - qualities: Contemporary, Female Author, Fiction, Romance
 - published 2022, 368 pages
@@ -113,7 +113,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book74 — Collected Poems; 1934-1952 · Dylan Thomas
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Poetry, Philosophical, Folklore
 - published 1952, 199 pages
@@ -128,7 +128,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book75 — Confess · Colleen Hoover
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Romance, Female Author, Plot Twist, Tragic, Thriller, Age Rating Mature, Contemporary
 - published 2015, 320 pages
@@ -143,9 +143,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book97 — Femme in Public · Alok V Menom
 
-- draft
+- applied
 - genres: Drama, Fact
-- qualities: Biography, Nature, Non-Fiction, Poetry, Political, Queer, Philosophical, Short, Contemporary
+- qualities: Biography, Nature, Non Fiction, Poetry, Political, Queer, Philosophical, Short, Contemporary
 - published 2021, 46 pages
 - length: 173 -> 191 (+18)
 - longest shared run with the replaced text: 2 word(s)
@@ -158,7 +158,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book142 — Henry V · William Shakespeare
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Historic, Philosophical, Epic, Series, Play
 - published 1600, 173 pages
@@ -173,7 +173,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book146 — Leave Taking · Winsome Pinnock
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Historic, Humour, Play, Coming of Age, Female Author, Happy Ending, Short, Contemporary
 - published 2018, 96 pages
@@ -188,7 +188,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book148 — Love · Toni Morrison
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Magic, Mystery, Philosophical, Poetry, Novel
 - published 1999, 208 pages
@@ -203,7 +203,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book149 — Macbeth · William Shakespeare
 
-- draft
+- applied
 - genres: Drama, Classic, Crime
 - qualities: Fiction, Tragic, Magic, Historic, Gore, Plot Twist, Philosophical, Epic, Thriller, Folklore, Play
 - published 1606, 138 pages
@@ -218,7 +218,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book151 — Meridian · Alice Walker
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Female Author, Magic, Historic, Coming of Age, Tragic, Philosophical, Political, YA, Novel
 - published 1976, 228 pages
@@ -233,7 +233,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book155 — milk and honey · Rupi Kaur
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Poetry, Female Author, Romance, Contemporary
 - published 2014, 226 pages
@@ -248,7 +248,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book167 — Normal People · Sally Rooney
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Romance, Coming of Age, Female Author, Novel, Contemporary
 - published 2018, 304 pages
@@ -263,7 +263,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book168 — Northanger Abbey · Jane Austen
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Romance, Female Author, Coming of Age, Happy Ending, Light Reading, Horror
 - published 1818, 254 pages
@@ -278,7 +278,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book173 — Paper Towns · John Green
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Romance, Mystery, YA, Coming of Age, Happy Ending, Light Reading, Contemporary
 - published 2008, 368 pages
@@ -293,7 +293,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book174 — Paradise · Toni Morrison
 
-- draft
+- applied
 - genres: Drama, Classic, Crime
 - qualities: Fiction, Female Author, Historic, Philosophical, Political, Gore, Novel, Age Rating Mature
 - published 1997, 351 pages
@@ -308,7 +308,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book175 — Persuasion · Jane Austen
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Romance, Female Author, Happy Ending, Humour, Novel
 - published 1789, 267 pages
@@ -323,7 +323,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book180 — Red, White & Royal Blue · Casey McQuiston
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Romance, Queer, Female Author, Coming of Age, Happy Ending, YA, Contemporary
 - published 2019, 448 pages
@@ -338,7 +338,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book184 — Romeo and Juliet · William Shakespeare
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Tragic, Philosophical, Play, Romance, Plot Twist, Historic
 - published 1597, 170 pages
@@ -353,7 +353,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book185 — Salomé · Oscar Wilde
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Historic, Plot Twist, Tragic, Academic, Philosophical, Folklore, Poetry, Play
 - published 1893, 66 pages
@@ -368,7 +368,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book186 — Saving Danny · Cathy Glass
 
-- draft
+- applied
 - genres: Drama, Fact
 - qualities: Animals, Biography, Light Reading, Niche, Non Fiction, Coming of Age, Female Author, Happy Ending, Contemporary
 - published 2015, 312 pages
@@ -383,7 +383,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book192 — Shirley · Charlotte Brontë
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Female Author, Historic, Happy Ending, Political, Humour, Romance, Novel
 - published 1800, 596 pages
@@ -398,7 +398,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book201 — Antigone · Sophocles
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Academic, Fiction, Historic, Play, Political, Short, Tragic
 - published -441, 80 pages
@@ -413,7 +413,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book202 — Antony and Cleopatra · William Shakespeare
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Academic, Fiction, Historic, Play, Romance, Tragic
 - published 1606, 336 pages
@@ -428,7 +428,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book204 — The Autograph Man · Zadie Smith
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Female Author, Coming of Age, Philosophical, Humour, Novel, Contemporary
 - published 2002, 400 pages
@@ -443,7 +443,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book208 — The Ballad of Jacquotte Delahaye · Briony Cameron
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Queer, Female Author, Happy Ending, Contemporary, Romance, Historic
 - published 2024, 368 pages
@@ -458,7 +458,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book214 — Beartown; Book 1 · Fredrik Backman
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Hobby, Queer, Series, Coming of Age, Novel, Tragic, Contemporary
 - published 2016, 415 pages
@@ -473,7 +473,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book215 — The Bell Jar · Sylvia Plath
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Female Author, Coming of Age, Tragic, Philosophical, Novel, Academic
 - published 1963, 258 pages
@@ -488,7 +488,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book218 — Binti; (Book 1) · Nnedi Okorafor
 
-- draft
+- applied
 - genres: Drama, Fantasy
 - qualities: Fiction, Science Fiction, Series, Space, Coming of Age, Epic, Female Author, Happy Ending, Thriller, YA, Short, Contemporary
 - published 2015, 90 pages
@@ -503,7 +503,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book220 — Birdland · Simon Stephens
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Niche, Play, Tragic, Short, Contemporary
 - published 2014, 144 pages
@@ -518,7 +518,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book222 — The Blind Assassin · Margaret Atwood
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Female Author, Historic, Gore, Mystery, Plot Twist, Tragic, Philosophical, Folklore, Science Fiction, Novel, Age Rating Mature, Contemporary
 - published 2000, 628 pages
@@ -533,9 +533,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book223 — Blithe Spirit · Noel Coward
 
-- draft
+- applied
 - genres: Drama
-- qualities: Fiction, Humor, Light Reading, Magic, Play, Short
+- qualities: Fiction, Humour, Light Reading, Magic, Play, Short
 - published 1941, 130 pages
 - length: 248 -> 203 (-45)
 - longest shared run with the replaced text: 3 word(s)
@@ -548,7 +548,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book224 — The Bluest Eye · Toni Morrison
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Coming of Age, Female Author, Historic, Tragic, Political, Novel
 - published 1970, 173 pages
@@ -563,7 +563,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book234 — The Comedy of Errors · William Shakespeare
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Happy Ending, Humour, Play
 - published 1594, 113 pages

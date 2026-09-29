@@ -8,7 +8,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book09 — A Dictionary of the English Language · Samuel Johnson
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Encyclopedic, Dry, Outdated, Academic
 - published 1747, 418 pages
@@ -23,7 +23,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book41 — Architecture in Britain; 1530-1830 · John N. Summerson
 
-- draft
+- applied
 - genres: Fact, Travel
 - qualities: Non Fiction, Historic, Academic
 - published 1950, 391 pages
@@ -38,7 +38,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book43 — Arnheim's Principles of Athletic Training; A Competency-Based Approach · William E. Prentice
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Self Help, Dry, Encyclopedic, Outdated, Long, Very Long, Contemporary
 - published 2006, 1002 pages
@@ -53,9 +53,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book45 — Art of the Modern Movie Poster; International Postwar Style and Design · Various Authors
 
-- draft
+- applied
 - genres: Fact
-- qualities: Historic, Niche, Non-Fiction, Long, Contemporary
+- qualities: Historic, Niche, Non Fiction, Long, Contemporary
 - published 2008, 516 pages
 - length: 128 -> 220 (+92)
 - longest shared run with the replaced text: 2 word(s)
@@ -68,9 +68,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book66 — Chemistry; The Central Science · Theodore L. Brown
 
-- draft
+- applied
 - genres: Fact
-- qualities: Non-Fiction, Outdated, Dry
+- qualities: Non Fiction, Outdated, Dry
 - published 1977, 1051 pages
 - length: 191 -> 219 (+28)
 - longest shared run with the replaced text: 1 word(s)
@@ -83,9 +83,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book67 — The Chicago Manual of Style (CMOS) · University of Chicago Press
 
-- draft
+- applied
 - genres: Fact
-- qualities: Dry, Non-Fiction, Outdated, Series
+- qualities: Dry, Non Fiction, Outdated, Series
 - published 1906, 203 pages
 - length: 230 -> 216 (-14)
 - longest shared run with the replaced text: 1 word(s)
@@ -98,7 +98,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book96 — Feminist, Queer, Crip · Alison Kafer
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Queer, Academic, Philosophical, Contemporary
 - published 2013, 276 pages
@@ -113,9 +113,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book103 — A Florence Diary · Diana Athill
 
-- draft
+- applied
 - genres: Fact, Travel
-- qualities: Biobraphy, Historic, Light Reading, Niche, Non-Fiction, Poetry, Female Author, Happy Ending, Outdated, Short, Contemporary
+- qualities: Biography, Historic, Light Reading, Niche, Non Fiction, Poetry, Female Author, Happy Ending, Outdated, Short, Contemporary
 - published 2016, 80 pages
 - length: 199 -> 198 (-1)
 - longest shared run with the replaced text: 1 word(s)
@@ -128,7 +128,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book110 — Games, Game Design, Game Studies · Gundolf S. Freyermuth
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Hobby, Dry, Academic, Contemporary
 - published 2015, 280 pages
@@ -143,9 +143,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book116 — A Gothic Cookbook; Hauntingly Delicious Recipes Inspired by 13 Classic Tales · Ella Buchan & Dr Allesandra Pino
 
-- draft
+- applied
 - genres: Fact
-- qualities: Cooking, Hobby, Niche, Non-Fiction, Female Author, Contemporary
+- qualities: Cooking, Hobby, Niche, Non Fiction, Female Author, Contemporary
 - published 2024, 244 pages
 - length: 173 -> 217 (+44)
 - longest shared run with the replaced text: 3 word(s)
@@ -158,9 +158,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book129 — The Illustrated Dust Jacket, 1920-1970 · Martin Salisbury
 
-- draft
+- applied
 - genres: Fact
-- qualities: Historic, Niche, Non-Fiction, Pop Science, Dry, Encyclopedic, Contemporary
+- qualities: Historic, Niche, Non Fiction, Pop Science, Dry, Encyclopedic, Contemporary
 - published 2017, 200 pages
 - length: 201 -> 212 (+11)
 - longest shared run with the replaced text: 1 word(s)
@@ -173,7 +173,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book145 — Le Corbusier · Le Corbusier
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Fact
 - qualities: Non Fiction, Biography, Dry, Niche, Academic
 - published 1938, 148 pages
@@ -188,9 +188,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book150 — Mend! A Refashioning Manual and Manifesto · Kate Sekules
 
-- draft
+- applied
 - genres: Fact
-- qualities: Hobby, Light Reading, Non-Fiction, Self Help, Female Author, Contemporary
+- qualities: Hobby, Light Reading, Non Fiction, Self Help, Female Author, Contemporary
 - published 2020, 240 pages
 - length: 256 -> 216 (-40)
 - longest shared run with the replaced text: 2 word(s)
@@ -203,9 +203,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book166 — Non-Binary Lives; An Anthology of Intersecting Identities · Various Authors
 
-- draft
+- applied
 - genres: Fact
-- qualities: Biography, Non-Fiction, Political, Queer, Contemporary
+- qualities: Biography, Non Fiction, Political, Queer, Contemporary
 - published 2020, 240 pages
 - length: 219 -> 202 (-17)
 - longest shared run with the replaced text: 1 word(s)
@@ -218,9 +218,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book182 — Richard Serra; Interviews, etc., 1970-1980 · Richard Serra
 
-- draft
+- applied
 - genres: Fact
-- qualities: Non Fiction, Bigraphy, Niche, Dry, Academic
+- qualities: Non Fiction, Biography, Niche, Dry, Academic
 - published 1970, 111 pages
 - length: 224 -> 212 (-12)
 - longest shared run with the replaced text: 1 word(s)
@@ -233,9 +233,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book187 — The Saviour Fish; Life and Death on Africa's Greatest Lake · Mark Weston
 
-- draft
+- applied
 - genres: Fact, Travel
-- qualities: Biography, Nature, Niche, Non-Fiction, Political, Academic, Dry, Philosophical Contemporary
+- qualities: Biography, Nature, Niche, Non Fiction, Political, Academic, Dry, Philosophical, Contemporary
 - published 2022, 216 pages
 - length: 225 -> 215 (-10)
 - longest shared run with the replaced text: 1 word(s)
@@ -248,7 +248,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book189 — Shakespeare; The World as Stage · Bill Bryson
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Biography, Historic, Light Reading, Humour, Contemporary
 - published 2007, 240 pages
@@ -263,9 +263,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book191 — Shearwater; A Bird, an Ocean, and a Long Way Home · Roger Morgan-Grenville
 
-- draft
+- applied
 - genres: Fact, Travel
-- qualities: Animals, Biography, Hobby, Light Reading, Nature, Niche, Non-Fiction, Pop Science, Epic, Philosophical
+- qualities: Animals, Biography, Hobby, Light Reading, Nature, Niche, Non Fiction, Pop Science, Epic, Philosophical
 - published 2021, 282 pages
 - length: 240 -> 207 (-33)
 - longest shared run with the replaced text: 2 word(s)
@@ -278,7 +278,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book200 — The Anthropocene Reviewed · John Green
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Pop Science, Historic, Philosophical, Contemporary
 - published 2019, 312 pages
@@ -293,9 +293,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book207 — Baking with Kim-Joy; Cute and Creative Bakes to Make You Smile · Kim-Joy
 
-- draft
+- applied
 - genres: Fact
-- qualities: Animals, Contemporary, Cooking, Female Author, Hobby, Non-Fiction, Short
+- qualities: Animals, Contemporary, Cooking, Female Author, Hobby, Non Fiction, Short
 - published 2019, 174 pages
 - length: 265 -> 205 (-60)
 - longest shared run with the replaced text: 1 word(s)
@@ -308,9 +308,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book210 — Barmy British Empire; Horrible Histories · Terry Deary
 
-- draft
+- applied
 - genres: Fact, Kids
-- qualities: Contemporary, Gore, Historic, Horror, Humour, Light Reading, Non-Fiction, Series
+- qualities: Contemporary, Gore, Historic, Horror, Humour, Light Reading, Non Fiction, Series
 - published 2002, 239 pages
 - length: 228 -> 214 (-14)
 - longest shared run with the replaced text: 1 word(s)
@@ -323,9 +323,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book211 — Baroque · John Rupert Martin
 
-- draft
+- applied
 - genres: Fact, Classic, Travel
-- qualities: Encyclopedic, Historic, Hobby, Non-Fiction, Niche, Pop Science
+- qualities: Encyclopedic, Historic, Hobby, Non Fiction, Niche, Pop Science
 - published 1977, 296 pages
 - length: 253 -> 207 (-46)
 - longest shared run with the replaced text: 1 word(s)
@@ -338,9 +338,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book219 — Bird by Bird; Some Instructions on Writing and Life · Anne Lamott
 
-- draft
+- applied
 - genres: Fact
-- qualities: Biography, Hobby, Niche, Non-Fiction, Self Help, Female Author
+- qualities: Biography, Hobby, Niche, Non Fiction, Self Help, Female Author
 - published 1994, 222 pages
 - length: 244 -> 209 (-35)
 - longest shared run with the replaced text: 2 word(s)
@@ -353,9 +353,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book225 — Blurb Your Enthusiasm: A Cracking Compendium of Book Blurbs, Writing Tips, Literary Folklore and Publishing Secrets · Louise Willder
 
-- draft
+- applied
 - genres: Fact
-- qualities: Contemporary, Humour, Female Author, Light Reading, Niche, Non-Fiction
+- qualities: Contemporary, Humour, Female Author, Light Reading, Niche, Non Fiction
 - published 2022, 352 pages
 - length: 256 -> 202 (-54)
 - longest shared run with the replaced text: 3 word(s)
@@ -368,9 +368,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book235 — The Comfort Book · Matt Haig
 
-- draft
+- applied
 - genres: Fact
-- qualities: Light Reading, Non-Fiction, Self Help, Happy Ending, Contemporary
+- qualities: Light Reading, Non Fiction, Self Help, Happy Ending, Contemporary
 - published 2021, 266 pages
 - length: 188 -> 213 (+25)
 - longest shared run with the replaced text: 1 word(s)
@@ -383,9 +383,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book237 — The Complete Illustrated Encyclopedia of Birds of the World; A Detailed Visual Reference Guide To 1600 Birds And Their Habitats, Shown In More Than 1800 Pictures · David Alderton
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Fact
-- qualities: Animals, Contemporary, Encyclopedic, Long, Hobby, Nature, Niche, Non-Fiction
+- qualities: Animals, Contemporary, Encyclopedic, Long, Hobby, Nature, Niche, Non Fiction
 - published 2018, 512 pages
 - length: 177 -> 215 (+38)
 - longest shared run with the replaced text: 1 word(s)
@@ -398,9 +398,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book242 — Crying in H Mart · Michelle Zauner
 
-- draft
+- applied
 - genres: Fact
-- qualities: Biography, Coming of Age, Contemporary, Cooking, Female Author, Light Reading, Nature, Non-Fiction, Philosophical, Self Help, Tragic
+- qualities: Biography, Coming of Age, Contemporary, Cooking, Female Author, Light Reading, Nature, Non Fiction, Philosophical, Self Help, Tragic
 - published 2021, 239 pages
 - length: 213 -> 208 (-5)
 - longest shared run with the replaced text: 2 word(s)
@@ -413,7 +413,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book245 — The Decoration of Houses · Edith Wharton
 
-- draft
+- applied
 - genres: Fact, Classic, Travel
 - qualities: Non Fiction, Hobby, Female Author, Self Help, Niche
 - published 1897, 204 pages
@@ -428,9 +428,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book250 — Europe Through the Back Door; A Travel Skills Handbook · Rick Steves
 
-- draft
+- applied
 - genres: Fact, Travel
-- qualities: Non-Fiction, Travel Guide, Long, Very Long
+- qualities: Non Fiction, Travel Guide, Long, Very Long
 - published 1982, 777 pages
 - length: 255 -> 207 (-48)
 - longest shared run with the replaced text: 1 word(s)
@@ -443,7 +443,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book258 — The Glass Castle · Jeannette Walls
 
-- draft
+- applied
 - genres: Fact, Drama
 - qualities: Non Fiction, Biography, Female Author, Coming of Age, Tragic, Contemporary
 - published 2005, 347 pages
@@ -458,9 +458,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book272 — Is a River Alive · Robert MacFarlane
 
-- draft
+- applied
 - genres: Fact, Travel
-- qualities: Nature, Non-Fiction, Political, Academic, Philosophical, Contemporary
+- qualities: Nature, Non Fiction, Political, Academic, Philosophical, Contemporary
 - published 2025, 284 pages
 - length: 240 -> 206 (-34)
 - longest shared run with the replaced text: 2 word(s)
@@ -473,9 +473,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book277 — Life is Better When You Draw It · Koosje Koene
 
-- draft
+- applied
 - genres: Fact
-- qualities: Graphic Novel, Hobby, Light Reading, Niche, Non-Fiction, Self-Help, Female Author, Manga, Contemporary
+- qualities: Graphic Novel, Hobby, Light Reading, Niche, Non Fiction, Self Help, Female Author, Manga, Contemporary
 - published 2022, 238 pages
 - length: 251 -> 193 (-58)
 - longest shared run with the replaced text: 1 word(s)
@@ -488,7 +488,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book284 — The Lost Words; A Spell Book · Robert Macfarlane & Jackie Morris
 
-- draft
+- applied
 - genres: Fact, Kids, Travel
 - qualities: Fiction, Light Reading, Nature, Poetry, Pop Science, Encyclopedic, Short, Contemporary, Animals
 - published 2017, 112 pages
@@ -503,7 +503,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book295 — Maybe You Should Take to Someone; A Therapist, Her Therapist, and Our Lives Revealed · Lori Gottlieb
 
-- draft
+- applied
 - genres: Fact
 - qualities: Biography, Hobby, Humour, Light Reading, Niche, Non Fiction, Self Help, Female Author, Contemporary
 - published 2019, 415 pages
@@ -518,9 +518,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book305 — Nature; Encyclopedia of Discovery · Various Authors
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Fact, Kids
-- qualities: Animals, Fact, Nature, Non-Fiction, Pop Science, Encyclopedic, Long, Contemporary
+- qualities: Animals, Nature, Non Fiction, Pop Science, Encyclopedic, Long, Contemporary
 - published 2002, 640 pages
 - length: 175 -> 207 (+32)
 - longest shared run with the replaced text: 1 word(s)
@@ -533,9 +533,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book308 — The New Encyclopedia of British, European & African Birds · David Alderton
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Fact, Travel
-- qualities: Animals, Hobby, Nature, Niche, Non-Fiction, Pop Science, Travel Guide, Academic, Dry, Encyclopedic, Contemporary
+- qualities: Animals, Hobby, Nature, Niche, Non Fiction, Pop Science, Travel Guide, Academic, Dry, Encyclopedic, Contemporary
 - published 2017, 256 pages
 - length: 192 -> 206 (+14)
 - longest shared run with the replaced text: 1 word(s)
@@ -548,7 +548,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book321 — The Seven Lamps of Architecture · John Ruskin
 
-- draft
+- applied
 - genres: Fact, Classic
 - qualities: Non Fiction, Hobby, Dry, Niche
 - published 1849, 222 pages
@@ -563,7 +563,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book330 — The Soul of Man Under Socialism · Oscar Wilde
 
-- draft
+- applied
 - genres: Fact, Classic
 - qualities: Non Fiction, Dry, Niche, Academic, Philosophical, Political
 - published 1891, 73 pages
@@ -578,9 +578,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book337 — The Templars; The Rise and Spectacular Fall of God's Holy Warriors · Dan Jones
 
-- draft
+- applied
 - genres: Fact
-- qualities: Historic, Niche, Non-Fiction, Academic, Contemporary
+- qualities: Historic, Niche, Non Fiction, Academic, Contemporary
 - published 2018, 448 pages
 - length: 195 -> 212 (+17)
 - longest shared run with the replaced text: 1 word(s)
@@ -593,9 +593,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book342 — Wars of The Roses; The Fall of the Plantagenets and the Rise of the Tudors · Dan Jones
 
-- draft
+- applied
 - genres: Fact
-- qualities: Historic, Non-Fiction, Academic, Contemporary
+- qualities: Historic, Non Fiction, Academic, Contemporary
 - published 2014, 416 pages
 - length: 192 -> 204 (+12)
 - longest shared run with the replaced text: 1 word(s)
@@ -608,9 +608,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book346 — The Wilder Shores of Love · Lesley Blanch
 
-- draft
+- applied
 - genres: Fact, Travel
-- qualities: Mature Reading, Biography, Fiction, Historic, Niche, Non-Fiction, Poetry, Political, Romance, Academic, Female Author, Novel, Outdated
+- qualities: Age Rating Mature, Biography, Fiction, Historic, Niche, Non Fiction, Poetry, Political, Romance, Academic, Female Author, Novel, Outdated
 - published 1954, 352 pages
 - length: 202 -> 209 (+7)
 - longest shared run with the replaced text: 2 word(s)
@@ -623,9 +623,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book347 — Will You Love Me?; The story of my adopted daughter Lucy · Cathy Glass
 
-- draft
+- applied
 - genres: Fact
-- qualities: Biography, Light Reading, Niche, Non-Fiction, Coming of Age, Female Author, Happy Ending, Contemporary
+- qualities: Biography, Light Reading, Niche, Non Fiction, Coming of Age, Female Author, Happy Ending, Contemporary
 - published 2013, 312 pages
 - length: 199 -> 209 (+10)
 - longest shared run with the replaced text: 1 word(s)
@@ -638,9 +638,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book351 — Women, Race and Class · Angela Y. Davis
 
-- draft
+- applied
 - genres: Fact
-- qualities: Non-Fiction, Political, Academic, Female Author
+- qualities: Non Fiction, Political, Academic, Female Author
 - published 1981, 258 pages
 - length: 219 -> 209 (-10)
 - longest shared run with the replaced text: 1 word(s)
@@ -653,9 +653,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book358 — The Third Gilmore Girl; A Memoir · Kelly Bishop
 
-- draft
+- applied
 - genres: Fact
-- qualities: Biography, Non-Fiction, Female Author, Contemporary
+- qualities: Biography, Non Fiction, Female Author, Contemporary
 - published 2024, 244 pages
 - length: 226 -> 204 (-22)
 - longest shared run with the replaced text: 2 word(s)
@@ -668,9 +668,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book363 — A Tomb With a View; The Stories and Glories of Graveyards · Peter Ross
 
-- draft
+- applied
 - genres: Fact, Travel
-- qualities: Mature Reading, Biography, Historic, Hobby, Nature, Niche, Non-Fiction, Philosophical, Contemporary
+- qualities: Age Rating Mature, Biography, Historic, Hobby, Nature, Niche, Non Fiction, Philosophical, Contemporary
 - published 2020, 368 pages
 - length: 229 -> 210 (-19)
 - longest shared run with the replaced text: 3 word(s)
@@ -683,9 +683,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book365 — Tree Houses: Baumhäuser - Maisons Dans les Arbres · Philip Jodidio
 
-- draft
+- applied
 - genres: Fact
-- qualities: Hobby, Nature, Niche, Non-Fiction, Pop Science, Encyclopedic, Long, Contemporary
+- qualities: Hobby, Nature, Niche, Non Fiction, Pop Science, Encyclopedic, Long, Contemporary
 - published 2012, 531 pages
 - length: 222 -> 210 (-12)
 - longest shared run with the replaced text: 1 word(s)

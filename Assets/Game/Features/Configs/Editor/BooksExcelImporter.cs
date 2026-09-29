@@ -62,27 +62,37 @@ namespace Game.Configs.Editor
         }
 
         /// <summary>
-        /// The Excel sheet is the original seed of the catalogue, not the source of truth for text any more:
-        /// descriptions are being rewritten in place (CONTENT-1). This import rewrites
-        /// <see cref="DefaultLocalizationOutputPath"/> wholesale from the sheet's Description column and
-        /// syncs StreamingAssets in the same call, so an absent-minded re-import would wipe the rewrite
-        /// with no trace. Make that cost explicit instead.
+        /// The Excel sheet is the original seed of the catalogue and is no longer the source of truth for
+        /// anything. This import rewrites <see cref="DefaultOutputPath"/> and
+        /// <see cref="DefaultLocalizationOutputPath"/> wholesale from the sheet and syncs StreamingAssets in
+        /// the same call, so it would undo two separate bodies of work with no trace: the rewritten
+        /// descriptions (CONTENT-1) and the normalized `qualities` vocabulary, which the sheet still holds in
+        /// its original, defective spelling.
+        ///
+        /// <para>The dialog is unconditional on purpose. Keying it off a count meant that an unreadable or
+        /// missing drafts file — the exact state after the drafts are applied and cleaned up — silently
+        /// waved the import through.</para>
         /// </summary>
         private static bool ConfirmOverwritingRewrittenDescriptions()
         {
             var rewritten = CountRewrittenDescriptions();
-            if (rewritten == 0) return true;
+            var draftsLine = rewritten >= 0
+                ? $"{rewritten} rewritten description(s) are waiting in {DraftsPath}."
+                : $"{DraftsPath} could not be read, so it is unknown how much rewritten text is at stake.";
 
             return EditorUtility.DisplayDialog(
                 "Import Books Excel",
-                $"{rewritten} description(s) have been rewritten in {DraftsPath}.\n\n" +
-                "Importing rebuilds every description from the Excel sheet and overwrites " +
-                "localization_books_en.json, discarding that work.\n\n" +
+                draftsLine + "\n\n" +
+                "Importing rebuilds books.json and localization_books_en.json from the Excel sheet. That " +
+                "discards every rewritten description and restores the old quality spellings the sheet " +
+                "still contains (Non-Fiction, Mature Rating, Bigraphy and the rest), which " +
+                "BookQualityVocabularyTests will then fail on.\n\n" +
                 "Import anyway?",
                 "Import anyway",
                 "Cancel");
         }
 
+        /// <summary>Rewritten descriptions waiting to be applied, or -1 when the file cannot be read.</summary>
         private static int CountRewrittenDescriptions()
         {
             if (!File.Exists(DraftsPath)) return 0;
@@ -104,10 +114,8 @@ namespace Game.Configs.Editor
             }
             catch (Exception ex)
             {
-                // An unreadable drafts file is not a reason to block the import, but the operator should
-                // know the guard could not check anything.
                 Debug.LogWarning($"{LogPrefix} Could not read {DraftsPath} to check for rewritten text: {ex.Message}");
-                return 0;
+                return -1;
             }
         }
 

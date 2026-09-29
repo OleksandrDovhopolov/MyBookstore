@@ -8,7 +8,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book11 — A Fire Upon the Deep · James Lovegrove & Nancy Holder
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Crime, Fantasy, Travel
 - qualities: Fiction, Humour, Light Reading, Niche, Science Fiction, Series, Space, Female Author, Happy Ending, Novel, Contemporary
 - published 2018, 334 pages
@@ -23,7 +23,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book47 — As Good As Dead · Holly Jackson
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Thriller, Female Author, Mystery, Plot Twist, Detective, Tragic, Philosophical, Series, Contemporary
 - published 2021, 432 pages
@@ -38,7 +38,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book58 — Camp Damascus · Chuck Tingle
 
-- draft
+- applied
 - genres: Crime, Fantasy
 - qualities: Contemporary, Dystopia, Fiction, Folklore, Gore, Happy Ending, Horror, Magic, Mystery, Political, Queer, Romance, Science Fiction, Thriller
 - published 2023, 246 pages
@@ -53,7 +53,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book80 — Dark Places · Gillian Flynn
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Thriller, Mystery, Tragic, Female Author, Gore, Plot Twist, Age Rating Mature, Contemporary
 - published 2009, 368 pages
@@ -68,7 +68,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book83 — Death Note; Volume 1 · Tsugumi Ohba
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Manga, Magic, Gore, Mystery, Plot Twist, Detective, Horror, Thriller, Series, Age Rating Mature, Contemporary
 - published 2005, 200 pages
@@ -83,9 +83,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book90 — Dreamer's Pool; Blackthorn & Grim #1 · Juliet Marillier
 
-- draft
+- applied
 - genres: Crime, Fantasy
-- qualities: Mature Reading, Animals, Fiction, Humour, Magic, Mystery, Nature, Plot Twist, Romance, Series, Detective, Female Author, Happy Ending, Philosophical, Contemporary
+- qualities: Age Rating Mature, Animals, Fiction, Humour, Magic, Mystery, Nature, Plot Twist, Romance, Series, Detective, Female Author, Happy Ending, Philosophical, Contemporary
 - published 2014, 434 pages
 - length: 256 -> 227 (-29)
 - longest shared run with the replaced text: 2 word(s)
@@ -98,7 +98,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book91 — The Dry; (Aaron Falk #1) · Jane Harper
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Gore, Horror, Light Reading, Mystery, Plot Twist, Romance, Series, Coming of Age, Detective, Female Author, Happy Ending, Novel, Thriller, Whodunnit, Contemporary
 - published 2016, 331 pages
@@ -113,7 +113,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book109 — Full Dark, No Stars · Stephen King
 
-- draft
+- applied
 - genres: Crime, Fantasy
 - qualities: Fiction, Horror, Gore, Plot Twist, Tragic, Dry, Philosophical, Thriller, Age Rating Mature, Contemporary
 - published 2010, 438 pages
@@ -128,7 +128,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book113 — Good Girl, Bad Blood · Holly Jackson
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, YA, Female Author, Mystery, Coming of Age, Plot Twist, Detective, Series, Contemporary
 - published 2020, 416 pages
@@ -143,9 +143,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book125 — Home Before Dark · Riley Sager
 
-- draft
+- applied
 - genres: Crime
-- qualities: Mature Reading, Fiction, Horror, Plot Twist, Thriller, Contemporary
+- qualities: Age Rating Mature, Fiction, Horror, Plot Twist, Thriller, Contemporary
 - published 2020, 384 pages
 - length: 272 -> 225 (-47)
 - longest shared run with the replaced text: 2 word(s)
@@ -158,7 +158,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book128 — If We Were Villains · M. L. Rio
 
-- draft
+- applied
 - genres: Crime, Drama
 - qualities: Fiction, Queer, Tragic, Female Author, Mystery, Plot Twist, Contemporary
 - published 2017, 368 pages
@@ -173,7 +173,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book130 — In Cold Blood · Truman Capote
 
-- draft
+- applied
 - genres: Crime, Fact
 - qualities: Non Fiction, Historic, Gore, Tragic, Thriller, Age Rating Mature
 - published 1965, 343 pages
@@ -188,7 +188,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book132 — The Inheritance Games · Jennifer Lynn Barnes
 
-- draft
+- applied
 - genres: Crime, Drama
 - qualities: Fiction, Female Author, Mystery, Plot Twist, Happy Ending, Series, Contemporary
 - published 2020, 400 pages
@@ -203,7 +203,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book133 — It · Stephen King
 
-- draft
+- applied
 - genres: Crime, Fantasy
 - qualities: Fiction, Thriller, Horror, Coming of Age, Magic, Gore, Mystery, Age Rating Mature
 - published 1986, 1168 pages
@@ -218,7 +218,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book137 — Julie Chan is Dead · Liann Zhang
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Light Reading, Mystery, Plot Twist, Detective, Female Author, Novel, Whodunnit, Contemporary
 - published 2025, 311 pages
@@ -233,7 +233,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book156 — Misery · Stephen King
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Thriller, Horror, Gore, Plot Twist, Tragic, Age Rating Mature, Mystery
 - published 1978, 378 pages
@@ -248,7 +248,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book161 — Murder on the Orient Express · Agatha Christie
 
-- draft
+- applied
 - genres: Crime, Classic, Travel
 - qualities: Fiction, Mystery, Female Author, Plot Twist, Detective, Whodunnit, Series
 - published 1933, 254 pages
@@ -263,7 +263,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book171 — One Of Us Is Lying · Karen M. McManus
 
-- draft
+- applied
 - genres: Crime, Drama
 - qualities: Fiction, Thriller, YA, Female Author, Mystery, Coming of Age, Plot Twist, Tragic, Series, Contemporary, Queer
 - published 2017, 214 pages
@@ -278,7 +278,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book176 — Pet Sematary · Stephen King
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Thriller, Horror, Gore, Plot Twist, Tragic, Folklore, Age Rating Mature
 - published 1983, 416 pages
@@ -293,7 +293,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book178 — Red Dragon · Thomas Harris
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Thriller, Horror, Mystery, Detective, Gore, Plot Twist, Tragic, Series, Age Rating Mature
 - published 1981, 369 pages
@@ -308,7 +308,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book203 — Anxious People · Fredrik Backman
 
-- draft
+- applied
 - genres: Crime, Drama
 - qualities: Fiction, Humour, Mystery, Nature, Plot Twist, Happy Ending, Philosophical, Thriller, Contemporary
 - published 2019, 341 pages
@@ -323,7 +323,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book206 — Bait and Witch; (Witch Way Librarian Mysteries #1) · Angela M. Sanders
 
-- draft
+- applied
 - genres: Crime, Fantasy
 - qualities: Fiction, Magic, Mystery, Series, Detective, Female Author, Novel, Whodunnit, Contemporary
 - published 2020, 336 pages
@@ -338,9 +338,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book213 — Battle Royale · Koushun Takami
 
-- draft
+- applied
 - genres: Crime
-- qualities: Mature Reading, Dystopia, Fiction, Gore, Horror, Political, Science Fiction, Novel, Thriller, Long
+- qualities: Age Rating Mature, Dystopia, Fiction, Gore, Horror, Political, Science Fiction, Novel, Thriller, Long
 - published 1999, 624 pages
 - length: 225 -> 226 (+1)
 - longest shared run with the replaced text: 3 word(s)
@@ -353,7 +353,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book216 — The Big Sleep · Raymond Chandler
 
-- draft
+- applied
 - genres: Crime, Classic
 - qualities: Fiction, Mystery, Detective, Series, Outdated
 - published 1939, 225 pages
@@ -368,7 +368,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book221 — Bleak House · Charles Dickens
 
-- draft
+- applied
 - genres: Crime, Drama, Classic
 - qualities: Academic, Dry, Fiction, Historic, Long, Mystery, Nature, Novel, Philosophical, Plot Twist, Political, Romance, Tragic, Very Long
 - published 1852, 1088 pages
@@ -383,7 +383,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book231 — The Cask of Amontillado · Edgar Allan Poe
 
-- draft
+- applied
 - genres: Crime, Classic
 - qualities: Fiction, Horror, Mystery, Plot Twist, Tragic, Thriller
 - published 1965, 29 pages
@@ -398,7 +398,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book243 — The Curious Incident of the Dog in the Night-Time · Mark Haddon
 
-- draft
+- applied
 - genres: Crime, Drama
 - qualities: Fiction, Mystery, YA, Detective, Coming of Age, Animals, Happy Ending, Philosophical, Contemporary
 - published 2003, 268 pages
@@ -413,7 +413,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book254 — The Eyes of Darkness · Dean Koontz
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Thriller, Horror, Mystery, Plot Twist, Epic, Science Fiction
 - published 1981, 340 pages
@@ -428,7 +428,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book255 — The Fall of the House of Usher · Edgar Allan Poe
 
-- draft
+- applied
 - genres: Crime, Classic, Drama
 - qualities: Fiction, Horror, Mystery, Plot Twist, Tragic, Philosophical, Thriller, Poetry
 - published 1997, 245 pages
@@ -443,7 +443,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book256 — Famous Last Words · Gillian McAllister
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Light Reading, Mystery, Plot Twist, Female Author, Thriller, Contemporary
 - published 2025, 336 pages
@@ -458,9 +458,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book275 — The Last Time I Lied · Riley Sager
 
-- draft
+- applied
 - genres: Crime
-- qualities: Mature Reading, Fiction, Gore, Horror, Light Reading, Mystery, Plot Twist, Thriller, YA, Contemporary
+- qualities: Age Rating Mature, Fiction, Gore, Horror, Light Reading, Mystery, Plot Twist, Thriller, YA, Contemporary
 - published 2018, 385 pages
 - length: 253 -> 225 (-28)
 - longest shared run with the replaced text: 2 word(s)
@@ -473,7 +473,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book278 — The Lighthouse Mystery; The Boxcar Children #8 · Gertrude Chandler Warner
 
-- draft
+- applied
 - genres: Crime, Kids
 - qualities: Animals, Fiction, Light Reading, Mystery, Series, Detective, Female Author, Novel, Outdated, Whodunnit, Short
 - published 1962, 128 pages
@@ -488,7 +488,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book283 — The Lost Symbol · Dan Brown
 
-- draft
+- applied
 - genres: Crime, Fantasy
 - qualities: Fiction, Thriller, Mystery, Detective, Historic, Gore, Plot Twist, Happy Ending, Folklore, Series
 - published 1992, 603 pages
@@ -503,7 +503,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book291 — The Maid; Molly the Maid #1 · Nita Prose
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Humour, Light Reading, Mystery, Series, Detective, Female Author, Happy Ending, Novel, Whodunnit, Contemporary
 - published 2022, 289 pages
@@ -518,7 +518,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book297 — The Murder at the Vicarage · Agatha Christie
 
-- draft
+- applied
 - genres: Crime, Classic
 - qualities: Fiction, Mystery, Detective, Female Author, Plot Twist, Happy Ending, Whodunnit, Series, Humour
 - published 1930, 251 pages
@@ -533,7 +533,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book298 — The Murder of Roger Ackroyd (Hercule Poirot Series) · Agatha Christie
 
-- draft
+- applied
 - genres: Crime, Classic
 - qualities: Fiction, Mystery, Detective, Female Author, Plot Twist, Tragic, Thriller, Whodunnit, Series
 - published 1926, 255 pages
@@ -548,7 +548,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book299 — The Mysterious Affair at Styles · Agatha Christie
 
-- draft
+- applied
 - genres: Crime, Classic
 - qualities: Fiction, Mystery, Detective, Female Author, Plot Twist, Happy Ending, Whodunnit, Series
 - published 1920, 220 pages
@@ -563,9 +563,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book300 — The Mysterious Benedict Society; The Mysterious Benedict Society #1 · Trenton Lee Stewart
 
-- draft
+- applied
 - genres: Crime
-- qualities: Fiction, Humour, Kids, Long, Mystery, Science Fiction, Series, Contemporary
+- qualities: Fiction, Humour, Long, Mystery, Science Fiction, Series, Contemporary
 - published 2007, 485 pages
 - length: 242 -> 229 (-13)
 - longest shared run with the replaced text: 2 word(s)
@@ -578,7 +578,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book322 — The Shining · Stephen King
 
-- draft
+- applied
 - genres: Crime, Drama
 - qualities: Fiction, Thriller, Horror, Gore, Plot Twist, Tragic, Series, Age Rating Mature
 - published 1977, 509 pages
@@ -593,7 +593,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book323 — The Silence of the Lambs · Thomas Harris
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Thriller, Horror, Mystery, Detective, Gore, Series, Plot Twist, Age Rating Mature
 - published 1988, 352 pages
@@ -608,7 +608,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book335 — The Tell-Tale Heart · Edgar Allan Poe
 
-- draft
+- applied
 - genres: Crime, Classic
 - qualities: Fiction, Horror, Mystery, Plot Twist, Tragic, Thriller, Gore
 - published 1976, 31 pages

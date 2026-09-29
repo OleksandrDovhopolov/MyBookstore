@@ -8,7 +8,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book270 — The Invisible Life of Addie LaRue · V.E. Schwab
 
-- draft
+- applied
 - genres: Fantasy, Travel
 - qualities: Fiction, Historic, Magic, Nature, Poetry, Political, Pop Science, Romance, Academic, Dry, Epic, Female Author, Novel, Philosophical, Tragic, Contemporary
 - published 2020, 448 pages
@@ -23,7 +23,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book271 — The Invisible Man · H. G. Wells
 
-- draft
+- applied
 - genres: Fantasy, Classic
 - qualities: Fiction, Science Fiction, Horror, Mystery, Plot Twist, Tragic, Dry, Philosophical, Political, Thriller
 - published 1897, 182 pages
@@ -38,7 +38,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book274 — The Last Battle; (Chronicles of Narnia) · C.S. Lewis
 
-- draft
+- applied
 - genres: Fantasy, Kids, Classic
 - qualities: Fiction, YA, Magic, Animals, Tragic, Happy Ending, Philosophical, Epic, Folklore, Series
 - published 1956, 192 pages
@@ -53,7 +53,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book276 — The Last Wish; (The Witcher) · Andrzej Sapkowski
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Magic, Gore, Epic, Folklore, Series, Age Rating Mature
 - published 1993, 384 pages
@@ -68,7 +68,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book279 — The Lightning Thief; (Percy Jackson #1) · Rick Riordan
 
-- draft
+- applied
 - genres: Fantasy, Kids
 - qualities: Fiction, YA, Magic, Coming of Age, Happy Ending, Light Reading, Epic, Folklore, Series, Contemporary
 - published 2005, 377 pages
@@ -83,7 +83,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book289 — The Magic City · Edith Nesbit
 
-- draft
+- applied
 - genres: Fantasy, Kids, Classic
 - qualities: Fiction, Female Author, Magic, Happy Ending, Epic, Folklore
 - published 1910, 194 pages
@@ -98,7 +98,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book290 — The Magic World · Edith Nesbit
 
-- draft
+- applied
 - genres: Fantasy, Kids, Classic
 - qualities: Fiction, Female Author, Magic, Animals, Happy Ending, Light Reading, Folklore, Poetry, Nature
 - published 1920, 211 pages
@@ -113,7 +113,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book292 — The Martian Chronicles · Ray Bradbury
 
-- draft
+- applied
 - genres: Fantasy, Drama, Classic
 - qualities: Fiction, Science Fiction, Space, Tragic, Philosophical, Epic
 - published 1950, 256 pages
@@ -128,7 +128,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book293 — The Martian · Andy Weir
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Science Fiction, Space, Happy Ending, Epic, Contemporary
 - published 2011, 407 pages
@@ -143,7 +143,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book294 — The Massacre of Mankind · Stephen Baxter
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Dystopia, Fiction, Political, Science Fiction, Series, Space, Epic, Thriller, Contemporary
 - published 2017, 449 pages
@@ -158,7 +158,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book296 — The Maze Runner · James Dashner
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Science Fiction, YA, Gore, Dystopia, Coming of Age, Plot Twist, Tragic, Epic, Thriller, Series, Contemporary
 - published 2009, 378 pages
@@ -173,7 +173,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book303 — The Napoleon of Notting Hill · Gilbert K. Chesterton
 
-- draft
+- applied
 - genres: Fantasy, Classic
 - qualities: Fiction, Science Fiction, Philosophical, Political, Humour, Poetry, Historic, Niche
 - published 1904, 198 pages
@@ -188,7 +188,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book307 — Nevermoor; The Trials of Morrigan Crow (Nevermoor #1) · Jessica Townsend
 
-- draft
+- applied
 - genres: Fantasy, Kids
 - qualities: Fiction, Long, Magic, Series, Coming of Age, Female Author, Contemporary
 - published 2017, 465 pages
@@ -203,7 +203,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book311 — The Passage · Justin Cronin
 
-- draft
+- applied
 - genres: Fantasy, Crime
 - qualities: Fiction, Thriller, Science Fiction, Horror, Epic, Gore, Dystopia, Plot Twist, Tragic, Philosophical, Series, Age Rating Mature, Contemporary
 - published 2010, 906 pages
@@ -218,7 +218,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book316 — The Ramayana · Valmiki
 
-- draft
+- applied
 - genres: Fantasy, Classic
 - qualities: Fiction, Folklore, Poetry, Magic, Gore, Philosophical, Epic, Series
 - published -300, 696 pages
@@ -233,7 +233,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book318 — The Sea of Monsters; (Percy Jackson #2) · Rick Riordan
 
-- draft
+- applied
 - genres: Fantasy, Kids
 - qualities: Fiction, YA, Magic, Coming of Age, Happy Ending, Epic, Folklore, Series, Contemporary
 - published 2005, 279 pages
@@ -248,7 +248,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book324 — The Silmarillion · J.R.R. Tolkien
 
-- draft
+- applied
 - genres: Fantasy, Classic
 - qualities: Fiction, Epic, Magic, Tragic, Philosophical, Poetry, Series, Dry
 - published 1977, 432 pages
@@ -263,7 +263,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book328 — Sorcery and Small Magics; The Wildersongs Trilogy #1 · Maiga Doocy
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Humour, Light Reading, Magic, Queer, Romance, Series, Coming of Age, Female Author, YA, Contemporary
 - published 2024, 369 pages
@@ -278,7 +278,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book329 — Soul Music; Discworld #16, Death #3 · Terry Pratchett
 
-- draft
+- applied
 - genres: Fantasy, Kids
 - qualities: Animals, Fiction, Historic, Humour, Light Reading, Magic, Romance, Series, Epic, Happy Ending, Novel
 - published 1999, 288 pages
@@ -293,7 +293,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book332 — The Stand · Stephen King
 
-- draft
+- applied
 - genres: Fantasy, Crime
 - qualities: Fiction, Thriller, Science Fiction, Horror, Gore, Dystopia, Tragic, Epic, Age Rating Mature
 - published 1978, 1153 pages
@@ -308,7 +308,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book339 — The Traitor Baru Cormorant; (The Masquerade #1) · Seth Dickinson
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Dystopia, Fiction, Nature, Plot Twist, Political, Queer, Romance, Series, Academic, Coming of Age, Epic, Novel, Philosophical, Thriller, Tragic, Contemporary
 - published 2015, 400 pages
@@ -323,7 +323,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book344 — The War of the Worlds · H. G. Wells
 
-- draft
+- applied
 - genres: Fantasy, Classic
 - qualities: Fiction, Science Fiction, Tragic, Happy Ending, Political, Epic, Horror, Space, Dystopia
 - published 1898, 204 pages
@@ -338,7 +338,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book345 — The Well at the World's End · William Morris
 
-- draft
+- applied
 - genres: Fantasy, Classic
 - qualities: Fiction, Epic, Magic, Happy Ending, Series, Niche, Historic
 - published 1896, 540 pages
@@ -353,7 +353,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book348 — The Willows · Algernon Blackwood
 
-- draft
+- applied
 - genres: Fantasy, Travel, Classic
 - qualities: Fiction, Horror, Magic, Plot Twist, Animals, Epic, Folklore, Gore, Nature
 - published 1907, 105 pages
@@ -368,7 +368,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book369 — The Truth; Discworld #25, Industrial Revolution #2 · Terry Pratchett
 
-- draft
+- applied
 - genres: Fantasy, Kids
 - qualities: Dystopia, Fiction, Historic, Humour, Light Reading, Magic, Nature, Political, Series, Epic, Happy Ending, Novel, Philosophical, Contemporary
 - published 2000, 444 pages
@@ -383,7 +383,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book384 — Watchmen; (Issue #12) · Alan Moore
 
-- draft
+- applied
 - genres: Fantasy, Crime
 - qualities: Fiction, Science Fiction, Historic, Gore, Dystopia, Political, Epic, Thriller, Graphic Novel, Series, Age Rating Mature
 - published 1987, 419 pages
@@ -398,7 +398,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book420 — A Clash of Kings · George R. R. Martin
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Epic, Magic, Gore, Plot Twist, Tragic, Series, Age Rating Mature
 - published 1998, 761 pages
@@ -413,7 +413,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book422 — A Court of Mist and Fury · Sarah J. Maas
 
-- draft
+- applied
 - genres: Fantasy, Drama
 - qualities: Fiction, Epic, YA, Series, Female Author, Magic, Plot Twist, Happy Ending, Folklore, Romance, Age Rating Mature, Contemporary
 - published 2014, 640 pages
@@ -428,7 +428,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book424 — A Feast for Crows · George R. R. Martin
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Epic, Magic, Gore, Plot Twist, Tragic, Series, Age Rating Mature, Contemporary
 - published 2005, 800 pages
@@ -443,7 +443,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book432 — All Systems Red; The Murderbot Diaries #1 · Martha Wells
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Contemporary, Female Author, Fiction, Humour, Science Fiction, Series, Short, Space
 - published 2017, 152 pages
@@ -458,7 +458,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book436 — Before the Coffee Gets Cold · Toshikazu Kawaguchi
 
-- draft
+- applied
 - genres: Fantasy, Drama
 - qualities: Fiction, Series, Science Fiction, Novel, Contemporary
 - published 2019, 239 pages
@@ -473,7 +473,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book440 — Blood of Elves; (The Witcher) · Andrzej Sapkowski
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Magic, Gore, Plot Twist, Tragic, Epic, Folklore, Series, Age Rating Mature
 - published 1994, 350 pages
@@ -488,7 +488,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book447 — Catching Fire · Suzanne Collins
 
-- draft
+- applied
 - genres: Fantasy, Drama
 - qualities: Fiction, Science Fiction, YA, Female Author, Gore, Dystopia, Plot Twist, Tragic, Political, Epic, Series, Contemporary
 - published 2009, 400 pages
@@ -503,7 +503,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book448 — Cats in Space... and Other Places · Various Authors
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Fantasy
 - qualities: Animals, Dystopia, Fiction, Niche, Science Fiction, Space
 - published 1992, 416 pages
@@ -518,9 +518,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book452 — Chain-Gang All-Stars · Nana Kwame Adjei-Brenyah
 
-- draft
+- applied
 - genres: Fantasy
-- qualities: Mature Rating, Contemporary, Dystopia, Fiction, Gore, Horror, Nature, Novel, Philosophical, Political, Queer, Science Fiction
+- qualities: Age Rating Mature, Contemporary, Dystopia, Fiction, Gore, Horror, Nature, Novel, Philosophical, Political, Queer, Science Fiction
 - published 2023, 367 pages
 - length: 243 -> 212 (-31)
 - longest shared run with the replaced text: 1 word(s)
@@ -533,7 +533,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book459 — Don't Let the Forest In · C.G. Drews
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Gore, Horror, Magic, Mystery, Plot Twist, Queer, Romance, Coming of Age, Folklore, Thriller, YA, Contemporary
 - published 2024, 336 pages
@@ -548,7 +548,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book460 — Dune · Frank Herbert
 
-- draft
+- applied
 - genres: Fantasy, Classic
 - qualities: Fiction, Science Fiction, Epic, Gore, Dystopia, Coming of Age, Plot Twist, Space, Tragic, Philosophical, Series
 - published 1965, 544 pages
@@ -563,7 +563,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book465 — Fire & Blood · George R. R. Martin
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Epic, Magic, Gore, Plot Twist, Tragic, Series, Age Rating Mature, Contemporary
 - published 2018, 776 pages
@@ -578,7 +578,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book467 — Frankenstein · Mary Shelley
 
-- draft
+- applied
 - genres: Fantasy, Classic
 - qualities: Fiction, Science Fiction, Horror, Female Author, Tragic, Philosophical, Thriller, Romance
 - published 1818, 240 pages
@@ -593,7 +593,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book476 — I, Robot · Isaac Asimov
 
-- draft
+- applied
 - genres: Fantasy, Classic
 - qualities: Fiction, Science Fiction, Detective, Philosophical, Epic, Series
 - published 1950, 247 pages
@@ -608,7 +608,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book479 — Inkheart · Cornelia Funke
 
-- draft
+- applied
 - genres: Fantasy, Kids
 - qualities: Fiction, YA, Female Author, Magic, Coming of Age, Folklore, Series, Contemporary
 - published 2003, 547 pages
@@ -623,7 +623,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book485 — Legendborn; The Legendborn Cycle #1 · Tracy Deonn
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Long, Magic, Queer, Romance, Series, Coming of Age, Epic, Female Author, Folklore, YA, Contemporary
 - published 2020, 502 pages

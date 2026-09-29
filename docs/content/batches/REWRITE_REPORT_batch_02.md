@@ -8,9 +8,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book02 — 11/22/63 · Stephen King
 
-- draft
+- applied
 - genres: Crime
-- qualities: Mature Reading, Fiction, Historic, Magic, Mystery, Political, Science Fiction, Thriller, Crime, Long, Very Long, Contemporary
+- qualities: Age Rating Mature, Fiction, Historic, Magic, Mystery, Political, Science Fiction, Thriller, Long, Very Long, Contemporary
 - published 2011, 752 pages
 - length: 202 -> 201 (-1)
 - longest shared run with the replaced text: 2 word(s)
@@ -23,7 +23,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book03 — 1st to Die · James Patterson
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Series, Gore, Mystery, Plot Twist, Detective, Tragic, Thriller, Age Rating Mature, Contemporary
 - published 2001, 462 pages
@@ -38,9 +38,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book04 — The 7 Stages of Grieving · Wesley Enoch & Deborah Mailman
 
-- draft
+- applied
 - genres: Drama
-- qualities: Academic, Female-Author, Fiction, Folklore, Historic, Nature, Niche, Philosophical, Play, Poetry, Political, Short, Tragic
+- qualities: Academic, Female Author, Fiction, Folklore, Historic, Nature, Niche, Philosophical, Play, Poetry, Political, Short, Tragic
 - published 1996, 77 pages
 - length: 256 -> 196 (-60)
 - longest shared run with the replaced text: 2 word(s)
@@ -53,7 +53,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book06 — A Dance With Dragons · George R. R. Martin
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Epic, Magic, Gore, Plot Twist, Series, Age Rating Mature, Contemporary
 - published 2008, 1040 pages
@@ -68,7 +68,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book14 — A Room of One's Own · Virginia Woolf
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Female Author, Academic, Philosophical, Political
 - published 1929, 141 pages
@@ -83,9 +83,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book15 — Rosalind Franklin; The Dark Lady of DNA · Brenda Maddox
 
-- draft
+- applied
 - genres: Fact
-- qualities: Biography, Non-Fiction, Historic, Pop Science, Female Author, Fact, Contemporary
+- qualities: Biography, Non Fiction, Historic, Pop Science, Female Author, Contemporary
 - published 2002, 416 pages
 - length: 236 -> 197 (-39)
 - longest shared run with the replaced text: 1 word(s)
@@ -98,7 +98,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book17 — A Storm of Swords · George R. R. Martin
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Epic, Magic, Gore, Plot Twist, Tragic, Series, Age Rating Mature, Contemporary
 - published 2000, 988 pages
@@ -113,7 +113,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book19 — A Time to Kill · John Grisham
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Gore, Tragic, Political, Series, Age Rating Mature
 - published 1989, 515 pages
@@ -128,7 +128,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book22 — Abridgment of Murray's English Grammar · Lindley Murray
 
-- draft
+- applied
 - genres: Fact, Classic
 - qualities: Non Fiction, Dry, Niche, Outdated, Academic
 - published 1800, 107 pages
@@ -143,7 +143,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book24 — The Acts of King Arthur and His Noble Knights · John Steinbeck
 
-- draft
+- applied
 - genres: Classic, Fantasy
 - qualities: Fiction, Magic, Niche, Academic, Folklore
 - published 1976, 384 pages
@@ -158,9 +158,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book25 — The Adventures of Huckleberry Finn; Adventures of Tom and Huck #2 · Mark Twain
 
-- draft
+- applied
 - genres: Classic
-- qualities: Mature Reading, Fiction, Humour, Kids, Nature, Series, Academic, Outdated, Philosophical, Coming of Age, Novel, Historic, Political
+- qualities: Age Rating Mature, Fiction, Humour, Nature, Series, Academic, Outdated, Philosophical, Coming of Age, Novel, Historic, Political
 - published 1884, 327 pages
 - length: 261 -> 182 (-79)
 - longest shared run with the replaced text: 2 word(s)
@@ -173,7 +173,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book27 — Alanna; The First Adventure (The Song of the Lioness #1) · Tamora Pierce
 
-- draft
+- applied
 - genres: Fantasy, Kids
 - qualities: Coming of Age, Female Author, Fiction, Magic, Series, YA
 - published 1983, 274 pages
@@ -188,7 +188,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book28 — Alias Grace · Margaret Atwood
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Mystery, Female Author, Historic, Plot Twist, Tragic, Philosophical, Thriller, Poetry, Novel
 - published 1996, 549 pages
@@ -203,7 +203,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book29 — Alvar Aalto · Alvar Aalto
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Fact
 - qualities: Non Fiction, Biography, Niche, Short
 - published 1963, 176 pages
@@ -218,9 +218,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book30 — Amadeus · Peter Shaffer
 
-- draft
+- applied
 - genres: Drama
-- qualities: Mature Rating, Fiction, Historic, Humour, Nature, Philosophical, Play, Short
+- qualities: Age Rating Mature, Fiction, Historic, Humour, Nature, Philosophical, Play, Short
 - published 1980, 156 pages
 - length: 247 -> 195 (-52)
 - longest shared run with the replaced text: 1 word(s)
@@ -233,7 +233,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book32 — Among the Hidden; (The Shadow Children #1) · Margaret Peterson Haddix
 
-- draft
+- applied
 - genres: Fantasy, Kids
 - qualities: Dystopia, Female Author, Fiction, Science Fiction, Series, Short, Thriller
 - published 1998, 153 pages
@@ -248,7 +248,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book34 — Ancillary Justice; Imperial Radch #1 · Ann Leckie
 
-- draft
+- applied
 - genres: Drama, Fantasy
 - qualities: Contemporary, Epic, Female Author, Fiction, Political, Queer, Science Fiction, Series, Space, Tragic
 - published 2013, 409 pages
@@ -263,9 +263,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book35 — And The World Spins Anyway · Georgie Jones
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Drama
-- qualities: Contemporary, Female Author, Light Reading, Nature, Niche, Non-Fiction, Philosophical, Poetry, Short
+- qualities: Contemporary, Female Author, Light Reading, Nature, Niche, Non Fiction, Philosophical, Poetry, Short
 - published 2025, 120 pages
 - length: 215 -> 200 (-15)
 - longest shared run with the replaced text: 1 word(s)
@@ -278,7 +278,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book36 — Angels & Demons · Dan Brown
 
-- draft
+- applied
 - genres: Crime, Drama
 - qualities: Fiction, Thriller, Mystery, Detective, Historic, Gore, Plot Twist, Tragic, Philosophical, Epic, Folklore, Series, Age Rating Mature, Contemporary
 - published 2000, 575 pages
@@ -293,7 +293,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book44 — Around the World in Eighty Days · Jules Verne
 
-- draft
+- applied
 - genres: Classic, Travel, Kids
 - qualities: Fiction, Happy Ending, Epic, Novel, Humour, Outdated
 - published 1873, 236 pages
@@ -308,7 +308,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book49 — Assassin's Apprentice; The Farseer Trilogy Book One · Robin Hobb
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Animals, Coming of Age, Epic, Female Author, Fiction, Magic, Series
 - published 1995, 401 pages
@@ -323,7 +323,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book100 — Five Little Peppers and How They Grew; Five Little Peppers #1 · Margaret Sidney Porter
 
-- draft
+- applied
 - genres: Classic, Kids
 - qualities: Fiction, Light Reading, Series, Coming of Age, Female Author, Happy Ending, Novel, Outdated
 - published 1880, 420 pages
@@ -338,9 +338,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book102 — Five Survive · Holly Jackson
 
-- draft
+- applied
 - genres: Crime
-- qualities: Mature Reading, Fiction, Mystery, Plot Twist, Female Author, Thriller, YA, Contemporary
+- qualities: Age Rating Mature, Fiction, Mystery, Plot Twist, Female Author, Thriller, YA, Contemporary
 - published 2022, 391 pages
 - length: 239 -> 207 (-32)
 - longest shared run with the replaced text: 1 word(s)
@@ -353,7 +353,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book104 — Flower Fables · Louisa May Alcott
 
-- draft
+- applied
 - genres: Kids, Drama
 - qualities: Fiction, Female Author, Magic, Niche, Light Reading
 - published 1854, 126 pages
@@ -368,9 +368,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book107 — The Forgotten Beasts of Eld · Patricia A. McKillip
 
-- draft
+- applied
 - genres: Classic, Fantasy
-- qualities: Mature Reading, Animals, Fiction, Magic, Niche, Romance, Female Author, Happy Ending, YA
+- qualities: Age Rating Mature, Animals, Fiction, Magic, Niche, Romance, Female Author, Happy Ending, YA
 - published 1974, 256 pages
 - length: 251 -> 211 (-40)
 - longest shared run with the replaced text: 1 word(s)
@@ -383,7 +383,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book114 — Good Night, Gorilla · Peggy Rathmann
 
-- draft
+- applied
 - genres: Kids, Fantasy
 - qualities: Fiction, Female Author, Animals, Happy Ending, Light Reading, Nature
 - published 1994, 34 pages
@@ -398,7 +398,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book119 — Hamlet · William Shakespeare
 
-- draft
+- applied
 - genres: Drama, Classic, Crime
 - qualities: Fiction, Tragic, Plot Twist, Philosophical, Thriller, Folklore, Play, Horror
 - published 1603, 202 pages
@@ -413,7 +413,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book120 — Hamnet · Maggie O'Farrell
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Historic, Poetry, Romance, Coming of Age, Female Author, Novel, Tragic, Contemporary
 - published 2020, 372 pages
@@ -428,7 +428,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book121 — Heartstopper; Volume 1 · Alice Oseman
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Romance, YA, Queer, Graphic Novel, Coming of Age, Happy Ending, Light Reading, Series, Contemporary
 - published 2019, 320 pages
@@ -443,7 +443,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book127 — If Not, Winter; (Fragments of Sappho) · Sappho, transl. by A. Carson
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Queer, Female Author, Philosophical, Folklore, Poetry, Historic
 - published 2002, 407 pages
@@ -458,7 +458,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book134 — Italian Villas and Their Gardens · Edith Wharton
 
-- draft
+- applied
 - genres: Travel, Fact
 - qualities: Non Fiction, Hobby, Female Author, Dry, Niche, Outdated, Nature
 - published 1904, 290 pages
@@ -473,7 +473,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book136 — Journey to the Centre of the Earth · Jules Verne
 
-- draft
+- applied
 - genres: Travel, Classic, Fantasy, Kids
 - qualities: Fiction, Science Fiction, Happy Ending, Epic
 - published 1867, 242 pages
@@ -488,7 +488,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book138 — Julius Caesar · William Shakespeare
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Tragic, Historic, Gore, Dry, Philosophical, Political, Epic, Folklore, Play
 - published 1684, 149 pages
@@ -503,9 +503,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book141 — King Stakh's Wild Hunt · Uladzimir Karatkievich
 
-- draft
+- applied
 - genres: Drama, Fantasy
-- qualities: Mature Reading, Fiction, Horror, Magic, Mystery, Niche, Plot Twist, Detective, Folklore, Novel, Thriller
+- qualities: Age Rating Mature, Fiction, Horror, Magic, Mystery, Niche, Plot Twist, Detective, Folklore, Novel, Thriller
 - published 1964, 293 pages
 - length: 225 -> 198 (-27)
 - longest shared run with the replaced text: 1 word(s)
@@ -518,7 +518,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book177 — Rambles in Germany and Italy; in 1840, 1842, and 1843 · Mary Shelley
 
-- draft
+- applied
 - genres: Travel, Classic, Fact
 - qualities: Non Fiction, Historic, Niche, Female Author, Dry, Academic, Biography
 - published 1844, 222 pages

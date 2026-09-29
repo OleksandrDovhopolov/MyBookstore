@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Game.Configs.Editor;
+using Game.Configs.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
@@ -57,6 +60,39 @@ namespace Game.Configs.Tests.Editor
                 .ToArray();
 
             Assert.IsEmpty(missing, $"Drafted books with no row in the seed archive: {string.Join(", ", missing)}");
+        }
+
+        /// <summary>
+        /// `Seed_IsFrozen` proves the archive has not changed. It cannot prove the archive is still the
+        /// ORIGINAL text — once the rewrites were applied, live localization stopped being a second copy to
+        /// compare against. Except for the excluded books: those 43 descriptions are never rewritten
+        /// (they belong to another product's setting, see docs/content/BOOK_CONTENT_QUESTIONS.md), so they
+        /// remain a standing sample of the seeded text. If the archive and the localization file ever drift
+        /// together — a bad merge, a re-import, a well-meaning "fix" — this is what notices.
+        /// </summary>
+        [Test]
+        public void Seed_StillMatchesTheUnrewrittenDescriptions()
+        {
+            var root = LoadSeed();
+            var books = JsonConvert.DeserializeObject<List<BookConfig>>(
+                File.ReadAllText(Path.Combine(ContentRoots[0], "books.json")));
+            var localization = JObject.Parse(
+                File.ReadAllText(Path.Combine(ContentRoots[0], "localization_books_en.json")));
+
+            var excluded = books.Where(book => book.IsExcludedFromCatalog).ToArray();
+            Assert.IsNotEmpty(excluded, "No excluded books left; this tripwire needs a new sample.");
+
+            foreach (var book in excluded)
+            {
+                var archived = (string)root[book.Id]?["description"];
+                var live = (string)localization[book.DescriptionKey];
+
+                Assert.AreEqual(
+                    archived,
+                    live,
+                    $"'{book.Id}' is excluded from the catalogue, so its description is never rewritten — "
+                    + "the archive and localization disagreeing means one of them drifted.");
+            }
         }
 
         [Test]

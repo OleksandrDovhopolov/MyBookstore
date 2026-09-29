@@ -8,7 +8,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book375 — Unmasking Autism · Devon Price
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Self Help, Queer, Contemporary, Political
 - published 2022, 304 pages
@@ -23,7 +23,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book378 — Upgrading and Repairing PCs · Scott Mueller
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Hobby, Dry, Series, Encyclopedic
 - published 1988, 1293 pages
@@ -38,9 +38,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book381 — Villainous Victorians; Horrible Histories · Terry Deary
 
-- draft
+- applied
 - genres: Fact
-- qualities: Gore, Historic, Horror, Humour, Kids, Light Reading, Non-Fiction, Series, Contemporary
+- qualities: Gore, Historic, Horror, Humour, Light Reading, Non Fiction, Series, Contemporary
 - published 2004, 235 pages
 - length: 252 -> 221 (-31)
 - longest shared run with the replaced text: 1 word(s)
@@ -53,9 +53,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book397 — The Encyclopedia of the Weird and Wonderful; Curious and Incredible Facts that Will Blow Your Mind · Milo Rossi
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Fact, Kids
-- qualities: Historic, Nature, Non-Fiction, Pop Science, Contemporary, Encyclopedic, Niche
+- qualities: Historic, Nature, Non Fiction, Pop Science, Contemporary, Encyclopedic, Niche
 - published 2023, 256 pages
 - length: 225 -> 203 (-22)
 - longest shared run with the replaced text: 1 word(s)
@@ -68,9 +68,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book406 — Know My Name · Chanel Miller
 
-- draft
+- applied
 - genres: Fact
-- qualities: Mature Reading, Biography, Nature, Niche, Non-Fiction, Poetry, Political, Self Help, Academic, Female Author, Philosophical, Tragic, Contemporary
+- qualities: Age Rating Mature, Biography, Nature, Niche, Non Fiction, Poetry, Political, Self Help, Academic, Female Author, Philosophical, Tragic, Contemporary
 - published 2019, 368 pages
 - length: 249 -> 206 (-43)
 - longest shared run with the replaced text: 3 word(s)
@@ -83,9 +83,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book413 — Round the World in Eighty Dishes · Lesley Blanch
 
-- draft
+- applied
 - genres: Fact, Travel
-- qualities: Biography, Cooking, Historic, Hobby, Light Reading, Niche, Non-Fiction, Political, Female Author, Outdated
+- qualities: Biography, Cooking, Historic, Hobby, Light Reading, Niche, Non Fiction, Political, Female Author, Outdated
 - published 1956, 200 pages
 - length: 149 -> 189 (+40)
 - longest shared run with the replaced text: 2 word(s)
@@ -98,7 +98,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book421 — The Code Book; The Science of Secrecy from Ancient Egypt to Quantum Cryptography · Simon Singh
 
-- draft
+- applied
 - genres: Fact
 - qualities: Historic, Hobby, Non Fiction, Pop Science
 - published 1999, 432 pages
@@ -113,7 +113,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book441 — Blood, Sweat, and Pixels · Jason Schreier
 
-- draft
+- applied
 - genres: Fact
 - qualities: Historic, Light Reading, Non Fiction, Contemporary
 - published 2017, 353 pages
@@ -128,9 +128,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book456 — Critical Hits; Writers on Gaming and the Alternate Worlds We Inhabit · Various Authors
 
-- draft
+- applied
 - genres: Fact
-- qualities: Biography, Hobby, Light Reading, Nature, Niche, Non-Fiction, Coming of Age, Female Author, Philosophical, Contemporary
+- qualities: Biography, Hobby, Light Reading, Nature, Niche, Non Fiction, Coming of Age, Female Author, Philosophical, Contemporary
 - published 2023, 224 pages
 - length: 210 -> 211 (+1)
 - longest shared run with the replaced text: 2 word(s)
@@ -143,9 +143,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book457 — The CRPG Book; Guide to Computer Role-Playing Games · Collection
 
-- draft
+- applied
 - genres: Fact
-- qualities: Historic, Hobby, Light Reading, Niche, Non-Fiction, Encyclopedic, Long, Contemporary
+- qualities: Historic, Hobby, Light Reading, Niche, Non Fiction, Encyclopedic, Long, Contemporary
 - published 2022, 680 pages
 - length: 248 -> 205 (-43)
 - longest shared run with the replaced text: 5 word(s)
@@ -158,7 +158,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book466 — Frank Lloyd Wright · Frank Lloyd Wright
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Fact
 - qualities: Non Fiction, Biography, Dry, Niche, Academic
 - published 2008, 141 pages
@@ -173,7 +173,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book471 — Heinemann Mathematics · Scottish Primary Mathematics Group
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Fact, Kids
 - qualities: Non Fiction, Dry, Academic, Series, Encyclopedic
 - published 1983, 38 pages
@@ -188,7 +188,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book481 — Jean Dubuffet · Jean Dubuffet
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Fact
 - qualities: Non Fiction, Biography, Niche, Dry
 - published 1958, 74 pages
@@ -203,7 +203,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book510 — Pageboy · Elliot Page
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Queer, Biography, Coming of Age, Contemporary, Political
 - published 2023, 288 pages
@@ -218,7 +218,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book512 — Persepolis; The Story of a Childhood · Marjane Satrapi
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, YA, Biography, Female Author, Historic, Coming of Age, Tragic, Political, Graphic Novel, Series, Contemporary
 - published 2003, 160 pages
@@ -233,7 +233,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book529 — Book of Yokai ; Mysterious Creatures of Japanese Folklore · Michael Dylan Foster & Shinonome Kijin
 
-- draft
+- applied
 - genres: Fact
 - qualities: Contemporary, Encyclopedic, Fiction, Folklore, Magic, Niche
 - published 2015, 336 pages
@@ -248,9 +248,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book539 — How Did Whales Get So Big?; An Other Curious Questions about Animals, Nature, Geology and Planet Earth · MinuteEarth
 
-- draft
+- applied
 - genres: Fact, Kids
-- qualities: Animals, Humour, Light Reading, Nature, Non-Fiction, Pop Science, Short, Encyclopedic, Contemporary
+- qualities: Animals, Humour, Light Reading, Nature, Non Fiction, Pop Science, Short, Encyclopedic, Contemporary
 - published 2021, 119 pages
 - length: 269 -> 210 (-59)
 - longest shared run with the replaced text: 2 word(s)
@@ -263,7 +263,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book547 — The Poetry of Architecture · John Ruskin
 
-- draft
+- applied
 - genres: Fact, Classic
 - qualities: Hobby, Dry, Niche, Academic
 - published 1800, 261 pages
@@ -278,9 +278,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book554 — So Easy So Good · Kylie Sakaida
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Fact
-- qualities: Cooking, Hobby, Non-Fiction, Female Author, Contemporary
+- qualities: Cooking, Hobby, Non Fiction, Female Author, Contemporary
 - published 2025, 272 pages
 - length: 191 -> 206 (+15)
 - longest shared run with the replaced text: 2 word(s)
@@ -293,7 +293,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book560 — Towards a New Architecture · Le Corbusier
 
-- draft
+- applied
 - genres: Fact, Classic
 - qualities: Non Fiction, Hobby, Dry, Niche, Academic
 - published 1923, 269 pages
@@ -308,9 +308,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book562 — Understanding Comics; The Invisible Art · Scott McCloud
 
-- draft
+- applied
 - genres: Fact
-- qualities: Graphic Novel, Historic, Hobby, Light Reading, Non-Fiction, Pop Science, Series, Academic, Manga
+- qualities: Graphic Novel, Historic, Hobby, Light Reading, Non Fiction, Pop Science, Series, Academic, Manga
 - published 1993, 222 pages
 - length: 234 -> 203 (-31)
 - longest shared run with the replaced text: 1 word(s)
@@ -323,7 +323,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book567 — Zaha Hadid · Zaha Hadid
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Fact
 - qualities: Non Fiction, Biography, Female Author, Hobby, Niche
 - published 1989, 160 pages
@@ -338,9 +338,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book574 — The Ghost Map; A Street, a City, An Epidemic and the Hidden Power of Urban Networks · Steven Johnson
 
-- draft
+- applied
 - genres: Fact
-- qualities: Historic, Non-Fiction, Pop Science, Contemporary
+- qualities: Historic, Non Fiction, Pop Science, Contemporary
 - published 2006, 300 pages
 - length: 202 -> 207 (+5)
 - longest shared run with the replaced text: 3 word(s)
@@ -353,7 +353,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book591 — Dinosaurs and other Prehistoric Life · Anusuya Chinsamy-Turan
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Fact, Kids
 - qualities: Non Fiction, Female Author, Animals, Nature, Encyclopedic, Historic, Pop Science
 - published 2021, 224 pages
@@ -368,7 +368,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book592 — Newtonian Physics for Babies · Chris Ferrie
 
-- draft
+- applied
 - genres: Fact, Kids
 - qualities: Non Fiction, Light Reading, Niche, Pop Science, Humour
 - published 2013, 24 pages
@@ -383,9 +383,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book595 — Coffee First, Then the World · Jenny Graham
 
-- draft
+- applied
 - genres: Fact, Travel
-- qualities: Biography, Hobby, Humour, Light Reading, Niche, Non-Fiction, Epic, Female Author, Happy Ending, Contemporary
+- qualities: Biography, Hobby, Humour, Light Reading, Niche, Non Fiction, Epic, Female Author, Happy Ending, Contemporary
 - published 2023, 277 pages
 - length: 271 -> 196 (-75)
 - longest shared run with the replaced text: 3 word(s)
@@ -398,9 +398,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book598 — The Bookshop Book · Lucy Mangan
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Fact, Kids
-- qualities: Biography, Contemporary, Female Author, Hobby, Light Reading, Non-Fiction
+- qualities: Biography, Contemporary, Female Author, Hobby, Light Reading, Non Fiction
 - published 2018, 326 pages
 - length: 223 -> 200 (-23)
 - longest shared run with the replaced text: 1 word(s)
@@ -413,7 +413,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book601 — What We Don't Talk About; When We Talk About Fat · Aubrey Gordon
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Female Author, Hobby, Self Help, Academic, Political
 - published 2020, 197 pages
@@ -428,7 +428,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book605 — Tasting History; Explore the Past through 4,000 Years of Recipes · Max Miller
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Hobby, Cooking, Historic
 - published 2023, 256 pages
@@ -443,7 +443,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book610 — The Stonewall Reader · The New York Public Library
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Biography, Historic, Political
 - published 2019, 288 pages
@@ -458,7 +458,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book611 — We Are Bridges; A Memoir · Cassandra Lane
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Female Author, Biography, Historic, Philosophical, Political
 - published 2021, 232 pages
@@ -473,7 +473,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book613 — Hawaii's Story by Hawaii's Queen · Lili'uokalani
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Biography, Historic, Political
 - published 1898, 424 pages
@@ -488,7 +488,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book615 — Botany in a Day; The Patterns Method of Plant Identification · Thomas J. Elpel
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Hobby, Encyclopedic, Nature
 - published 1998, 235 pages
@@ -503,9 +503,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book623 — British Boutique Hotels · Gina Jackson
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Fact, Travel
-- qualities: Light Reading, Niche, Non-Fiction, Travel Guide, Female Author, Contemporary
+- qualities: Light Reading, Niche, Non Fiction, Travel Guide, Female Author, Contemporary
 - published 2022, 208 pages
 - length: 201 -> 199 (-2)
 - longest shared run with the replaced text: 1 word(s)
@@ -518,9 +518,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book624 — Brown Girl Dreaming · Jacqueline Woodson
 
-- draft
+- applied
 - genres: Fact, Kids
-- qualities: Biography, Historic, Non-Fiction, Poetry, Political, Coming of Age, Female Author, Contemporary
+- qualities: Biography, Historic, Non Fiction, Poetry, Political, Coming of Age, Female Author, Contemporary
 - published 2014, 352 pages
 - length: 262 -> 200 (-62)
 - longest shared run with the replaced text: 3 word(s)
@@ -533,7 +533,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book628 — Entangled Life; How Fungi Make Our Worlds, Change Our Minds & Shape Our Futures · Merlin Sheldrake
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Hobby, Nature, Pop Science
 - published 2020, 352 pages
@@ -548,7 +548,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book630 — The Origin of Species · Charles Darwin
 
-- draft
+- applied
 - genres: Fact, Classic
 - qualities: Non Fiction, Academic, Dry, Nature, Outdated, Philosophical
 - published 1859, 703 pages
@@ -563,9 +563,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book631 — Provence to Pondicherry; Recipes from France and Faraway · Tessa Kiros
 
-- draft
+- applied
 - genres: Fact, Travel
-- qualities: Cooking, Historic, Hobby, Light Reading, Non-Fiction, Female Author, Contemporary
+- qualities: Cooking, Historic, Hobby, Light Reading, Non Fiction, Female Author, Contemporary
 - published 2016, 288 pages
 - length: 214 -> 204 (-10)
 - longest shared run with the replaced text: 1 word(s)
@@ -578,7 +578,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book635 — The Royal Horticultural Society Encyclopedia of Gardening · Royal Horticultural Society
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Hobby, Encyclopedic, Nature
 - published 1992, 648 pages
@@ -593,9 +593,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book637 — Russians in Alaska, 1732-1867 · Lydia T. Black
 
-- draft
+- applied
 - genres: Fact
-- qualities: Historic, Non-Fiction, Academic, Female Author, Contemporary
+- qualities: Historic, Non Fiction, Academic, Female Author, Contemporary
 - published 2004, 334 pages
 - length: 235 -> 203 (-32)
 - longest shared run with the replaced text: 2 word(s)
@@ -608,7 +608,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book641 — The Sea Around Us · Rachel Carson
 
-- draft
+- applied
 - genres: Fact, Classic
 - qualities: Non Fiction, Female Author, Historic, Nature, Pop Science
 - published 1951, 288 pages
@@ -623,9 +623,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book642 — The Sea Inside · Philip Hoare
 
-- draft
+- applied
 - genres: Fact, Travel
-- qualities: Animals, Biography, Historic, Humour, Light Reading, Nature, Niche, Non-Fiction, Poetry, Political, Epic, Folklore, Philosophical, Contemporary
+- qualities: Animals, Biography, Historic, Humour, Light Reading, Nature, Niche, Non Fiction, Poetry, Political, Epic, Folklore, Philosophical, Contemporary
 - published 2013, 350 pages
 - length: 204 -> 208 (+4)
 - longest shared run with the replaced text: 2 word(s)
@@ -638,9 +638,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book643 — Spirals in Time; The Secret Life and Curious Afterlife of Seashells · Helen Scales
 
-- draft
+- applied
 - genres: Fact
-- qualities: Non Fiction, Female Author, Animals, Nature, Historic, Nature, Pop Science
+- qualities: Non Fiction, Female Author, Animals, Nature, Historic, Pop Science
 - published 2015, 304 pages
 - length: 215 -> 207 (-8)
 - longest shared run with the replaced text: 3 word(s)
@@ -653,7 +653,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book646 — Wake; The Hidden History of Women-Led Slave Revolts · Rebecca Hall & Hugo Martínez
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Female Author, Biography, Graphic Novel, Historic, Political
 - published 2021, 208 pages
@@ -668,9 +668,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book649 — An Atlas of Countries that Don't Exist · Nick Middleton
 
-- draft
+- applied
 - genres: Fact, Travel
-- qualities: Historic, Hobby, Nature, Non-Fiction, Political, Travel Guide, Academic, Dry, Encyclopedic, Contemporary
+- qualities: Historic, Hobby, Nature, Non Fiction, Political, Travel Guide, Academic, Dry, Encyclopedic, Contemporary
 - published 2015, 250 pages
 - length: 253 -> 207 (-46)
 - longest shared run with the replaced text: 1 word(s)
@@ -683,7 +683,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book666 — My Lesbian Experience With Loneliness · Nagata Kabi
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Female Author, Manga, Biography, Coming of Age, Humour, Queer, Age Rating Mature
 - published 2016, 148 pages

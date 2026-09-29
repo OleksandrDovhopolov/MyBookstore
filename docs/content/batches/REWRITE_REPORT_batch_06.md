@@ -8,7 +8,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book349 — The Woman in White · Wilkie Collins
 
-- draft
+- applied
 - genres: Crime, Classic, Drama
 - qualities: Fiction, Mystery, Plot Twist, Tragic, Happy Ending
 - published 1860, 573 pages
@@ -23,7 +23,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book354 — Yellowface · R.F. Kuang
 
-- draft
+- applied
 - genres: Crime, Drama
 - qualities: Fiction, Light Reading, Mystery, Plot Twist, Female Author, Thriller, Contemporary
 - published 2023, 319 pages
@@ -38,9 +38,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book359 — This Book Will Bury Me · Ashley Winstead
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Crime
-- qualities: Mature Reading, Fiction, Gore, Horror, Mystery, Plot Twist, Female Author, Thriller, Long, Contemporary
+- qualities: Age Rating Mature, Fiction, Gore, Horror, Mystery, Plot Twist, Female Author, Thriller, Long, Contemporary
 - published 2025, 480 pages
 - length: 270 -> 173 (-97)
 - longest shared run with the replaced text: 1 word(s)
@@ -53,9 +53,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book367 — True Crime Story · Joseph Knox
 
-- draft
+- applied
 - genres: Crime
-- qualities: Mature Reading, Fiction, Mystery, Plot Twist, Detective, Thriller, Contemporary
+- qualities: Age Rating Mature, Fiction, Mystery, Plot Twist, Detective, Thriller, Contemporary
 - published 2021, 448 pages
 - length: 265 -> 204 (-61)
 - longest shared run with the replaced text: 2 word(s)
@@ -68,7 +68,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book374 — The Unmaking of June Farrow · Adrienne Young
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Historic, Magic, Mystery, Plot Twist, Romance, Female Author, Happy Ending, Novel, Contemporary
 - published 2023, 320 pages
@@ -83,7 +83,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book376 — The Unusual Suspects; The Sisters Grimm #2 · Michael Buckley, Peter Ferguson (Illustrator)
 
-- draft
+- applied
 - genres: Crime, Fantasy, Kids
 - qualities: Animals, Fiction, Humour, Magic, Mystery, Series, Coming of Age, Detective, Contemporary
 - published 2005, 288 pages
@@ -98,7 +98,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book380 — Vera Wong's Unsolicited Advice for Murderers; Vera Wong #1 · Jesse Q. Sutanto
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Humour, Mystery, Series, Female Author, Novel, Whodunnit, Contemporary
 - published 2023, 339 pages
@@ -113,7 +113,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book383 — Violets Are Blue · James Patterson
 
-- draft
+- applied
 - genres: Crime, Drama
 - qualities: Fiction, Thriller, Mystery, Detective, Magic, Gore, Plot Twist, Tragic, Series, Age Rating Mature, Contemporary
 - published 2001, 393 pages
@@ -128,9 +128,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book418 — Topdog/Underdog · Suzan-Lori Parks
 
-- draft
+- applied
 - genres: Crime, Drama
-- qualities: Mature Reading, Fiction, Play, Female Author, Thriller, Short, Contemporary
+- qualities: Age Rating Mature, Fiction, Play, Female Author, Thriller, Short, Contemporary
 - published 2001, 117 pages
 - length: 263 -> 188 (-75)
 - longest shared run with the replaced text: 1 word(s)
@@ -143,7 +143,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book423 — The Cream Tea Killer · Judy Leigh
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Crime
 - qualities: Fiction, Light Reading, Mystery, Series, Female Author, Contemporary
 - published 2025, 288 pages
@@ -158,7 +158,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book431 — All She Was Worth · Miyuki Miyabe
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Mystery, Detective, Female Author, Thriller
 - published 1992, 296 pages
@@ -173,7 +173,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book433 — All Your Twisted Secrets · Diana Urban
 
-- draft
+- applied
 - genres: Crime
 - qualities: Contemporary, Female Author, Fiction, Mystery, Novel, Plot Twist, Romance, Thriller, Whodunnit, YA
 - published 2021, 396 pages
@@ -188,7 +188,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book445 — Carrie · Stephen King
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Thriller, Horror, Magic, Gore, Plot Twist, Tragic, Age Rating Mature
 - published 1974, 256 pages
@@ -203,7 +203,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book446 — Case Closed; One and the Same? (Vol. 3) · Gosho Aoyama
 
-- draft
+- applied
 - genres: Crime, Kids
 - qualities: Detective, Fiction, Graphic Novel, Light Reading, Manga, Mystery, Novel, Series, Short, Thriller, Tragic, Whodunnit
 - published 1994, 181 pages
@@ -218,7 +218,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book451 — Cemetery Boys · Aiden Thomas
 
-- draft
+- applied
 - genres: Crime, Fantasy
 - qualities: Contemporary, Coming of Age, Fiction, Folklore, Happy Ending, Light Reading, Magic, Mystery, Plot Twist, Queer, Romance, YA
 - published 2020, 345 pages
@@ -233,9 +233,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book453 — The Chalk Man · C.J. Tudor
 
-- draft
+- applied
 - genres: Crime
-- qualities: Mature Rating, Coming of Age, Contemporary, Female Author, Fiction, Gore, Horror, Mystery, Plot Twist, Thriller, Tragic, Whodunnit, YA
+- qualities: Age Rating Mature, Coming of Age, Contemporary, Female Author, Fiction, Gore, Horror, Mystery, Plot Twist, Thriller, Tragic, Whodunnit, YA
 - published 2018, 346 pages
 - length: 266 -> 212 (-54)
 - longest shared run with the replaced text: 3 word(s)
@@ -248,7 +248,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book468 — Ghost Stories; From the Grave · Collection
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Crime, Classic
 - qualities: Fiction, Horror, Mystery, Contemporary
 - published 2007, 128 pages
@@ -263,7 +263,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book478 — If Tomorrow Comes · Sidney Sheldon
 
-- draft
+- applied
 - genres: Crime, Drama
 - qualities: Fiction, Thriller, Mystery, Detective, Plot Twist, Happy Ending, Epic, Series
 - published 1984, 415 pages
@@ -278,9 +278,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book489 — The Library Book · Susan Orlean
 
-- draft
+- applied
 - genres: Crime, Fact
-- qualities: Mystery, Non-Fiction, Political, Female Author, Contemporary
+- qualities: Mystery, Non Fiction, Political, Female Author, Contemporary
 - published 2018, 319 pages
 - length: 215 -> 202 (-13)
 - longest shared run with the replaced text: 3 word(s)
@@ -293,7 +293,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book500 — The Mousetrap and Other Plays · Agatha Christie
 
-- draft
+- applied
 - genres: Crime, Drama
 - qualities: Fiction, Humour, Mystery, Play, Plot Twist, Detective, Female Author, Novel, Whodunnit, Long, Very Long
 - published 1978, 752 pages
@@ -308,7 +308,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book526 — The Adventures of Sherlock Holmes · Arthur Conan Doyle
 
-- draft
+- applied
 - genres: Crime, Classic
 - qualities: Fiction, Mystery, Detective, Whodunnit, Series, Humour
 - published 1892, 307 pages
@@ -323,7 +323,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book533 — The Girl Who Played with Fire · Stieg Larsson
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Thriller, Mystery, Detective, Gore, Plot Twist, Tragic, Series, Age Rating Mature, Contemporary
 - published 2006, 645 pages
@@ -338,7 +338,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book536 — Greenglass House; Book 1 · Kate Milford & Jaime Zollars
 
-- draft
+- applied
 - genres: Crime, Kids
 - qualities: Fiction, Humour, Light Reading, Magic, Mystery, Plot Twist, Series, Coming of Age, Female Author, Happy Ending, Novel, Whodunnit, Contemporary
 - published 2014, 376 pages
@@ -353,9 +353,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book541 — Listen for the Lie · Amy Tintera
 
-- draft
+- applied
 - genres: Crime, Drama
-- qualities: Mature Reading, Fiction, Mystery, Romance, Female Author, Thriller, Contemporary
+- qualities: Age Rating Mature, Fiction, Mystery, Romance, Female Author, Thriller, Contemporary
 - published 2024, 336 pages
 - length: 251 -> 202 (-49)
 - longest shared run with the replaced text: 3 word(s)
@@ -368,7 +368,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book546 — The Outsider · Stephen King
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Thriller, Horror, Gore, Mystery, Plot Twist, Tragic, Series, Age Rating Mature, Contemporary
 - published 2018, 592 pages
@@ -383,7 +383,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book551 — The Shadow of the Wind · Carlos Ruiz Zafón
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Mystery, Detective, Historic, Coming of Age, Plot Twist, Tragic, Philosophical, Series, Contemporary
 - published 2001, 528 pages
@@ -398,7 +398,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book552 — The Silent Patient · Alex Michaelides
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Thriller, Mystery, Plot Twist, Tragic, Contemporary
 - published 2018, 339 pages
@@ -413,7 +413,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book557 — The Strange Case of Dr. Jekyll and Mr. Hyde · Robert Louis Stevenson
 
-- draft
+- applied
 - genres: Crime, Classic, Fantasy, Drama
 - qualities: Fiction, Horror, Mystery, Plot Twist, Tragic, Philosophical, Thriller
 - published 1875, 128 pages
@@ -428,7 +428,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book559 — The Westing Game · Ellen Raskin
 
-- draft
+- applied
 - genres: Crime, Kids
 - qualities: Fiction, Mystery, Detective, Whodunnit, Female Author, Plot Twist, Happy Ending
 - published 1978, 192 pages
@@ -443,7 +443,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book563 — The Unexpected Mrs. Pollifax; Mrs. Pollifax #1 · Dorothy Gilman
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Humour, Light Reading, Mystery, Series, Detective, Female Author, Outdated
 - published 1966, 208 pages
@@ -458,7 +458,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book594 — Codename Villanelle · Luke Jennings
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Series, Mystery, Thriller
 - published 2017, 220 pages
@@ -473,7 +473,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book603 — The Surgeon · Tess Gerritsen
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Female Author, Series, Detective, Mystery, Thriller, Plot Twist, Gore, Age Rating Mature
 - published 2001, 416 pages
@@ -488,9 +488,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book604 — The Taking of Annie Thorne · C.J Tudor
 
-- draft
+- applied
 - genres: Crime
-- qualities: Mature Reading, Fiction, Gore, Horror, Magic, Mystery, Plot Twist, Female Author, Thriller, Tragic, Contemporary
+- qualities: Age Rating Mature, Fiction, Gore, Horror, Magic, Mystery, Plot Twist, Female Author, Thriller, Tragic, Contemporary
 - published 2019, 347 pages
 - length: 266 -> 206 (-60)
 - longest shared run with the replaced text: 2 word(s)
@@ -503,9 +503,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book612 — We Solve Murders; Book 1 · Richard Osman
 
-- draft
+- applied
 - genres: Crime
-- qualities: Mature Reading, Fiction, Humour, Light Reading, Mystery, Plot Twist, Series, Detective, Novel, Whodunnit, Contemporary
+- qualities: Age Rating Mature, Fiction, Humour, Light Reading, Mystery, Plot Twist, Series, Detective, Novel, Whodunnit, Contemporary
 - published 2024, 387 pages
 - length: 253 -> 196 (-57)
 - longest shared run with the replaced text: 2 word(s)
@@ -518,9 +518,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book617 — Boy's Life · Robert R. McCammon
 
-- draft
+- applied
 - genres: Crime, Fantasy
-- qualities: Mature Reading, Fiction, Gore, Horror, Magic, Mystery, Coming of Age, Novel, Thriller, Long
+- qualities: Age Rating Mature, Fiction, Gore, Horror, Magic, Mystery, Coming of Age, Novel, Thriller, Long
 - published 1991, 627 pages
 - length: 212 -> 193 (-19)
 - longest shared run with the replaced text: 1 word(s)
@@ -533,9 +533,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book625 — The Bullet That Missed; A Thursday Murder Club Mystery #3 · Richard Osman
 
-- draft
+- applied
 - genres: Crime
-- qualities: Mature Reading, Fiction, Humour, Light Reading, Mystery, Plot Twist, Series, Detective, Contemporary
+- qualities: Age Rating Mature, Fiction, Humour, Light Reading, Mystery, Plot Twist, Series, Detective, Contemporary
 - published 2022, 413 pages
 - length: 258 -> 210 (-48)
 - longest shared run with the replaced text: 2 word(s)
@@ -548,7 +548,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book629 — Escape from Mr. Lemoncello's Library; Mr. Lemoncello's Library #1 · Chris Grabenstein
 
-- draft
+- applied
 - genres: Crime, Kids
 - qualities: Fiction, Light Reading, Mystery, Series, Contemporary
 - published 2013, 291 pages
@@ -563,7 +563,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book652 — Thornhill · Pam Smy
 
-- draft
+- applied
 - genres: Crime, Kids
 - qualities: Fiction, Female Author, Graphic Novel, Horror, Mystery, YA, Magic
 - published 2017, 533 pages
@@ -578,7 +578,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book653 — Three Bags Full; Sheep Detective Story #1 · Leonie Swann & Anthea Bell
 
-- draft
+- applied
 - genres: Crime
 - qualities: Animals, Fiction, Humour, Light Reading, Mystery, Series, Detective, Female Author, Novel, Whodunnit, Contemporary
 - published 2005, 341 pages
@@ -593,7 +593,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book667 — Monster; Volume 1 · Naoki Urasawa
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Series, Manga, Mystery, Thriller, Tragic, Age Rating Mature
 - published 2014, 426 pages

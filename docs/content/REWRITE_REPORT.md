@@ -19,22 +19,22 @@ are in the batch files linked below.
 
 | batch | books | statuses | detail |
 |---|---|---|---|
-| 1 | 42 | draft 42 | [batches/REWRITE_REPORT_batch_01.md](batches/REWRITE_REPORT_batch_01.md) |
-| 2 | 35 | draft 35 | [batches/REWRITE_REPORT_batch_02.md](batches/REWRITE_REPORT_batch_02.md) |
-| 3 | 13 | draft 13 | [batches/REWRITE_REPORT_batch_03.md](batches/REWRITE_REPORT_batch_03.md) |
-| 4 | 34 | draft 34 | [batches/REWRITE_REPORT_batch_04.md](batches/REWRITE_REPORT_batch_04.md) |
-| 5 | 41 | draft 41 | [batches/REWRITE_REPORT_batch_05.md](batches/REWRITE_REPORT_batch_05.md) |
-| 6 | 40 | draft 40 | [batches/REWRITE_REPORT_batch_06.md](batches/REWRITE_REPORT_batch_06.md) |
-| 7 | 44 | draft 44 | [batches/REWRITE_REPORT_batch_07.md](batches/REWRITE_REPORT_batch_07.md) |
-| 8 | 43 | draft 43 | [batches/REWRITE_REPORT_batch_08.md](batches/REWRITE_REPORT_batch_08.md) |
-| 9 | 46 | draft 46 | [batches/REWRITE_REPORT_batch_09.md](batches/REWRITE_REPORT_batch_09.md) |
-| 10 | 46 | draft 46 | [batches/REWRITE_REPORT_batch_10.md](batches/REWRITE_REPORT_batch_10.md) |
-| 11 | 38 | draft 38 | [batches/REWRITE_REPORT_batch_11.md](batches/REWRITE_REPORT_batch_11.md) |
-| 12 | 38 | draft 38 | [batches/REWRITE_REPORT_batch_12.md](batches/REWRITE_REPORT_batch_12.md) |
-| 13 | 36 | draft 36 | [batches/REWRITE_REPORT_batch_13.md](batches/REWRITE_REPORT_batch_13.md) |
-| 14 | 42 | draft 42 | [batches/REWRITE_REPORT_batch_14.md](batches/REWRITE_REPORT_batch_14.md) |
-| 15 | 42 | draft 42 | [batches/REWRITE_REPORT_batch_15.md](batches/REWRITE_REPORT_batch_15.md) |
-| 16 | 40 | draft 40 | [batches/REWRITE_REPORT_batch_16.md](batches/REWRITE_REPORT_batch_16.md) |
+| 1 | 42 | applied 42 | [batches/REWRITE_REPORT_batch_01.md](batches/REWRITE_REPORT_batch_01.md) |
+| 2 | 35 | applied 35 | [batches/REWRITE_REPORT_batch_02.md](batches/REWRITE_REPORT_batch_02.md) |
+| 3 | 13 | applied 13 | [batches/REWRITE_REPORT_batch_03.md](batches/REWRITE_REPORT_batch_03.md) |
+| 4 | 34 | applied 34 | [batches/REWRITE_REPORT_batch_04.md](batches/REWRITE_REPORT_batch_04.md) |
+| 5 | 41 | applied 41 | [batches/REWRITE_REPORT_batch_05.md](batches/REWRITE_REPORT_batch_05.md) |
+| 6 | 40 | applied 40 | [batches/REWRITE_REPORT_batch_06.md](batches/REWRITE_REPORT_batch_06.md) |
+| 7 | 44 | applied 44 | [batches/REWRITE_REPORT_batch_07.md](batches/REWRITE_REPORT_batch_07.md) |
+| 8 | 43 | applied 43 | [batches/REWRITE_REPORT_batch_08.md](batches/REWRITE_REPORT_batch_08.md) |
+| 9 | 46 | applied 46 | [batches/REWRITE_REPORT_batch_09.md](batches/REWRITE_REPORT_batch_09.md) |
+| 10 | 46 | applied 46 | [batches/REWRITE_REPORT_batch_10.md](batches/REWRITE_REPORT_batch_10.md) |
+| 11 | 38 | applied 38 | [batches/REWRITE_REPORT_batch_11.md](batches/REWRITE_REPORT_batch_11.md) |
+| 12 | 38 | applied 38 | [batches/REWRITE_REPORT_batch_12.md](batches/REWRITE_REPORT_batch_12.md) |
+| 13 | 36 | applied 36 | [batches/REWRITE_REPORT_batch_13.md](batches/REWRITE_REPORT_batch_13.md) |
+| 14 | 42 | applied 42 | [batches/REWRITE_REPORT_batch_14.md](batches/REWRITE_REPORT_batch_14.md) |
+| 15 | 42 | applied 42 | [batches/REWRITE_REPORT_batch_15.md](batches/REWRITE_REPORT_batch_15.md) |
+| 16 | 40 | applied 40 | [batches/REWRITE_REPORT_batch_16.md](batches/REWRITE_REPORT_batch_16.md) |
 
 ## Tone devices by batch
 

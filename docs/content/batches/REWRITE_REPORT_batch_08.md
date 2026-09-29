@@ -8,7 +8,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book368 — True Grit · Charles Portis
 
-- draft
+- applied
 - genres: Classic, Crime
 - qualities: Fiction, Gore, Historic, Horror, Light Reading, Mystery, Nature, Coming of Age, Detective, Outdated, Philosophical, Thriller
 - published 1968, 235 pages
@@ -23,9 +23,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book370 — Tuesdays with Morrie · Mitch Alborn
 
-- draft
+- applied
 - genres: Classic
-- qualities: Biography, Nature, Non-Fiction, Self Help, Academic, Philosophical
+- qualities: Biography, Nature, Non Fiction, Self Help, Academic, Philosophical
 - published 1997, 210 pages
 - length: 199 -> 194 (-5)
 - longest shared run with the replaced text: 1 word(s)
@@ -38,7 +38,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book371 — The Turn of the Screw · Henry James
 
-- draft
+- applied
 - genres: Classic, Crime
 - qualities: Fiction, Horror, Magic, Mystery, Plot Twist, Academic, Thriller, Short
 - published 1898, 121 pages
@@ -53,7 +53,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book372 — Twenty Thousand Leagues Under the Sea · Jules Verne
 
-- draft
+- applied
 - genres: Classic, Kids, Drama, Travel
 - qualities: Fiction, Science Fiction, Happy Ending, Epic, Animals, Nature
 - published 1870, 324 pages
@@ -68,7 +68,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book377 — Unwitting Wisdom; An Anthology of Aesop's Animal Fables · Helen Ward
 
-- draft
+- applied
 - genres: Classic, Kids
 - qualities: Animals, Fiction, Humour, Light Reading, Magic, Nature, Female Author, Folklore, Philosophical, Short, Contemporary
 - published 2004, 64 pages
@@ -83,7 +83,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book379 — Valperga · Mary Shelley
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Female Author, Historic, Tragic, Niche, Philosophical, Political, Folklore, Poetry, Novel
 - published 1823, 348 pages
@@ -98,7 +98,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book385 — Watership Down · Richard Adams
 
-- draft
+- applied
 - genres: Classic, Fantasy, Kids
 - qualities: Animals, Fiction, Nature, Folklore, Happy Ending, Philosophical, Tragic, YA
 - published 1972, 413 pages
@@ -113,7 +113,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book388 — Who's Afraid of Virginia Woolf? · Edward Albee
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Humour, Nature, Play, Academic, Novel, Philosophical, Thriller, Tragic
 - published 1962, 272 pages
@@ -128,7 +128,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book400 — Here Be Dragons; (Welsh Princes #1) · Sharon Kay Penman
 
-- draft
+- applied
 - genres: Classic, Fantasy
 - qualities: Fiction, Historic, Long, Magic, Romance, Series, Female Author, Very Long
 - published 1985, 800 pages
@@ -143,9 +143,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book416 — Declaration of the Rights of Woman and of the Female Citizen · Olympe de Gouges
 
-- draft
+- applied
 - genres: Classic, Fact
-- qualities: Historic, Niche, Non-Fiction, Political, Academic, Female Author, Short
+- qualities: Historic, Niche, Non Fiction, Political, Academic, Female Author, Short
 - published 1791, 32 pages
 - length: 263 -> 192 (-71)
 - longest shared run with the replaced text: 1 word(s)
@@ -158,9 +158,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book426 — Walden · Henry David Thoreau
 
-- draft
+- applied
 - genres: Classic, Fact
-- qualities: Biography, Nature, Niche, Non-Fiction, Political, Academic, Philosophical
+- qualities: Biography, Nature, Niche, Non Fiction, Political, Academic, Philosophical
 - published 1854, 275 pages
 - length: 266 -> 203 (-63)
 - longest shared run with the replaced text: 1 word(s)
@@ -173,7 +173,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book437 — Belinda · Maria Edgeworth
 
-- draft
+- applied
 - genres: Classic
 - qualities: Academic, Coming of Age, Dry, Female Author, Fiction, Historic, Long, Niche, Novel, Outdated, Political, Romance
 - published 1801, 560 pages
@@ -188,7 +188,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book455 — Crime and Punishment · Fyodor Dostoevsky
 
-- draft
+- applied
 - genres: Classic, Crime
 - qualities: Fiction, Tragic, Academic, Philosophical, Novel
 - published 1866, 671 pages
@@ -203,7 +203,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book458 — Don Quixote · Miguel de Cervantes
 
-- draft
+- applied
 - genres: Classic, Travel
 - qualities: Fiction, Humour, Animals, Tragic, Philosophical, Political, Folklore, Novel, Historic
 - published 1605, 1056 pages
@@ -218,7 +218,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book461 — East of Eden · John Steinbeck
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Historic, Nature, Romance, Novel, Philosophical, Long
 - published 1952, 632 pages
@@ -233,9 +233,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book462 — Edinburgh; Picturesque Notes · Robert Louis Stevenson
 
-- draft
+- applied
 - genres: Classic, Fact, Travel
-- qualities: Biography, Historic, Humour, Light Reading, Non-Fiction, Political, Travel Guide, Short
+- qualities: Biography, Historic, Humour, Light Reading, Non Fiction, Political, Travel Guide, Short
 - published 1879, 128 pages
 - length: 169 -> 200 (+31)
 - longest shared run with the replaced text: 1 word(s)
@@ -248,7 +248,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book470 — Great Expectations · Charles Dickens
 
-- draft
+- applied
 - genres: Classic, Drama, Travel
 - qualities: Fiction, Coming of Age, Plot Twist, Philosophical, Novel
 - published 1861, 493 pages
@@ -263,7 +263,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book474 — I Capture the Castle · Dodie Smith
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Humour, Light Reading, Romance, Coming of Age, Female Author, Happy Ending, Outdated, YA
 - published 1948, 343 pages
@@ -278,9 +278,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book475 — I Know Why the Caged Bird Sings · Maya Angelou
 
-- draft
+- applied
 - genres: Classic, Fact
-- qualities: Mature Rating, Biography, Nature, Non-Fiction, Poetry, Academic, Coming of Age, Female Author, Philosophical, Tragic
+- qualities: Age Rating Mature, Biography, Nature, Non Fiction, Poetry, Academic, Coming of Age, Female Author, Philosophical, Tragic
 - published 1969, 289 pages
 - length: 249 -> 196 (-53)
 - longest shared run with the replaced text: 1 word(s)
@@ -293,9 +293,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book477 — If Beale Street Could Talk · James Baldwin
 
-- draft
+- applied
 - genres: Classic, Drama
-- qualities: Mature Rating, Fiction, Historic, Political, Romance, Academic, Novel, Tragic, Short
+- qualities: Age Rating Mature, Fiction, Historic, Political, Romance, Academic, Novel, Tragic, Short
 - published 1974, 197 pages
 - length: 240 -> 198 (-42)
 - longest shared run with the replaced text: 2 word(s)
@@ -308,7 +308,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book480 — Jane Eyre · Charlotte Brontë
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Romance, Coming of Age, Female Author, Plot Twist, Tragic, Happy Ending, Philosophical, Horror, Novel
 - published 1847, 496 pages
@@ -323,7 +323,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book486 — Les Miserables · Victor Hugo
 
-- draft
+- applied
 - genres: Classic, Drama, Crime
 - qualities: Fiction, Historic, Gore, Detective, Tragic, Dry, Philosophical, Political, Novel
 - published 1800, 511 pages
@@ -338,9 +338,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book487 — Letters from Egypt; 1862-1869 · Lucie Duff Gordon
 
-- draft
+- applied
 - genres: Classic, Fact, Travel
-- qualities: Animals, Biography, Historic, Humour, Non-Fiction, Poetry, Political, Academic, Female Author, Outdated, Tragic
+- qualities: Animals, Biography, Historic, Humour, Non Fiction, Poetry, Political, Academic, Female Author, Outdated, Tragic
 - published 1865, 385 pages
 - length: 251 -> 206 (-45)
 - longest shared run with the replaced text: 2 word(s)
@@ -353,7 +353,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book492 — Lord of the Flies · William Golding
 
-- draft
+- applied
 - genres: Classic, Travel
 - qualities: Fiction, Coming of Age, Plot Twist, Tragic, Philosophical, YA, Political, Novel, Academic
 - published 1954, 243 pages
@@ -368,7 +368,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book493 — A Man for All Seasons · Robert Bolt
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Biography, Fiction, Historic, Play, Political, Academic, Dry, Short
 - published 1960, 192 pages
@@ -383,7 +383,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book507 — Orlando · Virginia Woolf
 
-- draft
+- applied
 - genres: Classic, Fantasy
 - qualities: Fiction, Queer, Female Author, Historic, Happy Ending, Philosophical, Political, Humour, Folklore, Poetry, Novel, Academic
 - published 1928, 263 pages
@@ -398,7 +398,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book519 — Sense and Sensibility · Jane Austen
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Romance, Female Author, Coming of Age, Happy Ending, Humour, Novel
 - published 1811, 352 pages
@@ -413,7 +413,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book528 — The Book of the City of Ladies · Christine de Pizan
 
-- draft
+- applied
 - genres: Classic
 - qualities: Fiction, Historic, Nature, Political, Academic, Dry, Female Author, Folklore, Philosophical
 - published 1405, 336 pages
@@ -428,7 +428,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book530 — The Canterbury Tales · Geoffrey Chaucer
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Gore, Academic, Philosophical, Humour, Folklore, Poetry
 - published 1478, 332 pages
@@ -443,7 +443,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book531 — The Count of Monte Cristo · Alexandre Dumas
 
-- draft
+- applied
 - genres: Classic
 - qualities: Fiction, Historic, Plot Twist, Tragic, Happy Ending, Philosophical, Epic, Thriller, Novel
 - published 1844, 1276 pages
@@ -458,7 +458,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book543 — The Odyssey · Homer, transl. by Knox & Fagles
 
-- draft
+- applied
 - genres: Classic, Fantasy
 - qualities: Fiction, Epic, Historic, Gore, Happy Ending, Philosophical, Folklore, Poetry, Magic, Academic, Outdated
 - published -700, 352 pages
@@ -473,7 +473,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book548 — Pollyanna; Book 1 · Eleanor H. Porter
 
-- draft
+- applied
 - genres: Classic, Kids
 - qualities: Fiction, Humour, Light Reading, Series, Coming of Age, Female Author, Happy Ending
 - published 1913, 304 pages
@@ -488,7 +488,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book579 — The Secret Island; The Secret Series #1 · Enid Blyton
 
-- draft
+- applied
 - genres: Classic, Drama, Kids
 - qualities: Animals, Fiction, Light Reading, Mystery, Nature, Plot Twist, Female Author, Series, Happy Ending, Short
 - published 1938, 192 pages
@@ -503,7 +503,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book580 — Selected Stories of Anton Chekhov · A. Chekhov, L. Volokhonsky & R. Pevear
 
-- draft
+- applied
 - genres: Classic
 - qualities: Animals, Fiction, Niche, Academic, Long
 - published 1903, 496 pages
@@ -518,7 +518,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book586 — Rebecca · Daphne du Maurier
 
-- draft
+- applied
 - genres: Classic
 - qualities: Fiction, Female Author, Mystery, Romance, Thriller, Plot Twist, Tragic, Novel
 - published 1938, 448 pages
@@ -533,7 +533,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book588 — Anne of Green Gables · L.M. Montgomery
 
-- draft
+- applied
 - genres: Classic, Kids
 - qualities: Fiction, Female Author, Series, Coming of Age, Happy Ending, Light Reading
 - published 1908, 320 pages
@@ -548,7 +548,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book590 — The Haunting of Hill House · Shirley Jackson
 
-- draft
+- applied
 - genres: Classic
 - qualities: Fiction, Female Author, Horror, Mystery, Thriller, Novel
 - published 1959, 204 pages
@@ -563,7 +563,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book593 — The Adventures of Pippi Longstocking · Astrid Lindgren
 
-- draft
+- applied
 - genres: Classic, Kids
 - qualities: Fiction, Female Author, Series, Coming of Age, Light Reading, Animals, Nature, Humour
 - published 1952, 296 pages
@@ -578,9 +578,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book616 — The Boundless Sea; A Human History of the Oceans · David Abulafia
 
-- draft
+- applied
 - genres: Classic, Fact, Travel
-- qualities: Historic, Nature, Non-Fiction, Political, Academic, Dry, Epic, Folklore, Long, Very Long, Contemporary
+- qualities: Historic, Nature, Non Fiction, Political, Academic, Dry, Epic, Folklore, Long, Very Long, Contemporary
 - published 2019, 1088 pages
 - length: 260 -> 201 (-59)
 - longest shared run with the replaced text: 1 word(s)
@@ -593,7 +593,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book633 — Pygmalion · George Bernard Shaw
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Historic, Humour, Light Reading, Play, Plot Twist, Political, Romance, Happy Ending, Outdated, Short
 - published 1912, 96 pages
@@ -608,7 +608,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book654 — Thumbelina · Hans Christian Andersen
 
-- draft
+- applied
 - genres: Classic, Kids
 - qualities: Animals, Fiction, Light Reading, Magic, Nature, Happy Ending, Short
 - published 1835, 34 pages
@@ -623,7 +623,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book663 — On the Banks of Plum Creek; (Little House, Book 4) · Laura Ingalls Wilder
 
-- draft
+- applied
 - genres: Classic, Kids
 - qualities: Biography, Fiction, Light Reading, Series, Coming of Age, Female Author, Outdated
 - published 1937, 358 pages
@@ -638,7 +638,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book670 — Dickens at Christmas · Charles Dickens
 
-- draft
+- applied
 - genres: Classic
 - qualities: Fiction, Horror, Contemporary
 - published 1843, 584 pages

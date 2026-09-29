@@ -8,7 +8,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book490 — The Long Way to a Small Angry Planet; Wayfarers #1 · Becky Chambers
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Animals, Fiction, Humour, Plot Twist, Queer, Romance, Science Fiction, Series, Space, Female Author, Contemporary
 - published 2014, 434 pages
@@ -23,7 +23,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book511 — Parable of the Sower · Octavia E. Butler
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Science Fiction, Coming of Age, Female Author, Gore, Dystopia, Tragic, Philosophical, Political, Poetry, Series, Novel
 - published 1993, 310 pages
@@ -38,7 +38,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book515 — Prince Caspian; The Return to Narnia · C.S. Lewis
 
-- draft
+- applied
 - genres: Fantasy, Kids, Classic
 - qualities: Fiction, Magic, Coming of Age, Animals, Happy Ending, Epic, Folklore, YA, Series
 - published 1951, 216 pages
@@ -53,7 +53,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book516 — The Princess Bride · William Goldman
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Humour, Light Reading, Magic, Plot Twist, Romance, Happy Ending, Outdated, Long
 - published 1973, 500 pages
@@ -68,7 +68,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book517 — Saga; Volume 9 · Brian K. Vaughan & Fiona Staples
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Graphic Novel, Science Fiction, Queer, Magic, Gore, Dystopia, Plot Twist, Space, Tragic, Philosophical, Political, Epic, Series, Age Rating Mature, Contemporary
 - published 2018, 152 pages
@@ -83,7 +83,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book521 — Starstruck; (Deluxe Edition) · Elaine Lee & Michael Kaluta
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Graphic Novel, Science Fiction, Female Author, Humour, Niche, Epic, Series, Contemporary
 - published 2011, 360 pages
@@ -98,9 +98,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book524 — The Sunlit Man · Brandon Sanderson
 
-- draft
+- applied
 - genres: Fantasy
-- qualities: Mature Reading, Dystopia, Fiction, Magic, Mystery, Plot Twist, Political, Science Fiction, Space, Epic, Contemporary
+- qualities: Age Rating Mature, Dystopia, Fiction, Magic, Mystery, Plot Twist, Political, Science Fiction, Space, Epic, Contemporary
 - published 2023, 447 pages
 - length: 264 -> 207 (-57)
 - longest shared run with the replaced text: 4 word(s)
@@ -113,7 +113,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book525 — Supernova; Renegades #3 · Marissa Meyer
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Dystopia, Fiction, Light Reading, Long, Magic, Nature, Plot Twist, Political, Queer, Romance, Science Fiction, Series, Coming of Age, Philosophical, Tragic, YA, Contemporary
 - published 2019, 549 pages
@@ -128,7 +128,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book532 — The Fellowship of the Ring · J.R.R. Tolkien
 
-- draft
+- applied
 - genres: Fantasy, Classic
 - qualities: Fiction, Epic, Magic, Series
 - published 1954, 496 pages
@@ -143,7 +143,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book534 — The Green Ember; Book 1 · S.D. Smith & Zach Franzen
 
-- draft
+- applied
 - genres: Fantasy, Kids
 - qualities: Animals, Fiction, Magic, Series, Coming of Age, Epic, Happy Ending, Contemporary
 - published 2014, 400 pages
@@ -158,7 +158,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book535 — The Green Mile · Stephen King
 
-- draft
+- applied
 - genres: Fantasy, Crime
 - qualities: Fiction, Magic, Gore, Plot Twist, Tragic, Philosophical, Age Rating Mature, Horror, Thriller, Animals
 - published 1996, 465 pages
@@ -173,7 +173,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book537 — The Gunslinger · Stephen King
 
-- draft
+- applied
 - genres: Fantasy, Crime
 - qualities: Fiction, Thriller, Science Fiction, Magic, Gore, Dystopia, Series, Age Rating Mature
 - published 1976, 254 pages
@@ -188,7 +188,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book540 — The Lion, the Witch and the Wardrobe · C. S. Lewis
 
-- draft
+- applied
 - genres: Fantasy, Kids, Classic
 - qualities: Fiction, Magic, Happy Ending, Epic, Folklore, Series, Animals
 - published 1950, 186 pages
@@ -203,7 +203,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book542 — The Lost Continent · C. J. Cutcliffe Hyne
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Science Fiction, Magic, Plot Twist, Animals, Tragic, Philosophical, Humour, YA, Series, Nature
 - published 1972, 309 pages
@@ -218,7 +218,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book549 — The Return of the King · J.R.R. Tolkien
 
-- draft
+- applied
 - genres: Fantasy, Classic
 - qualities: Fiction, Epic, Magic, Happy Ending, Series
 - published 1950, 482 pages
@@ -233,7 +233,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book558 — The Two Towers · J.R.R. Tolkien
 
-- draft
+- applied
 - genres: Fantasy, Classic
 - qualities: Fiction, Epic, Magic, Tragic, Series, Historic
 - published 1954, 440 pages
@@ -248,7 +248,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book564 — White Night · Jim Butcher
 
-- draft
+- applied
 - genres: Fantasy, Crime
 - qualities: Fiction, Magic, Gore, Mystery, Plot Twist, Detective, Happy Ending, Thriller, Folklore, Series, Age Rating Mature, Contemporary
 - published 2007, 480 pages
@@ -263,7 +263,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book565 — Witch Wood · John Buchan
 
-- draft
+- applied
 - genres: Fantasy, Classic
 - qualities: Fiction, Historic, Mystery, Tragic, Niche, Folklore, Horror, Magic, Novel
 - published 1927, 348 pages
@@ -278,7 +278,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book570 — An Unkindness of Ghosts · Rivers Solomon
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Contemporary, Dystopia, Female Author, Fiction, Novel, Queer, Science Fiction, Space
 - published 2017, 352 pages
@@ -293,7 +293,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book587 — Carmilla · J. Sheridan Le Fanu
 
-- draft
+- applied
 - genres: Fantasy, Classic
 - qualities: Fiction, Horror, Mystery, Romance, Plot Twist, Queer, Novel
 - published 1872, 108 pages
@@ -308,7 +308,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book589 — Guards! Guards! · Terry Pratchett
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Series, Light Reading, YA, Magic, Humour
 - published 1989, 355 pages
@@ -323,7 +323,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book596 — Moominland Midwinter · Tove Jansson
 
-- draft
+- applied
 - genres: Fantasy, Classic, Kids
 - qualities: Fiction, Female Author, Series, Happy Ending, Light Reading, Animals, Nature, Folklore
 - published 1957, 168 pages
@@ -338,7 +338,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book597 — The Witch Boy · Molly Knox Ostertag
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Graphic Novel, Mystery, Light Reading, YA, Queer, Magic
 - published 2017, 213 pages
@@ -353,9 +353,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book599 — Borne · Jeff VanderMeer
 
-- draft
+- applied
 - genres: Fantasy
-- qualities: Mature Rating, Contemporary, Dystopia, Fiction, Gore, Horror, Mystery, Novel, Science Fiction
+- qualities: Age Rating Mature, Contemporary, Dystopia, Fiction, Gore, Horror, Mystery, Novel, Science Fiction
 - published 2017, 323 pages
 - length: 254 -> 198 (-56)
 - longest shared run with the replaced text: 1 word(s)
@@ -368,7 +368,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book602 — Witch Hat Atelier; Volume 1 · Kamome Shirahama
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Female Author, Series, Manga, Coming of Age, Light Reading, Magic
 - published 2017, 203 pages
@@ -383,7 +383,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book614 — Heartless · Marissa Meyer
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Animals, Fiction, Magic, Plot Twist, Poetry, Queer, Romance, Female Author, Tragic, YA, Long, Contemporary
 - published 2016, 453 pages
@@ -398,9 +398,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book622 — The Bright Sword · Lev Grossman
 
-- draft
+- applied
 - genres: Fantasy
-- qualities: Academic, Mature Rating, Coming of Age, Contemporary, Dry, Epic, Fiction, Folklore, Historic, Long, Magic, Mystery, Nature, Novel, Philosophical, Plot Twist, Poetry, Political, Queer, Tragic
+- qualities: Academic, Age Rating Mature, Coming of Age, Contemporary, Dry, Epic, Fiction, Folklore, Historic, Long, Magic, Mystery, Nature, Novel, Philosophical, Plot Twist, Poetry, Political, Queer, Tragic
 - published 2024, 688 pages
 - length: 246 -> 188 (-58)
 - longest shared run with the replaced text: 2 word(s)
@@ -413,9 +413,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book626 — Bury Our Bones in the Midnight Soil · V.E. Schwab
 
-- draft
+- applied
 - genres: Fantasy
-- qualities: Mature Reading, Fiction, Magic, Queer, Romance, Female Author, Long, Contemporary
+- qualities: Age Rating Mature, Fiction, Magic, Queer, Romance, Female Author, Long, Contemporary
 - published 2025, 535 pages
 - length: 119 -> 198 (+79)
 - longest shared run with the replaced text: 1 word(s)
@@ -428,9 +428,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book627 — A Buzz in the Meadows; The Natural History of a French Farm · Dave Goulson
 
-- draft
+- applied
 - genres: Fantasy
-- qualities: Animals, Biography, Contemporary, Historic, Hobby, Light Reading, Nature, Non-Fiction, Pop Science
+- qualities: Animals, Biography, Contemporary, Historic, Hobby, Light Reading, Nature, Non Fiction, Pop Science
 - published 2014, 288 pages
 - length: 262 -> 204 (-58)
 - longest shared run with the replaced text: 3 word(s)
@@ -443,7 +443,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book632 — A Psalm for the Wild-Built · Becky Chambers
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Female Author, Series, Science Fiction, Happy Ending, Light Reading, Queer, Nature, Philosophical
 - published 2021, 151 pages
@@ -458,9 +458,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book636 — The Ruins of Gorlan; (Ranger's Apprentice #1) · John Flanagan
 
-- draft
+- applied
 - genres: Fantasy
-- qualities: Fiction, Historic, Humour, Kids, Light Reading, Mystery, Series, Coming of Age, Epic, Happy Ending, Contemporary
+- qualities: Fiction, Historic, Humour, Light Reading, Mystery, Series, Coming of Age, Epic, Happy Ending, Contemporary
 - published 2004, 249 pages
 - length: 217 -> 200 (-17)
 - longest shared run with the replaced text: 2 word(s)
@@ -473,7 +473,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book638 — Annihilation · Jeff VanderMeer
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Series, Science Fiction, Horror, Mystery, Thriller, Dystopia, Plot Twist, Epic, Gore, Space, Age Rating Mature
 - published 2014, 195 pages
@@ -488,7 +488,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book640 — The Fisherman · John Langan
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Science Fiction, Horror, Mystery, Tragic, Folklore, Age Rating Mature
 - published 2016, 282 pages
@@ -503,7 +503,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book645 — The Search; Avatar The Last Airbender (#4-6) · Konietzko, DiMartino & Yang
 
-- draft
+- applied
 - genres: Fantasy, Kids
 - qualities: Fiction, Series, Graphic Novel, Coming of Age, Happy Ending, Light Reading, Plot Twist, Animals, Nature, Humour
 - published 2014, 238 pages
@@ -518,7 +518,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book651 — This Was Our Pact · Ryan Andrews
 
-- draft
+- applied
 - genres: Fantasy, Kids
 - qualities: Fiction, Graphic Novel, Magic, Manga, Contemporary
 - published 2013, 330 pages
@@ -533,9 +533,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book659 — Dragonology; The Complete Book of Dragons · Ernest Drake
 
-- draft
+- applied
 - genres: Fantasy, Kids
-- qualities: Animals, Fiction, Hobby, Kids, Magic, Encyclopedic, Short, Contemporary, Folklore
+- qualities: Animals, Fiction, Hobby, Magic, Encyclopedic, Short, Contemporary, Folklore
 - published 2003, 26 pages
 - length: 243 -> 207 (-36)
 - longest shared run with the replaced text: 2 word(s)
@@ -548,7 +548,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book660 — Jujutsu Kaisen; Volume 1 · Gege Akutami
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Series, Manga, Horror, YA, Coming of Age, Magic, Tragic
 - published 2018, 192 pages
@@ -563,7 +563,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book661 — Ranma 1/2; Volume 1 · Rumiko Takahashi
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Female Author, Series, Manga, Romance, YA, Humour, Magic, Queer
 - published 2014, 360 pages
@@ -578,7 +578,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book662 — Omniscient Reader's Viewpoint; Volume 1 · singNsong & UMI
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Series, Manga, Mystery, Science Fiction, Thriller, YA, Dystopia, Epic
 - published 2020, 248 pages
@@ -593,7 +593,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book664 — Sailor Moon; Volume 1 · Naoko Takeuchi
 
-- draft
+- applied
 - genres: Fantasy, Kids
 - qualities: Fiction, Female Author, Series, Manga, Romance, Animals, Coming of Age, Epic, Happy Ending, Light Reading, Magic, Queer
 - published 1992, 200 pages

@@ -8,7 +8,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book01 — 1,000 Places to See Before You Die · Patricia Schultz
 
-- draft
+- applied
 - genres: Travel
 - qualities: Non Fiction, Female Author, Light Reading, Series, Travel Guide, Nature, Contemporary
 - published 2003, 974 pages
@@ -23,9 +23,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book05 — 84, Charing Cross Road · Helene Hanff
 
-- draft
+- applied
 - genres: Fact, Travel
-- qualities: Humour, Light Reading, Niche, Non-Fiction, Short, Female Author, Biography
+- qualities: Humour, Light Reading, Niche, Non Fiction, Short, Female Author, Biography
 - published 1970, 97 pages
 - length: 233 -> 195 (-38)
 - longest shared run with the replaced text: 4 word(s)
@@ -38,7 +38,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book07 — A Deepness in the Sky · Vernor Vinge
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Series, Space, Dry, Philosophical, Political, Epic, Science Fiction, Age Rating Mature
 - published 1999, 792 pages
@@ -53,9 +53,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book08 — Design Patterns; Elements of Reusable Object-Oriented Software · E. Gamma, R. Helm, R. Johnson, J. Vlissides
 
-- draft
+- applied
 - genres: Fact
-- qualities: Hobby, Niche, Non-Fiction, Academic, Dry, Encyclopedic
+- qualities: Hobby, Niche, Non Fiction, Academic, Dry, Encyclopedic
 - published 1994, 416 pages
 - length: 212 -> 198 (-14)
 - longest shared run with the replaced text: 2 word(s)
@@ -68,9 +68,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book10 — A Fire Upon the Deep · Vernor Vinge
 
-- draft
+- applied
 - genres: Fantasy
-- qualities: Fiction, Science Fiction, Space, Philosophical, Epic, Series, Age Rating Mature [customers do not accept this as fantasy]
+- qualities: Fiction, Science Fiction, Space, Philosophical, Epic, Series, Age Rating Mature
 - published 1992, 605 pages
 - length: 146 -> 186 (+40)
 - longest shared run with the replaced text: 1 word(s)
@@ -83,7 +83,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book12 — A Game of Thrones · George R. R. Martin
 
-- draft
+- applied
 - genres: Fantasy
 - qualities: Fiction, Epic, Magic, Gore, Plot Twist, Tragic, Series, Age Rating Mature
 - published 1996, 802 pages
@@ -98,7 +98,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book13 — A Good Girl's Guide to Murder · Holly Jackson
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Series, Female Author, Mystery, Plot Twist, Detective, YA, Romance, Contemporary
 - published 2019, 400 pages
@@ -113,7 +113,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book16 — A Short History of Nearly Everything · Bill Bryson
 
-- draft
+- applied
 - genres: Fact
 - qualities: Non Fiction, Historic, Epic, Pop Science, Contemporary
 - published 2003, 608 pages
@@ -128,7 +128,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book18 — A Study in Scarlet · Arthur Conan Doyle
 
-- draft
+- applied
 - genres: Crime, Classic
 - qualities: Fiction, Mystery, Detective, Series
 - published 1887, 162 pages
@@ -143,7 +143,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book20 — A Wrinkle in Time · Madeleine L'Engle
 
-- draft
+- applied
 - genres: Fantasy, Kids, Travel
 - qualities: Fiction, Science Fiction, YA, Female Author, Magic, Coming of Age, Space, Happy Ending, Philosophical, Epic, Series
 - published 1962, 212 pages
@@ -158,9 +158,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book23 — Ace; What Asexuality Reveals About Desire, Society and the Meaning of Sex · Angela Chen
 
-- draft
+- applied
 - genres: Fact
-- qualities: Nature, Non-Fiction, Political, Queer, Self Help, Female Author, Philosophical, Contemporary
+- qualities: Nature, Non Fiction, Political, Queer, Self Help, Female Author, Philosophical, Contemporary
 - published 2020, 209 pages
 - length: 202 -> 190 (-12)
 - longest shared run with the replaced text: 1 word(s)
@@ -173,7 +173,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book26 — After the Funeral · Agatha Christie
 
-- draft
+- applied
 - genres: Crime, Classic, Drama
 - qualities: Fiction, Mystery, Detective, Female Author, Plot Twist, Whodunnit
 - published 1953, 244 pages
@@ -188,7 +188,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book31 — American Psycho · Bret Easton Ellis
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Thriller, Gore, Tragic, Philosophical, Horror, Age Rating Mature
 - published 1991, 424 pages
@@ -203,7 +203,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book33 — Anathem · Neal Stephenson
 
-- draft
+- applied
 - genres: Fantasy, Crime
 - qualities: Fiction, Science Fiction, Plot Twist, Space, Dry, Philosophical, Epic, Contemporary
 - published 2008, 928 pages
@@ -218,7 +218,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book38 — Animal Farm · George Orwell
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Dystopia, Animals, Tragic, Dry, Philosophical, Political, Gore, Age Rating Mature, Academic
 - published 1945, 130 pages
@@ -233,7 +233,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book42 — Ariel · Sylvia Plath
 
-- draft
+- applied
 - genres: Drama
 - qualities: Non Fiction, Female Author, Tragic, Philosophical, Poetry
 - published 1965, 96 pages
@@ -248,7 +248,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book46 — Artemis Fowl · Eoin Colfer
 
-- draft
+- applied
 - genres: Fantasy, Kids, Crime
 - qualities: Fiction, Magic, Coming of Age, Plot Twist, Happy Ending, Light Reading, Epic, Folklore, YA, Series
 - published 1999, 288 pages
@@ -263,7 +263,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book55 — Beloved · Toni Morrison
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Female Author, Magic, Historic, Tragic, Philosophical, Political, Novel, Horror, Academic
 - published 1987, 338 pages
@@ -278,7 +278,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book56 — Better Than the Movies · Lynn Painter
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Romance, YA, Female Author, Coming of Age, Light Reading, Contemporary
 - published 2021, 368 pages
@@ -293,7 +293,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book57 — Call Me by Your Name · André Aciman
 
-- draft
+- applied
 - genres: Drama, Travel
 - qualities: Fiction, Coming of Age, Tragic, Romance, Poetry, Novel, Contemporary
 - published 2007, 256 pages
@@ -308,7 +308,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book61 — Catcher in the Rye, The · JD Salinger
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Academic, Coming of Age, Dry, Fiction, Historic, Humour, Nature, Novel, Philosophical, Tragic
 - published 1951, 277 pages
@@ -323,7 +323,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book62 — Charlie and the Chocolate Factory · Roald Dahl
 
-- draft
+- applied
 - genres: Kids, Classic, Fantasy
 - qualities: Fiction, Magic, Happy Ending, Light Reading
 - published 1964, 172 pages
@@ -338,7 +338,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book63 — Charlotte's Web · E. B. White
 
-- draft
+- applied
 - genres: Kids, Classic
 - qualities: Fiction, Animals, Tragic, Light Reading, Nature
 - published 1952, 184 pages
@@ -353,9 +353,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book64 — Chemical Chaos; Horrible Science · Nick Arnold & Tony De Saulles
 
-- draft
+- applied
 - genres: Fact, Kids
-- qualities: Humour, Light Reading, Non-Fiction, Pop Science, Series
+- qualities: Humour, Light Reading, Non Fiction, Pop Science, Series
 - published 1997, 208 pages
 - length: 232 -> 191 (-41)
 - longest shared run with the replaced text: 2 word(s)
@@ -368,9 +368,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book76 — Conversations with Friends · Sally Rooney
 
-- draft
+- applied
 - genres: Drama, Classic
-- qualities: Academic, Mature Rating, Coming of Age, Contemporary, Dry, Female Author, Fiction, Nature, Novel, Philosophical, Queer, Romance, Tragic
+- qualities: Academic, Age Rating Mature, Coming of Age, Contemporary, Dry, Female Author, Fiction, Nature, Novel, Philosophical, Queer, Romance, Tragic
 - published 2017, 336 pages
 - length: 257 -> 178 (-79)
 - longest shared run with the replaced text: 2 word(s)
@@ -383,7 +383,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book85 — Death on the Nile · Agatha Christie
 
-- draft
+- applied
 - genres: Crime, Classic, Travel
 - qualities: Fiction, Mystery, Female Author, Plot Twist, Detective, Tragic, Whodunnit, Series
 - published 1937, 287 pages
@@ -398,7 +398,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book87 — Down Under · Bill Bryson
 
-- draft
+- applied
 - genres: Travel, Fact
 - qualities: Non Fiction, Happy Ending, Biography, Humour, Historic, Contemporary
 - published 2000, 344 pages
@@ -413,7 +413,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book92 — Emma · Jane Austen
 
-- draft
+- applied
 - genres: Classic
 - qualities: Fiction, Romance, Female Author, Happy Ending, Humour, Novel
 - published 1816, 459 pages
@@ -428,7 +428,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book94 — Fantastic Mr Fox · Roald Dahl
 
-- draft
+- applied
 - genres: Kids, Classic
 - qualities: Fiction, Animals, Happy Ending, Light Reading, Nature
 - published 1970, 96 pages
@@ -443,7 +443,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book101 — Five on a Treasure Island · Enid Blyton
 
-- draft
+- applied
 - genres: Kids, Classic, Crime
 - qualities: Fiction, Mystery, Female Author, Animals, Happy Ending, Light Reading, Series
 - published 1942, 188 pages
@@ -458,7 +458,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book108 — Frog and Toad Together · Arnold Lobel
 
-- draft
+- applied
 - genres: Kids
 - qualities: Fiction, Animals, Happy Ending, Light Reading, Series, Nature
 - published 1971, 64 pages
@@ -473,7 +473,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book112 — Gone Girl · Gillian Flynn
 
-- draft
+- applied
 - genres: Crime
 - qualities: Fiction, Thriller, Mystery, Female Author, Plot Twist, Tragic, Contemporary
 - published 2011, 475 pages
@@ -488,7 +488,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book118 — Gulliver's Travels · Jonathan Swift
 
-- draft
+- applied
 - genres: Classic, Fantasy, Kids, Travel
 - qualities: Fiction, Humour, Happy Ending, Dry, Philosophical, Political, Epic
 - published 1726, 274 pages
@@ -503,7 +503,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book123 — The Hobbit; The Lord of the Rings #0 · J.R.R. Tolkien
 
-- draft
+- applied
 - genres: Classic, Fantasy, Kids
 - qualities: Fiction, Humour, Light Reading, Magic, Series, Epic, Folklore, Happy Ending
 - published 1937, 310 pages
@@ -518,7 +518,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book124 — Homage to Catalonia · George Orwell
 
-- draft
+- applied
 - genres: Fact, Travel, Classic
 - qualities: Non Fiction, Historic, Tragic, Academic, Political, Biography
 - published 1938, 241 pages
@@ -533,7 +533,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book165 — Nineteen Eighty-Four · George Orwell
 
-- draft
+- applied
 - genres: Classic
 - qualities: Fiction, Science Fiction, Dystopia, Tragic, Philosophical, Political, Epic, Thriller, Academic
 - published 1949, 320 pages
@@ -548,7 +548,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book170 — Notes From A Small Island · Bill Bryson
 
-- draft
+- applied
 - genres: Travel
 - qualities: Fiction, Light Reading, Humour
 - published 1995, 324 pages
@@ -563,7 +563,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book229 — The Canterville Ghost · Oscar Wilde
 
-- draft
+- applied
 - genres: Classic
 - qualities: Fiction, Magic, Happy Ending, Light Reading, Humour, Folklore
 - published 1887, 94 pages
@@ -578,7 +578,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book269 — The Invention of Hugo Cabret · Brian Selznick
 
-- draft
+- applied
 - genres: Kids
 - qualities: Fiction, Graphic Novel, Historic, Light Reading, Mystery, Niche, Manga, Long, Contemporary
 - published 2007, 533 pages
@@ -593,7 +593,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book340 — A Tramp Abroad · Mark Twain
 
-- draft
+- applied
 - genres: Travel
 - qualities: Biography, Fiction, Historic, Humour, Novel, Outdated, Long
 - published 1880, 649 pages
@@ -608,7 +608,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book341 — The Travels of Marco Polo · Marco Polo
 
-- draft
+- applied
 - genres: Travel, Fact, Classic
 - qualities: Non Fiction, Biography, Historic, Epic, Outdated
 - published 1300, 373 pages
@@ -623,7 +623,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book427 — A Walk in the Woods · Bill Bryson
 
-- draft
+- applied
 - genres: Travel
 - qualities: Fiction, Hobby, Light Reading, Humour, Nature
 - published 1997, 320 pages

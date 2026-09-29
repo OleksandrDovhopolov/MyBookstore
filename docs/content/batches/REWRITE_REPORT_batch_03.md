@@ -8,9 +8,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book82 — Death in Yellowstone; Accidents and Foolhardiness in the First National Park · Lee H. Whittlesey
 
-- draft
+- applied
 - genres: Travel
-- qualities: Animals, Gore, Horror, Nature, Niche, Non-Fiction, Travel Guide, Encyclopedic, Outdated
+- qualities: Animals, Gore, Horror, Nature, Niche, Non Fiction, Travel Guide, Encyclopedic, Outdated
 - published 1994, 240 pages
 - length: 140 -> 234 (+94)
 - longest shared run with the replaced text: 1 word(s)
@@ -23,9 +23,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book350 — Women Travel Solo; 30 Inspiring Stories of Adventure, Curiosity and the Power of Self-Discovery · Various Authors
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Travel
-- qualities: Biography, Hobby, Light Reading, Non-Fiction, Self Help, Travel Guide, Female Author, Contemporary
+- qualities: Biography, Hobby, Light Reading, Non Fiction, Self Help, Travel Guide, Female Author, Contemporary
 - published 2025, 272 pages
 - length: 228 -> 189 (-39)
 - longest shared run with the replaced text: 1 word(s)
@@ -38,9 +38,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book443 — Blue Highways; The Travel Trilogy #1 · William Least Heat-Moon
 
-- draft
+- applied
 - genres: Travel
-- qualities: Biography, Historic, Niche, Non-Fiction, Series, Travel Guide, Outdated, Contemporary
+- qualities: Biography, Historic, Niche, Non Fiction, Series, Travel Guide, Outdated, Contemporary
 - published 2011, 333 pages
 - length: 231 -> 208 (-23)
 - longest shared run with the replaced text: 2 word(s)
@@ -53,9 +53,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book464 — Elsewhere; One Woman, One Rucksack, One Lifetime of Travel · Rosita Boland
 
-- draft
+- applied
 - genres: Travel
-- qualities: Non-Fiction, Female Author
+- qualities: Non Fiction, Female Author
 - published 2019, 288 pages
 - length: 261 -> 200 (-61)
 - longest shared run with the replaced text: 2 word(s)
@@ -68,7 +68,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book498 — Mont-Saint-Michel and Chartres · Henry Adams
 
-- draft
+- applied
 - genres: Travel, Classic
 - qualities: Fiction, Historic, Niche, Philosophical, Poetry
 - published 1904, 397 pages
@@ -83,7 +83,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book527 — The Book of Tea · Okakura Kakuzo
 
-- draft
+- applied
 - genres: Travel, Classic
 - qualities: Non Fiction, Historic, Hobby, Philosophical, Poetry, Cooking
 - published 1906, 133 pages
@@ -98,7 +98,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book556 — The Stones of Venice · John Ruskin
 
-- draft
+- applied
 - genres: Travel, Classic
 - qualities: Non Fiction, Historic, Hobby, Dry, Niche, Academic, Series
 - published 1851, 222 pages
@@ -113,7 +113,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book600 — Bookworm; A Memoir of Childhood Reading · Jen Campbell
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Travel
 - qualities: Non Fiction, Female Author, Light Reading, Humour
 - published 2014, 273 pages
@@ -128,7 +128,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book606 — Happily Ever After Cookbook; Original Recipes for Book Lovers · Various Authors
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Travel, Fact
 - qualities: Non Fiction, Hobby, Cooking, Niche
 - published 2022, 138 pages
@@ -143,7 +143,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book607 — Cook As You Are; Recipes for Real Life, Hungry Cooks and Messy Kitchens · Ruby Tandoh
 
-- draft
+- applied
 - genres: Travel, Fact
 - qualities: Non Fiction, Female Author, Hobby, Light Reading, Self Help, Cooking
 - published 2021, 352 pages
@@ -158,7 +158,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book608 — Cook Korean!; A Comic Book with Recipes · Robin Ha
 
-- draft
+- applied
 - genres: Travel, Fact
 - qualities: Non Fiction, Female Author, Series, Graphic Novel, Hobby, Cooking, Humour
 - published 2016, 176 pages
@@ -173,9 +173,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book609 — A Cook's Tour; Global Adventures in Extreme Cuisines · Anthony Bourdain
 
-- draft
+- applied
 - genres: Travel
-- qualities: Cooking, Hobby, Nature, Niche, Non-Fiction, Self Help, Travel Guide, Philosophical, Contemporary
+- qualities: Cooking, Hobby, Nature, Niche, Non Fiction, Self Help, Travel Guide, Philosophical, Contemporary
 - published 2001, 277 pages
 - length: 128 -> 204 (+76)
 - longest shared run with the replaced text: 3 word(s)
@@ -188,7 +188,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book648 — An Age of License; A Travelogue (#1) · Lucy Knisley
 
-- draft
+- applied
 - genres: Travel
 - qualities: Non Fiction, Female Author, Biography, Graphic Novel, Light Reading, Self Help, Travel Guide, Humour
 - published 2014, 189 pages

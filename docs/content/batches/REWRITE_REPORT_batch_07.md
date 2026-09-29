@@ -8,7 +8,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book39 — The Animals of Farthing Wood · Colin Dann
 
-- draft
+- applied
 - genres: Classic, Drama, Kids
 - qualities: Animals, Fiction, Horror, Nature, Series, Tragic
 - published 1979, 302 pages
@@ -23,7 +23,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book40 — Annabel Lee · Edgar Allen Poe
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Poetry, Tragic, Short
 - published 1849, 24 pages
@@ -38,7 +38,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book68 — A Child's Garden of Verses · Robert Louis Stevenson & Tasha Tudor
 
-- draft
+- applied
 - genres: Classic, Kids
 - qualities: Fiction, Humour, Light Reading, Nature, Poetry, Happy Ending, Outdated, Short
 - published 1885, 67 pages
@@ -53,7 +53,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book78 — The Dark is Rising · Susan Cooper
 
-- draft
+- applied
 - genres: Classic, Fantasy, Kids
 - qualities: Fiction, Horror, Magic, Mystery, Series, Coming of Age, Epic, Female Author, Thriller
 - published 1973, 232 pages
@@ -68,9 +68,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book84 — Death of a Salesman; Certain Private Conversations in Two Acts and a Requiem · Arthur Miller
 
-- draft
+- applied
 - genres: Classic, Drama
-- qualities: Mature Rating, Fiction, Play, Political, Academic, Outdated, Tragic, Short
+- qualities: Age Rating Mature, Fiction, Play, Political, Academic, Outdated, Tragic, Short
 - published 1949, 112 pages
 - length: 180 -> 210 (+30)
 - longest shared run with the replaced text: 2 word(s)
@@ -83,7 +83,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book95 — Far from the Madding Crowd · Thomas Hardy
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Historic, Nature, Plot Twist, Romance, Academic, Dry, Novel, Outdated, Tragic
 - published 1874, 448 pages
@@ -98,7 +98,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book98 — Ficciones · J. L. Borges, A. Bonner & A. Kerrigan
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Gore, Horror, Magic, Mystery, Nature, Poetry, Academic, Folklore, Philosophical, Tragic, Short
 - published 1944, 174 pages
@@ -113,7 +113,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book111 — The Garden of Evening Mists · Tan Twan Eng
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Historic, Nature, Plot Twist, Political, Romance, Academic, Novel, Philosophical, Tragic, Long, Contemporary
 - published 2011, 488 pages
@@ -128,7 +128,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book131 — Inferno · Dante Alighieri, transl. by A. Esolen
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Epic, Magic, Historic, Gore, Tragic, Academic, Philosophical, Folklore, Poetry, Series, Age Rating Mature, Horror
 - published 1321, 309 pages
@@ -143,7 +143,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book139 — Jurassic Park · Michael Crichton
 
-- draft
+- applied
 - genres: Classic, Fantasy
 - qualities: Fiction, Long, Science Fiction, Series, Thriller, Animals, Nature
 - published 1990, 466 pages
@@ -158,7 +158,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book144 — Lady Audley's Secret · Mary Elizabeth Braddon
 
-- draft
+- applied
 - genres: Classic, Crime
 - qualities: Historic, Mystery, Plot Twist, Political, Academic, Dry, Female Author, Outdated, Thriller, Long
 - published 1862, 487 pages
@@ -173,7 +173,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book147 — Little Women · Louisa May Alcott
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Coming of Age, Female Author, Happy Ending, YA, Novel
 - published 1868, 416 pages
@@ -188,7 +188,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book152 — The Merry Adventures of Robin Hood · Howard Pyle
 
-- draft
+- applied
 - genres: Classic, Fantasy, Kids
 - qualities: Fiction, Historic, Humour, Light Reading, Folklore, Happy Ending
 - published 1883, 400 pages
@@ -203,7 +203,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book153 — Merry Mister Meddle; Mister Meddle Series · Enid Blyton
 
-- draft
+- applied
 - genres: Classic, Fantasy, Kids
 - qualities: Fiction, Humour, Light Reading, Magic, Series, Female Author, Short
 - published 1954, 184 pages
@@ -218,7 +218,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book154 — Middlemarch · George Eliot
 
-- draft
+- applied
 - genres: Classic
 - qualities: Fiction, Female Author, Historic, Academic, Philosophical, Political, Romance, Novel
 - published 1871, 800 pages
@@ -233,7 +233,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book157 — Moby-Dick · Herman Melville
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Epic, Historic, Gore, Animals, Tragic, Philosophical, Folklore, Nature, Academic
 - published 1851, 448 pages
@@ -248,7 +248,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book159 — Journey to the West; or, Monkey King · Wu Cheng'en
 
-- draft
+- applied
 - genres: Classic, Fantasy
 - qualities: Fiction, Magic, Historic, Gore, Happy Ending, Philosophical, Epic, Folklore, Poetry
 - published 1592, 339 pages
@@ -263,7 +263,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book163 — The Nightingale · Hans Christian Andersen
 
-- draft
+- applied
 - genres: Classic, Kids
 - qualities: Animals, Fiction, Light Reading, Nature, Poetry, Philosophical, Short
 - published 1843, 24 pages
@@ -278,7 +278,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book169 — The Notebooks of Malte Laurids Brigge · Rainer Maria Rilke
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Biography, Fiction, Poetry, Academic, Coming of Age, Novel, YA
 - published 1910, 260 pages
@@ -293,9 +293,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book179 — The Red Virgin; Memoirs of Louise Michel · Louise Michel
 
-- draft
+- applied
 - genres: Classic, Fact
-- qualities: Biography, Historic, Niche, Non-Fiction, Political, Dry, Female Author, Long
+- qualities: Biography, Historic, Niche, Non Fiction, Political, Dry, Female Author, Long
 - published 1886, 576 pages
 - length: 254 -> 205 (-49)
 - longest shared run with the replaced text: 3 word(s)
@@ -308,7 +308,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book183 — Romancero Gitano · Federico García Lorca
 
-- draft
+- applied
 - genres: Classic
 - qualities: Fiction, Poetry, Folklore, Tragic, Short, Romance
 - published 1928, 96 pages
@@ -323,7 +323,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book196 — Slaughterhouse-Five · Kurt Vonnegut
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Science Fiction, Historic, Gore, Tragic, Philosophical, Political, Age Rating Mature, Academic
 - published 1968, 188 pages
@@ -338,7 +338,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book226 — Body in the Library; Miss Marple  #2 · Agatha Christie
 
-- draft
+- applied
 - genres: Classic, Crime
 - qualities: Fiction, Humour, Mystery, Nature, Plot Twist, Series, Detective, Female Author, Novel, Philosophical, Whodunnit
 - published 1942, 272 pages
@@ -353,7 +353,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book230 — Caps for Sale; A Tale of a Peddler, Some Monkeys and Their Monkey Business · Esphyr Slobodkina
 
-- draft
+- applied
 - genres: Classic, Kids
 - qualities: Animals, Fiction, Humour, Light Reading, Short
 - published 1940, 48 pages
@@ -368,7 +368,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book232 — The Color Purple · Alice Walker
 
-- draft
+- applied
 - genres: Classic
 - qualities: Fiction, Queer, Female Author, Historic, Gore, Coming of Age, Tragic, Happy Ending, Philosophical, Political, Novel
 - published 1976, 262 pages
@@ -383,7 +383,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book236 — The Complete Father Brown · G.K. Chesterton
 
-- draft
+- applied
 - genres: Classic, Crime
 - qualities: Fiction, Historic, Humour, Mystery, Nature, Detective, Novel, Outdated, Philosophical, Whodunnit, Long, Very Long
 - published 1929, 718 pages
@@ -398,7 +398,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book248 — The Essential Rumi · Rumi, transl. by Barks & Moyne
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Non Fiction, Academic, Philosophical, Folklore, Poetry
 - published 1270, 302 pages
@@ -413,7 +413,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book249 — Eugene Onegin · Alexander Pushkin
 
-- draft
+- applied
 - genres: Classic
 - qualities: Fiction, Historic, Humour, Nature, Poetry, Romance, Academic, Dry, Novel, Philosophical, Tragic
 - published 1831, 244 pages
@@ -428,7 +428,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book252 — Evelina · Frances Burney
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Historic, Political, Romance, Academic, Coming of Age, Female Author, Novel, Outdated, Long
 - published 1778, 455 pages
@@ -443,7 +443,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book260 — The Great Gatsby · F. Scott Fitzgerald
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Romance, Coming of Age, Tragic, Novel
 - published 1920, 186 pages
@@ -458,7 +458,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book263 — Hard Times · Charles Dickens
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Humour, Nature, Political, Romance, Academic, Coming of Age, Novel, Outdated, Philosophical, Tragic
 - published 1854, 320 pages
@@ -473,7 +473,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book280 — Little Lord Fauntleroy · Frances Hodgson Burnett
 
-- draft
+- applied
 - genres: Classic, Kids
 - qualities: Fiction, Light Reading, Niche, Happy Ending, Outdated, Short, Female Author
 - published 1886, 164 pages
@@ -488,7 +488,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book286 — Lysistrata · Aristophanes
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Historic, Humour, Nature, Play, Political, Romance, Outdated, Philosophical, Short
 - published -411, 114 pages
@@ -503,7 +503,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book288 — Madeline · Ludwig Bemelmans
 
-- draft
+- applied
 - genres: Classic, Kids
 - qualities: Fiction, Humour, Light Reading, Poetry, Series, Coming of Age, Happy Ending, Short, Historic
 - published 1939, 44 pages
@@ -518,7 +518,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book309 — New Hampshire · Robert Frost
 
-- draft
+- applied
 - genres: Classic
 - qualities: Nature, Poetry, Short
 - published 1923, 128 pages
@@ -533,7 +533,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book313 — The Picture of Dorian Gray · Oscar Wilde
 
-- draft
+- applied
 - genres: Classic, Drama, Crime, Fantasy
 - qualities: Fiction, Horror, Queer, Plot Twist, Tragic, Philosophical, Novel, Magic, Academic
 - published 1890, 254 pages
@@ -548,7 +548,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book317 — The Raven · Edgar Allan Poe
 
-- draft
+- applied
 - genres: Classic, Fantasy
 - qualities: Fiction, Philosophical, Horror, Folklore, Poetry
 - published 1845, 44 pages
@@ -563,7 +563,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book325 — Sir Gawain and the Green Knight · Unknown & Simon Armitage
 
-- draft
+- applied
 - genres: Classic, Fantasy
 - qualities: Fiction, Historic, Magic, Mystery, Plot Twist, Poetry, Romance, Academic, Epic, Short
 - published 1375, 198 pages
@@ -578,7 +578,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book333 — The Story Girl; Book 1 · L.M. Montgomery
 
-- draft
+- applied
 - genres: Classic, Kids
 - qualities: Fiction, Historic, Humour, Light Reading, Nature, Series, Female Author, Happy Ending
 - published 1911, 336 pages
@@ -593,9 +593,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book338 — The Tenant of Wildfell Hall · Anne Brontë
 
-- draft
+- applied
 - genres: Classic, Drama
-- qualities: Mature Reading, Fiction, Historic, Plot Twist, Political, Female Author, Novel, Tragic, Romance
+- qualities: Age Rating Mature, Fiction, Historic, Plot Twist, Political, Female Author, Novel, Tragic, Romance
 - published 1848, 441 pages
 - length: 240 -> 202 (-38)
 - longest shared run with the replaced text: 3 word(s)
@@ -608,7 +608,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book343 — War and Peace · Leo Tolstoy
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Historic, Nature, Romance, Academic, Dry, Novel, Outdated, Philosophical, Long, Very Long, Political
 - published 1869, 1273 pages
@@ -623,7 +623,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book361 — To Kill a Mockingbird · Harper Lee
 
-- draft
+- applied
 - genres: Classic
 - qualities: Fiction, Coming of Age, Female Author, Historic, Tragic, Philosophical, Political, Novel, Academic
 - published 1960, 320 pages
@@ -638,7 +638,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book362 — To the Lighthouse · Virginia Woolf
 
-- draft
+- applied
 - genres: Classic, Drama
 - qualities: Fiction, Female Author, Tragic, Philosophical, Novel, Academic
 - published 1927, 242 pages
@@ -653,7 +653,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book364 — Treasure Island · Robert Louis Stevenson
 
-- draft
+- applied
 - genres: Classic, Fantasy, Kids
 - qualities: Fiction, Historic, Coming of Age, Happy Ending, YA, Mystery
 - published 1880, 247 pages

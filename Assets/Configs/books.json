@@ -30,7 +30,7 @@
       "Crime"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Historic",
       "Magic",
@@ -38,7 +38,6 @@
       "Political",
       "Science Fiction",
       "Thriller",
-      "Crime",
       "Long",
       "Very Long",
       "Contemporary"
@@ -81,7 +80,7 @@
     ],
     "qualities": [
       "Academic",
-      "Female-Author",
+      "Female Author",
       "Fiction",
       "Folklore",
       "Historic",
@@ -111,7 +110,7 @@
       "Humour",
       "Light Reading",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Short",
       "Female Author",
       "Biography"
@@ -177,7 +176,7 @@
     "qualities": [
       "Hobby",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Academic",
       "Dry",
       "Encyclopedic"
@@ -220,7 +219,7 @@
       "Philosophical",
       "Epic",
       "Series",
-      "Age Rating Mature [customers do not accept this as fantasy]"
+      "Age Rating Mature"
     ],
     "published": 1992,
     "pages": 605,
@@ -331,11 +330,10 @@
     ],
     "qualities": [
       "Biography",
-      "Non-Fiction",
+      "Non Fiction",
       "Historic",
       "Pop Science",
       "Female Author",
-      "Fact",
       "Contemporary"
     ],
     "published": 2002,
@@ -468,7 +466,7 @@
       "Animals",
       "Hobby",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Female Author",
       "Contemporary"
     ],
@@ -508,7 +506,7 @@
     ],
     "qualities": [
       "Nature",
-      "Non-Fiction",
+      "Non Fiction",
       "Political",
       "Queer",
       "Self Help",
@@ -551,10 +549,9 @@
       "Classic"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Humour",
-      "Kids",
       "Nature",
       "Series",
       "Academic",
@@ -668,7 +665,7 @@
       "Drama"
     ],
     "qualities": [
-      "Mature Rating",
+      "Age Rating Mature",
       "Fiction",
       "Historic",
       "Humour",
@@ -791,7 +788,7 @@
       "Light Reading",
       "Nature",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Philosophical",
       "Poetry",
       "Short"
@@ -841,7 +838,7 @@
       "Fantasy"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Historic",
       "Magic",
@@ -1020,7 +1017,7 @@
     "qualities": [
       "Historic",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Long",
       "Contemporary"
     ],
@@ -1467,7 +1464,7 @@
     "qualities": [
       "Humour",
       "Light Reading",
-      "Non-Fiction",
+      "Non Fiction",
       "Pop Science",
       "Series"
     ],
@@ -1505,7 +1502,7 @@
       "Fact"
     ],
     "qualities": [
-      "Non-Fiction",
+      "Non Fiction",
       "Outdated",
       "Dry"
     ],
@@ -1523,7 +1520,7 @@
     ],
     "qualities": [
       "Dry",
-      "Non-Fiction",
+      "Non Fiction",
       "Outdated",
       "Series"
     ],
@@ -1714,7 +1711,7 @@
     ],
     "qualities": [
       "Academic",
-      "Mature Rating",
+      "Age Rating Mature",
       "Coming of Age",
       "Contemporary",
       "Dry",
@@ -1740,7 +1737,7 @@
       "Fantasy"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Dystopia",
       "Fiction",
       "Gore",
@@ -1867,7 +1864,7 @@
       "Horror",
       "Nature",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Travel Guide",
       "Encyclopedic",
       "Outdated"
@@ -1912,7 +1909,7 @@
       "Drama"
     ],
     "qualities": [
-      "Mature Rating",
+      "Age Rating Mature",
       "Fiction",
       "Play",
       "Political",
@@ -2053,7 +2050,7 @@
       "Fantasy"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Animals",
       "Fiction",
       "Humour",
@@ -2223,7 +2220,7 @@
     "qualities": [
       "Biography",
       "Nature",
-      "Non-Fiction",
+      "Non Fiction",
       "Poetry",
       "Political",
       "Queer",
@@ -2341,7 +2338,7 @@
       "Crime"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Mystery",
       "Plot Twist",
@@ -2364,11 +2361,11 @@
       "Travel"
     ],
     "qualities": [
-      "Biobraphy",
+      "Biography",
       "Historic",
       "Light Reading",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Poetry",
       "Female Author",
       "Happy Ending",
@@ -2441,7 +2438,6 @@
       "Coming of Age",
       "Epic",
       "Female Author",
-      "Series",
       "YA",
       "Short",
       "Contemporary"
@@ -2460,7 +2456,7 @@
       "Fantasy"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Animals",
       "Fiction",
       "Magic",
@@ -2642,7 +2638,7 @@
       "Cooking",
       "Hobby",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Female Author",
       "Contemporary"
     ],
@@ -2846,7 +2842,7 @@
       "Crime"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Horror",
       "Plot Twist",
@@ -2937,7 +2933,7 @@
     "qualities": [
       "Historic",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Pop Science",
       "Dry",
       "Encyclopedic",
@@ -3208,7 +3204,7 @@
       "Fantasy"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Horror",
       "Magic",
@@ -3413,7 +3409,7 @@
     "qualities": [
       "Hobby",
       "Light Reading",
-      "Non-Fiction",
+      "Non Fiction",
       "Self Help",
       "Female Author",
       "Contemporary"
@@ -3781,7 +3777,7 @@
     ],
     "qualities": [
       "Biography",
-      "Non-Fiction",
+      "Non Fiction",
       "Political",
       "Queer",
       "Contemporary"
@@ -4067,7 +4063,7 @@
       "Biography",
       "Historic",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Political",
       "Dry",
       "Female Author",
@@ -4133,7 +4129,7 @@
     ],
     "qualities": [
       "Non Fiction",
-      "Bigraphy",
+      "Biography",
       "Niche",
       "Dry",
       "Academic"
@@ -4245,11 +4241,12 @@
       "Biography",
       "Nature",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Political",
       "Academic",
       "Dry",
-      "Philosophical Contemporary"
+      "Philosophical",
+      "Contemporary"
     ],
     "published": 2022,
     "pages": 216,
@@ -4344,7 +4341,7 @@
       "Light Reading",
       "Nature",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Pop Science",
       "Epic",
       "Philosophical"
@@ -4711,7 +4708,7 @@
       "Cooking",
       "Female Author",
       "Hobby",
-      "Non-Fiction",
+      "Non Fiction",
       "Short"
     ],
     "published": 2019,
@@ -4779,7 +4776,7 @@
       "Horror",
       "Humour",
       "Light Reading",
-      "Non-Fiction",
+      "Non Fiction",
       "Series"
     ],
     "published": 2002,
@@ -4800,7 +4797,7 @@
       "Encyclopedic",
       "Historic",
       "Hobby",
-      "Non-Fiction",
+      "Non Fiction",
       "Niche",
       "Pop Science"
     ],
@@ -4842,7 +4839,7 @@
       "Crime"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Dystopia",
       "Fiction",
       "Gore",
@@ -4979,7 +4976,7 @@
       "Biography",
       "Hobby",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Self Help",
       "Female Author"
     ],
@@ -5074,7 +5071,7 @@
     ],
     "qualities": [
       "Fiction",
-      "Humor",
+      "Humour",
       "Light Reading",
       "Magic",
       "Play",
@@ -5120,7 +5117,7 @@
       "Female Author",
       "Light Reading",
       "Niche",
-      "Non-Fiction"
+      "Non Fiction"
     ],
     "published": 2022,
     "pages": 352,
@@ -5161,7 +5158,7 @@
       "Fantasy"
     ],
     "qualities": [
-      "Mature Rating",
+      "Age Rating Mature",
       "Female Author",
       "Contemporary",
       "Fiction",
@@ -5314,7 +5311,7 @@
     ],
     "qualities": [
       "Light Reading",
-      "Non-Fiction",
+      "Non Fiction",
       "Self Help",
       "Happy Ending",
       "Contemporary"
@@ -5366,7 +5363,7 @@
       "Hobby",
       "Nature",
       "Niche",
-      "Non-Fiction"
+      "Non Fiction"
     ],
     "published": 2018,
     "pages": 512,
@@ -5488,7 +5485,7 @@
       "Female Author",
       "Light Reading",
       "Nature",
-      "Non-Fiction",
+      "Non Fiction",
       "Philosophical",
       "Self Help",
       "Tragic"
@@ -5666,7 +5663,7 @@
       "Travel"
     ],
     "qualities": [
-      "Non-Fiction",
+      "Non Fiction",
       "Travel Guide",
       "Long",
       "Very Long"
@@ -6192,7 +6189,7 @@
     ],
     "qualities": [
       "Nature",
-      "Non-Fiction",
+      "Non Fiction",
       "Political",
       "Academic",
       "Philosophical",
@@ -6261,7 +6258,7 @@
       "Crime"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Gore",
       "Horror",
@@ -6310,8 +6307,8 @@
       "Hobby",
       "Light Reading",
       "Niche",
-      "Non-Fiction",
-      "Self-Help",
+      "Non Fiction",
+      "Self Help",
       "Female Author",
       "Manga",
       "Contemporary"
@@ -6825,7 +6822,6 @@
     "qualities": [
       "Fiction",
       "Humour",
-      "Kids",
       "Long",
       "Mystery",
       "Science Fiction",
@@ -6950,9 +6946,8 @@
     ],
     "qualities": [
       "Animals",
-      "Fact",
       "Nature",
-      "Non-Fiction",
+      "Non Fiction",
       "Pop Science",
       "Encyclopedic",
       "Long",
@@ -7016,7 +7011,7 @@
       "Hobby",
       "Nature",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Pop Science",
       "Travel Guide",
       "Academic",
@@ -7399,7 +7394,7 @@
       "Fantasy"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Historic",
       "Magic",
@@ -7639,7 +7634,7 @@
     "qualities": [
       "Historic",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Academic",
       "Contemporary"
     ],
@@ -7657,7 +7652,7 @@
       "Drama"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Historic",
       "Plot Twist",
@@ -7753,7 +7748,7 @@
     ],
     "qualities": [
       "Historic",
-      "Non-Fiction",
+      "Non Fiction",
       "Academic",
       "Contemporary"
     ],
@@ -7844,12 +7839,12 @@
       "Travel"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Biography",
       "Fiction",
       "Historic",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Poetry",
       "Political",
       "Romance",
@@ -7874,7 +7869,7 @@
       "Biography",
       "Light Reading",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Coming of Age",
       "Female Author",
       "Happy Ending",
@@ -7942,7 +7937,7 @@
       "Biography",
       "Hobby",
       "Light Reading",
-      "Non-Fiction",
+      "Non Fiction",
       "Self Help",
       "Travel Guide",
       "Female Author",
@@ -7961,7 +7956,7 @@
       "Fact"
     ],
     "qualities": [
-      "Non-Fiction",
+      "Non Fiction",
       "Political",
       "Academic",
       "Female Author"
@@ -7987,7 +7982,7 @@
       "Hobby",
       "Light Reading",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Poetry",
       "Folklore",
       "Short"
@@ -8070,7 +8065,6 @@
       "Light Reading",
       "Mystery",
       "Happy Ending",
-      "Crime",
       "Short",
       "Contemporary"
     ],
@@ -8115,7 +8109,7 @@
     ],
     "qualities": [
       "Biography",
-      "Non-Fiction",
+      "Non Fiction",
       "Female Author",
       "Contemporary"
     ],
@@ -8132,7 +8126,7 @@
       "Crime"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Gore",
       "Horror",
@@ -8224,13 +8218,13 @@
       "Travel"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Biography",
       "Historic",
       "Hobby",
       "Nature",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Philosophical",
       "Contemporary"
     ],
@@ -8272,7 +8266,7 @@
       "Hobby",
       "Nature",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Pop Science",
       "Encyclopedic",
       "Long",
@@ -8313,7 +8307,7 @@
       "Crime"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Mystery",
       "Plot Twist",
@@ -8392,7 +8386,7 @@
     "qualities": [
       "Biography",
       "Nature",
-      "Non-Fiction",
+      "Non Fiction",
       "Self Help",
       "Academic",
       "Philosophical"
@@ -8642,9 +8636,8 @@
       "Historic",
       "Horror",
       "Humour",
-      "Kids",
       "Light Reading",
-      "Non-Fiction",
+      "Non Fiction",
       "Series",
       "Contemporary"
     ],
@@ -8999,7 +8992,7 @@
     "qualities": [
       "Historic",
       "Nature",
-      "Non-Fiction",
+      "Non Fiction",
       "Pop Science",
       "Contemporary",
       "Encyclopedic",
@@ -9186,11 +9179,11 @@
       "Fact"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Biography",
       "Nature",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Poetry",
       "Political",
       "Self Help",
@@ -9348,7 +9341,7 @@
       "Hobby",
       "Light Reading",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Political",
       "Female Author",
       "Outdated"
@@ -9409,7 +9402,7 @@
     "qualities": [
       "Historic",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Political",
       "Academic",
       "Female Author",
@@ -9448,7 +9441,7 @@
       "Drama"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Play",
       "Female Author",
@@ -9624,7 +9617,7 @@
       "Biography",
       "Nature",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Political",
       "Academic",
       "Philosophical"
@@ -10010,7 +10003,7 @@
       "Biography",
       "Historic",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Series",
       "Travel Guide",
       "Outdated",
@@ -10152,7 +10145,7 @@
       "Female Author",
       "Light Reading",
       "Nature",
-      "Non-Fiction",
+      "Non Fiction",
       "Series",
       "Short"
     ],
@@ -10220,7 +10213,7 @@
       "Fantasy"
     ],
     "qualities": [
-      "Mature Rating",
+      "Age Rating Mature",
       "Contemporary",
       "Dystopia",
       "Fiction",
@@ -10246,7 +10239,7 @@
       "Crime"
     ],
     "qualities": [
-      "Mature Rating",
+      "Age Rating Mature",
       "Coming of Age",
       "Contemporary",
       "Female Author",
@@ -10298,7 +10291,7 @@
       "Light Reading",
       "Nature",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Coming of Age",
       "Female Author",
       "Philosophical",
@@ -10321,7 +10314,7 @@
       "Hobby",
       "Light Reading",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Encyclopedic",
       "Long",
       "Contemporary"
@@ -10444,7 +10437,7 @@
       "Historic",
       "Humour",
       "Light Reading",
-      "Non-Fiction",
+      "Non Fiction",
       "Political",
       "Travel Guide",
       "Short"
@@ -10485,7 +10478,7 @@
       "Travel"
     ],
     "qualities": [
-      "Non-Fiction",
+      "Non Fiction",
       "Female Author"
     ],
     "published": 2019,
@@ -10716,10 +10709,10 @@
       "Fact"
     ],
     "qualities": [
-      "Mature Rating",
+      "Age Rating Mature",
       "Biography",
       "Nature",
-      "Non-Fiction",
+      "Non Fiction",
       "Poetry",
       "Academic",
       "Coming of Age",
@@ -10762,7 +10755,7 @@
       "Drama"
     ],
     "qualities": [
-      "Mature Rating",
+      "Age Rating Mature",
       "Fiction",
       "Historic",
       "Political",
@@ -10998,7 +10991,7 @@
       "Biography",
       "Historic",
       "Humour",
-      "Non-Fiction",
+      "Non Fiction",
       "Poetry",
       "Political",
       "Academic",
@@ -11047,7 +11040,7 @@
     ],
     "qualities": [
       "Mystery",
-      "Non-Fiction",
+      "Non Fiction",
       "Political",
       "Female Author",
       "Contemporary"
@@ -11201,7 +11194,6 @@
       "Fantasy"
     ],
     "qualities": [
-      "Fiction",
       "Fiction",
       "Mystery",
       "Niche",
@@ -11427,7 +11419,7 @@
       "Drama"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Historic",
       "Nature",
@@ -11836,7 +11828,7 @@
       "Fantasy"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Dystopia",
       "Fiction",
       "Magic",
@@ -12194,7 +12186,7 @@
       "Humour",
       "Light Reading",
       "Nature",
-      "Non-Fiction",
+      "Non Fiction",
       "Pop Science",
       "Short",
       "Encyclopedic",
@@ -12237,7 +12229,7 @@
       "Drama"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Mystery",
       "Romance",
@@ -12522,7 +12514,7 @@
     "qualities": [
       "Cooking",
       "Hobby",
-      "Non-Fiction",
+      "Non Fiction",
       "Female Author",
       "Contemporary"
     ],
@@ -12539,7 +12531,7 @@
       "Drama"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Historic",
       "Nature",
@@ -12701,7 +12693,7 @@
       "Historic",
       "Hobby",
       "Light Reading",
-      "Non-Fiction",
+      "Non Fiction",
       "Pop Science",
       "Series",
       "Academic",
@@ -12964,7 +12956,7 @@
     ],
     "qualities": [
       "Historic",
-      "Non-Fiction",
+      "Non Fiction",
       "Pop Science",
       "Contemporary"
     ],
@@ -13409,7 +13401,7 @@
       "Humour",
       "Light Reading",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Epic",
       "Female Author",
       "Happy Ending",
@@ -13479,7 +13471,7 @@
       "Female Author",
       "Hobby",
       "Light Reading",
-      "Non-Fiction"
+      "Non Fiction"
     ],
     "published": 2018,
     "pages": 326,
@@ -13494,7 +13486,7 @@
       "Fantasy"
     ],
     "qualities": [
-      "Mature Rating",
+      "Age Rating Mature",
       "Contemporary",
       "Dystopia",
       "Fiction",
@@ -13599,7 +13591,7 @@
       "Crime"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Gore",
       "Horror",
@@ -13708,7 +13700,7 @@
       "Hobby",
       "Nature",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Self Help",
       "Travel Guide",
       "Philosophical",
@@ -13765,7 +13757,7 @@
       "Crime"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Humour",
       "Light Reading",
@@ -13856,7 +13848,7 @@
     "qualities": [
       "Historic",
       "Nature",
-      "Non-Fiction",
+      "Non Fiction",
       "Political",
       "Academic",
       "Dry",
@@ -13880,7 +13872,7 @@
       "Fantasy"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Gore",
       "Horror",
@@ -13976,7 +13968,7 @@
       "Drama"
     ],
     "qualities": [
-      "Mature Rating",
+      "Age Rating Mature",
       "Fiction",
       "Historic",
       "Humour",
@@ -13998,7 +13990,7 @@
     ],
     "qualities": [
       "Academic",
-      "Mature Rating",
+      "Age Rating Mature",
       "Coming of Age",
       "Contemporary",
       "Dry",
@@ -14034,7 +14026,7 @@
     "qualities": [
       "Light Reading",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Travel Guide",
       "Female Author",
       "Contemporary"
@@ -14055,7 +14047,7 @@
     "qualities": [
       "Biography",
       "Historic",
-      "Non-Fiction",
+      "Non Fiction",
       "Poetry",
       "Political",
       "Coming of Age",
@@ -14075,7 +14067,7 @@
       "Crime"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Humour",
       "Light Reading",
@@ -14098,7 +14090,7 @@
       "Fantasy"
     ],
     "qualities": [
-      "Mature Reading",
+      "Age Rating Mature",
       "Fiction",
       "Magic",
       "Queer",
@@ -14127,7 +14119,7 @@
       "Hobby",
       "Light Reading",
       "Nature",
-      "Non-Fiction",
+      "Non Fiction",
       "Pop Science"
     ],
     "published": 2014,
@@ -14207,7 +14199,7 @@
       "Historic",
       "Hobby",
       "Light Reading",
-      "Non-Fiction",
+      "Non Fiction",
       "Female Author",
       "Contemporary"
     ],
@@ -14319,7 +14311,6 @@
       "Fiction",
       "Historic",
       "Humour",
-      "Kids",
       "Light Reading",
       "Mystery",
       "Series",
@@ -14342,7 +14333,7 @@
     ],
     "qualities": [
       "Historic",
-      "Non-Fiction",
+      "Non Fiction",
       "Academic",
       "Female Author",
       "Contemporary"
@@ -14388,7 +14379,7 @@
     ],
     "qualities": [
       "Academic",
-      "Mature Rating",
+      "Age Rating Mature",
       "Dry",
       "Fiction",
       "Historic",
@@ -14463,7 +14454,7 @@
       "Light Reading",
       "Nature",
       "Niche",
-      "Non-Fiction",
+      "Non Fiction",
       "Poetry",
       "Political",
       "Epic",
@@ -14489,7 +14480,6 @@
       "Animals",
       "Nature",
       "Historic",
-      "Nature",
       "Pop Science"
     ],
     "published": 2015,
@@ -14619,7 +14609,7 @@
       "Historic",
       "Hobby",
       "Nature",
-      "Non-Fiction",
+      "Non Fiction",
       "Political",
       "Travel Guide",
       "Academic",
@@ -14760,7 +14750,6 @@
       "Nature",
       "Encyclopedic",
       "Niche",
-      "Nature",
       "Pop Science"
     ],
     "published": 2004,
@@ -14842,7 +14831,6 @@
       "Animals",
       "Fiction",
       "Hobby",
-      "Kids",
       "Magic",
       "Encyclopedic",
       "Short",

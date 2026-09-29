@@ -8,7 +8,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book117 — Gregor the Overlander · Suzanne Collins
 
-- draft
+- applied
 - genres: Kids, Fantasy
 - qualities: Fiction, YA, Female Author, Coming of Age, Plot Twist, Epic, Series, Contemporary, Animals
 - published 2003, 311 pages
@@ -23,7 +23,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book122 — Heidi · Johanna Spyri
 
-- draft
+- applied
 - genres: Kids, Classic
 - qualities: Fiction, Female Author, Coming of Age, Happy Ending, Light Reading, Series, Niche
 - published 1885, 278 pages
@@ -38,7 +38,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book135 — James and the Giant Peach · Roald Dahl
 
-- draft
+- applied
 - genres: Kids, Fantasy, Drama
 - qualities: Fiction, Magic, Coming of Age, Happy Ending, Light Reading
 - published 1961, 144 pages
@@ -53,7 +53,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book140 — Kiki's Delivery Service · Eiko Kadono
 
-- draft
+- applied
 - genres: Kids, Fantasy
 - qualities: Fiction, Female Author, Magic, Coming of Age, Happy Ending, Light Reading, Series, Animals
 - published 1985, 208 pages
@@ -68,7 +68,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book158 — Momo; or, The Grey Gentlemen · Michael Ende
 
-- draft
+- applied
 - genres: Kids, Fantasy
 - qualities: Fiction, Magic, Coming of Age, Animals, Happy Ending, Philosophical, Folklore
 - published 1973, 269 pages
@@ -83,7 +83,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book194 — Sky Island · L. Frank Baum
 
-- draft
+- applied
 - genres: Kids, Classic, Fantasy
 - qualities: Fiction, Female Author, Magic, Happy Ending, Niche, Light Reading, Humour, Series
 - published 1912, 209 pages
@@ -98,7 +98,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book197 — Small Spaces; (Book 1) · Katherine Arden
 
-- draft
+- applied
 - genres: Kids
 - qualities: Fiction, Horror, Magic, Series, Female Author, Thriller, Contemporary
 - published 2018, 224 pages
@@ -113,7 +113,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book205 — The Bad Beginning; (A Series of Unfortunate Events) · Lemony Snicket
 
-- draft
+- applied
 - genres: Kids, Fantasy
 - qualities: Fiction, Mystery, Humour, Series
 - published 1999, 176 pages
@@ -128,7 +128,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book262 — The Happy Prince and Other Tales · Oscar Wilde
 
-- draft
+- applied
 - genres: Kids, Fantasy, Classic
 - qualities: Fiction, Magic, Tragic, Humour, Light Reading, Folklore
 - published 1888, 54 pages
@@ -143,7 +143,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book264 — Hatchet · Gary Paulsen
 
-- draft
+- applied
 - genres: Kids
 - qualities: Fiction, Light Reading, Nature, Series, Coming of Age, Happy Ending, Novel, YA, Short, Animals
 - published 1987, 181 pages
@@ -158,7 +158,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book265 — The Hidden Staircase; (Nancy Drew #2) · Carolyn Keene
 
-- draft
+- applied
 - genres: Kids, Classic, Crime
 - qualities: Fiction, Detective, Female Author, Mystery, Series, Happy Ending, Light Reading, Whodunnit
 - published 1959, 187 pages
@@ -173,7 +173,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book268 — The Invasion; (Animorphs #1) · K. A. Applegate
 
-- draft
+- applied
 - genres: Kids
 - qualities: Fiction, Female Author, Coming of Age, Plot Twist, Animals, Epic, Science Fiction, YA, Series
 - published 1996, 184 pages
@@ -188,7 +188,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book281 — The Little Prince · Antoine de Saint-Exupéry
 
-- draft
+- applied
 - genres: Kids, Travel, Classic
 - qualities: Fiction, Magic, Coming of Age, Space, Tragic, Philosophical, Animals, Nature
 - published 1943, 96 pages
@@ -203,7 +203,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book282 — The Lorax · Dr. Seuss
 
-- draft
+- applied
 - genres: Kids, Classic
 - qualities: Fiction, Dystopia, Happy Ending, Humour, Poetry, Animals, Nature
 - published 1911, 64 pages
@@ -218,7 +218,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book306 — The Neverending Story · Michael Ende
 
-- draft
+- applied
 - genres: Kids, Fantasy
 - qualities: Fiction, YA, Magic
 - published 1979, 420 pages
@@ -233,7 +233,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book314 — A Place to Hang the Moon · Kate Albus
 
-- draft
+- applied
 - genres: Kids
 - qualities: Fiction, Historic, Light Reading, Coming of Age, Female Author, Happy Ending, Contemporary
 - published 2021, 320 pages
@@ -248,7 +248,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book353 — The Yellow Fairy Book · L. B. Alleyne & A. Lang
 
-- draft
+- applied
 - genres: Kids, Fantasy, Classic
 - qualities: Fiction, Folklore, Magic, Light Reading, Epic, Series
 - published 1894, 329 pages
@@ -263,7 +263,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book355 — Theodora Hendrix and the Curious Case of the Cursed Beetle · Jordan Kopy
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Kids
 - qualities: Fiction, Horror, Contemporary
 - published 2021, 285 pages
@@ -278,9 +278,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book356 — There's A Ghost In This House · Oliver Jeffers
 
-- draft
+- applied
 - genres: Kids
-- qualities: Fiction, Light Reading, Mystery, Happy Ending, Crime, Short, Contemporary
+- qualities: Fiction, Light Reading, Mystery, Happy Ending, Short, Contemporary
 - published 2021, 44 pages
 - length: 219 -> 202 (-17)
 - longest shared run with the replaced text: 1 word(s)
@@ -293,7 +293,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book386 — Where the Wild Things Are · Maurice Sendak
 
-- draft
+- applied
 - genres: Kids, Fantasy, Classic
 - qualities: Fiction, Magic, Coming of Age, Happy Ending
 - published 1963, 42 pages
@@ -308,7 +308,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book428 — Alice's Adventures in Wonderland · Lewis Carroll
 
-- draft
+- applied
 - genres: Kids, Classic, Fantasy, Drama
 - qualities: Fiction, Magic, Coming of Age, Animals, Happy Ending, Philosophical, Light Reading, Humour, Poetry, Series, Nature
 - published 1865, 133 pages
@@ -323,7 +323,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book463 — The Eleventh Hour; A Curious Mystery · Graeme Base
 
-- draft
+- applied
 - genres: Kids
 - qualities: Animals, Fiction, Mystery, Poetry, Happy Ending, Whodunnit, Novel, Short, Light Reading
 - published 1988, 38 pages
@@ -338,7 +338,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book472 — How Winston Delivered Christmas; A Christmas Story in Twenty-Four-and-a-Half Chapters · Alex T. Smith
 
-- draft
+- applied
 - genres: Kids
 - qualities: Animals, Fiction, Light Reading, Folklore, Happy Ending, Short, Contemporary
 - published 2018, 160 pages
@@ -353,7 +353,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book495 — Matilda · Roald Dahl
 
-- draft
+- applied
 - genres: Kids
 - qualities: Fiction, Magic, Coming of Age, Happy Ending, Light Reading, Humour
 - published 1988, 240 pages
@@ -368,7 +368,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book497 — Miss Peregrine's Home for Peculiar Children · Ransom Riggs
 
-- draft
+- applied
 - genres: Kids, Fantasy
 - qualities: Fiction, Mystery, Magic, Coming of Age, Plot Twist, Happy Ending, Folklore, YA, Series, Contemporary
 - published 2011, 392 pages
@@ -383,7 +383,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book513 — Peter Pan in Kensington Gardens · J. M. Barrie
 
-- draft
+- applied
 - genres: Kids, Fantasy, Classic
 - qualities: Fiction, Magic, Happy Ending, Folklore, Poetry
 - published 1906, 126 pages
@@ -398,7 +398,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book522 — Stormbreaker · Anthony Horowitz
 
-- draft
+- applied
 - genres: Kids, Crime
 - qualities: Fiction, YA, Coming of Age, Plot Twist, Happy Ending, Series, Mystery, Contemporary
 - published 2000, 234 pages
@@ -413,7 +413,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book538 — The House with a Clock in Its Walls · John Bellairs
 
-- draft
+- applied
 - genres: Kids, Fantasy
 - qualities: Fiction, Mystery, Magic, Coming of Age, Happy Ending, Horror, Thriller, Folklore, YA, Series
 - published 1973, 179 pages
@@ -428,7 +428,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book550 — The Scarecrow of Oz · L. Frank Baum
 
-- draft
+- applied
 - genres: Kids, Fantasy, Classic
 - qualities: Fiction, Magic, Happy Ending, Light Reading, Series
 - published 1915, 184 pages
@@ -443,7 +443,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book553 — The Snowy Day · Ezra Jack Keats
 
-- draft
+- applied
 - genres: Kids, Drama
 - qualities: Fiction, Happy Ending, Light Reading
 - published 1962, 32 pages
@@ -458,7 +458,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book566 — Z for Zachariah · Robert C. O'Brian
 
-- draft
+- applied
 - genres: Kids
 - qualities: Dystopia, Fiction, Horror, Science Fiction, Coming of Age, Novel, Thriller, YA, Short
 - published 1976, 192 pages
@@ -473,7 +473,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book582 — Hello Lighthouse · Sophie Blackall
 
-- draft
+- applied
 - genres: Kids
 - qualities: Fiction, Light Reading, Nature, Female Author, Happy Ending, Short, Contemporary
 - published 2018, 44 pages
@@ -488,7 +488,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book618 — The Boy, The Mole, The Fox and The Horse; (Book 1) · Charlie Mackesy
 
-- draft
+- applied
 - genres: Kids
 - qualities: Animals, Contemporary, Fiction, Graphic Novel, Light Reading, Manga, Nature, Philosophical, Poetry, Self Help, Short
 - published 2019, 128 pages
@@ -503,7 +503,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book658 — Dragon Ball; Volume 1 · Akira Toriyama
 
-- draft
+- applied
 - genres: Kids, Classic
 - qualities: Fiction, Series, Manga, Epic, Folklore, Happy Ending, Humour, Light Reading, Magic
 - published 1985, 192 pages

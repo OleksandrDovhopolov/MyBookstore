@@ -87,30 +87,43 @@ C#-модель — [`RequestDefinitionConfig`](../../Assets/Game/Features/Confi
 
 ### Словарь `qualities` из `Unique Qualities`
 
-Источник: `Tiny_Bookshop_Books.xlsx`, вкладка `Unique Qualities`.
+Источник: исходно вкладка `Unique Qualities` импортированной таблицы; сейчас словарь **закрыт** и
+живёт в `BookQualityVocabularyTests.AllowedQualities` — C# авторитетный, этот список его зеркалит.
+Добавление значения — правка в двух местах одной задачей.
 
-Нормализация:
-- дефис и пробел считаются одним разделителем: `Non-Fiction` == `Non Fiction`;
-- опечаточные варианты `Bigraphy` / `Biobraphy` не используются — оставляем только `Biography`;
-- варианты `Humour` / `Humor` сведены к `Humor`.
+**Сравнение строгое, целиком строкой.** `BookConditionRequestEvaluator.Contains` сравнивает значение
+условия с тегом книги через `OrdinalIgnoreCase`, без всякой нормализации разделителей: `Non-Fiction`
+и `Non Fiction` — **два разных тега**, и условие на одно не найдёт книги со вторым. Единственное
+место, где дефис и пробел сворачиваются, — `LexiconActiveRequestTextComposer`, и там нормализуется
+значение **условия** при поиске фразы в лексиконе, а не теги книги.
 
-Разрешённые значения:
+Именно поэтому словарь приведён к одному написанию (было 64 значения, стало 51):
+
+- опечатки, встречавшиеся по одному разу, сведены к канону: `Bigraphy` / `Biobraphy` → `Biography`,
+  `Female-Author` → `Female Author`, `Humor` → `Humour`, `Self-Help` → `Self Help`;
+- расколотые понятия слиты: `Mature Reading` / `Mature Rating` → `Age Rating Mature`,
+  `Non-Fiction` → `Non Fiction`;
+- склейка `Philosophical Contemporary` разобрана на два тега;
+- значения жанров (`Crime`, `Fact`, `Kids`), попавшие в поле qualities, удалены — жанр спрашивают
+  через `genres`.
+
+Значения видны игроку: `BookCardView` рендерит их в лейбл карточки как есть, без локализации.
+Поэтому редакторские пометки внутри значения недопустимы — тест это запрещает.
+
+Разрешённые значения (51):
 
 - `Academic`
 - `Age Rating Mature`
-- `Age Rating Mature [customers do not accept this as fantasy]`
 - `Animals`
 - `Biography`
 - `Coming of Age`
 - `Contemporary`
 - `Cooking`
-- `Crime`
 - `Detective`
 - `Dry`
 - `Dystopia`
 - `Encyclopedic`
 - `Epic`
-- `Fact`
 - `Female Author`
 - `Fiction`
 - `Folklore`
@@ -120,14 +133,11 @@ C#-модель — [`RequestDefinitionConfig`](../../Assets/Game/Features/Confi
 - `Historic`
 - `Hobby`
 - `Horror`
-- `Humor`
-- `Kids`
+- `Humour`
 - `Light Reading`
 - `Long`
 - `Magic`
 - `Manga`
-- `Mature Rating`
-- `Mature Reading`
 - `Mystery`
 - `Nature`
 - `Niche`
@@ -135,7 +145,6 @@ C#-модель — [`RequestDefinitionConfig`](../../Assets/Game/Features/Confi
 - `Novel`
 - `Outdated`
 - `Philosophical`
-- `Philosophical Contemporary`
 - `Play`
 - `Plot Twist`
 - `Poetry`

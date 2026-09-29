@@ -8,7 +8,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book469 — Great Big Beautiful Life · Emily Henry
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Light Reading, Romance, Female Author, Happy Ending, YA, Contemporary
 - published 2025, 418 pages
@@ -23,7 +23,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book473 — Howl, and Other Poems · Allen Ginsberg
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Non Fiction, Historic, Tragic, Academic, Philosophical, Political, Poetry, Fiction
 - published 1956, 44 pages
@@ -38,7 +38,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book482 — Henry VI, Part 1 · William Shakespeare
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Historic, Tragic, Dry, Epic, Series, Play
 - published 1591, 168 pages
@@ -53,7 +53,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book483 — Henry VI, Part 3 · William Shakespeare
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Historic, Gore, Tragic, Dry, Epic, Series, Play
 - published 1600, 168 pages
@@ -68,7 +68,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book484 — Richard II · William Shakespeare
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Historic, Tragic, Academic, Philosophical, Series, Play
 - published 1597, 160 pages
@@ -83,7 +83,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book491 — Looking for Alaska · John Green
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, YA, Tragic, Coming of Age, Plot Twist, Philosophical, Contemporary, Romance
 - published 2005, 272 pages
@@ -98,7 +98,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book494 — Maria Stuart · Friedrich Schiller
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Tragic, Historic, Academic, Folklore, Play, Fiction
 - published 1801, 188 pages
@@ -113,9 +113,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book496 — A Matter of Oaths · Helen S. Wright
 
-- draft
+- applied
 - genres: Drama, Fantasy
-- qualities: Fiction, Fiction, Mystery, Niche, Plot Twist, Queer, Romance, Science Fiction, Space, Epic, Female Author, Happy Ending
+- qualities: Fiction, Mystery, Niche, Plot Twist, Queer, Romance, Science Fiction, Space, Epic, Female Author, Happy Ending
 - published 1988, 234 pages
 - length: 192 -> 196 (+4)
 - longest shared run with the replaced text: 2 word(s)
@@ -128,7 +128,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book499 — Mother Night · Kurt Vonnegut
 
-- draft
+- applied
 - genres: Drama, Crime, Classic
 - qualities: Fiction, Historic, Tragic, Philosophical, Political, Thriller, Science Fiction, Novel
 - published 1961, 197 pages
@@ -143,7 +143,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book501 — Mrs. Dalloway · Virginia Woolf
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Queer, Female Author, Philosophical, Novel, Academic
 - published 1925, 224 pages
@@ -158,7 +158,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book502 — Much Ado About Nothing · William Shakespeare
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Romance, Queer, Happy Ending, Humour, Play
 - published 1600, 160 pages
@@ -173,7 +173,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book503 — Night and Day · Virginia Woolf
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Romance, Female Author, Happy Ending, Philosophical, Novel
 - published 1919, 496 pages
@@ -188,7 +188,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book504 — Night Sky with Exit Wounds · Ocean Vuong
 
-- draft
+- applied
 - genres: Drama
 - qualities: Non Fiction, Queer, Historic, Coming of Age, Tragic, Philosophical, Political, Poetry, Contemporary
 - published 2016, 96 pages
@@ -203,7 +203,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book505 — On Beauty · Zadie Smith
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Political, Female Author, Philosophical, Novel, Contemporary
 - published 2005, 455 pages
@@ -218,9 +218,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book506 — On Earth We're Briefly Gorgeous · Ocean Vuong
 
-- draft
+- applied
 - genres: Drama
-- qualities: Mature Reading, Fiction, Historic, Nature, Poetry, Political, Queer, Romance, Academic, Dry, Novel, Philosophical, Tragic, Contemporary
+- qualities: Age Rating Mature, Fiction, Historic, Nature, Poetry, Political, Queer, Romance, Academic, Dry, Novel, Philosophical, Tragic, Contemporary
 - published 2019, 246 pages
 - length: 261 -> 196 (-65)
 - longest shared run with the replaced text: 2 word(s)
@@ -233,7 +233,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book508 — Othello · William Shakespeare
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Fiction, Tragic, Plot Twist, Philosophical, Play
 - published 1622, 180 pages
@@ -248,7 +248,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book509 — P.S. I Still Love You · Jenny Han
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Romance, YA, Female Author, Coming of Age, Happy Ending, Light Reading, Series, Contemporary
 - published 2000, 352 pages
@@ -263,7 +263,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book518 — Scott Pilgrim's Precious Little Life (#1) · Bryan Lee O'Malley
 
-- draft
+- applied
 - genres: Drama, Fantasy
 - qualities: Fiction, Coming of Age, Magic, Happy Ending, Light Reading, Humour, YA, Graphic Novel, Series, Romance, Queer, Contemporary
 - published 2004, 168 pages
@@ -278,7 +278,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book520 — Sister Outsider · Audre Lorde
 
-- draft
+- applied
 - genres: Drama, Classic
 - qualities: Non Fiction, Philosophical, Academic, Biography, Poetry, Queer, Female Author, Self Help, Political
 - published 1984, 190 pages
@@ -293,7 +293,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book523 — Sula · Toni Morrison
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Female Author, Historic, Coming of Age, Tragic, Philosophical, Political, Novel
 - published 1973, 174 pages
@@ -308,7 +308,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book544 — Oh, Mary! · Cole Escola
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Historic, Humour, Play, Queer, Short, Contemporary
 - published 2025, 120 pages
@@ -323,7 +323,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book545 — Olivetti · Allie Millington
 
-- draft
+- applied
 - genres: Drama, Kids
 - qualities: Fiction, Humour, Magic, Mystery, Coming of Age, Female Author, Contemporary
 - published 2024, 256 pages
@@ -338,9 +338,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book555 — Stone Butch Blues · Leslie Feinberg
 
-- draft
+- applied
 - genres: Drama
-- qualities: Mature Reading, Fiction, Historic, Nature, Political, Queer, Romance, Coming of Age, Female Author, Happy Ending, Novel, Philosophical, Thriller, Tragic
+- qualities: Age Rating Mature, Fiction, Historic, Nature, Political, Queer, Romance, Coming of Age, Female Author, Happy Ending, Novel, Philosophical, Thriller, Tragic
 - published 1993, 308 pages
 - length: 262 -> 198 (-64)
 - longest shared run with the replaced text: 3 word(s)
@@ -353,7 +353,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book561 — Ugly Love · Colleen Hoover
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Romance, Female Author, Tragic, Happy Ending, Contemporary, Age Rating Mature
 - published 2014, 360 pages
@@ -368,7 +368,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book619 — Boys run the riot, Vol. 1 · Keito Gaku
 
-- draft
+- applied
 - genres: Drama
 - qualities: Coming of Age, Contemporary, Fiction, Graphic Novel, Hobby, Manga, Queer, Series, YA
 - published 2021, 240 pages
@@ -383,7 +383,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book620 — Boys run the riot, Vol. 1 · Keito Gaku
 
-- draft
+- applied
 - genres: Drama
 - qualities: Coming of Age, Contemporary, Fiction, Graphic Novel, Hobby, Manga, Queer, Series, Short, YA
 - published 2021, 192 pages
@@ -398,9 +398,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book621 — Breakfast at Tiffany's · Truman Capote
 
-- draft
+- applied
 - genres: Drama
-- qualities: Mature Rating, Fiction, Historic, Humour, Romance, Outdated, Short
+- qualities: Age Rating Mature, Fiction, Historic, Humour, Romance, Outdated, Short
 - published 1958, 178 pages
 - length: 220 -> 199 (-21)
 - longest shared run with the replaced text: 2 word(s)
@@ -413,7 +413,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book634 — A Raisin in the Sun · Lorraine Hansberry
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Historic, Nature, Play, Political, Academic, Female Author, Novel, Philosophical, Thriller, Short
 - published 1959, 162 pages
@@ -428,9 +428,9 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book639 — Anna Karenina · Leo Tolstoy
 
-- draft
+- applied
 - genres: Drama, Classic
-- qualities: Academic, Mature Rating, Dry, Fiction, Historic, Long, Nature, Philosophical, Novel, Political, Romance, Tragic, Very Long
+- qualities: Academic, Age Rating Mature, Dry, Fiction, Historic, Long, Nature, Philosophical, Novel, Political, Romance, Tragic, Very Long
 - published 1877, 864 pages
 - length: 170 -> 198 (+28)
 - longest shared run with the replaced text: 1 word(s)
@@ -443,7 +443,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book644 — Spring Clean · Sabreen Islam
 
-- draft, **written without knowing the book**
+- applied, **written without knowing the book**
 - genres: Drama
 - qualities: Fiction, Niche, Poetry, Female Author, YA, Short, Contemporary
 - published 2019, 92 pages
@@ -458,7 +458,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book647 — The Magic Fish · Trung Le Nguyen
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Graphic Novel, Novel, Coming of Age, Happy Ending, YA, Queer, Magic
 - published 2020, 229 pages
@@ -473,7 +473,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book650 — An Experiment with an Air Pump · Shelagh Stephenson
 
-- draft
+- applied
 - genres: Drama
 - qualities: Female Author, Fiction, Historic, Mystery, Nature, Philosophical, Play, Plot Twist, Short
 - published 1998, 96 pages
@@ -488,7 +488,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book657 — How to Stop Time · Matt Haig
 
-- draft
+- applied
 - genres: Drama, Fantasy
 - qualities: Fiction, Nature, Happy Ending, Philosophical, Contemporary
 - published 2017, 352 pages
@@ -503,7 +503,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book665 — Ouran High School Host Club; Volume 1 · Bisco Hatori
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Female Author, Series, Manga, Romance, YA, Humour, Queer
 - published 2003, 184 pages
@@ -518,7 +518,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book668 — The Rose of Versailles · Riyoko Ikeda
 
-- draft
+- applied
 - genres: Drama
 - qualities: Fiction, Female Author, Series, Manga, Romance, Historic, Light Reading, Political, Queer, Tragic
 - published 1972, 496 pages
@@ -533,7 +533,7 @@ Generated — see [../REWRITE_REPORT.md](../REWRITE_REPORT.md). Do not edit by h
 
 ### book669 — FAKE; Volume 1 · Sanami Matoh
 
-- draft
+- applied
 - genres: Drama, Crime
 - qualities: Fiction, Female Author, Series, Manga, Detective, Romance, Humour, Niche, Queer
 - published 1994, 192 pages
