@@ -1843,5 +1843,1616 @@
     "authorAtDraft": "Naoki Urasawa",
     "new": "Two patients, one surgeon, a single choice, and a lifetime spent paying for it. Cold adult suspense in comic form, set in Germany, opening a series that turns very, very dark.",
     "recognized": true
+  },
+  {
+    "id": "book39",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "The Animals of Farthing Wood",
+    "authorAtDraft": "Colin Dann",
+    "new": "Bulldozers take the wood, so badger, fox and a mob of frightened neighbours swear an oath and set out for a park they have only heard of. Plenty of them do not arrive. First leg of a long trek of sequels.",
+    "recognized": true
+  },
+  {
+    "id": "book40",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Annabel Lee",
+    "authorAtDraft": "Edgar Allen Poe",
+    "new": "One short ballad, read aloud in minutes, where a grieving voice insists that the sea and the angels conspired to take his bride. Hypnotic rhyme, refrains that circle back, and a tomb by the shore at the end.",
+    "recognized": true
+  },
+  {
+    "id": "book68",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "A Child's Garden of Verses",
+    "authorAtDraft": "Robert Louis Stevenson & Tasha Tudor",
+    "new": "Short rhymes about a swing, a shadow that will not keep step, and being sent to bed while it is still light outside. Nursery Victoriana, quaint in places, and lovely read aloud at any age.",
+    "recognized": true
+  },
+  {
+    "id": "book78",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "The Dark is Rising",
+    "authorAtDraft": "Susan Cooper",
+    "new": "Will wakes on his eleventh birthday able to hear things nobody else can, and midwinter closes over the village in snow that is not weather. Six signs to find, and something very old hunting him for them.",
+    "recognized": true
+  },
+  {
+    "id": "book84",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Death of a Salesman; Certain Private Conversations in Two Acts and a Requiem",
+    "authorAtDraft": "Arthur Miller",
+    "new": "Willy Loman comes home with the car and his sample cases and cannot stop talking to people who are not in the room. Staged inside one exhausted head, memory cutting into kitchen argument, ending at a graveside.",
+    "recognized": true
+  },
+  {
+    "id": "book95",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Far from the Madding Crowd",
+    "authorAtDraft": "Thomas Hardy",
+    "new": "Bathsheba inherits a farm and three men who want her: a shepherd who waits, a landowner who unravels, a soldier who charms. Sheep, harvest and weather get as many pages as the courtship, and not everyone survives.",
+    "recognized": true
+  },
+  {
+    "id": "book98",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Ficciones",
+    "authorAtDraft": "J. L. Borges, A. Bonner & A. Kerrigan",
+    "new": "Stories dressed as book reviews and encyclopedia entries: a library holding every possible book, a man who forgets nothing, an invented country that leaks into this one. Short, dry, and built to be reread.",
+    "recognized": true
+  },
+  {
+    "id": "book111",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "The Garden of Evening Mists",
+    "authorAtDraft": "Tan Twan Eng",
+    "new": "Years after a prison camp she barely survived, a retired judge goes back to a garden in the Malayan highlands and to the Japanese gardener who taught her. Slow, beautiful, withholding; secrets surface late.",
+    "recognized": true
+  },
+  {
+    "id": "book131",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Inferno",
+    "authorAtDraft": "Dante Alighieri, transl. by A. Esolen",
+    "new": "Lost in a wood at the middle of his life, a poet is handed Virgil as a guide and walks down through nine circles of punishment, each one fitted to its sin. Verse that is grisly, gossipy, and hard to shake off.",
+    "recognized": true
+  },
+  {
+    "id": "book139",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Jurassic Park",
+    "authorAtDraft": "Michael Crichton",
+    "new": "Cloned dinosaurs stock an island park, a mathematician insists the whole system is bound to fail, and then the fences go down. More biotech briefing and chaos theory than the film, and scarier for it.",
+    "recognized": true
+  },
+  {
+    "id": "book144",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Lady Audley's Secret",
+    "authorAtDraft": "Mary Elizabeth Braddon",
+    "new": "A golden-haired young wife has married very well, and her husband's nephew starts pulling at the thread of who she was before. Victorian sensation at full pelt: a vanished man, a well, and no quiet fainting.",
+    "recognized": true
+  },
+  {
+    "id": "book147",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Little Women",
+    "authorAtDraft": "Louisa May Alcott",
+    "new": "Four sisters, one shabby house, a father away at the war: Meg wants comfort, Jo wants to write, Beth wants nobody upset, Amy wants more. Growing up happens in small scenes here, and it earns its warmth.",
+    "recognized": true
+  },
+  {
+    "id": "book152",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "The Merry Adventures of Robin Hood",
+    "authorAtDraft": "Howard Pyle",
+    "new": "Episode after episode of Sherwood mischief: quarterstaff duels on bridges, a disguised archer at the sheriff's contest, fat purses relieved of their owners. Mock-old English that rolls along merrily.",
+    "recognized": true
+  },
+  {
+    "id": "book153",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Merry Mister Meddle; Mister Meddle Series",
+    "authorAtDraft": "Enid Blyton",
+    "new": "Mister Meddle cannot leave anything alone, and every attempt to be helpful ends with a pixie in disgrace and somebody's day in ruins. Short silly chapters, built for reading one at a time to a giggling child.",
+    "recognized": true
+  },
+  {
+    "id": "book154",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Middlemarch",
+    "authorAtDraft": "George Eliot",
+    "new": "Dorothea marries a scholar for his great work and learns what it is worth; a young doctor marries for beauty and gets debt. Provincial England in patient, enormous detail, and a narrator who sees through everyone.",
+    "recognized": true
+  },
+  {
+    "id": "book157",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Moby-Dick",
+    "authorAtDraft": "Herman Melville",
+    "new": "Signing onto a whaler turns into a hunt for one white whale and the captain who has staked everything on finding it. Half sea story, half encyclopedia of whales, and the digressions are the point, not a detour.",
+    "recognized": true
+  },
+  {
+    "id": "book159",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Journey to the West; or, Monkey King",
+    "authorAtDraft": "Wu Cheng'en",
+    "new": "Press-ganged into escorting a timid monk to India for holy scriptures, a monkey who once fought heaven itself sets out with a greedy pig for company. Demons every few chapters, slapstick and sermon side by side.",
+    "recognized": true
+  },
+  {
+    "id": "book163",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "The Nightingale",
+    "authorAtDraft": "Hans Christian Andersen",
+    "new": "An emperor hears that the finest thing in his kingdom is a plain brown bird in the woods, then trades it for a jewelled clockwork one. Short, and clear-eyed about what a living song is worth. No scolding.",
+    "recognized": true
+  },
+  {
+    "id": "book169",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "The Notebooks of Malte Laurids Brigge",
+    "authorAtDraft": "Rainer Maria Rilke",
+    "new": "Alone in Paris, a young Danish poet fills notebooks with whatever frightens him: hospitals, faces in the street, his own childhood, the ways people die. Barely a plot, and startling sentence by sentence.",
+    "recognized": true
+  },
+  {
+    "id": "book179",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "The Red Virgin; Memoirs of Louise Michel",
+    "authorAtDraft": "Louise Michel",
+    "new": "Memoirs of the anarchist schoolteacher who fought for the Paris Commune, dared her judges to shoot her, and kept organising from a penal colony. Dense, partisan, and not much interested in charming anyone.",
+    "recognized": true
+  },
+  {
+    "id": "book183",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Romancero Gitano",
+    "authorAtDraft": "Federico García Lorca",
+    "new": "Andalusian ballads where the moon walks into a forge, knives find ribs, and the civil guard rides in black. Slim, incantatory, colours used as omens; read them aloud even if the Spanish is out of reach.",
+    "recognized": true
+  },
+  {
+    "id": "book196",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Slaughterhouse-Five",
+    "authorAtDraft": "Kurt Vonnegut",
+    "new": "Billy Pilgrim comes unstuck in time, bouncing between a prisoner-of-war cellar under Dresden, a dull suburban marriage, and a zoo on another planet. Jokes and atrocity in one sentence, and a shrug that never lifts.",
+    "recognized": true
+  },
+  {
+    "id": "book226",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Body in the Library; Miss Marple  #2",
+    "authorAtDraft": "Agatha Christie",
+    "new": "Found strangled on the hearthrug of a colonel's library: one blonde stranger, extremely awkward for everybody. An elderly village lady asks the questions nobody else thinks of. Fair clues, and a tidy trap.",
+    "recognized": true
+  },
+  {
+    "id": "book230",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Caps for Sale; A Tale of a Peddler, Some Monkeys and Their Monkey Business",
+    "authorAtDraft": "Esphyr Slobodkina",
+    "new": "Caps stacked high on one peddler's head, a nap under a tree, and a treeful of monkeys who help themselves. Toddlers will be shouting the repeated lines back at you before the third page is turned.",
+    "recognized": true
+  },
+  {
+    "id": "book232",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "The Color Purple",
+    "authorAtDraft": "Alice Walker",
+    "new": "Celie writes letters because there is nobody safe to talk to: about a husband who breaks her, a sister sent far away, and a blues singer who teaches her she is worth something. Brutal early, then it opens up.",
+    "recognized": true
+  },
+  {
+    "id": "book236",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "The Complete Father Brown",
+    "authorAtDraft": "G.K. Chesterton",
+    "new": "Dozens of short puzzles solved by a shabby little priest with an umbrella, who knows exactly what people do because he has spent a lifetime hearing confessions. All paradox, best taken a few at a time.",
+    "recognized": true
+  },
+  {
+    "id": "book248",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "The Essential Rumi",
+    "authorAtDraft": "Rumi, transl. by Barks & Moyne",
+    "new": "Sufi poems of longing dressed up as drinking songs, full of reed flutes and tavern talk, where the beloved might be God and might not. Loose, singable renderings rather than scholarly ones, made for dipping.",
+    "recognized": true
+  },
+  {
+    "id": "book249",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Eugene Onegin",
+    "authorAtDraft": "Alexander Pushkin",
+    "new": "Bored in St Petersburg, a dandy turns down a country girl's letter, shoots his only friend in a duel over nothing, and meets her again far too late. A whole novel in rhymed stanzas, gossipy and quick.",
+    "recognized": true
+  },
+  {
+    "id": "book252",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Evelina",
+    "authorAtDraft": "Frances Burney",
+    "new": "Letters home from a country girl turned loose on London society, where every assembly is a minefield of wrong dresses and dreadful relatives. Sharp comedy of manners, courtship running underneath.",
+    "recognized": true
+  },
+  {
+    "id": "book260",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "The Great Gatsby",
+    "authorAtDraft": "F. Scott Fitzgerald",
+    "new": "Next door, a man throws enormous parties for strangers, hoping that one night the woman across the bay will walk in. Told by a neighbour who half admires him; short, glittering, colder than the parties look.",
+    "recognized": true
+  },
+  {
+    "id": "book263",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Hard Times",
+    "authorAtDraft": "Charles Dickens",
+    "new": "In a smoke-blackened mill town a schoolmaster raises his children on facts and nothing else, and his daughter's marriage is the bill for it. Angry, very funny about the pompous, and short for what it is.",
+    "recognized": true
+  },
+  {
+    "id": "book280",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Little Lord Fauntleroy",
+    "authorAtDraft": "Frances Hodgson Burnett",
+    "new": "Heir to an English earldom out of nowhere, a sunny American boy goes to live with a grandfather nobody likes, cheerfully assuming the best of him. Sentimental to a fault, and it wins you over anyway.",
+    "recognized": true
+  },
+  {
+    "id": "book286",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Lysistrata",
+    "authorAtDraft": "Aristophanes",
+    "new": "Fed up with a war that never ends, the women of Greece seize the treasury and refuse their husbands until the men sit down and negotiate. Filthier than its school reputation allows, and it still plays.",
+    "recognized": true
+  },
+  {
+    "id": "book288",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Madeline",
+    "authorAtDraft": "Ludwig Bemelmans",
+    "new": "Twelve little girls walk Paris in two straight lines, and the smallest is afraid of nothing, right up to the night she wakes with a pain and is carried off to hospital. Rhymes and loose ink drawings of the city.",
+    "recognized": true
+  },
+  {
+    "id": "book309",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "New Hampshire",
+    "authorAtDraft": "Robert Frost",
+    "new": "Stone walls, birches, a horse stopped beside dark woods full of snow: plain New England talk that turns unsettling if you sit with it. A long rambling title poem, then the short pieces everybody quotes.",
+    "recognized": true
+  },
+  {
+    "id": "book313",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "The Picture of Dorian Gray",
+    "authorAtDraft": "Oscar Wilde",
+    "new": "Handed the wish that his portrait should take the damage instead of him, a beautiful young man spends years finding out how much damage he can do. Epigrams by the dozen, and real rot under the wit.",
+    "recognized": true
+  },
+  {
+    "id": "book317",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "The Raven",
+    "authorAtDraft": "Edgar Allan Poe",
+    "new": "Midnight, a grieving man, and a bird that will not leave the doorway and has only one word to offer. Heavy internal rhyme drags the dread along with it, and the ending refuses every scrap of comfort.",
+    "recognized": true
+  },
+  {
+    "id": "book325",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Sir Gawain and the Green Knight",
+    "authorAtDraft": "Unknown & Simon Armitage",
+    "new": "Into a Christmas feast rides a green giant who offers his neck to any taker, then names the price: find him in a year and kneel for the return blow. Alliterative verse, bristling with hunts and temptation.",
+    "recognized": true
+  },
+  {
+    "id": "book333",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "The Story Girl; Book 1",
+    "authorAtDraft": "L.M. Montgomery",
+    "new": "One summer, cousins run loose in a Prince Edward Island orchard, where a girl tells a story so well that the others forget their chores and their suppers. Episodes, jokes, one glorious doomsday panic.",
+    "recognized": true
+  },
+  {
+    "id": "book338",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "The Tenant of Wildfell Hall",
+    "authorAtDraft": "Anne Brontë",
+    "new": "Nobody knows the widow who moves into the half-ruined hall with her small son, paints for money and refuses to explain herself, until her diary does. Unsparing about a drunk husband, and meant to shock.",
+    "recognized": true
+  },
+  {
+    "id": "book343",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "War and Peace",
+    "authorAtDraft": "Leo Tolstoy",
+    "new": "Five families, twenty years, Napoleon coming and going, and Pierre wandering a battlefield trying to work out what he is looking at. Ballrooms, retreats and long essays on history; give it a whole winter.",
+    "recognized": true
+  },
+  {
+    "id": "book361",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "To Kill a Mockingbird",
+    "authorAtDraft": "Harper Lee",
+    "new": "Scout is six, her town is small and Alabama hot, and her father takes the case nobody wants him to take. Half a funny childhood summer, half a courtroom that ends the way the grown-ups always knew it would.",
+    "recognized": true
+  },
+  {
+    "id": "book362",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "To the Lighthouse",
+    "authorAtDraft": "Virginia Woolf",
+    "new": "Skye, a summer house, a promised trip across the bay, and a dinner party held together by sheer will. Almost nothing happens out loud, the deaths arrive in brackets, and the last pages repay the effort.",
+    "recognized": true
+  },
+  {
+    "id": "book364",
+    "batch": 7,
+    "status": "draft",
+    "titleAtDraft": "Treasure Island",
+    "authorAtDraft": "Robert Louis Stevenson",
+    "new": "Jim finds a map at the inn where his father is dying, and the ship hired to chase it is crewed by exactly the wrong men. A one-legged sea cook, an island stockade, and not a wasted chapter anywhere.",
+    "recognized": true
+  },
+  {
+    "id": "book368",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "True Grit",
+    "authorAtDraft": "Charles Portis",
+    "new": "Mattie Ross is fourteen, her father is dead, and the one-eyed marshal she hires would rather drink than ride. Her account of the manhunt is bone dry and funnier than the body count suggests.",
+    "recognized": true
+  },
+  {
+    "id": "book370",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Tuesdays with Morrie",
+    "authorAtDraft": "Mitch Alborn",
+    "new": "Every Tuesday a former student sits with the old professor who is dying of ALS and still teaching. Conversations about work, family and regret, set down as a last course with no exam at the end.",
+    "recognized": true
+  },
+  {
+    "id": "book371",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "The Turn of the Screw",
+    "authorAtDraft": "Henry James",
+    "new": "A young governess takes charge of two unnervingly polite children in a country house and starts seeing figures nobody else will admit to. Barely 120 pages, and every one can be read two ways.",
+    "recognized": true
+  },
+  {
+    "id": "book372",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Twenty Thousand Leagues Under the Sea",
+    "authorAtDraft": "Jules Verne",
+    "new": "Harpooned into the custody of Captain Nemo, a naturalist tours the sea floor aboard a submarine that answers to no flag. Expect squid, coral forests, and page after page of loving specimen lists.",
+    "recognized": true
+  },
+  {
+    "id": "book377",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Unwitting Wisdom; An Anthology of Aesop's Animal Fables",
+    "authorAtDraft": "Helen Ward",
+    "new": "Foxes flatter, tortoises plod, and each one hands you a moral on the way out. Aesop's animals retold in a handful of short fables, painted in the sort of detail that rewards holding the page close.",
+    "recognized": true
+  },
+  {
+    "id": "book379",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Valperga",
+    "authorAtDraft": "Mary Shelley",
+    "new": "A boyhood friend grows into a warlord, and the woman who loves him will not hand over her free city to buy his affection. Medieval Italy, prophecy and politics, with no comfortable ending waiting.",
+    "recognized": true
+  },
+  {
+    "id": "book385",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Watership Down",
+    "authorAtDraft": "Richard Adams",
+    "new": "Their warren is doomed, so a handful of rabbits walk out on the strength of one runt's vision and go looking for high ground. Own language, own myths, and a death toll that startles readers expecting cuddly.",
+    "recognized": true
+  },
+  {
+    "id": "book388",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Who's Afraid of Virginia Woolf?",
+    "authorAtDraft": "Edward Albee",
+    "new": "Late-night drinking, two faculty couples, and party games with names like Get the Guest. Three acts made of dialogue that lands like a knife fight, and the laughs keep arriving sideways.",
+    "recognized": true
+  },
+  {
+    "id": "book400",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Here Be Dragons; (Welsh Princes #1)",
+    "authorAtDraft": "Sharon Kay Penman",
+    "new": "Llewelyn rules Wales by war and marriage; his wife is an English king's illegitimate daughter, loyal to both men and forced to choose. Eight hundred pages of thirteenth-century politics, book one of three.",
+    "recognized": true
+  },
+  {
+    "id": "book416",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Declaration of the Rights of Woman and of the Female Citizen",
+    "authorAtDraft": "Olympe de Gouges",
+    "new": "Seventeen articles, rewritten line by line from the French revolution's own declaration with the women put back into it. Thirty pages of argument that helped send its author to the guillotine.",
+    "recognized": true
+  },
+  {
+    "id": "book426",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Walden",
+    "authorAtDraft": "Henry David Thoreau",
+    "new": "Two years in a self-built cabin beside a pond, with the bean field accounted for down to the cent. Half nature notebook, half lecture on how little a person needs, and not at all shy about the lecturing.",
+    "recognized": true
+  },
+  {
+    "id": "book437",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Belinda",
+    "authorAtDraft": "Maria Edgeworth",
+    "new": "Belinda is brought to London to be marketed for marriage and finds her glamorous chaperone hiding a ruined life under the rouge. Long, moralising, and sharper about reputation than the manners suggest.",
+    "recognized": true
+  },
+  {
+    "id": "book455",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Crime and Punishment",
+    "authorAtDraft": "Fyodor Dostoevsky",
+    "new": "A broke student murders a pawnbroker to test a theory about great men, then spends hundreds of pages being taken apart by his own conscience and a policeman who never quite accuses him. Feverish, airless.",
+    "recognized": true
+  },
+  {
+    "id": "book458",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Don Quixote",
+    "authorAtDraft": "Miguel de Cervantes",
+    "new": "An old man reads too much chivalric romance, names a bony horse Rocinante and rides out to right wrongs only he can see. A thousand pages of slapstick that turns sad once you notice who is laughing.",
+    "recognized": true
+  },
+  {
+    "id": "book461",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "East of Eden",
+    "authorAtDraft": "John Steinbeck",
+    "new": "Two generations of Trasks farm the Salinas Valley and keep replaying Cain and Abel, with a mother who walked out of the house and into a brothel. Long, biblical, and greenest when it stops to look at the land.",
+    "recognized": true
+  },
+  {
+    "id": "book462",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Edinburgh; Picturesque Notes",
+    "authorAtDraft": "Robert Louis Stevenson",
+    "new": "Wind, wet stone and a city stacked along a ridge, walked through in short essays by a native who loves it and refuses to pretend the weather is bearable. Closes, kirkyards and gossip, under 130 pages.",
+    "recognized": true
+  },
+  {
+    "id": "book470",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Great Expectations",
+    "authorAtDraft": "Charles Dickens",
+    "new": "Pip feeds a convict out on the marshes, later comes into money from a source he is certain he understands, and learns what being a gentleman costs. Miss Havisham's stopped clocks are worth the trip alone.",
+    "recognized": true
+  },
+  {
+    "id": "book474",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "I Capture the Castle",
+    "authorAtDraft": "Dodie Smith",
+    "new": "Cassandra keeps a journal from a decaying castle her family cannot afford to heat, and two American landlords turn up to complicate everybody's affections. Funny, broke, and very good on being seventeen.",
+    "recognized": true
+  },
+  {
+    "id": "book475",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "I Know Why the Caged Bird Sings",
+    "authorAtDraft": "Maya Angelou",
+    "new": "Between a grandmother's store in Arkansas and a mother in St Louis, a girl stops speaking for years after an assault and reads her way back to a voice. Told plainly, which is exactly why it hurts.",
+    "recognized": true
+  },
+  {
+    "id": "book477",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "If Beale Street Could Talk",
+    "authorAtDraft": "James Baldwin",
+    "new": "Nineteen, pregnant, and trying to get the father of her child out of a cell he was put in on a lie. A love story squeezed inside a legal nightmare, under two hundred pages of Harlem voices and rage.",
+    "recognized": true
+  },
+  {
+    "id": "book480",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Jane Eyre",
+    "authorAtDraft": "Charlotte Brontë",
+    "new": "Plain, poor and not remotely meek, Jane takes a governess post at Thornfield and falls for an employer whose house keeps something awake at night. Gothic, bitter, and fierce about being treated as an equal.",
+    "recognized": true
+  },
+  {
+    "id": "book486",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Les Miserables",
+    "authorAtDraft": "Victor Hugo",
+    "new": "Stolen bread costs Valjean nineteen years, and a policeman who mistakes law for morality will not stop following him. Barricades, sewers and street children, plus long detours before the plot resumes.",
+    "recognized": true
+  },
+  {
+    "id": "book487",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Letters from Egypt; 1862-1869",
+    "authorAtDraft": "Lucie Duff Gordon",
+    "new": "Sent to Egypt for her lungs, an Englishwoman settles at Luxor, learns Arabic and writes home about her neighbours, their taxes and their donkeys. Warm, gossipy letters from someone who never came back well.",
+    "recognized": true
+  },
+  {
+    "id": "book492",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Lord of the Flies",
+    "authorAtDraft": "William Golding",
+    "new": "Schoolboys wash up on an island with a conch, a fire and no adults, and demonstrate how fast rules rot. Short, cold, and far nastier than the survival adventure the first chapter seems to promise.",
+    "recognized": true
+  },
+  {
+    "id": "book493",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "A Man for All Seasons",
+    "authorAtDraft": "Robert Bolt",
+    "new": "Thomas More will not swear the oath, and everyone from his king to his own daughter tries to talk him round. A play made almost entirely of argument, with a Common Man shifting scenery and picking sides.",
+    "recognized": true
+  },
+  {
+    "id": "book507",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Orlando",
+    "authorAtDraft": "Virginia Woolf",
+    "new": "An Elizabethan nobleman lives three centuries without ageing much, then wakes one morning as a woman and finds it mildly inconvenient. Mock biography, footnotes included, arguing that gender is costume.",
+    "recognized": true
+  },
+  {
+    "id": "book519",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Sense and Sensibility",
+    "authorAtDraft": "Jane Austen",
+    "new": "Two sisters lose the family house and must marry well: one locks her feelings away, the other broadcasts hers and pays for it. Comedy about money that keeps pretending to be about love.",
+    "recognized": true
+  },
+  {
+    "id": "book528",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "The Book of the City of Ladies",
+    "authorAtDraft": "Christine de Pizan",
+    "new": "Three crowned allegories visit a discouraged writer and set her to building a walled city out of the lives of women worth defending. Medieval argument, example after example, answering the slanders of its day.",
+    "recognized": true
+  },
+  {
+    "id": "book530",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "The Canterbury Tales",
+    "authorAtDraft": "Geoffrey Chaucer",
+    "new": "Pilgrims riding to Canterbury pass the time with a story contest: knightly romance, filth, sermons, and a fart joke that has outlived several empires. Verse, unfinished, and rowdier than school lets on.",
+    "recognized": true
+  },
+  {
+    "id": "book531",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "The Count of Monte Cristo",
+    "authorAtDraft": "Alexandre Dumas",
+    "new": "Framed on his wedding day, Edmond Dantes spends fourteen years in a sea fortress, walks out rich under a borrowed name, and takes his time. Twelve hundred pages of patient, delicious revenge.",
+    "recognized": true
+  },
+  {
+    "id": "book543",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "The Odyssey",
+    "authorAtDraft": "Homer, transl. by Knox & Fagles",
+    "new": "Ten years to get home from Troy, by way of a cyclops, a witch, a whirlpool, and a wife stalling a houseful of suitors. Verse built to be spoken aloud, in a translation quick enough to prove the point.",
+    "recognized": true
+  },
+  {
+    "id": "book548",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Pollyanna; Book 1",
+    "authorAtDraft": "Eleanor H. Porter",
+    "new": "An orphan lands on a stiff aunt who never wanted her and disarms a whole town with the glad game, finding something to be pleased about in everything. Sweet enough to ache, and the series starts here.",
+    "recognized": true
+  },
+  {
+    "id": "book579",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "The Secret Island; The Secret Series #1",
+    "authorAtDraft": "Enid Blyton",
+    "new": "Four children, badly treated at home, row out to an island in a lake and set up house with a cow, a rowboat and a willow shelter. Cosy runaway adventure, all raspberries and secrets, and book one.",
+    "recognized": true
+  },
+  {
+    "id": "book580",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Selected Stories of Anton Chekhov",
+    "authorAtDraft": "A. Chekhov, L. Volokhonsky & R. Pevear",
+    "new": "Story after story catches people mid-compromise: a seaside affair, a bored doctor, a dog, a funeral, and nothing tied off. Endings that simply stop rather than conclude, and they follow you around for days.",
+    "recognized": true
+  },
+  {
+    "id": "book586",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Rebecca",
+    "authorAtDraft": "Daphne du Maurier",
+    "new": "A new bride reaches Manderley to find the first wife's monogram on everything and a housekeeper who worships her memory. Dread assembled out of furniture and menus, and nobody lets her forget she is second.",
+    "recognized": true
+  },
+  {
+    "id": "book588",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Anne of Green Gables",
+    "authorAtDraft": "L.M. Montgomery",
+    "new": "Matthew and Marilla asked for a farm boy and got a red-headed talker who renames the landscape and apologises at enormous length. Warm, funny, and the opening of a very long series.",
+    "recognized": true
+  },
+  {
+    "id": "book590",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "The Haunting of Hill House",
+    "authorAtDraft": "Shirley Jackson",
+    "new": "Hill House takes in four people for a study of the supernatural and reserves its attention for the loneliest of them. Cold hands, chalked walls, and dread that works by never quite showing itself.",
+    "recognized": true
+  },
+  {
+    "id": "book593",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "The Adventures of Pippi Longstocking",
+    "authorAtDraft": "Astrid Lindgren",
+    "new": "Nine years old, strong enough to lift a horse, living alone with a monkey and a bag of gold while the grown-ups fuss. Episodic nonsense that adults read as chaos and children read as a manifesto.",
+    "recognized": true
+  },
+  {
+    "id": "book616",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "The Boundless Sea; A Human History of the Oceans",
+    "authorAtDraft": "David Abulafia",
+    "new": "Human history retold from the water: outrigger canoes, monsoon traders, Dutch fleets, all the way to container ships. Over a thousand dense pages, and the detail piles up faster than the argument does.",
+    "recognized": true
+  },
+  {
+    "id": "book633",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Pygmalion",
+    "authorAtDraft": "George Bernard Shaw",
+    "new": "A phonetics professor bets he can pass a flower girl off as a duchess by correcting her vowels, and never once asks what she is meant to do afterwards. Brisk, talky, merciless about the English class system.",
+    "recognized": true
+  },
+  {
+    "id": "book654",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Thumbelina",
+    "authorAtDraft": "Hans Christian Andersen",
+    "new": "Born in a tulip and no taller than a thumb, a girl is stolen by a toad, adopted by a mouse and promised to a mole before the swallows get a say. Short, strange, and kind to her in the end.",
+    "recognized": true
+  },
+  {
+    "id": "book663",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "On the Banks of Plum Creek; (Little House, Book 4)",
+    "authorAtDraft": "Laura Ingalls Wilder",
+    "new": "A family moves into a dugout in the creek bank and stakes everything on a wheat crop that grasshoppers arrive to eat. Fourth in the series, and the weather is the real antagonist throughout.",
+    "recognized": true
+  },
+  {
+    "id": "book670",
+    "batch": 8,
+    "status": "draft",
+    "titleAtDraft": "Dickens at Christmas",
+    "authorAtDraft": "Charles Dickens",
+    "new": "Five Christmas stories with the ghosts left in: a miser walked through his own life by spirits, goblins in a bell tower, a chemist who wishes his memories away. Sentiment and haunting in equal measure.",
+    "recognized": true
+  },
+  {
+    "id": "book09",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "A Dictionary of the English Language",
+    "authorAtDraft": "Samuel Johnson",
+    "new": "Every definition comes with a quotation to prove it, and the compiler's own opinions slip in more than once. A monument of a reference work, magnificently dry, and long since overtaken by the lexicographers who followed.",
+    "recognized": true
+  },
+  {
+    "id": "book41",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Architecture in Britain; 1530-1830",
+    "authorAtDraft": "John N. Summerson",
+    "new": "Tudor great houses to Georgian terraces, sorted by patron, builder and style, with the plans to back it up. A scholarly survey for anyone who reads buildings the way others read novels, and a fine companion on a British tour.",
+    "recognized": true
+  },
+  {
+    "id": "book43",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Arnheim's Principles of Athletic Training; A Competency-Based Approach",
+    "authorAtDraft": "William E. Prentice",
+    "new": "A thousand pages of taping, prevention, rehab protocols and exam-ready competencies for the athletic trainer. Thorough, dry as chalk, and several editions behind current practice, though the anatomy has not moved.",
+    "recognized": true
+  },
+  {
+    "id": "book45",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Art of the Modern Movie Poster; International Postwar Style and Design",
+    "authorAtDraft": "Various Authors",
+    "new": "Postwar cinema sold itself in ink: bold type, flat colour, faces cropped to a single stare. A big, generously plated survey of poster design country by country, for designers, film buffs and lovers of a specialist shelf.",
+    "recognized": true
+  },
+  {
+    "id": "book66",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Chemistry; The Central Science",
+    "authorAtDraft": "Theodore L. Brown",
+    "new": "Stoichiometry, bonding, thermodynamics and problem sets by the hundred, in the introductory textbook that raised a good many chemists. An early edition, so its data and diagrams belong to their moment rather than yours.",
+    "recognized": true
+  },
+  {
+    "id": "book67",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "The Chicago Manual of Style (CMOS)",
+    "authorAtDraft": "University of Chicago Press",
+    "new": "Hyphens, capitals, citations, proofreading marks: the house rulebook editors reach for mid-argument. This is an early edition of a reference revised many times since, so treat its verdicts as history rather than law.",
+    "recognized": true
+  },
+  {
+    "id": "book96",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Feminist, Queer, Crip",
+    "authorAtDraft": "Alison Kafer",
+    "new": "What if a future without disability is not progress but erasure? A dense academic argument that crip politics and queer politics belong together, built for seminar readers rather than casual browsers.",
+    "recognized": true
+  },
+  {
+    "id": "book103",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "A Florence Diary",
+    "authorAtDraft": "Diana Athill",
+    "new": "Eighty pages of a young Englishwoman's first Italian summer: churches, chaperones, heat and gelato, recorded on the spot. A slight, sunlit travel notebook published long after the trip it describes.",
+    "recognized": true
+  },
+  {
+    "id": "book110",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Games, Game Design, Game Studies",
+    "authorAtDraft": "Gundolf S. Freyermuth",
+    "new": "Where do games come from, and how did studying them become a discipline? A brisk academic primer on design practice and the young field built around it, written for students and dry in the way syllabi are.",
+    "recognized": true
+  },
+  {
+    "id": "book116",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "A Gothic Cookbook; Hauntingly Delicious Recipes Inspired by 13 Classic Tales",
+    "authorAtDraft": "Ella Buchan & Dr Allesandra Pino",
+    "new": "Thirteen gothic classics, raided for supper. Recipes, menus and literary notes that let you cook your way through mist, inheritance and the odd disappearance, illustrated for readers who like their baking atmospheric.",
+    "recognized": true
+  },
+  {
+    "id": "book129",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "The Illustrated Dust Jacket, 1920-1970",
+    "authorAtDraft": "Martin Salisbury",
+    "new": "Between the wars and after, a book's jacket was where illustrators showed off. Designer by designer, plate by plate, this survey catalogues that golden stretch of jacket art, with the text kept short and factual.",
+    "recognized": true
+  },
+  {
+    "id": "book145",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Le Corbusier",
+    "authorAtDraft": "Le Corbusier",
+    "new": "Drawings, doctrine and buildings from the hard edge of modern architecture, in a slim interwar volume that argues as much as it illustrates. Dry, specialist, and aimed at readers who already speak the language.",
+    "recognized": false
+  },
+  {
+    "id": "book150",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Mend! A Refashioning Manual and Manifesto",
+    "authorAtDraft": "Kate Sekules",
+    "new": "Darning is an argument now. Visible stitches, patches worn on purpose and a short history of mending, from a writer who would rather your wardrobe was repaired than replaced. Practical, opinionated, easy to dip into.",
+    "recognized": true
+  },
+  {
+    "id": "book166",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Non-Binary Lives; An Anthology of Intersecting Identities",
+    "authorAtDraft": "Various Authors",
+    "new": "Essays and life stories from people whose gender sits outside the binary, and who are also, variously, disabled, religious, working class or of colour. Personal, political, and told in their own voices.",
+    "recognized": true
+  },
+  {
+    "id": "book182",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Richard Serra; Interviews, etc., 1970-1980",
+    "authorAtDraft": "Richard Serra",
+    "new": "A sculptor talks shop across a decade: steel, weight, site, process, and what happens when a work refuses to be moved. Interviews rather than a life story, dense throughout, and best suited to art-school shelves.",
+    "recognized": true
+  },
+  {
+    "id": "book187",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "The Saviour Fish; Life and Death on Africa's Greatest Lake",
+    "authorAtDraft": "Mark Weston",
+    "new": "One introduced fish made fortunes and unmade a lake. Reported from an island where the catch keeps shrinking, this is patient, unsparing writing about ecology, poverty and politics on the water. Not a cheerful trip.",
+    "recognized": true
+  },
+  {
+    "id": "book189",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Shakespeare; The World as Stage",
+    "authorAtDraft": "Bill Bryson",
+    "new": "How much can actually be known about the man from Stratford? Very little, it turns out, and the hunt for it is the fun. A short, funny, sceptical biography that prefers evidence to legend.",
+    "recognized": true
+  },
+  {
+    "id": "book191",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Shearwater; A Bird, an Ocean, and a Long Way Home",
+    "authorAtDraft": "Roger Morgan-Grenville",
+    "new": "Few birds travel like the shearwater, and following one across oceans turns into a reckoning with home, friendship and getting older. Nature writing with salt in it: curious, companionable, quietly enormous.",
+    "recognized": true
+  },
+  {
+    "id": "book200",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "The Anthropocene Reviewed",
+    "authorAtDraft": "John Green",
+    "new": "Rating the human-shaped planet on a five-star scale, one small subject at a time, from sunsets to soft drinks. Essays that start funny and land somewhere tender, with a scientist's curiosity and a fan's warmth.",
+    "recognized": true
+  },
+  {
+    "id": "book207",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Baking with Kim-Joy; Cute and Creative Bakes to Make You Smile",
+    "authorAtDraft": "Kim-Joy",
+    "new": "Bakes with faces. Animals piped, iced and assembled step by step, in a decorating book for home bakers who would like their kitchen cheerful rather than serious. Cute is the whole point here, and it works.",
+    "recognized": true
+  },
+  {
+    "id": "book210",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Barmy British Empire; Horrible Histories",
+    "authorAtDraft": "Terry Deary",
+    "new": "History for children with the gruesome bits left in: empire, plunder, disease and some truly poor decisions, told in jokes, cartoons and lists. Part of a long series that turned squeamish readers into history fans.",
+    "recognized": true
+  },
+  {
+    "id": "book211",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Baroque",
+    "authorAtDraft": "John Rupert Martin",
+    "new": "Illusion, naturalism, allegory, light: baroque art sorted by idea rather than by date, across painting, sculpture and the buildings that framed them. A compact survey with plates, clear enough for beginners.",
+    "recognized": true
+  },
+  {
+    "id": "book219",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Bird by Bird; Some Instructions on Writing and Life",
+    "authorAtDraft": "Anne Lamott",
+    "new": "Stuck at page one? Permission to write a terrible first draft, then another, offered through a writing teacher's own false starts and small victories. Warm, funny, and the most quoted advice book on the craft.",
+    "recognized": true
+  },
+  {
+    "id": "book225",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Blurb Your Enthusiasm: A Cracking Compendium of Book Blurbs, Writing Tips, Literary Folklore and Publishing Secrets",
+    "authorAtDraft": "Louise Willder",
+    "new": "Who writes the words on the back of a book, and why do they work? A copywriter's cheerful tour of blurbs, cover lines, publishing lore and the tricks that shift stock. Best read in a bookshop, out loud.",
+    "recognized": true
+  },
+  {
+    "id": "book235",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "The Comfort Book",
+    "authorAtDraft": "Matt Haig",
+    "new": "Short notes, lists and fragments written for bad days, meant to be opened anywhere rather than read straight through. Gentle, plain-spoken comfort from someone who has needed it, and no promise that you are fixed.",
+    "recognized": true
+  },
+  {
+    "id": "book237",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "The Complete Illustrated Encyclopedia of Birds of the World; A Detailed Visual Reference Guide To 1600 Birds And Their Habitats, Shown In More Than 1800 Pictures",
+    "authorAtDraft": "David Alderton",
+    "new": "Sixteen hundred species and more than eighteen hundred pictures, arranged by the habitats they belong to. A heavy, handsome reference to keep near the window, for birdwatchers who look things up rather than read on.",
+    "recognized": false
+  },
+  {
+    "id": "book242",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Crying in H Mart",
+    "authorAtDraft": "Michelle Zauner",
+    "new": "Grief tastes like the food a mother used to make. A memoir of losing her, of Korean groceries and half-belonging, and of learning the recipes far too late. Tender, exact, and unsparing about what goes unsaid.",
+    "recognized": true
+  },
+  {
+    "id": "book245",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "The Decoration of Houses",
+    "authorAtDraft": "Edith Wharton",
+    "new": "Clutter is the enemy; proportion is the cure. An argument for rooms planned like architecture instead of padded like parlours, with practical chapters on doors, walls and light. Opinionated, and still useful.",
+    "recognized": true
+  },
+  {
+    "id": "book250",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Europe Through the Back Door; A Travel Skills Handbook",
+    "authorAtDraft": "Rick Steves",
+    "new": "Skip the front door. Packing light, sleeping cheap, reading timetables and finding the village the tour buses miss, in a fat handbook of travel skills followed by country notes. Of its era, and still shrewd.",
+    "recognized": true
+  },
+  {
+    "id": "book258",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "The Glass Castle",
+    "authorAtDraft": "Jeannette Walls",
+    "new": "Four children raised on charm, hunger and a father's blueprints for a house he never built, moving town whenever the rent came due. A memoir clear-eyed about the cost and unwilling to hate anyone for it.",
+    "recognized": true
+  },
+  {
+    "id": "book272",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Is a River Alive",
+    "authorAtDraft": "Robert MacFarlane",
+    "new": "Can a river hold rights of its own? Journeys to three threatened waterways, among lawyers, activists and people who speak of rivers as kin, in nature writing that is lyrical and pointedly political at once.",
+    "recognized": true
+  },
+  {
+    "id": "book277",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Life is Better When You Draw It",
+    "authorAtDraft": "Koosje Koene",
+    "new": "Ten minutes and a pen is enough to start. Prompts, exercises and hand-drawn encouragement for people convinced they cannot draw, arranged so you can open anywhere and put a mark on paper today.",
+    "recognized": true
+  },
+  {
+    "id": "book284",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "The Lost Words; A Spell Book",
+    "authorAtDraft": "Robert Macfarlane & Jackie Morris",
+    "new": "Words that fell out of a children's dictionary, summoned back as acrostic spells and huge painted plates. Read them aloud and otter, acorn and magpie come back into the room. For any age, and quietly urgent.",
+    "recognized": true
+  },
+  {
+    "id": "book295",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Maybe You Should Take to Someone; A Therapist, Her Therapist, and Our Lives Revealed",
+    "authorAtDraft": "Lori Gottlieb",
+    "new": "A therapist's patients arrive in crisis; so, it turns out, does she. Sessions from both sides of the couch, written with jokes and real tenderness, and more useful about ordinary unhappiness than most self-help.",
+    "recognized": true
+  },
+  {
+    "id": "book305",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Nature; Encyclopedia of Discovery",
+    "authorAtDraft": "Various Authors",
+    "new": "Big pages, bigger pictures: habitats, creatures and how the living world fits together, in a nature reference built for curious young readers to browse rather than finish. Heavy enough to flatten a bookmark.",
+    "recognized": false
+  },
+  {
+    "id": "book308",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "The New Encyclopedia of British, European & African Birds",
+    "authorAtDraft": "David Alderton",
+    "new": "Species accounts and plates covering birds of Britain, Europe and Africa, arranged for looking up rather than reading through. Dry, thorough, and exactly what a birder wants in the rucksack or on the shelf.",
+    "recognized": false
+  },
+  {
+    "id": "book321",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "The Seven Lamps of Architecture",
+    "authorAtDraft": "John Ruskin",
+    "new": "Seven principles a building ought to obey, from sacrifice to memory, argued with Victorian certainty and a passion for Gothic stone. Dense, sermon-like prose for readers who want architecture as a moral question.",
+    "recognized": true
+  },
+  {
+    "id": "book330",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "The Soul of Man Under Socialism",
+    "authorAtDraft": "Oscar Wilde",
+    "new": "Socialism defended not for the sake of the state but so that people might finally become individuals and make art. A short, contrary, gleefully argumentative essay that treats charity itself as part of the problem.",
+    "recognized": true
+  },
+  {
+    "id": "book337",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "The Templars; The Rise and Spectacular Fall of God's Holy Warriors",
+    "authorAtDraft": "Dan Jones",
+    "new": "Bankers in armour, sworn to poverty, grown rich enough to frighten kings and then broken by one. Narrative history of the warrior order, well sourced and fast moving, for readers who like medieval politics sharp.",
+    "recognized": true
+  },
+  {
+    "id": "book342",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Wars of The Roses; The Fall of the Plantagenets and the Rise of the Tudors",
+    "authorAtDraft": "Dan Jones",
+    "new": "Cousins with armies, a crown that kept changing heads, and a dynastic war that ended with a new family on the throne. Popular narrative history, briskly told, strong on battles and stronger on the people.",
+    "recognized": true
+  },
+  {
+    "id": "book346",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "The Wilder Shores of Love",
+    "authorAtDraft": "Lesley Blanch",
+    "new": "Four nineteenth-century women who went east and declined to come home to the drawing room, told as romantic biography with the scholarship worn lightly. Sumptuous, dated in its attitudes, and a very good read.",
+    "recognized": true
+  },
+  {
+    "id": "book347",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Will You Love Me?; The story of my adopted daughter Lucy",
+    "authorAtDraft": "Cathy Glass",
+    "new": "A foster carer's account of one girl who arrives angry, hungry and certain she will be moved on again. Plain, quick, upsetting in places, and it does end somewhere hopeful. Written from inside the care system.",
+    "recognized": true
+  },
+  {
+    "id": "book351",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Women, Race and Class",
+    "authorAtDraft": "Angela Y. Davis",
+    "new": "Abolition, suffrage, housework and wages, read together to show where the women's movement failed Black women and working women. A sharp, foundational history of feminism's blind spots, argued from the record.",
+    "recognized": true
+  },
+  {
+    "id": "book358",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "The Third Gilmore Girl; A Memoir",
+    "authorAtDraft": "Kelly Bishop",
+    "new": "Broadway first, dancing eight shows a week, then decades of television and one famously formidable grandmother. A performer's memoir, brisk and candid about work, marriages and the business of being cast.",
+    "recognized": true
+  },
+  {
+    "id": "book363",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "A Tomb With a View; The Stories and Glories of Graveyards",
+    "authorAtDraft": "Peter Ross",
+    "new": "Graveyards as places where the living gather: keepers, historians, mourners and the odd celebrity resident. Reported essays wandering the burial grounds of Britain and Ireland, funnier and kinder than expected.",
+    "recognized": true
+  },
+  {
+    "id": "book365",
+    "batch": 9,
+    "status": "draft",
+    "titleAtDraft": "Tree Houses: Baumhäuser - Maisons Dans les Arbres",
+    "authorAtDraft": "Philip Jodidio",
+    "new": "Houses up in the branches, from plank-and-rope forts grown up to engineered retreats with glass and cantilevers. A big photographic survey of building in trees, better for browsing than for following literally.",
+    "recognized": true
+  },
+  {
+    "id": "book375",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Unmasking Autism",
+    "authorAtDraft": "Devon Price",
+    "new": "Masking to pass as neurotypical costs more than it earns: a social psychologist's case for dropping the performance, built from interviews with late-diagnosed autistic and queer adults, plus exercises for finding your own footing.",
+    "recognized": true
+  },
+  {
+    "id": "book378",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Upgrading and Repairing PCs",
+    "authorAtDraft": "Scott Mueller",
+    "new": "Nearly thirteen hundred pages on motherboards, drive interfaces and power supplies, revised edition after edition for anyone who opens the case themselves. Dry as a service manual, and indexed like one too.",
+    "recognized": true
+  },
+  {
+    "id": "book381",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Villainous Victorians; Horrible Histories",
+    "authorAtDraft": "Terry Deary",
+    "new": "Victorian Britain served up with the gruesome bits left in: chimney sweeps, grim punishments, cheerful cartoons and jokes at every turn. History for kids who prefer their facts a bit revolting, from a long-running series.",
+    "recognized": true
+  },
+  {
+    "id": "book397",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "The Encyclopedia of the Weird and Wonderful; Curious and Incredible Facts that Will Blow Your Mind",
+    "authorAtDraft": "Milo Rossi",
+    "new": "Short entries on the odd corners of nature, the earth and the past, arranged to be dipped into rather than read straight through. Curious facts for browsers of any age who enjoy being surprised mid-page.",
+    "recognized": false
+  },
+  {
+    "id": "book406",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Know My Name",
+    "authorAtDraft": "Chanel Miller",
+    "new": "Reclaiming a name after being known only as a victim in a court transcript: a memoir of assault, a trial that failed her, and the slow work of becoming whole again. Devastating, and written with real grace.",
+    "recognized": true
+  },
+  {
+    "id": "book413",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Round the World in Eighty Dishes",
+    "authorAtDraft": "Lesley Blanch",
+    "new": "Travel by dinner plate: a slim cookbook that tours the world one recipe at a time, chatty about each country's table. Charming, and dated enough that half the pleasure is the period itself.",
+    "recognized": true
+  },
+  {
+    "id": "book421",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "The Code Book; The Science of Secrecy from Ancient Egypt to Quantum Cryptography",
+    "authorAtDraft": "Simon Singh",
+    "new": "Ciphers, and the people who broke them: a queen undone by a cracked code, Enigma unpicked at Bletchley, lost scripts deciphered at last. Popular history of secret writing that teaches the maths painlessly.",
+    "recognized": true
+  },
+  {
+    "id": "book441",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Blood, Sweat, and Pixels",
+    "authorAtDraft": "Jason Schreier",
+    "new": "Ten video games, ten different ways a project nearly collapsed before shipping. Reported from inside the studios, full of crunch, rewrites and last-minute rescues, and surprisingly breezy for a book about misery.",
+    "recognized": true
+  },
+  {
+    "id": "book456",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Critical Hits; Writers on Gaming and the Alternate Worlds We Inhabit",
+    "authorAtDraft": "Various Authors",
+    "new": "Novelists and poets writing about the games that got under their skin, from open-world wandering to character creators and the pull of an unfinished save. A slim essay collection, personal rather than technical.",
+    "recognized": true
+  },
+  {
+    "id": "book457",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "The CRPG Book; Guide to Computer Role-Playing Games",
+    "authorAtDraft": "Collection",
+    "new": "Hundreds of computer role-playing games reviewed by the fans who played them, decade by decade, with screenshots and strong opinions. Huge, browsable, and the closest thing the genre has to a family album.",
+    "recognized": true
+  },
+  {
+    "id": "book466",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Frank Lloyd Wright",
+    "authorAtDraft": "Frank Lloyd Wright",
+    "new": "Plates, plans and a short critical text on one of architecture's most argued-over careers. Slim, academic in tone, and aimed at readers who already know the buildings and now want the drawings.",
+    "recognized": false
+  },
+  {
+    "id": "book471",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Heinemann Mathematics",
+    "authorAtDraft": "Scottish Primary Mathematics Group",
+    "new": "Thirty-odd pages of primary school sums: number lines, shape work and neat rows of exercises to be filled in with a pencil. One thin booklet from a long classroom series, and no fun was budgeted for.",
+    "recognized": false
+  },
+  {
+    "id": "book481",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Jean Dubuffet",
+    "authorAtDraft": "Jean Dubuffet",
+    "new": "Seventy-odd pages of plates and commentary on a painter's work, the kind of slim catalogue an exhibition leaves behind. Plain in tone, niche by design, and a small treasure if the pictures are your pictures.",
+    "recognized": false
+  },
+  {
+    "id": "book510",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Pageboy",
+    "authorAtDraft": "Elliot Page",
+    "new": "Fame arriving before the self does: a memoir of growing up on film sets, staying closeted through an awards campaign, and the relief of finally saying who he is. Told in fragments rather than a tidy arc.",
+    "recognized": true
+  },
+  {
+    "id": "book512",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Persepolis; The Story of a Childhood",
+    "authorAtDraft": "Marjane Satrapi",
+    "new": "Growing up in Tehran as the revolution hardens, drawn in stark black and white by a girl who keeps asking the wrong questions. A graphic memoir, funny and then suddenly not, about childhood under a new regime.",
+    "recognized": true
+  },
+  {
+    "id": "book529",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Book of Yokai ; Mysterious Creatures of Japanese Folklore",
+    "authorAtDraft": "Michael Dylan Foster & Shinonome Kijin",
+    "new": "Japanese folklore's monsters catalogued and explained: shape-shifting foxes, river imps, creatures born out of neglected household objects. A scholarly survey with a real feel for why these stories stuck.",
+    "recognized": true
+  },
+  {
+    "id": "book539",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "How Did Whales Get So Big?; An Other Curious Questions about Animals, Nature, Geology and Planet Earth",
+    "authorAtDraft": "MinuteEarth",
+    "new": "Why did whales end up so enormous? Bite-sized illustrated answers to the questions kids actually ask about animals, weather and rocks, from the crew behind the science cartoons. Silly drawings, careful science.",
+    "recognized": true
+  },
+  {
+    "id": "book547",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "The Poetry of Architecture",
+    "authorAtDraft": "John Ruskin",
+    "new": "An early essay on cottages and villas, arguing that a building belongs to its landscape or it belongs nowhere. Dense prose, close attention to stone and hillside, and a young critic already certain of his eye.",
+    "recognized": true
+  },
+  {
+    "id": "book554",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "So Easy So Good",
+    "authorAtDraft": "Kylie Sakaida",
+    "new": "Weeknight cooking for people who are tired: short ingredient lists, balanced plates, and recipes that do not need a second pan. Cheerful, practical, and aimed at whoever is standing in the kitchen at seven.",
+    "recognized": false
+  },
+  {
+    "id": "book560",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Towards a New Architecture",
+    "authorAtDraft": "Le Corbusier",
+    "new": "A manifesto that holds up ocean liners, aeroplanes and grain silos as models for how houses should be built, and calls the home a machine for living in. Polemical, repetitive, and impossible to ignore since.",
+    "recognized": true
+  },
+  {
+    "id": "book562",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Understanding Comics; The Invisible Art",
+    "authorAtDraft": "Scott McCloud",
+    "new": "Comics explained in comics form, a cartoon narrator walking you through panels, gutters and the way your brain fills the gaps between them. The theory book that made a whole medium take itself seriously.",
+    "recognized": true
+  },
+  {
+    "id": "book567",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Zaha Hadid",
+    "authorAtDraft": "Zaha Hadid",
+    "new": "One architect's portfolio in print: elevations, sketches and plates, laid out with barely a word of commentary to get in the way. Slim, niche, and likely to end up permanently open on a studio desk.",
+    "recognized": false
+  },
+  {
+    "id": "book574",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "The Ghost Map; A Street, a City, An Epidemic and the Hidden Power of Urban Networks",
+    "authorAtDraft": "Steven Johnson",
+    "new": "London, cholera, and a doctor with a map: how one Soho outbreak was traced to a single water pump and overturned the idea that disease drifts in on bad air. Popular science that doubles as a case for cities.",
+    "recognized": true
+  },
+  {
+    "id": "book591",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Dinosaurs and other Prehistoric Life",
+    "authorAtDraft": "Anusuya Chinsamy-Turan",
+    "new": "Big illustrated spreads walking back through deep time, era by era, with skeletons, reconstructions and all the creatures that were not dinosaurs but get lumped in anyway. Shelf reference for an obsessed kid.",
+    "recognized": false
+  },
+  {
+    "id": "book592",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Newtonian Physics for Babies",
+    "authorAtDraft": "Chris Ferrie",
+    "new": "A board book explaining forces to an audience still working on sitting up: bold shapes, one idea per page, and a completely straight face. The joke is for the grown-up reading aloud, and it lands.",
+    "recognized": true
+  },
+  {
+    "id": "book595",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Coffee First, Then the World",
+    "authorAtDraft": "Jenny Graham",
+    "new": "Around the world by bicycle, alone and unsupported, chasing a record with a coffee stop wherever one could be found. A cheerful, self-deprecating adventure memoir that ends the way you want it to.",
+    "recognized": true
+  },
+  {
+    "id": "book598",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "The Bookshop Book",
+    "authorAtDraft": "Lucy Mangan",
+    "new": "Shop by shop, a warm tour of the places that sell books: the odd ones, the tiny ones, the ones that should not still be open. Light, browsable, and dangerous to anyone who already owns too many books.",
+    "recognized": false
+  },
+  {
+    "id": "book601",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "What We Don't Talk About; When We Talk About Fat",
+    "authorAtDraft": "Aubrey Gordon",
+    "new": "Anti-fat bias treated as a structural problem rather than a personal failing: doctors, airline seats, hiring, and the language of concern. Part memoir, part argument, with the research stacked up behind it.",
+    "recognized": true
+  },
+  {
+    "id": "book605",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Tasting History; Explore the Past through 4,000 Years of Recipes",
+    "authorAtDraft": "Max Miller",
+    "new": "Historical recipes tested until they actually work, each with the history of the dish attached: ancient stews, medieval pies, wartime improvisation. A cookbook to read for pleasure and still cook from tonight.",
+    "recognized": true
+  },
+  {
+    "id": "book610",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "The Stonewall Reader",
+    "authorAtDraft": "The New York Public Library",
+    "new": "First-hand accounts from before, during and after the Stonewall uprising, pulled out of the archives: diaries, interviews, movement periodicals. An anthology that lets the people who were there do the talking.",
+    "recognized": true
+  },
+  {
+    "id": "book611",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "We Are Bridges; A Memoir",
+    "authorAtDraft": "Cassandra Lane",
+    "new": "Pregnancy sends a writer back through family silence toward a great-grandfather lost to a lynching, reconstructing what the records refuse to hold. A memoir moving between generations, close to poetry.",
+    "recognized": true
+  },
+  {
+    "id": "book613",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Hawaii's Story by Hawaii's Queen",
+    "authorAtDraft": "Lili'uokalani",
+    "new": "The last queen of Hawaii tells how her kingdom was taken: court life, the overthrow, her imprisonment, and an appeal addressed straight to American readers. Dignified, pointed, a primary source with a voice.",
+    "recognized": true
+  },
+  {
+    "id": "book615",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Botany in a Day; The Patterns Method of Plant Identification",
+    "authorAtDraft": "Thomas J. Elpel",
+    "new": "Learn the plant families instead of memorizing species and the whole meadow starts making sense. A workmanlike field guide to the patterns method, with keys, line drawings and notes on edible and medicinal use.",
+    "recognized": true
+  },
+  {
+    "id": "book623",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "British Boutique Hotels",
+    "authorAtDraft": "Gina Jackson",
+    "new": "Photographs and short write-ups of small British hotels worth booking, sorted so you can choose by mood and region. A coffee-table travel guide that works perfectly well as a pure daydreaming device.",
+    "recognized": false
+  },
+  {
+    "id": "book624",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Brown Girl Dreaming",
+    "authorAtDraft": "Jacqueline Woodson",
+    "new": "A childhood told in short poems, split between a South Carolina grandmother's porch and a Brooklyn street, the civil rights era humming behind it. A memoir in verse that earns every single line break.",
+    "recognized": true
+  },
+  {
+    "id": "book628",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Entangled Life; How Fungi Make Our Worlds, Change Our Minds & Shape Our Futures",
+    "authorAtDraft": "Merlin Sheldrake",
+    "new": "Fungi as the quiet infrastructure of life: networks trading with tree roots, lichens that are two organisms at once, truffle hunts and mind-altering mushrooms. Popular science with genuine wonder in it.",
+    "recognized": true
+  },
+  {
+    "id": "book630",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "The Origin of Species",
+    "authorAtDraft": "Charles Darwin",
+    "new": "Pigeons, barnacles and one long patient argument that species change by natural selection. Dense Victorian science, written before anyone knew what a gene was, and still the book everything after it answers to.",
+    "recognized": true
+  },
+  {
+    "id": "book631",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Provence to Pondicherry; Recipes from France and Faraway",
+    "authorAtDraft": "Tessa Kiros",
+    "new": "French cooking followed wherever French ships went: Provence, Vietnam, Pondicherry, the islands, with photographs as slow and warm as the recipes. A travel cookbook to read in bed and cook from on Sunday.",
+    "recognized": true
+  },
+  {
+    "id": "book635",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "The Royal Horticultural Society Encyclopedia of Gardening",
+    "authorAtDraft": "Royal Horticultural Society",
+    "new": "Soil preparation, pruning, propagation, pests: hundreds of pages of authoritative reference, illustrated step by step, arranged so you can look up one problem and fix it this weekend. Charm was not the goal.",
+    "recognized": true
+  },
+  {
+    "id": "book637",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Russians in Alaska, 1732-1867",
+    "authorAtDraft": "Lydia T. Black",
+    "new": "Russian America reconstructed from the archives: fur company politics, Orthodox missions, and the Native communities whose part the older accounts left out. Academic history, footnoted, worth the effort.",
+    "recognized": true
+  },
+  {
+    "id": "book641",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "The Sea Around Us",
+    "authorAtDraft": "Rachel Carson",
+    "new": "Oceans described with a naturalist's precision and a poet's ear: tides, currents, the dark of the deep, islands being born. Popular science from before the sonar maps, and the prose has not aged a day.",
+    "recognized": true
+  },
+  {
+    "id": "book642",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "The Sea Inside",
+    "authorAtDraft": "Philip Hoare",
+    "new": "Walking out from an English shore and somehow ending up among whales, ravens and drowned histories on the far side of the world. Nature writing that wanders where it likes, melancholy, funny, full of animals.",
+    "recognized": true
+  },
+  {
+    "id": "book643",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Spirals in Time; The Secret Life and Curious Afterlife of Seashells",
+    "authorAtDraft": "Helen Scales",
+    "new": "Seashells as architecture, currency, dye and dinner: how molluscs build those spirals, and why humans have collected, traded and worn them for millennia. A marine biologist's tour, curious and companionable.",
+    "recognized": true
+  },
+  {
+    "id": "book646",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "Wake; The Hidden History of Women-Led Slave Revolts",
+    "authorAtDraft": "Rebecca Hall & Hugo Martínez",
+    "new": "A historian hunts through court records and ship logs for the women who led revolts aboard slave ships, drawn as a graphic narrative that includes the search itself. Angry, rigorous, and hard to put down.",
+    "recognized": true
+  },
+  {
+    "id": "book649",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "An Atlas of Countries that Don't Exist",
+    "authorAtDraft": "Nick Middleton",
+    "new": "Fifty places with flags, borders and governments that most of the world declines to recognize, each given a map and a few sober pages of history. Browsable geopolitics for anyone who likes an awkward border.",
+    "recognized": true
+  },
+  {
+    "id": "book666",
+    "batch": 10,
+    "status": "draft",
+    "titleAtDraft": "My Lesbian Experience With Loneliness",
+    "authorAtDraft": "Nagata Kabi",
+    "new": "An autobiographical manga about depression, an eating disorder, and finally booking a female escort because nothing else had worked. Painfully candid, oddly funny, and drawn in relentlessly cheerful pink.",
+    "recognized": true
   }
 ]

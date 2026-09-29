@@ -10,10 +10,10 @@ are in the batch files linked below.
 ## Overall
 
 - seed archive: 663 rows (620 in the catalogue, 43 excluded)
-- rewritten: 205 of 620 catalogue books
-- remaining: 415
-- validator: 0 error(s), 10 warning(s)
-- written without knowing the book: book350, book600, book606, book35, book29, book355, book11, book359, book423, book468
+- rewritten: 384 of 620 catalogue books
+- remaining: 236
+- validator: 0 error(s), 23 warning(s)
+- written without knowing the book: book350, book600, book606, book35, book29, book355, book11, book359, book423, book468, book145, book237, book305, book308, book397, book466, book471, book481, book554, book567, book591, book598, book623
 
 ## Batches
 
@@ -25,6 +25,10 @@ are in the batch files linked below.
 | 4 | 34 | draft 34 | [batches/REWRITE_REPORT_batch_04.md](batches/REWRITE_REPORT_batch_04.md) |
 | 5 | 41 | draft 41 | [batches/REWRITE_REPORT_batch_05.md](batches/REWRITE_REPORT_batch_05.md) |
 | 6 | 40 | draft 40 | [batches/REWRITE_REPORT_batch_06.md](batches/REWRITE_REPORT_batch_06.md) |
+| 7 | 44 | draft 44 | [batches/REWRITE_REPORT_batch_07.md](batches/REWRITE_REPORT_batch_07.md) |
+| 8 | 43 | draft 43 | [batches/REWRITE_REPORT_batch_08.md](batches/REWRITE_REPORT_batch_08.md) |
+| 9 | 46 | draft 46 | [batches/REWRITE_REPORT_batch_09.md](batches/REWRITE_REPORT_batch_09.md) |
+| 10 | 46 | draft 46 | [batches/REWRITE_REPORT_batch_10.md](batches/REWRITE_REPORT_batch_10.md) |
 
 ## Tone devices by batch
 
@@ -39,13 +43,15 @@ All three are allowed and wanted; strict third person is what made the first pas
 | 4 | 0 (seeded 6) | 0 (seeded 9) | 4 (seeded 5) |
 | 5 | 1 (seeded 9) | 0 (seeded 12) | 2 (seeded 9) |
 | 6 | 0 (seeded 8) | 1 (seeded 9) | 1 (seeded 1) |
+| 7 | 0 (seeded 2) | 0 (seeded 7) | 3 (seeded 5) |
+| 8 | 0 (seeded 4) | 0 (seeded 6) | 3 (seeded 6) |
+| 9 | 6 (seeded 7) | 0 (seeded 13) | 5 (seeded 14) |
+| 10 | 1 (seeded 4) | 0 (seeded 14) | 6 (seeded 12) |
 
 ## Remaining by primary genre
 
 | genre | books left |
 |---|---|
-| Classic | 87 |
 | Drama | 112 |
-| Fact | 92 |
 | Fantasy | 124 |
 
