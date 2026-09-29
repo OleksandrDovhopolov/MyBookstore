@@ -10,10 +10,10 @@ are in the batch files linked below.
 ## Overall
 
 - seed archive: 663 rows (620 in the catalogue, 43 excluded)
-- rewritten: 384 of 620 catalogue books
-- remaining: 236
-- validator: 0 error(s), 23 warning(s)
-- written without knowing the book: book350, book600, book606, book35, book29, book355, book11, book359, book423, book468, book145, book237, book305, book308, book397, book466, book471, book481, book554, book567, book591, book598, book623
+- rewritten: 620 of 620 catalogue books
+- remaining: 0
+- validator: 0 error(s), 26 warning(s)
+- written without knowing the book: book350, book600, book606, book35, book29, book355, book11, book359, book423, book468, book145, book237, book305, book308, book397, book466, book471, book481, book554, book567, book591, book598, book623, book644, book227, book448
 
 ## Batches
 
@@ -29,6 +29,12 @@ are in the batch files linked below.
 | 8 | 43 | draft 43 | [batches/REWRITE_REPORT_batch_08.md](batches/REWRITE_REPORT_batch_08.md) |
 | 9 | 46 | draft 46 | [batches/REWRITE_REPORT_batch_09.md](batches/REWRITE_REPORT_batch_09.md) |
 | 10 | 46 | draft 46 | [batches/REWRITE_REPORT_batch_10.md](batches/REWRITE_REPORT_batch_10.md) |
+| 11 | 38 | draft 38 | [batches/REWRITE_REPORT_batch_11.md](batches/REWRITE_REPORT_batch_11.md) |
+| 12 | 38 | draft 38 | [batches/REWRITE_REPORT_batch_12.md](batches/REWRITE_REPORT_batch_12.md) |
+| 13 | 36 | draft 36 | [batches/REWRITE_REPORT_batch_13.md](batches/REWRITE_REPORT_batch_13.md) |
+| 14 | 42 | draft 42 | [batches/REWRITE_REPORT_batch_14.md](batches/REWRITE_REPORT_batch_14.md) |
+| 15 | 42 | draft 42 | [batches/REWRITE_REPORT_batch_15.md](batches/REWRITE_REPORT_batch_15.md) |
+| 16 | 40 | draft 40 | [batches/REWRITE_REPORT_batch_16.md](batches/REWRITE_REPORT_batch_16.md) |
 
 ## Tone devices by batch
 
@@ -47,11 +53,15 @@ All three are allowed and wanted; strict third person is what made the first pas
 | 8 | 0 (seeded 4) | 0 (seeded 6) | 3 (seeded 6) |
 | 9 | 6 (seeded 7) | 0 (seeded 13) | 5 (seeded 14) |
 | 10 | 1 (seeded 4) | 0 (seeded 14) | 6 (seeded 12) |
+| 11 | 0 (seeded 3) | 0 (seeded 3) | 5 (seeded 1) |
+| 12 | 0 (seeded 6) | 0 (seeded 3) | 4 (seeded 3) |
+| 13 | 0 (seeded 8) | 0 (seeded 2) | 2 (seeded 4) |
+| 14 | 0 (seeded 11) | 0 (seeded 6) | 7 (seeded 3) |
+| 15 | 0 (seeded 6) | 0 (seeded 6) | 3 (seeded 4) |
+| 16 | 1 (seeded 5) | 0 (seeded 12) | 3 (seeded 5) |
 
 ## Remaining by primary genre
 
 | genre | books left |
 |---|---|
-| Drama | 112 |
-| Fantasy | 124 |
 

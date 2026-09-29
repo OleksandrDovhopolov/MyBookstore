@@ -3454,5 +3454,2129 @@
     "authorAtDraft": "Nagata Kabi",
     "new": "An autobiographical manga about depression, an eating disorder, and finally booking a female escort because nothing else had worked. Painfully candid, oddly funny, and drawn in relentlessly cheerful pink.",
     "recognized": true
+  },
+  {
+    "id": "book37",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Angels in America; A Gay Fantasia on National Themes",
+    "authorAtDraft": "Tony Kushner",
+    "new": "New York, the mid-1980s: a man with AIDS is left by his lover, a Mormon lawyer cannot stay closeted, and an angel comes through the ceiling. A two-part play that argues with God and with America at the same time.",
+    "recognized": true
+  },
+  {
+    "id": "book50",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Asterios Polyp",
+    "authorAtDraft": "David Mazzucchelli",
+    "new": "Lightning burns down the flat of a celebrated architect who never built anything, so he takes a bus to nowhere and learns to fix cars. A graphic novel where line, colour and lettering do the arguing.",
+    "recognized": true
+  },
+  {
+    "id": "book52",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Atmosphere",
+    "authorAtDraft": "Taylor Jenkins Reid",
+    "new": "Houston, the 1980s: an astronomer joins NASA's shuttle program and learns that the hard part of going to space is deciding who she can leave on the ground. A love story wired into a mission.",
+    "recognized": true
+  },
+  {
+    "id": "book60",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Cat's Eye",
+    "authorAtDraft": "Margaret Atwood",
+    "new": "A painter comes back to Toronto for a retrospective and finds the city crowded with the girls who tormented her at nine. A novel about how cruelty between small friends never quite finishes with you.",
+    "recognized": true
+  },
+  {
+    "id": "book70",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Chocolat; Book 1",
+    "authorAtDraft": "Joanne Harris",
+    "new": "Vianne Rocher opens a chocolate shop in a small French village on the first day of Lent, and the priest takes it personally. Warm, faintly witchy, and the first of a series worth staying in.",
+    "recognized": true
+  },
+  {
+    "id": "book72",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Clap When You Land",
+    "authorAtDraft": "Elizabeth Acevedo",
+    "new": "A plane goes down between New York and the Dominican Republic, and two teenage girls learn they shared a father, and each other. A novel in verse, in two voices that circle grief until they can meet.",
+    "recognized": true
+  },
+  {
+    "id": "book73",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Cleopatra and Frankenstein",
+    "authorAtDraft": "Coco Mellors",
+    "new": "Six months after meeting at a party, a broke British art student marries a rich New York ad man twice her age. What follows tracks that marriage, and the friends around it, through drink and depression.",
+    "recognized": true
+  },
+  {
+    "id": "book74",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Collected Poems; 1934-1952",
+    "authorAtDraft": "Dylan Thomas",
+    "new": "Welsh hillsides, seaside dark, and a son telling his father not to go gentle: the poems Dylan Thomas chose to keep, gathered by his own hand. Sound first, sense second, and best read aloud.",
+    "recognized": true
+  },
+  {
+    "id": "book75",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Confess",
+    "authorAtDraft": "Colleen Hoover",
+    "new": "Strangers post their confessions through an artist's door and he paints them. The woman who takes a job at his studio has secrets of her own, and a past she cannot afford to open. Romance with a sting.",
+    "recognized": true
+  },
+  {
+    "id": "book97",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Femme in Public",
+    "authorAtDraft": "Alok V Menom",
+    "new": "Forty-six pages of poems about what it costs to walk down a street visibly femme, by a gender-nonconforming artist who does it daily. Short, furious, tender, and asking nobody for permission.",
+    "recognized": true
+  },
+  {
+    "id": "book142",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Henry V",
+    "authorAtDraft": "William Shakespeare",
+    "new": "Young King Harry takes an army across the Channel and stakes a reign on a muddy field at Agincourt. A history play about the rhetoric of war and who pays for it, and part of a four-play cycle.",
+    "recognized": true
+  },
+  {
+    "id": "book146",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Leave Taking",
+    "authorAtDraft": "Winsome Pinnock",
+    "new": "Enid left Jamaica for London years ago; her daughters were born here and want none of it. A short play about a mother, a healer and the arguments families have standing up in kitchens. Funny where it hurts.",
+    "recognized": true
+  },
+  {
+    "id": "book148",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Love",
+    "authorAtDraft": "Toni Morrison",
+    "new": "Two old women share a crumbling seaside house and a hatred fifty years deep, both of them shaped by the same charming hotel owner. Morrison tells it sideways, in prose that will not hurry for anyone.",
+    "recognized": true
+  },
+  {
+    "id": "book149",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Macbeth",
+    "authorAtDraft": "William Shakespeare",
+    "new": "Three strangers on a heath tell a Scottish general he will be king, and his wife makes certain of it. The shortest tragedy Shakespeare wrote, running on blood, sleeplessness and a crown nobody enjoys.",
+    "recognized": true
+  },
+  {
+    "id": "book151",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Meridian",
+    "authorAtDraft": "Alice Walker",
+    "new": "Meridian Hill gives up a child, a marriage and eventually her health to the civil rights movement, then keeps working long after the marches stop. An unsparing novel about what activism asks of one body.",
+    "recognized": true
+  },
+  {
+    "id": "book155",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "milk and honey",
+    "authorAtDraft": "Rupi Kaur",
+    "new": "Four sections, the hurting, the loving, the breaking and the healing, in short unpunctuated poems with line drawings beside them. Plain words about abuse, love and getting yourself back afterwards.",
+    "recognized": true
+  },
+  {
+    "id": "book167",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Normal People",
+    "authorAtDraft": "Sally Rooney",
+    "new": "Connell is popular at school, Marianne is not, and his mother cleans her house. From a small Irish town to Trinity College they keep finding each other and getting it wrong. Class and love, told exactly.",
+    "recognized": true
+  },
+  {
+    "id": "book168",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Northanger Abbey",
+    "authorAtDraft": "Jane Austen",
+    "new": "Catherine Morland reads too many horrid novels, goes to Bath, and arrives at a real abbey fully prepared for murdered wives and secret passages. Austen's funniest romance, and a fond joke at gothic fiction.",
+    "recognized": true
+  },
+  {
+    "id": "book173",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Paper Towns",
+    "authorAtDraft": "John Green",
+    "new": "Margo climbs through Quentin's window for one night of revenge errands, then vanishes, leaving clues only he would notice. A road trip about the gap between a girl and the girl you decided she was.",
+    "recognized": true
+  },
+  {
+    "id": "book174",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Paradise",
+    "authorAtDraft": "Toni Morrison",
+    "new": "Nine men from an all-Black Oklahoma town drive out to an old convent where a handful of women live alone, and they bring guns. Morrison unpicks that morning backwards, woman by woman. Demanding, and worth it.",
+    "recognized": true
+  },
+  {
+    "id": "book175",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Persuasion",
+    "authorAtDraft": "Jane Austen",
+    "new": "Anne Elliot was persuaded out of marrying a poor sailor eight years ago. Now he is back, rich, and civil to everyone but her. Austen's quietest and most grown-up romance, with a letter worth the wait.",
+    "recognized": true
+  },
+  {
+    "id": "book180",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Red, White & Royal Blue",
+    "authorAtDraft": "Casey McQuiston",
+    "new": "The First Son of the United States and a prince of England wreck a royal wedding cake, then have to fake a friendship for the cameras. Emails, borrowed hotel rooms and an election at stake. Very funny.",
+    "recognized": true
+  },
+  {
+    "id": "book184",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Romeo and Juliet",
+    "authorAtDraft": "William Shakespeare",
+    "new": "Two teenagers from feuding Verona households meet at a party and marry in secret inside a day, helped along by a friar, a nurse and a street brawl. A tragedy of pure speed, with nobody old enough to slow it.",
+    "recognized": true
+  },
+  {
+    "id": "book185",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Salomé",
+    "authorAtDraft": "Oscar Wilde",
+    "new": "Herod's stepdaughter wants the imprisoned prophet to look at her, and when he will not, she names her price for a dance. A one-act tragedy of moonlight, obsession and lines that repeat like an incantation.",
+    "recognized": true
+  },
+  {
+    "id": "book186",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Saving Danny",
+    "authorAtDraft": "Cathy Glass",
+    "new": "A five-year-old autistic boy arrives at a foster carer's door frightened, furious and asking after his dog. The carer tells it herself, plainly, and is kinder than you expect about parents out of their depth.",
+    "recognized": true
+  },
+  {
+    "id": "book192",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Shirley",
+    "authorAtDraft": "Charlotte Brontë",
+    "new": "Yorkshire mill workers smash the new machines while two very different women, a shy curate's niece and an heiress who signs herself like a man, work out what they want. Long, argumentative, and no mere romance.",
+    "recognized": true
+  },
+  {
+    "id": "book201",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Antigone",
+    "authorAtDraft": "Sophocles",
+    "new": "Her brother lies unburied outside the walls by order of the king, and Antigone decides the gods outrank him. Eighty pages of Greek tragedy setting law against conscience, still argued over in every seminar.",
+    "recognized": true
+  },
+  {
+    "id": "book202",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Antony and Cleopatra",
+    "authorAtDraft": "William Shakespeare",
+    "new": "A Roman general who is meant to be running half an empire cannot make himself leave Egypt, or its queen. Late Shakespeare, moving between marble and barge, with no mercy at all for middle-aged love.",
+    "recognized": true
+  },
+  {
+    "id": "book204",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "The Autograph Man",
+    "authorAtDraft": "Zadie Smith",
+    "new": "Alex-Li Tandem buys and sells other people's signatures, chases one reclusive actress, and keeps not saying kaddish for his father. A comic London novel about fame, faith, and avoiding the thing in front of you.",
+    "recognized": true
+  },
+  {
+    "id": "book208",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "The Ballad of Jacquotte Delahaye",
+    "authorAtDraft": "Briony Cameron",
+    "new": "Jacquotte Delahaye loses her father and his shipyard, and takes to the Caribbean under her own flag. A debut novel that turns a half-legendary pirate into a woman with a crew, a temper and a love of her own.",
+    "recognized": true
+  },
+  {
+    "id": "book214",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Beartown; Book 1",
+    "authorAtDraft": "Fredrik Backman",
+    "new": "A dying forest town pins everything on its junior ice hockey team. After the semi-final, a star player rapes the general manager's teenage daughter, and the town decides which of them to believe. First of a trilogy.",
+    "recognized": true
+  },
+  {
+    "id": "book215",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "The Bell Jar",
+    "authorAtDraft": "Sylvia Plath",
+    "new": "Esther Greenwood wins a month at a New York magazine and feels nothing at all. Her slide into breakdown, and the hospitals afterwards, set down with a clarity that never once asks for pity. Plath's only novel.",
+    "recognized": true
+  },
+  {
+    "id": "book218",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Binti; (Book 1)",
+    "authorAtDraft": "Nnedi Okorafor",
+    "new": "Binti is the first of her people offered a place at the finest university in the galaxy, so she runs for the shuttle without telling her family. Then something boards the ship. Ninety fast pages.",
+    "recognized": true
+  },
+  {
+    "id": "book220",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Birdland",
+    "authorAtDraft": "Simon Stephens",
+    "new": "Paul is a rock star in the last week of a world tour, and money has stopped meaning anything to him, other people included. A short contemporary play watching a man corrode hotel room by hotel room.",
+    "recognized": true
+  },
+  {
+    "id": "book222",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "The Blind Assassin",
+    "authorAtDraft": "Margaret Atwood",
+    "new": "An old woman in Ontario writes down what happened to her sister, who drove off a bridge a week after the war ended. Inside her account sits a pulp romance, and inside that, a blind killer on another planet.",
+    "recognized": true
+  },
+  {
+    "id": "book223",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "Blithe Spirit",
+    "authorAtDraft": "Noel Coward",
+    "new": "A novelist invites a medium to dinner for research and gets his first wife back: dead, visible only to him, and rude about the second one. A three-act comedy written in wartime and still genuinely funny.",
+    "recognized": true
+  },
+  {
+    "id": "book224",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "The Bluest Eye",
+    "authorAtDraft": "Toni Morrison",
+    "new": "Pecola Breedlove prays for blue eyes, certain they would make her lovable. Morrison's first novel, set in an Ohio town, follows a Black girl raped by her father and failed by every neighbour who could have helped.",
+    "recognized": true
+  },
+  {
+    "id": "book234",
+    "batch": 11,
+    "status": "draft",
+    "titleAtDraft": "The Comedy of Errors",
+    "authorAtDraft": "William Shakespeare",
+    "new": "Two sets of identical twins, separated at sea and all four in Ephesus on the same day with nobody told. The shortest, silliest play in the canon: wrong doors, wrong wife, and a beating for everybody.",
+    "recognized": true
+  },
+  {
+    "id": "book240",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Crucible",
+    "authorAtDraft": "Arthur Miller",
+    "new": "Salem hangs on the word of a teenage girl, and a courtroom turns neighbour against neighbour until confessing to witchcraft is the only way to stay alive. Miller's stage tragedy about panic wearing the robes of law.",
+    "recognized": true
+  },
+  {
+    "id": "book244",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "Cyrano de Bergerac",
+    "authorAtDraft": "Edmond Rostand",
+    "new": "Swordsman, poet, and owner of a truly magnificent nose, Cyrano lends his words to a handsomer man so that Roxane may be wooed properly. A verse play that is gloriously funny for four acts and then quietly breaks you.",
+    "recognized": true
+  },
+  {
+    "id": "book247",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Duke and I",
+    "authorAtDraft": "Julia Quinn",
+    "new": "Daphne Bridgerton and a duke with no intention of marrying anyone stage a fake courtship to get the gossips off their backs. Regency romance, first of the Bridgerton run, frothy and headed exactly where you hope.",
+    "recognized": true
+  },
+  {
+    "id": "book251",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "Eurydice",
+    "authorAtDraft": "Sarah Ruhl",
+    "new": "The myth belongs to Eurydice here: newly dead, she meets in the underworld the father who has been waiting to teach her words again, while Orpheus plays above. A short, dreamlike stage poem about grief.",
+    "recognized": true
+  },
+  {
+    "id": "book257",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Fault in Our Stars",
+    "authorAtDraft": "John Green",
+    "new": "Hazel has thyroid cancer and a favourite novel with no ending. Augustus has one leg and a great deal of nerve. They fly to Amsterdam to ask an author a question. Funny right up until the moment it is not.",
+    "recognized": true
+  },
+  {
+    "id": "book259",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The God of Small Things",
+    "authorAtDraft": "Arundhati Roy",
+    "new": "Twins in Kerala grow up among pickle vats, a river and a family rule about who may be loved and how much. Roy circles one afternoon that broke everything, told in a child's dazzling, sideways English.",
+    "recognized": true
+  },
+  {
+    "id": "book267",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Importance of Being Earnest",
+    "authorAtDraft": "Oscar Wilde",
+    "new": "Two men invent imaginary relatives to escape their obligations, then propose to two women under the same borrowed name. Wilde's comedy of manners runs on epigrams alone, and the cucumber sandwiches do not survive.",
+    "recognized": true
+  },
+  {
+    "id": "book273",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Island of Missing Trees",
+    "authorAtDraft": "Elif Shafak",
+    "new": "A Greek Cypriot boy and a Turkish Cypriot girl meet in a Nicosia tavern with a fig tree growing through its roof. Decades later that tree, replanted in a London garden, tells their daughter what the war cost.",
+    "recognized": true
+  },
+  {
+    "id": "book285",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Love Hypothesis",
+    "authorAtDraft": "Ali Hazelwood",
+    "new": "Olive kisses the nearest available man to sell a lie to her best friend, and the nearest available man turns out to be the department's most feared professor. Fake dating in a lab, with a guaranteed soft landing.",
+    "recognized": true
+  },
+  {
+    "id": "book301",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Namesake",
+    "authorAtDraft": "Jhumpa Lahiri",
+    "new": "Named in a hurry after a Russian writer his father loves for reasons he will not explain, Gogol Ganguli spends years trying to shed it. Lahiri's novel of a Bengali family building an American life in instalments.",
+    "recognized": true
+  },
+  {
+    "id": "book302",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "Nana; Volume 1",
+    "authorAtDraft": "Ai Yazawa",
+    "new": "Two women named Nana share a train to Tokyo and then an apartment: one chasing a punk band, one chasing a boyfriend. Volume one of Yazawa's manga, where the friendship is the love story and it already aches.",
+    "recognized": true
+  },
+  {
+    "id": "book304",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "Nation",
+    "authorAtDraft": "Terry Pratchett",
+    "new": "A wave takes Mau's island and everyone on it. A wrecked ship leaves a governor's daughter on the same beach. Pratchett's standalone about two survivors rebuilding a nation and arguing, politely, with the gods.",
+    "recognized": true
+  },
+  {
+    "id": "book310",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Outsiders",
+    "authorAtDraft": "S. E. Hinton",
+    "new": "Ponyboy is a greaser, which in this town settles who jumps you and whom the police believe. Hinton wrote this coming-of-age novel while still a teenager herself, and the loyalty and the loss both land hard.",
+    "recognized": true
+  },
+  {
+    "id": "book312",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Perks of Being a Wallflower",
+    "authorAtDraft": "Stephen Chbosky",
+    "new": "Charlie writes letters to a stranger about his first year of high school, the two seniors who adopt him, and the things he cannot quite bring himself to remember. Tender, funny, and heavier than it first lets on.",
+    "recognized": true
+  },
+  {
+    "id": "book315",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Poems of Emily Dickinson; Volume II",
+    "authorAtDraft": "Emily Dickinson",
+    "new": "Short poems with long silences: slant rhymes, bees, a civil call paid by Death. A second gathering of Dickinson's verse, published after her death, where the plainest four lines carry the largest questions.",
+    "recognized": true
+  },
+  {
+    "id": "book320",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Seven Husbands of Evelyn Hugo",
+    "authorAtDraft": "Taylor Jenkins Reid",
+    "new": "A reclusive film legend agrees at last to tell the truth about her seven marriages, and picks an unknown magazine writer to hear it. Old Hollywood glamour over a love story the studios would never have allowed.",
+    "recognized": true
+  },
+  {
+    "id": "book326",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "Siren Queen",
+    "authorAtDraft": "Nghi Vo",
+    "new": "In a Hollywood where studio contracts are signed in blood and fire, a Chinese American girl refuses to play the maid and takes the monster roles instead. Glamour, hunger and real magic, told without apology.",
+    "recognized": true
+  },
+  {
+    "id": "book327",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Song of Achilles",
+    "authorAtDraft": "Madeline Miller",
+    "new": "Exiled prince Patroclus is taken in by the golden son of a sea goddess, and boyhood friendship walks them both to the beach at Troy. Miller retells the Iliad as a love story, knowing exactly how myth ends.",
+    "recognized": true
+  },
+  {
+    "id": "book331",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Spear Cuts Through Water",
+    "authorAtDraft": "Simon Jimenez",
+    "new": "Two young men carry a dying god across a country in five nights, hunted by the emperor's sons. Jimenez stages the whole thing as a performance watched from a dream: gorgeous, brutal, and well over five hundred pages.",
+    "recognized": true
+  },
+  {
+    "id": "book336",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Tempest",
+    "authorAtDraft": "William Shakespeare",
+    "new": "Marooned on an island with his books, his daughter and two unwilling servants, a deposed duke raises a storm to wash his enemies ashore. Late Shakespeare, thick with magic, music and bargained forgiveness.",
+    "recognized": true
+  },
+  {
+    "id": "book357",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "They Both Die at the End",
+    "authorAtDraft": "Adam Silvera",
+    "new": "Death-Cast rings before dawn to say today is your last, so Mateo and Rufus find each other on an app for final friends and spend the day living properly. The title warned you. It hurts anyway.",
+    "recognized": true
+  },
+  {
+    "id": "book360",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "Titus Andronicus",
+    "authorAtDraft": "William Shakespeare",
+    "new": "Rome's victorious general sacrifices a Gothic queen's son, and she spends the rest of the play answering him. Shakespeare's earliest tragedy is a revenge machine, notorious for staging its cruelty rather than reporting it.",
+    "recognized": true
+  },
+  {
+    "id": "book366",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "True Beauty; Volume 1",
+    "authorAtDraft": "Yaongyi",
+    "new": "Jugyeong learns makeup from internet tutorials and walks into school as the pretty girl, terrified of being seen without it. First volume of the Korean webtoon, a school romance with real bite under the gloss.",
+    "recognized": true
+  },
+  {
+    "id": "book373",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "Twisted Love",
+    "authorAtDraft": "Ana Huang",
+    "new": "Ava's brother leaves his cold, ruthless best friend in charge of looking after her, which is how a man who claims to feel nothing ends up wrecked. Steamy contemporary romance, first of a series, and firmly for adults.",
+    "recognized": true
+  },
+  {
+    "id": "book382",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "Villette",
+    "authorAtDraft": "Charlotte Brontë",
+    "new": "Lucy Snowe crosses the Channel with no money and no plan, and takes a teaching post in a foreign city where nobody knows her. Bronte at her coldest and strangest, five hundred pages of watchful loneliness.",
+    "recognized": true
+  },
+  {
+    "id": "book387",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "White Teeth",
+    "authorAtDraft": "Zadie Smith",
+    "new": "Two old army friends, one English and one Bengali, raise their children in north London and make a hash of it in three directions at once. Smith's big comic novel of immigration, faith and inherited arguments.",
+    "recognized": true
+  },
+  {
+    "id": "book389",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "Wuthering Heights",
+    "authorAtDraft": "Emily Brontë",
+    "new": "A farmer brings home a foundling boy, and forty years later the moors are still paying for it. Bronte's novel of obsession dressed as love, narrated by a housekeeper who saw everything and forgave almost none of it.",
+    "recognized": true
+  },
+  {
+    "id": "book390",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "You've Reached Sam",
+    "authorAtDraft": "Dustin Thao",
+    "new": "Sam is dead, but when Julie calls his number he picks up. A novel about a girl granted a few more conversations than she is owed, and the harder question of when to stop dialling.",
+    "recognized": true
+  },
+  {
+    "id": "book425",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "A Midsummer Night's Dream",
+    "authorAtDraft": "William Shakespeare",
+    "new": "Four lovers run into a wood ruled by quarrelling fairies, a meddling sprite with the wrong flower, and a troupe of amateurs rehearsing the worst play ever staged. Shakespeare's comedy at its silliest and best.",
+    "recognized": true
+  },
+  {
+    "id": "book429",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "All My Sons",
+    "authorAtDraft": "Arthur Miller",
+    "new": "A backyard in a comfortable American town, a son still missing from the war, and a business decision the family has agreed never to mention. Miller's short tragedy tightens over one day until the neighbours hear it.",
+    "recognized": true
+  },
+  {
+    "id": "book430",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "All Out; The No-Longer-Secret Stories of Queer Teens throughout the Ages",
+    "authorAtDraft": "Various Authors",
+    "new": "Queer teenagers turn up where history usually erases them: an outlaw band in Sherwood, a Georgian country house, a small-town roller rink. Short stories spanning centuries, every one of them about a first love.",
+    "recognized": true
+  },
+  {
+    "id": "book434",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "All's Well That Ends Well",
+    "authorAtDraft": "William Shakespeare",
+    "new": "Helena cures a king and asks for a husband as payment. The husband runs off to a war rather than have her. Shakespeare's most awkward comedy, in which the woman does all the scheming and the title makes a promise.",
+    "recognized": true
+  },
+  {
+    "id": "book435",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "Allegiant; Divergent #3",
+    "authorAtDraft": "Veronica Roth",
+    "new": "Tris finally gets past the fence and finds the people who have been watching Chicago all along. The third Divergent book splits its narration in two and ends the series somewhere readers still argue about.",
+    "recognized": true
+  },
+  {
+    "id": "book438",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "Beowulf",
+    "authorAtDraft": "Unknown, transl. by S. Heaney",
+    "new": "A hero sails to a hall where a monster comes nightly, and fifty years on he meets a dragon. Heaney's translation gives the great Old English epic a plain, hammering music that makes the oldest lines sound alive.",
+    "recognized": true
+  },
+  {
+    "id": "book439",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Best Short Stories of O. Henry",
+    "authorAtDraft": "O. Henry, B. Cerf & V.H. Cartmell",
+    "new": "New York shop girls, safecrackers, cowboys and con men, every story turning on its final sentence. O. Henry's twist endings collected whole: sentimental, sharp, and dated in ways that show their age.",
+    "recognized": true
+  },
+  {
+    "id": "book442",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Blue Castle",
+    "authorAtDraft": "L.M. Montgomery",
+    "new": "Valancy is twenty-nine, unmarried and bullied by her relatives until a doctor's letter convinces her that she has one year left. So she says what she thinks and moves to the woods. Montgomery for grown-ups.",
+    "recognized": true
+  },
+  {
+    "id": "book444",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "Blue Sisters",
+    "authorAtDraft": "Coco Mellors",
+    "new": "Three sisters, a lawyer, a boxer and a model, return to the New York apartment they grew up in a year after the fourth one died. Addiction, grief and old scores, handled without flinching or tidying up.",
+    "recognized": true
+  },
+  {
+    "id": "book450",
+    "batch": 12,
+    "status": "draft",
+    "titleAtDraft": "The Caucasian Chalk Circle",
+    "authorAtDraft": "Bertolt Brecht",
+    "new": "A servant girl carries an abandoned baby across the mountains, and years later a drunkard of a judge must decide whose child it is. Brecht's parable play about who has earned the things they claim to own.",
+    "recognized": true
+  },
+  {
+    "id": "book469",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Great Big Beautiful Life",
+    "authorAtDraft": "Emily Henry",
+    "new": "Two rival writers land on a Georgia island, each given one month to win over the reclusive heiress whose scandalous family they want to write. Sunny, sharp-tongued contemporary romance with a soft landing.",
+    "recognized": true
+  },
+  {
+    "id": "book473",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Howl, and Other Poems",
+    "authorAtDraft": "Allen Ginsberg",
+    "new": "Forty-four pages of Beat verse that went on trial for obscenity: long howling lines about madness, poverty, queer desire and the machine that eats the young. Poetry written to be read out loud.",
+    "recognized": true
+  },
+  {
+    "id": "book482",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Henry VI, Part 1",
+    "authorAtDraft": "William Shakespeare",
+    "new": "England loses France while its nobles bicker at home, and two roses plucked in a garden mark the factions that will tear the kingdom apart. First play of Shakespeare's trilogy about a boy king's reign.",
+    "recognized": true
+  },
+  {
+    "id": "book483",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Henry VI, Part 3",
+    "authorAtDraft": "William Shakespeare",
+    "new": "Wars of the Roses at full boil: fathers kill sons, a queen leads armies, and a limping duke starts counting the bodies between himself and the crown. Third play of the trilogy, and by far the bloodiest.",
+    "recognized": true
+  },
+  {
+    "id": "book484",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Richard II",
+    "authorAtDraft": "William Shakespeare",
+    "new": "Convinced God put the crown on his head, a young king banishes the wrong cousin and seizes the wrong inheritance. Shakespeare's history in verse throughout, more interested in the man than in the battles.",
+    "recognized": true
+  },
+  {
+    "id": "book491",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Looking for Alaska",
+    "authorAtDraft": "John Green",
+    "new": "Miles leaves Florida for an Alabama boarding school hunting a Great Perhaps, and finds pranks, cheap wine and a girl named Alaska. Teenage wit for half the book, then a grief nobody is ready for.",
+    "recognized": true
+  },
+  {
+    "id": "book494",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Maria Stuart",
+    "authorAtDraft": "Friedrich Schiller",
+    "new": "Two queens, one garden: Mary Stuart imprisoned and condemned, and the cousin who must decide whether to sign. Schiller's verse tragedy stages the meeting history never allowed them, and it burns.",
+    "recognized": true
+  },
+  {
+    "id": "book496",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "A Matter of Oaths",
+    "authorAtDraft": "Helen S. Wright",
+    "new": "Commander Rallya hires a web officer whose memory was legally erased for a crime he cannot remember, then learns two rival emperors want him back. Space opera with a slow-burn romance between men.",
+    "recognized": true
+  },
+  {
+    "id": "book499",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Mother Night",
+    "authorAtDraft": "Kurt Vonnegut",
+    "new": "Howard Campbell broadcast Nazi propaganda and passed coded messages to the Allies in the same sentence. Now he waits in an Israeli cell, writing it down. The coldest joke: you are what you pretend to be.",
+    "recognized": true
+  },
+  {
+    "id": "book501",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Mrs. Dalloway",
+    "authorAtDraft": "Virginia Woolf",
+    "new": "One June day in London: Clarissa Dalloway shops for her party while a shell-shocked veteran across the city comes apart. Consciousness rendered hour by hour, with Big Ben striking over everybody.",
+    "recognized": true
+  },
+  {
+    "id": "book502",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Much Ado About Nothing",
+    "authorAtDraft": "William Shakespeare",
+    "new": "Beatrice and Benedick would rather trade insults than admit anything, so their friends build a trap out of overheard gossip. Comedy in which slander nearly wrecks a wedding and wit repairs it.",
+    "recognized": true
+  },
+  {
+    "id": "book503",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Night and Day",
+    "authorAtDraft": "Virginia Woolf",
+    "new": "Katharine keeps house for a famous poet's legacy and does mathematics in secret, engaged to one man and pulled toward another. Woolf at her most conventional: a long, clear-eyed courtship novel.",
+    "recognized": true
+  },
+  {
+    "id": "book504",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Night Sky with Exit Wounds",
+    "authorAtDraft": "Ocean Vuong",
+    "new": "Poems moving between a father's war in Vietnam, a son's desire for other boys in small-town America, and the wreckage handed down between them. Lean, image-packed verse from a debut that earned its noise.",
+    "recognized": true
+  },
+  {
+    "id": "book505",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "On Beauty",
+    "authorAtDraft": "Zadie Smith",
+    "new": "Two feuding art historians, one liberal and one conservative, collide when their families tangle in a New England college town. Campus novel with marriage, race and class in the crossfire, and real jokes.",
+    "recognized": true
+  },
+  {
+    "id": "book506",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "On Earth We're Briefly Gorgeous",
+    "authorAtDraft": "Ocean Vuong",
+    "new": "Written as a letter to a mother who cannot read it: nail salon shifts in Hartford, a grandmother's war, a first love lost to opioids. A poet's prose, unsparing about violence and tenderness alike.",
+    "recognized": true
+  },
+  {
+    "id": "book508",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Othello",
+    "authorAtDraft": "William Shakespeare",
+    "new": "Passed over for promotion, Iago sets out to destroy his general using nothing but suggestion, a lost handkerchief and patience. Shakespeare's tightest tragedy, and the hardest one to sit through.",
+    "recognized": true
+  },
+  {
+    "id": "book509",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "P.S. I Still Love You",
+    "authorAtDraft": "Jenny Han",
+    "new": "Lara Jean's fake relationship turned real, and now a second old love letter answers back. Sweet, scrapbooking, endlessly overthinking, she has to work out which boy she actually wants. Series, book two.",
+    "recognized": true
+  },
+  {
+    "id": "book518",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Scott Pilgrim's Precious Little Life (#1)",
+    "authorAtDraft": "Bryan Lee O'Malley",
+    "new": "Toronto slacker, bad bassist, dating a high schooler, suddenly obsessed with a girl who rollerblades through his dreams. Then her first evil ex crashes the gig. Comics with video-game logic and real bruises.",
+    "recognized": true
+  },
+  {
+    "id": "book520",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Sister Outsider",
+    "authorAtDraft": "Audre Lorde",
+    "new": "Essays and speeches by a Black lesbian poet on anger, silence, erotic power and what difference is actually for. Arguments sharpened at the podium and still quoted at every protest. Non fiction that asks something of you.",
+    "recognized": true
+  },
+  {
+    "id": "book523",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Sula",
+    "authorAtDraft": "Toni Morrison",
+    "new": "Nel stays in the Ohio hill town and marries; Sula leaves for ten years and returns scandalous. Their friendship survives nearly everything. Morrison on a Black neighbourhood and the cost of being free.",
+    "recognized": true
+  },
+  {
+    "id": "book544",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Oh, Mary!",
+    "authorAtDraft": "Cole Escola",
+    "new": "Mary Todd Lincoln wants one thing in this gleefully filthy comedy: to be a cabaret star. Her husband would prefer she stayed upstairs. Short, fast and very queer, set in the last weeks of the war.",
+    "recognized": true
+  },
+  {
+    "id": "book545",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Olivetti",
+    "authorAtDraft": "Allie Millington",
+    "new": "Olivetti is a typewriter who remembers every word typed on him, and he breaks his kind's only rule when the mother of the house disappears. Her son and a pawnshop girl follow the trail. Odd, funny, for kids.",
+    "recognized": true
+  },
+  {
+    "id": "book555",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Stone Butch Blues",
+    "authorAtDraft": "Leslie Feinberg",
+    "new": "Jess Goldberg grows up butch in 1950s Buffalo, finds family in the bars and pays for it in police raids and factory jobs. A novel about passing, hormones and survival, written from inside that life.",
+    "recognized": true
+  },
+  {
+    "id": "book561",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Ugly Love",
+    "authorAtDraft": "Colleen Hoover",
+    "new": "Tate agrees to two rules with the pilot across the hall: no questions about his past, no expectations about a future. Alternating chapters reveal why he set them. Romance built to hurt before it heals.",
+    "recognized": true
+  },
+  {
+    "id": "book619",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Boys run the riot, Vol. 1",
+    "authorAtDraft": "Keito Gaku",
+    "new": "Ryo is a trans high schooler who only feels like himself in the clothes he chooses, until a loud new classmate proposes they launch a streetwear label together. Manga about fashion, pronouns and nerve.",
+    "recognized": true
+  },
+  {
+    "id": "book620",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Boys run the riot, Vol. 1",
+    "authorAtDraft": "Keito Gaku",
+    "new": "Clothes are the one place Ryo gets read correctly. Building a streetwear brand from nothing with a classmate who asks no awkward questions opens this manga series about being trans and being sixteen.",
+    "recognized": true
+  },
+  {
+    "id": "book621",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Breakfast at Tiffany's",
+    "authorAtDraft": "Truman Capote",
+    "new": "Holly Golightly arrives in an Upper East Side brownstone with a nameless cat, no fixed past and a talent for other people's money. Slim postwar novella, funnier and considerably sadder than the film.",
+    "recognized": true
+  },
+  {
+    "id": "book634",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "A Raisin in the Sun",
+    "authorAtDraft": "Lorraine Hansberry",
+    "new": "Ten thousand dollars of insurance money lands in a cramped South Side apartment, and every Younger wants it spent differently. The first play by a Black woman staged on Broadway, and still the sharpest.",
+    "recognized": true
+  },
+  {
+    "id": "book639",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Anna Karenina",
+    "authorAtDraft": "Leo Tolstoy",
+    "new": "Anna leaves a cold marriage for a cavalry officer and watches Petersburg society shut its doors, while a landowner named Levin digs for meaning in his fields. Eight hundred pages, none of them idle.",
+    "recognized": true
+  },
+  {
+    "id": "book644",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Spring Clean",
+    "authorAtDraft": "Sabreen Islam",
+    "new": "Ninety-odd pages of contemporary poetry, finished in one sitting and better on the second pass. A quiet, niche collection for readers who want verse that sounds like now rather than like the syllabus.",
+    "recognized": false
+  },
+  {
+    "id": "book647",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "The Magic Fish",
+    "authorAtDraft": "Trung Le Nguyen",
+    "new": "Tien cannot find the Vietnamese words to tell his mother he is gay, so mother and son keep reading fairy tales instead. Three versions of one tale braided through a graphic novel drawn in three colours.",
+    "recognized": true
+  },
+  {
+    "id": "book650",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "An Experiment with an Air Pump",
+    "authorAtDraft": "Shelagh Stephenson",
+    "new": "One house in Newcastle, two centuries apart: Enlightenment gentlemen staging experiments for an audience, and a geneticist weighing what her research is for. Bones under the kitchen floor join them.",
+    "recognized": true
+  },
+  {
+    "id": "book657",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "How to Stop Time",
+    "authorAtDraft": "Matt Haig",
+    "new": "Tom Hazard looks forty and has been alive for centuries, teaching history he personally watched happen. The society protecting people like him has one rule: never fall in love. Melancholy, and on the side of living.",
+    "recognized": true
+  },
+  {
+    "id": "book665",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "Ouran High School Host Club; Volume 1",
+    "authorAtDraft": "Bisco Hatori",
+    "new": "Haruhi, a scholarship student at a school for the absurdly rich, smashes a priceless vase and gets press-ganged into the campus host club to work off the debt. Shojo manga that cheerfully spoofs itself.",
+    "recognized": true
+  },
+  {
+    "id": "book668",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "The Rose of Versailles",
+    "authorAtDraft": "Riyoko Ikeda",
+    "new": "Oscar was raised as a son to command the Royal Guard, and now protects a young queen at Versailles while France starves outside the gates. Landmark shojo manga: ballgowns, duels, revolution coming.",
+    "recognized": true
+  },
+  {
+    "id": "book669",
+    "batch": 13,
+    "status": "draft",
+    "titleAtDraft": "FAKE; Volume 1",
+    "authorAtDraft": "Sanami Matoh",
+    "new": "Two New York detectives get partnered up: one all appetite and bad jokes, the other too polite to say no clearly. Cases cracked between flirtations in an early boys love manga with a crime-comedy pulse.",
+    "recognized": true
+  },
+  {
+    "id": "book490",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Long Way to a Small Angry Planet; Wayfarers #1",
+    "authorAtDraft": "Becky Chambers",
+    "new": "Sign on with the Wayfarer, a battered tunnelling ship whose multispecies crew punch wormholes through space and bicker like family. The long haul to a war-torn planet matters less than who you share the galley with.",
+    "recognized": true
+  },
+  {
+    "id": "book511",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Parable of the Sower",
+    "authorAtDraft": "Octavia E. Butler",
+    "new": "Lauren Olamina feels other people's pain in her own body, a bad gift in a California where the walls around her neighbourhood are failing. Out of the collapse she starts writing a religion called Earthseed.",
+    "recognized": true
+  },
+  {
+    "id": "book515",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Prince Caspian; The Return to Narnia",
+    "authorAtDraft": "C.S. Lewis",
+    "new": "Centuries have passed in Narnia since the four children last left it, and the talking beasts have gone into hiding. A horn sounds, and the four are pulled back to help a young prince claim a stolen throne.",
+    "recognized": true
+  },
+  {
+    "id": "book516",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Princess Bride",
+    "authorAtDraft": "William Goldman",
+    "new": "Farm boy loves princess, pirates intervene, and a swordsman with a lifelong grudge counts the seconds. Presented as the good bits of a fat foreign classic, with the boring parts cheerfully cut out.",
+    "recognized": true
+  },
+  {
+    "id": "book517",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Saga; Volume 9",
+    "authorAtDraft": "Brian K. Vaughan & Fiona Staples",
+    "new": "Volume nine of the space opera comic where two soldiers from opposite sides raise a daughter on the run. Staples draws wonders and horrors with the same brush, and this one is short, tender and not remotely safe.",
+    "recognized": true
+  },
+  {
+    "id": "book521",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Starstruck; (Deluxe Edition)",
+    "authorAtDraft": "Elaine Lee & Michael Kaluta",
+    "new": "Kaluta's baroque line work and Lee's dense, footnoted satire make this space opera famously demanding. Collected at last in one slab, it rewards exactly the sort of reader who enjoys decoding a page.",
+    "recognized": true
+  },
+  {
+    "id": "book524",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Sunlit Man",
+    "authorAtDraft": "Brandon Sanderson",
+    "new": "On a world where sunrise burns everything it touches, cities keep moving and a hunted drifter sells his labour just to stay ahead of the light. Sanderson at his bleakest, with the Cosmere humming underneath.",
+    "recognized": true
+  },
+  {
+    "id": "book525",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Supernova; Renegades #3",
+    "authorAtDraft": "Marissa Meyer",
+    "new": "Closing book of a superhero trilogy in which the line between the costumed council that rules the city and the outlaws who oppose it keeps blurring. Long, twisty, and aimed squarely at a final showdown.",
+    "recognized": true
+  },
+  {
+    "id": "book532",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Fellowship of the Ring",
+    "authorAtDraft": "J.R.R. Tolkien",
+    "new": "Nine companions leave Rivendell carrying one small gold ring the wrong way, toward the only fire that can unmake it. The opening volume that set the shape of nearly every quest fantasy written since.",
+    "recognized": true
+  },
+  {
+    "id": "book534",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Green Ember; Book 1",
+    "authorAtDraft": "S.D. Smith & Zach Franzen",
+    "new": "Heather and Picket are rabbits whose ordinary afternoon ends with their home in ruins and their family scattered. Swords, secret havens and a kingdom worth rebuilding, told for younger readers with a straight face.",
+    "recognized": true
+  },
+  {
+    "id": "book535",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Green Mile",
+    "authorAtDraft": "Stephen King",
+    "new": "Cold Mountain's death row runs on routine until a huge, weeping prisoner arrives with hands that can undo harm. A tame mouse, a cruel guard, and a miracle nobody on the block can afford to believe in.",
+    "recognized": true
+  },
+  {
+    "id": "book537",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Gunslinger",
+    "authorAtDraft": "Stephen King",
+    "new": "Roland crosses a desert that never ends, chasing a man in black across a world that has moved on. Part western, part quest, and the opening move of King's very long march toward the Dark Tower.",
+    "recognized": true
+  },
+  {
+    "id": "book540",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Lion, the Witch and the Wardrobe",
+    "authorAtDraft": "C. S. Lewis",
+    "new": "Four children, one wartime evacuation, and a wardrobe that opens onto a country locked in endless winter. Talking beasts, a lion who is not tame, and the first door anyone ever walked through into Narnia.",
+    "recognized": true
+  },
+  {
+    "id": "book542",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Lost Continent",
+    "authorAtDraft": "C. J. Cutcliffe Hyne",
+    "new": "Atlantis in its last days, told by a soldier-priest: palace intrigue, monstrous beasts and a ruler who claims to be a goddess. Lost-world adventure of the old school, pulp grandeur and doom included.",
+    "recognized": true
+  },
+  {
+    "id": "book549",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Return of the King",
+    "authorAtDraft": "J.R.R. Tolkien",
+    "new": "Everything converges at once: the siege of a white city, a last hopeless march to the Black Gate, and two small figures still climbing in the dark. The final volume, and it earns its very long goodbye.",
+    "recognized": true
+  },
+  {
+    "id": "book558",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Two Towers",
+    "authorAtDraft": "J.R.R. Tolkien",
+    "new": "Split paths: one half rides with the horse-lords into a wizard's war, the other creeps east behind a guide nobody sensible would trust. The middle volume, where the losses start landing for real.",
+    "recognized": true
+  },
+  {
+    "id": "book564",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "White Night",
+    "authorAtDraft": "Jim Butcher",
+    "new": "Chicago's lesser practitioners are turning up dead in ways that look like suicide, and the only wizard in the phone book takes the case. Another Dresden outing: wisecracks, vampire politics, and real collateral damage.",
+    "recognized": true
+  },
+  {
+    "id": "book565",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Witch Wood",
+    "authorAtDraft": "John Buchan",
+    "new": "Sent to a moorland parish in Covenanting Scotland, a young minister finds his own flock slipping into the woods at night for older rites. Bleak, beautiful, and hard on anyone expecting goodness to win.",
+    "recognized": true
+  },
+  {
+    "id": "book570",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "An Unkindness of Ghosts",
+    "authorAtDraft": "Rivers Solomon",
+    "new": "Aster lives in the lower decks of a generation ship run like a plantation, healing people the overseers would rather see punished. Her dead mother's notebooks hint at where the ship is really going.",
+    "recognized": true
+  },
+  {
+    "id": "book587",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Carmilla",
+    "authorAtDraft": "J. Sheridan Le Fanu",
+    "new": "Lonely in a Styrian castle, Laura finally gets the companion she longed for, and promptly begins to sicken. This vampire novella came a quarter century before Dracula and stays the more intimate book.",
+    "recognized": true
+  },
+  {
+    "id": "book589",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Guards! Guards!",
+    "authorAtDraft": "Terry Pratchett",
+    "new": "Someone has summoned a dragon to Ankh-Morpork to install a puppet king, and the city's drunk, undermanned Night Watch is all that stands in the way. Where Discworld grew a conscience and stayed funny.",
+    "recognized": true
+  },
+  {
+    "id": "book596",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Moominland Midwinter",
+    "authorAtDraft": "Tove Jansson",
+    "new": "Moomintroll wakes months early, alone in a hibernating house, and finds a whole winter world his family sleeps straight through. Strange company, cold light, and the gentlest lesson in being on your own.",
+    "recognized": true
+  },
+  {
+    "id": "book597",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Witch Boy",
+    "authorAtDraft": "Molly Knox Ostertag",
+    "new": "In Aster's family, girls learn witchery and boys learn to shapeshift, and nobody thinks to ask which he would rather do. A warm graphic novel about wanting the magic you were never assigned.",
+    "recognized": true
+  },
+  {
+    "id": "book599",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Borne",
+    "authorAtDraft": "Jeff VanderMeer",
+    "new": "Rachel scavenges a poisoned city ruled by a giant flying bear, and brings home a thing she names Borne. It grows. It learns to talk. Whether it is a person or a weapon may not end up being her call.",
+    "recognized": true
+  },
+  {
+    "id": "book602",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Witch Hat Atelier; Volume 1",
+    "authorAtDraft": "Kamome Shirahama",
+    "new": "Coco learns that magic is not born into anyone: it is drawn, with ink and a steady hand. Taken on as an apprentice, she starts at the very bottom, in a manga whose artwork alone earns the shelf space.",
+    "recognized": true
+  },
+  {
+    "id": "book614",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Heartless",
+    "authorAtDraft": "Marissa Meyer",
+    "new": "Before the Queen of Hearts started shouting about heads, she was a girl who wanted to open a bakery and fell for the wrong court joker. Wonderland nonsense, sweet baking, and an ending that has to hurt.",
+    "recognized": true
+  },
+  {
+    "id": "book622",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Bright Sword",
+    "authorAtDraft": "Lev Grossman",
+    "new": "Collum reaches Camelot a fortnight too late: Arthur is dead and only the second-string knights are left. Long, learned and dryly funny about carrying on after the legend has already ended.",
+    "recognized": true
+  },
+  {
+    "id": "book626",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Bury Our Bones in the Midnight Soil",
+    "authorAtDraft": "V.E. Schwab",
+    "new": "Three women, centuries apart, turned into something that neither dies nor forgives. A sapphic vampire novel that is hungry in every sense, long, lush and thoroughly uninterested in redeeming anyone.",
+    "recognized": true
+  },
+  {
+    "id": "book627",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "A Buzz in the Meadows; The Natural History of a French Farm",
+    "authorAtDraft": "Dave Goulson",
+    "new": "Goulson buys a derelict farm in rural France and spends years counting what lives there: bees, deathwatch beetles, dragonflies. Field notes turned into companionable science, with a warning folded inside.",
+    "recognized": true
+  },
+  {
+    "id": "book632",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "A Psalm for the Wild-Built",
+    "authorAtDraft": "Becky Chambers",
+    "new": "Dex serves tea and sympathy from a wagon until a robot walks out of the wilderness with one question: what do people need? Short, kind, and quietly radical about rest, in a future that chose gentleness.",
+    "recognized": true
+  },
+  {
+    "id": "book636",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Ruins of Gorlan; (Ranger's Apprentice #1)",
+    "authorAtDraft": "John Flanagan",
+    "new": "Will is too small for battleschool, so he is apprenticed to the kingdom's grim, sarcastic Ranger instead: a bow, a grey cloak and a great deal of unglamorous practice. First of a very readable series.",
+    "recognized": true
+  },
+  {
+    "id": "book638",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Annihilation",
+    "authorAtDraft": "Jeff VanderMeer",
+    "new": "Four women walk into Area X, a stretch of coast that has swallowed every expedition sent before them. The biologist keeps notes. What waits in a tunnel going down is best met without preparation.",
+    "recognized": true
+  },
+  {
+    "id": "book640",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Fisherman",
+    "authorAtDraft": "John Langan",
+    "new": "Two widowers take up fishing to get through their grief, and a stranger's story about a certain creek should have stopped them going. Slow, literary cosmic horror that earns every inch of its dread.",
+    "recognized": true
+  },
+  {
+    "id": "book645",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "The Search; Avatar The Last Airbender (#4-6)",
+    "authorAtDraft": "Konietzko, DiMartino & Yang",
+    "new": "Zuko finally goes looking for his missing mother and takes his dangerously unstable sister along for the ride. Three Avatar comics in one volume, bright and funny until the family history bites.",
+    "recognized": true
+  },
+  {
+    "id": "book651",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "This Was Our Pact",
+    "authorAtDraft": "Ryan Andrews",
+    "new": "On the autumn equinox the lanterns go down the river, and a pack of boys swears to follow them to the end. Most turn back. What waits for the two who keep going is stranger and kinder than expected.",
+    "recognized": true
+  },
+  {
+    "id": "book659",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Dragonology; The Complete Book of Dragons",
+    "authorAtDraft": "Ernest Drake",
+    "new": "Presented as the field notes of a nineteenth-century dragonologist, with flaps to lift, samples to handle and species charts to study. A short, gorgeous object for any child who wants dragons filed properly.",
+    "recognized": true
+  },
+  {
+    "id": "book660",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Jujutsu Kaisen; Volume 1",
+    "authorAtDraft": "Gege Akutami",
+    "new": "Yuji Itadori swallows a rotting finger to save his friends and ends up sharing his body with a thousand-year-old curse. Sorcery school, grisly monsters, and a hero who insists everyone deserves a decent death.",
+    "recognized": true
+  },
+  {
+    "id": "book661",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Ranma 1/2; Volume 1",
+    "authorAtDraft": "Rumiko Takahashi",
+    "new": "Cold water turns Ranma into a girl, hot water turns him back, and his father into a panda. Add an arranged engagement to a girl who despises boys, and the martial arts farce is up and running.",
+    "recognized": true
+  },
+  {
+    "id": "book662",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Omniscient Reader's Viewpoint; Volume 1",
+    "authorAtDraft": "singNsong & UMI",
+    "new": "Kim Dokja is the only person who ever finished a very long, very bad web novel. When its apocalypse starts happening for real, being the one reader who knows the plot turns into the best weapon going.",
+    "recognized": true
+  },
+  {
+    "id": "book664",
+    "batch": 16,
+    "status": "draft",
+    "titleAtDraft": "Sailor Moon; Volume 1",
+    "authorAtDraft": "Naoko Takeuchi",
+    "new": "Usagi is fourteen, bad at school and worse at waking up, until a talking cat hands her a brooch and a job saving the world. The volume that launched a thousand magical girls, and still charming.",
+    "recognized": true
+  },
+  {
+    "id": "book48",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Ashfall Legacy; Ashfall #1",
+    "authorAtDraft": "Pittacus Lore",
+    "new": "Syd has spent his life hiding what his missing father was. When the truth finally arrives it comes with a starship, a treaty and a court of aliens who have plans for him. Fast science fiction adventure, and only the first book.",
+    "recognized": true
+  },
+  {
+    "id": "book51",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "At the Earth's Core",
+    "authorAtDraft": "Edgar Rice Burroughs",
+    "new": "Drill straight down far enough and you break into a sunlit world beneath the crust, where men are cattle and telepathic reptiles hold the whip. Pulp adventure from the genre's early days, over in an afternoon.",
+    "recognized": true
+  },
+  {
+    "id": "book53",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Attack On Titan; Volume 1",
+    "authorAtDraft": "Hajime Isayama",
+    "new": "Humanity has spent a century behind three rings of wall, safe from giants that eat people for no reason anyone can name. This opening volume gets the outermost wall breached. Brutal, fast, and the start of something very long.",
+    "recognized": true
+  },
+  {
+    "id": "book54",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Babel; or the Necessity of Violence",
+    "authorAtDraft": "R. F. Kuang",
+    "new": "Silver bars hold the meaning lost between two languages, and Oxford runs an empire on that power. Robin Swift, brought from Canton to translate, learns what the trade costs. Dense, angry historical fantasy about complicity.",
+    "recognized": true
+  },
+  {
+    "id": "book59",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Can't Spell Treason Without Tea; Tomes and Tea #1",
+    "authorAtDraft": "Rebecca Thorne",
+    "new": "A queen's guard and the most powerful mage in the realm quit their posts to open a bookshop that serves tea. Cozy fantasy with a dragon at the window, a town worth defending, and two women who would rather brew than fight.",
+    "recognized": true
+  },
+  {
+    "id": "book65",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Charmed Life; (Chrestomanci, Book 1)",
+    "authorAtDraft": "Diana Wynne Jones",
+    "new": "Cat Chant lets his sister handle the witchcraft, until both are taken in by an enchanter with nine lives and considerable style. Wry English magic where the quiet child turns out to matter most. First of the Chrestomanci books.",
+    "recognized": true
+  },
+  {
+    "id": "book69",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Children of Time; (Book 1)",
+    "authorAtDraft": "Adrian Tchaikovsky",
+    "new": "A terraformed world was meant for monkeys. The uplift virus found spiders instead, and they have had millennia to build, while the last humans arrive in a dying ark. Patient, enormous science fiction about minds nothing like a human one.",
+    "recognized": true
+  },
+  {
+    "id": "book71",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Circe",
+    "authorAtDraft": "Madeline Miller",
+    "new": "Born to the sun god and useful to nobody, Circe learns what herbs and sheer will can do, and is exiled to an island for it. Greek myth told from the witch's side, with centuries of solitude and the mortals who wash ashore.",
+    "recognized": true
+  },
+  {
+    "id": "book77",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Dark Age; (Red Rising #5)",
+    "authorAtDraft": "Pierce Brown",
+    "new": "Fifth in the Red Rising sequence, and the war has stopped looking winnable. Many voices, sieges that cost everything, and no guarantee your favourites survive. Eight hundred pages of bleak, bloody, propulsive space opera.",
+    "recognized": true
+  },
+  {
+    "id": "book79",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Dark Matter",
+    "authorAtDraft": "Blake Crouch",
+    "new": "Kidnapped by a masked man who knows far too much about his life, a physics professor wakes into a version of it he never lived. A thriller built on the roads not taken, and on what a man will do to get his own back.",
+    "recognized": true
+  },
+  {
+    "id": "book81",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "The Dark Portal; Book One of The Deptford Mice",
+    "authorAtDraft": "Robin Jarvis",
+    "new": "Beneath the streets of Deptford, mice keep to the daylight, because the sewers belong to rats who worship a cat as a god. Genuinely frightening for a children's book, and the opening of a grim animal trilogy.",
+    "recognized": true
+  },
+  {
+    "id": "book86",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Divergent",
+    "authorAtDraft": "Veronica Roth",
+    "new": "Chicago has sorted itself into five factions, and at sixteen you pick one for life. Beatrice's aptitude test refuses to sort her at all. Dystopian YA that moves fast, hits hard, and does not leave everyone standing.",
+    "recognized": true
+  },
+  {
+    "id": "book88",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Dracula",
+    "authorAtDraft": "Bram Stoker",
+    "new": "Letters, diaries and a ship's log assemble the case against a Transylvanian count who has quietly bought property in London. Victorian horror built as evidence rather than narration, and wonderfully patient about its dread.",
+    "recognized": true
+  },
+  {
+    "id": "book89",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Dragonsong",
+    "authorAtDraft": "Anne McCaffrey",
+    "new": "Menolly's hold has no use for a girl who makes songs, so she runs, and ends up mothering nine newly hatched fire lizards. Warm, quick Pern story about a talent that will not be argued out of someone.",
+    "recognized": true
+  },
+  {
+    "id": "book93",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Empire of the Vampire",
+    "authorAtDraft": "Jay Kristoff",
+    "new": "Twenty-seven years without a sunrise, and the last of the silversaints tells his story from a cell to the vampire sent to write it down. Seven hundred pages of blood, black humour and holy war. Book one of a series.",
+    "recognized": true
+  },
+  {
+    "id": "book99",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "The Field Guide; The Spiderwick Chronicles #1",
+    "authorAtDraft": "Holly Black & Tony DiTerlizzi",
+    "new": "Three children, one crumbling family estate, and a hidden field guide explaining exactly what is living in the walls. Short, illustrated and briskly creepy, the opening of the Spiderwick books at barely a hundred pages.",
+    "recognized": true
+  },
+  {
+    "id": "book105",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Flowers for Algernon",
+    "authorAtDraft": "Daniel Keyes",
+    "new": "Charlie Gordon writes progress reports. The surgery that tripled a laboratory mouse's intelligence is tried on him next, and the reports change as he does. Quietly devastating science fiction about who was kind to whom.",
+    "recognized": true
+  },
+  {
+    "id": "book106",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "The Forests of Silence; (Deltora Quest #1)",
+    "authorAtDraft": "Emily Rodda",
+    "new": "Seven gems were prised from the Belt of Deltora and hidden, and a blacksmith's son sets out after the first of them. Short, brisk quest fantasy for younger readers, with a map, a riddle and a forest nobody walks out of.",
+    "recognized": true
+  },
+  {
+    "id": "book126",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Howl's Moving Castle",
+    "authorAtDraft": "Diana Wynne Jones",
+    "new": "Sophie makes hats and expects nothing, then a slighted witch turns her ninety. Refuge comes in a walking castle run by a vain wizard and a fire demon who bargains. Funny, warm and far cleverer than its fairy tale shape.",
+    "recognized": true
+  },
+  {
+    "id": "book143",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Labyrinths",
+    "authorAtDraft": "Jorge Luis Borges",
+    "new": "Libraries bent into infinity, a garden that forks into every possible path, reviews of books nobody wrote. Stories, essays and parables, short and bottomless, from the great architect of the philosophical maze.",
+    "recognized": true
+  },
+  {
+    "id": "book160",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "The Journey; Big Panda and Tiny Dragon #2",
+    "authorAtDraft": "James Norbury",
+    "new": "Panda and dragon take to the road again, through snow, doubt and long stretches of nothing much. Illustrated, unhurried and full of small kindnesses, it asks what to do when the path you were following disappears.",
+    "recognized": true
+  },
+  {
+    "id": "book162",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Night Shift",
+    "authorAtDraft": "Stephen King",
+    "new": "Twenty stories from King's first collection: trucks that drive themselves, a laundry press with an appetite, a Maine town that empties after dark. Nasty, efficient horror and a very good place to start.",
+    "recognized": true
+  },
+  {
+    "id": "book164",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Nimona",
+    "authorAtDraft": "N. D. Stevenson",
+    "new": "Ballister Blackheart is a supervillain with standards. Nimona is the shapeshifting sidekick who has none, and no visible bottom either. A graphic novel that is hilarious right up until it decides to break your heart.",
+    "recognized": true
+  },
+  {
+    "id": "book172",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "One Piece; Volume 1",
+    "authorAtDraft": "Eiichiro Oda",
+    "new": "Monkey D. Luffy ate the wrong fruit, turned to rubber, and decided to become King of the Pirates regardless. First volume of an extremely long voyage: loud, daft, and far better hearted than it looks.",
+    "recognized": true
+  },
+  {
+    "id": "book181",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Redwall; Book 1",
+    "authorAtDraft": "Brian Jacques",
+    "new": "Cluny the Scourge has designs on Redwall Abbey, and the mice inside have a legend and one clumsy novice to work with. Animal adventure with siege warfare, riddles, and feasts described in indecent detail.",
+    "recognized": true
+  },
+  {
+    "id": "book188",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Second Foundation",
+    "authorAtDraft": "Isaac Asimov",
+    "new": "Third in the Foundation sequence. A second, secret order of mind-shapers is supposed to be steering history from somewhere, and half the galaxy wants its address. Asimov at his most puzzle-like, and barely a doorstop.",
+    "recognized": true
+  },
+  {
+    "id": "book190",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Shatter Me",
+    "authorAtDraft": "Tahereh Mafi",
+    "new": "Juliette's touch kills, which is why she was locked away and why the regime now wants her back. Dystopian YA in feverish, crossed-out prose, all first love and worse decisions. The opening of a long series.",
+    "recognized": true
+  },
+  {
+    "id": "book193",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Six of Crows",
+    "authorAtDraft": "Leigh Bardugo",
+    "new": "Six criminals, one fortress nobody has ever broken into, and a payday big enough to make the odds look survivable. Heist fantasy with a razor of a crew, a drug that breaks magic, and Ketterdam's filthy charm.",
+    "recognized": true
+  },
+  {
+    "id": "book195",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Skyward; (Book 1)",
+    "authorAtDraft": "Brandon Sanderson",
+    "new": "Spensa wants to fly, and the people who call her father a coward have no intention of letting her. Humanity underground, alien raids, and a sarcastic ship buried in the hills. Hopeful, propulsive space opera.",
+    "recognized": true
+  },
+  {
+    "id": "book198",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Snow Crash",
+    "authorAtDraft": "Neal Stephenson",
+    "new": "A pizza courier for the Mafia moonlights as the best swordsman in the Metaverse, then a drug that infects hackers and their brains alike starts spreading. Cyberpunk satire, loud, funny, and built on Sumerian grammar.",
+    "recognized": true
+  },
+  {
+    "id": "book199",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Stories of Your Life and Others",
+    "authorAtDraft": "Ted Chiang",
+    "new": "Eight stories, each taking one idea entirely seriously: a language that unsticks time, a tower built to reach heaven, a world where angel visits leave wreckage. Cool, precise science fiction that earns its sadness.",
+    "recognized": true
+  },
+  {
+    "id": "book209",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "The Bar Code Tattoo; (Bar Code #1)",
+    "authorAtDraft": "Suzane Weyn",
+    "new": "At seventeen the tattoo becomes compulsory, a barcode carrying everything about you, including what your genes are said to predict. Kayla refuses. Short, blunt dystopian YA about data as destiny.",
+    "recognized": true
+  },
+  {
+    "id": "book212",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "The Battle of the Labyrinth",
+    "authorAtDraft": "Rick Riordan",
+    "new": "Fourth Percy Jackson book, and the war finally reaches camp. The way in runs through Daedalus's Labyrinth, which rearranges itself and resists being mapped. Funny, quick, and heavier than the ones before it.",
+    "recognized": true
+  },
+  {
+    "id": "book217",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "The Binding",
+    "authorAtDraft": "Bridget Collins",
+    "new": "Bookbinders take a memory out of you and bind it into a volume, and then you are free of it. Apprenticed to one, Emmett finds a book with his own name on the spine. Quiet, gorgeous fantasy with a love story underneath.",
+    "recognized": true
+  },
+  {
+    "id": "book227",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "Book of Azrael",
+    "authorAtDraft": "Amber V Nicole",
+    "new": "Dark romantic fantasy, nearly five hundred pages of gods, bargains and monsters, written squarely for adult readers. Expect a slow burn, a high body count and a series that is nowhere near finished.",
+    "recognized": false
+  },
+  {
+    "id": "book233",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "The Colour of Magic; Discworld #1, Rincewind #1",
+    "authorAtDraft": "Terry Pratchett",
+    "new": "Discworld starts here, riding four elephants on the back of a turtle, with an inept wizard and the first tourist the place has ever seen. Comic fantasy still finding its feet, and already very funny indeed.",
+    "recognized": true
+  },
+  {
+    "id": "book238",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "The Complete Peanuts; 1993-1994",
+    "authorAtDraft": "Charles M. Schultz",
+    "new": "Two full years of daily and Sunday strips: Charlie Brown losing with dignity, Snoopy on the doghouse roof, and jokes about despair aimed squarely at children. Comfort reading that was always sadder than it looked.",
+    "recognized": true
+  },
+  {
+    "id": "book239",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "The Complete Robot",
+    "authorAtDraft": "Isaac Asimov",
+    "new": "Thirty-one stories about machines built to obey three laws, and the engineers, psychologists and detectives who keep finding the gaps. Asimov's robot fiction gathered whole, cool-headed and endlessly logical.",
+    "recognized": true
+  },
+  {
+    "id": "book241",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "The Cruel Prince",
+    "authorAtDraft": "Holly Black",
+    "new": "Jude is mortal, raised in Faerie by the man who murdered her parents, and she wants a place at a court that despises her for existing. Cruel, courtly YA fantasy where everyone lies beautifully. First of a trilogy.",
+    "recognized": true
+  },
+  {
+    "id": "book246",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "The Dispossessed",
+    "authorAtDraft": "Ursula K. Le Guin",
+    "new": "Shevek leaves the anarchist moon that raised him to publish his physics on the wealthy world below, and finds both societies wanting. Science fiction as political argument: dry, humane, and still unanswered.",
+    "recognized": true
+  },
+  {
+    "id": "book261",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "The Handmaid's Tale",
+    "authorAtDraft": "Margaret Atwood",
+    "new": "Gilead has solved its fertility crisis by assigning fertile women to powerful men, and Offred remembers the country it replaced. Cold, careful prose that still notices small pleasures. Harrowing, and hard to argue with.",
+    "recognized": true
+  },
+  {
+    "id": "book266",
+    "batch": 14,
+    "status": "draft",
+    "titleAtDraft": "The Hunger Games",
+    "authorAtDraft": "Suzanne Collins",
+    "new": "Twelve districts, two children each, one televised arena, and Katniss volunteering to spare her sister. Narrated in a present tense that never lets up. Dystopian YA that reshaped an entire shelf.",
+    "recognized": true
+  },
+  {
+    "id": "book270",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Invisible Life of Addie LaRue",
+    "authorAtDraft": "V.E. Schwab",
+    "new": "Bargain with a power in the dark and you get forever, but nobody will remember your name. Three centuries of being forgotten, until one man says he does. Tender, aching, and honest about what it costs to leave no mark.",
+    "recognized": true
+  },
+  {
+    "id": "book271",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Invisible Man",
+    "authorAtDraft": "H. G. Wells",
+    "new": "Griffin cracks the optics of the human body and turns himself transparent, then finds no way back. A bandaged stranger at a village inn becomes a study in what a man does once nobody can watch him.",
+    "recognized": true
+  },
+  {
+    "id": "book274",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Last Battle; (Chronicles of Narnia)",
+    "authorAtDraft": "C.S. Lewis",
+    "new": "A cunning ape dresses a donkey in a lion skin, and Narnia believes him. The seventh and final chronicle, where the talking beasts must choose sides and the country everyone loved comes to its last morning.",
+    "recognized": true
+  },
+  {
+    "id": "book276",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Last Wish; (The Witcher)",
+    "authorAtDraft": "Andrzej Sapkowski",
+    "new": "Geralt of Rivia kills monsters for coin, and the monsters are rarely the worst thing in the room. Short stories that take old folk tales, strip the moral off and leave the blood. Where the Witcher saga starts.",
+    "recognized": true
+  },
+  {
+    "id": "book279",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Lightning Thief; (Percy Jackson #1)",
+    "authorAtDraft": "Rick Riordan",
+    "new": "Twelve years old, dyslexic, expelled again, and now Olympus says he stole Zeus's master bolt. Percy learns who his father really is and crosses America to clear his name. Greek myth with a wisecracking grin.",
+    "recognized": true
+  },
+  {
+    "id": "book289",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Magic City",
+    "authorAtDraft": "Edith Nesbit",
+    "new": "Philip builds a city out of books, dominoes and silver candlesticks, then wakes to find it life-sized with himself inside it, cast as its prophesied deliverer. Edwardian nursery magic that takes its own rules seriously.",
+    "recognized": true
+  },
+  {
+    "id": "book290",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Magic World",
+    "authorAtDraft": "Edith Nesbit",
+    "new": "Twelve short tales in which a boy who torments the family cat wakes up inside it, a princess is betrothed to a hedgehog, and wishing reliably goes sideways. Light, brisk, and full of animals with firm opinions.",
+    "recognized": true
+  },
+  {
+    "id": "book292",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Martian Chronicles",
+    "authorAtDraft": "Ray Bradbury",
+    "new": "Rocket after rocket leaves an Earth running out of patience with itself, and Mars answers with dry canals, gold-eyed ghosts and dust. Linked stories, more elegy than adventure, about settlers who pack their ruin with them.",
+    "recognized": true
+  },
+  {
+    "id": "book293",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Martian",
+    "authorAtDraft": "Andy Weir",
+    "new": "Left for dead on Mars with a punctured suit, a few potatoes and a habitat rated for thirty days, Mark Watney does the arithmetic and refuses to die. Hard science fiction that is genuinely funny about duct tape.",
+    "recognized": true
+  },
+  {
+    "id": "book294",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Massacre of Mankind",
+    "authorAtDraft": "Stephen Baxter",
+    "new": "The Martians came once, learned from it, and are coming back better prepared. An authorized sequel to Wells, set in an alternate Britain hardened by the first invasion, where the second is fought on a planetary scale.",
+    "recognized": true
+  },
+  {
+    "id": "book296",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Maze Runner",
+    "authorAtDraft": "James Dashner",
+    "new": "Thomas arrives in a metal lift with his memory wiped, into a walled Glade full of boys and a stone maze that rearranges itself every night. Runners map it, something inside hunts them, and nobody will say why.",
+    "recognized": true
+  },
+  {
+    "id": "book303",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Napoleon of Notting Hill",
+    "authorAtDraft": "Gilbert K. Chesterton",
+    "new": "A bored king revives medieval pageantry for London's boroughs as a practical joke, and one young man from Notting Hill takes it entirely seriously, to the point of war. Satire with a straight face and a real sword.",
+    "recognized": true
+  },
+  {
+    "id": "book307",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "Nevermoor; The Trials of Morrigan Crow (Nevermoor #1)",
+    "authorAtDraft": "Jessica Townsend",
+    "new": "Morrigan Crow is blamed for every mishap in town and due to die at midnight, until a red-haired stranger smuggles her into a hidden city and enters her in four impossible trials. Charming, inventive and generously long.",
+    "recognized": true
+  },
+  {
+    "id": "book311",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Passage",
+    "authorAtDraft": "Justin Cronin",
+    "new": "Sign the waiver and you walk off death row into a laboratory. The virus meant to make soldiers unkillable gets out and takes the continent. Nine hundred pages that open as a thriller and end a century later in a colony afraid of the dark.",
+    "recognized": true
+  },
+  {
+    "id": "book316",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Ramayana",
+    "authorAtDraft": "Valmiki",
+    "new": "Rama is exiled on the eve of his crowning, his wife is carried off by a ten-headed king, and an army of monkeys builds a bridge to reach her. Ancient verse that still gives half of South Asia the shape of its stories.",
+    "recognized": true
+  },
+  {
+    "id": "book318",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Sea of Monsters; (Percy Jackson #2)",
+    "authorAtDraft": "Rick Riordan",
+    "new": "Camp Half-Blood's magical border is failing and the only cure is a Golden Fleece somewhere in the Sea of Monsters, which modern charts call the Bermuda Triangle. Percy's second outing, with a crew he did not pick.",
+    "recognized": true
+  },
+  {
+    "id": "book324",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Silmarillion",
+    "authorAtDraft": "J.R.R. Tolkien",
+    "new": "Before any hobbits, there was a song that made the world, three jewels holding the last of its light, and an oath sworn by their maker that doomed everyone who kept it. Scripture-dry, mythic, relentlessly tragic.",
+    "recognized": true
+  },
+  {
+    "id": "book328",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "Sorcery and Small Magics; The Wildersongs Trilogy #1",
+    "authorAtDraft": "Maiga Doocy",
+    "new": "Leovander writes charming little spells and no serious ones. Grimm can cast anything and despises him. One botched curse later they are stuck together on the road to the Unquiet Wood. Enemies to something else, sweetly done.",
+    "recognized": true
+  },
+  {
+    "id": "book329",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "Soul Music; Discworld #16, Death #3",
+    "authorAtDraft": "Terry Pratchett",
+    "new": "Music With Rocks In arrives in Ankh-Morpork out of a shop that was not there yesterday, and it will not stop. Death has wandered off to forget something, leaving his granddaughter holding the scythe. Daft, and oddly moving.",
+    "recognized": true
+  },
+  {
+    "id": "book332",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Stand",
+    "authorAtDraft": "Stephen King",
+    "new": "Ninety-nine percent of America dies of the flu inside a fortnight. The few left start dreaming of an old woman in Nebraska or a smiling man out west, and walk toward one of them. Over a thousand pages, all of them earned.",
+    "recognized": true
+  },
+  {
+    "id": "book339",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Traitor Baru Cormorant; (The Masquerade #1)",
+    "authorAtDraft": "Seth Dickinson",
+    "new": "Her island is annexed by an empire that conquers with schools, sanitation and eugenics, so Baru learns its accounting and climbs. Rebellion fought with ledgers and currency crashes, at a cost the arithmetic never covers.",
+    "recognized": true
+  },
+  {
+    "id": "book344",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The War of the Worlds",
+    "authorAtDraft": "H. G. Wells",
+    "new": "Something unscrews the lid of a cylinder on Horsell Common, and within days tripods are walking over Surrey burning everything ahead of them. Told by an ordinary man trying to get home. The blueprint for every invasion since.",
+    "recognized": true
+  },
+  {
+    "id": "book345",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Well at the World's End",
+    "authorAtDraft": "William Morris",
+    "new": "Ralph, youngest son of a very small king, rides out after a well at the edge of the world whose water grants long life and luck. Written in deliberate medieval English, and one of the roots the whole genre grew from.",
+    "recognized": true
+  },
+  {
+    "id": "book348",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Willows",
+    "authorAtDraft": "Algernon Blackwood",
+    "new": "Two men canoe down the Danube and camp on a sandbank among endless willows, where the sand shifts, the bushes move and something enormous takes an interest. Barely a hundred pages, and among the finest horror in English.",
+    "recognized": true
+  },
+  {
+    "id": "book369",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "The Truth; Discworld #25, Industrial Revolution #2",
+    "authorAtDraft": "Terry Pratchett",
+    "new": "Movable type reaches Ankh-Morpork and William de Worde, who only wanted to write a newsletter, finds himself running a newspaper while somebody frames the Patrician. Dwarfs, a vampire on the pictures, and a dog with a scoop.",
+    "recognized": true
+  },
+  {
+    "id": "book384",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "Watchmen; (Issue #12)",
+    "authorAtDraft": "Alan Moore",
+    "new": "Somebody throws a costumed vigilante out of a high window, and a paranoid man in an inkblot mask starts asking why. Superheroes as a Cold War liability, drawn nine panels to the page, where the doomsday clock is not a metaphor.",
+    "recognized": true
+  },
+  {
+    "id": "book420",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "A Clash of Kings",
+    "authorAtDraft": "George R. R. Martin",
+    "new": "A comet the colour of blood hangs over Westeros while five men claim one throne and none will back down. The second volume, where the war stops being theoretical and magic starts creeping back. Seven hundred pages, no mercy.",
+    "recognized": true
+  },
+  {
+    "id": "book422",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "A Court of Mist and Fury",
+    "authorAtDraft": "Sarah J. Maas",
+    "new": "Book two turns the Courts inside out. A bargain drags Feyre to the Night Court one week a month, where the male everyone fears turns out to be playing a far longer game. Faerie politics, slow-burn romance, and a war coming.",
+    "recognized": true
+  },
+  {
+    "id": "book424",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "A Feast for Crows",
+    "authorAtDraft": "George R. R. Martin",
+    "new": "The war is over, in the sense that the armies are gone and the wreckage is not. Volume four moves to a kingsmoot, to Dorne, to a capital run by someone with no gift for it, while a tall knight searches the ruined roads.",
+    "recognized": true
+  },
+  {
+    "id": "book432",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "All Systems Red; The Murderbot Diaries #1",
+    "authorAtDraft": "Martha Wells",
+    "new": "Murderbot hacked its own governor module and now mostly wants to be left alone with several thousand hours of soap opera. Instead it has to keep a survey team alive on a hostile world. Short, deadpan, quietly anxious.",
+    "recognized": true
+  },
+  {
+    "id": "book436",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "Before the Coffee Gets Cold",
+    "authorAtDraft": "Toshikazu Kawaguchi",
+    "new": "In a Tokyo basement cafe one seat sends you back in time, and the rules are strict: nothing you do will change the present, and you must finish before the coffee cools. Four quiet stories about the thing left unsaid.",
+    "recognized": true
+  },
+  {
+    "id": "book440",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "Blood of Elves; (The Witcher)",
+    "authorAtDraft": "Andrzej Sapkowski",
+    "new": "The first full novel of the Witcher saga. A child of prophecy is hidden at the witchers' mountain keep and trained to survive, while every power on the Continent works out what she is worth. Politics sharpen, monsters recede.",
+    "recognized": true
+  },
+  {
+    "id": "book447",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "Catching Fire",
+    "authorAtDraft": "Suzanne Collins",
+    "new": "The districts are simmering, the Capitol needs a distraction, and the seventy-fifth Games arrive with a rule nobody survives twice. Volume two, where a stunt becomes a symbol and a symbol becomes a war.",
+    "recognized": true
+  },
+  {
+    "id": "book448",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "Cats in Space... and Other Places",
+    "authorAtDraft": "Various Authors",
+    "new": "An anthology of science fiction and fantasy stories with one thing in common: a cat somewhere in them, usually the one with a plan. Space travel, stranger places, and four hundred pages of cheerfully niche fun.",
+    "recognized": false
+  },
+  {
+    "id": "book452",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "Chain-Gang All-Stars",
+    "authorAtDraft": "Nana Kwame Adjei-Brenyah",
+    "new": "Prisoners fight to the death on live television for a shot at freedom, and the ratings are excellent. Thurwar is a few matches from release. Savage satire of American incarceration, footnoted with the real thing.",
+    "recognized": true
+  },
+  {
+    "id": "book459",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "Don't Let the Forest In",
+    "authorAtDraft": "C.G. Drews",
+    "new": "Andrew writes monsters, Thomas draws them, and behind their boarding school the drawings wait in the trees with too many teeth. Queer teen horror where the bleeding hands and the aching crush arrive together.",
+    "recognized": true
+  },
+  {
+    "id": "book460",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "Dune",
+    "authorAtDraft": "Frank Herbert",
+    "new": "One desert planet yields the spice that makes interstellar travel possible, so whoever holds Arrakis holds everything. A ducal heir loses his house and finds a prophecy waiting in the sand. Ecology, religion and empire, welded.",
+    "recognized": true
+  },
+  {
+    "id": "book465",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "Fire & Blood",
+    "authorAtDraft": "George R. R. Martin",
+    "new": "Not a novel but a maester's chronicle: generations of Targaryen rule, dragon by dragon, from the Conquest to the civil war that burned the dynasty's power out. Dry, gossipy, and full of sources that contradict each other.",
+    "recognized": true
+  },
+  {
+    "id": "book467",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "Frankenstein",
+    "authorAtDraft": "Mary Shelley",
+    "new": "Victor Frankenstein assembles a living man and runs from him the moment those eyes open. The creature teaches itself to read, to speak, and to ask why it was made. The first science fiction novel, and still the most pitiless.",
+    "recognized": true
+  },
+  {
+    "id": "book476",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "I, Robot",
+    "authorAtDraft": "Isaac Asimov",
+    "new": "Three laws are built into every positronic brain to keep robots safe, and every story here is a machine obeying them perfectly into some fresh disaster. Puzzle-box science fiction, told by a robopsychologist with no patience for sentiment.",
+    "recognized": true
+  },
+  {
+    "id": "book479",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "Inkheart",
+    "authorAtDraft": "Cornelia Funke",
+    "new": "Meggie's father reads aloud so well that things come out of the book, and something goes in to take their place. Years later the villain he loosed comes looking. A love letter to reading with real menace in it.",
+    "recognized": true
+  },
+  {
+    "id": "book485",
+    "batch": 15,
+    "status": "draft",
+    "titleAtDraft": "Legendborn; The Legendborn Cycle #1",
+    "authorAtDraft": "Tracy Deonn",
+    "new": "Grieving her mother, Bree starts early college and finds a secret society of students descended from Arthur's knights. Arthurian legend collides with Black Southern rootwork, and the magic in her own blood answers first.",
+    "recognized": true
   }
 ]
