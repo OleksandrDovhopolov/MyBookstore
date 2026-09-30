@@ -208,6 +208,7 @@ namespace Game.Decor.UI
             pool.DisableAll();
             var selectable = true;
             var items = _inventory.GetByCategory(InventoryCategories.Decor);
+            var visibleCount = 0;
             foreach (var item in items)
             {
                 var config = _configs.Get<DecorConfig>(item.ItemId);
@@ -218,8 +219,10 @@ namespace Game.Decor.UI
                 var placed = !string.IsNullOrEmpty(FindPlacedSlot(item.ItemId));
                 var card = pool.GetNext();
                 card.Bind(config, placed, selectable, _sprites, OnCardSelect, OnCardInfo);
+                visibleCount++;
             }
             pool.DisableNonActive();
+            View.SetEmptyInventoryVisible(visibleCount == 0);
         }
 
         private void OnCardSelect(string decorId)
