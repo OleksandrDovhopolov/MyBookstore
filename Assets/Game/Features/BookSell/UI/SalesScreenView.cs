@@ -95,6 +95,7 @@ namespace Book.Sell.UI
             _controller.DayCompleted += OnDayCompleted;
             _controller.ShelfChanged += OnShelfChanged;
             _controller.PassiveSaleHappened += OnPassiveSaleHappened;
+            _controller.CustomerPassivePurchaseFailed += OnCustomerPassivePurchaseFailed;
 
             StartDayFlowAsync(_cts.Token).Forget();
         }
@@ -141,6 +142,13 @@ namespace Book.Sell.UI
         private void OnPassiveSaleHappened(PassiveSaleEvent _)
         {
             PlaySfx(Audio.Catalog?.BookSold);
+        }
+
+        private void OnCustomerPassivePurchaseFailed(Domain.Customer _, string __)
+        {
+            // TODO: create a dedicated sale_failed.ogg, expose it in AudioCatalog, and use it here
+            // instead of the generic blocked-action sound.
+            PlaySfx(Audio.Catalog?.ActionBlocked);
         }
 
         private void PublishGenreBookCounts()
@@ -296,6 +304,7 @@ namespace Book.Sell.UI
                 _controller.DayCompleted -= OnDayCompleted;
                 _controller.ShelfChanged -= OnShelfChanged;
                 _controller.PassiveSaleHappened -= OnPassiveSaleHappened;
+                _controller.CustomerPassivePurchaseFailed -= OnCustomerPassivePurchaseFailed;
             }
 
             _cts.Cancel();

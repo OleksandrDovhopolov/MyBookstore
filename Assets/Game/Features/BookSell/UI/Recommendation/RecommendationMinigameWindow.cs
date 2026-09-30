@@ -318,7 +318,15 @@ namespace Book.Sell.UI
             _resolutionPending = true;
             SetSelectionActionsInteractable(false);
             if (result?.Tier == RecommendationTier.Excellent)
+            {
                 PlaySfx(Audio.Catalog?.BookSold);
+            }
+            else if (result?.Tier == RecommendationTier.Failed)
+            {
+                // TODO: create a dedicated sale_failed.ogg, expose it in AudioCatalog, and use it here
+                // instead of the generic blocked-action sound.
+                PlaySfx(Audio.Catalog?.ActionBlocked);
+            }
 
             var emotion = EmotionFor(result?.Tier ?? RecommendationTier.Skipped);
             if (View.Animator != null)

@@ -26,6 +26,16 @@
 
 ## Done
 
+### QA-3 — First Load Buttons Flicker
+
+Статус: сделано. Мигания кнопок при первой загрузке больше нет.
+
+Что проверено:
+- UI на первом запуске/первой загрузке показывает стабильное состояние.
+- Кнопки не появляются кратко в неправильном active/interactable состоянии.
+
+Критичность была medium: это визуальный polish первого впечатления.
+
 ### CONTENT-1 — Replace Copied Book Localization Texts
 
 Статус: сделано. Описания книг переписаны и применены; работа закрыта серией последних коммитов
@@ -748,17 +758,6 @@ Smoke: открыть Market до unlock — условие `soldTotal: 200` п�
 
 Критичность: high. Active request — центральная часть дневного gameplay loop.
 
-### QA-3 — First Load Buttons Flicker
-
-Баг: при первой загрузке мигают кнопки.
-
-Что сделать:
-- Найти, какие кнопки/окна мигают на первом запуске или первой загрузке сцены.
-- Проверить порядок инициализации UI, начальные active/interactable состояния и анимации появления.
-- Исправить так, чтобы игрок видел уже стабильное состояние UI, без краткого показа неправильных кнопок.
-
-Критичность: medium. Это визуальный polish первого впечатления.
-
 ### QA-4 — Gameplay Day Characters Overflow Screen
 
 Баг: персонажи вылезают за экран во время игрового дня.
@@ -906,6 +905,126 @@ Smoke: открыть Market до unlock — условие `soldTotal: 200` п�
 - Зафиксировать, какие данные/ассеты нужны для store listing.
 
 Критичность: critical for release. Это внешняя задача, без неё публикация в Google Play невозможна.
+
+### JRN-3 — Memory Unlock Sources Beyond Quests
+
+Продолжение [JRN-1](#jrn-1--memories-structure-in-charactersjson). Структура записей закрыта, но
+**источники разблокировки memory жёстко ограничены квестами**, и это мешает авторить сюжетные
+воспоминания на не-квестовые события.
+
+Scope note: по [Scope Rule](#scope-rule) это архитектурное улучшение, а не блокер релиза — текущая игра
+проходится и публикуется без него. Задача лежит в TODO как **решение, которое принимается после
+закрытия остальных задач**: по остатку времени выбирается один из вариантов ниже, вплоть до «ничего не
+делаем, оставляем вариант A».
+
+#### Текущее состояние
+
+`CharacterMemoryConfig` допускает ровно три источника, и `CharacterMemoryReferenceValidator` это
+проверяет (`sourceCount != 1` → error):
+
+| Источник | Как срабатывает | Кто исполняет |
+|---|---|---|
+| `unlockedAtStart` | один раз на первом запуске | `FtueBootstrapper.UnlockStartMemories()` |
+| `questId` | квест переходит в `Awarded` | `CharacterModelFactory.IsUnlockedByQuest` |
+| `questChainId` | финальный квест цепочки в `Awarded` | то же |
+
+Read-model: `Unlocked = IsUnlockedByQuest(mc) || saved.UnlockedMemoryIds.Contains(mc.Id)`. Леджер в
+save-модуле `"characters"` нужен для одноразовости события `MemoryUnlocked` и для ручного
+`ICharactersService.TryUnlockMemory(characterId, memoryId)`.
+
+#### Что именно не получается
+
+1. **Несколько memory на одно событие.** Валидатор требует уникальности `questId` на memory
+   (`reuses questId '...' already used by ...`). Одно событие → максимум одна memory. Исключение —
+   `unlockedAtStart`: на него ограничения уникальности нет, поэтому «несколько memory на первом
+   запуске» работает уже сегодня, просто конфигом.
+2. **Memory на открытие локации.** Событие «локация открыта» не входит в три источника. В реестре
+   условий нет leaf-условия `locationUnlocked`: есть `LocationIsCondition` (текущая локация) и
+   `visitLocation` (счётчик входов из `LocationVisits`), а `LocationUnlockConditionBuilder` работает в
+   обратную сторону — локация *потребляет* условия из `LocationConfig.Unlock`. Рантайм-сигнал при этом
+   существует и не используется: `ILocationUnlockService.Unlocked` (`event Action<string>`).
+3. **`unlockedAtStart` не бэкфиллится.** `FtueBootstrapper` выходит по маркеру `ftue.applied`. Новые
+   стартовые memory, добавленные после релиза, существующим игрокам не откроются. Сейчас неважно
+   (baseline v1, сейвы вайпаются), но перестанет быть неважным после публикации.
+4. **Побочка с discovery.** `CharacterModelFactory.IsDiscoveredByQuest` считает персонажа открытым,
+   если любой его memory-квест `!= Pending`. Технический квест-триггер раскрывает персонажа раньше
+   сценария. Обходится паттерном `owner` (`hiddenInJournal: true`).
+
+#### Варианты — выбрать один по остатку времени
+
+**Вариант A — квесты-пустышки. 0 кода, только конфиг.**
+
+Квест с `activationConditions` + один таск (например `visitLocation`), без `rewards`, memory вешается на
+его `questId`. Работает, потому что квесты авто-авардятся: `QuestsService` — «Auto-award: completing all
+tasks goes ReadyToAward → Awarded at once», ручной claim не нужен.
+
+Цена: у `QuestConfig` нет флага hidden, поэтому технический квест виден игроку в списках квестов и
+требует осмысленных `titleKey`/`descriptionKey`; одно событие = один квест = одна memory;
+`visitLocation` срабатывает на первом *входе*, а не в момент разблокировки; персонаж раскрывается
+раньше срока (лечится скрытым персонажем-контейнером).
+
+**Вариант B — A + leaf-условие `locationUnlocked`. ~3 маленьких файла.**
+
+По готовому шаблону `VisitLocationCondition` / `VisitLocationConditionFactory`: read-only seam над
+`ILocationUnlockRepository`, фабрика с `TypeId`, регистрация в `ConditionsVContainerBindings`. В проекте
+~11 условий сделаны одинаково, так что это шаблонная работа.
+
+Даёт: точный триггер «локация открыта» вместо «зашёл в локацию», и условие переиспользуемо для любых
+квестов и для гейтов других локаций. Не снимает пункты 1 и 4 — квест-пустышка всё ещё нужна.
+
+**Вариант C — четвёртый источник `unlockCondition` в `CharacterMemoryConfig`. Средний рефактор внутри
+одной фичи.**
+
+Поле `JObject unlockCondition` по образцу `QuestConfig.ActivationConditions`, парсится через
+`IConditionParser`, пересчёт по `IConditionChangeSource` (оба уже есть в `Game.Conditions.API`).
+
+Затрагивает: `sourceCount` в валидаторе, `IsUnlockedByQuest` → `IsUnlockedByTrigger` в
+`CharacterModelFactory`, реконсайл в `CharactersService`.
+
+Даёт: «локация открыта», «есть предмет», «день ≥ N» авторятся прямо в `characters.json`, без квестов-
+пустышек и без фантомов в UI. Снимает пункты 1, 2 и 4 сразу: ограничение уникальности `questId` можно
+отпустить, потому что квест перестаёт быть единственным ключом.
+
+**Вариант D — вынести memories в отдельный модуль `Game.Memories`. Полный рефактор.**
+
+Фича уже наполовину отдельная: `memory.id` глобально уникальны (валидатор это требует), `SeenMemoryIds`
+в `SavedCharacters` — плоский `HashSet<string>`, а не по персонажам, `JournalMemoriesViewModelBuilder`
+обходит персонажей только чтобы развернуть их обратно в один список, и `TryUnlockMemory` уже публичный
+API. Персонаж `owner` c `hiddenInJournal: true` — прямое признание, что memory нужен контейнер, а не
+персонаж.
+
+Состав: `memories.json` вместо вложенности в `CharacterConfig` (`characterId` становится опциональным
+тегом «чья это memory» для People-таба); свой save-модуль `"memories"` — туда уезжают леджер и
+`SeenMemoryIds`, модуль `"characters"` худеет до `Discovered`; подписка на `QuestStarted`/`QuestAwarded`
+переезжает из `CharactersService` как есть; публичный `OpenMemory(memoryId)` без `characterId`.
+
+Цена: `IsDiscoveredByQuest` придётся либо читать memories через `Game.Memories.API`, либо переводить
+discovery целиком на `DiscoveryQuestIds` — это дизайн-решение, а не рефакторинг; появляется зависимость
+`Game.Characters → Game.Memories.API` (не наоборот), сверить с [ASMDEF_RULES.md](ASMDEF_RULES.md);
+плюс ещё один `SaveBacked*`-репозиторий, `ISaveHook` и биндинг.
+
+Порядок внутри D, если берёмся: сначала конфиг (`memories.json` + `characterId` как тег), потом
+save-модуль, и только потом `unlockCondition` — иначе валидатор переписывается дважды.
+
+#### Окно для вариантов C и D
+
+Save-миграция сейчас не нужна: `StateSchemaVersion = 1` — release baseline, пре-релизные сейвы
+вайпаются ([INF-6](#inf-6--save-module-versioning-release-baseline)). После публикации любой перенос
+леджера и `SeenMemoryIds` в другой модуль потребует настоящей миграции. То есть C и D дешевле всего
+**до первого релиза**, дальше дорожают.
+
+Что сделать:
+- Дождаться закрытия остальных релизных задач и оценить остаток времени.
+- Выбрать вариант: A (ничего не делаем сверх конфига), B, C или D.
+- Если выбран A — дописать в `characters.json` нужные `unlockedAtStart` и квесты-триггеры, и решить,
+  гасить ли бейдж unseen после FTUE через `MarkAllMemoriesSeen()`.
+- Если выбран C или D — сделать до релиза, пока миграция сейва не нужна.
+- Синхронизировать [CHARACTER_SYSTEM.md](CHARACTER_SYSTEM.md) с итоговой моделью (документ уже
+  расходится с кодом: заявляет `StateSchemaVersion = 2` и миграцию v1→v2, в коде `= 1`).
+
+Критичность: low для релиза, medium для дальнейшего контента. Блокером публикации не является: кейс
+«несколько memory на первом запуске» закрывается конфигом уже сейчас, кейс «memory на открытие локации»
+закрывается вариантом A без кода.
 
 ## Wait For Resources
 
