@@ -220,7 +220,7 @@ display/shelf-жанр: визуал книги, группировка полк
 - Conditions scoring: matching book => `Excellent` and `10` gold; non-matching book => `Failed` and `0` gold; skip => `Skipped` and `0` gold. `Normal` is unused by the active flow.
 - Request text v1: generated programmer-readable text from the condition tree; `Difficulty = Unknown`.
 - Condition semantics: `genres` checks only `BookConfig.Genres`; `qualities` checks only `BookConfig.Qualities`; sample content must target the field where the value actually lives.
-- Spawn semantics: regular customer spawning assigns the first `N` enabled valid condition requests to `Passive -> Active -> Passive` customers; the rest remain passive-only. Hard override days keep the exact customer count and warn if capacity is below request count.
+- ~~Spawn semantics: regular customer spawning assigns the first `N` enabled valid condition requests to `Passive -> Active -> Passive` customers~~ — **пересмотрено 2026-09-30, см. §8.1.** Спавнер решает только, *какие слоты* получают активный запрос; *какой именно* запрос — решает `ActiveRequestStep` в момент захвата interaction lock, по актуальной полке. Селектор дня живёт на `CustomerContext` в единственном экземпляре. Hard override days keep the exact customer count and warn if capacity is below request count.
 - Validation: invalid condition requests are filtered before spawning; direct evaluator calls fail closed and log an error.
 - Scope: active purchase predicates stay in BookSell and do not reuse the global `Game.Conditions` quest/location engine.
 
@@ -250,14 +250,46 @@ display/shelf-жанр: визуал книги, группировка полк
 - **Пустой результат shelf-aware фильтра закрывается рероллом** (§8.3), а не отказом от выдачи запроса.
   Вариант «не создавать активного покупателя, если отвечать нечем» рассмотрен и отклонён.
 - **Порог в `ActiveRequestValidator`.** Разовая правка контента чинит сегодняшний день; порог не даёт
-  завести проблему заново. Ориентир по замерам: `n < 5` — error, `n < 15` — warning (n = 15 даёт ≈ 50 %
-  попадания на полку из 30, n = 5 — 21 %). Отдельно держать в уме `Travel`: в каталоге всего 77 книг
-  этого жанра, узкий Travel-запрос рискованнее узкого Classic-запроса (224 книги).
-- **Ослабление узких запросов: убирать условие, а не расширять полосу.** Композитор текста выбирает,
-  сколько условий озвучить, по числу подходящих книг, и в бакете loose числовое условие **отбрасывается
-  из текста, продолжая действовать**. Расширение полосы может перевести запрос в loose и создать
-  невербализованное условие — игрок его не видит, но промахивается по нему. Подробности и список
-  затронутых запросов — [DEF-6](RELEASE_TASKS.md#def-6--proofread-active-request-texts-after-condition-loosening).
+  завести проблему заново. Внедрено: `n < 5` — error, `n < 15` — warning (n = 15 даёт ≈ 50 % попадания
+  на полку из 30, n = 5 — 21 %). Отчёт печатает оценку P(hit) по каждому запросу и список самых узких.
+  Отдельно держать в уме `Travel`: в каталоге всего 77 книг этого жанра, узкий Travel-запрос
+  рискованнее узкого Classic-запроса (224 книги).
+  <br>Вместимость полки в валидаторе продублирована константой: `Book.Sell.Editor` не может ссылаться
+  на `Game.Preparation` (ASMDEF_RULES §2), поэтому `ShelfCapacity` держат синхронной с
+  `PreparationSessionService.DefaultDailyBookSlots` вручную. Число влияет только на печатаемую
+  вероятность, не на вердикт.
+- **Бакеты жёсткости в композиторе текста удалены.** Правило скрывало числовое условие из текста,
+  оставляя его действующим: на момент разбора пять запросов из девятнадцати отгружались с невидимым
+  игроку условием (`req_psycho_01`, `req_fact_02`, `req_classic_02`, `req_drama_02`, `req_kids_01`).
+  Это вторая, независимая причина жалоб QA-11: не «не повезло с полкой», а «ответил по тексту и не
+  засчитали». Теперь озвучивается каждое условие, влияющее на предикат, — значит ослаблять запросы
+  можно любым способом, скрыться нечему. См.
+  [ACTIVE_REQUEST_TEXT_COMPOSER.md §2](INPROGRESS/ACTIVE_REQUEST_TEXT_COMPOSER.md).
+
+### 8.1.1 Фактический результат правок (2026-09-30)
+
+Шесть узких запросов ослаблены, целевая полоса — 15…35 подходящих книг:
+
+| Запрос | Было | Стало | Что изменили |
+|---|---|---|---|
+| `req_fantasy_02` | 2 (9 %) | 36 (82 %) | снято `pages between 700–900` |
+| `req_fireupon_01` | 2 (9 %) | 23 (66 %) | снято `pages between 550–650` |
+| `req_scarlet_01` | 3 (13 %) | 16 (53 %) | снято `publicationYear`, оставлено `pages ≤ 200` |
+| `req_travel_02` | 3 (13 %) | 35 (81 %) | снято `pages > 500` |
+| `req_kids_02` | 3 (13 %) | 30 (76 %) | `containsAll` → `containsAny` |
+| `req_classic_01` | 5 (21 %) | 32 (78 %) | `Dystopia` → `containsAny[Dystopia, Horror]` |
+
+По пулу: медианная вероятность 45 % → **61 %**, минимальная 9 % → **37 %**, запросов ниже порога
+ошибки не осталось. Пять запросов (`req_psycho_02`, `req_fact_02`, `req_scarlet_02`, `req_psycho_01`,
+`req_fact_01`) сидят в полосе 10–14 книг и дают warning — это следующий эшелон, в правку не входил.
+
+Два решения приняты вручную, потому что механика упиралась в замысел: у `req_classic_01` якорная книга
+*Nineteen Eighty-Four*, и `Dystopia` сама по себе даёт ровно 5 книг — второе качество подбиралось так,
+чтобы остаться в теме и в полосе; `req_scarlet_01` ослаблен снятием года, а не страниц, потому что
+снятие страниц давало всего 9 книг.
+
+> ⚠️ Кандидаты на расширение обязаны иметь фразу в `request_phrases.json`. Качество без записи в
+> лексиконе останется невысказанным — то есть воспроизведёт ровно тот немой предикат, который чинили.
 
 ### 8.2 Backlog: частичное совпадение вместо бинарного исхода
 

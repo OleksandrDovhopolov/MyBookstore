@@ -11,7 +11,8 @@ namespace Book.Sell.Services
     /// <summary>
     /// Production base spawner: sources the regular customer count from <see cref="ICustomerTrafficResolver"/>
     /// and the active-request count from <see cref="IActiveRequestCountResolver"/>. Active request slots are
-    /// spread across the day, then each active customer draws a request matching its DesiredGenres profile.
+    /// spread across the day; the request in each slot is drawn later, by the step itself, from the day's
+    /// selector on <see cref="Domain.CustomerContext"/>.
     /// Wrapped by <see cref="ScriptedCustomerSpawner"/>, which can replace regular slots with scripted visits.
     /// </summary>
     public sealed class RegularCustomerSpawner : ICustomerSpawner
@@ -24,7 +25,6 @@ namespace Book.Sell.Services
         private readonly IActiveRequestRuntimeProvider _activeRequests;
         private readonly ICustomerProfileProvider _profiles;
         private readonly IActiveRequestCountResolver _requestCount;
-        private readonly IActiveRequestSelectorFactory _selectorFactory;
         private readonly ICustomerVisualSelector _visualSelector;
 
         public RegularCustomerSpawner(IConfigsService configs, ICustomerTrafficResolver trafficResolver)
@@ -36,8 +36,7 @@ namespace Book.Sell.Services
                     new BookConditionRequestEvaluator(),
                     new ConditionActiveRequestGenreResolver()),
                 profileProvider: null,
-                requestCountResolver: null,
-                selectorFactory: null)
+                requestCountResolver: null)
         {
         }
 
@@ -47,14 +46,12 @@ namespace Book.Sell.Services
             IActiveRequestRuntimeProvider activeRequests,
             ICustomerProfileProvider profileProvider = null,
             IActiveRequestCountResolver requestCountResolver = null,
-            IActiveRequestSelectorFactory selectorFactory = null,
             ICustomerVisualSelector visualSelector = null)
         {
             if (configs == null) throw new ArgumentNullException(nameof(configs));
             _trafficResolver = trafficResolver ?? throw new ArgumentNullException(nameof(trafficResolver));
             _activeRequests = activeRequests ?? throw new ArgumentNullException(nameof(activeRequests));
             _profiles = profileProvider;
-            _selectorFactory = selectorFactory ?? new ProfileMatchedRequestSelectorFactory();
             _visualSelector = visualSelector;
 
             // Null means default knobs with no contributors. Never fall back to "pool size" here: that is
@@ -72,9 +69,9 @@ namespace Book.Sell.Services
             var requestCount = ResolveActiveRequestCount(setup, tuning, customerCount, pool.Count);
 
             var activeSlots = PickActiveSlots(customerCount, requestCount, random);
-            var selector = _selectorFactory.CreateForDay(pool);
 
             var passive = new PassiveAttemptsArchetype(tuning.MinPassiveAttempts, tuning.MaxPassiveAttempts);
+            var active = new PassiveActivePassiveArchetype(1, 1);
             var customers = new List<Customer>(customerCount);
 
             for (var i = 0; i < customerCount; i++)
@@ -82,12 +79,10 @@ namespace Book.Sell.Services
                 var profile = _profiles?.Create(setup, random) ?? CustomerProfile.Empty;
                 ICustomerArchetype archetype = passive;
 
+                // Which slots get a request is decided here; *which* request is not — the step draws it
+                // from the day's selector against the shelf as it stands when the customer walks up.
                 if (activeSlots != null && activeSlots.Contains(i))
-                {
-                    var request = selector.Draw(profile, random);
-                    if (request != null)
-                        archetype = new PassiveActivePassiveArchetype(request, 1, 1);
-                }
+                    archetype = active;
 
                 customers.Add(CustomerPlanBuilder.Build(
                     $"cust_{i + 1}", tuning, random,

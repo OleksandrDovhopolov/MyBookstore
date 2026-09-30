@@ -17,9 +17,11 @@ namespace Book.Sell.Services
     ///
     /// <para>Two deliberate properties:</para>
     /// <list type="bullet">
-    /// <item><description>Not every condition is voiced. How much is said depends on how many books in the
-    /// catalogue can satisfy the request at all — a request only two books answer must spell out every
-    /// constraint, one thirty-seven books answer would read like a checklist if it did.</description></item>
+    /// <item><description>Every condition that decides the outcome is voiced. Scoring is all-or-nothing, so a
+    /// constraint the player cannot read is a constraint they lose to blindly — brevity is never worth that.
+    /// A request that still reads like a checklist has too many conditions; fix the content, or give it an
+    /// authored <c>DescriptionKey</c>. The one exception is a numeric band inside a `none` group, which has
+    /// no negated phrasing (see CollectLeaf).</description></item>
     /// <item><description>Opener and anchor are picked deterministically from the request id, so a request
     /// always reads the same way. Nothing re-rolls when the day is respawned after a reload.</description></item>
     /// </list>
@@ -30,9 +32,6 @@ namespace Book.Sell.Services
     {
         private const string LogPrefix = "[ActiveRequests]";
 
-        private const int TightMax = 5;
-        private const int MediumMax = 15;
-
         private const string KindTerm = "term";
         private const string KindBand = "band";
         private const string KindCombo = "combo";
@@ -41,9 +40,7 @@ namespace Book.Sell.Services
         private const string KindAnchor = "anchor";
 
         private readonly IConfigsService _configs;
-        private readonly IBookConditionRequestEvaluator _evaluator;
         private readonly ILocalizationService _localization;
-        private readonly Dictionary<string, Verbosity> _verbosityCache = new(StringComparer.Ordinal);
 
         private Lexicon _lexicon;
 
@@ -52,11 +49,9 @@ namespace Book.Sell.Services
 
         public LexiconActiveRequestTextComposer(
             IConfigsService configs,
-            IBookConditionRequestEvaluator evaluator,
             ILocalizationService localization)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
-            _evaluator = evaluator ?? throw new ArgumentNullException(nameof(evaluator));
             _localization = localization;
         }
 
@@ -82,7 +77,6 @@ namespace Book.Sell.Services
             CollectGroup(request.Conditions?.None, wantPositive: false, joinWithOr: false, lexicon, request.Id, fragments);
 
             ApplyCombos(lexicon, fragments);
-            FilterByVerbosity(request, fragments);
 
             return Assemble(request, lexicon, fragments);
         }
@@ -162,7 +156,7 @@ namespace Book.Sell.Services
             if (!joinWithOr || groupFragments.Count == 0) return;
 
             // An `any` group is an OR over the whole group, so it reads as one clause.
-            sink.Add(new Fragment(null, JoinOr(groupFragments), IsAllBands(groupFragments), MinRank(groupFragments)));
+            sink.Add(new Fragment(null, JoinOr(groupFragments), MinRank(groupFragments)));
         }
 
         private void CollectLeaf(
@@ -197,7 +191,7 @@ namespace Book.Sell.Services
             }
 
             if (TryLocalize(band.PositiveKey, out var text))
-                sink.Add(new Fragment(band.Id, text, isBand: true, Fragment.BandRank));
+                sink.Add(new Fragment(band.Id, text, Fragment.BandRank));
         }
 
         private void CollectTermLeaf(
@@ -242,7 +236,7 @@ namespace Book.Sell.Services
                 }
 
                 if (TryLocalize(key, out var text))
-                    leafFragments.Add(new Fragment(term.Id, text, isBand: false, rank));
+                    leafFragments.Add(new Fragment(term.Id, text, rank));
             }
 
             if (leafFragments.Count == 0) return;
@@ -250,7 +244,7 @@ namespace Book.Sell.Services
             // containsAny is an OR *inside* one leaf and must read as one clause; the rest are separate.
             if (op.Equals("containsAny", StringComparison.OrdinalIgnoreCase) && leafFragments.Count > 1)
             {
-                sink.Add(new Fragment(null, JoinOr(leafFragments), isBand: false, rank));
+                sink.Add(new Fragment(null, JoinOr(leafFragments), rank));
                 return;
             }
 
@@ -280,56 +274,8 @@ namespace Book.Sell.Services
                 for (var i = indices.Count - 1; i >= 1; i--)
                     fragments.RemoveAt(indices[i]);
 
-                fragments[head] = new Fragment(combo.Id, text, isBand: false, fragments[head].Rank);
+                fragments[head] = new Fragment(combo.Id, text, fragments[head].Rank);
             }
-        }
-
-        private void FilterByVerbosity(RequestDefinitionConfig request, List<Fragment> fragments)
-        {
-            var verbosity = ResolveVerbosity(request);
-            if (verbosity == Verbosity.Tight) return;
-
-            for (var i = fragments.Count - 1; i >= 0; i--)
-            {
-                if (!fragments[i].IsBand) continue;
-                if (verbosity == Verbosity.Loose) { fragments.RemoveAt(i); continue; }
-
-                // Medium: a `between` band is narrow enough to be worth saying; an open-ended one is not.
-                if (!IsBetweenBand(fragments[i].Id)) fragments.RemoveAt(i);
-            }
-        }
-
-        private bool IsBetweenBand(string bandId)
-        {
-            if (string.IsNullOrEmpty(bandId)) return false;
-            return _lexicon != null &&
-                   _lexicon.BandsById.TryGetValue(bandId, out var band) &&
-                   string.Equals(band.Operator, "between", StringComparison.OrdinalIgnoreCase);
-        }
-
-        // ---------- verbosity ----------
-
-        private Verbosity ResolveVerbosity(RequestDefinitionConfig request)
-        {
-            if (string.IsNullOrEmpty(request.Id)) return Verbosity.Medium;
-            if (_verbosityCache.TryGetValue(request.Id, out var cached)) return cached;
-
-            var books = _configs.GetAll<BookConfig>();
-            var matches = 0;
-            for (var i = 0; i < books.Count; i++)
-            {
-                var book = books[i];
-                if (book != null && _evaluator.Evaluate(book, request).IsMatch) matches++;
-            }
-
-            var verbosity = matches <= TightMax
-                ? Verbosity.Tight
-                : matches <= MediumMax
-                    ? Verbosity.Medium
-                    : Verbosity.Loose;
-
-            _verbosityCache[request.Id] = verbosity;
-            return verbosity;
         }
 
         // ---------- lexicon ----------
@@ -407,13 +353,6 @@ namespace Book.Sell.Services
             return min;
         }
 
-        private static bool IsAllBands(List<Fragment> fragments)
-        {
-            for (var i = 0; i < fragments.Count; i++)
-                if (!fragments[i].IsBand) return false;
-            return fragments.Count > 0;
-        }
-
         private static int IndexOfFragment(List<Fragment> fragments, string id)
         {
             for (var i = 0; i < fragments.Count; i++)
@@ -476,27 +415,18 @@ namespace Book.Sell.Services
             public const int QualityRank = 1;
             public const int BandRank = 2;
 
-            public Fragment(string id, string text, bool isBand, int rank)
+            public Fragment(string id, string text, int rank)
             {
                 Id = id;
                 Text = text;
-                IsBand = isBand;
                 Rank = rank;
             }
 
             public string Id { get; }
             public string Text { get; }
-            public bool IsBand { get; }
 
             /// <summary>Reading order inside a group: genre, then qualities, then the numeric band.</summary>
             public int Rank { get; }
-        }
-
-        private enum Verbosity
-        {
-            Tight,
-            Medium,
-            Loose
         }
 
         private sealed class Lexicon
@@ -504,7 +434,6 @@ namespace Book.Sell.Services
             private readonly Dictionary<string, RequestPhraseConfig> _terms = new(StringComparer.Ordinal);
             private readonly Dictionary<string, RequestPhraseConfig> _bands = new(StringComparer.Ordinal);
 
-            public Dictionary<string, RequestPhraseConfig> BandsById { get; } = new(StringComparer.Ordinal);
             public List<RequestPhraseConfig> Combos { get; } = new();
             public List<RequestPhraseConfig> Openers { get; } = new();
             public List<RequestPhraseConfig> Leads { get; } = new();
@@ -529,7 +458,6 @@ namespace Book.Sell.Services
                             break;
                         case KindBand:
                             lexicon._bands[BandKey(entry.Type, entry.Operator, ReadScalar(entry.Value), entry.Min, entry.Max)] = entry;
-                            lexicon.BandsById[entry.Id] = entry;
                             break;
                         case KindCombo: lexicon.Combos.Add(entry); break;
                         case KindOpener: lexicon.Openers.Add(entry); break;

@@ -74,7 +74,6 @@ namespace Book.Sell.Tests.Editor
             FakeQuestsService quests = null,
             StubDeliveredDialogues delivered = null,
             ICustomerProfileProvider profiles = null,
-            IActiveRequestRuntimeProvider activeRequests = null,
             ICustomerVisualSelector visualSelector = null)
             => new(
                 inner,
@@ -82,8 +81,6 @@ namespace Book.Sell.Tests.Editor
                 quests ?? new FakeQuestsService(),
                 delivered ?? new StubDeliveredDialogues(),
                 profiles ?? new StubProfileProvider(),
-                activeRequests ?? new StubActiveRequests(Array.Empty<ActiveRequestRuntime>()),
-                new ProfileMatchedRequestSelectorFactory(),
                 visualSelector);
 
         [Test]
@@ -481,26 +478,32 @@ namespace Book.Sell.Tests.Editor
                 }
             });
             var inner = new StubCustomerSpawner(new List<Customer> { Passive("inner_1"), Passive("inner_2") });
-            var activeRequests = new StubActiveRequests(new[]
-            {
-                SalesTestKit.ActiveRequest("crime", requiredGenres: new[] { "Crime" }),
-                SalesTestKit.ActiveRequest("fact", requiredGenres: new[] { "Fact" })
-            });
 
-            var customers = Spawner(inner, configs, activeRequests: activeRequests)
+            // The day's pool now lives on the context: the step draws from it once the customer reaches
+            // the minigame, so the spawner never sees a request at all.
+            var selector = new ProfileMatchedRequestSelector(
+                new[]
+                {
+                    SalesTestKit.ActiveRequest("crime", requiredGenres: new[] { "Crime" }),
+                    SalesTestKit.ActiveRequest("fact", requiredGenres: new[] { "Fact" })
+                },
+                new BookConditionRequestEvaluator());
+
+            var customers = Spawner(inner, configs)
                 .BuildCustomers(DayTwoSetup, Tuning, new FakeSalesRandom());
             var customer = customers[0];
             var ctx = SalesTestKit.Context(SalesTestKit.Shelf(SalesTestKit.Book("book_fact", "Fact")),
-                SalesTestKit.Location(), new RecordingSink());
+                SalesTestKit.Location(), new RecordingSink(), activeRequests: selector);
 
             Assert.AreEqual(2, customers.Count);
             Assert.AreEqual("script_active_fact", customer.Id);
             CollectionAssert.AreEqual(new[] { "Fact" }, customer.Profile.DesiredGenres);
 
-            customer.Tick(ctx, 1f); // Approach -> Active request.
+            customer.Tick(ctx, 1f); // Approach -> Active request (BrowseDuration is 0, so the lock is taken).
 
             Assert.IsInstanceOf<ActiveRequestStep>(customer.CurrentStep);
-            Assert.AreEqual("fact", ((ActiveRequestStep)customer.CurrentStep).Request.Id);
+            Assert.AreEqual("fact", ((ActiveRequestStep)customer.CurrentStep).Request.Id,
+                "The profile is Fact and the shelf can answer it.");
 
             customer.ForceCompleteCurrentStep(ctx);
 

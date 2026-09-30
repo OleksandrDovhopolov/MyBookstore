@@ -102,7 +102,8 @@ namespace Book.Sell.Tests.Editor.Fakes
 
         public static CustomerContext Context(SalesShelf shelf, LocationConfig location, ISalesDaySink sink,
             IInteractionLock interactionLock = null, ISalesRandom random = null, SalesTuning tuning = null,
-            IPassiveSaleSelector passiveSelector = null, IReadOnlyList<string> activeDecorIds = null)
+            IPassiveSaleSelector passiveSelector = null, IReadOnlyList<string> activeDecorIds = null,
+            IActiveRequestSelector activeRequests = null)
             => new(
                 shelf,
                 interactionLock ?? new InteractionLock(),
@@ -111,6 +112,7 @@ namespace Book.Sell.Tests.Editor.Fakes
                 location,
                 activeDecorIds,
                 sink,
-                tuning ?? FastTuning());
+                tuning ?? FastTuning(),
+                activeRequests);
     }
 }

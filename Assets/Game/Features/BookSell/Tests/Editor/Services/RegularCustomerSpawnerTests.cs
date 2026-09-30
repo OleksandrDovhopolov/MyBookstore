@@ -77,7 +77,6 @@ namespace Book.Sell.Tests.Editor.Services
                 new StubActiveRequests(pool),
                 profiles,
                 new StubRequestCount(requestDemand),
-                selectorFactory: null,
                 visualSelector: visualSelector);
 
             return spawner.BuildCustomers(Setup(), SalesTestKit.FastTuning(), random ?? new FakeSalesRandom());

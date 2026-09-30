@@ -79,7 +79,10 @@ namespace Game.Bootstrap
             builder.Register<IBookConditionRequestEvaluator, BookConditionRequestEvaluator>(Lifetime.Singleton);
             builder.Register<IActiveRequestGenreResolver, ConditionActiveRequestGenreResolver>(Lifetime.Singleton);
             builder.Register<IActiveRequestTextComposer, LexiconActiveRequestTextComposer>(Lifetime.Singleton);
-            builder.Register<IActiveRequestSelectorFactory, ProfileMatchedRequestSelectorFactory>(Lifetime.Singleton);
+            // Needs the evaluator: the selector filters the pool down to requests the current shelf can answer.
+            builder.Register<IActiveRequestSelectorFactory>(
+                r => new ProfileMatchedRequestSelectorFactory(r.Resolve<IBookConditionRequestEvaluator>()),
+                Lifetime.Singleton);
             builder.Register<IActiveRequestRuntimeProvider, ConfigActiveRequestRuntimeProvider>(Lifetime.Singleton);
             builder.Register<IActiveRequestScoringService, ActiveRequestScoringService>(Lifetime.Singleton);
             builder.Register<ICustomerVisualSelector, CustomerVisualSelector>(Lifetime.Singleton);
@@ -146,7 +149,6 @@ namespace Game.Bootstrap
                     r.Resolve<IActiveRequestRuntimeProvider>(),
                     r.Resolve<ICustomerProfileProvider>(),
                     r.Resolve<IActiveRequestCountResolver>(),
-                    r.Resolve<IActiveRequestSelectorFactory>(),
                     r.Resolve<ICustomerVisualSelector>()),
                 Lifetime.Singleton); // production base: count from ICustomerTrafficResolver
             builder.Register<ICustomerSpawner>(r => new ScriptedCustomerSpawner(
@@ -155,8 +157,6 @@ namespace Game.Bootstrap
                     r.Resolve<IQuestsService>(),
                     r.Resolve<IDeliveredDialoguesService>(),
                     r.Resolve<ICustomerProfileProvider>(),
-                    r.Resolve<IActiveRequestRuntimeProvider>(),
-                    r.Resolve<IActiveRequestSelectorFactory>(),
                     r.Resolve<ICustomerVisualSelector>()),
                 Lifetime.Singleton);
             

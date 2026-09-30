@@ -12,14 +12,6 @@
           "value": "Crime"
         },
         {
-          "type": "publicationYear",
-          "operator": "between",
-          "value": {
-            "min": 1850,
-            "max": 1900
-          }
-        },
-        {
           "type": "pages",
           "operator": "lessOrEqual",
           "value": 200
@@ -177,8 +169,11 @@
         },
         {
           "type": "qualities",
-          "operator": "contains",
-          "value": "Dystopia"
+          "operator": "containsAny",
+          "value": [
+            "Dystopia",
+            "Horror"
+          ]
         }
       ]
     }
@@ -298,11 +293,6 @@
             "Biography",
             "Historic"
           ]
-        },
-        {
-          "type": "pages",
-          "operator": "greater",
-          "value": 500
         }
       ]
     }
@@ -341,7 +331,7 @@
         },
         {
           "type": "qualities",
-          "operator": "containsAll",
+          "operator": "containsAny",
           "value": [
             "Graphic Novel",
             "Mystery"
@@ -392,14 +382,6 @@
             "Space",
             "Dry"
           ]
-        },
-        {
-          "type": "pages",
-          "operator": "between",
-          "value": {
-            "min": 700,
-            "max": 900
-          }
         }
       ]
     }
@@ -474,14 +456,6 @@
           "type": "qualities",
           "operator": "contains",
           "value": "Space"
-        },
-        {
-          "type": "pages",
-          "operator": "between",
-          "value": {
-            "min": 550,
-            "max": 650
-          }
         }
       ],
       "none": [

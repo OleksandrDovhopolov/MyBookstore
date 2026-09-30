@@ -61,15 +61,11 @@ namespace Book.Sell.Tests.Editor.Services
         private static LexiconActiveRequestTextComposer BuildComposer(out IReadOnlyList<RequestDefinitionConfig> requests)
         {
             var configs = new FakeConfigsService();
-            configs.SetAll(Load<BookConfig>(ActiveRequestValidator.BooksPath));
             configs.SetAll(Load<RequestPhraseConfig>(PhrasesPath));
 
             requests = Load<RequestDefinitionConfig>(ActiveRequestValidator.RequestsPath);
 
-            return new LexiconActiveRequestTextComposer(
-                configs,
-                new BookConditionRequestEvaluator(),
-                LoadLocalization());
+            return new LexiconActiveRequestTextComposer(configs, LoadLocalization());
         }
 
         private static IReadOnlyList<T> Load<T>(string path)

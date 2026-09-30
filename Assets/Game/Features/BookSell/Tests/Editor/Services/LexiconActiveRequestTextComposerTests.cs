@@ -9,8 +9,8 @@ namespace Book.Sell.Tests.Editor.Services
 {
     /// <summary>
     /// Covers the composer's contract: an authored override wins, `all` and `none` pick opposite phrase
-    /// forms, combos collapse, how much gets said follows how many books can answer the request, and the
-    /// wrapper slots are stable for a given request id.
+    /// forms, combos collapse, every condition that decides the outcome is voiced, and the wrapper slots
+    /// are stable for a given request id.
     /// </summary>
     public sealed class LexiconActiveRequestTextComposerTests
     {
@@ -25,7 +25,7 @@ namespace Book.Sell.Tests.Editor.Services
             request.DescriptionKey = "request.req_override.description";
 
             var loc = Localization().Set(request.DescriptionKey, "Hand-written line.");
-            var composer = Composer(loc, MatchingCatalog(1));
+            var composer = Composer(loc);
 
             Assert.AreEqual("Hand-written line.", composer.Compose(request));
         }
@@ -34,7 +34,7 @@ namespace Book.Sell.Tests.Editor.Services
         public void AllGroup_UsesPositiveForm()
         {
             var request = Request("req_pos", All(Quality("Gore")));
-            var composer = Composer(Localization(), MatchingCatalog(1));
+            var composer = Composer(Localization());
 
             StringAssert.Contains("nothing squeamish", composer.Compose(request));
         }
@@ -45,7 +45,7 @@ namespace Book.Sell.Tests.Editor.Services
             var request = Request("req_neg", All(Genre("Fantasy")));
             request.Conditions.None = new[] { Quality("Gore") };
 
-            var text = Composer(Localization(), MatchingCatalog(1)).Compose(request);
+            var text = Composer(Localization()).Compose(request);
 
             StringAssert.Contains("but nothing gory", text);
             StringAssert.DoesNotContain("nothing squeamish", text);
@@ -56,7 +56,7 @@ namespace Book.Sell.Tests.Editor.Services
         {
             var request = Request("req_combo", All(Genre("Fantasy"), Quality("Space")));
 
-            var text = Composer(Localization(), MatchingCatalog(1)).Compose(request);
+            var text = Composer(Localization()).Compose(request);
 
             StringAssert.Contains("proper space sci-fi", text);
             StringAssert.DoesNotContain("a fantasy", text);
@@ -75,28 +75,24 @@ namespace Book.Sell.Tests.Editor.Services
 
             StringAssert.Contains(
                 "set out in space or dry and matter-of-fact",
-                Composer(Localization(), MatchingCatalog(1)).Compose(request));
+                Composer(Localization()).Compose(request));
         }
 
+        /// <summary>
+        /// Regression for the removed verbosity buckets, which dropped an open-ended band from the text
+        /// while it kept deciding the outcome — req_psycho_01, req_fact_02 and req_kids_01 all shipped
+        /// that way. Scoring is all-or-nothing, so a page count the player cannot read is one they lose
+        /// to blindly; how many books in the catalogue answer the request never enters into it.
+        /// </summary>
         [Test]
-        public void TightRequest_KeepsTheNumericBand()
+        public void NumericBand_IsAlwaysVoiced()
         {
-            var request = Request("req_tight", All(Genre("Fantasy"), Pages("greater", 500)));
+            var request = Request("req_band", All(Genre("Fantasy"), Pages("greater", 500)));
 
-            // Two books can answer it — the player must be told about the page count.
-            StringAssert.Contains("a real brick", Composer(Localization(), MatchingCatalog(2)).Compose(request));
-        }
-
-        [Test]
-        public void LooseRequest_DropsTheNumericBand()
-        {
-            var request = Request("req_loose", All(Genre("Fantasy"), Pages("greater", 500)));
-
-            // Twenty books can answer it — spelling out every constraint would read like a checklist.
-            var text = Composer(Localization(), MatchingCatalog(20)).Compose(request);
+            var text = Composer(Localization()).Compose(request);
 
             StringAssert.Contains("a fantasy", text);
-            StringAssert.DoesNotContain("a real brick", text);
+            StringAssert.Contains("a real brick", text);
         }
 
         [Test]
@@ -115,8 +111,8 @@ namespace Book.Sell.Tests.Editor.Services
                 Pool("opener.c", "opener", "request.opener.c")
             };
 
-            var first = Composer(loc, MatchingCatalog(1), phrases).Compose(request);
-            var second = Composer(loc, MatchingCatalog(1), phrases).Compose(request);
+            var first = Composer(loc, phrases).Compose(request);
+            var second = Composer(loc, phrases).Compose(request);
 
             Assert.AreEqual(first, second);
         }
@@ -126,7 +122,7 @@ namespace Book.Sell.Tests.Editor.Services
         {
             var request = Request("req_unknown", All(Genre("Fantasy"), Quality("Whodunnit")));
 
-            var text = Composer(Localization(), MatchingCatalog(1)).Compose(request);
+            var text = Composer(Localization()).Compose(request);
 
             StringAssert.Contains("a fantasy", text);
             StringAssert.DoesNotContain("Whodunnit", text);
@@ -138,21 +134,19 @@ namespace Book.Sell.Tests.Editor.Services
             var request = Request("req_anchor", All(Genre("Fantasy")));
             request.BookTitle = "Anathem";
 
-            StringAssert.Contains("<i>Anathem</i>", Composer(Localization(), MatchingCatalog(1)).Compose(request));
+            StringAssert.Contains("<i>Anathem</i>", Composer(Localization()).Compose(request));
         }
 
         // ---------- setup ----------
 
         private static LexiconActiveRequestTextComposer Composer(
             FakeLocalizationService localization,
-            IReadOnlyList<BookConfig> books,
             IReadOnlyList<RequestPhraseConfig> phrases = null)
         {
             var configs = new FakeConfigsService();
-            configs.SetAll(books);
             configs.SetAll(phrases ?? Lexicon());
 
-            return new LexiconActiveRequestTextComposer(configs, new BookConditionRequestEvaluator(), localization);
+            return new LexiconActiveRequestTextComposer(configs, localization);
         }
 
         private static IReadOnlyList<RequestPhraseConfig> Lexicon() => new[]
@@ -180,25 +174,6 @@ namespace Book.Sell.Tests.Editor.Services
             .Set(Opener, "Sooo...")
             .Set(Lead, "I'm after")
             .Set(Anchor, "Something like <i>{0}</i>?");
-
-        /// <summary>A catalogue where exactly <paramref name="matching"/> books satisfy every test request.</summary>
-        private static IReadOnlyList<BookConfig> MatchingCatalog(int matching)
-        {
-            var books = new List<BookConfig>(matching);
-            for (var i = 0; i < matching; i++)
-            {
-                books.Add(new BookConfig
-                {
-                    Id = $"book_{i}",
-                    Genres = new[] { "Fantasy" },
-                    Qualities = new[] { "Gore", "Space", "Dry", "Whodunnit" },
-                    Published = 2000,
-                    Pages = 900
-                });
-            }
-
-            return books;
-        }
 
         // ---------- builders ----------
 

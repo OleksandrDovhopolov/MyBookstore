@@ -29,6 +29,8 @@ namespace Book.Sell.Services
         private readonly ISalesDayCommitService _commitService;
         private readonly ICustomerDirector _director;
         private readonly IDeliveredDialoguesService _delivered;
+        private readonly IActiveRequestRuntimeProvider _activeRequestPool;
+        private readonly IActiveRequestSelectorFactory _selectorFactory;
 
         private SalesShelf _shelf = new();
         private SalesDayResult _result = new();
@@ -54,7 +56,9 @@ namespace Book.Sell.Services
             ISalesShelfBuilder shelfBuilder = null,
             ISalesDayCommitService commitService = null,
             ICustomerDirector director = null,
-            IDeliveredDialoguesService delivered = null)
+            IDeliveredDialoguesService delivered = null,
+            IActiveRequestRuntimeProvider activeRequestPool = null,
+            IActiveRequestSelectorFactory selectorFactory = null)
         {
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _setupProvider = setupProvider ?? throw new ArgumentNullException(nameof(setupProvider));
@@ -68,6 +72,11 @@ namespace Book.Sell.Services
             _commitService = commitService;   // optional in tests; in prod injected via DI
             _director = director;             // optional in existing tests
             _delivered = delivered;
+
+            // Both optional: a test that pins requests on the steps themselves needs neither, and the day
+            // then simply runs without a pool to draw from.
+            _activeRequestPool = activeRequestPool;
+            _selectorFactory = selectorFactory;
         }
 
         public int Day { get; private set; }
@@ -111,7 +120,13 @@ namespace Book.Sell.Services
             _shelf = _shelfBuilder.Build(setup.ShelfBookIds);
 
             _result = new SalesDayResult { Day = setup.Day, LocationId = setup.LocationId };
-            _ctx = new CustomerContext(_shelf, _lock, _random, _passiveResolver, _location, setup.DecorIds, this, _tuning);
+
+            // One selector for the whole day, shared by every active step through the context: that is what
+            // stops two customers being handed the same request.
+            var requestSelector = _selectorFactory?.CreateForDay(_activeRequestPool?.GetRequests());
+
+            _ctx = new CustomerContext(
+                _shelf, _lock, _random, _passiveResolver, _location, setup.DecorIds, this, _tuning, requestSelector);
 
             _delivered?.DiscardDeferred();
             _customers = new List<Customer>(_spawner.BuildCustomers(setup, _tuning, _random));
