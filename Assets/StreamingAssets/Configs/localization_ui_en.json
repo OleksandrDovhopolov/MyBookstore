@@ -11,6 +11,7 @@
   "ui.decor.bonus.sale_chance": "sale chance",
   "ui.decor.description.placeholder": "Decor item",
   "ui.gameplay.day": "Day {0}",
+  "ui.gameplay.sale_chance": "Sale chance: {0}%",
   "ui.inventory.item.description.placeholder": "Item description",
   "ui.journal.reward.description.placeholder": "Reward",
   "ui.journal.tab.characters": "Characters",
