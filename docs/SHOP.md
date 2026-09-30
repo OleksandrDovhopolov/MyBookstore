@@ -106,7 +106,7 @@ InventoryWindowController → InventoryWindowView ─── tabs by category ─
 
 | Storefront | Лоты | Лимит | Цены |
 |---|---|---|---|
-| `newspaper.decor` | 14 decor lots, including migrated newspaper decor and current classic decor ids. | Disposable+1 | 0g–120g |
+| `newspaper.decor` | 14 decor lots, including migrated newspaper decor and current classic decor ids. Gated by `unlock` (REL-10): 2 доступны сразу, далее ~1 в день до дня 11, `newspaper_decor_tifany_lamp` — по `visitLocation loc_campus`. | Disposable+1 | 0g–120g |
 | `newspaper.books` | 11 authored book-box lots: 4 general + 7 genre boxes; `GetOfferedLots` exposes 4 per day (2 general + 2 genre). | Daily+1 | 15g / 28g / 40g / 55g / 45g genre boxes |
 | `newspaper.consumables` | `newspaper_consumable_fuel_canister`, `newspaper_quest_item_map` | Unlimited / Disposable+1 | 20g / 200g |
 | `tutorial` | `tutorial_book_box_heartfelt` | Disposable+1 | 0g |
@@ -373,7 +373,7 @@ NPC-продавцы прямо на локации. Под текущий gamep
 ```
 Available  — есть на витрине, можно купить (если хватает gold и не превышен лимит)
 SoldOut    — лимит исчерпан, ждём ежедневного reset (00:00 по локали игрока — TBD)
-Hidden     — лот не показывается (например, gated по progress; Phase 2+)
+Hidden     — лот не показывается: условие `ShopConfig.Unlock` не выполнено (REL-10)
 ```
 
 Daily reset:
@@ -727,7 +727,11 @@ namespace Game.Shop.API
 ```
 
 **Что в Phase 0 не нужно в API:**
-- `ActivationEvents` / `VisibilityEvents` / `UnlockPurchaseEvents` — все лоты в Phase 0 «активны и видимы» либо «полностью выкуплены».
+- `ActivationEvents` / `VisibilityEvents` / `UnlockPurchaseEvents` — событийная активация не нужна.
+  Видимость решается декларативно: `ShopConfig.Unlock` (JObject, тот же формат, что `LocationConfig.Unlock`)
+  парсится в `ShopService.WarmupCatalog` через `IConditionParser`, и `GetOfferedLots` отбрасывает лоты
+  с невыполненным условием. Отсутствие узла = «доступен всегда». `BuyAsync` закрыт тем же `IsOffered`,
+  поэтому скрытый лот нельзя купить в обход UI (`ShopPurchaseStatus.NotOffered`).
 - Состояние `WaitRefresh` — нет рефреша.
 - `IsLotInactive` причина — все лоты активны или sold-out.
 

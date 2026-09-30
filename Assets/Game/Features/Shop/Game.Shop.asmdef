@@ -2,11 +2,13 @@
     "name": "Game.Shop",
     "rootNamespace": "Game.Shop",
     "references": [
+        "Game.Attention.API",
         "UniTask",
         "VContainer",
         "Save",
         "Book.Sell.API",
         "Configs",
+        "Game.Conditions.API",
         "Game.Shop.API",
         "Game.Rewards.API",
         "Game.Resources.API",

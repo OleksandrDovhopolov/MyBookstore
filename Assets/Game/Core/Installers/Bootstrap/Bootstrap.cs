@@ -10,7 +10,7 @@ using Game.Configs.Remote;
 using Game.Decor;
 using Game.Ftue.Services;
 using Game.Inventory.API;
-using Game.Journal.UI;
+using Game.Attention.API;
 using Game.Localization;
 using Game.LocationUnlock.API;
 using Game.LocationVisits.API;
@@ -89,7 +89,7 @@ namespace Game.Bootstrap
         private IQuestsService _quests;
         private ITutorialService _tutorial;
         private ICharactersService _characters;
-        private IJournalAttentionService _journalAttention;
+        private IAttentionService _attention;
         private IDecorPlacementService _decorPlacement;
         private ILocationVisitService _locationVisits;
         private IQuestRewardGranter _questRewardGranter;
@@ -126,7 +126,7 @@ namespace Game.Bootstrap
             IQuestsService quests,
             ITutorialService tutorial,
             ICharactersService characters,
-            IJournalAttentionService journalAttention,
+            IAttentionService attention,
             IDecorPlacementService decorPlacement,
             ILocationVisitService locationVisits,
             IQuestRewardGranter questRewardGranter)
@@ -153,7 +153,7 @@ namespace Game.Bootstrap
             _quests = quests;
             _tutorial = tutorial;
             _characters = characters;
-            _journalAttention = journalAttention;
+            _attention = attention;
             _decorPlacement = decorPlacement;
             _locationVisits = locationVisits;
             _questRewardGranter = questRewardGranter;

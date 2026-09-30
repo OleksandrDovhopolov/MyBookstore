@@ -2,6 +2,8 @@
     "name": "GameplayUI",
     "rootNamespace": "GameplayUI",
     "references": [
+        "Game.Attention.API",
+        "Game.Shop.API",
         "VContainer",
         "UniTask",
         "Unity.TextMeshPro",

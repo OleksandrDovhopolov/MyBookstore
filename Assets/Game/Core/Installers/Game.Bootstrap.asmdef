@@ -2,6 +2,8 @@
     "name": "Game.Bootstrap",
     "rootNamespace": "Game.Bootstrap",
     "references": [
+        "Game.Attention.API",
+        "Game.Attention",
         "VContainer",
         "Save",
         "Configs",

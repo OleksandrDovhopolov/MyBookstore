@@ -6,6 +6,8 @@
         "Save",
         "Book.Sell.API",
         "Configs",
+        "Game.Conditions",
+        "Game.Conditions.API",
         "Game.Shop.API",
         "Game.Shop",
         "Game.Rewards.API",

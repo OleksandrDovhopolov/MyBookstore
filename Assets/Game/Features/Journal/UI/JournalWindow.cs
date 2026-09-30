@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Attention.API;
 using Game.Characters.API;
 using Game.Configs;
 using Game.Configs.Models;
@@ -42,7 +44,7 @@ namespace Game.Journal.UI
         private IDecorTotalEffectsProvider _decorEffects;
         private IQuestsService _quests;
         private IQuestRewardGranter _questGranter;
-        private IJournalAttentionService _attention;
+        private IAttentionService _attention;
         private IUiSpriteProvider _sprites;
         private Action<string> _onQuestClaim;
         private Action<QuestRewardItemModel, RectTransform> _onRewardInfo;
@@ -63,7 +65,7 @@ namespace Game.Journal.UI
             IDecorTotalEffectsProvider decorEffects = null,
             IQuestsService quests = null,
             IQuestRewardGranter questGranter = null,
-            IJournalAttentionService attention = null,
+            IAttentionService attention = null,
             IUiSpriteProvider sprites = null)
         {
             _characters = characters;
@@ -350,21 +352,24 @@ namespace Game.Journal.UI
 
         private void RefreshTabBadges()
         {
-            SetTabBadge(JournalTab.Quests, JournalAttentionCategory.Quests);
-            SetTabBadge(JournalTab.Places, JournalAttentionCategory.Places);
-            SetTabBadge(JournalTab.People, JournalAttentionCategory.People);
-            SetTabBadge(JournalTab.Memories, JournalAttentionCategory.Memories);
+            SetTabBadge(JournalTab.Quests, JournalAttentionKeys.QuestsTab);
+            SetTabBadge(JournalTab.Places, JournalAttentionKeys.PlacesTab);
+            SetTabBadge(JournalTab.People, JournalAttentionKeys.PeopleTab);
+            SetTabBadge(JournalTab.Memories, JournalAttentionKeys.MemoriesTab);
             View.SetTabBadge(JournalTab.Objects, false);
         }
 
-        private void SetTabBadge(JournalTab tab, JournalAttentionCategory category)
-            => View.SetTabBadge(tab, _attention != null && _attention.HasUnseen(category));
+        private void SetTabBadge(JournalTab tab, IReadOnlyList<string> keys)
+            => View.SetTabBadge(tab, _attention != null && _attention.HasAnyUnseen(keys));
 
         private void MarkActiveTabSeen()
         {
-            if (_attention != null && TryGetAttentionCategory(_activeTab, out var category))
+            // The Quests tab owns two attention keys ("new" and "ready to award"), so the tab -> key
+            // map is 1:N and every key has to be marked.
+            if (_attention != null && TryGetAttentionKeys(_activeTab, out var keys))
             {
-                _attention.MarkSeen(category);
+                for (var i = 0; i < keys.Count; i++)
+                    _attention.MarkSeen(keys[i]);
                 return;
             }
 
@@ -372,24 +377,24 @@ namespace Game.Journal.UI
                 _characters?.MarkAllMemoriesSeen();
         }
 
-        private static bool TryGetAttentionCategory(JournalTab tab, out JournalAttentionCategory category)
+        private static bool TryGetAttentionKeys(JournalTab tab, out IReadOnlyList<string> keys)
         {
             switch (tab)
             {
                 case JournalTab.Quests:
-                    category = JournalAttentionCategory.Quests;
+                    keys = JournalAttentionKeys.QuestsTab;
                     return true;
                 case JournalTab.Places:
-                    category = JournalAttentionCategory.Places;
+                    keys = JournalAttentionKeys.PlacesTab;
                     return true;
                 case JournalTab.People:
-                    category = JournalAttentionCategory.People;
+                    keys = JournalAttentionKeys.PeopleTab;
                     return true;
                 case JournalTab.Memories:
-                    category = JournalAttentionCategory.Memories;
+                    keys = JournalAttentionKeys.MemoriesTab;
                     return true;
                 default:
-                    category = default;
+                    keys = null;
                     return false;
             }
         }

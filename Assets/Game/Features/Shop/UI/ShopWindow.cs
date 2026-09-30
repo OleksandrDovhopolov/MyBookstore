@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Attention.API;
 using Game.Decor.UI;
 using Game.Localization;
 using Game.Rewards.UI;
@@ -27,6 +28,7 @@ namespace Game.Shop.UI
         private IShopConfirmationPolicy _confirmPolicy;
         private IShopOfferSource _offerSource;
         private IUiSpriteProvider _uiSprites;
+        private IAttentionService _attention;
         private CancellationTokenSource _cts;
         private CancellationTokenSource _iconsCts;
         private TabType _activeTab = TabType.All;
@@ -40,12 +42,14 @@ namespace Game.Shop.UI
             IShopService shop,
             IShopConfirmationPolicy confirmPolicy,
             IShopOfferSource offerSource,
-            IUiSpriteProvider uiSprites)
+            IUiSpriteProvider uiSprites,
+            IAttentionService attention = null)
         {
             _shop = shop;
             _confirmPolicy = confirmPolicy;
             _offerSource = offerSource;
             _uiSprites = uiSprites;
+            _attention = attention;
         }
 
         protected override void OnInit()
@@ -65,6 +69,7 @@ namespace Game.Shop.UI
             }
 
             RefreshOffers();
+            MarkShopSeen();
         }
 
         protected override void OnHideStart(bool isClosed)
@@ -121,6 +126,20 @@ namespace Game.Shop.UI
 
             _activeTab = tab;
             RefreshOffers();
+            MarkShopSeen();
+        }
+
+        /// <summary>
+        /// Clears the HUD shop badge once the player is actually looking at decor. TabType.All also
+        /// renders the decor rows (see ShopTabOffers.BuildAll), and All is the default tab, so the very
+        /// first open always clears it.
+        /// </summary>
+        private void MarkShopSeen()
+        {
+            if (_attention == null) return;
+            if (_activeTab is not (TabType.Decor or TabType.All)) return;
+
+            _attention.MarkSeen(ShopAttentionKeys.Decor);
         }
 
         private void SpawnOffers(

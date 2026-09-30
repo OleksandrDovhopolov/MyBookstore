@@ -43,7 +43,8 @@
       "maxPurchases": 1
     },
     "displayNameKey": "shop.newspaper_decor_coffee_pot.name",
-    "descriptionKey": "shop.newspaper_decor_coffee_pot.description"
+    "descriptionKey": "shop.newspaper_decor_coffee_pot.description",
+    "unlock": { "type": "dayAtLeast", "min": 4 }
   },
   {
     "id": "newspaper_decor_chinese_vase",
@@ -66,7 +67,8 @@
       "maxPurchases": 1
     },
     "displayNameKey": "shop.newspaper_decor_chinese_vase.name",
-    "descriptionKey": "shop.newspaper_decor_chinese_vase.description"
+    "descriptionKey": "shop.newspaper_decor_chinese_vase.description",
+    "unlock": { "type": "dayAtLeast", "min": 9 }
   },
   {
     "id": "newspaper_decor_gas_lighter",
@@ -89,7 +91,8 @@
       "maxPurchases": 1
     },
     "displayNameKey": "shop.newspaper_decor_gas_lighter.name",
-    "descriptionKey": "shop.newspaper_decor_gas_lighter.description"
+    "descriptionKey": "shop.newspaper_decor_gas_lighter.description",
+    "unlock": { "type": "dayAtLeast", "min": 5 }
   },
   {
     "id": "newspaper_decor_green_flower",
@@ -112,7 +115,8 @@
       "maxPurchases": 1
     },
     "displayNameKey": "shop.newspaper_decor_green_flower.name",
-    "descriptionKey": "shop.newspaper_decor_green_flower.description"
+    "descriptionKey": "shop.newspaper_decor_green_flower.description",
+    "unlock": { "type": "dayAtLeast", "min": 2 }
   },
   {
     "id": "newspaper_decor_green_menu",
@@ -135,7 +139,8 @@
       "maxPurchases": 1
     },
     "displayNameKey": "shop.newspaper_decor_green_menu.name",
-    "descriptionKey": "shop.newspaper_decor_green_menu.description"
+    "descriptionKey": "shop.newspaper_decor_green_menu.description",
+    "unlock": { "type": "dayAtLeast", "min": 11 }
   },
   {
     "id": "newspaper_decor_little_cactus",
@@ -181,7 +186,8 @@
       "maxPurchases": 1
     },
     "displayNameKey": "shop.newspaper_decor_pocket_clock.name",
-    "descriptionKey": "shop.newspaper_decor_pocket_clock.description"
+    "descriptionKey": "shop.newspaper_decor_pocket_clock.description",
+    "unlock": { "type": "dayAtLeast", "min": 7 }
   },
   {
     "id": "newspaper_decor_table_frame",
@@ -204,7 +210,8 @@
       "maxPurchases": 1
     },
     "displayNameKey": "shop.newspaper_decor_table_frame.name",
-    "descriptionKey": "shop.newspaper_decor_table_frame.description"
+    "descriptionKey": "shop.newspaper_decor_table_frame.description",
+    "unlock": { "type": "dayAtLeast", "min": 3 }
   },
   {
     "id": "newspaper_decor_tifany_lamp",
@@ -227,7 +234,8 @@
       "maxPurchases": 1
     },
     "displayNameKey": "shop.newspaper_decor_tifany_lamp.name",
-    "descriptionKey": "shop.newspaper_decor_tifany_lamp.description"
+    "descriptionKey": "shop.newspaper_decor_tifany_lamp.description",
+    "unlock": { "type": "visitLocation", "locationId": "loc_campus", "min": 1 }
   },
   {
     "id": "newspaper_decor_wite_flower",
@@ -250,7 +258,8 @@
       "maxPurchases": 1
     },
     "displayNameKey": "shop.newspaper_decor_wite_flower.name",
-    "descriptionKey": "shop.newspaper_decor_wite_flower.description"
+    "descriptionKey": "shop.newspaper_decor_wite_flower.description",
+    "unlock": { "type": "dayAtLeast", "min": 2 }
   },
   {
     "id": "newspaper_box_general_5",
@@ -510,7 +519,8 @@
       "maxPurchases": 1
     },
     "displayNameKey": "shop.classic_decor_old_lamp.name",
-    "descriptionKey": "shop.classic_decor_old_lamp.description"
+    "descriptionKey": "shop.classic_decor_old_lamp.description",
+    "unlock": { "type": "dayAtLeast", "min": 8 }
   },
   {
     "id": "classic_decor_houseplant",
@@ -533,7 +543,8 @@
       "maxPurchases": 1
     },
     "displayNameKey": "shop.classic_decor_houseplant.name",
-    "descriptionKey": "shop.classic_decor_houseplant.description"
+    "descriptionKey": "shop.classic_decor_houseplant.description",
+    "unlock": { "type": "dayAtLeast", "min": 6 }
   },
   {
     "id": "classic_decor_maritime_painting",
@@ -556,6 +567,7 @@
       "maxPurchases": 1
     },
     "displayNameKey": "shop.classic_decor_maritime_painting.name",
-    "descriptionKey": "shop.classic_decor_maritime_painting.description"
+    "descriptionKey": "shop.classic_decor_maritime_painting.description",
+    "unlock": { "type": "dayAtLeast", "min": 10 }
   }
 ]
