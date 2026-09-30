@@ -28,6 +28,7 @@ namespace Book.Sell.UI.Customer
         // movement while the minigame window is open so visuals don't drift past the paused logic.
         private readonly Func<bool> _isPaused;
         private readonly IUiSpriteProvider _uiSprites;
+        private readonly ICustomerVisualSpriteResolver _spriteResolver;
         private readonly CustomerVisual _visualPrefab;
         private readonly ILocationContext _location;
 
@@ -43,6 +44,7 @@ namespace Book.Sell.UI.Customer
             SalesTuning tuning,
             CustomerVisualRegistryConfig config,
             IUiSpriteProvider uiSprites = null,
+            ICustomerVisualSpriteResolver spriteResolver = null,
             IRecommendationMinigamePresenter minigamePresenter = null)
         {
             _sales = sales;
@@ -50,6 +52,7 @@ namespace Book.Sell.UI.Customer
             _tuning = tuning;
             _isPaused = () => minigamePresenter?.IsWindowOpen ?? false;
             _uiSprites = uiSprites;
+            _spriteResolver = spriteResolver;
             _visualPrefab = config?.VisualPrefab;
             _location = config?.Location;
         }
@@ -113,11 +116,11 @@ namespace Book.Sell.UI.Customer
 
             var state = new VisualState(visual, lanePos);
             _byId[customer.Id] = state;
-            LoadCharacterSpriteAsync(customer.CharacterId, state).Forget();
+            LoadFigureSpriteAsync(customer, state).Forget();
             CustomerVisualSpawned?.Invoke(visual);
         }
 
-        private async UniTaskVoid LoadCharacterSpriteAsync(string characterId, VisualState state)
+        private async UniTaskVoid LoadFigureSpriteAsync(Book.Sell.Domain.Customer customer, VisualState state)
         {
             if (state == null)
                 return;
@@ -128,7 +131,8 @@ namespace Book.Sell.UI.Customer
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(characterId))
+            var spriteKey = _spriteResolver?.ResolveFigureSpriteKey(customer) ?? customer?.CharacterId;
+            if (string.IsNullOrWhiteSpace(spriteKey))
             {
                 ApplyFallbackSprite(state.Visual);
                 return;
@@ -137,7 +141,7 @@ namespace Book.Sell.UI.Customer
             try
             {
                 var token = state.SpriteToken;
-                var sprite = await _uiSprites.GetSpriteAsync(characterId, token);
+                var sprite = await _uiSprites.GetSpriteAsync(spriteKey, token);
                 if (token.IsCancellationRequested)
                     return;
 
@@ -151,7 +155,7 @@ namespace Book.Sell.UI.Customer
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"[CustomerVisualRegistry] Failed to load character sprite '{characterId}': {ex.Message}");
+                Debug.LogWarning($"[CustomerVisualRegistry] Failed to load customer figure sprite '{spriteKey}': {ex.Message}");
             }
         }
 

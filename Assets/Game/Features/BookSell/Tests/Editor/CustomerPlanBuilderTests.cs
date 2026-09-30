@@ -60,6 +60,16 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void Build_DefaultsNpcVisualIdToNull()
+        {
+            var customer = CustomerPlanBuilder.Build(
+                "c1", SalesTestKit.FastTuning(), new FakeSalesRandom(),
+                buildMiddle: () => Array.Empty<ICustomerStep>());
+
+            Assert.IsNull(customer.NpcVisualId);
+        }
+
+        [Test]
         public void Build_StoresCharacterId_WhenProvided()
         {
             var customer = CustomerPlanBuilder.Build(
@@ -68,6 +78,50 @@ namespace Book.Sell.Tests.Editor
                 characterId: "eddi");
 
             Assert.AreEqual("eddi", customer.CharacterId);
+        }
+
+        [Test]
+        public void Build_StoresNpcVisualId_WhenProvided()
+        {
+            var customer = CustomerPlanBuilder.Build(
+                "cust_1", SalesTestKit.FastTuning(), new FakeSalesRandom(),
+                buildMiddle: () => Array.Empty<ICustomerStep>(),
+                npcVisualId: "npc_01");
+
+            Assert.AreEqual("npc_01", customer.NpcVisualId);
+        }
+
+        [Test]
+        public void Build_NpcVisualFactory_RunsAfterApproachAndLeaveDraws()
+        {
+            var tuning = SalesTestKit.FastTuning();
+            tuning.MinApproachDuration = 0f;
+            tuning.MaxApproachDuration = 10f;
+            tuning.MinLeaveDuration = 0f;
+            tuning.MaxLeaveDuration = 10f;
+            var random = new FakeSalesRandom().EnqueueDouble(0.2, 0.8, 0.1);
+            var visualRoll = -1d;
+
+            var customer = CustomerPlanBuilder.Build(
+                "cust_1", tuning, random,
+                buildMiddle: () => Array.Empty<ICustomerStep>(),
+                npcVisualIdFactory: () =>
+                {
+                    visualRoll = random.NextDouble();
+                    return "npc_01";
+                });
+            var ctx = SalesTestKit.Context(new SalesShelf(), SalesTestKit.Location(), new RecordingSink(), tuning: tuning);
+
+            var approachTicks = 0;
+            while (customer.CurrentStep is ApproachStep && approachTicks < 100)
+            {
+                customer.Tick(ctx, 1f);
+                approachTicks++;
+            }
+
+            Assert.AreEqual("npc_01", customer.NpcVisualId);
+            Assert.AreEqual(0.1d, visualRoll);
+            Assert.AreEqual(2, approachTicks, "Approach must still consume the first random double.");
         }
 
         [Test]

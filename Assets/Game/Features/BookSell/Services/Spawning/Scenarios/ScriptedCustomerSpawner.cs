@@ -25,6 +25,7 @@ namespace Book.Sell.Services
         private readonly ICustomerProfileProvider _profiles;
         private readonly IActiveRequestRuntimeProvider _activeRequests;
         private readonly IActiveRequestSelectorFactory _selectorFactory;
+        private readonly ICustomerVisualSelector _visualSelector;
 
         public ScriptedCustomerSpawner(
             ICustomerSpawner inner,
@@ -33,7 +34,8 @@ namespace Book.Sell.Services
             IDeliveredDialoguesService delivered,
             ICustomerProfileProvider profiles,
             IActiveRequestRuntimeProvider activeRequests,
-            IActiveRequestSelectorFactory selectorFactory)
+            IActiveRequestSelectorFactory selectorFactory,
+            ICustomerVisualSelector visualSelector = null)
         {
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
@@ -42,6 +44,7 @@ namespace Book.Sell.Services
             _profiles = profiles ?? throw new ArgumentNullException(nameof(profiles));
             _activeRequests = activeRequests ?? throw new ArgumentNullException(nameof(activeRequests));
             _selectorFactory = selectorFactory ?? throw new ArgumentNullException(nameof(selectorFactory));
+            _visualSelector = visualSelector;
         }
 
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
@@ -129,7 +132,10 @@ namespace Book.Sell.Services
                     buildMiddle: () => archetype.BuildMiddle(setup, tuning, random),
                     profile: profile,
                     characterId: script.CharacterId,
-                    scriptedPassivePlan: scriptedPlan);
+                    scriptedPassivePlan: scriptedPlan,
+                    npcVisualIdFactory: () => string.IsNullOrWhiteSpace(script.CharacterId)
+                        ? _visualSelector?.SelectNpcVisualId(random)
+                        : null);
 
                 scriptedCustomers.Add(new ScriptedCustomerVisit(customer, replacesRegularSlot));
                 if (replacesRegularSlot)

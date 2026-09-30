@@ -82,6 +82,8 @@ namespace Game.Bootstrap
             builder.Register<IActiveRequestSelectorFactory, ProfileMatchedRequestSelectorFactory>(Lifetime.Singleton);
             builder.Register<IActiveRequestRuntimeProvider, ConfigActiveRequestRuntimeProvider>(Lifetime.Singleton);
             builder.Register<IActiveRequestScoringService, ActiveRequestScoringService>(Lifetime.Singleton);
+            builder.Register<ICustomerVisualSelector, CustomerVisualSelector>(Lifetime.Singleton);
+            builder.Register<ICustomerVisualSpriteResolver, CustomerVisualSpriteResolver>(Lifetime.Singleton);
 
             // Passive sale chance gate (ADR-0004) resolves from the global scope so HUD previews and
             // sales use the same calculator instance.
@@ -144,7 +146,8 @@ namespace Game.Bootstrap
                     r.Resolve<IActiveRequestRuntimeProvider>(),
                     r.Resolve<ICustomerProfileProvider>(),
                     r.Resolve<IActiveRequestCountResolver>(),
-                    r.Resolve<IActiveRequestSelectorFactory>()),
+                    r.Resolve<IActiveRequestSelectorFactory>(),
+                    r.Resolve<ICustomerVisualSelector>()),
                 Lifetime.Singleton); // production base: count from ICustomerTrafficResolver
             builder.Register<ICustomerSpawner>(r => new ScriptedCustomerSpawner(
                     r.Resolve<RegularCustomerSpawner>(),
@@ -153,7 +156,8 @@ namespace Game.Bootstrap
                     r.Resolve<IDeliveredDialoguesService>(),
                     r.Resolve<ICustomerProfileProvider>(),
                     r.Resolve<IActiveRequestRuntimeProvider>(),
-                    r.Resolve<IActiveRequestSelectorFactory>()),
+                    r.Resolve<IActiveRequestSelectorFactory>(),
+                    r.Resolve<ICustomerVisualSelector>()),
                 Lifetime.Singleton);
             
             

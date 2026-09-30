@@ -25,6 +25,7 @@ namespace Book.Sell.Services
         private readonly ICustomerProfileProvider _profiles;
         private readonly IActiveRequestCountResolver _requestCount;
         private readonly IActiveRequestSelectorFactory _selectorFactory;
+        private readonly ICustomerVisualSelector _visualSelector;
 
         public RegularCustomerSpawner(IConfigsService configs, ICustomerTrafficResolver trafficResolver)
             : this(
@@ -46,13 +47,15 @@ namespace Book.Sell.Services
             IActiveRequestRuntimeProvider activeRequests,
             ICustomerProfileProvider profileProvider = null,
             IActiveRequestCountResolver requestCountResolver = null,
-            IActiveRequestSelectorFactory selectorFactory = null)
+            IActiveRequestSelectorFactory selectorFactory = null,
+            ICustomerVisualSelector visualSelector = null)
         {
             if (configs == null) throw new ArgumentNullException(nameof(configs));
             _trafficResolver = trafficResolver ?? throw new ArgumentNullException(nameof(trafficResolver));
             _activeRequests = activeRequests ?? throw new ArgumentNullException(nameof(activeRequests));
             _profiles = profileProvider;
             _selectorFactory = selectorFactory ?? new ProfileMatchedRequestSelectorFactory();
+            _visualSelector = visualSelector;
 
             // Null means default knobs with no contributors. Never fall back to "pool size" here: that is
             // the bug this resolver exists to prevent.
@@ -89,7 +92,8 @@ namespace Book.Sell.Services
                 customers.Add(CustomerPlanBuilder.Build(
                     $"cust_{i + 1}", tuning, random,
                     buildMiddle: () => archetype.BuildMiddle(setup, tuning, random),
-                    profile: profile));
+                    profile: profile,
+                    npcVisualIdFactory: () => _visualSelector?.SelectNpcVisualId(random)));
             }
 
             return customers;
