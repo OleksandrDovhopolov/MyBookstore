@@ -6,8 +6,7 @@ namespace Book.Sell.UI
     /// <summary>
     /// Carries the gameplay-scoped <see cref="ISalesDayController"/> into <see cref="RecommendationMinigameWindow"/>.
     /// The window is created by the bootstrap-scoped <c>AddressablesWindowFactory</c>, which cannot inject
-    /// the controller (it lives in the Gameplay child scope), so <see cref="SalesScreenView"/> — which already
-    /// has it injected — passes it through these args.
+    /// the controller (it lives in the Gameplay child scope)
     /// </summary>
     public sealed class RecommendationMinigameArgs : WindowArgs
     {

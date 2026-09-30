@@ -19,12 +19,11 @@ using Object = UnityEngine.Object;
 namespace Book.Sell.UI
 {
     /// <summary>
-    /// Modal window for the active recommendation minigame (extracted from <see cref="SalesScreenView"/>).
+    /// Modal window for the active recommendation minigame
     /// Shows the customer's request + the current shelf; clicking a book opens a detail panel; Recommend/Skip
     /// resolve the request via <see cref="ISalesDayController"/>; the resolution stamps success/fail over
     /// the selected book, keeps the customer's reaction text, and reveals a Finish button that
-    /// closes the window. The day is paused by <see cref="SalesScreenView"/> while this window is open, so the
-    /// shelf is static and rendered once on show.
+    /// closes the window.
     /// </summary>
     [Window("RecommendationMinigameWindow", WindowType.Popup, true)]
     public sealed class RecommendationMinigameWindow : WindowController<RecommendationMinigameWindowView>

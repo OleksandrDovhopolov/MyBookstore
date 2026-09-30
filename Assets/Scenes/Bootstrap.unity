@@ -687,6 +687,10 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1668804391479864891, guid: 9808c443777d7ed49a4c49d42597ce98, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1668804392687440268, guid: 9808c443777d7ed49a4c49d42597ce98, type: 3}
       propertyPath: m_Name
       value: LoadingBar
