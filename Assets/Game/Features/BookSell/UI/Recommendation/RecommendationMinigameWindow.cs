@@ -149,18 +149,27 @@ namespace Book.Sell.UI
             if (View.BookCardPrefab == null || View.ShelfContainer == null) return;
 
             var shelf = _controller.Shelf;
+            if (shelf?.Books == null) return;
+
             foreach (var shelfBook in shelf.Books)
             {
+                if (!ShouldShowShelfBookInActiveRequest(shelf, shelfBook))
+                    continue;
+
                 var card = Object.Instantiate(View.BookCardPrefab, View.ShelfContainer);
                 card.Bind(shelfBook.Config, OnBookCardClicked, _uiSprites);
 
-                var available = shelfBook.State == ShelfBookState.Available && !shelf.IsReserved(shelfBook.BookId);
-                card.SetSoldOut(!available);
                 SetDebugState(card, shelfBook.Config);
 
                 _cards.Add(card);
             }
         }
+
+        internal static bool ShouldShowShelfBookInActiveRequest(SalesShelf shelf, ShelfBook shelfBook)
+            => shelf != null
+               && shelfBook != null
+               && shelfBook.State == ShelfBookState.Available
+               && !shelf.IsReserved(shelfBook.BookId);
 
         private void ClearCards()
         {
