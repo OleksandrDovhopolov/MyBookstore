@@ -203,7 +203,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: By continuing, you accept our Terms of Use and Privacy Policy.
+  m_text: By continuing, you accept our <b><u><color=#6B4EFF>Terms of Use and Privacy
+    Policy</color></u></b>.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dfeedb9dd1c0b473886e97c2a0b71e70, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 4fd6adf3455d71c4e80e365f5634de40, type: 2}
@@ -838,7 +839,7 @@ MonoBehaviour:
   m_text: Terms of Use
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dfeedb9dd1c0b473886e97c2a0b71e70, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: 4fd6adf3455d71c4e80e365f5634de40, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: c10b326d93e9e774188d7473d302dd5f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
