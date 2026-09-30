@@ -78,6 +78,7 @@ namespace Game.Bootstrap
             // catalog if no session exists yet.
             builder.Register<IBookConditionRequestEvaluator, BookConditionRequestEvaluator>(Lifetime.Singleton);
             builder.Register<IActiveRequestGenreResolver, ConditionActiveRequestGenreResolver>(Lifetime.Singleton);
+            builder.Register<IActiveRequestTextComposer, LexiconActiveRequestTextComposer>(Lifetime.Singleton);
             builder.Register<IActiveRequestSelectorFactory, ProfileMatchedRequestSelectorFactory>(Lifetime.Singleton);
             builder.Register<IActiveRequestRuntimeProvider, ConfigActiveRequestRuntimeProvider>(Lifetime.Singleton);
             builder.Register<IActiveRequestScoringService, ActiveRequestScoringService>(Lifetime.Singleton);

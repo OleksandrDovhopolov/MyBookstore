@@ -26,6 +26,98 @@
 
 ## Done
 
+### CONTENT-1 — Replace Copied Book Localization Texts
+
+Статус: сделано. Описания книг переписаны и применены; работа закрыта серией последних коммитов
+`ff3d732`, `a3ff153`, `f26bfb2`, `2d6db07`, `7aab379` и материалами в `docs/content`.
+
+Что сделано:
+- Все 620 каталожных Real-книг переписаны батчами и применены к `Assets/Configs/localization_books_en.json`.
+- Bundled defaults синхронизированы с `Assets/StreamingAssets/Configs/localization_books_en.json`.
+- В `docs/content` сохранены стиль-гайд, seed-архив исходного текста, рабочие черновики и batch reports
+  `REWRITE_REPORT_batch_01..16`.
+- Fake-книги не переписывались: они остаются отдельным контентным вопросом, потому что относятся к чужому
+  сеттингу и не должны использоваться как релизный контент.
+- Проверочный контур держит результат: валидаторы/тесты сверяют черновики, seed-архив, применённую
+  локализацию и generated rewrite reports.
+
+Критичность была high: задача убирает copied book descriptions из релизного player-facing контента.
+
+### REL-6 — App Signing
+
+Статус: сделано. Release-сборка подписывается собственным keystore; проверено вручную в Unity.
+
+Что сделано:
+- Создан release keystore `user.keystore` **вне репозитория** (`G:\MyBookstore\Key\user.keystore`), в git не
+  попадает — по правилу [SERVICES/SECRETS.md](SERVICES/SECRETS.md).
+- В `Project Settings → Player → Publishing Settings` подключён Custom Keystore с alias; проверено, что release
+  build подписывается этим ключом, а не debug-ключом.
+- Пароли keystore/key, alias и сам ключ (в виде base64) сохранены в менеджере паролей Bitwarden как единственный
+  читаемый бэкап — GitHub Secrets значения обратно не отдаёт.
+- Секретные файлы и пароли в репозиторий не коммитятся.
+
+Осознанно вынесено:
+- **Google Play App Signing** пока не включаем — решение отложено до момента публикации в Play Console (REL-4).
+  Сейчас keystore выступает как полноценный app-signing ключ; при включении App Signing он станет upload-ключом.
+- **Заливка секретов в GitHub Actions Secrets для CI-подписи** отложена в [DEF-5](#def-5--ci-apk-signing-via-github-secrets):
+  пока APK собирается локально из Unity, CI-подпись не нужна.
+
+Критичность была critical for APK/Play release.
+
+### Build Checklist For APK
+
+Статус: сделано на текущем этапе — dev-сборка APK успешно прошла через новое build-окно. Оставшиеся
+device-side проверки (prod smoke / FTUE / consent) сознательно закрываются вместе с публикацией
+([REL-4](#rel-4--register-google-play-developer-account)), а не блокируют сам APK.
+
+Источник: [BUILD.md](BUILD.md), [TODO.md](TODO.md).
+
+Что сделано:
+- **Пайплайн сборки автоматизирован** editor-окном `Tools/Build/Release Build Window`
+  ([ReleaseBuildWindow.cs](../Assets/Game/Core/Build/Editor/ReleaseBuildWindow.cs), коммит `75965646`
+  + доработка versionCode). По кнопке Dev/Prod оно: переключает таргет на Android, ставит
+  Development-флаг и APK/AAB, гоняет `SyncBundledDefaultsMenu.Sync()`, `PreBuildValidationGate.CollectErrors()`
+  (fail-fast), `AddressableAssetSettings.BuildPlayerContent()`, затем `BuildPipeline.BuildPlayer()` по
+  включённым сценам. Ручные шаги «синк configs / Run Pre-Build Validation / собрать Addressables /
+  проверить Player Settings» больше не держатся в голове.
+- **Dev vs Prod**: Dev — Development build + Unity debug-подпись; Prod — release build, форс IL2CPP + ARM64,
+  подпись release keystore (пароль из session-поля или env `ANDROID_KEYSTORE_PASSWORD`, очищается после сборки).
+- **versionCode**: авто-инкремент `bundleVersionCode` только для **Prod + AAB** (артефакт, который реально
+  уходит в Play; Play отклоняет повторный код). Dev/APK номер не жгут. Ручной bump перед каждой заливкой в
+  Play больше не нужен.
+- **Billing safety — закрыто.** Firebase на бесплатном **Spark** (billing account не привязан, списать нельзя
+  by design; не переходить на Blaze без нужды). Cloudflare R2 — Billing Budget Alert на **$10** на
+  `bobakgamestudio@gmail.com`.
+- **Privacy/Terms URL** — свой `https://mybookstore-legal.netlify.app/` в `BootstrapInstaller.asset`
+  (одна страница покрывает Privacy + Terms через fallback `PrivacyLinkSettings`).
+- **Аналитика dev/prod** выводится из типа сборки автоматически (REL-12), окно её не трогает.
+- **Warning по `hard_requests.json`** — снят (legacy-файл удалён ранее).
+- **Дубли permission в манифесте** (`INTERNET` / `ACCESS_NETWORK_STATE`) убраны из
+  `Assets/Plugins/Android/AndroidManifest.xml` — Unity/Firebase добавляют их сами, Unity-мёрджер больше не варнит.
+
+Оставшиеся ручные device-side проверки (к моменту публикации, вместе с REL-4):
+- Собрать **Prod** APK/AAB и smoke на устройстве: старт, configs, active request, dialogue, FTUE/tutorial.
+- FTUE на чистой установке.
+- Оба пути согласия на чистой установке: Accept → события в Firebase DebugView; Decline → в логе ни одного
+  `[Analytics] Sent`, в DebugView тишина.
+- Подтвердить на реальном Prod-бинаре IL2CPP/ARM64 (dev-сборка их не форсит — возможен другой backend).
+
+Критичность была critical: это релизный gate.
+
+### REL-8 — Add Sounds
+
+Статус: сделано.
+
+Что сделано:
+- Закрыта кодовая инфраструктура: `AudioCatalog`, музыка хаб/день, fade, fallback для UI-кликов/окон.
+- Закрыты SFX-хуки для минимального релизного набора: покупки, blocked/error, unlock location, decor
+  place/remove, пассивная продажа, excellent-рекомендация, journal badge notification, rewards popup,
+  dialogue line, day completion reward и count-up золота.
+- Настройки работают по правилу `Sound = Sfx + Ui`, `Music = Music + Ambient`.
+- В редакторе назначены клипы в `AudioCatalog.asset`, кнопки и окна подключены к audio-компонентам.
+
+Критичность была medium: звук важен для ощущения законченного продукта, но scope оставался минимальным.
+
 ### REL-9 — Finish Decorations Release UX
 
 Статус: сделано, коммиты `907af61`, `a75defa`. Из двух путей выбран первый — доработка сценовой выкладки,
@@ -602,59 +694,209 @@ Smoke: открыть Market до unlock — условие `soldTotal: 200` п�
 Проверка: `Game.Location` — 0 ошибок; loc-ключи синхронизированы. Финальная вёрстка префабов виджета и Button
 на элементе — в Editor.
 
+### CONTENT-2 — Active Request Descriptions
+
+Статус: сделано. Активный запрос показывает человеческий текст, собранный из его же `conditions`,
+а не техническую debug-строку.
+
+Что сделано:
+- Композитор `LexiconActiveRequestTextComposer` (`Assets/Game/Features/BookSell/Services/`) собирает
+  предложение из слотов opener / lead / core / constraint / exclusion / anchor.
+- Лексикон `Assets/Configs/request_phrases.json` (57 записей, модель `RequestPhraseConfig`) хранит только
+  loc-ключи; 83 строки `request.*` — в `localization_quests_en.json`. 38 терминов покрывают все листья 19 запросов.
+- Сколько условий озвучивать, решает жёсткость запроса (число подходящих книг в каталоге): tight ≤ 5 —
+  всё, medium 6–15 — без открытых числовых полос, loose > 15 — без числовых вовсе.
+- Обёртка выбирается детерминированно по FNV-1a от `request.Id`: текст запроса стабилен, ничего не
+  перекатывается после reload дня.
+- `ActiveRequestRuntime.UseLocalizedDescriptions` и debug-fallback удалены; `BuildDebugText` остался
+  инструментом `ActiveRequestValidator` и чит-панели.
+- Контент: `req_anathem_01` — исключение `none: Female Author` заменено на `none: Gore` (непроизносимая
+  формулировка). У `req_fact_01` сохранён ручной `descriptionKey` — полное название референсной книги не
+  влезает в баббл. С остальных 18 запросов `descriptionKey` снят, чтобы override не перекрывал композитор.
+- `LocalizationKeyValidator` проверяет `request_phrases.json` (поля `positiveKey` / `negativeKey`);
+  `request_phrases.json` добавлен в манифест StreamingAssets.
+- Тесты: `LexiconActiveRequestTextComposerTests` (юниты) и `ActiveRequestTextContentTests` (прогон живого
+  контента: у каждого enabled-запроса читаемый текст без дампа условий и сырых loc-ключей).
+
+Спека и фактический вывод по всем 19 запросам:
+[docs/INPROGRESS/ACTIVE_REQUEST_TEXT_COMPOSER.md](INPROGRESS/ACTIVE_REQUEST_TEXT_COMPOSER.md).
+
+Осознанно вынесено:
+- `bookId` в `RequestDefinitionConfig` вместо свободной строки `BookTitle` + проверка якоря в
+  `ActiveRequestValidator` — отдельной задачей.
+
 ## TODO
 
 Единый список открытых релизных задач. Задачи, ожидающие внешние ресурсы, вынесены в
 [Wait For Resources](#wait-for-resources) ниже.
 
-### Build Checklist For APK
-
-Источник: [BUILD.md](BUILD.md), [TODO.md](TODO.md).
+### QA-1 — Fix Welcome Window
 
 Что сделать:
-- ~~Разобраться с warning по `Assets/Configs/hard_requests.json`~~ — legacy-файл удалён.
-- Опубликовать/синхронизировать живые configs и прогнать `Sync Bundled Defaults to StreamingAssets`.
-- Прогнать `Run Pre-Build Validation` и runtime validators через Play mode.
-- Собрать Addressables.
-- Проверить Firebase Android config.
-- Настроить/проверить billing safety для Firebase Remote Config / Firebase project и Cloudflare: budget
-  alerts, spending limits/usage caps где доступны, лимиты запросов/egress, уведомления на почту. Раньше
-  приходили инвойсы на `$0`, но перед релизом нужно убедиться, что проект не сможет незаметно уйти в
-  платные списания или долги.
-- Проверить Android Player Settings: IL2CPP, ARM64, API level, keystore, scenes.
-- Проверить `BootstrapInstaller.asset`: debug off, full loading on, tutorial settings, first-day path.
-- Обязательно заменить `_privacyPolicyUrl` / `_termsOfUseUrl` на правильные ссылки на **мой Terms / Privacy**.
-  Сейчас там стоят тестовые чужие ссылки; они проходят https-проверку, но не подходят для релиза.
-- Настройки аналитики (отладочный лог и `environment`) вручную **не трогать** — они выводятся из типа сборки, см. REL-12 и [BUILD.md §5](BUILD.md).
-- Проверить FTUE на чистой установке.
-- Собрать APK и сделать smoke: старт, configs, active request, dialogue, FTUE/tutorial.
-- Проверить на чистой установке оба пути согласия: Accept → события видны в Firebase DebugView; Decline → в логе нет ни одного `[Analytics] Sent`, в DebugView тишина.
+- Проверить текущее состояние `WelcomeWindow` в первом запуске/возврате в игру.
+- Исправить визуальные или UX-проблемы окна: layout, тексты, кнопки, safe area и поведение закрытия.
+- Проверить smoke на чистой установке: окно выглядит корректно и не блокирует дальнейший flow.
 
-Критичность: critical. Это релизный gate.
+Критичность: high. Это один из первых экранов игрока, он должен выглядеть финально.
 
-### CONTENT-2 — Active Request Descriptions
-
-Контекст: активный запрос (мини-игра рекомендации) сейчас показывает **техническую debug-строку** условий
-(напр. «A Study in Scarlet: ALL: genres contains Crime; publicationYear between …; pages ≤ 200»), а не
-человеческий текст. Это сделано намеренно: локализация (коммит `49fc9b9`) уже завела поле
-`RequestDefinitionConfig.DescriptionKey`, проставила ключи в `sample_requests.json` и тексты в
-`localization_quests_en.json`, но текущие тексты — временные/шаблонные (типа «I'm looking for a Crime book
-like …»), а не финальные под каждый конкретный запрос. Поэтому вывод переключён обратно на debug-строку
-флагом `ActiveRequestRuntime.UseLocalizedDescriptions = false` (`Assets/Game/Features/BookSell/Domain/ActiveRequestRuntime.cs`).
-Ничего не удалялось — ключи и loc-тексты сохранены.
+### QA-2 — Fix Active Request Window Layout
 
 Что сделать:
-- Продумать логику подачи текста запроса: он должен читаемо и по-человечески описывать, что хочет покупатель,
-  и сходиться с фактическими условиями (`conditions`) запроса — под каждый из ~19 запросов в
-  `sample_requests.json` (жанр/качества/годы/страницы, референсная книга `bookTitle`).
-- Написать финальный текст под каждый `descriptionKey` в `localization_quests_en.json` (ключи `request.*.description`).
-- Переключить `ActiveRequestRuntime.UseLocalizedDescriptions` в `true` (или убрать флаг и debug-fallback,
-  когда тексты готовы) — тогда UI начнёт показывать человеческое описание вместо технической строки.
-- Синхронизировать `Assets/StreamingAssets/Configs/localization_quests_en.json`.
-- Проверить Recommendation minigame: игрок видит осмысленный текст запроса, а не дамп условий.
+- Поправить вёрстку окна активного запроса: текст запроса, список книг, карточки, кнопки и debug/служебные элементы.
+- Проверить разные длины текста и разные размеры/пропорции экрана.
+- Убедиться, что элементы не перекрываются, кнопки доступны, а окно читается без ощущения временной сборки.
 
-Критичность: high (качество релизного контента). Не блокирует прохождение — debug-строка работает как
-временный fallback, но для игрока выглядит технически.
+Критичность: high. Active request — центральная часть дневного gameplay loop.
+
+### QA-3 — First Load Buttons Flicker
+
+Баг: при первой загрузке мигают кнопки.
+
+Что сделать:
+- Найти, какие кнопки/окна мигают на первом запуске или первой загрузке сцены.
+- Проверить порядок инициализации UI, начальные active/interactable состояния и анимации появления.
+- Исправить так, чтобы игрок видел уже стабильное состояние UI, без краткого показа неправильных кнопок.
+
+Критичность: medium. Это визуальный polish первого впечатления.
+
+### QA-4 — Gameplay Day Characters Overflow Screen
+
+Баг: персонажи вылезают за экран во время игрового дня.
+
+Что сделать:
+- Проверить позиции/анимации покупателей и story-персонажей на разных aspect ratios.
+- Исправить bounds/safe area/anchor logic так, чтобы персонажи не выходили за видимую область.
+- Проверить smoke на широком телефоне, обычном 16:9 и планшетном соотношении.
+
+Критичность: high. Персонажи за экраном выглядят как сломанный core gameplay.
+
+### QA-5 — Multiple NPC Sprites And Request Bubble Portraits
+
+Что сделать:
+- Создать несколько спрайтов для NPC/покупателей, чтобы активные запросы не выглядели одинаково.
+- Подключить выбор NPC-спрайта к данным запроса/покупателя.
+- Отображать соответствующий NPC-спрайт в bubble активного запроса.
+- Проверить fallback: если спрайт не задан или не загрузился, bubble показывает безопасную заглушку.
+
+Критичность: medium. Это улучшает читаемость запросов и ощущение живого магазина.
+
+### QA-6 — Add Success And Failure Sale Sounds
+
+Что сделать:
+- Добавить/подключить отдельный звук успешной продажи.
+- Добавить/подключить отдельный звук неуспешной продажи или rejected recommendation.
+- Проверить, что звуки уважают настройки `Sound` и не дублируются с существующими UI-click/reward sounds.
+
+Критичность: medium. Это важная обратная связь в основном цикле продаж.
+
+### QA-7 — Regenerate Shop And Start Game Button Sprites
+
+Что сделать:
+- Перегенерировать/заменить спрайты кнопки магазина и кнопки начала игры.
+- Подключить новые ассеты в соответствующих prefab/UI.
+- Проверить normal/pressed/disabled состояния и читаемость текста поверх кнопок.
+
+Критичность: medium. Эти кнопки часто видны игроку и должны совпадать с финальным стилем.
+
+### QA-8 — Analyze Location Start Price
+
+Что сделать:
+- Проанализировать цену стартовой локации: оставить `0` и скрыть текст цены или выставить реальные цены.
+- Если цены выставляются, проверить, можно ли заблокировать игру состоянием, где игрок не может открыть
+  нужную локацию и продолжить progression.
+- Зафиксировать выбранное решение в конфигах и проверить LocationWindow/UI.
+
+Критичность: high. Нельзя допустить softlock из-за стоимости локации.
+
+### QA-9 — Fix Sale Probability Description Texts
+
+Что сделать:
+- Поправить тексты описания вероятности продажи.
+- Проверить, что формулировки понятны игроку и соответствуют реальной логике/шансам.
+- Синхронизировать локализацию и проверить UI, где эти тексты отображаются.
+
+Критичность: medium. Непонятные probability-тексты ломают доверие к продаже.
+
+### QA-10 — Restyle Dialogue Skip Button
+
+Что сделать:
+- Поменять кнопку `Skip` в окне диалога: визуальный стиль, размер, позиция и состояния.
+- Проверить, что кнопка не выглядит как primary action и не конфликтует с основным чтением диалога.
+- Поведение skip оставить прежним.
+
+Критичность: medium. Это polish заметного story UI.
+
+### GAME-23 — Active Requests Nobody Can Answer From Today's Shelf
+
+Контекст: активные запросы валидируются только на **разрешимость в принципе** —
+`ActiveRequestValidator` ругается, если запросу не подходит ни одна книга из 663. Но подходящих книг
+у запроса может быть 2, а полка дня вмещает 30 слотов (`PreparationSessionService.DefaultDailyBookSlots`),
+и набирается она из инвентаря игрока, а не из всего каталога. Вероятность, что нужная книга вообще
+окажется на полке, для тонких запросов мизерная:
+
+| Запрос | Подходящих книг | P(есть на полке), оценка сверху |
+|---|---|---|
+| `req_fantasy_02`, `req_fireupon_01` | 2 | ~9 % |
+| `req_kids_02`, `req_scarlet_01`, `req_travel_02` | 3 | ~13 % |
+| `req_classic_01` | 5 | ~21 % |
+| `req_canterville_01` | 37 | ~83 % |
+
+(оценка = случайная выборка 30 книг из 663; реальная ниже, потому что инвентарь игрока — подмножество каталога)
+
+Усугубляет то, что выбор запроса полку **не видит**:
+[`ProfileMatchedRequestSelector.Draw`](../Assets/Game/Features/BookSell/Services/Spawning/ProfileMatchedRequestSelector.cs)
+фильтрует пул только по `MatchesProfile(profile.DesiredGenres)`. То есть покупателю может достаться
+запрос, на который сегодня физически нечем ответить, — игроку остаётся Skip, и это читается как
+несправедливость, а не как сложность.
+
+Что сделать:
+- **Основное — сделать выбор запроса shelf-aware.** Передать селектору полку дня и отбрасывать
+  запросы, для которых на полке нет ни одной подходящей книги (`IBookConditionRequestEvaluator` уже
+  под рукой). Fallback на текущее поведение + warning, если после фильтра пул пуст. Это чинит проблему
+  без переписывания контента и не трогает ощущение сложности.
+- **Порог в валидаторе.** Поднять планку с «≥ 1 книга» до warning'а ниже порога (ориентир — 8–10 книг,
+  подобрать по факту) и добавить в отчёт `ActiveRequestValidationReport` оценку P(hit) при текущей
+  вместимости полки. Ноль подходящих книг остаётся ошибкой.
+- **Точечно ослабить самые тонкие запросы**, если после shelf-aware выбора они всё равно почти не
+  выпадают: у `req_fantasy_02` / `req_fireupon_01` / `req_kids_02` / `req_scarlet_01` / `req_travel_02`
+  расширить числовые полосы или убрать третье условие.
+- **Перепроверить текст.** Композитор
+  ([CONTENT-2](#content-2--active-request-descriptions)) выбирает многословность по числу подходящих
+  книг: ослабление условий сдвинет запрос из бакета tight в medium и текст станет короче. Прогнать
+  `ActiveRequestTextContentTests` и сверить §4 в
+  [ACTIVE_REQUEST_TEXT_COMPOSER.md](INPROGRESS/ACTIVE_REQUEST_TEXT_COMPOSER.md).
+
+Критичность: high. Не блокирует прохождение — игрок просто скипает запрос, — но активная продажа
+это ядро лупа (10 gold за попадание) и единственный драйвер квестовых задач `activePickGenre`
+(Millie, Tara). Запрос с ~9 % решаемости обесценивает и то и другое.
+
+### QA-11 — Raise Active Request Success Probability
+
+Что сделать:
+- Повысить вероятность выполнения активных запросов, потому что сейчас они ощущаются слишком сложными.
+- Согласовать решение с [GAME-23](#game-23--active-requests-nobody-can-answer-from-todays-shelf):
+  shelf-aware выбор запроса, ослабление слишком узких условий и/или корректировка выдачи книг.
+- Проверить, что active request остаётся задачей на выбор, но перестаёт выглядеть как случайная неудача.
+
+Критичность: high. Active requests должны быть выполнимым ядром gameplay loop, а не постоянным Skip.
+
+### QA-12 — Hide Already Sold Books In Active Request Window
+
+Что сделать:
+- Убирать из списка книги, которые уже проданы в текущий день, в окне активного запроса.
+- Проверить, что такие книги нельзя выбрать повторно через UI и что логика не ломает текущий shelf/inventory state.
+- Если все книги проданы/недоступны, показать корректное пустое состояние или оставить только доступные действия.
+
+Критичность: high. Повторный показ уже проданных книг путает игрока и может ломать ожидания продажи.
+
+### QA-13 — Hide Selected Book Close Button
+
+Что сделать:
+- Скрыть кнопку закрытия/сброса выбранной книги в active request UI.
+- Сам функционал оставить доступным через существующий flow, если он нужен логике окна.
+- Проверить, что скрытие кнопки не ломает выбор другой книги, skip/close окна и сброс состояния после продажи.
+
+Критичность: medium. Нужно убрать лишний визуальный элемент без удаления полезной логики.
 
 ### REL-4 — Register Google Play Developer Account
 
@@ -665,45 +907,11 @@ like …»), а не финальные под каждый конкретный
 
 Критичность: critical for release. Это внешняя задача, без неё публикация в Google Play невозможна.
 
-### REL-6 — App Signing
-
-Что сделать:
-- Подготовить keystore/signing config для Android.
-- Убедиться, что release build подписывается корректно.
-- Не коммитить секретные файлы и пароли; следовать [SERVICES/SECRETS.md](SERVICES/SECRETS.md).
-
-Критичность: critical for APK/Play release.
-
-### REL-8 — Add Sounds
-
-Текущее состояние:
-- Кодовая инфраструктура закрыта: `AudioCatalog`, музыка хаб/день, fade, fallback для UI-кликов/окон.
-- Кодовые SFX-хуки закрыты для минимального релизного набора: покупки, blocked/error, unlock location,
-  декор place/remove, пассивная продажа, excellent-рекомендация, journal badge notification, rewards popup,
-  dialogue line, day completion reward и count-up золота.
-- Настройки работают по правилу `Sound = Sfx + Ui`, `Music = Music + Ambient`.
-
-Что осталось сделать в редакторе:
-- Назначить все клипы в `AudioCatalog.asset`.
-- Навесить `UiButtonClickAudio` на shared-кнопки, где компонента ещё нет.
-- Навесить `WindowAudio` на префабы окон; кодовый fallback уже есть, но компонент должен стоять на view root.
-
-Критичность: medium. Важно для ощущения продукта, но scope должен быть минимальным.
-
 ## Wait For Resources
 
 Следующие задачи упираются во внешние ресурсы: арт, который нужно нарисовать, тексты, которые нужно
 подготовить или заменить, и контентно-балансовые решения, которые нужно принять. Это не
 [Deferred](#deferred--сознательно-отложено): задачи остаются в релизном scope, но ждут входные материалы.
-
-### CONTENT-1 — Replace Copied Book Localization Texts
-
-Что сделать:
-- Обновить все записи в `Assets/Configs/localization_books_en.json`: текущие тексты были скопированы из другого проекта и должны быть заменены на финальные тексты этой игры.
-- После правки синхронизировать `Assets/StreamingAssets/Configs/localization_books_en.json`.
-- Проверить Book UI и Recommendation minigame, чтобы игрок не видел временные чужие тексты.
-
-Критичность: high. Это не блокирует работу localization-системы, но блокирует качественный релизный контент.
 
 ### REL-7 — App Icons
 
@@ -976,6 +1184,25 @@ Memories станет презентабельной только с этими 
 Почему отложено: до первого релиза продовых сейвов нет, все module versions стартуют с `1`, а pre-release сейвы
 стираются локально и на сервере. Задача становится обязательной до первого изменения формата save-модуля после
 релиза.
+
+### DEF-5 — CI APK Signing Via GitHub Secrets
+
+Автоматическая подпись APK/AAB в CI. Изначально часть [REL-6](#rel-6--app-signing), вынесена отдельно —
+**сейчас делать не будем**, потому что релизная сборка идёт локально из Unity, а не через CI.
+
+Источник: [SERVICES/SECRETS.md §4](SERVICES/SECRETS.md) («CI Secrets»).
+
+Что потребуется, когда возьмём:
+- Залить в GitHub Actions Secrets репозитория `OleksandrDovhopolov/MyBookstore`:
+  `ANDROID_KEYSTORE_BASE64` (base64 из `G:\MyBookstore\Key\user.keystore`), `KEYSTORE_PASSWORD`,
+  `KEY_ALIAS`, `KEY_ALIAS_PASSWORD`. Значения — из записи Bitwarden `MyBookstore Android Keystore`.
+- В build-workflow декодировать base64 обратно в keystore-файл перед `Unity -batchmode -build...` и передать
+  пути/пароли в Android build настройки.
+- Проверить, что секреты не логируются (GitHub маскирует, но не выводить их явно).
+
+Почему отложено: CI-пайплайна для сборки APK пока нет. Ручной GitHub Secrets заводить нет смысла, пока
+подпись делается в Unity локально. Значения уже безопасно лежат в Bitwarden, так что данные не потеряются.
+Задача становится нужной, когда подключим автоматическую сборку/деплой APK.
 
 ## Explicitly Not Release Scope Unless Reclassified
 

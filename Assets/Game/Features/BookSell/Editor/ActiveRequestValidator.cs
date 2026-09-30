@@ -34,8 +34,12 @@ namespace Book.Sell.Editor
         {
             var report = new ActiveRequestValidationReport();
 
-            if (!TryLoad<BookConfig>(BooksPath, report, out var books)) return report;
+            if (!TryLoad<BookConfig>(BooksPath, report, out var loadedBooks)) return report;
             if (!TryLoad<RequestDefinitionConfig>(RequestsPath, report, out var requests)) return report;
+
+            // Same catalogue the game sees: entries excluded at deserialization can never answer a request,
+            // so counting them here would call a starved request solvable (see BookConfig.IsExcludedFromCatalog).
+            var books = loadedBooks.Where(book => book != null && !book.IsExcludedFromCatalog).ToList();
 
             var evaluator = new BookConditionRequestEvaluator();
             var solvableByGenre = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);

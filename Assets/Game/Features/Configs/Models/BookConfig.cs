@@ -8,10 +8,11 @@ namespace Game.Configs.Models
     /// Файл: books.json (JSON-массив).
     /// </summary>
     [ConfigFile("books")]
-    public sealed class BookConfig : IConfig
+    public sealed class BookConfig : IConfig, ICatalogExcludable
     {
         public const int FixedPriceGold = 10;
         private const string FemaleAuthorQuality = "Female Author";
+        private const string FakeValue = "Fake";
 
         public string Id { get; set; }
         public string TitleKey { get; set; }
@@ -32,6 +33,20 @@ namespace Game.Configs.Models
 
         /// <summary>Display/shelf genre. Sale progress uses an attributed sale genre when one is known.</summary>
         public string PrimaryGenre => Genres != null && Genres.Length > 0 ? Genres[0] : null;
+
+        /// <summary>
+        /// Books the seed sheet marked "Fake" are inventions of another setting, so they never reach
+        /// the game. Match is opt-in on the exact value: a book with no <see cref="FakeOrReal"/> at all
+        /// (hand-authored entries, test fixtures) stays in the catalogue.
+        /// </summary>
+        public bool IsExcludedFromCatalog => IsFake(FakeOrReal);
+
+        /// <summary>
+        /// Same rule for the editor validators that read books.json straight from disk instead of
+        /// going through <see cref="ConfigsService"/>, so they check the catalogue the game actually sees.
+        /// </summary>
+        public static bool IsFake(string fakeOrReal)
+            => string.Equals(fakeOrReal, FakeValue, StringComparison.OrdinalIgnoreCase);
 
         //TODO do not calculate every request
         public bool IsFemaleAuthor

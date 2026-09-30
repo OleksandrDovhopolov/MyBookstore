@@ -39,14 +39,26 @@ namespace Book.Sell.Tests.Editor.Services
                 Request("invalid", true, "notAnOperator")
             });
 
-            var provider = new ConfigActiveRequestRuntimeProvider(configs, new BookConditionRequestEvaluator());
+            var provider = new ConfigActiveRequestRuntimeProvider(
+                configs,
+                new BookConditionRequestEvaluator(),
+                new ConditionActiveRequestGenreResolver(),
+                new StubTextComposer());
+
             var requests = provider.GetRequests();
 
             Assert.AreEqual(1, requests.Count);
             Assert.AreEqual("valid", requests[0].Id);
             Assert.AreEqual(RequestDifficulty.Unknown, requests[0].Difficulty);
             CollectionAssert.AreEqual(new[] { "Crime" }, requests[0].RequiredGenres);
-            StringAssert.Contains("genres", requests[0].Text);
+            Assert.AreEqual("composed:valid", requests[0].Text);
+        }
+
+        /// <summary>The provider only has to hand the composed line through; composition itself is covered
+        /// by <see cref="LexiconActiveRequestTextComposerTests"/>.</summary>
+        private sealed class StubTextComposer : IActiveRequestTextComposer
+        {
+            public string Compose(RequestDefinitionConfig request) => $"composed:{request?.Id}";
         }
     }
 }

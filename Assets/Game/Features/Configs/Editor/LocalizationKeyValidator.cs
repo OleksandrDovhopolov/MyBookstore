@@ -26,6 +26,7 @@ namespace Game.Configs.Editor
             "locations.json",
             "quest_items.json",
             "quests.json",
+            "request_phrases.json",
             "sample_requests.json",
             "shelf_presets.json",
             "shop.json"
@@ -49,7 +50,9 @@ namespace Game.Configs.Editor
             "titleKey",
             "authorKey",
             "speakerKey",
-            "textKey"
+            "textKey",
+            "positiveKey",
+            "negativeKey"
         };
 
         public static LocalizationKeyValidationReport Validate(string configsDir = ConfigsDir)

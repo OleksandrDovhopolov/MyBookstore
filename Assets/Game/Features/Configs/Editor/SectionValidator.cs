@@ -74,6 +74,7 @@ namespace Game.Configs.Editor
                 {
                     ValidateHardRequest(id, obj, issues);
                 }
+
             }
 
             return issues;

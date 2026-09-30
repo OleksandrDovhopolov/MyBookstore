@@ -3,9 +3,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Firebase / Analytics / Crashlytics need network permissions -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- INTERNET / ACCESS_NETWORK_STATE deliberately NOT declared here. Unity injects INTERNET
+         automatically (Player Settings → Internet Access = Require) and the Firebase AARs declare both
+         in their own library manifests, so the merged APK still has them. Declaring them here as well
+         made Unity's manifest merger warn "trying to add element ... already declared by the user". -->
     <!-- REL-5: the advertising ID is never used. firebase-analytics declares AD_ID in its own library
          manifest, so it has to be stripped at merge time - deleting this line would not be enough. -->
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />

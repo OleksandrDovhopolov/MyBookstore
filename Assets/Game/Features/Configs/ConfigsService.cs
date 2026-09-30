@@ -152,6 +152,7 @@ namespace Game.Configs
             // source per id made it re-fetch and re-parse the whole RC key for every config in the file.
             var hasOverrides = _overrides.TryGetOverrides(fileName, out var partialsById) && partialsById != null;
             var appliedOverrides = 0;
+            var excluded = 0;
 
             foreach (var token in array)
             {
@@ -183,8 +184,18 @@ namespace Game.Configs
                 try
                 {
                     var config = obj.ToObject<T>(Serializer);
-                    if (config != null)
-                        map[config.Id] = config;
+                    if (config == null)
+                        continue;
+
+                    // Checked after ToObject, not on the raw JObject, so an RC override can move an entry
+                    // in or out of the catalogue like any other field.
+                    if (config is ICatalogExcludable { IsExcludedFromCatalog: true })
+                    {
+                        excluded++;
+                        continue;
+                    }
+
+                    map[config.Id] = config;
                 }
                 catch (Exception ex)
                 {
@@ -197,6 +208,13 @@ namespace Game.Configs
             if (hasOverrides)
             {
                 Debug.Log($"{LogPrefix} '{fileName}': applied {appliedOverrides} of {partialsById.Count} RC override(s).");
+            }
+
+            // Counted separately from appliedOverrides: an override may well have landed on an entry that
+            // is then excluded, and folding the two together would over-report applied overrides.
+            if (excluded > 0)
+            {
+                Debug.Log($"{LogPrefix} '{fileName}': {excluded} of {array.Count} entries excluded from the catalogue.");
             }
 
             return map;

@@ -20,6 +20,9 @@ namespace Game.Configs.Editor
         public const string DefaultOutputPath = "Assets/Configs/books.json";
         public const string DefaultLocalizationOutputPath = "Assets/Configs/localization_books_en.json";
 
+        /// <summary>Rewritten descriptions waiting to be applied — see <see cref="BookDescriptionDraft"/>.</summary>
+        public const string DraftsPath = "docs/content/book_descriptions.json";
+
         private const string LogPrefix = "[BooksExcelImporter]";
 
         private static readonly string[] RequiredHeaders =
@@ -37,6 +40,8 @@ namespace Game.Configs.Editor
         [MenuItem(MenuPath)]
         public static void ImportFromMenu()
         {
+            if (!ConfirmOverwritingRewrittenDescriptions()) return;
+
             var path = EditorUtility.OpenFilePanel("Import Books Excel", string.Empty, "xlsx");
             if (string.IsNullOrEmpty(path)) return;
 
@@ -54,6 +59,64 @@ namespace Game.Configs.Editor
             WriteJson(DefaultLocalizationOutputPath, result.Localization);
             Debug.Log($"{LogPrefix} Imported {result.Books.Count} book(s) to {DefaultOutputPath} and {DefaultLocalizationOutputPath}.");
             SyncBundledDefaultsMenu.Sync();
+        }
+
+        /// <summary>
+        /// The Excel sheet is the original seed of the catalogue and is no longer the source of truth for
+        /// anything. This import rewrites <see cref="DefaultOutputPath"/> and
+        /// <see cref="DefaultLocalizationOutputPath"/> wholesale from the sheet and syncs StreamingAssets in
+        /// the same call, so it would undo two separate bodies of work with no trace: the rewritten
+        /// descriptions (CONTENT-1) and the normalized `qualities` vocabulary, which the sheet still holds in
+        /// its original, defective spelling.
+        ///
+        /// <para>The dialog is unconditional on purpose. Keying it off a count meant that an unreadable or
+        /// missing drafts file — the exact state after the drafts are applied and cleaned up — silently
+        /// waved the import through.</para>
+        /// </summary>
+        private static bool ConfirmOverwritingRewrittenDescriptions()
+        {
+            var rewritten = CountRewrittenDescriptions();
+            var draftsLine = rewritten >= 0
+                ? $"{rewritten} rewritten description(s) are waiting in {DraftsPath}."
+                : $"{DraftsPath} could not be read, so it is unknown how much rewritten text is at stake.";
+
+            return EditorUtility.DisplayDialog(
+                "Import Books Excel",
+                draftsLine + "\n\n" +
+                "Importing rebuilds books.json and localization_books_en.json from the Excel sheet. That " +
+                "discards every rewritten description and restores the old quality spellings the sheet " +
+                "still contains (Non-Fiction, Mature Rating, Bigraphy and the rest), which " +
+                "BookQualityVocabularyTests will then fail on.\n\n" +
+                "Import anyway?",
+                "Import anyway",
+                "Cancel");
+        }
+
+        /// <summary>Rewritten descriptions waiting to be applied, or -1 when the file cannot be read.</summary>
+        private static int CountRewrittenDescriptions()
+        {
+            if (!File.Exists(DraftsPath)) return 0;
+
+            try
+            {
+                var drafts = JsonConvert.DeserializeObject<List<BookDescriptionDraft>>(
+                    File.ReadAllText(DraftsPath));
+                if (drafts == null) return 0;
+
+                var count = 0;
+                foreach (var draft in drafts)
+                {
+                    if (!string.IsNullOrWhiteSpace(draft?.New))
+                        count++;
+                }
+
+                return count;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"{LogPrefix} Could not read {DraftsPath} to check for rewritten text: {ex.Message}");
+                return -1;
+            }
         }
 
         public static BooksExcelImportResult ConvertWorkbook(string xlsxPath)

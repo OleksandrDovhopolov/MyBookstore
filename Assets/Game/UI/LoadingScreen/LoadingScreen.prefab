@@ -66,7 +66,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -5546797215090650393, guid: 56368a805a3b8cd41a7b77a92e62b7ce, type: 3}
+  m_Sprite: {fileID: -5546797215090650393, guid: bf0070fdb9b56b64599165f161f3e716, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -89,7 +89,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_AspectMode: 4
-  m_AspectRatio: 0.4745
+  m_AspectRatio: 0.6656
 --- !u!1 &1668804392687440268
 GameObject:
   m_ObjectHideFlags: 0
@@ -294,15 +294,15 @@ RectTransform:
   m_GameObject: {fileID: 5434405955671156080}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1668804392687440371}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 296}
-  m_SizeDelta: {x: 991, y: 526}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 0, y: -512}
+  m_SizeDelta: {x: 1515, y: 1024}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5774943213770176336
 CanvasRenderer:
@@ -332,7 +332,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -3756766015282493801, guid: b897aa2d950967e4da2334d87c64b969, type: 3}
+  m_Sprite: {fileID: -3756766015282493801, guid: baf63ff15ec7b2f4dabc2bcd20a65348, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -617,11 +617,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2689546994553564354, guid: 0f4f167562f87e24386759bec46e9268, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0.336
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2689546994553564354, guid: 0f4f167562f87e24386759bec46e9268, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -707,7 +707,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1422639537234470086, guid: d882658a4e3f66f42b44d04feb27175c, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 164
+      value: 352
       objectReference: {fileID: 0}
     - target: {fileID: 1422639537234470086, guid: d882658a4e3f66f42b44d04feb27175c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
