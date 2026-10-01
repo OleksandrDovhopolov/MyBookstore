@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: Shared
   m_GUID: 9d448088a7b284a8aa48875cd780de0d
   m_SerializeEntries:
+  - m_GUID: 03378164e6211c340a9b54092169a9e5
+    m_Address: npc_06_front
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 050ac53f83d914b418d4578bbe177569
     m_Address: coffee_pot
     m_ReadOnly: 0
@@ -37,6 +42,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 12ba210409adeef46833afd178ec2e81
     m_Address: Drama
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 194904379c939cb4c9881b18751e19ea
+    m_Address: npc_03_front
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -75,6 +85,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4b6cd57063b1e7048993b72ebf3e7247
+    m_Address: npc_02_front
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 501db7976e397614e93236b4c463b029
     m_Address: postcard
     m_ReadOnly: 0
@@ -87,6 +102,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5743b08665c557d4dbffb0d38fb13023
     m_Address: little_cactus
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5dc7a949382c1e045b24e066bd680021
+    m_Address: npc_04_front
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -192,6 +212,16 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e5870de896be30d439d086e058a9f31a
     m_Address: green_flower
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eb3959ee197851044bfb55d5b4d49088
+    m_Address: npc_01_front
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ebe6a4aa4bedd804cb9ca46bbee8396f
+    m_Address: npc_05_front
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
