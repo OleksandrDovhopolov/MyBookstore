@@ -146,9 +146,7 @@ namespace Book.Sell.UI
 
         private void OnCustomerPassivePurchaseFailed(Domain.Customer _, string __)
         {
-            // TODO: create a dedicated sale_failed.ogg, expose it in AudioCatalog, and use it here
-            // instead of the generic blocked-action sound.
-            PlaySfx(Audio.Catalog?.ActionBlocked);
+            PlaySfx(Audio.Catalog?.SaleFailed);
         }
 
         private void PublishGenreBookCounts()

@@ -466,5 +466,769 @@
         }
       ]
     }
+  },
+  {
+    "id": "req_classic_03",
+    "genre": "Classic",
+    "bookTitle": "Bleak House",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Classic"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Dry"
+        }
+      ],
+      "none": [
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Gore"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_classic_04",
+    "genre": "Classic",
+    "bookTitle": "Beowulf",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Classic"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAll",
+          "value": [
+            "Historic",
+            "Poetry"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_classic_05",
+    "genre": "Classic",
+    "bookTitle": "The Big Sleep",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Classic"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Mystery"
+        }
+      ],
+      "none": [
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Tragic"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_classic_06",
+    "genre": "Classic",
+    "bookTitle": "Inferno",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Classic"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Academic"
+        },
+        {
+          "type": "pages",
+          "operator": "between",
+          "value": {
+            "min": 300,
+            "max": 500
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_classic_07",
+    "genre": "Classic",
+    "bookTitle": "Antigone",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Classic"
+        },
+        {
+          "type": "pages",
+          "operator": "less",
+          "value": 100
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_drama_03",
+    "genre": "Drama",
+    "bookTitle": "Beloved",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAll",
+          "value": [
+            "Academic",
+            "Historic"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_drama_04",
+    "genre": "Drama",
+    "bookTitle": "Henry V",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Series"
+        }
+      ],
+      "none": [
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Romance"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_drama_05",
+    "genre": "Drama",
+    "bookTitle": "Villette",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Female Author"
+        },
+        {
+          "type": "pages",
+          "operator": "greater",
+          "value": 400
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_drama_06",
+    "genre": "Drama",
+    "bookTitle": "Hard Times",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        },
+        {
+          "type": "publicationYear",
+          "operator": "between",
+          "value": {
+            "min": 1850,
+            "max": 1900
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_drama_07",
+    "genre": "Drama",
+    "bookTitle": "Shirley",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Romance"
+        },
+        {
+          "type": "publicationYear",
+          "operator": "less",
+          "value": 1900
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_fantasy_03",
+    "genre": "Fantasy",
+    "bookTitle": "Dune",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Dystopia"
+        }
+      ],
+      "none": [
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "YA"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_fantasy_04",
+    "genre": "Fantasy",
+    "bookTitle": "Nimona",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAny",
+          "value": [
+            "Graphic Novel",
+            "Poetry"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_fantasy_05",
+    "genre": "Fantasy",
+    "bookTitle": "The Dark is Rising",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAll",
+          "value": [
+            "Mystery",
+            "Series"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_fantasy_06",
+    "genre": "Fantasy",
+    "bookTitle": "The Odyssey",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Historic"
+        }
+      ],
+      "none": [
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Horror"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_fantasy_07",
+    "genre": "Fantasy",
+    "bookTitle": "The Binding",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fantasy"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Romance"
+        }
+      ],
+      "none": [
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Tragic"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_fact_03",
+    "genre": "Fact",
+    "bookTitle": "By Train Through Spain",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fact"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAny",
+          "value": [
+            "Series",
+            "Travel Guide"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_fact_04",
+    "genre": "Fact",
+    "bookTitle": "Medieval Carpentry",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fact"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Dry"
+        }
+      ],
+      "none": [
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Biography"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_fact_05",
+    "genre": "Fact",
+    "bookTitle": "Know My Name",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fact"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Female Author"
+        },
+        {
+          "type": "publicationYear",
+          "operator": "greater",
+          "value": 2015
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_fact_06",
+    "genre": "Fact",
+    "bookTitle": "Le Corbusier",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fact"
+        },
+        {
+          "type": "pages",
+          "operator": "lessOrEqual",
+          "value": 200
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_fact_07",
+    "genre": "Fact",
+    "bookTitle": "The Sea Around Us",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Fact"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Pop Science"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_kids_03",
+    "genre": "Kids",
+    "bookTitle": "Heidi",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Female Author"
+        }
+      ],
+      "none": [
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Magic"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_kids_04",
+    "genre": "Kids",
+    "bookTitle": "Madeline",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAny",
+          "value": [
+            "Historic",
+            "Poetry"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_kids_05",
+    "genre": "Kids",
+    "bookTitle": "Artemis Fowl",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAll",
+          "value": [
+            "Series",
+            "YA"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_kids_06",
+    "genre": "Kids",
+    "bookTitle": "Watership Down",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Kids"
+        },
+        {
+          "type": "pages",
+          "operator": "between",
+          "value": {
+            "min": 300,
+            "max": 500
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_crime_01",
+    "genre": "Crime",
+    "bookTitle": "After the Funeral",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Crime"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAll",
+          "value": [
+            "Detective",
+            "Female Author"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_crime_02",
+    "genre": "Crime",
+    "bookTitle": "True Grit",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Crime"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAny",
+          "value": [
+            "Dry",
+            "Historic"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_crime_03",
+    "genre": "Crime",
+    "bookTitle": "Red Dragon",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Crime"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Series"
+        },
+        {
+          "type": "pages",
+          "operator": "between",
+          "value": {
+            "min": 300,
+            "max": 500
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_travel_03",
+    "genre": "Travel",
+    "bookTitle": "A Florence Diary",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Travel"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Female Author"
+        }
+      ],
+      "none": [
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Dry"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_travel_04",
+    "genre": "Travel",
+    "bookTitle": "Down Under",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Travel"
+        },
+        {
+          "type": "qualities",
+          "operator": "containsAny",
+          "value": [
+            "Academic",
+            "Historic"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_drama_08",
+    "genre": "Drama",
+    "bookTitle": "Yellowface",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Mystery"
+        }
+      ],
+      "none": [
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Biography"
+        }
+      ]
+    }
+  },
+  {
+    "id": "req_drama_09",
+    "genre": "Drama",
+    "bookTitle": "Salomé",
+    "enabled": true,
+    "conditions": {
+      "all": [
+        {
+          "type": "genres",
+          "operator": "contains",
+          "value": "Drama"
+        },
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Poetry"
+        }
+      ],
+      "none": [
+        {
+          "type": "qualities",
+          "operator": "contains",
+          "value": "Romance"
+        }
+      ]
+    }
   }
 ]

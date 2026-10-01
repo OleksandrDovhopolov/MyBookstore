@@ -331,9 +331,7 @@ namespace Book.Sell.UI
             }
             else if (result?.Tier == RecommendationTier.Failed)
             {
-                // TODO: create a dedicated sale_failed.ogg, expose it in AudioCatalog, and use it here
-                // instead of the generic blocked-action sound.
-                PlaySfx(Audio.Catalog?.ActionBlocked);
+                PlaySfx(Audio.Catalog?.SaleFailed);
             }
 
             var emotion = EmotionFor(result?.Tier ?? RecommendationTier.Skipped);
