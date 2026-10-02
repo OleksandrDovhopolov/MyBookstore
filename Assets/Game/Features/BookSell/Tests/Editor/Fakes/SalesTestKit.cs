@@ -71,6 +71,9 @@ namespace Book.Sell.Tests.Editor.Fakes
                 ApproachDuration = 0f,
                 MinApproachDuration = 0f,
                 MaxApproachDuration = 0f,
+                // 0 disables the View's distance/speed derivation, so tests keep the drawn durations.
+                ApproachSpeed = 0f,
+                LeaveSpeed = 0f,
                 BrowseDuration = 0f,
                 PassiveCommitDelay = 0f,
                 PassiveFailureFeedbackDuration = 0f,

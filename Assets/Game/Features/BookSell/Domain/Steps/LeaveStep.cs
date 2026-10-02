@@ -8,12 +8,24 @@ namespace Book.Sell.Domain.Steps
     /// </summary>
     public sealed class LeaveStep : IClosingStep
     {
-        private readonly float? _durationOverride;
+        private float? _durationOverride;
         private float _elapsed;
 
         public LeaveStep(float? duration = null)
         {
             _durationOverride = duration;
+        }
+
+        /// <summary>
+        /// Replaces the duration with one the View derived from the actual walk-away distance
+        /// (distance / speed). Same contract as <c>ApproachStep.TryOverrideDuration</c>: only honoured
+        /// before the step has consumed any time.
+        /// </summary>
+        public bool TryOverrideDuration(float seconds)
+        {
+            if (_elapsed > 0f || seconds <= 0f) return false;
+            _durationOverride = seconds;
+            return true;
         }
 
         public void Enter(Customer self, CustomerContext ctx)

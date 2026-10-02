@@ -10,28 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fb073179077b9c54682653d639aeb329, type: 3}
-  m_Name: SalesTuningExpress
+  m_Name: SalesTuningDense
   m_EditorClassIdentifier: 
-  _approachDuration: 2.5
-  _minApproachDuration: 0.5
-  _maxApproachDuration: 5
-  _approachSpeed: 4
-  _browseDuration: 3.5
-  _passiveCommitDelay: 1
-  _passiveFailureFeedbackDuration: 1.5
-  _passiveSaleFeedbackDuration: 1.5
-  _passiveSaleCommentChance: 0.35
+  _approachDuration: 1.8
+  _minApproachDuration: 1.5
+  _maxApproachDuration: 2.2
+  _approachSpeed: 3.5
+  _browseDuration: 2.5
+  _passiveCommitDelay: 0.4
+  _passiveFailureFeedbackDuration: 0.8
+  _passiveSaleFeedbackDuration: 1
+  _passiveSaleCommentChance: 0.25
   _minPassiveAttempts: 1
   _maxPassiveAttempts: 6
   _passiveDemandRequestShare: 0.7
   _passiveDemandRequestShareNarrow: 0.5
   _narrowDemandGenreThreshold: 3
-  _commentDuration: 1.2
-  _completePurchaseDuration: 1.5
-  _leaveDuration: 0.5
-  _minLeaveDuration: 0.5
-  _maxLeaveDuration: 1.5
-  _leaveSpeed: 5
+  _commentDuration: 1
+  _completePurchaseDuration: 1
+  _leaveDuration: 1.8
+  _minLeaveDuration: 1.5
+  _maxLeaveDuration: 2.2
+  _leaveSpeed: 3.5
   _spawnInterval: 2
-  _maxConcurrentCustomers: 9
+  _maxConcurrentCustomers: 6
   _passiveRequestGenreCount: 2

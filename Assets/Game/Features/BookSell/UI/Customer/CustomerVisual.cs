@@ -55,7 +55,9 @@ namespace Book.Sell.UI.Customer
                     if (isPaused == null || !isPaused())
                     {
                         elapsed += Time.deltaTime;
-                        var t = Mathf.Clamp01(elapsed / safeDuration);
+                        // SmoothStep instead of a raw ratio: a linear Lerp starts and stops dead, which
+                        // reads as a sprite being dragged rather than a person walking off and arriving.
+                        var t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / safeDuration));
                         transform.position = Vector3.Lerp(start, target, t);
                     }
                     await UniTask.Yield(PlayerLoopTiming.Update, token);

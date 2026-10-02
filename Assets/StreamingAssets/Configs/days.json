@@ -21,6 +21,11 @@
     "eventId": "",
     "customerCount": 3,
     "activeRequestCount": 1,
+    "waveSizes": [
+      2,
+      3
+    ],
+    "waveGapSeconds": 0.5,
     "applyModifiers": false,
     "titleKey": "day.day_002.title"
   }

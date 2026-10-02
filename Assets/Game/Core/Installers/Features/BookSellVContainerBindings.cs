@@ -173,6 +173,9 @@ namespace Game.Bootstrap
             // Customer visualization + world-space thought bubbles (Phase 0 of World HUD).
             builder.RegisterInstance(new CustomerVisualRegistryConfig(customerVisualPrefab, locationContext));
             builder.Register<IBubbleSlotAllocator, BubbleSlotAllocator>(Lifetime.Singleton);
+            // Lane anchors are acquired/released per live customer instead of the old spawn-index
+            // modulo, which could put two customers on the same spot.
+            builder.Register<ILaneSlotAllocator, LaneSlotAllocator>(Lifetime.Singleton);
             builder.Register<CustomerVisualRegistry>(Lifetime.Singleton)
                 .AsImplementedInterfaces() // exposes ICustomerVisualRegistry, IStartable, IDisposable
                 .AsSelf();
