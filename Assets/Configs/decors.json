@@ -19,7 +19,8 @@
       "wood",
       "study"
     ],
-    "displayNameKey": "decor.vintage_globe.name"
+    "displayNameKey": "decor.vintage_globe.name",
+    "descriptionKey": "decor.vintage_globe.desc"
   },
   {
     "id": "coffee_pot",
@@ -36,7 +37,8 @@
       "coffee",
       "warm"
     ],
-    "displayNameKey": "decor.coffee_pot.name"
+    "displayNameKey": "decor.coffee_pot.name",
+    "descriptionKey": "decor.coffee_pot.desc"
   },
   {
     "id": "houseplant",
@@ -57,7 +59,8 @@
       "green",
       "fresh"
     ],
-    "displayNameKey": "decor.houseplant.name"
+    "displayNameKey": "decor.houseplant.name",
+    "descriptionKey": "decor.houseplant.desc"
   },
   {
     "id": "old_lamp",
@@ -74,7 +77,8 @@
       "wood",
       "warm"
     ],
-    "displayNameKey": "decor.old_lamp.name"
+    "displayNameKey": "decor.old_lamp.name",
+    "descriptionKey": "decor.old_lamp.desc"
   },
   {
     "id": "maritime_painting",
@@ -91,7 +95,8 @@
       "sea",
       "salt"
     ],
-    "displayNameKey": "decor.maritime_painting.name"
+    "displayNameKey": "decor.maritime_painting.name",
+    "descriptionKey": "decor.maritime_painting.desc"
   },
   {
     "id": "chinese_vase",
@@ -113,7 +118,8 @@
       "porcelain",
       "oriental"
     ],
-    "displayNameKey": "decor.chinese_vase.name"
+    "displayNameKey": "decor.chinese_vase.name",
+    "descriptionKey": "decor.chinese_vase.desc"
   },
   {
     "id": "gas_lighter",
@@ -134,7 +140,8 @@
       "warm",
       "vintage"
     ],
-    "displayNameKey": "decor.gas_lighter.name"
+    "displayNameKey": "decor.gas_lighter.name",
+    "descriptionKey": "decor.gas_lighter.desc"
   },
   {
     "id": "green_flower",
@@ -155,7 +162,8 @@
       "green",
       "fresh"
     ],
-    "displayNameKey": "decor.green_flower.name"
+    "displayNameKey": "decor.green_flower.name",
+    "descriptionKey": "decor.green_flower.desc"
   },
   {
     "id": "green_menu",
@@ -168,7 +176,8 @@
       "sign",
       "street"
     ],
-    "displayNameKey": "decor.green_menu.name"
+    "displayNameKey": "decor.green_menu.name",
+    "descriptionKey": "decor.green_menu.desc"
   },
   {
     "id": "lavender",
@@ -191,7 +200,8 @@
       "fresh",
       "calm"
     ],
-    "displayNameKey": "decor.lavender.name"
+    "displayNameKey": "decor.lavender.name",
+    "descriptionKey": "decor.lavender.desc"
   },
   {
     "id": "little_cactus",
@@ -212,7 +222,8 @@
       "green",
       "desert"
     ],
-    "displayNameKey": "decor.little_cactus.name"
+    "displayNameKey": "decor.little_cactus.name",
+    "descriptionKey": "decor.little_cactus.desc"
   },
   {
     "id": "pocket_clock",
@@ -233,7 +244,8 @@
       "brass",
       "vintage"
     ],
-    "displayNameKey": "decor.pocket_clock.name"
+    "displayNameKey": "decor.pocket_clock.name",
+    "descriptionKey": "decor.pocket_clock.desc"
   },
   {
     "id": "table_frame",
@@ -254,7 +266,8 @@
       "wood",
       "study"
     ],
-    "displayNameKey": "decor.table_frame.name"
+    "displayNameKey": "decor.table_frame.name",
+    "descriptionKey": "decor.table_frame.desc"
   },
   {
     "id": "tifany_lamp",
@@ -277,7 +290,8 @@
       "glass",
       "cozy"
     ],
-    "displayNameKey": "decor.tifany_lamp.name"
+    "displayNameKey": "decor.tifany_lamp.name",
+    "descriptionKey": "decor.tifany_lamp.desc"
   },
   {
     "id": "wite_flower",
@@ -298,7 +312,8 @@
       "fresh",
       "flowers"
     ],
-    "displayNameKey": "decor.wite_flower.name"
+    "displayNameKey": "decor.wite_flower.name",
+    "descriptionKey": "decor.wite_flower.desc"
   },
   {
     "id": "ship",
@@ -323,6 +338,7 @@
       "sea",
       "travel"
     ],
-    "displayNameKey": "decor.ship.name"
+    "displayNameKey": "decor.ship.name",
+    "descriptionKey": "decor.ship.desc"
   }
 ]

@@ -22,7 +22,8 @@ namespace Game.Shop.UI
     [Window("NewspaperWindow", WindowType.Page, keepInCache: true)]
     public sealed class ShopWindow : WindowController<ShopWindowView>
     {
-        private const string TodoDescriptionKey = "ui.shop.item.description.placeholder";
+        // Shown when a lot has no authored descriptionKey (ShopService resolves that to an empty string).
+        private const string FallbackDescriptionKey = "ui.shop.item.description.fallback";
 
         private IShopService _shop;
         private IShopConfirmationPolicy _confirmPolicy;
@@ -177,7 +178,7 @@ namespace Game.Shop.UI
                 return;
             }
 
-            ShowItemInfoWidgetAsync(lotId, anchor).Forget();
+            ShowItemInfoWidgetAsync(lotId, offer.Description, anchor).Forget();
         }
 
         private void ShowDecorInfo(string decorId)
@@ -249,7 +250,10 @@ namespace Game.Shop.UI
             }
         }
 
-        private async UniTaskVoid ShowItemInfoWidgetAsync(string lotId, RectTransform anchor)
+        private async UniTaskVoid ShowItemInfoWidgetAsync(
+            string lotId,
+            string description,
+            RectTransform anchor)
         {
             if (string.IsNullOrEmpty(lotId) || anchor == null || UIManager == null || View == null)
                 return;
@@ -259,7 +263,11 @@ namespace Game.Shop.UI
 
             try
             {
-                var data = new ShopItemWidgetData(lotId, LocalizationLocator.GetOrKey(TodoDescriptionKey));
+                var data = new ShopItemWidgetData(
+                    lotId,
+                    string.IsNullOrWhiteSpace(description)
+                        ? LocalizationLocator.GetOrKey(FallbackDescriptionKey)
+                        : description);
                 var args = new ContentWidgetArgs(
                     data,
                     anchor,

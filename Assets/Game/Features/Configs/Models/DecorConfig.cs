@@ -12,6 +12,7 @@ namespace Game.Configs.Models
     {
         public string Id { get; set; }
         public string DisplayNameKey { get; set; }
+        public string DescriptionKey { get; set; }
 
         // Sprites are loaded from Addressables by the decor Id itself (see UiSpriteProvider), so there is
         // no separate icon address: the Addressables entry for a decor sprite must be addressed by its Id.

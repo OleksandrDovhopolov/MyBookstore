@@ -55,6 +55,25 @@ namespace Game.Decor.Tests.Editor.Services
         }
 
         [Test]
+        public void MissingDescriptionKey_Warns()
+        {
+            var v = Build(decors: new[]
+            {
+                new DecorConfig
+                {
+                    Id = "d1", DisplayNameKey = "x",
+                    PositionType = DecorPositionType.Standing, Size = DecorSize.Small
+                }
+            });
+
+            var report = v.Validate();
+
+            Assert.IsFalse(report.HasErrors, "got errors: " + report.FormatErrors());
+            Assert.IsTrue(report.HasWarnings);
+            StringAssert.Contains("empty DescriptionKey", string.Join("|", report.Warnings));
+        }
+
+        [Test]
         public void DuplicateId_Errors()
         {
             var v = Build(decors: new[]
@@ -380,6 +399,7 @@ namespace Game.Decor.Tests.Editor.Services
             {
                 Id = id,
                 DisplayNameKey = id,
+                DescriptionKey = id,
                 PositionType = positionType,
                 Size = size,
                 GenreMultipliers = System.Array.Empty<DecorGenreModifier>()
