@@ -9,6 +9,7 @@
         "Game.Decor.API",
         "Game.LocationUnlock.API",
         "Game.Quest.API",
+        "Game.Conditions.API",
         "Configs",
         "Game.Localization",
         "Save",

@@ -186,5 +186,171 @@
       }
     ],
     "worldEffects": []
+  },
+  {
+    "id": "q_mem_millie_met",
+    "type": "story",
+    "chainId": null,
+    "characterId": "millie",
+    "hiddenInJournal": true,
+    "nextQuestIds": [],
+    "activationConditions": {
+      "type": "dialogueDelivered",
+      "dialogueId": "millie1"
+    },
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "completionConditions": {
+          "type": "dialogueDelivered",
+          "dialogueId": "millie1"
+        }
+      }
+    ],
+    "rewards": [],
+    "worldEffects": []
+  },
+  {
+    "id": "q_mem_tara_met",
+    "type": "story",
+    "chainId": null,
+    "characterId": "tara",
+    "hiddenInJournal": true,
+    "nextQuestIds": [],
+    "activationConditions": {
+      "type": "dialogueDelivered",
+      "dialogueId": "tara_quest_1"
+    },
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "completionConditions": {
+          "type": "dialogueDelivered",
+          "dialogueId": "tara_quest_1"
+        }
+      }
+    ],
+    "rewards": [],
+    "worldEffects": []
+  },
+  {
+    "id": "q_mem_captain_met",
+    "type": "story",
+    "chainId": null,
+    "characterId": "captain",
+    "hiddenInJournal": true,
+    "nextQuestIds": [],
+    "activationConditions": {
+      "type": "dialogueDelivered",
+      "dialogueId": "captain_quest_1"
+    },
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "completionConditions": {
+          "type": "dialogueDelivered",
+          "dialogueId": "captain_quest_1"
+        }
+      }
+    ],
+    "rewards": [],
+    "worldEffects": []
+  },
+  {
+    "id": "q_mem_tilde_met",
+    "type": "story",
+    "chainId": null,
+    "characterId": "tilde",
+    "hiddenInJournal": true,
+    "nextQuestIds": [],
+    "activationConditions": {
+      "type": "dialogueDelivered",
+      "dialogueId": "dlg_tilde_meet"
+    },
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "completionConditions": {
+          "type": "dialogueDelivered",
+          "dialogueId": "dlg_tilde_meet"
+        }
+      }
+    ],
+    "rewards": [],
+    "worldEffects": []
+  },
+  {
+    "id": "q_mem_book_boxes",
+    "type": "story",
+    "chainId": null,
+    "characterId": "owner",
+    "hiddenInJournal": true,
+    "nextQuestIds": [],
+    "activationConditions": null,
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "completionConditions": {
+          "type": "shopPurchases",
+          "storefrontIds": [
+            "newspaper.books"
+          ],
+          "min": 3
+        }
+      }
+    ],
+    "rewards": [],
+    "worldEffects": []
+  },
+  {
+    "id": "q_mem_shop_items",
+    "type": "story",
+    "chainId": null,
+    "characterId": "owner",
+    "hiddenInJournal": true,
+    "nextQuestIds": [],
+    "activationConditions": null,
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "completionConditions": {
+          "type": "shopPurchases",
+          "storefrontIds": [
+            "newspaper.decor",
+            "newspaper.consumables"
+          ],
+          "min": 3
+        }
+      }
+    ],
+    "rewards": [],
+    "worldEffects": []
+  },
+  {
+    "id": "q_mem_return",
+    "type": "story",
+    "chainId": null,
+    "characterId": "owner",
+    "hiddenInJournal": true,
+    "nextQuestIds": [],
+    "activationConditions": null,
+    "failConditions": null,
+    "tasks": [
+      {
+        "id": 1,
+        "completionConditions": {
+          "type": "dayAtLeast",
+          "min": 2
+        }
+      }
+    ],
+    "rewards": [],
+    "worldEffects": []
   }
 ]

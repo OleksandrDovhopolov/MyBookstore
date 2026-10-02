@@ -177,6 +177,37 @@ internal interface ICharacterModelFactory
 
 Неизвестный quest/chain → `Pending` → locked, без исключений.
 
+### Условия разблокировки сложнее трёх источников: квест-обёртка
+
+`CharacterMemoryConfig` знает ровно три источника (`unlockedAtStart`, `questId`, `questChainId`), и
+валидатор требует ровно один из них. Всё остальное («после первого диалога с X», «после покупки 3+
+ящиков книг», «на второй день») выражается **служебным квестом-обёрткой**, а не расширением схемы
+memory:
+
+```jsonc
+{
+  "id": "q_mem_millie_met",
+  "characterId": "millie",
+  "hiddenInJournal": true,            // нет строки в журнале, нет бейджа, авто-award
+  "activationConditions": { "type": "dialogueDelivered", "dialogueId": "millie1" },
+  "tasks": [ { "id": 1, "completionConditions": { "type": "dialogueDelivered", "dialogueId": "millie1" } } ],
+  "rewards": []
+}
+```
+
+Memory висит на `questId` обёртки обычным образом. Условие дублируется в activation и completion
+намеренно: квест лежит `Pending` и не создаёт шума, пока триггер не сработал, а `SinglePass` проводит
+Pending → Active → ReadyToAward в одном проходе, после чего `Complete` сам вызывает `Award` (см.
+QUESTS.md). Квест **без тасков скипается** при построении каталога, поэтому триггер обязан жить в таске.
+
+Два правила при авторинге обёрток:
+
+1. Обёртку нельзя ставить в `activationQuestId` кастомер-скрипта: `ScriptedCustomerSpawner.IsEligible`
+   требует `QuestState.Active`, а обёртка проскакивает это состояние за один проход.
+2. Обёртку нельзя ставить в `discoveryQuestIds` персонажа, который открывается раньше: discovery
+   читается через `AnyQuestStarted`, то есть сработает в момент активации. Исключение — когда
+   активация обёртки и есть момент знакомства (так сделано для `tilde`).
+
 Фабрика не пишет save, не подписывается на события, не открывает memories, не активирует квесты, не знает о UI.
 
 ---

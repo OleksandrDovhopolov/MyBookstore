@@ -28,11 +28,12 @@ namespace Game.Quest.Tests.Editor
 
         private static QuestConfig QuestCfg(
             string id, QuestTaskConfig[] tasks, string chainId = null, string[] next = null,
-            JObject activation = null, JObject fail = null, string type = "story")
+            JObject activation = null, JObject fail = null, string type = "story", bool hidden = false)
             => new QuestConfig
             {
                 Id = id, Type = type, ChainId = chainId, NextQuestIds = next,
-                Tasks = tasks, ActivationConditions = activation, FailConditions = fail
+                Tasks = tasks, ActivationConditions = activation, FailConditions = fail,
+                HiddenInJournal = hidden
             };
 
         private sealed class Harness
@@ -95,6 +96,53 @@ namespace Game.Quest.Tests.Editor
             Assert.IsTrue(h.Service.TryAwardAsync("q1", CancellationToken.None).GetAwaiter().GetResult());
             Assert.AreEqual(QuestState.Awarded, h.Service.GetQuestState("q1"));
             Assert.Greater(h.Events.IndexOf("awarded:q1"), iCompleted, "QuestCompleted must precede QuestAwarded");
+        }
+
+        /// <summary>
+        /// A hidden quest has no journal row, so nothing would ever call TryAwardAsync for it. It must
+        /// award itself the moment its tasks complete, otherwise a memory hanging off it never unlocks.
+        /// </summary>
+        [Test]
+        public void HiddenQuest_AwardsItself_WithoutExplicitAward()
+        {
+            var h = Build(QuestCfg("q_service", new[] { Task(1, Tag("c1")) }, hidden: true));
+            var c1 = h.Parser.Register("c1", false);
+            h.Load();
+
+            Assert.AreEqual(QuestState.Active, h.Service.GetQuestState("q_service"));
+
+            c1.Met = true;
+            h.Sales.RaiseChanged();
+
+            Assert.AreEqual(QuestState.Awarded, h.Service.GetQuestState("q_service"));
+            Assert.Greater(h.Events.IndexOf("awarded:q_service"), h.Events.IndexOf("completed:q_service"),
+                "QuestCompleted must still precede QuestAwarded");
+            Assert.IsFalse(h.Service.TryAwardAsync("q_service", CancellationToken.None).GetAwaiter().GetResult(),
+                "already awarded, so an explicit claim is a no-op");
+        }
+
+        /// <summary>
+        /// Activation and completion gated on the same condition: Pending → Active → ReadyToAward →
+        /// Awarded inside one Reevaluate pass. This is the shape every memory-unlock wrapper uses.
+        /// </summary>
+        [Test]
+        public void HiddenQuest_WithSameActivationAndCompletion_AwardsInOnePass()
+        {
+            var h = Build(QuestCfg("q_service", new[] { Task(1, Tag("c1")) },
+                activation: Tag("c1"), hidden: true));
+            var c1 = h.Parser.Register("c1", false);
+            h.Load();
+
+            Assert.AreEqual(QuestState.Pending, h.Service.GetQuestState("q_service"));
+            CollectionAssert.DoesNotContain(h.Events, "started:q_service");
+
+            c1.Met = true;
+            h.Sales.RaiseChanged();
+
+            Assert.AreEqual(QuestState.Awarded, h.Service.GetQuestState("q_service"));
+            CollectionAssert.AreEqual(
+                new[] { "started:q_service", "task:q_service.1", "completed:q_service", "awarded:q_service" },
+                h.Events);
         }
 
         [Test]

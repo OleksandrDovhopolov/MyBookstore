@@ -40,6 +40,7 @@ namespace Game.Journal.UI
                 {
                     var quest = quests[i];
                     if (quest == null || string.IsNullOrEmpty(quest.Id)) continue;
+                    if (quest.Config?.HiddenInJournal == true) continue;   // service quest: no badge
                     if (quest.State == _state)
                         yield return quest.Id;
                 }

@@ -56,7 +56,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1b1022f11fc618649af3adae9e46fd5b
-    m_Address: memory_placeholder
+    m_Address: memory_eddi_intro
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -76,7 +76,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2829eb0a049cce64681b461184d540a9
-    m_Address: MeetCaptain
+    m_Address: memory_captain_intro
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -91,12 +91,12 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3889642b172336440b9fd6b5443f9cba
-    m_Address: Shopaholic
+    m_Address: memory_owner_shop_items
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 38fb2276889195b43bf98e89c9420142
-    m_Address: Col3
+    m_Address: memory_owner_col3
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -136,12 +136,12 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 589cf849e86af124f9ea10520340af30
-    m_Address: MeetCat
+    m_Address: memory_owner_shop_cat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 58dd1c9fdf75f8440a2631f9172dac6f
-    m_Address: Col1
+    m_Address: memory_owner_col1
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -151,12 +151,17 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5e3e9368c823ed640b7531c347cc7720
-    m_Address: BookKeeper
+    m_Address: memory_owner_book_boxes
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6046e1a31fd48ec4d8db68b56931bed1
     m_Address: tifany_lamp
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 610d130fd0f9c92419e4612be7dea0f0
+    m_Address: tilde
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -166,7 +171,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 725319d3d7a54ad4da502b0a84ea4457
-    m_Address: Col2
+    m_Address: memory_owner_col2
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -196,7 +201,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 887792deabafdd849a6a463ce9b49ea4
-    m_Address: MeetMartha
+    m_Address: memory_tilde_intro
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -256,12 +261,12 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bcb2edf3d53b1e1429fd553237de6432
-    m_Address: MeetMillie
+    m_Address: memory_millie_intro
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c470e333a5b3cce408ea5f39415838ad
-    m_Address: yuki_avatar
+    m_Address: tilde_avatar
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -286,7 +291,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d5d22aa02cc5b6348b7413bc089ff151
-    m_Address: MeetTara
+    m_Address: memory_tara_kids
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -302,11 +307,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ebe6a4aa4bedd804cb9ca46bbee8396f
     m_Address: npc_05_front
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: eefd4c06ce62e8847bd3f908e88180ab
-    m_Address: memory_moving_in
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

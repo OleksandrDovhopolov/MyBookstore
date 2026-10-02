@@ -1004,14 +1004,76 @@ Memories станет презентабельной только с этими 
 
 ### JRN-3 — Memory Unlock Sources Beyond Quests
 
-Статус: отложено после первого релиза. Текущая игра проходится и публикуется без расширения источников разблокировки memories; для релизного scope достаточно существующих `unlockedAtStart`, `questId` и `questChainId`.
+Статус: частично закрыто в релизном scope минимальным вариантом, остаток отложен.
+
+Что сделано: 12 memories разложены на 5 `unlockedAtStart` и 7 служебных квестов-обёрток
+(`hiddenInJournal: true`, один таск с триггерным условием, авто-award в `QuestsService.Complete`).
+Для двух условий добавлен тип условия `shopPurchases`. Схема `CharacterMemoryConfig` не менялась,
+источников по-прежнему три, save-миграция не потребовалась.
 
 Что потребуется позже:
-- Решить, нужен ли минимальный вариант через квесты-пустышки/`locationUnlocked`, или полноценный `unlockCondition` в `CharacterMemoryConfig`.
-- Если брать средний/полный вариант, учесть save migration после первого релиза.
+- Полноценный `unlockCondition` в `CharacterMemoryConfig`, если число memories вырастет настолько,
+  что обёртки станут шумом. Тогда — save migration после первого релиза.
+- Решить, нужно ли разделять `hiddenInJournal` (видимость) и авто-award: сейчас это один флаг на
+  одно понятие «служебный квест».
 - Синхронизировать `CHARACTER_SYSTEM.md` с итоговой моделью memories.
 
 Критичность: low для первого релиза, medium для дальнейшего story/content pipeline.
+
+### ANL-4 — Служебные квесты засоряют quest-аналитику
+
+Источник: побочный эффект минимального варианта JRN-3.
+
+Статус: отложено после первого релиза.
+
+`QuestAnalyticsListener` ([QuestAnalyticsListener.cs](../Assets/Game/Core/Installers/Features/Analytics/QuestAnalyticsListener.cs))
+шлёт `quest_started` / `quest_completed` для каждого квеста без разбора. Семь обёрток
+(`q_mem_*`) дают до 14 лишних событий на игрока, которые попадут в ту же воронку, что и
+сюжетные квесты, и исказят её.
+
+Что сделать (одно из):
+- Фильтровать `quest.Config?.HiddenInJournal` в листенере и не слать события вовсе.
+- Либо слать, но с параметром `is_service: true`, чтобы дашборды могли их отрезать.
+
+Отдельно проверить, не завязаны ли уже существующие дашборды на абсолютное число `quest_started`.
+
+Критичность: low для релиза, medium для аналитики.
+
+### JRN-4 — Чит «удалить все memories»
+
+Статус: отложено после первого релиза. В релиз вошла только кнопка «Unlock all memories».
+
+Очистка невозможна без изменения модели: `IsMemoryUnlocked` — это
+`IsUnlockedByQuest(memory) || LedgerContains(...)`, а `UnlockMatchingMemories` копирует квестовые
+разблокировки в леджер на каждом `Reconcile()`. После переезда на обёртки 7 из 12 memories выводятся
+из `QuestState.Awarded`, поэтому очистка леджера их не скроет и не переживёт следующий запуск.
+
+Что потребуется:
+- Набор подавленных id (`ClearedMemoryIds`) в `SavedCharacter`, чтение его в
+  `CharactersService.IsMemoryUnlocked` и в обоих местах `CharacterModelFactory`, пропуск в
+  `UnlockMatchingMemories`.
+- Bump `CharactersSaveKeys.StateSchemaVersion` + миграция.
+
+Пока QA пользуется `Tools/Save/Reset Player Save`.
+
+Критичность: low.
+
+### CFG-x — Нет валидатора `photoKey` / `portraitKey` → Addressables
+
+Статус: отложено после первого релиза.
+
+Адрес Addressables резолвится как `photoKey` символ в символ, промах даёт лишь `LogWarning` в
+`UiSpriteProvider` и fallback-спрайт с префаба — билд проходит. Адреса проставляются вручную в окне
+Addressables Groups, автоматики в проекте нет. Из-за этого в репозитории успели накопиться две
+коллизии: два ассета на адресе `memory_moving_in` и один на мёртвом `memory_placeholder` (обе
+исправлены при раскладке 12 memories).
+
+Что сделать: валидатор в `Assets/Game/Features/Configs/Editor/`, который проверяет, что каждый
+`photoKey`, `portraitKey` (и `portraitKey + "_avatar"`) из `characters.json` резолвится в ровно одну
+запись Addressables, плюс строка в `Validators` массиве `PreBuildValidationGate` и в таблице
+`docs/BUILD.md §0`.
+
+Критичность: low для релиза, medium для контент-пайплайна.
 
 ### GAME-10 — Finish Tutorial Release Slice
 

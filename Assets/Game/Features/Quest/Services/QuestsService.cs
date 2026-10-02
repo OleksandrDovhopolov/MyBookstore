@@ -24,7 +24,10 @@ namespace Game.Quest.Services
     /// <c>LocationUnlockService</c>: registers as <see cref="ISaveHook"/> only for init timing — the catalog
     /// is built in <see cref="AfterLoadAsync"/> (configs are warm by then) and re-evaluated when domain data
     /// changes. Этап 4: no persistence (<see cref="BeforeSaveAsync"/> is a strict no-op); quest state is
-    /// rebuilt from config each launch. Auto-award: completing all tasks goes ReadyToAward → Awarded at once.
+    /// rebuilt from config each launch. Completing all tasks stops at ReadyToAward — the player claims the
+    /// reward from the journal (<c>TryAwardAsync</c>). The one exception is a quest with
+    /// <see cref="QuestConfig.HiddenInJournal"/>: it has no journal row to claim from, so it is awarded
+    /// automatically inside <c>Complete</c>.
     /// </summary>
     public sealed class QuestsService : IQuestsService, IQuestReevaluationGate, ISaveHook, IDisposable
     {
@@ -466,6 +469,11 @@ namespace Game.Quest.Services
             MarkDirty();
             Debug.Log($"{LogPrefix} quest completed '{quest.Id}'.");
             QuestCompleted?.Invoke(quest);
+
+            // A service quest has no journal row, so nothing would ever call TryAwardAsync for it:
+            // it would sit in ReadyToAward forever and its memory would never unlock. Award it here.
+            if (quest.Config?.HiddenInJournal == true)
+                Award(quest);
         }
 
         private void Award(Quest quest)

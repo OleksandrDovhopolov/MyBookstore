@@ -735,6 +735,31 @@ namespace Game.Shop.API
 - Состояние `WaitRefresh` — нет рефреша.
 - `IsLotInactive` причина — все лоты активны или sold-out.
 
+### 12.3.1. Условие `shopPurchases` (шоп как источник для квестов)
+
+Шоп не только *читает* условия, но и *отдаёт* одно — чтобы квесты и memories могли опираться на
+покупки. `Assets/Game/Features/Shop/Conditions/`:
+
+```json
+{ "type": "shopPurchases", "storefrontIds": ["newspaper.books"], "min": 3 }
+```
+
+- Суммирует `GetPurchaseCount` по всем лотам каждого перечисленного storefront.
+  Допустима и краткая форма `"storefrontId": "newspaper.books"`.
+- Читает `GetLots`, **не** `GetOfferedLots`: лот, который сегодня не попал в дневную ротацию
+  книжных ящиков или больше не проходит `Unlock`, всё равно учитывается в накопительном итоге.
+- Счётчик накопительный за всю игру: `LotPurchasesDto.Purchases` инкрементится всегда, дневная
+  квота `Daily`-лота живёт отдельно в `PurchasesToday` / `LastPurchasedDay` и его не сбрасывает.
+- `min` нормализуется до ≥ 1, пустой `storefrontIds` → `ArgumentException` при парсе.
+- Фабрика реализует `IConditionChangeSource` поверх `LotPurchased`, поэтому квесты
+  переоцениваются сразу после покупки.
+
+DI: фабрика держит **ленивый** `Func<IShopService>`, а не сам сервис — прямая инъекция замкнула бы
+цикл `IConditionParser → registry → IConditionFactory[] → ShopPurchasesConditionFactory → IShopService
+→ Func<IConditionParser>`. Регистрируется по конкретному типу, `Func<IShopService>` — отдельным
+сервисом: коллекция `IConditionFactory` не держит две Func-регистрации (слот занят
+`WeatherIsConditionFactory`).
+
 ---
 
 ### 12.4. Покупочный pipeline (Phase 0)

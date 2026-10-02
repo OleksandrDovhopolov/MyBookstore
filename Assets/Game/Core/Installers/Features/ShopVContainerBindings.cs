@@ -1,6 +1,7 @@
 using System;
 using Game.Conditions.API;
 using Game.Shop.API;
+using Game.Shop.Conditions;
 using Game.Shop.Services;
 using VContainer;
 using VContainer.Unity;
@@ -40,6 +41,15 @@ namespace Game.Bootstrap
             // PR9: confirmation policy. UI consumers (NewspaperWindow, future Classic Shop) check
             // the policy before BuyAsync and show a ConfirmDialog when required.
             builder.Register<IShopConfirmationPolicy, ThresholdConfirmationPolicy>(Lifetime.Singleton);
+
+            // "shopPurchases" condition adapter, discovered via the IConditionFactory collection.
+            // The Func is registered as its own service (NOT the factory via a Func-registration) because
+            // the IConditionFactory collection cannot hold two Func-based entries - WeatherIsConditionFactory
+            // is already one. Same shape as Func<ITutorialService> in TutorialVContainerBindings.
+            builder.Register<Func<IShopService>>(
+                resolver => () => resolver.Resolve<IShopService>(),
+                Lifetime.Singleton);
+            builder.Register<IConditionFactory, ShopPurchasesConditionFactory>(Lifetime.Singleton);
         }
     }
 }
