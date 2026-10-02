@@ -64,7 +64,7 @@
         "descriptionKey": "memory.tara.kids.description",
         "photoKey": "memory_tara_kids",
         "questId": "q_mem_tara_met",
-        "order": 10,
+        "order": 9,
         "isGolden": false
       }
     ]
@@ -87,30 +87,7 @@
         "descriptionKey": "memory.captain.postcards.description",
         "photoKey": "memory_captain_intro",
         "questId": "q_mem_captain_met",
-        "order": 11,
-        "isGolden": false
-      }
-    ]
-  },
-  {
-    "id": "tilde",
-    "displayNameKey": "character.tilde.name",
-    "portraitKey": "tilde",
-    "favoriteGenres": [
-      "Classic",
-      "Drama"
-    ],
-    "discoveryQuestIds": [
-      "q_mem_tilde_met"
-    ],
-    "memories": [
-      {
-        "id": "mem_tilde_intro",
-        "titleKey": "memory.tilde.intro.title",
-        "descriptionKey": "memory.tilde.intro.description",
-        "photoKey": "memory_tilde_intro",
-        "questId": "q_mem_tilde_met",
-        "order": 7,
+        "order": 10,
         "isGolden": false
       }
     ]
@@ -171,7 +148,7 @@
         "descriptionKey": "memory.owner.book_boxes.description",
         "photoKey": "memory_owner_book_boxes",
         "questId": "q_mem_book_boxes",
-        "order": 8,
+        "order": 7,
         "isGolden": false
       },
       {
@@ -180,7 +157,16 @@
         "descriptionKey": "memory.owner.shop_items.description",
         "photoKey": "memory_owner_shop_items",
         "questId": "q_mem_shop_items",
-        "order": 9,
+        "order": 8,
+        "isGolden": false
+      },
+      {
+        "id": "mem_owner_cafe",
+        "titleKey": "memory.owner.cafe.title",
+        "descriptionKey": "memory.owner.cafe.description",
+        "photoKey": "memory_owner_cafe",
+        "questId": "q_mem_town",
+        "order": 11,
         "isGolden": false
       }
     ]

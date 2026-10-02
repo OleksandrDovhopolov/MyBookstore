@@ -260,23 +260,21 @@
     "worldEffects": []
   },
   {
-    "id": "q_mem_tilde_met",
+    "id": "q_mem_town",
     "type": "story",
     "chainId": null,
-    "characterId": "tilde",
+    "characterId": "owner",
     "hiddenInJournal": true,
     "nextQuestIds": [],
-    "activationConditions": {
-      "type": "dialogueDelivered",
-      "dialogueId": "dlg_tilde_meet"
-    },
+    "activationConditions": null,
     "failConditions": null,
     "tasks": [
       {
         "id": 1,
         "completionConditions": {
-          "type": "dialogueDelivered",
-          "dialogueId": "dlg_tilde_meet"
+          "type": "visitLocation",
+          "locationId": "loc_market",
+          "min": 1
         }
       }
     ],

@@ -4,7 +4,6 @@
   "character.millie.name": "Millie",
   "character.owner.name": "Owner",
   "character.tara.name": "Tara",
-  "character.tilde.name": "Tilde",
   "memory.captain.postcards.description": "[TODO] The captain stopped by from the port and talked about the postcards he never sends home.",
   "memory.captain.postcards.title": "[TODO] Meeting The Captain",
   "memory.eddi.intro.description": "Eddy handed over the shop and left you with a first bit of confidence.",
@@ -13,6 +12,8 @@
   "memory.millie.intro.title": "[TODO] Meeting Millie",
   "memory.owner.book_boxes.description": "[TODO] Crates everywhere, nowhere left to sit, and not one book you regret buying.",
   "memory.owner.book_boxes.title": "[TODO] Buried In Boxes",
+  "memory.owner.cafe.description": "[TODO] The first walk into town: a cafe terrace, a tray of coffee, and the shop cat already ahead of you.",
+  "memory.owner.cafe.title": "[TODO] Coffee In The Market Square",
   "memory.owner.col1.description": "[TODO] Childhood flashback: sweeping the shrine path in the late afternoon.",
   "memory.owner.col1.title": "[TODO] Sweeping The Shrine Path",
   "memory.owner.col2.description": "[TODO] Childhood flashback: an older girl crouching down to meet you eye to eye.",
@@ -26,7 +27,5 @@
   "memory.owner.shop_items.description": "[TODO] Three things bought for the shop, and it finally looks like somewhere to stay.",
   "memory.owner.shop_items.title": "[TODO] Making It Yours",
   "memory.tara.kids.description": "Tara asked for help finding stories children would love.",
-  "memory.tara.kids.title": "Tara's Request",
-  "memory.tilde.intro.description": "[TODO] Tilde heard the rumours, came to see for herself, and let a good book find her.",
-  "memory.tilde.intro.title": "[TODO] Meeting Tilde"
+  "memory.tara.kids.title": "Tara's Request"
 }

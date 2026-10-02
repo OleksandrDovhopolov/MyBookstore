@@ -160,11 +160,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 610d130fd0f9c92419e4612be7dea0f0
-    m_Address: tilde
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6f077335830febe45804a2e23887988a
     m_Address: millie_avatar
     m_ReadOnly: 0
@@ -201,7 +196,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 887792deabafdd849a6a463ce9b49ea4
-    m_Address: memory_tilde_intro
+    m_Address: memory_owner_cafe
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -266,7 +261,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c470e333a5b3cce408ea5f39415838ad
-    m_Address: tilde_avatar
+    m_Address: yuki_avatar
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

@@ -244,7 +244,6 @@ namespace Game.Quest.Tests.Editor
                 AssertStoryCharacterMemory(characters, questIds, "millie");
                 AssertStoryCharacterMemory(characters, questIds, "tara");
                 AssertStoryCharacterMemory(characters, questIds, "captain");
-                AssertStoryCharacterMemory(characters, questIds, "tilde");
             }
         }
 

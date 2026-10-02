@@ -22,12 +22,6 @@
     "dialogueId": "millie1"
   },
   {
-    "id": "tilde_intro",
-    "dayIndex": 3,
-    "characterId": "tilde",
-    "dialogueId": "dlg_tilde_meet"
-  },
-  {
     "id": "tara_quest_intro",
     "dayIndex": 5,
     "characterId": "tara",
