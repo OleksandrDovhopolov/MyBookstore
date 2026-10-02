@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 968f7e801ba279c4b9d373659828dcfa
+guid: 887792deabafdd849a6a463ce9b49ea4
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7883027845158862082
-    second: Arived_0
+      213: 324836141666952704
+    second: MeetMartha_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Arived_0
+      name: MeetMartha_0
       rect:
         serializedVersion: 2
-        x: 10
-        y: 10
-        width: 428
-        height: 539
+        x: 0
+        y: 0
+        width: 1081
+        height: 1402
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ef20bced0fbd99290800000000000000
-      internalID: -7883027845158862082
+      spriteID: 0066442ffbc028400800000000000000
+      internalID: 324836141666952704
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Arived_0: -7883027845158862082
+      MeetMartha_0: 324836141666952704
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

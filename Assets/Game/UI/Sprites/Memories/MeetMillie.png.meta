@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: 968f7e801ba279c4b9d373659828dcfa
+guid: bcb2edf3d53b1e1429fd553237de6432
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7883027845158862082
-    second: Arived_0
+      213: -4503589477003058608
+    second: MeetMillie_0
+  - first:
+      213: -7433486473326697460
+    second: MeetMillie_1
+  - first:
+      213: 4083845144214768753
+    second: MeetMillie_2
+  - first:
+      213: -4465209531619289327
+    second: MeetMillie_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +135,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Arived_0
+      name: MeetMillie_0
       rect:
         serializedVersion: 2
-        x: 10
-        y: 10
-        width: 428
-        height: 539
+        x: 0
+        y: 0
+        width: 1073
+        height: 1380
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +150,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ef20bced0fbd99290800000000000000
-      internalID: -7883027845158862082
+      spriteID: 052ab015b390081c0800000000000000
+      internalID: -4503589477003058608
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MeetMillie_1
+      rect:
+        serializedVersion: 2
+        x: 353
+        y: 1361
+        width: 31
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c04e0b2df63f6d890800000000000000
+      internalID: -7433486473326697460
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MeetMillie_2
+      rect:
+        serializedVersion: 2
+        x: 60
+        y: 1135
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17c00a2858bbca830800000000000000
+      internalID: 4083845144214768753
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MeetMillie_3
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 942
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 117d424b6936802c0800000000000000
+      internalID: -4465209531619289327
       vertices: []
       indices: 
       edges: []
@@ -161,7 +236,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Arived_0: -7883027845158862082
+      MeetMillie_0: -4503589477003058608
+      MeetMillie_1: -7433486473326697460
+      MeetMillie_2: 4083845144214768753
+      MeetMillie_3: -4465209531619289327
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
