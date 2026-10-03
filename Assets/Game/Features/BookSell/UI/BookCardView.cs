@@ -10,11 +10,6 @@ using UnityEngine.UI;
 
 namespace Book.Sell.UI
 {
-    /// <summary>
-    /// A single book card inside the shelf grid. <see cref="SalesScreenView"/> instantiates one
-    /// per <see cref="Domain.ShelfBook"/>. States: Available (clickable) / Selected (highlighted)
-    /// / SoldOut (dimmed and non-interactable).
-    /// </summary>
     public sealed class BookCardView : MonoBehaviour
     {
         [Header("Labels")]

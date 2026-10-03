@@ -23,8 +23,7 @@ namespace Book.Sell.Services
         private readonly IQuestsService _quests;
         private readonly IDeliveredDialoguesService _delivered;
         private readonly ICustomerProfileProvider _profiles;
-        private readonly IActiveRequestRuntimeProvider _activeRequests;
-        private readonly IActiveRequestSelectorFactory _selectorFactory;
+        private readonly ICustomerVisualSelector _visualSelector;
 
         public ScriptedCustomerSpawner(
             ICustomerSpawner inner,
@@ -32,16 +31,14 @@ namespace Book.Sell.Services
             IQuestsService quests,
             IDeliveredDialoguesService delivered,
             ICustomerProfileProvider profiles,
-            IActiveRequestRuntimeProvider activeRequests,
-            IActiveRequestSelectorFactory selectorFactory)
+            ICustomerVisualSelector visualSelector = null)
         {
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _configs = configs ?? throw new ArgumentNullException(nameof(configs));
             _quests = quests ?? throw new ArgumentNullException(nameof(quests));
             _delivered = delivered ?? throw new ArgumentNullException(nameof(delivered));
             _profiles = profiles ?? throw new ArgumentNullException(nameof(profiles));
-            _activeRequests = activeRequests ?? throw new ArgumentNullException(nameof(activeRequests));
-            _selectorFactory = selectorFactory ?? throw new ArgumentNullException(nameof(selectorFactory));
+            _visualSelector = visualSelector;
         }
 
         public IReadOnlyList<Customer> BuildCustomers(SalesSessionSetup setup, SalesTuning tuning, ISalesRandom random)
@@ -75,7 +72,6 @@ namespace Book.Sell.Services
             ISalesRandom random,
             int capacity)
         {
-            var selector = _selectorFactory.CreateForDay(_activeRequests.GetRequests());
             var scriptedCustomers = new List<ScriptedCustomerVisit>();
             var replacedSlots = 0;
 
@@ -120,16 +116,18 @@ namespace Book.Sell.Services
                 }
 
                 var profile = BuildProfile(script, setup, random);
-                var request = wantsActiveRequest ? selector.Draw(profile, random) : null;
                 var passiveCount = ScriptedPassivePlanFactory.PassiveCountFor(scriptedPlan);
-                var archetype = BuildArchetype(dialogueId, hasDialogue, hasScriptedPassive, passiveCount, request);
+                var archetype = BuildArchetype(dialogueId, hasDialogue, hasScriptedPassive, passiveCount, wantsActiveRequest);
 
                 var customer = CustomerPlanBuilder.Build(
                     $"script_{script.Id}", tuning, random,
                     buildMiddle: () => archetype.BuildMiddle(setup, tuning, random),
                     profile: profile,
                     characterId: script.CharacterId,
-                    scriptedPassivePlan: scriptedPlan);
+                    scriptedPassivePlan: scriptedPlan,
+                    npcVisualIdFactory: () => string.IsNullOrWhiteSpace(script.CharacterId)
+                        ? _visualSelector?.SelectNpcVisualId(random)
+                        : null);
 
                 scriptedCustomers.Add(new ScriptedCustomerVisit(customer, replacesRegularSlot));
                 if (replacesRegularSlot)
@@ -144,14 +142,14 @@ namespace Book.Sell.Services
             bool hasDialogue,
             bool hasScriptedPassive,
             int passiveCount,
-            ActiveRequestRuntime request)
+            bool wantsActiveRequest)
         {
             ICustomerArchetype salesArchetype;
-            if (request != null)
+            if (wantsActiveRequest)
             {
                 salesArchetype = hasScriptedPassive
-                    ? new PassiveActivePassiveArchetype(request, passiveCount, passiveCount)
-                    : new ActiveRequestArchetype(request);
+                    ? new PassiveActivePassiveArchetype(passiveCount, passiveCount)
+                    : new ActiveRequestArchetype();
             }
             else
             {
@@ -161,7 +159,7 @@ namespace Book.Sell.Services
             if (!hasDialogue)
                 return salesArchetype;
 
-            var afterDialogue = hasScriptedPassive || request != null ? salesArchetype : null;
+            var afterDialogue = hasScriptedPassive || wantsActiveRequest ? salesArchetype : null;
             return new QuestCharacterArchetype(new DialoguePayload(dialogueId), afterDialogue);
         }
 

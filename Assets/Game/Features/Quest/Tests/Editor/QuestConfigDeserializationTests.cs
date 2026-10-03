@@ -182,9 +182,10 @@ namespace Game.Quest.Tests.Editor
                 var characters = JsonConvert.DeserializeObject<CharacterConfig[]>(
                     File.ReadAllText(Path.Combine(root, "characters.json")));
 
-                Assert.AreEqual(4, quests.Length, root);
+                var playerFacing = quests.Where(q => !q.HiddenInJournal).ToArray();
+                Assert.AreEqual(4, playerFacing.Length, root);
 
-                foreach (var quest in quests)
+                foreach (var quest in playerFacing)
                 {
                     Assert.IsFalse(string.IsNullOrEmpty(quest.CharacterId), quest.Id);
                     Assert.IsTrue(characters.Any(c => c.Id == quest.CharacterId),
@@ -192,6 +193,36 @@ namespace Game.Quest.Tests.Editor
                     Assert.IsTrue(characters.Any(c => c.DiscoveryQuestIds != null
                         && c.DiscoveryQuestIds.Contains(quest.Id)),
                         $"{quest.Id} must be referenced by a character discoveryQuestIds entry");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Service quests (memory-unlock wrappers) stay out of the journal and are awarded automatically,
+        /// so they carry no player-facing text and no rewards — but their characterId must still resolve,
+        /// because CharactersService indexes memories by it.
+        /// </summary>
+        [Test]
+        public void Content_ServiceQuests_AreSilentAndRewardless_InBothRoots()
+        {
+            foreach (var root in ContentRoots)
+            {
+                var quests = JsonConvert.DeserializeObject<QuestConfig[]>(
+                    File.ReadAllText(Path.Combine(root, "quests.json")));
+                var characters = JsonConvert.DeserializeObject<CharacterConfig[]>(
+                    File.ReadAllText(Path.Combine(root, "characters.json")));
+
+                var service = quests.Where(q => q.HiddenInJournal).ToArray();
+                Assert.IsNotEmpty(service, root);
+
+                foreach (var quest in service)
+                {
+                    Assert.IsTrue(characters.Any(c => c.Id == quest.CharacterId),
+                        $"{quest.Id} characterId '{quest.CharacterId}' must resolve in characters.json");
+                    Assert.IsNull(quest.TitleKey, quest.Id);
+                    Assert.IsNull(quest.DescriptionKey, quest.Id);
+                    Assert.IsEmpty(quest.Rewards, quest.Id);
+                    Assert.AreEqual(1, quest.Tasks.Length, $"{quest.Id} carries exactly one trigger task");
                 }
             }
         }
@@ -207,7 +238,9 @@ namespace Game.Quest.Tests.Editor
                     File.ReadAllText(Path.Combine(root, "characters.json")));
                 var questIds = new System.Collections.Generic.HashSet<string>(quests.Select(q => q.Id));
 
-                AssertStoryCharacterMemory(characters, questIds, "eddi");
+                // eddi's memory is the handover at day zero, so it is unlockedAtStart, not quest-linked.
+                AssertStartCharacterMemory(characters, "eddi");
+
                 AssertStoryCharacterMemory(characters, questIds, "millie");
                 AssertStoryCharacterMemory(characters, questIds, "tara");
                 AssertStoryCharacterMemory(characters, questIds, "captain");
@@ -314,6 +347,20 @@ namespace Game.Quest.Tests.Editor
                 Assert.IsFalse(string.IsNullOrEmpty(memory.QuestId), memory.Id);
                 Assert.IsTrue(questIds.Contains(memory.QuestId),
                     $"{characterId}.{memory.Id} questId '{memory.QuestId}' must resolve in quests.json");
+            }
+        }
+
+        private static void AssertStartCharacterMemory(CharacterConfig[] characters, string characterId)
+        {
+            var character = characters.Single(c => c.Id == characterId);
+            Assert.IsNotNull(character.Memories, characterId);
+            Assert.IsTrue(character.Memories.Length > 0, characterId);
+
+            foreach (var memory in character.Memories)
+            {
+                Assert.IsTrue(memory.UnlockedAtStart, memory.Id);
+                Assert.IsTrue(string.IsNullOrEmpty(memory.QuestId), memory.Id);
+                Assert.IsTrue(string.IsNullOrEmpty(memory.QuestChainId), memory.Id);
             }
         }
 

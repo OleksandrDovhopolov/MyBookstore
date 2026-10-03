@@ -87,6 +87,9 @@ Phase 0 не покрывает (3) и (6) полностью — игрок м�
 - Геймплейный эффект (Phase 0: только `GenreMultipliers`)
 - Ограничения размещения (position-type + size)
 - Метаданные (название, иконка, стоимость покупки)
+- `DescriptionKey` → `decor.<id>.desc` в `localization_items_en.json`: что даёт декор,
+  когда он поставлен. Показывается в `DecorInfoPopup` и в окне размещения через
+  `DecorTextResolver`; у декора без ключа подставляется `ui.decor.description.fallback`
 - **Reserved fields** — paintable/electric/style/activatable/distracting/upkeep (см. §6)
 
 ### 3.2 Slot

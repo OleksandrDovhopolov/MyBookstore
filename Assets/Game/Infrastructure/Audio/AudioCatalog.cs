@@ -13,6 +13,7 @@ namespace Infrastructure.Audio
         [Header("Gameplay SFX")]
         [SerializeField] private AudioClip _purchaseSuccess;
         [SerializeField] private AudioClip _actionBlocked;
+        [SerializeField] private AudioClip _saleFailed;
         [SerializeField] private AudioClip _decorPlace;
         [SerializeField] private AudioClip _decorRemove;
         [SerializeField] private AudioClip _currencyGained;
@@ -33,6 +34,7 @@ namespace Infrastructure.Audio
         public AudioClip WindowClose => _windowClose;
         public AudioClip PurchaseSuccess => _purchaseSuccess;
         public AudioClip ActionBlocked => _actionBlocked;
+        public AudioClip SaleFailed => _saleFailed;
         public AudioClip DecorPlace => _decorPlace;
         public AudioClip DecorRemove => _decorRemove;
         public AudioClip CurrencyGained => _currencyGained;

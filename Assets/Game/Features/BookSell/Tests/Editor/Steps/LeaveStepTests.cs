@@ -48,5 +48,36 @@ namespace Book.Sell.Tests.Editor.Steps
             step.Enter(self, ctx);
             Assert.AreEqual(StepStatus.Completed, step.Tick(self, ctx, 1f), "Override (1s) beats tuning (10s).");
         }
+
+        [Test]
+        public void TryOverrideDuration_BeforeFirstTick_BeatsTheCtorOverride()
+        {
+            var sink = new RecordingSink();
+            var tuning = new SalesTuning { LeaveDuration = 10f };
+            var ctx = SalesTestKit.Context(new SalesShelf(), SalesTestKit.Location(), sink, tuning: tuning);
+            var step = new LeaveStep(duration: 5f);
+            var self = new Customer("c1", new[] { step });
+
+            step.Enter(self, ctx);
+
+            Assert.IsTrue(step.TryOverrideDuration(1f), "The View's distance-derived value is the latest word.");
+            Assert.AreEqual(StepStatus.Completed, step.Tick(self, ctx, 1f));
+        }
+
+        [Test]
+        public void TryOverrideDuration_AfterTicking_IsIgnored()
+        {
+            var sink = new RecordingSink();
+            var tuning = new SalesTuning { LeaveDuration = 10f };
+            var ctx = SalesTestKit.Context(new SalesShelf(), SalesTestKit.Location(), sink, tuning: tuning);
+            var step = new LeaveStep(duration: 4f);
+            var self = new Customer("c1", new[] { step });
+
+            step.Enter(self, ctx);
+            step.Tick(self, ctx, 0.5f);
+
+            Assert.IsFalse(step.TryOverrideDuration(1f));
+            Assert.AreEqual(4f, step.ResolveDuration(tuning));
+        }
     }
 }

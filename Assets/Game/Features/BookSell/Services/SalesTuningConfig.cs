@@ -15,6 +15,8 @@ namespace Book.Sell.Services
         [SerializeField] private float _approachDuration = 3f;
         [SerializeField] private float _minApproachDuration = 3f;
         [SerializeField] private float _maxApproachDuration = 6f;
+        [Tooltip("Скорость подхода в мировых единицах/сек. Длительность = дистанция / скорость, зажатая в min/max. 0 — вернуться к случайной длительности.")]
+        [SerializeField] private float _approachSpeed = 2.5f;
 
         [Header("Passive purchase")]
         [SerializeField] private float _browseDuration = 3.5f;
@@ -39,6 +41,8 @@ namespace Book.Sell.Services
         [SerializeField] private float _leaveDuration = 3f;
         [SerializeField] private float _minLeaveDuration = 3f;
         [SerializeField] private float _maxLeaveDuration = 6f;
+        [Tooltip("Скорость ухода в мировых единицах/сек. Аналог _approachSpeed.")]
+        [SerializeField] private float _leaveSpeed = 2.5f;
 
         [Header("Spawning")]
         [SerializeField] private float _spawnInterval = 5.0f;
@@ -51,6 +55,7 @@ namespace Book.Sell.Services
             ApproachDuration = _approachDuration,
             MinApproachDuration = _minApproachDuration,
             MaxApproachDuration = _maxApproachDuration,
+            ApproachSpeed = _approachSpeed,
             BrowseDuration = _browseDuration,
             PassiveCommitDelay = _passiveCommitDelay,
             PassiveFailureFeedbackDuration = _passiveFailureFeedbackDuration,
@@ -66,6 +71,7 @@ namespace Book.Sell.Services
             LeaveDuration = _leaveDuration,
             MinLeaveDuration = _minLeaveDuration,
             MaxLeaveDuration = _maxLeaveDuration,
+            LeaveSpeed = _leaveSpeed,
             SpawnInterval = _spawnInterval,
             MaxConcurrentCustomers = _maxConcurrentCustomers,
             PassiveRequestGenreCount = _passiveRequestGenreCount

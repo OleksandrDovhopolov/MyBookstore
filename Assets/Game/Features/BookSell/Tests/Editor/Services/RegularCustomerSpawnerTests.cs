@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Book.Sell.Domain;
 using Book.Sell.Services;
 using Book.Sell.Tests.Editor.Fakes;
+using Game.Configs.Models;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -49,6 +50,13 @@ namespace Book.Sell.Tests.Editor.Services
                 => new(new[] { "Fact", "Travel" });
         }
 
+        private sealed class StubVisualSelector : ICustomerVisualSelector
+        {
+            private readonly string _id;
+            public StubVisualSelector(string id) => _id = id;
+            public string SelectNpcVisualId(ISalesRandom random) => _id;
+        }
+
         private static SalesSessionSetup Setup()
             => new SalesSessionSetup(1, "loc", Array.Empty<string>(), Array.Empty<string>());
 
@@ -57,7 +65,8 @@ namespace Book.Sell.Tests.Editor.Services
             int requestDemand,
             int poolSize,
             ICustomerProfileProvider profiles = null,
-            FakeSalesRandom random = null)
+            FakeSalesRandom random = null,
+            ICustomerVisualSelector visualSelector = null)
         {
             var pool = new ActiveRequestRuntime[poolSize];
             for (var i = 0; i < poolSize; i++) pool[i] = SalesTestKit.ActiveRequest($"r{i + 1}");
@@ -67,7 +76,8 @@ namespace Book.Sell.Tests.Editor.Services
                 new StubResolver(new CustomerTrafficResult(customerCount, customerCount, isHardOverride: false, breakdown: null)),
                 new StubActiveRequests(pool),
                 profiles,
-                new StubRequestCount(requestDemand));
+                new StubRequestCount(requestDemand),
+                visualSelector: visualSelector);
 
             return spawner.BuildCustomers(Setup(), SalesTestKit.FastTuning(), random ?? new FakeSalesRandom());
         }
@@ -186,6 +196,19 @@ namespace Book.Sell.Tests.Editor.Services
         }
 
         [Test]
+        public void RegularCustomers_ReceiveNpcVisualFromSelector()
+        {
+            var customers = Build(
+                customerCount: 1,
+                requestDemand: 0,
+                poolSize: 0,
+                visualSelector: new StubVisualSelector("npc_01"));
+
+            Assert.AreEqual("npc_01", customers[0].NpcVisualId);
+            Assert.IsNull(customers[0].CharacterId);
+        }
+
+        [Test]
         public void ActiveRequest_IsSelectedToMatchCustomerProfile()
         {
             var spawner = new RegularCustomerSpawner(
@@ -203,6 +226,22 @@ namespace Book.Sell.Tests.Editor.Services
 
             Assert.AreEqual(1, sink.ActiveStarted.Count);
             Assert.AreEqual("fact", sink.ActiveStarted[0].request.Id);
+        }
+
+        [Test]
+        public void CustomerVisualSelector_UsesWeightedRandomActiveVisualsOnly()
+        {
+            var configs = new FakeConfigsService();
+            configs.SetAll(new[]
+            {
+                new CustomerVisualConfig { Id = "npc_01", Weight = 1f },
+                new CustomerVisualConfig { Id = "npc_02", Weight = 3f },
+                new CustomerVisualConfig { Id = "npc_03", Weight = 0f }
+            });
+            var selector = new CustomerVisualSelector(configs);
+
+            Assert.AreEqual("npc_01", selector.SelectNpcVisualId(new FakeSalesRandom().EnqueueDouble(0.0)));
+            Assert.AreEqual("npc_02", selector.SelectNpcVisualId(new FakeSalesRandom().EnqueueDouble(0.99)));
         }
     }
 }

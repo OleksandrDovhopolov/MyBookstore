@@ -74,15 +74,14 @@ namespace Book.Sell.Tests.Editor
             FakeQuestsService quests = null,
             StubDeliveredDialogues delivered = null,
             ICustomerProfileProvider profiles = null,
-            IActiveRequestRuntimeProvider activeRequests = null)
+            ICustomerVisualSelector visualSelector = null)
             => new(
                 inner,
                 configs,
                 quests ?? new FakeQuestsService(),
                 delivered ?? new StubDeliveredDialogues(),
                 profiles ?? new StubProfileProvider(),
-                activeRequests ?? new StubActiveRequests(Array.Empty<ActiveRequestRuntime>()),
-                new ProfileMatchedRequestSelectorFactory());
+                visualSelector);
 
         [Test]
         public void DayScript_ReplacesRegularSlot_AndPreservesTotalCount()
@@ -304,6 +303,37 @@ namespace Book.Sell.Tests.Editor
         }
 
         [Test]
+        public void ScriptedCustomerWithoutCharacter_ReceivesNpcVisual()
+        {
+            var configs = new FakeConfigsService();
+            configs.SetAll(new[] { Script("day2_missed_sale") });
+            var inner = new StubCustomerSpawner(new List<Customer> { Passive("inner_1") });
+
+            var customers = Spawner(inner, configs, visualSelector: new StubVisualSelector("npc_01"))
+                .BuildCustomers(DayTwoSetup, Tuning, new FakeSalesRandom());
+
+            Assert.AreEqual("script_day2_missed_sale", customers[0].Id);
+            Assert.IsNull(customers[0].CharacterId);
+            Assert.AreEqual("npc_01", customers[0].NpcVisualId);
+        }
+
+        [Test]
+        public void ScriptedCustomerWithCharacter_DoesNotReceiveNpcVisual()
+        {
+            var configs = ConfigsWithEddi(Script("eddi_intro", dayIndex: null,
+                activationQuestId: "q_intro_eddi", dialogueId: "eddy1", characterId: "eddi",
+                attempts: EddiAttempts()));
+            var quests = new FakeQuestsService(("q_intro_eddi", QuestState.Active));
+            var inner = new StubCustomerSpawner(new List<Customer> { Passive("inner_1") });
+
+            var customers = Spawner(inner, configs, quests, visualSelector: new StubVisualSelector("npc_01"))
+                .BuildCustomers(DayOneSetup, Tuning, new FakeSalesRandom());
+
+            Assert.AreEqual("eddi", customers[0].CharacterId);
+            Assert.IsNull(customers[0].NpcVisualId);
+        }
+
+        [Test]
         public void QuestScript_Skips_WhenDialogueAlreadyDelivered()
         {
             var configs = ConfigsWithEddi(Script("eddi_intro", dayIndex: null,
@@ -448,26 +478,32 @@ namespace Book.Sell.Tests.Editor
                 }
             });
             var inner = new StubCustomerSpawner(new List<Customer> { Passive("inner_1"), Passive("inner_2") });
-            var activeRequests = new StubActiveRequests(new[]
-            {
-                SalesTestKit.ActiveRequest("crime", requiredGenres: new[] { "Crime" }),
-                SalesTestKit.ActiveRequest("fact", requiredGenres: new[] { "Fact" })
-            });
 
-            var customers = Spawner(inner, configs, activeRequests: activeRequests)
+            // The day's pool now lives on the context: the step draws from it once the customer reaches
+            // the minigame, so the spawner never sees a request at all.
+            var selector = new ProfileMatchedRequestSelector(
+                new[]
+                {
+                    SalesTestKit.ActiveRequest("crime", requiredGenres: new[] { "Crime" }),
+                    SalesTestKit.ActiveRequest("fact", requiredGenres: new[] { "Fact" })
+                },
+                new BookConditionRequestEvaluator());
+
+            var customers = Spawner(inner, configs)
                 .BuildCustomers(DayTwoSetup, Tuning, new FakeSalesRandom());
             var customer = customers[0];
             var ctx = SalesTestKit.Context(SalesTestKit.Shelf(SalesTestKit.Book("book_fact", "Fact")),
-                SalesTestKit.Location(), new RecordingSink());
+                SalesTestKit.Location(), new RecordingSink(), activeRequests: selector);
 
             Assert.AreEqual(2, customers.Count);
             Assert.AreEqual("script_active_fact", customer.Id);
             CollectionAssert.AreEqual(new[] { "Fact" }, customer.Profile.DesiredGenres);
 
-            customer.Tick(ctx, 1f); // Approach -> Active request.
+            customer.Tick(ctx, 1f); // Approach -> Active request (BrowseDuration is 0, so the lock is taken).
 
             Assert.IsInstanceOf<ActiveRequestStep>(customer.CurrentStep);
-            Assert.AreEqual("fact", ((ActiveRequestStep)customer.CurrentStep).Request.Id);
+            Assert.AreEqual("fact", ((ActiveRequestStep)customer.CurrentStep).Request.Id,
+                "The profile is Fact and the shelf can answer it.");
 
             customer.ForceCompleteCurrentStep(ctx);
 
@@ -511,6 +547,13 @@ namespace Book.Sell.Tests.Editor
         {
             public CustomerProfile Create(SalesSessionSetup setup, ISalesRandom random)
                 => new(new[] { "Fallback" });
+        }
+
+        private sealed class StubVisualSelector : ICustomerVisualSelector
+        {
+            private readonly string _id;
+            public StubVisualSelector(string id) => _id = id;
+            public string SelectNpcVisualId(ISalesRandom random) => _id;
         }
 
         private sealed class StubActiveRequests : IActiveRequestRuntimeProvider

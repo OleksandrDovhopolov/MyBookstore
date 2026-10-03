@@ -148,6 +148,45 @@ namespace Game.Shop.Tests.Editor
             Assert.AreEqual("map", offers[0].IconId);
         }
 
+        [Test]
+        public void GetDecorOffers_OmitsLotsHiddenByTheProgressionGate()
+        {
+            var lots = new[]
+            {
+                new ShopLot(
+                    "decor_open",
+                    NewspaperShopLotIds.StorefrontDecor,
+                    new ShopPrice("gold", 0),
+                    "decor_vintage_globe",
+                    ShopLotLimit.Disposable(1),
+                    "Vintage Globe",
+                    "Available from day one"),
+                new ShopLot(
+                    "decor_locked",
+                    NewspaperShopLotIds.StorefrontDecor,
+                    new ShopPrice("gold", 120),
+                    "decor_tifany_lamp",
+                    ShopLotLimit.Disposable(1),
+                    "Tiffany Lamp",
+                    "Unlocks later"),
+            };
+            var shop = new FakeShopService(
+                lots,
+                unavailableLotId: null,
+                gatedLotIds: new[] { "decor_locked" });
+            var configs = new FakeConfigsService(new Dictionary<string, RewardItemData>
+            {
+                ["decor_open"] = RewardItem("vintage_globe", "decor"),
+                ["decor_locked"] = RewardItem("tifany_lamp", "decor"),
+            });
+            var source = new ShopOfferSource(shop, configs);
+
+            var decor = source.GetDecorOffers();
+
+            Assert.AreEqual(1, decor.Count, "a gated lot must be hidden, not rendered as sold out");
+            Assert.AreEqual("decor_open", decor[0].LotId);
+        }
+
         private static RewardItemData RewardItem(string id, string category) =>
             new RewardItemData
             {
@@ -198,11 +237,17 @@ namespace Game.Shop.Tests.Editor
         {
             private readonly List<ShopLot> _lots;
             private readonly string _unavailableLotId;
+            private readonly HashSet<string> _gatedLotIds;
 
-            public FakeShopService(IEnumerable<ShopLot> lots, string unavailableLotId)
+            public FakeShopService(
+                IEnumerable<ShopLot> lots,
+                string unavailableLotId,
+                IEnumerable<string> gatedLotIds = null)
             {
                 _lots = new List<ShopLot>(lots);
                 _unavailableLotId = unavailableLotId;
+                _gatedLotIds = new HashSet<string>(
+                    gatedLotIds ?? Array.Empty<string>(), StringComparer.Ordinal);
             }
 
             public IReadOnlyList<ShopLot> GetLots(string storefrontId)
@@ -218,7 +263,20 @@ namespace Game.Shop.Tests.Editor
                 return result;
             }
 
-            public IReadOnlyList<ShopLot> GetOfferedLots(string storefrontId) => GetLots(storefrontId);
+            // Mirrors the real service: a lot whose unlock condition is unmet is dropped here, so it
+            // never reaches the UI at all.
+            public IReadOnlyList<ShopLot> GetOfferedLots(string storefrontId)
+            {
+                var all = GetLots(storefrontId);
+                if (_gatedLotIds.Count == 0) return all;
+
+                var result = new List<ShopLot>(all.Count);
+                for (var i = 0; i < all.Count; i++)
+                    if (!_gatedLotIds.Contains(all[i].LotId))
+                        result.Add(all[i]);
+
+                return result;
+            }
 
             public bool TryGetLot(string lotId, out ShopLot lot)
             {
@@ -236,7 +294,8 @@ namespace Game.Shop.Tests.Editor
             public int GetPurchaseCount(string lotId) => 0;
 
             public bool IsAvailable(string lotId) =>
-                !string.Equals(lotId, _unavailableLotId, StringComparison.Ordinal);
+                !_gatedLotIds.Contains(lotId)
+                && !string.Equals(lotId, _unavailableLotId, StringComparison.Ordinal);
 
             public UniTask<ShopPurchaseResult> BuyAsync(string lotId, CancellationToken ct) =>
                 UniTask.FromResult(ShopPurchaseResult.Fail(ShopPurchaseStatus.InternalError));

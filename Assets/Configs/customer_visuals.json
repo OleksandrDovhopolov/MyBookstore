@@ -1,0 +1,38 @@
+[
+  {
+    "id": "npc_01",
+    "figureSpriteKey": "npc_01_front",
+    "avatarSpriteKey": "npc_01_avatar",
+    "weight": 1
+  },
+  {
+    "id": "npc_02",
+    "figureSpriteKey": "npc_02_front",
+    "avatarSpriteKey": "npc_02_avatar",
+    "weight": 1
+  },
+  {
+    "id": "npc_03",
+    "figureSpriteKey": "npc_03_front",
+    "avatarSpriteKey": "npc_03_avatar",
+    "weight": 1
+  },
+  {
+    "id": "npc_04",
+    "figureSpriteKey": "npc_04_front",
+    "avatarSpriteKey": "npc_04_avatar",
+    "weight": 1
+  },
+  {
+    "id": "npc_05",
+    "figureSpriteKey": "npc_05_front",
+    "avatarSpriteKey": "npc_05_avatar",
+    "weight": 1
+  },
+  {
+    "id": "npc_06",
+    "figureSpriteKey": "npc_06_front",
+    "avatarSpriteKey": "npc_06_avatar",
+    "weight": 1
+  }
+]

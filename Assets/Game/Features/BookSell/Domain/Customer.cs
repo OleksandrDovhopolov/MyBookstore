@@ -15,6 +15,7 @@ namespace Book.Sell.Domain
 
         public string Id { get; }
         public string CharacterId { get; }
+        public string NpcVisualId { get; }
         public CustomerPhase Phase { get; private set; } = CustomerPhase.Spawned;
 
         /// <summary>Desire profile (genres) used by the requested-genre passive model. Empty by default
@@ -34,10 +35,12 @@ namespace Book.Sell.Domain
             IReadOnlyList<ICustomerStep> plan,
             CustomerProfile profile = null,
             string characterId = null,
-            ScriptedPassivePurchasePlan scriptedPassivePlan = null)
+            ScriptedPassivePurchasePlan scriptedPassivePlan = null,
+            string npcVisualId = null)
         {
             Id = id;
             CharacterId = characterId;
+            NpcVisualId = npcVisualId;
             _plan = new CustomerPlan(plan);   // CustomerPlan copies the list
             Profile = profile ?? CustomerProfile.Empty;
             ScriptedPassivePlan = scriptedPassivePlan;

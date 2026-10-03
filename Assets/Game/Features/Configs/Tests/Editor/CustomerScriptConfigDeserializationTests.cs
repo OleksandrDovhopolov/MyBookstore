@@ -19,6 +19,7 @@ namespace Game.Configs.Tests.Editor
         };
 
         private const string BooksFileName = "books.json";
+        private const string CustomerVisualsFileName = "customer_visuals.json";
 
         private const string Json = @"
 [
@@ -94,6 +95,28 @@ namespace Game.Configs.Tests.Editor
             Assert.AreEqual("millie1", millie.DialogueId);
             Assert.AreEqual("millie", millie.CharacterId);
             Assert.IsNull(millie.PassiveAttempts);
+        }
+
+        [Test]
+        public void Deserialize_PopulatesCustomerVisual()
+        {
+            const string json = @"[
+  {
+    ""id"": ""npc_01"",
+    ""figureSpriteKey"": ""npc_01_front"",
+    ""avatarSpriteKey"": ""npc_01_avatar"",
+    ""weight"": 1
+  }
+]";
+
+            var visuals = JsonConvert.DeserializeObject<CustomerVisualConfig[]>(json);
+
+            Assert.IsNotNull(visuals);
+            Assert.AreEqual(1, visuals.Length);
+            Assert.AreEqual("npc_01", visuals[0].Id);
+            Assert.AreEqual("npc_01_front", visuals[0].FigureSpriteKey);
+            Assert.AreEqual("npc_01_avatar", visuals[0].AvatarSpriteKey);
+            Assert.AreEqual(1f, visuals[0].Weight);
         }
 
         [Test]
@@ -176,6 +199,13 @@ namespace Game.Configs.Tests.Editor
         {
             foreach (var root in ContentRoots)
                 AssertFirstDayStarterGenresCoverScriptedPassiveAttempts(root);
+        }
+
+        [Test]
+        public void Content_CustomerVisuals_HaveActiveReleaseFallback()
+        {
+            foreach (var root in ContentRoots)
+                AssertCustomerVisualsHaveActiveReleaseFallback(root);
         }
 
         [Test]
@@ -388,6 +418,21 @@ namespace Game.Configs.Tests.Editor
                     genreCounts.TryGetValue(genre, out var count) && count >= min,
                     $"{root}/{BooksFileName} must include at least {min} primary '{genre}' book(s) for the FTUE starter preset.");
             }
+        }
+
+        private static void AssertCustomerVisualsHaveActiveReleaseFallback(string root)
+        {
+            var visuals = JsonConvert.DeserializeObject<CustomerVisualConfig[]>(
+                File.ReadAllText(Path.Combine(root, CustomerVisualsFileName)));
+
+            Assert.IsNotNull(visuals);
+            Assert.IsTrue(
+                visuals.Any(v => v != null
+                                 && v.Weight > 0f
+                                 && !string.IsNullOrWhiteSpace(v.Id)
+                                 && !string.IsNullOrWhiteSpace(v.FigureSpriteKey)
+                                 && !string.IsNullOrWhiteSpace(v.AvatarSpriteKey)),
+                $"{root}/{CustomerVisualsFileName} must contain at least one active weighted NPC visual.");
         }
 
         private static string NormalizeJson(string json)

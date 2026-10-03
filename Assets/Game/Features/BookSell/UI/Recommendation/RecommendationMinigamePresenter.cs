@@ -14,7 +14,7 @@ namespace Book.Sell.UI
     /// Owns the lifecycle of <see cref="RecommendationMinigameWindow"/>: listens for active requests on
     /// <see cref="ISalesDayController"/>, opens the window (handing it the gameplay-scoped controller via
     /// <see cref="RecommendationMinigameArgs"/>, since the bootstrap-scoped window factory cannot inject it),
-    /// and exposes <see cref="IsWindowOpen"/> so <see cref="SalesScreenView"/> can pause the day while it is up.
+    /// and exposes <see cref="IsWindowOpen"/>
     /// While the window is open it also suppresses every world HUD (thought bubbles) so the focused minigame
     /// is clean, restoring them on close. Extracted from SalesScreenView so the screen only pumps the sim
     /// and renders the header/log.

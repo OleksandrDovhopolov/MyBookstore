@@ -26,6 +26,13 @@ namespace Game.Configs.Models
         public string TitleKey { get; set; }
         public string DescriptionKey { get; set; }
 
+        /// <summary>
+        /// Service quest: kept out of the journal quest list and the journal attention counters, and
+        /// awarded automatically the moment its tasks complete (there is no row to claim it from).
+        /// Used for memory-unlock wrappers whose only job is to carry a trigger condition.
+        /// </summary>
+        public bool HiddenInJournal { get; set; }
+
         /// <summary>MVP: 0 or 1 element (linear chain). Branching is a future graph, not a QuestChain.</summary>
         public string[] NextQuestIds { get; set; }
 

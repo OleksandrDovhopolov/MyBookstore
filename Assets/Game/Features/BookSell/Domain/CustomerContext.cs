@@ -23,6 +23,13 @@ namespace Book.Sell.Domain
         public ISalesDaySink Sink { get; }
         public SalesTuning Tuning { get; }
 
+        /// <summary>
+        /// The day's request pool, drawn from as customers reach the minigame rather than when the day is
+        /// planned. Lives here because it is day-scoped state shared by every active step: one selector per
+        /// day is what keeps two customers from being handed the same request.
+        /// </summary>
+        public IActiveRequestSelector ActiveRequests { get; }
+
         public CustomerContext(
             SalesShelf shelf,
             IInteractionLock interactionLock,
@@ -31,7 +38,8 @@ namespace Book.Sell.Domain
             LocationConfig location,
             IReadOnlyList<string> activeDecorIds,
             ISalesDaySink sink,
-            SalesTuning tuning)
+            SalesTuning tuning,
+            IActiveRequestSelector activeRequests = null)
         {
             Shelf = shelf;
             Lock = interactionLock;
@@ -41,6 +49,7 @@ namespace Book.Sell.Domain
             ActiveDecorIds = activeDecorIds ?? Array.Empty<string>();
             Sink = sink;
             Tuning = tuning;
+            ActiveRequests = activeRequests;
         }
     }
 }

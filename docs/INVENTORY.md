@@ -296,6 +296,24 @@ On a successful sale, Sales consumes the sold book by calling
 shelf/session state for UI and day flow; it is not the source of truth for whether the
 player owns a book.
 
+### Item info widget
+
+Клик по кнопке info в строке инвентаря открывает `ContentWidget` с описанием предмета
+(`InventoryWindowController.ShowItemInfoWidgetAsync`); декор уходит в отдельный
+`DecorInfoPopup`. Ключ описания подбирает `InventoryItemDescriptionResolver` по id строки:
+
+| Строка | Откуда ключ |
+|--------|-------------|
+| расходник | `ConsumableConfig.DescriptionKey` (`consumables.json`) |
+| квест-предмет | `QuestItemConfig.DescriptionKey` (`quest_items.json`) |
+| жанр книг | `BookGenre.ToDescriptionLocalizationKey()` → `book_genre.<lower>.desc` |
+| декор | `DecorConfig.DescriptionKey` (через `DecorInfoPopup`) |
+
+Жанровые строки — агрегаты, собираемые в коде, поэтому их ключи не прописаны ни в одном
+конфиге и `LocalizationKeyValidator` их не видит: за наличие ключей отвечает
+`BookGenreDescriptionKeyTests`. Если ключ не найден вовсе, подставляется
+`ui.inventory.item.description.fallback`.
+
 ### Debug UI
 
 `InventoryScreenView` is a lightweight tabbed window that lists items by category and
@@ -333,6 +351,7 @@ Tests live in `Assets/Game/Features/Inventory/Tests/Editor/` and use the local f
 | `InventoryServiceTests`              | Unique/Stack adds, idempotency, GetByCategory, partial/full removes, batch persistence, roundtrip.  |
 | `InventoryUseRouterTests`            | Handler dispatch, ConsumeAfterUse path, missing-item / missing-handler error messages.               |
 | `LegacyOwnedBooksMigrationHookTests` | One-time migration of legacy `day_progress.OwnedBookIds` into inventory (no-op after first run).     |
+| `InventoryItemDescriptionResolverTests` | Description-key lookup per row kind: consumable, quest item, book genre (any case), misses.      |
 
 To run them in the Editor: **Window → General → Test Runner → EditMode → Run All** with
 `Game.Inventory.Tests.Editor` selected.

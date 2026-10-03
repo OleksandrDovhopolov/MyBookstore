@@ -93,7 +93,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _portraitImage: {fileID: 2802459466361555273}
-  _spriteFallback: {fileID: 21300000, guid: 997def910878f4a2591f0219d0c704f3, type: 3}
+  _spriteFallback: {fileID: 21300000, guid: fb07378a3dedcb34cb312cb95f095135, type: 3}
   _completeBadge: {fileID: 8118254785495417885}
   _taskPool:
     prefab: {fileID: 4077997542497972351, guid: 0c5cef0b67dc9e94e82e8478bd1d3bf2, type: 3}

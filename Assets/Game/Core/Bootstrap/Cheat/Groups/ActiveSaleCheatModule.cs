@@ -44,7 +44,7 @@ namespace Game.Cheat
 
             // The cheat runs outside the sales-day scope, so the composer is new-ed here and resolves
             // localization through the locator.
-            _textComposer = new LexiconActiveRequestTextComposer(_configs, _evaluator, null);
+            _textComposer = new LexiconActiveRequestTextComposer(_configs, null);
         }
 
         public void Initialize(ICheatsContainer cheatsContainer)

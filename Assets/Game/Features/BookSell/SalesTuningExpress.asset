@@ -15,17 +15,23 @@ MonoBehaviour:
   _approachDuration: 2.5
   _minApproachDuration: 0.5
   _maxApproachDuration: 5
+  _approachSpeed: 4
   _browseDuration: 3.5
   _passiveCommitDelay: 1
   _passiveFailureFeedbackDuration: 1.5
   _passiveSaleFeedbackDuration: 1.5
+  _passiveSaleCommentChance: 0.35
+  _minPassiveAttempts: 1
+  _maxPassiveAttempts: 6
   _passiveDemandRequestShare: 0.7
   _passiveDemandRequestShareNarrow: 0.5
   _narrowDemandGenreThreshold: 3
+  _commentDuration: 1.2
   _completePurchaseDuration: 1.5
   _leaveDuration: 0.5
   _minLeaveDuration: 0.5
   _maxLeaveDuration: 1.5
+  _leaveSpeed: 5
   _spawnInterval: 2
-  _baseCustomers: 5
   _maxConcurrentCustomers: 9
+  _passiveRequestGenreCount: 2

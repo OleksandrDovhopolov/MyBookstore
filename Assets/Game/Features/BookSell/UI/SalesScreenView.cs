@@ -95,6 +95,7 @@ namespace Book.Sell.UI
             _controller.DayCompleted += OnDayCompleted;
             _controller.ShelfChanged += OnShelfChanged;
             _controller.PassiveSaleHappened += OnPassiveSaleHappened;
+            _controller.CustomerPassivePurchaseFailed += OnCustomerPassivePurchaseFailed;
 
             StartDayFlowAsync(_cts.Token).Forget();
         }
@@ -141,6 +142,11 @@ namespace Book.Sell.UI
         private void OnPassiveSaleHappened(PassiveSaleEvent _)
         {
             PlaySfx(Audio.Catalog?.BookSold);
+        }
+
+        private void OnCustomerPassivePurchaseFailed(Domain.Customer _, string __)
+        {
+            PlaySfx(Audio.Catalog?.SaleFailed);
         }
 
         private void PublishGenreBookCounts()
@@ -296,6 +302,7 @@ namespace Book.Sell.UI
                 _controller.DayCompleted -= OnDayCompleted;
                 _controller.ShelfChanged -= OnShelfChanged;
                 _controller.PassiveSaleHappened -= OnPassiveSaleHappened;
+                _controller.CustomerPassivePurchaseFailed -= OnCustomerPassivePurchaseFailed;
             }
 
             _cts.Cancel();

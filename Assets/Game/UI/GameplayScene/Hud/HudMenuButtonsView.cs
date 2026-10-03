@@ -21,11 +21,12 @@ namespace GameplayUI
         [SerializeField] private Button _shopButton;
         [SerializeField] private Button _settingsButton;
         [SerializeField] private GameObject _journalBadge;
+        [SerializeField] private GameObject _shopBadge;
 
         private IHudWindowLauncher _launcher;
         private bool _opening;
-        private bool _journalBadgeInitialized;
-        private bool _journalBadgeOn;
+        private BadgeState _journalBadgeState;
+        private BadgeState _shopBadgeState;
 
         public event Action StartDayClicked;
 
@@ -90,22 +91,39 @@ namespace GameplayUI
 
         public void SetStartButtonActive(bool active) => SetButtonInteractable(_startDayButton, active);
 
-        public void SetJournalBadge(bool on)
-        {
-            if (_journalBadge != null)
-                _journalBadge.SetActive(on);
+        public void SetJournalBadge(bool on) => SetBadge(_journalBadge, ref _journalBadgeState, on);
 
-            if (!_journalBadgeInitialized)
+        public void SetShopBadge(bool on) => SetBadge(_shopBadge, ref _shopBadgeState, on);
+
+        /// <summary>
+        /// Toggles one badge and plays the "something new" cue on the off -> on edge only. The first
+        /// call is always silent: it is the initial sync from the attention service, not news.
+        /// A badge that is not wired up in the prefab stays fully inert — no cue either, so an
+        /// unassigned slot cannot produce a sound with nothing on screen.
+        /// </summary>
+        private void SetBadge(GameObject badge, ref BadgeState state, bool on)
+        {
+            if (badge == null) return;
+
+            badge.SetActive(on);
+
+            if (!state.Initialized)
             {
-                _journalBadgeInitialized = true;
-                _journalBadgeOn = on;
+                state.Initialized = true;
+                state.On = on;
                 return;
             }
 
-            if (!_journalBadgeOn && on)
+            if (!state.On && on)
                 PlayUi(Audio.Catalog?.NewJournalEntry);
 
-            _journalBadgeOn = on;
+            state.On = on;
+        }
+
+        private struct BadgeState
+        {
+            public bool Initialized;
+            public bool On;
         }
 
         private void OnStartDayButtonClicked() => StartDayClicked?.Invoke();

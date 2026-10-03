@@ -7,9 +7,7 @@ namespace Game.Cheat
 {
     /// <summary>
     /// Debug control over the live sales day. The <see cref="ISalesDayController"/> lives in the gameplay
-    /// scope and is not resolvable from the global-scope cheat panel (see CheatModuleView), so it is reached
-    /// through the active <see cref="SalesScreenView"/> in the scene. Buttons no-op with a warning when no
-    /// sales day is running.
+    /// scope and is not resolvable from the global-scope cheat panel (see CheatModuleView)
     /// </summary>
     public sealed class SalesCheatModule : ICheatsModule
     {

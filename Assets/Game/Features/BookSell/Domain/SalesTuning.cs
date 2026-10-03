@@ -9,11 +9,25 @@ namespace Book.Sell.Domain
         /// <summary>Fallback fixed approach duration used by manually constructed approach steps.</summary>
         public float ApproachDuration { get; set; } = 3f;
 
-        /// <summary>Minimum seconds a spawned customer spends walking up before buying can start.</summary>
+        /// <summary>
+        /// Minimum seconds a spawned customer spends walking up before buying can start. Also the lower
+        /// clamp applied to the distance-derived duration (see <see cref="ApproachSpeed"/>).
+        /// </summary>
         public float MinApproachDuration { get; set; } = 3f;
 
-        /// <summary>Maximum seconds a spawned customer spends walking up before buying can start.</summary>
+        /// <summary>
+        /// Maximum seconds a spawned customer spends walking up before buying can start. Also the upper
+        /// clamp applied to the distance-derived duration (see <see cref="ApproachSpeed"/>).
+        /// </summary>
         public float MaxApproachDuration { get; set; } = 6f;
+
+        /// <summary>
+        /// Walking speed in world units per second used by the View to turn the real entry→lane distance
+        /// into an approach duration, so customers entering from the far side don't appear to sprint.
+        /// The result is clamped to [<see cref="MinApproachDuration"/>, <see cref="MaxApproachDuration"/>].
+        /// <c>&lt;= 0</c> falls back to the random duration drawn when the plan was built.
+        /// </summary>
+        public float ApproachSpeed { get; set; } = 2.5f;
 
         /// <summary>Seconds a customer "thinks" before each passive purchase attempt.</summary>
         public float BrowseDuration { get; set; } = 3.5f;
@@ -43,11 +57,17 @@ namespace Book.Sell.Domain
         /// Aligned with the visual exit move so the domain finishes roughly as the visual despawns.</summary>
         public float LeaveDuration { get; set; } = 3f;
 
-        /// <summary>Minimum seconds a spawned customer spends walking away when leaving.</summary>
+        /// <summary>Minimum seconds a spawned customer spends walking away when leaving. Also the lower
+        /// clamp on the distance-derived duration (see <see cref="LeaveSpeed"/>).</summary>
         public float MinLeaveDuration { get; set; } = 3f;
 
-        /// <summary>Maximum seconds a spawned customer spends walking away when leaving.</summary>
+        /// <summary>Maximum seconds a spawned customer spends walking away when leaving. Also the upper
+        /// clamp on the distance-derived duration (see <see cref="LeaveSpeed"/>).</summary>
         public float MaxLeaveDuration { get; set; } = 6f;
+
+        /// <summary>Walk-away speed in world units per second; the leave counterpart of
+        /// <see cref="ApproachSpeed"/>. <c>&lt;= 0</c> falls back to the drawn duration.</summary>
+        public float LeaveSpeed { get; set; } = 2.5f;
 
         /// <summary>Seconds between sequential customer spawns ("one by one").</summary>
         public float SpawnInterval { get; set; } = 5.0f;

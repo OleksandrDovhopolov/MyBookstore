@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb073179077b9c54682653d639aeb329, type: 3}
+  m_Name: SalesTuningDense
+  m_EditorClassIdentifier: 
+  _approachDuration: 1.8
+  _minApproachDuration: 1.5
+  _maxApproachDuration: 2.2
+  _approachSpeed: 3.5
+  _browseDuration: 2.5
+  _passiveCommitDelay: 0.4
+  _passiveFailureFeedbackDuration: 0.8
+  _passiveSaleFeedbackDuration: 1
+  _passiveSaleCommentChance: 0.25
+  _minPassiveAttempts: 1
+  _maxPassiveAttempts: 6
+  _passiveDemandRequestShare: 0.7
+  _passiveDemandRequestShareNarrow: 0.5
+  _narrowDemandGenreThreshold: 3
+  _commentDuration: 1
+  _completePurchaseDuration: 1
+  _leaveDuration: 1.8
+  _minLeaveDuration: 1.5
+  _maxLeaveDuration: 2.2
+  _leaveSpeed: 3.5
+  _spawnInterval: 2
+  _maxConcurrentCustomers: 6
+  _passiveRequestGenreCount: 2
