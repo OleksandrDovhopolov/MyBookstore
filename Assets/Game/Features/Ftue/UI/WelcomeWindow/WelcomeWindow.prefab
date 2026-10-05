@@ -1896,9 +1896,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Junior Trick is ready to be a dad, but where is he supposed to find time
-    to date? When he isn't recing children and pets from burning buildings, he's
-    usually at home, sleeping off one of his 24-hour ahifts!
+  m_text: The shop is yours now. Open the shutters, dust off the shelves, and give
+    the first readers a reason to linger. Every good bookshop begins with one quiet
+    morning and one brave step through the door.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dfeedb9dd1c0b473886e97c2a0b71e70, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 4fd6adf3455d71c4e80e365f5634de40, type: 2}
