@@ -169,10 +169,10 @@ namespace Game.Configs.Tests.Editor
         }
 
         [Test]
-        public void Content_DayOne_UsesTwoWavesForEddiThenMissNpc()
+        public void Content_DayOne_UsesTwoWaves()
         {
             foreach (var root in ContentRoots)
-                AssertDayOneUsesTwoWavesForEddiThenMissNpc(root);
+                AssertDayOneUsesTwoWaves(root);
         }
 
         [Test]
@@ -256,7 +256,7 @@ namespace Game.Configs.Tests.Editor
                 CustomerScriptDayLookup.PassiveGenresForDay(scripts, 1));
         }
 
-        private static void AssertDayOneUsesTwoWavesForEddiThenMissNpc(string root)
+        private static void AssertDayOneUsesTwoWaves(string root)
         {
             var days = JsonConvert.DeserializeObject<DayConfig[]>(
                 File.ReadAllText(Path.Combine(root, "days.json")));
@@ -267,37 +267,12 @@ namespace Game.Configs.Tests.Editor
             Assert.IsTrue(day1.ActiveRequestCount.HasValue);
             Assert.AreEqual(0, day1.ActiveRequestCount.Value);
             CollectionAssert.AreEqual(new[] { 1, 3 }, day1.WaveSizes);
+            // Same value as WaveScheduleResolver.DefaultWaveGapSeconds; spelled out because this assembly
+            // does not reference Book.Sell.
             Assert.IsTrue(day1.WaveGapSeconds.HasValue);
-            Assert.AreEqual(2f, day1.WaveGapSeconds.Value);
+            Assert.AreEqual(0.5f, day1.WaveGapSeconds.Value);
             Assert.IsTrue(day1.ApplyModifiers.HasValue);
             Assert.IsFalse(day1.ApplyModifiers.Value);
-        }
-
-        [Test]
-        public void Content_DayOneMissScript_UsesKnownTravelGenre()
-        {
-            foreach (var root in ContentRoots)
-                AssertDayOneMissScriptUsesKnownTravelGenre(root);
-        }
-
-        private static void AssertDayOneMissScriptUsesKnownTravelGenre(string root)
-        {
-            var scripts = JsonConvert.DeserializeObject<CustomerScriptConfig[]>(
-                File.ReadAllText(Path.Combine(root, "customer_scripts.json")));
-            var books = JsonConvert.DeserializeObject<BookConfig[]>(
-                File.ReadAllText(Path.Combine(root, BooksFileName)));
-
-            var script = scripts.Single(s => s.Id == "day2_missed_sale");
-            Assert.IsTrue(script.DayIndex.HasValue);
-            Assert.AreEqual(1, script.DayIndex.Value);
-
-            var attempt = AssertOneAttempt(script);
-            Assert.AreEqual("Travel", attempt.Genre);
-            Assert.IsFalse(attempt.ForceHit);
-
-            Assert.IsTrue(
-                books.Any(b => string.Equals(b.PrimaryGenre, attempt.Genre, StringComparison.OrdinalIgnoreCase)),
-                "The scripted miss genre must exist in BookConfig.PrimaryGenre.");
         }
 
         [Test]
@@ -437,13 +412,6 @@ namespace Game.Configs.Tests.Editor
 
         private static string NormalizeJson(string json)
             => JToken.Parse(json).ToString(Formatting.None);
-
-        private static ScriptedPassivePurchaseConfig AssertOneAttempt(CustomerScriptConfig script)
-        {
-            Assert.IsNotNull(script.PassiveAttempts);
-            Assert.AreEqual(1, script.PassiveAttempts.Length);
-            return script.PassiveAttempts[0];
-        }
 
         private sealed class FakeConfigSource : IConfigSource
         {

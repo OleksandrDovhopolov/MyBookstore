@@ -145,6 +145,6 @@
   "task.q_intro_eddi_sell_crime": "Sell 10 Crime books.",
   "task.q_intro_eddi_sell_drama": "Sell 10 Drama books.",
   "task.q_intro_eddi_sell_fantasy": "Sell 15 Fantasy books.",
-  "task.q_intro_millie_pick_science": "Recommend 5 Fact books in active requests.",
-  "task.q_tara_kids_pick_kids": "Recommend 5 Kids books in active requests."
+  "task.q_intro_millie_pick_kids": "Recommend 2 Kids books in active requests.",
+  "task.q_tara_kids_pick_drama": "Recommend 2 Drama books in active requests."
 }

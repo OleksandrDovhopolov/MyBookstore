@@ -76,10 +76,10 @@
     "tasks": [
       {
         "id": 1,
-        "descriptionKey": "task.q_intro_millie_pick_science",
+        "descriptionKey": "task.q_intro_millie_pick_kids",
         "completionConditions": {
           "type": "activePickGenre",
-          "genre": "Fact",
+          "genre": "Kids",
           "min": 2
         }
       }
@@ -116,11 +116,11 @@
     "tasks": [
       {
         "id": 1,
-        "descriptionKey": "task.q_tara_kids_pick_kids",
+        "descriptionKey": "task.q_tara_kids_pick_drama",
         "completionConditions": {
           "type": "activePickGenre",
-          "genre": "Kids",
-          "min": 3
+          "genre": "Drama",
+          "min": 2
         }
       }
     ],

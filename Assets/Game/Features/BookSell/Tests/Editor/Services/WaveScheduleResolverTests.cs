@@ -33,7 +33,18 @@ namespace Book.Sell.Tests.Editor.Services
             var result = WaveScheduleResolver.Resolve(ConfigsWith(), 1);
 
             Assert.IsNull(result.waveSizes);
-            Assert.AreEqual(0f, result.gapSeconds);
+            Assert.AreEqual(WaveScheduleResolver.DefaultWaveGapSeconds, result.gapSeconds);
+        }
+
+        [Test]
+        public void Resolve_DayWithoutAuthoredGap_ReturnsDefaultGap()
+        {
+            var configs = ConfigsWith(new DayConfig { Id = "d1", DayIndex = 1, WaveSizes = new[] { 2, 2 } });
+
+            var result = WaveScheduleResolver.Resolve(configs, 1);
+
+            CollectionAssert.AreEqual(new[] { 2, 2 }, result.waveSizes);
+            Assert.AreEqual(WaveScheduleResolver.DefaultWaveGapSeconds, result.gapSeconds);
         }
 
         [Test]
@@ -62,14 +73,14 @@ namespace Book.Sell.Tests.Editor.Services
         }
 
         [Test]
-        public void Resolve_NegativeGap_WarnsAndReturnsZeroGap()
+        public void Resolve_NegativeGap_WarnsAndReturnsDefaultGap()
         {
             var configs = ConfigsWith(new DayConfig { Id = "d1", DayIndex = 1, WaveGapSeconds = -1f });
 
-            LogAssert.Expect(LogType.Warning, "[Sales.Setup] day 'd1' has negative waveGapSeconds=-1; using 0.");
+            LogAssert.Expect(LogType.Warning, "[Sales.Setup] day 'd1' has negative waveGapSeconds=-1; using 0.5.");
             var result = WaveScheduleResolver.Resolve(configs, 1);
 
-            Assert.AreEqual(0f, result.gapSeconds);
+            Assert.AreEqual(WaveScheduleResolver.DefaultWaveGapSeconds, result.gapSeconds);
         }
 
         private static FakeConfigsService ConfigsWith(params DayConfig[] days)
