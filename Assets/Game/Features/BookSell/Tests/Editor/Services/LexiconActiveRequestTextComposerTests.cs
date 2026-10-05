@@ -92,7 +92,7 @@ namespace Book.Sell.Tests.Editor.Services
             var text = Composer(Localization()).Compose(request);
 
             StringAssert.Contains("a fantasy", text);
-            StringAssert.Contains("a real brick", text);
+            StringAssert.Contains("more than 500 pages", text);
         }
 
         [Test]
@@ -169,7 +169,7 @@ namespace Book.Sell.Tests.Editor.Services
             .Set("request.term.quality.gore.neg", "but nothing too bloody")
             .Set("request.term.quality.space.pos", "set out in space")
             .Set("request.term.quality.dry.pos", "dry and matter-of-fact")
-            .Set("request.band.pages.gt500", "a real brick")
+            .Set("request.band.pages.gt500", "more than 500 pages")
             .Set("request.combo.fantasy_space", "proper space sci-fi")
             .Set(Opener, "Sooo...")
             .Set(Lead, "I'm after")
