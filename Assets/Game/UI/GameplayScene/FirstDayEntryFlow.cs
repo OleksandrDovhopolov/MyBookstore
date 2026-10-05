@@ -117,7 +117,30 @@ namespace GameplayUI
             foreach (var genre in CustomerScriptDayLookup.PassiveGenresForDay(_configs.GetAll<CustomerScriptConfig>(), 1))
                 AddFirstByGenre(genre);
 
-            foreach (var book in owned.OrderBy(GenreRank)
+            // What is left of the shelf is split across genres proportionally to what the player owns.
+            // Ordering the whole inventory by genre instead filled every slot from the head of
+            // FirstDayGenreOrder and left the tail at zero: the FTUE seeds 54 books into 30 slots, so
+            // Drama/Classic/Kids never reached the shelf on day 1.
+            var pools = owned
+                .Where(b => !selectedIds.Contains(b.Id))
+                .GroupBy(b => b.PrimaryGenre, StringComparer.OrdinalIgnoreCase)
+                .Select(g => (
+                    Genre: g.Key,
+                    Books: (IReadOnlyList<BookConfig>)g
+                        .OrderByDescending(b => b.RarityWeight)
+                        .ThenBy(b => b.Id, StringComparer.Ordinal)
+                        .ToList()))
+                .OrderBy(p => GenreRank(p.Genre))
+                .ThenBy(p => p.Genre, StringComparer.Ordinal)
+                .ToList();
+
+            var quotas = Apportion(pools, capacity - selected.Count);
+            for (var i = 0; i < pools.Count; i++)
+                for (var j = 0; j < quotas[i]; j++)
+                    Add(pools[i].Books[j]);
+
+            // Rounding, or a pool that ran dry, can leave slots open — top them up in the canonical order.
+            foreach (var book in owned.OrderBy(b => GenreRank(b.PrimaryGenre))
                          .ThenByDescending(b => b.RarityWeight)
                          .ThenBy(b => b.Id, StringComparer.Ordinal))
             {
@@ -146,13 +169,89 @@ namespace GameplayUI
                 selected.Add(book);
             }
 
-            int GenreRank(BookConfig book)
+            int GenreRank(string genre)
             {
                 for (var i = 0; i < FirstDayGenreOrder.Count; i++)
-                    if (string.Equals(book.PrimaryGenre, FirstDayGenreOrder[i], StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(genre, FirstDayGenreOrder[i], StringComparison.OrdinalIgnoreCase))
                         return i;
                 return FirstDayGenreOrder.Count;
             }
+        }
+
+        /// <summary>
+        /// Splits <paramref name="slots"/> across the genre pools proportionally to their size, using the
+        /// largest-remainder method. Pools arrive in FirstDayGenreOrder and LINQ ordering is stable, so
+        /// equal fractions fall back to that order and the result is identical run to run.
+        /// </summary>
+        private static int[] Apportion(IReadOnlyList<(string Genre, IReadOnlyList<BookConfig> Books)> pools, int slots)
+        {
+            var quotas = new int[pools.Count];
+            if (slots <= 0 || pools.Count == 0) return quotas;
+
+            var available = new int[pools.Count];
+            var total = 0;
+            for (var i = 0; i < pools.Count; i++)
+            {
+                available[i] = pools[i].Books.Count;
+                total += available[i];
+            }
+
+            // Everything the player owns fits — nothing to apportion.
+            if (total <= slots)
+            {
+                Array.Copy(available, quotas, pools.Count);
+                return quotas;
+            }
+
+            // Every owned genre takes one book before the rest is split, so no genre the player stocks shows
+            // up as 0 on the shelf. With fewer slots than genres that promise cannot be kept and the
+            // proportional pass alone decides who gets in.
+            var left = slots;
+            if (slots >= pools.Count)
+            {
+                for (var i = 0; i < pools.Count; i++)
+                {
+                    quotas[i] = 1;
+                    available[i]--;
+                    total--;
+                    left--;
+                }
+            }
+
+            var remainders = new double[pools.Count];
+            var assigned = 0;
+            for (var i = 0; i < pools.Count; i++)
+            {
+                var exact = total > 0 ? (double)available[i] * left / total : 0d;
+                var floor = Mathf.Min((int)exact, available[i]);
+                quotas[i] += floor;
+                remainders[i] = exact - floor;
+                assigned += floor;
+            }
+
+            // Hand out the rounding leftovers, largest fraction first; repeat because a pool can cap out
+            // before it absorbs its share.
+            var leftover = left - assigned;
+            var order = Enumerable.Range(0, pools.Count)
+                .OrderByDescending(i => remainders[i])
+                .ToArray();
+
+            while (leftover > 0)
+            {
+                var progressed = false;
+                foreach (var i in order)
+                {
+                    if (leftover <= 0) break;
+                    if (quotas[i] >= pools[i].Books.Count) continue;
+                    quotas[i]++;
+                    leftover--;
+                    progressed = true;
+                }
+
+                if (!progressed) break;
+            }
+
+            return quotas;
         }
 
         // Day 1 = single fixed location: the first unlocked one in catalog order (mirror of

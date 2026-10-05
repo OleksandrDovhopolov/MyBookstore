@@ -115,6 +115,46 @@ namespace GameplayUI.Tests.Editor
         }
 
         [Test]
+        public async System.Threading.Tasks.Task EnterAsync_WhenInventoryExceedsSlots_StocksEveryOwnedGenre()
+        {
+            // The FTUE seeds more books than the shelf holds. Filling the shelf genre by genre used to leave
+            // the tail of FirstDayGenreOrder (Drama/Classic/Kids) at zero even though the player owned them.
+            var scripts = new[]
+            {
+                Script("eddi_intro", 1,
+                    Attempt("Fact", forceHit: true),
+                    Attempt("Travel", forceHit: false))
+            };
+            var books = StarterPresetBooks();
+            var preparation = new FakePreparation(slots: 30);
+            var flow = new FirstDayEntryFlow(
+                new FakeMorning(),
+                preparation,
+                new RecordingGameFlow(new List<string>()),
+                ConfigsWith(new[] { new LocationConfig { Id = "loc" } }, books, scripts),
+                inventory: new FakeInventory(books));
+
+            var entered = await flow.EnterAsync(CancellationToken.None);
+
+            Assert.IsTrue(entered);
+            Assert.AreEqual(preparation.Capacity.DailyBookSlots, preparation.TotalSelected);
+
+            var selectedIds = new HashSet<string>(preparation.SelectedBookIds, StringComparer.Ordinal);
+            var byGenre = books
+                .Where(b => selectedIds.Contains(b.Id))
+                .GroupBy(b => b.PrimaryGenre, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
+
+            foreach (var genre in StarterPresetCounts.Keys)
+                Assert.IsTrue(
+                    byGenre.TryGetValue(genre, out var count) && count > 0,
+                    $"Genre '{genre}' is owned but got no slot on the day-1 shelf.");
+
+            // Shares follow what the player owns: the biggest stack must not end up below the smallest one.
+            Assert.GreaterOrEqual(byGenre["Drama"], byGenre["Kids"]);
+        }
+
+        [Test]
         public async System.Threading.Tasks.Task EnterAsync_WhenScriptedGenresExceedSlots_ClampsToCapacity()
         {
             var scripts = new[]
@@ -212,6 +252,26 @@ namespace GameplayUI.Tests.Editor
                 Book("fact", "Fact"),
                 Book("travel", "Travel")
             };
+
+        /// <summary>Mirrors the genre split <c>FtueBootstrapper.PresetCounts</c> seeds on first launch.</summary>
+        private static readonly IReadOnlyDictionary<string, int> StarterPresetCounts =
+            new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Fantasy"] = 10,
+                ["Crime"] = 10,
+                ["Drama"] = 12,
+                ["Classic"] = 6,
+                ["Fact"] = 6,
+                ["Travel"] = 6,
+                ["Kids"] = 4
+            };
+
+        private static BookConfig[] StarterPresetBooks()
+            => StarterPresetCounts
+                .SelectMany(pair => Enumerable
+                    .Range(0, pair.Value)
+                    .Select(i => Book($"{pair.Key.ToLowerInvariant()}_{i:00}", pair.Key)))
+                .ToArray();
 
         private static BookConfig Book(string id, string genre)
             => new() { Id = id, Genres = new[] { genre }, RarityWeight = 1f };
