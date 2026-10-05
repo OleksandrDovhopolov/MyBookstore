@@ -27,7 +27,7 @@ namespace Game.Journal.UI
     [Window("JournalWindow", WindowType.Page, true)]
     public sealed class JournalWindow : WindowController<JournalWindowView>
     {
-        private const string TodoDescriptionKey = "ui.journal.reward.description.placeholder";
+        private const string RewardDescriptionFallbackKey = "ui.journal.reward.description.fallback";
 
         private readonly JournalCharactersViewModelBuilder _peopleBuilder = new();
         private readonly JournalMemoriesViewModelBuilder _memoriesBuilder = new();
@@ -275,7 +275,7 @@ namespace Game.Journal.UI
             try
             {
                 var description = string.IsNullOrEmpty(reward.DisplayName)
-                    ? LocalizationLocator.GetOrKey(TodoDescriptionKey)
+                    ? LocalizationLocator.GetOrKey(RewardDescriptionFallbackKey)
                     : reward.DisplayName;
                 var args = new ContentWidgetArgs(
                     new QuestRewardWidgetData(reward.Id, description),

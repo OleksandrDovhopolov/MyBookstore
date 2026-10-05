@@ -266,6 +266,22 @@
           {
             "speakerKey": "dialogue.eddy_quest_1.root.line_1.speaker",
             "textKey": "dialogue.eddy_quest_1.root.line_1.text"
+          },
+          {
+            "speakerKey": "dialogue.eddy_quest_1.root.line_2.speaker",
+            "textKey": "dialogue.eddy_quest_1.root.line_2.text"
+          },
+          {
+            "speakerKey": "dialogue.eddy_quest_1.root.line_3.speaker",
+            "textKey": "dialogue.eddy_quest_1.root.line_3.text"
+          },
+          {
+            "speakerKey": "dialogue.eddy_quest_1.root.line_4.speaker",
+            "textKey": "dialogue.eddy_quest_1.root.line_4.text"
+          },
+          {
+            "speakerKey": "dialogue.eddy_quest_1.root.line_5.speaker",
+            "textKey": "dialogue.eddy_quest_1.root.line_5.text"
           }
         ]
       }
@@ -285,6 +301,22 @@
           {
             "speakerKey": "dialogue.millie1.root.line_1.speaker",
             "textKey": "dialogue.millie1.root.line_1.text"
+          },
+          {
+            "speakerKey": "dialogue.millie1.root.line_2.speaker",
+            "textKey": "dialogue.millie1.root.line_2.text"
+          },
+          {
+            "speakerKey": "dialogue.millie1.root.line_3.speaker",
+            "textKey": "dialogue.millie1.root.line_3.text"
+          },
+          {
+            "speakerKey": "dialogue.millie1.root.line_4.speaker",
+            "textKey": "dialogue.millie1.root.line_4.text"
+          },
+          {
+            "speakerKey": "dialogue.millie1.root.line_5.speaker",
+            "textKey": "dialogue.millie1.root.line_5.text"
           }
         ]
       }
@@ -304,6 +336,22 @@
           {
             "speakerKey": "dialogue.tara_quest_1.root.line_1.speaker",
             "textKey": "dialogue.tara_quest_1.root.line_1.text"
+          },
+          {
+            "speakerKey": "dialogue.tara_quest_1.root.line_2.speaker",
+            "textKey": "dialogue.tara_quest_1.root.line_2.text"
+          },
+          {
+            "speakerKey": "dialogue.tara_quest_1.root.line_3.speaker",
+            "textKey": "dialogue.tara_quest_1.root.line_3.text"
+          },
+          {
+            "speakerKey": "dialogue.tara_quest_1.root.line_4.speaker",
+            "textKey": "dialogue.tara_quest_1.root.line_4.text"
+          },
+          {
+            "speakerKey": "dialogue.tara_quest_1.root.line_5.speaker",
+            "textKey": "dialogue.tara_quest_1.root.line_5.text"
           }
         ]
       }
@@ -323,6 +371,22 @@
           {
             "speakerKey": "dialogue.captain_quest_1.root.line_1.speaker",
             "textKey": "dialogue.captain_quest_1.root.line_1.text"
+          },
+          {
+            "speakerKey": "dialogue.captain_quest_1.root.line_2.speaker",
+            "textKey": "dialogue.captain_quest_1.root.line_2.text"
+          },
+          {
+            "speakerKey": "dialogue.captain_quest_1.root.line_3.speaker",
+            "textKey": "dialogue.captain_quest_1.root.line_3.text"
+          },
+          {
+            "speakerKey": "dialogue.captain_quest_1.root.line_4.speaker",
+            "textKey": "dialogue.captain_quest_1.root.line_4.text"
+          },
+          {
+            "speakerKey": "dialogue.captain_quest_1.root.line_5.speaker",
+            "textKey": "dialogue.captain_quest_1.root.line_5.text"
           }
         ]
       }
@@ -346,6 +410,18 @@
           {
             "speakerKey": "dialogue.tutorial_hub_intro.root.line_2.speaker",
             "textKey": "dialogue.tutorial_hub_intro.root.line_2.text"
+          },
+          {
+            "speakerKey": "dialogue.tutorial_hub_intro.root.line_3.speaker",
+            "textKey": "dialogue.tutorial_hub_intro.root.line_3.text"
+          },
+          {
+            "speakerKey": "dialogue.tutorial_hub_intro.root.line_4.speaker",
+            "textKey": "dialogue.tutorial_hub_intro.root.line_4.text"
+          },
+          {
+            "speakerKey": "dialogue.tutorial_hub_intro.root.line_5.speaker",
+            "textKey": "dialogue.tutorial_hub_intro.root.line_5.text"
           }
         ]
       }

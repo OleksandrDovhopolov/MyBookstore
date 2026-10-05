@@ -13,7 +13,7 @@
   "ui.gameplay.day": "Day {0}",
   "ui.gameplay.sale_chance": "Sale chance: {0}%",
   "ui.inventory.item.description.fallback": "No details for this item yet.",
-  "ui.journal.reward.description.placeholder": "Reward",
+  "ui.journal.reward.description.fallback": "Quest reward",
   "ui.journal.tab.characters": "Characters",
   "ui.journal.tab.locations": "Locations",
   "ui.journal.tab.memories": "Memories",

@@ -33,6 +33,7 @@ namespace Game.Build.Editor
         private const string ConfigsDir = "Assets/Configs";
         private const string BundledDir = "Assets/StreamingAssets/Configs";
         private const string ManifestFileName = "manifest.json";
+        private const string EnableCheatsDefine = "ENABLE_CHEATS";
 
         // Ahead of Addressables (1000) and most third-party callbacks, so a content error surfaces before
         // the slow parts of the build have run.
@@ -99,6 +100,7 @@ namespace Game.Build.Editor
         /// </summary>
         private static readonly (string Name, Action<List<string>> Run)[] Validators =
         {
+            ("Cheat build symbols", CollectCheatDefineErrors),
             ("Bundled configs", CollectBundledConfigErrors),
             ("Active requests", CollectActiveRequestErrors),
             ("Dialogue delivered conditions", CollectDialogueDeliveredReferenceErrors),
@@ -123,6 +125,17 @@ namespace Game.Build.Editor
             RunValidators(Validators, report.Errors, report.Errors);
             RunValidators(SoftValidators, report.Warnings, report.Errors);
             return report;
+        }
+
+        private static void CollectCheatDefineErrors(List<string> errors)
+        {
+            var defines = PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.Android);
+            var hasCheats = defines
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Any(define => string.Equals(define.Trim(), EnableCheatsDefine, StringComparison.Ordinal));
+
+            if (hasCheats)
+                errors.Add($"{EnableCheatsDefine} is set for Android. Remove it before making a verification/release build.");
         }
 
         private static void RunValidators(

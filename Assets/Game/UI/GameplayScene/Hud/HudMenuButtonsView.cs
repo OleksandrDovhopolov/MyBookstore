@@ -30,10 +30,29 @@ namespace GameplayUI
 
         public event Action StartDayClicked;
 
+        private static bool CheatsEnabled
+        {
+            get
+            {
+#if UNITY_EDITOR || ENABLE_CHEATS
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
+        private void Awake()
+        {
+            ApplyCheatButtonVisibility(interactable: true);
+        }
+
         public void Bind(IHudWindowLauncher launcher)
         {
             Unbind();
             _launcher = launcher;
+
+            ApplyCheatButtonVisibility(interactable: true);
 
             if (_startDayButton != null)
                 _startDayButton.onClick.AddListener(OnStartDayButtonClicked);
@@ -80,7 +99,7 @@ namespace GameplayUI
 
         public void SetInteractable(bool value)
         {
-            SetButtonInteractable(_cheatButton, value);
+            ApplyCheatButtonVisibility(value);
             SetStartButtonActive(value);
             SetButtonInteractable(_decorButton, value);
             SetButtonInteractable(_journalButton, value);
@@ -162,6 +181,15 @@ namespace GameplayUI
 
             button.interactable = value;
             button.gameObject.SetActive(value);
+        }
+
+        private void ApplyCheatButtonVisibility(bool interactable)
+        {
+            if (_cheatButton == null) return;
+
+            var visible = CheatsEnabled && interactable;
+            _cheatButton.interactable = visible;
+            _cheatButton.gameObject.SetActive(visible);
         }
 
         private static void PlayUi(AudioClip clip)
