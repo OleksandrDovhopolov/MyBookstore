@@ -4,6 +4,7 @@
     "genre": "Crime",
     "bookTitle": "A Study in Scarlet",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_01.description",
     "conditions": {
       "all": [
         {
@@ -24,6 +25,7 @@
     "genre": "Classic",
     "bookTitle": "A Study in Scarlet",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_08.description",
     "conditions": {
       "all": [
         {
@@ -47,6 +49,7 @@
     "genre": "Crime",
     "bookTitle": "American Psycho",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_02.description",
     "conditions": {
       "all": [
         {
@@ -72,6 +75,7 @@
     "genre": "Crime",
     "bookTitle": "American Psycho",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_03.description",
     "conditions": {
       "all": [
         {
@@ -125,13 +129,14 @@
         }
       ]
     },
-    "descriptionKey": "request.req_fact_01.description"
+    "descriptionKey": "request.legacy.req_hard_29.description"
   },
   {
     "id": "req_fact_02",
     "genre": "Fact",
     "bookTitle": "A Short History of Nearly Everything",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_30.description",
     "conditions": {
       "all": [
         {
@@ -160,6 +165,7 @@
     "genre": "Classic",
     "bookTitle": "Nineteen Eighty-Four",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_09.description",
     "conditions": {
       "all": [
         {
@@ -183,6 +189,7 @@
     "genre": "Classic",
     "bookTitle": "Emma",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_10.description",
     "conditions": {
       "all": [
         {
@@ -211,6 +218,7 @@
     "genre": "Drama",
     "bookTitle": "Ariel",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_15.description",
     "conditions": {
       "all": [
         {
@@ -234,6 +242,7 @@
     "genre": "Drama",
     "bookTitle": "Better Than the Movies",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_16.description",
     "conditions": {
       "all": [
         {
@@ -259,6 +268,7 @@
     "genre": "Travel",
     "bookTitle": "1,000 Places to See Before You Die",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_43.description",
     "conditions": {
       "all": [
         {
@@ -279,6 +289,7 @@
     "genre": "Travel",
     "bookTitle": "A Tramp Abroad",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_44.description",
     "conditions": {
       "all": [
         {
@@ -302,6 +313,7 @@
     "genre": "Kids",
     "bookTitle": "Frog and Toad Together",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_36.description",
     "conditions": {
       "all": [
         {
@@ -322,6 +334,7 @@
     "genre": "Kids",
     "bookTitle": "The Invention of Hugo Cabret",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_37.description",
     "conditions": {
       "all": [
         {
@@ -345,6 +358,7 @@
     "genre": "Fantasy",
     "bookTitle": "A Game of Thrones",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_22.description",
     "conditions": {
       "all": [
         {
@@ -368,6 +382,7 @@
     "genre": "Fantasy",
     "bookTitle": "A Deepness in the Sky",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_23.description",
     "conditions": {
       "all": [
         {
@@ -391,6 +406,7 @@
     "genre": "Classic",
     "bookTitle": "The Canterville Ghost",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_11.description",
     "conditions": {
       "all": [
         {
@@ -418,6 +434,7 @@
     "genre": "Fantasy",
     "bookTitle": "Anathem",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_24.description",
     "conditions": {
       "all": [
         {
@@ -445,6 +462,7 @@
     "genre": "Fantasy",
     "bookTitle": "A Fire Upon the Deep",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_25.description",
     "conditions": {
       "all": [
         {
@@ -472,6 +490,7 @@
     "genre": "Classic",
     "bookTitle": "Bleak House",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_12.description",
     "conditions": {
       "all": [
         {
@@ -499,6 +518,7 @@
     "genre": "Classic",
     "bookTitle": "Beowulf",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_13.description",
     "conditions": {
       "all": [
         {
@@ -522,6 +542,7 @@
     "genre": "Classic",
     "bookTitle": "The Big Sleep",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_14.description",
     "conditions": {
       "all": [
         {
@@ -549,6 +570,7 @@
     "genre": "Classic",
     "bookTitle": "Inferno",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_08.description",
     "conditions": {
       "all": [
         {
@@ -577,6 +599,7 @@
     "genre": "Classic",
     "bookTitle": "Antigone",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_09.description",
     "conditions": {
       "all": [
         {
@@ -597,6 +620,7 @@
     "genre": "Drama",
     "bookTitle": "Beloved",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_17.description",
     "conditions": {
       "all": [
         {
@@ -620,6 +644,7 @@
     "genre": "Drama",
     "bookTitle": "Henry V",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_18.description",
     "conditions": {
       "all": [
         {
@@ -647,6 +672,7 @@
     "genre": "Drama",
     "bookTitle": "Villette",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_19.description",
     "conditions": {
       "all": [
         {
@@ -672,6 +698,7 @@
     "genre": "Drama",
     "bookTitle": "Hard Times",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_20.description",
     "conditions": {
       "all": [
         {
@@ -695,6 +722,7 @@
     "genre": "Drama",
     "bookTitle": "Shirley",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_21.description",
     "conditions": {
       "all": [
         {
@@ -720,6 +748,7 @@
     "genre": "Fantasy",
     "bookTitle": "Dune",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_26.description",
     "conditions": {
       "all": [
         {
@@ -747,6 +776,7 @@
     "genre": "Fantasy",
     "bookTitle": "Nimona",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_27.description",
     "conditions": {
       "all": [
         {
@@ -770,6 +800,7 @@
     "genre": "Fantasy",
     "bookTitle": "The Dark is Rising",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_28.description",
     "conditions": {
       "all": [
         {
@@ -793,6 +824,7 @@
     "genre": "Fantasy",
     "bookTitle": "The Odyssey",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_22.description",
     "conditions": {
       "all": [
         {
@@ -820,6 +852,7 @@
     "genre": "Fantasy",
     "bookTitle": "The Binding",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_23.description",
     "conditions": {
       "all": [
         {
@@ -847,6 +880,7 @@
     "genre": "Fact",
     "bookTitle": "By Train Through Spain",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_31.description",
     "conditions": {
       "all": [
         {
@@ -870,6 +904,7 @@
     "genre": "Fact",
     "bookTitle": "Medieval Carpentry",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_32.description",
     "conditions": {
       "all": [
         {
@@ -897,6 +932,7 @@
     "genre": "Fact",
     "bookTitle": "Know My Name",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_33.description",
     "conditions": {
       "all": [
         {
@@ -922,6 +958,7 @@
     "genre": "Fact",
     "bookTitle": "Le Corbusier",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_34.description",
     "conditions": {
       "all": [
         {
@@ -942,6 +979,7 @@
     "genre": "Fact",
     "bookTitle": "The Sea Around Us",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_35.description",
     "conditions": {
       "all": [
         {
@@ -962,6 +1000,7 @@
     "genre": "Kids",
     "bookTitle": "Heidi",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_38.description",
     "conditions": {
       "all": [
         {
@@ -989,6 +1028,7 @@
     "genre": "Kids",
     "bookTitle": "Madeline",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_39.description",
     "conditions": {
       "all": [
         {
@@ -1012,6 +1052,7 @@
     "genre": "Kids",
     "bookTitle": "Artemis Fowl",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_40.description",
     "conditions": {
       "all": [
         {
@@ -1035,6 +1076,7 @@
     "genre": "Kids",
     "bookTitle": "Watership Down",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_41.description",
     "conditions": {
       "all": [
         {
@@ -1058,6 +1100,7 @@
     "genre": "Crime",
     "bookTitle": "After the Funeral",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_04.description",
     "conditions": {
       "all": [
         {
@@ -1081,6 +1124,7 @@
     "genre": "Crime",
     "bookTitle": "True Grit",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_05.description",
     "conditions": {
       "all": [
         {
@@ -1104,6 +1148,7 @@
     "genre": "Crime",
     "bookTitle": "Red Dragon",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_06.description",
     "conditions": {
       "all": [
         {
@@ -1132,6 +1177,7 @@
     "genre": "Travel",
     "bookTitle": "A Florence Diary",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_45.description",
     "conditions": {
       "all": [
         {
@@ -1159,6 +1205,7 @@
     "genre": "Travel",
     "bookTitle": "Down Under",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_46.description",
     "conditions": {
       "all": [
         {
@@ -1182,6 +1229,7 @@
     "genre": "Drama",
     "bookTitle": "Yellowface",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_15.description",
     "conditions": {
       "all": [
         {
@@ -1209,6 +1257,7 @@
     "genre": "Drama",
     "bookTitle": "Salomé",
     "enabled": true,
+    "descriptionKey": "request.legacy.req_hard_16.description",
     "conditions": {
       "all": [
         {

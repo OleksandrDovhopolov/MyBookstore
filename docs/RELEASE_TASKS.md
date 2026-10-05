@@ -1360,6 +1360,35 @@ GD по тону, персонажным голосам и месту в про�
 Критичность: medium — поднята с low после находки про туториал. Первый релиз не блокирует (туториал
 выключен), но брать GAME-10 без этого решения нельзя.
 
+### DEF-10 — Automate Active Request Translation Mode Switching
+
+Статус: DEFFERED / отложено. На 2026-10-05 активные запросы временно переключены на старые
+`request.legacy.req_hard_*` строки через `descriptionKey` в `sample_requests.json`. Новый лексикон
+`request_phrases.json` и новые `request.term.*` / `request.opener.*` / `request.anchor.*` строки
+сохранены, но прямого переключателя между режимами нет.
+
+Проблема:
+- Сейчас режим выбирается контентом: если у request есть `descriptionKey`, `LexiconActiveRequestTextComposer`
+  отдаёт эту строку и не собирает фразу из лексикона.
+- Это удобно для emergency rollback текста, но неудобно для продакшена: чтобы переключать все активные
+  запросы между legacy и lexicon, нужно руками менять десятки `descriptionKey`.
+- `sample_requests.json` содержит 50 запросов, а legacy-набор — 49 жанровых строк, поэтому текущая привязка
+  не является финальной редакторской мапой: часть legacy-строк переиспользуется по жанру.
+
+Что сделать:
+- Ввести явный режим активных request-текстов: например `legacy`, `lexicon`, `authoredOverride`.
+- Хранить обе мапы/варианты без удаления: legacy keys, lexicon phrases и точечные authored override должны
+  оставаться доступны.
+- Сделать editor/tooling-команду для массового переключения `sample_requests.json` и синхронизации
+  `Assets/Configs` → `Assets/StreamingAssets/Configs`.
+- Добавить проверку, что выбранный режим не оставляет request без player-facing текста.
+- Обновить `ActiveRequestTextContentTests`: отдельно проверять legacy mode и lexicon mode, чтобы один режим
+  не ломал другой незаметно.
+- Зафиксировать правило в `docs/INPROGRESS/ACTIVE_REQUEST_TEXT_COMPOSER.md`.
+
+Критичность: medium. Для текущего релиза можно жить с ручным rollback на legacy-тексты, но без автоматики
+легко потерять один из вариантов или случайно собрать билд в неправильном текстовом режиме.
+
 ## Explicitly Not Release Scope Unless Reclassified
 
 Эти типы задач не добавлять сюда автоматически:

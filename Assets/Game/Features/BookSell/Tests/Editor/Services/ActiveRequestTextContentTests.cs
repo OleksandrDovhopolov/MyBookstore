@@ -39,7 +39,9 @@ namespace Book.Sell.Tests.Editor.Services
                     failures.Add($"{request.Id}: still shows the condition dump - '{text}'.");
                 else if (text.Contains("request."))
                     failures.Add($"{request.Id}: leaked a raw localization key - '{text}'.");
-                else if (!string.IsNullOrWhiteSpace(request.BookTitle) && !text.Contains(request.BookTitle))
+                else if (string.IsNullOrWhiteSpace(request.DescriptionKey) &&
+                         !string.IsNullOrWhiteSpace(request.BookTitle) &&
+                         !text.Contains(request.BookTitle))
                     failures.Add($"{request.Id}: the reference book is missing from the line - '{text}'.");
             }
 
