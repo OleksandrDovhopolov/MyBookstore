@@ -112,7 +112,7 @@
   "request.term.quality.dystopia.neg": "but nothing bleak",
   "request.term.quality.dystopia.pos": "with a grim future in it",
   "request.term.quality.female_author.pos": "written by a woman",
-  "request.term.quality.gore.neg": "but nothing gory",
+  "request.term.quality.gore.neg": "but nothing too bloody",
   "request.term.quality.gore.pos": "not squeamish about blood",
   "request.term.quality.graphic_novel.neg": "but not a picture book",
   "request.term.quality.graphic_novel.pos": "told in pictures",
@@ -145,6 +145,6 @@
   "task.q_intro_eddi_sell_crime": "Sell 10 Crime books.",
   "task.q_intro_eddi_sell_drama": "Sell 10 Drama books.",
   "task.q_intro_eddi_sell_fantasy": "Sell 15 Fantasy books.",
-  "task.q_intro_millie_pick_kids": "Recommend 2 Kids books in active requests.",
-  "task.q_tara_kids_pick_drama": "Recommend 2 Drama books in active requests."
+  "task.q_intro_millie_pick_kids": "Recommend 1 Kids book in active requests.",
+  "task.q_tara_kids_pick_drama": "Recommend 1 Drama book in active requests."
 }

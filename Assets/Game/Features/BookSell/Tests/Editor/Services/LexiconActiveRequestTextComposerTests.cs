@@ -47,7 +47,7 @@ namespace Book.Sell.Tests.Editor.Services
 
             var text = Composer(Localization()).Compose(request);
 
-            StringAssert.Contains("but nothing gory", text);
+            StringAssert.Contains("but nothing too bloody", text);
             StringAssert.DoesNotContain("nothing squeamish", text);
         }
 
@@ -166,7 +166,7 @@ namespace Book.Sell.Tests.Editor.Services
             .Set("request.term.genre.fantasy.pos", "a fantasy")
             .Set("request.term.genre.fantasy.neg", "but nothing fantastical")
             .Set("request.term.quality.gore.pos", "and don't give me anything squeamish")
-            .Set("request.term.quality.gore.neg", "but nothing gory")
+            .Set("request.term.quality.gore.neg", "but nothing too bloody")
             .Set("request.term.quality.space.pos", "set out in space")
             .Set("request.term.quality.dry.pos", "dry and matter-of-fact")
             .Set("request.band.pages.gt500", "a real brick")

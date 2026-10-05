@@ -287,7 +287,7 @@ namespace Game.Quest.Tests.Editor
             Assert.IsNotNull(task.CompletionConditions);
             Assert.AreEqual("activePickGenre", task.CompletionConditions["type"].ToString());
             Assert.AreEqual("Kids", task.CompletionConditions["genre"].ToString());
-            Assert.AreEqual(2, (int)task.CompletionConditions["min"]);
+            Assert.AreEqual(1, (int)task.CompletionConditions["min"]);
 
             Assert.AreEqual(2, quest.Rewards.Length);
             var letter = quest.Rewards.Single(r => r.Id == "millie_letter");
@@ -317,7 +317,7 @@ namespace Game.Quest.Tests.Editor
             Assert.IsNotNull(task.CompletionConditions);
             Assert.AreEqual("activePickGenre", task.CompletionConditions["type"].ToString());
             Assert.AreEqual("Drama", task.CompletionConditions["genre"].ToString());
-            Assert.AreEqual(2, (int)task.CompletionConditions["min"]);
+            Assert.AreEqual(1, (int)task.CompletionConditions["min"]);
 
             var permit = quest.Rewards.Single(r => r.Id == "port_trade_permit");
             Assert.AreEqual("InventoryItem", permit.Kind);
