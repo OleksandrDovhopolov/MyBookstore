@@ -8,18 +8,19 @@ namespace Book.Sell.Services
     /// <summary>
     /// Passive×N -> ActiveRequest -> Passive×1. Only the leading passive count consumes random
     /// (Range(min, max + 1), or min when min == max); the active step and trailing passive are fixed.
-    /// Requires a non-null request (fail-fast); the spawner only builds this archetype when a request
-    /// is available, so a null active step can never be produced.
+    /// <para>
+    /// Which request gets asked for is not decided here: the step draws it from the day's selector when the
+    /// customer reaches the minigame, by which time the leading passive purchase has already taken its book
+    /// off the shelf.
+    /// </para>
     /// </summary>
     public sealed class PassiveActivePassiveArchetype : ICustomerArchetype
     {
-        private readonly ActiveRequestRuntime _request;
         private readonly int _min;
         private readonly int _max;
 
-        public PassiveActivePassiveArchetype(ActiveRequestRuntime request, int min, int max)
+        public PassiveActivePassiveArchetype(int min, int max)
         {
-            _request = request ?? throw new ArgumentNullException(nameof(request));
             _min = min;
             _max = max;
         }
@@ -32,7 +33,7 @@ namespace Book.Sell.Services
             var steps = new List<ICustomerStep>(count + 2);
             for (var i = 0; i < count; i++)
                 steps.Add(new PassivePurchaseStep());
-            steps.Add(new ActiveRequestStep(_request));
+            steps.Add(new ActiveRequestStep());
             steps.Add(new PassivePurchaseStep());
             return steps;
         }

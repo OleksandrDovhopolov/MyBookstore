@@ -39,9 +39,10 @@ namespace Game.Shop.UI
 
         private IReadOnlyList<ShopOffer> BuildOffers(string storefrontId, bool isDecor, string rewardCategoryId = null)
         {
-            var lots = string.Equals(storefrontId, NewspaperShopLotIds.StorefrontBooks, StringComparison.Ordinal)
-                ? _shop.GetOfferedLots(storefrontId)
-                : _shop.GetLots(storefrontId);
+            // Every storefront goes through GetOfferedLots now: it applies the day rotation for book
+            // boxes and the progression gate everywhere, so lots that are not unlocked yet are hidden
+            // rather than rendered as sold out.
+            var lots = _shop.GetOfferedLots(storefrontId);
             if (lots == null || lots.Count == 0) return Array.Empty<ShopOffer>();
 
             var offers = new List<ShopOffer>(lots.Count);

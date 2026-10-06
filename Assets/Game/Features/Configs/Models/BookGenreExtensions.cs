@@ -23,5 +23,13 @@ namespace Game.Configs.Models
         }
 
         public static string ToConfigValue(this BookGenre genre) => genre.ToString();
+
+        /// <summary>
+        /// Localization key for the inventory hint of a book genre row. Genre rows are aggregates
+        /// built in code (see BookGenreRowSource), so there is no config entry to author the key on.
+        /// Lowercase to match the dotted-lowercase convention; lookups are case-sensitive.
+        /// </summary>
+        public static string ToDescriptionLocalizationKey(this BookGenre genre)
+            => $"book_genre.{genre.ToConfigValue().ToLowerInvariant()}.desc";
     }
 }

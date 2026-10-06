@@ -2,6 +2,7 @@
     "name": "Game.Journal.UI",
     "rootNamespace": "Game.Journal.UI",
     "references": [
+        "Game.Attention.API",
         "Game.Characters.API",
         "Game.Decor",
         "Game.Decor.API",

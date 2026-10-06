@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace Book.Sell.Domain.Steps
 {
     /// <summary>
@@ -7,21 +9,38 @@ namespace Book.Sell.Domain.Steps
     /// free (FIFO) and holds it — staying <see cref="StepStatus.Running"/> — until the controller resolves
     /// it via player input (RecommendBook / Skip) and force-completes the step. While the lock is held by
     /// someone else, the step is <see cref="StepStatus.Blocked"/> (the customer waits).
+    ///
+    /// <para>
+    /// The request itself is chosen at the moment the lock is taken, not when the day was planned: by then
+    /// passive sales have already emptied part of the shelf, and a request picked any earlier could have
+    /// become unanswerable while the customer was still queueing. <see cref="Request"/> is therefore null
+    /// until that point.
+    /// </para>
     /// </summary>
     public sealed class ActiveRequestStep : ICustomerStep
     {
+        private const string LogPrefix = "[ActiveRequests]";
+
         private enum Sub { Think, AwaitingHelp }
 
-        private readonly ActiveRequestRuntime _request;
+        private readonly ActiveRequestRuntime _authored;
+
+        private ActiveRequestRuntime _request;
         private Sub _sub;
         private float _t;
         private bool _acquired;
 
-        public ActiveRequestStep(ActiveRequestRuntime request)
+        public ActiveRequestStep()
         {
-            _request = request;
         }
 
+        /// <summary>Pins a specific request instead of drawing one. For tests and cheat-driven days.</summary>
+        public ActiveRequestStep(ActiveRequestRuntime request)
+        {
+            _authored = request;
+        }
+
+        /// <summary>The request being asked for; null until the customer actually enters the minigame.</summary>
         public ActiveRequestRuntime Request => _request;
 
         public void Enter(Customer self, CustomerContext ctx)
@@ -51,6 +70,18 @@ namespace Book.Sell.Domain.Steps
 
             if (ctx.Lock.TryAcquire(self))
             {
+                // Drawn here, against the shelf as it stands right now — see the class summary.
+                _request = ResolveRequest(self, ctx);
+                if (_request == null)
+                {
+                    // Nothing to ask for: release the lock we just took and leave without a minigame,
+                    // rather than opening an empty one.
+                    ctx.Lock.Release(self);
+                    Debug.LogWarning($"{LogPrefix} customer '{self.Id}' reached the minigame with no request " +
+                                     "available; the visit ends without an active sale.");
+                    return StepStatus.Completed;
+                }
+
                 _acquired = true;
                 self.SetPhase(CustomerPhase.InMinigame, ctx);
                 ctx.Sink?.OnActiveRequestStarted(self, _request);
@@ -67,6 +98,13 @@ namespace Book.Sell.Domain.Steps
             // No-op when we never got past the Think phase.
             ctx.Lock.Release(self);
             _acquired = false;
+        }
+
+        private ActiveRequestRuntime ResolveRequest(Customer self, CustomerContext ctx)
+        {
+            if (_authored != null) return _authored;
+
+            return ctx.ActiveRequests?.Draw(self.Profile, ctx.Shelf.AvailableForSelection(), ctx.Random);
         }
     }
 }

@@ -6,7 +6,7 @@
 
 > **Статус (2026-07-07): MVP-ядро реализовано и поставлено на паузу.**
 > Готово: GAME-4 (продажи по локации/дню), GAME-5 (`visitLocation`/`locationIs`), GAME-9 (compact baseline + readable quest save v4), сборки `Game.Quest`/`.API`/тесты, API+enum+конфиги, условия
-> `decorEquipped`/`haveItem`/`weatherIs` (+продажные `soldGenre*`), `QuestsService` (lifecycle/цепочки/auto-award),
+> `decorEquipped`/`haveItem`/`weatherIs` (+продажные `soldGenre*`), `QuestsService` (lifecycle/цепочки/клейм награды),
 > save (Этап 5, Awarded/Failed не переигрываются), baseline «после старта задачи» (Этап 4b).
 > В **следующих итерациях**: награды + permanent effects (GAME-3/Этап 6), реальная цепочка-слайс `quests.json` (Этап 7), UI журнала/HUD, персонажи.
 > Принятые решения зафиксированы в [ADR-0007](adr/0007-quest-system.md); уточнение по сохранению sales-прогресса — в [ADR-0008](adr/0008-quest-sales-progress-persistence.md).
@@ -188,7 +188,16 @@ Pending -> Active -> Completed
 - `Awarded` сохраняет **только id** (Этап 5). `timestamp` и `applied effects` добавятся в Этап 6 (со сменой `StateSchemaVersion`).
 - `Failed` нужен редко: например, пропущенные one-shot события. Для Active-квеста **fail имеет приоритет** над completion. Сезонного ожидания нет (сезоны вне MVP).
 - `CanBeReset` (для задач «держать декор N дней» / «выбирать солнечные локации 7 дней») в модели есть, но **в MVP игнорируется** — Completed-задачи не откатываются. Полноценный rollback — позже.
-- **Auto-award (MVP):** когда все задачи `Completed`, квест проходит `ReadyToAward` → `Awarded` автоматически (события `QuestCompleted`, затем `QuestAwarded`); `NextQuestIds` активируются после `Awarded`. `TryAwardAsync` — явный идемпотентный путь.
+- **Award — по клейму, не автоматически.** Когда все задачи `Completed`, квест останавливается на
+  `ReadyToAward` (событие `QuestCompleted`) и ждёт `TryAwardAsync`, который дёргает кнопка «забрать»
+  в журнале (`QuestClaimFlow`). Только после этого — `Awarded`, событие `QuestAwarded` и активация
+  `NextQuestIds`. `TryAwardAsync` идемпотентен: повторный вызов на уже выданном квесте вернёт `false`.
+  *(Раньше здесь было написано «auto-award», что не соответствовало коду.)*
+- **Единственное исключение — `hiddenInJournal`.** Служебный квест не имеет строки в журнале, то есть
+  и кнопки клейма, поэтому `Complete` выдаёт его сам, сразу после `QuestCompleted`. Такой квест также
+  не попадает в `QuestViewModelBuilder` и в attention-счётчики `QuestAttentionSource`. Флаг покрывает
+  всё «служебное» поведение разом; используется для квестов-обёрток, открывающих memories
+  (см. CHARACTER_SYSTEM.md). Служебные квесты авторятся без `titleKey`/`descriptionKey` и без наград.
 
 ---
 
@@ -272,7 +281,7 @@ Pending -> Active -> Completed
 1. ✅ Сборки `Game.Quest.API`, `Game.Quest`, `Game.Quest.Tests.Editor`.
 2. ✅ `QuestState`, `QuestTaskState`, `QuestType` (+ extensions).
 3. ✅ `QuestsService` с конфигами, задачами и цепочками; условия — через `IConditionParser`.
-4. ✅ Save DTO + hook (`SavedQuests`, `SaveBackedQuestsRepository`): Active/RTA + терминалы; auto-award; idempotent restore.
+4. ✅ Save DTO + hook (`SavedQuests`, `SaveBackedQuestsRepository`): Active/RTA + терминалы; клейм награды; idempotent restore.
 5. ✅ Condition-factory: `soldGenre` / `soldGenreAtLocation` / `soldGenreInSingleDay` / `weatherIs` / `decorEquipped` / `haveItem` / `visitLocation` / `locationIs`.
 6. ✅ baseline scoped-reader (прогресс «после старта задачи») — **Этап 4b** (`ISalesStatsBaselineSource` + scoped re-parse задачи + compact persisted baseline).
 7. ⏳ Награды и permanent effects (грант + `WorldEffectConfig`-хендлеры, идемпотентность) — **Этап 6 / GAME-3**.

@@ -3,7 +3,6 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Configs;
 using Game.Configs.Models;
-using Game.Localization;
 using Game.UI;
 using SpriteService;
 using UIShared;
@@ -15,10 +14,6 @@ namespace Game.Decor.UI
     [Window("DecorInfoPopup", WindowType.Popup)]
     public sealed class DecorInfoPopup : WindowController<DecorInfoPopupView>
     {
-        // DecorConfig has no authored flavor description yet. Placeholder shown in _descriptionLabel
-        // until a Description field exists on DecorConfig (then feed config.Description here instead).
-        private const string DescriptionPlaceholderKey = "ui.decor.description.placeholder";
-
         private IConfigsService _configs;
         private IUiSpriteProvider _sprites;
         private CancellationTokenSource _iconCts;
@@ -51,11 +46,9 @@ namespace Game.Decor.UI
             var config = _configs.Get<DecorConfig>(args.DecorId);
             if (config == null) return;
 
-            if (View.NameLabel != null)
-                View.NameLabel.text = string.IsNullOrEmpty(config.DisplayNameKey)
-                    ? config.Id
-                    : LocalizationLocator.GetOrKey(config.DisplayNameKey);
-            if (View.DescriptionLabel != null) View.DescriptionLabel.text = LocalizationLocator.GetOrKey(DescriptionPlaceholderKey);
+            if (View.NameLabel != null) View.NameLabel.text = DecorTextResolver.ResolveName(config);
+            if (View.DescriptionLabel != null)
+                View.DescriptionLabel.text = DecorTextResolver.ResolveDescription(config);
 
             RenderBonuses(config);
             RenderCharacteristics(config);

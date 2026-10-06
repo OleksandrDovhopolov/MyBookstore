@@ -46,6 +46,18 @@ namespace Game.Cheat
         // global IObjectResolver returns false. SalesCheatModule looks the controller up via the
         // active SalesScreenView in the scene instead.
 
+        private static bool CheatsEnabled
+        {
+            get
+            {
+#if UNITY_EDITOR || ENABLE_CHEATS
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
         [Inject]
         private void Construct(UIManager uiManager, IInventoryService inventory, IConfigsService configs,
             IResourcesService resources, ICharactersService characters, ILocationUnlockService locationUnlock,
@@ -66,8 +78,23 @@ namespace Game.Cheat
             _countUpPublisher = countUpPublisher;
         }
 
+        private void Awake()
+        {
+            if (CheatsEnabled) return;
+
+            if (_cheatButton != null)
+            {
+                _cheatButton.interactable = false;
+                _cheatButton.gameObject.SetActive(false);
+            }
+
+            gameObject.SetActive(false);
+        }
+
         public void Start()
         {
+            if (!CheatsEnabled) return;
+
             InitializeRootPanel();
             // Cheat modules read configs synchronously (GetAll<DecorConfig>, etc.). If Start runs before
             // ConfigsService.WarmupAsync, lists will be empty and warnings will appear. Wait for the
@@ -94,12 +121,21 @@ namespace Game.Cheat
 
         private void OnEnable()
         {
-            _cheatButton.onClick.AddListener(OpenCheatPanel);
+            if (!CheatsEnabled)
+            {
+                if (_cheatButton != null)
+                    _cheatButton.gameObject.SetActive(false);
+                return;
+            }
+
+            if (_cheatButton != null)
+                _cheatButton.onClick.AddListener(OpenCheatPanel);
         }
 
         private void OnDisable()
         {
-            _cheatButton.onClick.RemoveListener(OpenCheatPanel);
+            if (_cheatButton != null)
+                _cheatButton.onClick.RemoveListener(OpenCheatPanel);
         }
 
         private void InitializeRootPanel()
@@ -154,6 +190,8 @@ namespace Game.Cheat
 
         public void OpenCheatPanel()
         {
+            if (!CheatsEnabled) return;
+
             if (_cheatsManager == null)
             {
                 Debug.LogWarning("Failed to open inventory window. Inventory services are not initialized.");

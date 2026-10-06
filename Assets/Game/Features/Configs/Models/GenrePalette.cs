@@ -16,8 +16,8 @@ namespace Game.Configs.Models
         {
             public BookGenre Genre;
             public Color Color;
-            [Tooltip("Optional per-genre background sprite for the +/- buttons in a genre row.")]
-            public Sprite ButtonBackground;
+            /*[Tooltip("Optional per-genre background sprite for the +/- buttons in a genre row.")]
+            public Sprite ButtonBackground;*/
         }
 
         [SerializeField] private Entry[] _entries = Array.Empty<Entry>();
@@ -33,7 +33,7 @@ namespace Game.Configs.Models
             return _fallback;
         }
 
-        /// <summary>Returns the configured button-background sprite for <paramref name="genre"/>, or null.</summary>
+        /*/// <summary>Returns the configured button-background sprite for <paramref name="genre"/>, or null.</summary>
         public Sprite GetButtonBackground(BookGenre genre)
         {
             for (var i = 0; i < _entries.Length; i++)
@@ -41,6 +41,6 @@ namespace Game.Configs.Models
                     return _entries[i].ButtonBackground;
 
             return null;
-        }
+        }*/
     }
 }

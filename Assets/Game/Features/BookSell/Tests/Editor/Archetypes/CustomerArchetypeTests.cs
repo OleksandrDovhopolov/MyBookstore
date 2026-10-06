@@ -115,41 +115,36 @@ namespace Book.Sell.Tests.Editor
         // --- Active archetypes (structural smoke) -------------------------------------------
 
         [Test]
-        public void ActiveRequest_WithRequest_BuildsActiveStep()
+        public void ActiveRequest_BuildsActiveStep()
         {
-            var request = SalesTestKit.ActiveRequest("r1");
-            var middle = Middle(new ActiveRequestArchetype(request), new FakeSalesRandom());
+            var middle = Middle(new ActiveRequestArchetype(), new FakeSalesRandom());
 
             Assert.AreEqual(1, middle.Count);
             Assert.IsInstanceOf<ActiveRequestStep>(middle[0]);
-            Assert.AreSame(request, ((ActiveRequestStep)middle[0]).Request);
         }
 
+        /// <summary>
+        /// The archetype no longer carries a request — the step draws one when the customer reaches the
+        /// minigame — so a freshly built step has nothing to ask for yet.
+        /// </summary>
         [Test]
-        public void ActiveRequest_NullRequest_EmptyMiddle()
+        public void ActiveRequest_CarriesNoRequestUntilItRuns()
         {
-            var middle = Middle(new ActiveRequestArchetype(null), new FakeSalesRandom());
-            Assert.IsEmpty(middle);
+            var middle = Middle(new ActiveRequestArchetype(), new FakeSalesRandom());
+
+            Assert.IsNull(((ActiveRequestStep)middle[0]).Request);
         }
 
         [Test]
         public void PassiveActivePassive_OrdersPassiveActivePassive()
         {
-            var request = SalesTestKit.ActiveRequest("r1");
             var random = new FakeSalesRandom().EnqueueRangeIndex(0); // Range(1,3) => 1 leading passive
-            var middle = Middle(new PassiveActivePassiveArchetype(request, 1, 2), random);
+            var middle = Middle(new PassiveActivePassiveArchetype(1, 2), random);
 
             Assert.AreEqual(3, middle.Count, "1 leading passive + active + 1 trailing passive.");
             Assert.IsInstanceOf<PassivePurchaseStep>(middle[0]);
             Assert.IsInstanceOf<ActiveRequestStep>(middle[1]);
-            Assert.AreSame(request, ((ActiveRequestStep)middle[1]).Request);
             Assert.IsInstanceOf<PassivePurchaseStep>(middle[2]);
-        }
-
-        [Test]
-        public void PassiveActivePassive_NullRequest_Throws()
-        {
-            Assert.Throws<ArgumentNullException>(() => new PassiveActivePassiveArchetype(null, 1, 2));
         }
 
         /// <summary>
@@ -161,9 +156,8 @@ namespace Book.Sell.Tests.Editor
         [Test]
         public void PassiveActivePassive_LeadingMiss_RunsActive_AndDropsTrailingPassive()
         {
-            var request = SalesTestKit.ActiveRequest("r1");
             var steps = new List<ICustomerStep> { new ApproachStep() };
-            steps.AddRange(Middle(new PassiveActivePassiveArchetype(request, 1, 1), new FakeSalesRandom()));
+            steps.AddRange(Middle(new PassiveActivePassiveArchetype(1, 1), new FakeSalesRandom()));
             steps.Add(new LeaveStep());
 
             var sink = new RecordingSink();
@@ -172,7 +166,8 @@ namespace Book.Sell.Tests.Editor
                 ShelfOf(2),   // non-empty: ActiveRequestStep completes without a minigame on an empty shelf
                 SalesTestKit.Location(),
                 sink,
-                passiveSelector: SalesTestKit.AlwaysMissPassiveSelector());
+                passiveSelector: SalesTestKit.AlwaysMissPassiveSelector(),
+                activeRequests: new FakeActiveRequestSelector().Enqueue(SalesTestKit.ActiveRequest("r1")));
 
             Drive(customer, ctx);
 

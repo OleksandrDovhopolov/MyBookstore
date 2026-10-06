@@ -16,7 +16,7 @@
         "titleKey": "memory.eddi.intro.title",
         "descriptionKey": "memory.eddi.intro.description",
         "photoKey": "memory_eddi_intro",
-        "questId": "q_intro_eddi",
+        "unlockedAtStart": true,
         "order": 1,
         "isGolden": false
       }
@@ -40,8 +40,8 @@
         "titleKey": "memory.millie.intro.title",
         "descriptionKey": "memory.millie.intro.description",
         "photoKey": "memory_millie_intro",
-        "questId": "q_intro_millie",
-        "order": 2,
+        "questId": "q_mem_millie_met",
+        "order": 5,
         "isGolden": false
       }
     ]
@@ -63,8 +63,8 @@
         "titleKey": "memory.tara.kids.title",
         "descriptionKey": "memory.tara.kids.description",
         "photoKey": "memory_tara_kids",
-        "questId": "q_tara_kids",
-        "order": 3,
+        "questId": "q_mem_tara_met",
+        "order": 9,
         "isGolden": false
       }
     ]
@@ -85,9 +85,9 @@
         "id": "mem_captain_postcards",
         "titleKey": "memory.captain.postcards.title",
         "descriptionKey": "memory.captain.postcards.description",
-        "photoKey": "memory_captain_postcards",
-        "questId": "q_captain_postcards",
-        "order": 4,
+        "photoKey": "memory_captain_intro",
+        "questId": "q_mem_captain_met",
+        "order": 10,
         "isGolden": false
       }
     ]
@@ -103,7 +103,71 @@
         "descriptionKey": "memory.owner.moving_in.description",
         "photoKey": "memory_moving_in",
         "unlockedAtStart": true,
-        "order": 0
+        "order": 0,
+        "isGolden": false
+      },
+      {
+        "id": "mem_owner_col1",
+        "titleKey": "memory.owner.col1.title",
+        "descriptionKey": "memory.owner.col1.description",
+        "photoKey": "memory_owner_col1",
+        "unlockedAtStart": true,
+        "order": 2,
+        "isGolden": false
+      },
+      {
+        "id": "mem_owner_col2",
+        "titleKey": "memory.owner.col2.title",
+        "descriptionKey": "memory.owner.col2.description",
+        "photoKey": "memory_owner_col2",
+        "unlockedAtStart": true,
+        "order": 3,
+        "isGolden": false
+      },
+      {
+        "id": "mem_owner_col3",
+        "titleKey": "memory.owner.col3.title",
+        "descriptionKey": "memory.owner.col3.description",
+        "photoKey": "memory_owner_col3",
+        "unlockedAtStart": true,
+        "order": 4,
+        "isGolden": false
+      },
+      {
+        "id": "mem_owner_shop_cat",
+        "titleKey": "memory.owner.shop_cat.title",
+        "descriptionKey": "memory.owner.shop_cat.description",
+        "photoKey": "memory_owner_shop_cat",
+        "questId": "q_mem_return",
+        "order": 6,
+        "isGolden": false
+      },
+      {
+        "id": "mem_owner_book_boxes",
+        "titleKey": "memory.owner.book_boxes.title",
+        "descriptionKey": "memory.owner.book_boxes.description",
+        "photoKey": "memory_owner_book_boxes",
+        "questId": "q_mem_book_boxes",
+        "order": 7,
+        "isGolden": false
+      },
+      {
+        "id": "mem_owner_shop_items",
+        "titleKey": "memory.owner.shop_items.title",
+        "descriptionKey": "memory.owner.shop_items.description",
+        "photoKey": "memory_owner_shop_items",
+        "questId": "q_mem_shop_items",
+        "order": 8,
+        "isGolden": false
+      },
+      {
+        "id": "mem_owner_cafe",
+        "titleKey": "memory.owner.cafe.title",
+        "descriptionKey": "memory.owner.cafe.description",
+        "photoKey": "memory_owner_cafe",
+        "questId": "q_mem_town",
+        "order": 11,
+        "isGolden": false
       }
     ]
   }

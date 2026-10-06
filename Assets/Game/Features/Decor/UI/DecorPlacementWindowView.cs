@@ -23,6 +23,7 @@ namespace Game.Decor.UI
         [Header("Bottom inventory panel")]
         [Tooltip("Card prefab + parent are assigned on the pool in the inspector.")]
         [SerializeField] private UIListPool<DecorInventoryCardView> _cardsPool = new();
+        [SerializeField] private TextMeshProUGUI _emptyInventoryLabel;
         [SerializeField] private DecorInfoWidgetView _decorInfoWidgetPrefab;
 
         [Header("Selected decor info")]
@@ -68,6 +69,12 @@ namespace Game.Decor.UI
 
         public AudioClip PlaceClip => _placeClip;
         public AudioClip RemoveClip => _removeClip;
+
+        public void SetEmptyInventoryVisible(bool visible)
+        {
+            if (_emptyInventoryLabel != null)
+                _emptyInventoryLabel.gameObject.SetActive(visible);
+        }
 
         protected override void Awake()
         {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Firebase;
 using Firebase.Analytics;
+using Firebase.Crashlytics;
 using UnityEngine;
 
 namespace Analytics
@@ -32,6 +33,8 @@ namespace Analytics
                 }
 
                 FirebaseAnalytics.SetAnalyticsCollectionEnabled(true);
+                Crashlytics.IsCrashlyticsCollectionEnabled = true;
+                Crashlytics.ReportUncaughtExceptionsAsFatal = true;
                 base.Initialize();
             }
             catch (Exception exception)
@@ -55,6 +58,7 @@ namespace Analytics
             if (IsEnabled && !string.IsNullOrWhiteSpace(userId))
             {
                 FirebaseAnalytics.SetUserId(userId);
+                Crashlytics.SetUserId(userId);
             }
         }
 

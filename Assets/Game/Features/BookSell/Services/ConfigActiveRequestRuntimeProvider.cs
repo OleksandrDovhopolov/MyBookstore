@@ -41,7 +41,7 @@ namespace Book.Sell.Services
             _configs = configs ?? throw new System.ArgumentNullException(nameof(configs));
             _conditionEvaluator = conditionEvaluator ?? throw new System.ArgumentNullException(nameof(conditionEvaluator));
             _genreResolver = genreResolver ?? throw new System.ArgumentNullException(nameof(genreResolver));
-            _textComposer = textComposer ?? new LexiconActiveRequestTextComposer(configs, conditionEvaluator, null);
+            _textComposer = textComposer ?? new LexiconActiveRequestTextComposer(configs, null);
         }
 
         public IReadOnlyList<ActiveRequestRuntime> GetRequests()

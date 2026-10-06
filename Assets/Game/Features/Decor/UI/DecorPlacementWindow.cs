@@ -7,7 +7,6 @@ using Game.Configs;
 using Game.Configs.Models;
 using Game.Decor.Services;
 using Game.Inventory.API;
-using Game.Localization;
 using Game.UI;
 using Game.UI.ContentWidget;
 using Infrastructure.Audio;
@@ -208,6 +207,7 @@ namespace Game.Decor.UI
             pool.DisableAll();
             var selectable = true;
             var items = _inventory.GetByCategory(InventoryCategories.Decor);
+            var visibleCount = 0;
             foreach (var item in items)
             {
                 var config = _configs.Get<DecorConfig>(item.ItemId);
@@ -218,8 +218,10 @@ namespace Game.Decor.UI
                 var placed = !string.IsNullOrEmpty(FindPlacedSlot(item.ItemId));
                 var card = pool.GetNext();
                 card.Bind(config, placed, selectable, _sprites, OnCardSelect, OnCardInfo);
+                visibleCount++;
             }
             pool.DisableNonActive();
+            View.SetEmptyInventoryVisible(visibleCount == 0);
         }
 
         private void OnCardSelect(string decorId)
@@ -337,8 +339,8 @@ namespace Game.Decor.UI
             }
 
             return new DecorInfoWidgetData(
-                ResolveDecorName(config),
-                LocalizationLocator.GetOrKey("ui.decor.description.placeholder"),
+                DecorTextResolver.ResolveName(config),
+                DecorTextResolver.ResolveDescription(config),
                 icon,
                 bonuses,
                 BuildDecorCharacteristics(config));
@@ -430,7 +432,8 @@ namespace Game.Decor.UI
             var config = string.IsNullOrEmpty(decorId) ? null : _configs.Get<DecorConfig>(decorId);
 
             if (View.SelectedDecorNameLabel != null)
-                View.SelectedDecorNameLabel.text = config != null ? ResolveDecorName(config) : string.Empty;
+                View.SelectedDecorNameLabel.text =
+                    config != null ? DecorTextResolver.ResolveName(config) : string.Empty;
 
             if (View.SelectedDecorImage != null)
             {
@@ -874,10 +877,5 @@ namespace Game.Decor.UI
             sb.Append(". Continue?");
             return sb.ToString();
         }
-
-        private static string ResolveDecorName(DecorConfig config)
-            => string.IsNullOrEmpty(config?.DisplayNameKey)
-                ? config?.Id
-                : LocalizationLocator.GetOrKey(config.DisplayNameKey);
     }
 }

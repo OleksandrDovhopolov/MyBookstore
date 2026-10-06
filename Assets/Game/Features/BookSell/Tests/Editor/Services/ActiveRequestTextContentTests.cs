@@ -39,7 +39,9 @@ namespace Book.Sell.Tests.Editor.Services
                     failures.Add($"{request.Id}: still shows the condition dump - '{text}'.");
                 else if (text.Contains("request."))
                     failures.Add($"{request.Id}: leaked a raw localization key - '{text}'.");
-                else if (!string.IsNullOrWhiteSpace(request.BookTitle) && !text.Contains(request.BookTitle))
+                else if (string.IsNullOrWhiteSpace(request.DescriptionKey) &&
+                         !string.IsNullOrWhiteSpace(request.BookTitle) &&
+                         !text.Contains(request.BookTitle))
                     failures.Add($"{request.Id}: the reference book is missing from the line - '{text}'.");
             }
 
@@ -61,15 +63,11 @@ namespace Book.Sell.Tests.Editor.Services
         private static LexiconActiveRequestTextComposer BuildComposer(out IReadOnlyList<RequestDefinitionConfig> requests)
         {
             var configs = new FakeConfigsService();
-            configs.SetAll(Load<BookConfig>(ActiveRequestValidator.BooksPath));
             configs.SetAll(Load<RequestPhraseConfig>(PhrasesPath));
 
             requests = Load<RequestDefinitionConfig>(ActiveRequestValidator.RequestsPath);
 
-            return new LexiconActiveRequestTextComposer(
-                configs,
-                new BookConditionRequestEvaluator(),
-                LoadLocalization());
+            return new LexiconActiveRequestTextComposer(configs, LoadLocalization());
         }
 
         private static IReadOnlyList<T> Load<T>(string path)

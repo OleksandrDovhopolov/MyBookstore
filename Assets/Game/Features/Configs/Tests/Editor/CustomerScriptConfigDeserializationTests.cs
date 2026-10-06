@@ -19,6 +19,7 @@ namespace Game.Configs.Tests.Editor
         };
 
         private const string BooksFileName = "books.json";
+        private const string CustomerVisualsFileName = "customer_visuals.json";
 
         private const string Json = @"
 [
@@ -97,6 +98,28 @@ namespace Game.Configs.Tests.Editor
         }
 
         [Test]
+        public void Deserialize_PopulatesCustomerVisual()
+        {
+            const string json = @"[
+  {
+    ""id"": ""npc_01"",
+    ""figureSpriteKey"": ""npc_01_front"",
+    ""avatarSpriteKey"": ""npc_01_avatar"",
+    ""weight"": 1
+  }
+]";
+
+            var visuals = JsonConvert.DeserializeObject<CustomerVisualConfig[]>(json);
+
+            Assert.IsNotNull(visuals);
+            Assert.AreEqual(1, visuals.Length);
+            Assert.AreEqual("npc_01", visuals[0].Id);
+            Assert.AreEqual("npc_01_front", visuals[0].FigureSpriteKey);
+            Assert.AreEqual("npc_01_avatar", visuals[0].AvatarSpriteKey);
+            Assert.AreEqual(1f, visuals[0].Weight);
+        }
+
+        [Test]
         public void ConfigsService_LoadsCustomerScriptsByConfigFileMapping_AndIndexesById()
         {
             var service = new ConfigsService(new FakeConfigSource(Json), overrides: null);
@@ -146,10 +169,10 @@ namespace Game.Configs.Tests.Editor
         }
 
         [Test]
-        public void Content_DayOne_UsesTwoWavesForEddiThenMissNpc()
+        public void Content_DayOne_UsesTwoWaves()
         {
             foreach (var root in ContentRoots)
-                AssertDayOneUsesTwoWavesForEddiThenMissNpc(root);
+                AssertDayOneUsesTwoWaves(root);
         }
 
         [Test]
@@ -176,6 +199,13 @@ namespace Game.Configs.Tests.Editor
         {
             foreach (var root in ContentRoots)
                 AssertFirstDayStarterGenresCoverScriptedPassiveAttempts(root);
+        }
+
+        [Test]
+        public void Content_CustomerVisuals_HaveActiveReleaseFallback()
+        {
+            foreach (var root in ContentRoots)
+                AssertCustomerVisualsHaveActiveReleaseFallback(root);
         }
 
         [Test]
@@ -226,7 +256,7 @@ namespace Game.Configs.Tests.Editor
                 CustomerScriptDayLookup.PassiveGenresForDay(scripts, 1));
         }
 
-        private static void AssertDayOneUsesTwoWavesForEddiThenMissNpc(string root)
+        private static void AssertDayOneUsesTwoWaves(string root)
         {
             var days = JsonConvert.DeserializeObject<DayConfig[]>(
                 File.ReadAllText(Path.Combine(root, "days.json")));
@@ -237,37 +267,12 @@ namespace Game.Configs.Tests.Editor
             Assert.IsTrue(day1.ActiveRequestCount.HasValue);
             Assert.AreEqual(0, day1.ActiveRequestCount.Value);
             CollectionAssert.AreEqual(new[] { 1, 3 }, day1.WaveSizes);
+            // Same value as WaveScheduleResolver.DefaultWaveGapSeconds; spelled out because this assembly
+            // does not reference Book.Sell.
             Assert.IsTrue(day1.WaveGapSeconds.HasValue);
-            Assert.AreEqual(2f, day1.WaveGapSeconds.Value);
+            Assert.AreEqual(0.5f, day1.WaveGapSeconds.Value);
             Assert.IsTrue(day1.ApplyModifiers.HasValue);
             Assert.IsFalse(day1.ApplyModifiers.Value);
-        }
-
-        [Test]
-        public void Content_DayOneMissScript_UsesKnownTravelGenre()
-        {
-            foreach (var root in ContentRoots)
-                AssertDayOneMissScriptUsesKnownTravelGenre(root);
-        }
-
-        private static void AssertDayOneMissScriptUsesKnownTravelGenre(string root)
-        {
-            var scripts = JsonConvert.DeserializeObject<CustomerScriptConfig[]>(
-                File.ReadAllText(Path.Combine(root, "customer_scripts.json")));
-            var books = JsonConvert.DeserializeObject<BookConfig[]>(
-                File.ReadAllText(Path.Combine(root, BooksFileName)));
-
-            var script = scripts.Single(s => s.Id == "day2_missed_sale");
-            Assert.IsTrue(script.DayIndex.HasValue);
-            Assert.AreEqual(1, script.DayIndex.Value);
-
-            var attempt = AssertOneAttempt(script);
-            Assert.AreEqual("Travel", attempt.Genre);
-            Assert.IsFalse(attempt.ForceHit);
-
-            Assert.IsTrue(
-                books.Any(b => string.Equals(b.PrimaryGenre, attempt.Genre, StringComparison.OrdinalIgnoreCase)),
-                "The scripted miss genre must exist in BookConfig.PrimaryGenre.");
         }
 
         [Test]
@@ -390,15 +395,23 @@ namespace Game.Configs.Tests.Editor
             }
         }
 
+        private static void AssertCustomerVisualsHaveActiveReleaseFallback(string root)
+        {
+            var visuals = JsonConvert.DeserializeObject<CustomerVisualConfig[]>(
+                File.ReadAllText(Path.Combine(root, CustomerVisualsFileName)));
+
+            Assert.IsNotNull(visuals);
+            Assert.IsTrue(
+                visuals.Any(v => v != null
+                                 && v.Weight > 0f
+                                 && !string.IsNullOrWhiteSpace(v.Id)
+                                 && !string.IsNullOrWhiteSpace(v.FigureSpriteKey)
+                                 && !string.IsNullOrWhiteSpace(v.AvatarSpriteKey)),
+                $"{root}/{CustomerVisualsFileName} must contain at least one active weighted NPC visual.");
+        }
+
         private static string NormalizeJson(string json)
             => JToken.Parse(json).ToString(Formatting.None);
-
-        private static ScriptedPassivePurchaseConfig AssertOneAttempt(CustomerScriptConfig script)
-        {
-            Assert.IsNotNull(script.PassiveAttempts);
-            Assert.AreEqual(1, script.PassiveAttempts.Length);
-            return script.PassiveAttempts[0];
-        }
 
         private sealed class FakeConfigSource : IConfigSource
         {

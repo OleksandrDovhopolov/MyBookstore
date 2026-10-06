@@ -12,8 +12,6 @@ namespace Game.Cheat
     {
         private const string Group = "Characters";
         private const string LogTag = "[CharacterMemoryCheat]";
-        private const string CharacterId = "owner";
-        private const string MovingInMemoryId = "mem_owner_moving_in";
 
         private readonly ICharactersService _characters;
         private readonly ISaveService _save;
@@ -28,29 +26,50 @@ namespace Game.Cheat
 
         public void Initialize(ICheatsContainer cheatsContainer)
         {
-            AddUnlockButton(cheatsContainer, "Unlock owner moving in", MovingInMemoryId);
-        }
-
-        private void AddUnlockButton(ICheatsContainer cheatsContainer, string label, string memoryId)
-        {
             cheatsContainer.AddItem<CheatButtonItem>(item =>
-                item.OnClick(label, () => UnlockAsync(memoryId).Forget())
+                item.OnClick("Unlock all memories", () => UnlockAllAsync().Forget())
                     .WithGroup(Group));
         }
 
-        private async UniTaskVoid UnlockAsync(string memoryId)
+        /// <summary>
+        /// Writes every memory into the unlock ledger, which is the OR-partner of the quest-derived state
+        /// in <c>CharactersService.IsMemoryUnlocked</c> — so this works for quest-linked memories too
+        /// without touching quest state. Idempotent: already-unlocked ids are skipped.
+        ///
+        /// There is deliberately no "clear all" counterpart: 7 of the 12 memories are derived from
+        /// QuestState.Awarded, so wiping the ledger would neither hide them nor survive the next
+        /// Reconcile(). Use Tools/Save/Reset Player Save for a real reset.
+        /// </summary>
+        private async UniTaskVoid UnlockAllAsync()
         {
             try
             {
-                var unlocked = _characters.TryUnlockMemory(CharacterId, memoryId);
-                if (!unlocked)
+                var unlocked = 0;
+                var total = 0;
+
+                foreach (var character in _characters.GetAllCharacters())
                 {
-                    Debug.Log($"{LogTag} '{CharacterId}.{memoryId}' is already unlocked or missing.");
+                    var memories = character?.Memories;
+                    if (memories == null) continue;
+
+                    for (var i = 0; i < memories.Count; i++)
+                    {
+                        var memory = memories[i];
+                        if (memory == null || string.IsNullOrEmpty(memory.Id)) continue;
+
+                        total++;
+                        if (_characters.TryUnlockMemory(character.Id, memory.Id)) unlocked++;
+                    }
+                }
+
+                if (unlocked == 0)
+                {
+                    Debug.Log($"{LogTag} all {total} memories were already unlocked.");
                     return;
                 }
 
                 await _save.SaveAsync(_ct);
-                Debug.Log($"{LogTag} unlocked '{CharacterId}.{memoryId}'.");
+                Debug.Log($"{LogTag} unlocked {unlocked} of {total} memories.");
             }
             catch (OperationCanceledException)
             {

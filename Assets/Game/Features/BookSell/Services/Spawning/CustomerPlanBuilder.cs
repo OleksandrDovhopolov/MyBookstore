@@ -28,7 +28,9 @@ namespace Book.Sell.Services
             Func<IEnumerable<ICustomerStep>> buildMiddle,
             CustomerProfile profile = null,
             string characterId = null,
-            ScriptedPassivePurchasePlan scriptedPassivePlan = null)
+            ScriptedPassivePurchasePlan scriptedPassivePlan = null,
+            string npcVisualId = null,
+            Func<string> npcVisualIdFactory = null)
         {
             var steps = new List<ICustomerStep>
             {
@@ -42,7 +44,8 @@ namespace Book.Sell.Services
             steps.Add(new CompletePurchaseStep());
             steps.Add(new LeaveStep(RandomInRange(tuning.MinLeaveDuration, tuning.MaxLeaveDuration, random)));
 
-            return new Customer(id, steps, profile, characterId, scriptedPassivePlan);
+            npcVisualId ??= npcVisualIdFactory?.Invoke();
+            return new Customer(id, steps, profile, characterId, scriptedPassivePlan, npcVisualId);
         }
 
         /// <summary>Uniform value in [min, max], drawn from the sales random port. Moved verbatim from

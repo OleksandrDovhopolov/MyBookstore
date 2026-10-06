@@ -29,6 +29,7 @@ namespace Book.Sell.UI.Customer
         private readonly IWorldHudManager _worldHud;
         private readonly IConfigsService _configs;
         private readonly IUiSpriteProvider _uiSprites;
+        private readonly ICustomerVisualSpriteResolver _spriteResolver;
         private readonly IBubbleSlotAllocator _slots;
         private readonly SalesTuning _tuning;
         private readonly CancellationTokenSource _cts = new();
@@ -50,6 +51,7 @@ namespace Book.Sell.UI.Customer
             IWorldHudManager worldHud,
             IConfigsService configs,
             IUiSpriteProvider uiSprites,
+            ICustomerVisualSpriteResolver spriteResolver,
             IBubbleSlotAllocator slots,
             SalesTuning tuning)
         {
@@ -58,6 +60,7 @@ namespace Book.Sell.UI.Customer
             _worldHud = worldHud;
             _configs = configs;
             _uiSprites = uiSprites;
+            _spriteResolver = spriteResolver;
             _slots = slots;
             _tuning = tuning;
         }
@@ -299,7 +302,7 @@ namespace Book.Sell.UI.Customer
                 }
 
                 _bubbles[customerId] = bubble;
-                ApplyAvatarAsync(customerId, customer.CharacterId, bubble).Forget();
+                ApplyAvatarAsync(customerId, customer, bubble).Forget();
                 return bubble;
             }
             catch
@@ -339,13 +342,16 @@ namespace Book.Sell.UI.Customer
             }
         }
 
-        private async UniTaskVoid ApplyAvatarAsync(string customerId, string characterId, CustomerThoughtBubble bubble)
+        private async UniTaskVoid ApplyAvatarAsync(string customerId, Domain.Customer customer, CustomerThoughtBubble bubble)
         {
-            if (_uiSprites == null || string.IsNullOrWhiteSpace(characterId)) return;
+            if (_uiSprites == null) return;
+
+            var spriteKey = _spriteResolver?.ResolveAvatarSpriteKey(customer) ?? customer?.CharacterId;
+            if (string.IsNullOrWhiteSpace(spriteKey)) return;
 
             try
             {
-                var sprite = await _uiSprites.GetSpriteAsync(characterId, _cts.Token);
+                var sprite = await _uiSprites.GetSpriteAsync(spriteKey, _cts.Token);
                 if (sprite == null || bubble == null) return;
                 if (!_bubbles.TryGetValue(customerId, out var current) || current != bubble) return;
 
@@ -356,7 +362,7 @@ namespace Book.Sell.UI.Customer
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"[CustomerBubbleBinder] Failed to load avatar '{characterId}': {ex.Message}");
+                Debug.LogWarning($"[CustomerBubbleBinder] Failed to load avatar '{spriteKey}': {ex.Message}");
             }
         }
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Configs;
 using Game.Decor;
 using Game.Decor.UI;
 using Game.Inventory.API;
@@ -17,12 +18,14 @@ namespace Game.Inventory.UI
     [Window("InventoryWindow", WindowType.Page)]
     public sealed class InventoryWindowController : WindowController<InventoryWindowView>
     {
-        private const string TodoDescriptionKey = "ui.inventory.item.description.placeholder";
+        // Shown when an item has no authored descriptionKey (and for rows whose id matches no config).
+        private const string FallbackDescriptionKey = "ui.inventory.item.description.fallback";
 
         private IInventoryService _inventory;
         private IUiSpriteProvider _sprites;
         private IReadOnlyList<IInventoryRowSource> _rowSources;
         private IDecorPlacementService _decorPlacement;
+        private IConfigsService _configs;
 
         // The widget is hidden by instance, not by type: UIManager.HideAsync<T> and IsWindowShown
         // both filter on IWindowController.IsShown, which is only set after the show animation
@@ -36,12 +39,14 @@ namespace Game.Inventory.UI
             IInventoryService inventory,
             IUiSpriteProvider sprites,
             IReadOnlyList<IInventoryRowSource> rowSources,
-            IDecorPlacementService decorPlacement)
+            IDecorPlacementService decorPlacement,
+            IConfigsService configs)
         {
             _inventory = inventory;
             _sprites = sprites;
             _rowSources = rowSources;
             _decorPlacement = decorPlacement;
+            _configs = configs;
         }
 
         protected override void OnInit()
@@ -69,7 +74,7 @@ namespace Game.Inventory.UI
             }
             else
             {
-                ShowItemInfoWidgetAsync(itemId, anchor).Forget();
+                ShowItemInfoWidgetAsync(itemId, style, anchor).Forget();
             }
         }
 
@@ -81,7 +86,10 @@ namespace Game.Inventory.UI
                 View != null ? View.destroyCancellationToken : default).Forget();
         }
 
-        private async UniTaskVoid ShowItemInfoWidgetAsync(string itemId, RectTransform anchor)
+        private async UniTaskVoid ShowItemInfoWidgetAsync(
+            string itemId,
+            InventoryRowStyle style,
+            RectTransform anchor)
         {
             if (string.IsNullOrEmpty(itemId) || anchor == null || UIManager == null || View == null)
                 return;
@@ -92,7 +100,11 @@ namespace Game.Inventory.UI
 
             try
             {
-                var data = new InventoryItemWidgetData(itemId, LocalizationLocator.GetOrKey(TodoDescriptionKey));
+                var descriptionKey = InventoryItemDescriptionResolver.ResolveDescriptionKey(
+                    _configs, itemId, style);
+                var data = new InventoryItemWidgetData(
+                    itemId,
+                    LocalizationLocator.GetOrKey(descriptionKey ?? FallbackDescriptionKey));
                 var args = new ContentWidgetArgs(
                     data,
                     anchor,

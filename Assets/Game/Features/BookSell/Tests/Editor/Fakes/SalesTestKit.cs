@@ -71,6 +71,9 @@ namespace Book.Sell.Tests.Editor.Fakes
                 ApproachDuration = 0f,
                 MinApproachDuration = 0f,
                 MaxApproachDuration = 0f,
+                // 0 disables the View's distance/speed derivation, so tests keep the drawn durations.
+                ApproachSpeed = 0f,
+                LeaveSpeed = 0f,
                 BrowseDuration = 0f,
                 PassiveCommitDelay = 0f,
                 PassiveFailureFeedbackDuration = 0f,
@@ -102,7 +105,8 @@ namespace Book.Sell.Tests.Editor.Fakes
 
         public static CustomerContext Context(SalesShelf shelf, LocationConfig location, ISalesDaySink sink,
             IInteractionLock interactionLock = null, ISalesRandom random = null, SalesTuning tuning = null,
-            IPassiveSaleSelector passiveSelector = null, IReadOnlyList<string> activeDecorIds = null)
+            IPassiveSaleSelector passiveSelector = null, IReadOnlyList<string> activeDecorIds = null,
+            IActiveRequestSelector activeRequests = null)
             => new(
                 shelf,
                 interactionLock ?? new InteractionLock(),
@@ -111,6 +115,7 @@ namespace Book.Sell.Tests.Editor.Fakes
                 location,
                 activeDecorIds,
                 sink,
-                tuning ?? FastTuning());
+                tuning ?? FastTuning(),
+                activeRequests);
     }
 }

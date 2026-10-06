@@ -79,9 +79,14 @@ namespace Game.Bootstrap
             builder.Register<IBookConditionRequestEvaluator, BookConditionRequestEvaluator>(Lifetime.Singleton);
             builder.Register<IActiveRequestGenreResolver, ConditionActiveRequestGenreResolver>(Lifetime.Singleton);
             builder.Register<IActiveRequestTextComposer, LexiconActiveRequestTextComposer>(Lifetime.Singleton);
-            builder.Register<IActiveRequestSelectorFactory, ProfileMatchedRequestSelectorFactory>(Lifetime.Singleton);
+            // Needs the evaluator: the selector filters the pool down to requests the current shelf can answer.
+            builder.Register<IActiveRequestSelectorFactory>(
+                r => new ProfileMatchedRequestSelectorFactory(r.Resolve<IBookConditionRequestEvaluator>()),
+                Lifetime.Singleton);
             builder.Register<IActiveRequestRuntimeProvider, ConfigActiveRequestRuntimeProvider>(Lifetime.Singleton);
             builder.Register<IActiveRequestScoringService, ActiveRequestScoringService>(Lifetime.Singleton);
+            builder.Register<ICustomerVisualSelector, CustomerVisualSelector>(Lifetime.Singleton);
+            builder.Register<ICustomerVisualSpriteResolver, CustomerVisualSpriteResolver>(Lifetime.Singleton);
 
             // Passive sale chance gate (ADR-0004) resolves from the global scope so HUD previews and
             // sales use the same calculator instance.
@@ -144,7 +149,7 @@ namespace Game.Bootstrap
                     r.Resolve<IActiveRequestRuntimeProvider>(),
                     r.Resolve<ICustomerProfileProvider>(),
                     r.Resolve<IActiveRequestCountResolver>(),
-                    r.Resolve<IActiveRequestSelectorFactory>()),
+                    r.Resolve<ICustomerVisualSelector>()),
                 Lifetime.Singleton); // production base: count from ICustomerTrafficResolver
             builder.Register<ICustomerSpawner>(r => new ScriptedCustomerSpawner(
                     r.Resolve<RegularCustomerSpawner>(),
@@ -152,8 +157,7 @@ namespace Game.Bootstrap
                     r.Resolve<IQuestsService>(),
                     r.Resolve<IDeliveredDialoguesService>(),
                     r.Resolve<ICustomerProfileProvider>(),
-                    r.Resolve<IActiveRequestRuntimeProvider>(),
-                    r.Resolve<IActiveRequestSelectorFactory>()),
+                    r.Resolve<ICustomerVisualSelector>()),
                 Lifetime.Singleton);
             
             
@@ -169,6 +173,9 @@ namespace Game.Bootstrap
             // Customer visualization + world-space thought bubbles (Phase 0 of World HUD).
             builder.RegisterInstance(new CustomerVisualRegistryConfig(customerVisualPrefab, locationContext));
             builder.Register<IBubbleSlotAllocator, BubbleSlotAllocator>(Lifetime.Singleton);
+            // Lane anchors are acquired/released per live customer instead of the old spawn-index
+            // modulo, which could put two customers on the same spot.
+            builder.Register<ILaneSlotAllocator, LaneSlotAllocator>(Lifetime.Singleton);
             builder.Register<CustomerVisualRegistry>(Lifetime.Singleton)
                 .AsImplementedInterfaces() // exposes ICustomerVisualRegistry, IStartable, IDisposable
                 .AsSelf();

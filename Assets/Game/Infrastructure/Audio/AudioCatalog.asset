@@ -17,6 +17,7 @@ MonoBehaviour:
   _windowClose: {fileID: 0}
   _purchaseSuccess: {fileID: 8300000, guid: 18ee91475d2e6f64a80ebf07f42d0a13, type: 3}
   _actionBlocked: {fileID: 8300000, guid: cd9e63fd84d19fe4a8be26d5b2beec5e, type: 3}
+  _saleFailed: {fileID: 8300000, guid: 84a6e9c391a794c4a90b5950d52b6dfd, type: 3}
   _decorPlace: {fileID: 8300000, guid: d87fd5877fbe94a42828e9b56915617d, type: 3}
   _decorRemove: {fileID: 8300000, guid: 94c51a626bbee0e47b6da474292e5a79, type: 3}
   _currencyGained: {fileID: 8300000, guid: 1705f2a556aae2046825557f66d4bc32, type: 3}

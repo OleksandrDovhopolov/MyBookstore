@@ -32,6 +32,7 @@ hard-валидатор вернул ошибку. Warning-проверки пи
 
 | Валидатор | Уровень | Что ловит | Почему это не видно иначе |
 |---|---|---|---|
+| `CollectCheatDefineErrors` (внутри гейта) | Error | Android scripting define `ENABLE_CHEATS`, который включает cheat HUD в player build | Проверочный/релизный билд может собраться с debug define и визуально протащить `CheatButton`, хотя prefab по умолчанию скрыт |
 | `CollectBundledConfigErrors` (внутри гейта) | Error | Файл есть в `Assets/Configs`, но не в StreamingAssets; лежит в StreamingAssets, но удалён из источника; содержимое одноимённых файлов различается; файл забыт в `manifest.json` | В плеере `Directory.GetFiles` недоступен — не перечисленный в манифесте файл невидим, даже если физически попал в APK |
 | `ActiveRequestValidator` | Error | Активный запрос, который не может удовлетворить ни одна книга каталога; жанр, ни одна книга которого не способна получить `Excellent` (тогда квест с `activePickGenre <жанр>` непроходим) | Синтаксически корректный запрос спавнится и просто никогда не решается |
 | `DialogueDeliveredConditionReferenceValidator` | Error | Условие `dialogueDelivered` в квесте ссылается на несуществующий `dialogueId` (или не указывает его) | Условие fail-closed → квест молча никогда не стартует |

@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using Game.Bootstrap.Loading;
 using Game.Configs;
 using Game.Configs.Models;
+using Game.Attention.API;
 using Game.DayCycle.Day;
 using Game.DayCycle.Morning;
 using Game.Journal.UI;
@@ -14,6 +15,7 @@ using Game.Location.UI;
 using Game.LocationUnlock.API;
 using Game.Preparation.Services;
 using Game.Preparation.UI;
+using Game.Shop.API;
 using Game.Tutorial.API;
 using Game.UI;
 using Game.UI.ContentWidget;
@@ -39,7 +41,7 @@ namespace GameplayUI
         private IConfigsService _configs;
         private IUiSpriteProvider _uiSprites;
         private IGameFlowService _gameFlow;
-        private IJournalAttentionService _journalAttention;
+        private IAttentionService _attention;
 
         // True once the window has loaded all the data it needs to display (currently the genre sprites).
         public bool IsDataReady { get; private set; }
@@ -75,7 +77,7 @@ namespace GameplayUI
             ISubscriber<GameplayLocationGoldEarnedChanged> locationGoldEarnedSubscriber = null,
             IPublisher<GameplayGenreBookCountsRequested> genreBookCountsRequestPublisher = null,
             ISubscriber<TutorialStepChanged> tutorialStepSubscriber = null,
-            IJournalAttentionService journalAttention = null)
+            IAttentionService attention = null)
         {
             _uiSprites = uiSprites;
             _dayProgress = dayProgress;
@@ -90,7 +92,7 @@ namespace GameplayUI
             _buttonsInteractableSubscriber = buttonsInteractableSubscriber;
             _genreBookCountsRequestPublisher = genreBookCountsRequestPublisher;
             _tutorialStepSubscriber = tutorialStepSubscriber;
-            _journalAttention = journalAttention;
+            _attention = attention;
         }
 
         protected override void OnInit()
@@ -120,10 +122,10 @@ namespace GameplayUI
             if (_gameFlow != null)
                 _gameFlow.LocationLoadedChanged += OnLocationLoadedChanged;
 
-            if (_journalAttention != null)
+            if (_attention != null)
             {
-                _journalAttention.Changed += RefreshJournalBadge;
-                RefreshJournalBadge();
+                _attention.Changed += RefreshAttentionBadges;
+                RefreshAttentionBadges();
             }
         }
 
@@ -176,6 +178,13 @@ namespace GameplayUI
                 }
 
                 _genreBookCountsRequestPublisher?.Publish(new GameplayGenreBookCountsRequested());
+
+                // Refresh here and not only in OnInit: DayProgressService is not an ISaveHook, its
+                // LoadAsync runs in this scene (HubPhaseRouter / MainSceneBootstrap) and never raises
+                // PhaseChanged. The OnInit read can therefore win the race and evaluate day-gated content
+                // against the default day 1, with no later event to correct it. StartOrResumeAsync above is
+                // the deterministic point at which the real day is loaded.
+                RefreshAttentionBadges();
             }
             catch (OperationCanceledException)
             {
@@ -224,8 +233,8 @@ namespace GameplayUI
             if (_gameFlow != null)
                 _gameFlow.LocationLoadedChanged -= OnLocationLoadedChanged;
 
-            if (_journalAttention != null)
-                _journalAttention.Changed -= RefreshJournalBadge;
+            if (_attention != null)
+                _attention.Changed -= RefreshAttentionBadges;
         }
 
         private void SetSceneButtonsInteractable(bool interactable)
@@ -249,9 +258,17 @@ namespace GameplayUI
             View?.SetGoldCounterMode(loaded);
         }
 
-        private void RefreshJournalBadge()
+        /// <summary>
+        /// Pushes both HUD badges from the shared attention state. The journal button reads only the
+        /// Journal keys, so new shop stock never lights it up, and vice versa.
+        /// </summary>
+        private void RefreshAttentionBadges()
         {
-            View?.MenuButtons?.SetJournalBadge(_journalAttention != null && _journalAttention.HasAnyUnseen);
+            var buttons = View?.MenuButtons;
+            if (buttons == null) return;
+
+            buttons.SetJournalBadge(_attention != null && _attention.HasAnyUnseen(JournalAttentionKeys.All));
+            buttons.SetShopBadge(_attention != null && _attention.HasUnseen(ShopAttentionKeys.Decor));
         }
 
         private void OnStartGameClicked() => StartGameAsync().Forget();

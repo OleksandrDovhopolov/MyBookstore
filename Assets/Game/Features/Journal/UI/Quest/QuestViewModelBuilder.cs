@@ -29,6 +29,7 @@ namespace Game.Quest.UI
             foreach (var quest in quests)
             {
                 if (quest == null || quest.State == QuestState.Pending) continue;
+                if (quest.Config?.HiddenInJournal == true) continue;   // service quest: no journal row
                 models.Add(BuildOne(quest));
             }
 

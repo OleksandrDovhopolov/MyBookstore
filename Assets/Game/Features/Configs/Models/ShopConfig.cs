@@ -22,6 +22,13 @@ namespace Game.Configs.Models
         public string RewardId { get; set; }
         public RewardItemData[] RewardItems { get; set; }
         public ShopLotLimitData Limit { get; set; }
+
+        /// <summary>
+        /// Condition tree gating whether this lot is on offer at all, same shape as
+        /// <c>LocationConfig.Unlock</c> (parsed by <c>IConditionParser</c>). Absent or empty means
+        /// "always available" — a locked lot is hidden from the storefront, not shown greyed out.
+        /// </summary>
+        public Newtonsoft.Json.Linq.JObject Unlock { get; set; }
     }
 
     public sealed class ShopPriceData

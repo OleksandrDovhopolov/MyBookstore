@@ -1,5 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Localization;
 using Game.UI.ContentWidget;
 using TMPro;
 using UnityEngine;
@@ -24,7 +25,7 @@ namespace GameplayUI
                 return false;
 
             if (_percentLabel != null)
-                _percentLabel.text = $"{saleChance.Percent}%";
+                _percentLabel.text = LocalizationLocator.GetOrKey("ui.gameplay.sale_chance", saleChance.Percent);
 
             return true;
         }

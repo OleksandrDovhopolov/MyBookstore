@@ -21,7 +21,6 @@ namespace Game.Ftue
 
         [SerializeField] private Button _letterButton;
         [SerializeField] private Button _startButton;
-        [SerializeField] private TextMeshProUGUI _letterText;
         [SerializeField] private WelcomeWindowAnimation _welcomeAnimation;
         
         public WelcomeWindowAnimation WelcomeAnimation => _welcomeAnimation;
@@ -44,12 +43,6 @@ namespace Game.Ftue
         public void SetStartInteractable(bool interactable)
         {
             if (_startButton != null) _startButton.interactable = interactable;
-        }
-
-        /// <summary>Optional override of the static letter text (text is normally authored on the prefab).</summary>
-        public void SetText(string text)
-        {
-            if (_letterText != null) _letterText.text = text;
         }
     }
 }
